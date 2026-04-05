@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,16 +14,13 @@ func (h *server) PostOutplans(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostOutplansJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -35,7 +31,7 @@ func (h *server) PostOutplans(c *gin.Context) {
 
 	source := ConvertCommonAddress(req.Source)
 
-	res, err := h.serviceHandler.OutplanCreate(c.Request.Context(), &a, req.Name, req.Detail, &source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
+	res, err := h.serviceHandler.OutplanCreate(c.Request.Context(), a, req.Name, req.Detail, &source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
 	if err != nil {
 		log.Errorf("Could not create a outplan. err: %v", err)
 		c.AbortWithStatus(400)
@@ -51,16 +47,13 @@ func (h *server) GetOutplans(c *gin.Context, params openapi_server.GetOutplansPa
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -76,7 +69,7 @@ func (h *server) GetOutplans(c *gin.Context, params openapi_server.GetOutplansPa
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.OutplanGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.OutplanGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a outplan list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -99,16 +92,13 @@ func (h *server) GetOutplansId(c *gin.Context, id string) {
 		"outplan_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -117,7 +107,7 @@ func (h *server) GetOutplansId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.OutplanGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.OutplanGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a outplan. err: %v", err)
 		c.AbortWithStatus(400)
@@ -134,16 +124,13 @@ func (h *server) DeleteOutplansId(c *gin.Context, id string) {
 		"outplan_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -152,7 +139,7 @@ func (h *server) DeleteOutplansId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.OutplanDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.OutplanDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the outplan. err: %v", err)
 		c.AbortWithStatus(400)
@@ -168,16 +155,13 @@ func (h *server) PutOutplansId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -193,7 +177,7 @@ func (h *server) PutOutplansId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.OutplanUpdateBasicInfo(c.Request.Context(), &a, target, req.Name, req.Detail)
+	res, err := h.serviceHandler.OutplanUpdateBasicInfo(c.Request.Context(), a, target, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the outplan. err: %v", err)
 		c.AbortWithStatus(400)
@@ -209,16 +193,13 @@ func (h *server) PutOutplansIdDialInfo(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -236,7 +217,7 @@ func (h *server) PutOutplansIdDialInfo(c *gin.Context, id string) {
 
 	source := ConvertCommonAddress(req.Source)
 
-	res, err := h.serviceHandler.OutplanUpdateDialInfo(c.Request.Context(), &a, target, &source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
+	res, err := h.serviceHandler.OutplanUpdateDialInfo(c.Request.Context(), a, target, &source, req.DialTimeout, req.TryInterval, req.MaxTryCount0, req.MaxTryCount1, req.MaxTryCount2, req.MaxTryCount3, req.MaxTryCount4)
 	if err != nil {
 		log.Errorf("Could not update the outplan. err: %v", err)
 		c.AbortWithStatus(400)

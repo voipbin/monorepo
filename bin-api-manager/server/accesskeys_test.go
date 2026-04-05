@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 
@@ -21,7 +22,7 @@ func Test_GetAccesskeys(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,12 +36,12 @@ func Test_GetAccesskeys(t *testing.T) {
 	tests := []test{
 		{
 			name: "empty request",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("9b7a30c4-ab4e-11ef-9068-1b1141edabd3"),
 				},
-			},
+			}),
 
 			reqQuery: "/accesskeys",
 
@@ -57,12 +58,12 @@ func Test_GetAccesskeys(t *testing.T) {
 		},
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("9b7a30c4-ab4e-11ef-9068-1b1141edabd3"),
 				},
-			},
+			}),
 
 			reqQuery: "/accesskeys?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -79,12 +80,12 @@ func Test_GetAccesskeys(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("cb8453ee-ab4e-11ef-9a1c-dfc505495abd"),
 				},
-			},
+			}),
 
 			reqQuery: "/accesskeys?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -123,12 +124,12 @@ func Test_GetAccesskeys(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyList(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAccesskeys, nil)
+			mockSvc.EXPECT().AccesskeyList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAccesskeys, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -146,7 +147,7 @@ func Test_PostAccesskeys(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -160,11 +161,11 @@ func Test_PostAccesskeys(t *testing.T) {
 	}{
 		{
 			name: "full data",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/accesskeys",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","expire":86400000}`),
@@ -180,11 +181,11 @@ func Test_PostAccesskeys(t *testing.T) {
 		},
 		{
 			name: "empty",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/accesskeys",
 			reqBody:  []byte(`{}`),
@@ -214,7 +215,7 @@ func Test_PostAccesskeys(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -222,7 +223,7 @@ func Test_PostAccesskeys(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().AccesskeyCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectedName,
 				tt.expectedDetail,
 				tt.expectedExpire,
@@ -244,7 +245,7 @@ func Test_GetAccesskeysId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -255,11 +256,11 @@ func Test_GetAccesskeysId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/accesskeys/14a2e40a-ab4f-11ef-a837-63a93a15cd69",
 
@@ -286,12 +287,12 @@ func Test_GetAccesskeysId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyGet(req.Context(), &tt.agent, tt.expectedAccesskeyID).Return(tt.responseAccesskey, nil)
+			mockSvc.EXPECT().AccesskeyGet(req.Context(), tt.agent, tt.expectedAccesskeyID).Return(tt.responseAccesskey, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -309,7 +310,7 @@ func Test_DeleteAccesskeysId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -320,12 +321,12 @@ func Test_DeleteAccesskeysId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("35ffcfdc-ab4f-11ef-a110-e348ca351ef1"),
 				},
-			},
+			}),
 
 			reqQuery: "/accesskeys/3629227e-ab4f-11ef-bcdb-ebc17777d865",
 
@@ -352,12 +353,12 @@ func Test_DeleteAccesskeysId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AccesskeyDelete(req.Context(), &tt.agent, tt.expectAccesskeyID).Return(tt.responseAccesskey, nil)
+			mockSvc.EXPECT().AccesskeyDelete(req.Context(), tt.agent, tt.expectAccesskeyID).Return(tt.responseAccesskey, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -374,7 +375,7 @@ func Test_PutAccesskeysId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -388,11 +389,11 @@ func Test_PutAccesskeysId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("a1a28ef0-ab4f-11ef-bf8c-4f4d983fb85e"),
 				},
-			},
+			}),
 
 			reqQuery: "/accesskeys/a1a28ef0-ab4f-11ef-bf8c-4f4d983fb85e",
 
@@ -423,13 +424,13 @@ func Test_PutAccesskeysId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().AccesskeyUpdate(req.Context(), &tt.agent, tt.expectedAccesskeyID, tt.expectedName, tt.expectedDetail).Return(tt.responseAccesskey, nil)
+			mockSvc.EXPECT().AccesskeyUpdate(req.Context(), tt.agent, tt.expectedAccesskeyID, tt.expectedName, tt.expectedDetail).Return(tt.responseAccesskey, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -12,6 +12,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -22,7 +24,7 @@ func Test_QueueList(t *testing.T) {
 
 	type test struct {
 		name      string
-		agent     *amagent.Agent
+		agent *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -35,13 +37,13 @@ func Test_QueueList(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"2021-03-01T01:00:00.995000Z",
 			10,
 
@@ -99,7 +101,7 @@ func Test_QueueGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		id    uuid.UUID
 
 		response  *qmqueue.Queue
@@ -109,13 +111,13 @@ func Test_QueueGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("17bd8d64-7be4-11eb-b887-8f1b24b98639"),
 
 			&qmqueue.Queue{
@@ -166,7 +168,7 @@ func Test_QueueCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent          *amagent.Agent
+		agent *auth.AuthIdentity
 		queueName      string
 		detail         string
 		routingMethod  qmqueue.RoutingMethod
@@ -181,13 +183,13 @@ func Test_QueueCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			queueName:     "name",
 			detail:        "detail",
 			routingMethod: qmqueue.RoutingMethodRandom,
@@ -266,7 +268,7 @@ func Test_QueueDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		customer *amagent.Agent
+		customer *auth.AuthIdentity
 		queueID  uuid.UUID
 
 		response  *qmqueue.Queue
@@ -277,13 +279,13 @@ func Test_QueueDelete(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("6aa878a2-6317-11ec-94b7-c7ba9436173f"),
 
 			&qmqueue.Queue{
@@ -336,7 +338,7 @@ func Test_QueueUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent          *amagent.Agent
+		agent *auth.AuthIdentity
 		queueID        uuid.UUID
 		queueName      string
 		detail         string
@@ -352,13 +354,13 @@ func Test_QueueUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			queueID:       uuid.FromStringOrNil("116b515e-6391-11ec-a2ab-2b13d87ce328"),
 			queueName:     "name",
 			detail:        "detail",
@@ -441,7 +443,7 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 	type test struct {
 		name string
 
-		agent   *amagent.Agent
+		agent *auth.AuthIdentity
 		queueID uuid.UUID
 		tagIDs  []uuid.UUID
 
@@ -453,13 +455,13 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("4f10fcca-6391-11ec-b1a8-cf59a893226a"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("50c7c31e-6391-11ec-b1f6-cb24701d7df3"),
@@ -481,13 +483,13 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 		{
 			"2 items",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("7472d542-6391-11ec-8e92-6f12cb507950"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("74963b9a-6391-11ec-84ae-337b926b8136"),
@@ -544,7 +546,7 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
+		agent *auth.AuthIdentity
 		queueID       uuid.UUID
 		routingMethod qmqueue.RoutingMethod
 
@@ -556,13 +558,13 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 		{
 			"routing method random",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("af14400a-6391-11ec-baed-7fb98aebe61a"),
 			qmqueue.RoutingMethodRandom,
 
@@ -582,13 +584,13 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 		{
 			"routing method none",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("af2efe86-6391-11ec-8100-c3e8d3057916"),
 			qmqueue.RoutingMethodNone,
 

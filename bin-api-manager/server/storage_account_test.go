@@ -2,6 +2,7 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -19,7 +20,7 @@ func Test_storageAccountGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -31,11 +32,11 @@ func Test_storageAccountGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ab2f092e-004e-11ee-b834-b7077f22c1eb"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_account",
 
@@ -62,7 +63,7 @@ func Test_storageAccountGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -70,7 +71,7 @@ func Test_storageAccountGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountGetByCustomerID(req.Context(), &tt.agent).Return(tt.responseStorageAccount, nil)
+			mockSvc.EXPECT().StorageAccountGetByCustomerID(req.Context(), tt.agent).Return(tt.responseStorageAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

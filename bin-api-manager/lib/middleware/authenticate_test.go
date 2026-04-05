@@ -1,21 +1,24 @@
 package middleware
 
 import (
-	"net/http"
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	modelscommon "monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 	"go.uber.org/mock/gomock"
 )
 
@@ -192,53 +195,62 @@ func Test_getAuthString(t *testing.T) {
 	}
 }
 
-func Test_getAuthData(t *testing.T) {
+func Test_buildJWTIdentity(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	testAgent := amagent.Agent{
-		Identity: commonidentity.Identity{
-			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-		},
-		Permission: amagent.PermissionCustomerAdmin,
-	}
-
 	tests := []struct {
-		name         string
-		setupRequest func(c *gin.Context)
-		authType     string
-		mockSetup    func(mockSH *servicehandler.MockServiceHandler)
-		expectErr    bool
+		name      string
+		authData  map[string]interface{}
+		expectErr bool
+		expectTyp auth.Type
 	}{
 		{
-			name: "Token auth success",
-			setupRequest: func(c *gin.Context) {
-				c.Request.Header.Set("Authorization", "Bearer validToken")
-			},
-			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
-				mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
-					"agent": testAgent,
-				}, nil)
-			},
-			expectErr: false,
-		},
-		{
-			name: "Accesskey auth success",
-			setupRequest: func(c *gin.Context) {
-				c.Request.URL.RawQuery = "accesskey=validAccesskey"
-			},
-			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
-				mockSH.EXPECT().AuthAccesskeyParse(gomock.Any(), "validAccesskey").Return(map[string]interface{}{
-					"agent": testAgent,
-				}, nil)
+			name: "Agent JWT (default type)",
+			authData: map[string]interface{}{
+				"agent": amagent.Agent{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
+					Permission: amagent.PermissionCustomerAdmin,
+				},
 			},
 			expectErr: false,
+			expectTyp: auth.TypeAgent,
 		},
 		{
-			name: "No auth",
-			setupRequest: func(c *gin.Context) {
+			name: "Agent JWT (explicit type)",
+			authData: map[string]interface{}{
+				"type": "agent",
+				"agent": amagent.Agent{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+						CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					},
+					Permission: amagent.PermissionCustomerAdmin,
+				},
 			},
-			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+			expectErr: false,
+			expectTyp: auth.TypeAgent,
+		},
+		{
+			name: "Direct JWT",
+			authData: map[string]interface{}{
+				"type": "direct",
+				"direct": map[string]interface{}{
+					"customer_id":            "5f621078-8e5f-11ee-97b2-cfe7337b701c",
+					"resource_type":          "aicall",
+					"resource_id":            "a1b2c3d4-0000-0000-0000-000000000000",
+					"allowed_resource_types": []string{"aicall"},
+				},
+			},
+			expectErr: false,
+			expectTyp: auth.TypeDirect,
+		},
+		{
+			name: "Invalid agent data",
+			authData: map[string]interface{}{
+				"agent": make(chan int),
 			},
 			expectErr: true,
 		},
@@ -246,27 +258,21 @@ func Test_getAuthData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+			log := logrus.WithField("func", "test")
+			identity, err := buildJWTIdentity(log, tt.authData)
 
-			mockSH := servicehandler.NewMockServiceHandler(mc)
-			tt.mockSetup(mockSH)
-
-			req := httptest.NewRequest(http.MethodGet, "/", nil)
-			w := httptest.NewRecorder()
-			c, _ := gin.CreateTestContext(w)
-			c.Request = req
-			c.Set(modelscommon.OBJServiceHandler, mockSH)
-
-			tt.setupRequest(c)
-
-			_, err := getAuthData(c)
-
-			if tt.expectErr && err == nil {
-				t.Error("Expected error but got nil")
+			if tt.expectErr {
+				if err == nil {
+					t.Error("Expected error but got nil")
+				}
+				return
 			}
-			if !tt.expectErr && err != nil {
+			if err != nil {
 				t.Errorf("Expected no error but got: %v", err)
+				return
+			}
+			if identity.Type != tt.expectTyp {
+				t.Errorf("Wrong type. expect: %v, got: %v", tt.expectTyp, identity.Type)
 			}
 		})
 	}
@@ -467,15 +473,15 @@ func TestAuthenticateAgentStoredInContext(t *testing.T) {
 	c, router := gin.CreateTestContext(w)
 	c.Request = req
 
-	var capturedAgent amagent.Agent
+	var capturedIdentity *auth.AuthIdentity
 	router.Use(func(c *gin.Context) {
 		c.Set(modelscommon.OBJServiceHandler, mockSH)
 	})
 	router.Use(Authenticate())
 	router.GET("/", func(c *gin.Context) {
-		// Capture the agent from context
-		if agent, exists := c.Get("agent"); exists {
-			capturedAgent = agent.(amagent.Agent)
+		// Capture the auth identity from context
+		if tmp, exists := c.Get("auth_identity"); exists {
+			capturedIdentity = tmp.(*auth.AuthIdentity)
 		}
 		c.Status(200)
 	})
@@ -487,11 +493,139 @@ func TestAuthenticateAgentStoredInContext(t *testing.T) {
 	}
 
 	// Verify agent was stored correctly in context
-	if capturedAgent.ID != testAgent.ID {
-		t.Errorf("Agent ID mismatch. expect: %v, got: %v", testAgent.ID, capturedAgent.ID)
+	if capturedIdentity == nil {
+		t.Fatal("AuthIdentity should not be nil")
 	}
-	if capturedAgent.Username != testAgent.Username {
-		t.Errorf("Agent username mismatch. expect: %v, got: %v", testAgent.Username, capturedAgent.Username)
+	if capturedIdentity.Agent == nil {
+		t.Errorf("Agent should not be nil in AuthIdentity")
+	} else {
+		if capturedIdentity.Agent.ID != testAgent.ID {
+			t.Errorf("Agent ID mismatch. expect: %v, got: %v", testAgent.ID, capturedIdentity.Agent.ID)
+		}
+		if capturedIdentity.Agent.Username != testAgent.Username {
+			t.Errorf("Agent username mismatch. expect: %v, got: %v", testAgent.Username, capturedIdentity.Agent.Username)
+		}
+	}
+}
+
+func TestAuthenticateAccesskey(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	testCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	testAccesskeyID := uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001")
+
+	tests := []struct {
+		name             string
+		setupRequest     func(c *gin.Context)
+		mockSetup        func(mockSH *servicehandler.MockServiceHandler)
+		expectStatus     int
+		expectIdentityFn func(t *testing.T, identity *auth.AuthIdentity)
+	}{
+		{
+			name: "Valid accesskey",
+			setupRequest: func(c *gin.Context) {
+				c.Request.URL.RawQuery = "accesskey=valid-token"
+			},
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().AccesskeyRawGetByToken(gomock.Any(), "valid-token").Return(&csaccesskey.Accesskey{
+					ID:         testAccesskeyID,
+					CustomerID: testCustomerID,
+					Name:       "test-key",
+				}, nil)
+				mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.Customer{
+					Status: cscustomer.StatusActive,
+				}, nil)
+			},
+			expectStatus: 200,
+			expectIdentityFn: func(t *testing.T, identity *auth.AuthIdentity) {
+				if identity == nil {
+					t.Fatal("Expected non-nil identity")
+				}
+				if identity.Type != auth.TypeAccesskey {
+					t.Errorf("Wrong type. expect: %v, got: %v", auth.TypeAccesskey, identity.Type)
+				}
+				if identity.CustomerID != testCustomerID {
+					t.Errorf("Wrong customer_id. expect: %v, got: %v", testCustomerID, identity.CustomerID)
+				}
+			},
+		},
+		{
+			name: "Expired accesskey",
+			setupRequest: func(c *gin.Context) {
+				c.Request.URL.RawQuery = "accesskey=expired-token"
+			},
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				expireTime := time.Now().UTC().Add(-1 * time.Hour)
+				mockSH.EXPECT().AccesskeyRawGetByToken(gomock.Any(), "expired-token").Return(&csaccesskey.Accesskey{
+					ID:         testAccesskeyID,
+					CustomerID: testCustomerID,
+					TMExpire:   &expireTime,
+				}, nil)
+			},
+			expectStatus: 401,
+		},
+		{
+			name: "Deleted accesskey",
+			setupRequest: func(c *gin.Context) {
+				c.Request.URL.RawQuery = "accesskey=deleted-token"
+			},
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				deleteTime := time.Now().UTC().Add(-1 * time.Hour)
+				mockSH.EXPECT().AccesskeyRawGetByToken(gomock.Any(), "deleted-token").Return(&csaccesskey.Accesskey{
+					ID:         testAccesskeyID,
+					CustomerID: testCustomerID,
+					TMDelete:   &deleteTime,
+				}, nil)
+			},
+			expectStatus: 401,
+		},
+		{
+			name: "Invalid accesskey token",
+			setupRequest: func(c *gin.Context) {
+				c.Request.URL.RawQuery = "accesskey=bad-token"
+			},
+			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
+				mockSH.EXPECT().AccesskeyRawGetByToken(gomock.Any(), "bad-token").Return(nil, fmt.Errorf("not found"))
+			},
+			expectStatus: 401,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSH := servicehandler.NewMockServiceHandler(mc)
+			tt.mockSetup(mockSH)
+
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			w := httptest.NewRecorder()
+			c, router := gin.CreateTestContext(w)
+			c.Request = req
+
+			var capturedIdentity *auth.AuthIdentity
+			router.Use(func(c *gin.Context) {
+				c.Set(modelscommon.OBJServiceHandler, mockSH)
+			})
+			router.Use(Authenticate())
+			router.GET("/", func(c *gin.Context) {
+				if tmp, exists := c.Get("auth_identity"); exists {
+					capturedIdentity = tmp.(*auth.AuthIdentity)
+				}
+				c.Status(200)
+			})
+
+			tt.setupRequest(c)
+			router.ServeHTTP(w, req)
+
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong status code. expect: %v, got: %v", tt.expectStatus, w.Code)
+			}
+			if tt.expectIdentityFn != nil {
+				tt.expectIdentityFn(t, capturedIdentity)
+			}
+		})
 	}
 }
 
@@ -503,7 +637,7 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		method       string
 		path         string
 		mockSetup    func(mockSH *servicehandler.MockServiceHandler)
@@ -512,10 +646,10 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 	}{
 		{
 			name: "Active account - not blocked",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			method: http.MethodGet,
 			path:   "/v1.0/agents",
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
@@ -528,10 +662,10 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 		},
 		{
 			name: "Frozen account - blocked",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			method: http.MethodGet,
 			path:   "/v1.0/agents",
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {
@@ -545,10 +679,10 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 		},
 		{
 			name: "Frozen account - DELETE /auth/unregister allowed",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			method:       http.MethodDelete,
 			path:         "/auth/unregister",
 			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
@@ -557,10 +691,10 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 		},
 		{
 			name: "Frozen account - POST /auth/unregister allowed",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			method:       http.MethodPost,
 			path:         "/auth/unregister",
 			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
@@ -568,11 +702,25 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			expectStatus: 200,
 		},
 		{
+			name: "Direct token - skip frozen check",
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           testCustomerID,
+				ResourceType:         "aicall",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			method:       http.MethodGet,
+			path:         "/v1.0/aicalls",
+			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
+			expectBlock:  false,
+			expectStatus: 200,
+		},
+		{
 			name: "Project super admin - not blocked even if frozen",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			method:       http.MethodGet,
 			path:         "/v1.0/agents",
 			mockSetup:    func(mockSH *servicehandler.MockServiceHandler) {},
@@ -581,10 +729,10 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 		},
 		{
 			name: "CustomerGet error - fail open (not blocked)",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity:   commonidentity.Identity{CustomerID: testCustomerID},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			method: http.MethodGet,
 			path:   "/v1.0/agents",
 			mockSetup: func(mockSH *servicehandler.MockServiceHandler) {

@@ -11,7 +11,7 @@ import (
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/websocket"
@@ -19,7 +19,7 @@ import (
 
 // WebsockHandler defines
 type WebsockHandler interface {
-	RunSubscription(ctx context.Context, w http.ResponseWriter, r *http.Request, a *amagent.Agent) error
+	RunSubscription(ctx context.Context, w http.ResponseWriter, r *http.Request, a *auth.AuthIdentity) error
 	RunMediaStream(ctx context.Context, w http.ResponseWriter, r *http.Request, referenceType cmexternalmedia.ReferenceType, referenceID uuid.UUID, encapsulation string) error
 }
 

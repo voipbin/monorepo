@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -232,7 +233,7 @@ func Test_ServiceAgentTalkChatList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -242,12 +243,12 @@ func Test_ServiceAgentTalkChatList(t *testing.T) {
 	}{
 		{
 			name: "normal - returns joined chats without participants",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
-			},
+			}),
 			size:  10,
 			token: "2024-01-01T00:00:00.000000Z",
 			responseChats: []*tkchat.Chat{
@@ -314,7 +315,7 @@ func Test_ServiceAgentTalkChannelList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -324,12 +325,12 @@ func Test_ServiceAgentTalkChannelList(t *testing.T) {
 	}{
 		{
 			name: "normal - returns public channels without participants",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
-			},
+			}),
 			size:  10,
 			token: "2024-01-01T00:00:00.000000Z",
 			responseChats: []*tkchat.Chat{
@@ -396,7 +397,7 @@ func Test_canAddParticipant(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		chatID    uuid.UUID
 		ownerType string
 		ownerID   uuid.UUID
@@ -407,12 +408,12 @@ func Test_canAddParticipant(t *testing.T) {
 	}{
 		{
 			name: "existing participant adding another agent to group chat - should succeed",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("a2222222-2222-2222-2222-222222222222"), // different agent
@@ -435,12 +436,12 @@ func Test_canAddParticipant(t *testing.T) {
 		},
 		{
 			name: "existing participant adding another agent to talk-type chat - should succeed",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
 					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("a4444444-4444-4444-4444-444444444444"), // different agent
@@ -463,12 +464,12 @@ func Test_canAddParticipant(t *testing.T) {
 		},
 		{
 			name: "non-participant agent adding themselves to talk-type chat - should succeed",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a5555555-5555-5555-5555-555555555555"),
 					CustomerID: uuid.FromStringOrNil("c5555555-5555-5555-5555-555555555555"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("d5555555-5555-5555-5555-555555555555"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("a5555555-5555-5555-5555-555555555555"), // same agent (self-join)
@@ -484,12 +485,12 @@ func Test_canAddParticipant(t *testing.T) {
 		},
 		{
 			name: "non-participant agent trying to add someone else to talk-type chat - should fail",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a6666666-6666-6666-6666-666666666666"),
 					CustomerID: uuid.FromStringOrNil("c6666666-6666-6666-6666-666666666666"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("d6666666-6666-6666-6666-666666666666"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("a7777777-7777-7777-7777-777777777777"), // different agent
@@ -505,12 +506,12 @@ func Test_canAddParticipant(t *testing.T) {
 		},
 		{
 			name: "non-participant agent trying to add anyone to group chat - should fail",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a8888888-8888-8888-8888-888888888888"),
 					CustomerID: uuid.FromStringOrNil("c8888888-8888-8888-8888-888888888888"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("d8888888-8888-8888-8888-888888888888"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("a9999999-9999-9999-9999-999999999999"), // different agent
@@ -526,12 +527,12 @@ func Test_canAddParticipant(t *testing.T) {
 		},
 		{
 			name: "non-participant agent trying to add themselves to group chat - should fail",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
 					CustomerID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), // same agent (self-join)
@@ -547,12 +548,12 @@ func Test_canAddParticipant(t *testing.T) {
 		},
 		{
 			name: "non-participant agent from different customer trying to join talk-type chat - should fail",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
 					CustomerID: uuid.FromStringOrNil("c9999999-9999-9999-9999-999999999999"), // different customer
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), // same agent
@@ -597,7 +598,7 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		chatID    uuid.UUID
 		ownerType string
 		ownerID   uuid.UUID
@@ -609,12 +610,12 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 	}{
 		{
 			name: "existing participant adding another agent - should succeed",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("d1111111-1111-1111-1111-111111111111"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("a2222222-2222-2222-2222-222222222222"),
@@ -648,12 +649,12 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 		},
 		{
 			name: "non-participant agent joining talk-type chat - should succeed",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
 					CustomerID: uuid.FromStringOrNil("c3333333-3333-3333-3333-333333333333"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("d3333333-3333-3333-3333-333333333333"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"), // self-join
@@ -680,12 +681,12 @@ func Test_ServiceAgentTalkParticipantCreate(t *testing.T) {
 		},
 		{
 			name: "non-participant agent trying to add someone else - should fail",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a4444444-4444-4444-4444-444444444444"),
 					CustomerID: uuid.FromStringOrNil("c4444444-4444-4444-4444-444444444444"),
 				},
-			},
+			}),
 			chatID:    uuid.FromStringOrNil("d4444444-4444-4444-4444-444444444444"),
 			ownerType: "agent",
 			ownerID:   uuid.FromStringOrNil("a5555555-5555-5555-5555-555555555555"), // different agent

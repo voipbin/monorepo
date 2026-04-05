@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	caoutplan "monorepo/bin-campaign-manager/models/outplan"
@@ -36,7 +37,7 @@ func (h *serviceHandler) outplanGet(ctx context.Context, id uuid.UUID) (*caoutpl
 // OutplanCreate is a service handler for outplan creation.
 func (h *serviceHandler) OutplanCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	name string,
 	detail string,
 	source *commonaddress.Address,
@@ -53,6 +54,10 @@ func (h *serviceHandler) OutplanCreate(
 		"customer_id": a.CustomerID,
 		"name":        name,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Creating a new outplan.")
 
 	// permission check
@@ -72,13 +77,17 @@ func (h *serviceHandler) OutplanCreate(
 }
 
 // OutplanDelete deletes the outplan.
-func (h *serviceHandler) OutplanDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
+func (h *serviceHandler) OutplanDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"outplan_id":  id,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Deleting a outplan.")
 
 	op, err := h.outplanGet(ctx, id)
@@ -104,13 +113,17 @@ func (h *serviceHandler) OutplanDelete(ctx context.Context, a *amagent.Agent, id
 
 // OutplanGetsByCustomerID gets the list of outplans of the given customer id.
 // It returns list of outplans if it succeed.
-func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*caoutplan.WebhookMessage, error) {
+func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Getting a outplans.")
 
 	if token == "" {
@@ -144,13 +157,17 @@ func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, a *amagent
 
 // OutplanGet gets the outplan of the given id.
 // It returns outplan if it succeed.
-func (h *serviceHandler) OutplanGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
+func (h *serviceHandler) OutplanGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"outplan_id":  id,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Getting an outplan.")
 
 	// get outplan
@@ -171,13 +188,17 @@ func (h *serviceHandler) OutplanGet(ctx context.Context, a *amagent.Agent, id uu
 
 // OutplanUpdateBasicInfo updates the outplan's basic info.
 // It returns updated outplan if it succeed.
-func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *amagent.Agent, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error) {
+func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string) (*caoutplan.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanUpdateBasicInfo",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"outplan_id":  id,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Updating an outplan.")
 
 	// get outplan
@@ -206,7 +227,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *amagent.
 // It returns updated outplan if it succeed.
 func (h *serviceHandler) OutplanUpdateDialInfo(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	id uuid.UUID,
 	source *commonaddress.Address,
 	dialTimeout int,
@@ -220,9 +241,13 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutplanUpdateDialInfo",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"outplan_id":  id,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Updating an outplan.")
 
 	// get outplan

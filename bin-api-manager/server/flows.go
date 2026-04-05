@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -17,16 +16,13 @@ func (h *server) PostFlows(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostFlowsJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -44,7 +40,7 @@ func (h *server) PostFlows(c *gin.Context) {
 	if req.OnCompleteFlowId != nil {
 		onCompleteFlowId = uuid.FromStringOrNil(*req.OnCompleteFlowId)
 	}
-	res, err := h.serviceHandler.FlowCreate(c.Request.Context(), &a, req.Name, req.Detail, actions, onCompleteFlowId, true)
+	res, err := h.serviceHandler.FlowCreate(c.Request.Context(), a, req.Name, req.Detail, actions, onCompleteFlowId, true)
 	if err != nil {
 		log.Errorf("Could not create data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -60,16 +56,13 @@ func (h *server) GetFlows(c *gin.Context, params openapi_server.GetFlowsParams) 
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -85,7 +78,7 @@ func (h *server) GetFlows(c *gin.Context, params openapi_server.GetFlowsParams) 
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.FlowList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.FlowList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get data list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -108,16 +101,13 @@ func (h *server) GetFlowsId(c *gin.Context, id string) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -126,7 +116,7 @@ func (h *server) GetFlowsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.FlowGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.FlowGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -143,16 +133,13 @@ func (h *server) PutFlowsId(c *gin.Context, id string) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -178,7 +165,7 @@ func (h *server) PutFlowsId(c *gin.Context, id string) {
 		onCompleteFlowID = uuid.FromStringOrNil(*req.OnCompleteFlowId)
 	}
 
-	res, err := h.serviceHandler.FlowUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, actions, onCompleteFlowID)
+	res, err := h.serviceHandler.FlowUpdate(c.Request.Context(), a, target, req.Name, req.Detail, actions, onCompleteFlowID)
 	if err != nil {
 		log.Errorf("Could not update data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -195,16 +182,13 @@ func (h *server) DeleteFlowsId(c *gin.Context, id string) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -213,7 +197,7 @@ func (h *server) DeleteFlowsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.FlowDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.FlowDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -230,16 +214,13 @@ func (h *server) PostFlowsIdDirectHashRegenerate(c *gin.Context, id openapi_type
 		"flow_id":         id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	// Convert openapi_types.UUID to uuid.UUID
 	flowID, err := uuid.FromString(id.String())
@@ -249,7 +230,7 @@ func (h *server) PostFlowsIdDirectHashRegenerate(c *gin.Context, id openapi_type
 		return
 	}
 
-	res, err := h.serviceHandler.FlowDirectHashRegenerate(c.Request.Context(), &a, flowID)
+	res, err := h.serviceHandler.FlowDirectHashRegenerate(c.Request.Context(), a, flowID)
 	if err != nil {
 		log.Errorf("Could not regenerate flow direct hash. err: %v", err)
 		c.AbortWithStatus(400)

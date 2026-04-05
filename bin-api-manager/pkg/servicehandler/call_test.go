@@ -20,6 +20,7 @@ import (
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -33,20 +34,20 @@ func Test_callGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall *cmcall.Call
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
 			&cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -91,7 +92,7 @@ func Test_callGet_error(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall      *cmcall.Call
@@ -99,26 +100,26 @@ func Test_callGet_error(t *testing.T) {
 	}{
 		{
 			name: "call get returns an error",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			callID: uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
 
 			responseCallError: fmt.Errorf(""),
 		},
 		{
 			name: "deleted call info",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			callID: uuid.FromStringOrNil("7b7e58de-8f37-11ed-8852-0f407ad6849f"),
 
 			responseCall: &cmcall.Call{
@@ -160,7 +161,7 @@ func Test_CallCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		flowID       uuid.UUID
 		actions      []fmaction.Action
 		source       *commonaddress.Address
@@ -176,13 +177,13 @@ func Test_CallCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID:  uuid.FromStringOrNil("2c45d0b8-efc4-11ea-9a45-4f30fc2e0b02"),
 			actions: []fmaction.Action{},
 			source: &commonaddress.Address{
@@ -236,13 +237,13 @@ func Test_CallCreate(t *testing.T) {
 		{
 			name: "with actions only",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID: uuid.Nil,
 			actions: []fmaction.Action{
 				{
@@ -300,13 +301,13 @@ func Test_CallCreate(t *testing.T) {
 		{
 			name: "if both has given, flowid has more priority",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			flowID: uuid.FromStringOrNil("2ca43d36-8df9-11ec-846a-ebf271da36c8"),
 			actions: []fmaction.Action{
 				{
@@ -406,7 +407,7 @@ func Test_CallDelete(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall *cmcall.Call
@@ -415,13 +416,13 @@ func Test_CallDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("eccc7bf4-8926-11ed-b638-0fcef48a97d2"),
 			&cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -474,7 +475,7 @@ func Test_CallHangup(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall *cmcall.Call
@@ -483,13 +484,13 @@ func Test_CallHangup(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("9e9ed0b6-6791-11eb-9810-87fda8377194"),
 			&cmcall.Call{
 				Identity: commonidentity.Identity{
@@ -542,7 +543,7 @@ func Test_CallTalk(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		agent    *amagent.Agent
+		agent    *auth.AuthIdentity
 		callID   uuid.UUID
 		text     string
 		language string
@@ -553,13 +554,13 @@ func Test_CallTalk(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("89f97b66-a4b6-11ed-b3a8-9732500c39be"),
 			"hello world",
 			"en-US",
@@ -605,20 +606,20 @@ func Test_CallHoldOn(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall *cmcall.Call
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("4db40768-cef8-11ed-bb96-8fbbe25ae0fa"),
 
 			&cmcall.Call{
@@ -660,20 +661,20 @@ func Test_CallHoldOff(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall *cmcall.Call
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("7079cc38-cef8-11ed-9410-b35f9ccb992c"),
 
 			&cmcall.Call{
@@ -715,7 +716,7 @@ func Test_CallMuteOn(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		callID    uuid.UUID
 		direction cmcall.MuteDirection
 
@@ -723,13 +724,13 @@ func Test_CallMuteOn(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("70a879e8-cef8-11ed-a112-13d831e46695"),
 			cmcall.MuteDirectionBoth,
 
@@ -771,7 +772,7 @@ func Test_CallMuteOff(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		callID    uuid.UUID
 		direction cmcall.MuteDirection
 
@@ -779,13 +780,13 @@ func Test_CallMuteOff(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("70d6557a-cef8-11ed-95b3-0b608cbf435e"),
 			cmcall.MuteDirectionBoth,
 
@@ -827,7 +828,7 @@ func Test_CallList(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		pageToken string
 		pageSize  uint64
@@ -838,13 +839,13 @@ func Test_CallList(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			"2021-03-01T01:00:00.995000Z",
 			10,
@@ -903,7 +904,7 @@ func Test_CallMediaStreamStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		callID        uuid.UUID
 		encapsulation string
 		writer        http.ResponseWriter
@@ -916,13 +917,13 @@ func Test_CallMediaStreamStart(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("1299b152-e921-11ee-889f-7b65e5d7a225"),
 			"rtp",
 			&mockResponseWriter{},
@@ -976,7 +977,7 @@ func Test_CallRecordingStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		callID       uuid.UUID
 		format       cmrecording.Format
 		endOfSilence int
@@ -990,13 +991,13 @@ func Test_CallRecordingStart(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f71a3738-0564-11f0-bd3f-37e4bca1cda6"),
 					CustomerID: uuid.FromStringOrNil("f7440658-0564-11f0-911f-07ef11cbbf3f"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			callID:       uuid.FromStringOrNil("f71a3738-0564-11f0-bd3f-37e4bca1cda6"),
 			format:       cmrecording.FormatWAV,
 			endOfSilence: 10,
@@ -1055,7 +1056,7 @@ func Test_CallRecordingStop(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall *cmcall.Call
@@ -1064,13 +1065,13 @@ func Test_CallRecordingStop(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f78ca28c-0564-11f0-9fca-13cae175815c"),
 					CustomerID: uuid.FromStringOrNil("f7b152c6-0564-11f0-8e74-333547c026af"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			callID: uuid.FromStringOrNil("f78ca28c-0564-11f0-9fca-13cae175815c"),
 
 			responseCall: &cmcall.Call{

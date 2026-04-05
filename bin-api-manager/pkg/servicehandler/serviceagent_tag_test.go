@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -20,7 +21,7 @@ func Test_ServiceAgentTagList(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -32,13 +33,13 @@ func Test_ServiceAgentTagList(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			size:  10,
 			token: "2020-09-20T03:23:20.995000Z",
 
@@ -94,7 +95,7 @@ func Test_ServiceAgentTagGet(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		tagID uuid.UUID
 
 		responseTag *tmtag.Tag
@@ -105,13 +106,13 @@ func Test_ServiceAgentTagGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			tagID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 
 			responseTag: &tmtag.Tag{

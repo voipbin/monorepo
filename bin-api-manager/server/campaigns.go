@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmcampaign "monorepo/bin-campaign-manager/models/campaign"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -17,15 +16,14 @@ func (h *server) PostCampaigns(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	var req openapi_server.PostCampaignsJSONBody
@@ -46,7 +44,7 @@ func (h *server) PostCampaigns(c *gin.Context) {
 	queueID := uuid.FromStringOrNil(req.QueueId)
 	nextCampaignID := uuid.FromStringOrNil(req.NextCampaignId)
 
-	res, err := h.serviceHandler.CampaignCreate(c.Request.Context(), &a, req.Name, req.Detail, cmcampaign.Type(req.Type), req.ServiceLevel, cmcampaign.EndHandle(req.EndHandle), actions, outplanID, outdialID, queueID, nextCampaignID)
+	res, err := h.serviceHandler.CampaignCreate(c.Request.Context(), a, req.Name, req.Detail, cmcampaign.Type(req.Type), req.ServiceLevel, cmcampaign.EndHandle(req.EndHandle), actions, outplanID, outdialID, queueID, nextCampaignID)
 	if err != nil {
 		log.Errorf("Could not create a campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -62,15 +60,14 @@ func (h *server) GetCampaigns(c *gin.Context, params openapi_server.GetCampaigns
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -87,7 +84,7 @@ func (h *server) GetCampaigns(c *gin.Context, params openapi_server.GetCampaigns
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.CampaignGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.CampaignGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a campaign list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -109,15 +106,14 @@ func (h *server) GetCampaignsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -127,7 +123,7 @@ func (h *server) GetCampaignsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CampaignGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.CampaignGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -143,15 +139,14 @@ func (h *server) DeleteCampaignsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -161,7 +156,7 @@ func (h *server) DeleteCampaignsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CampaignDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.CampaignDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -177,15 +172,14 @@ func (h *server) PutCampaignsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -202,7 +196,7 @@ func (h *server) PutCampaignsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CampaignUpdateBasicInfo(c.Request.Context(), &a, target, req.Name, req.Detail, cmcampaign.Type(req.Type), req.ServiceLevel, cmcampaign.EndHandle(req.EndHandle))
+	res, err := h.serviceHandler.CampaignUpdateBasicInfo(c.Request.Context(), a, target, req.Name, req.Detail, cmcampaign.Type(req.Type), req.ServiceLevel, cmcampaign.EndHandle(req.EndHandle))
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -218,15 +212,14 @@ func (h *server) PutCampaignsIdStatus(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -243,7 +236,7 @@ func (h *server) PutCampaignsIdStatus(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CampaignUpdateStatus(c.Request.Context(), &a, target, cmcampaign.Status(req.Status))
+	res, err := h.serviceHandler.CampaignUpdateStatus(c.Request.Context(), a, target, cmcampaign.Status(req.Status))
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -259,15 +252,14 @@ func (h *server) PutCampaignsIdServiceLevel(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -284,7 +276,7 @@ func (h *server) PutCampaignsIdServiceLevel(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.CampaignUpdateServiceLevel(c.Request.Context(), &a, target, req.ServiceLevel)
+	res, err := h.serviceHandler.CampaignUpdateServiceLevel(c.Request.Context(), a, target, req.ServiceLevel)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -300,15 +292,14 @@ func (h *server) PutCampaignsIdActions(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -331,7 +322,7 @@ func (h *server) PutCampaignsIdActions(c *gin.Context, id string) {
 		actions = append(actions, tmp)
 	}
 
-	res, err := h.serviceHandler.CampaignUpdateActions(c.Request.Context(), &a, target, actions)
+	res, err := h.serviceHandler.CampaignUpdateActions(c.Request.Context(), a, target, actions)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -347,15 +338,14 @@ func (h *server) PutCampaignsIdResourceInfo(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -377,7 +367,7 @@ func (h *server) PutCampaignsIdResourceInfo(c *gin.Context, id string) {
 	queueID := uuid.FromStringOrNil(req.QueueId)
 	nextCampaignID := uuid.FromStringOrNil(req.NextCampaignId)
 
-	res, err := h.serviceHandler.CampaignUpdateResourceInfo(c.Request.Context(), &a, target, outplanID, outdialID, queueID, nextCampaignID)
+	res, err := h.serviceHandler.CampaignUpdateResourceInfo(c.Request.Context(), a, target, outplanID, outdialID, queueID, nextCampaignID)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -393,15 +383,14 @@ func (h *server) PutCampaignsIdNextCampaignId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -420,7 +409,7 @@ func (h *server) PutCampaignsIdNextCampaignId(c *gin.Context, id string) {
 
 	nextCampaignID := uuid.FromStringOrNil(req.NextCampaignId)
 
-	res, err := h.serviceHandler.CampaignUpdateNextCampaignID(c.Request.Context(), &a, target, nextCampaignID)
+	res, err := h.serviceHandler.CampaignUpdateNextCampaignID(c.Request.Context(), a, target, nextCampaignID)
 	if err != nil {
 		log.Errorf("Could not update the campaign. err: %v", err)
 		c.AbortWithStatus(400)
@@ -436,15 +425,14 @@ func (h *server) GetCampaignsIdCampaigncalls(c *gin.Context, id string, params o
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -468,7 +456,7 @@ func (h *server) GetCampaignsIdCampaigncalls(c *gin.Context, id string, params o
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.CampaigncallGetsByCampaignID(c.Request.Context(), &a, target, pageSize, pageToken)
+	tmps, err := h.serviceHandler.CampaigncallGetsByCampaignID(c.Request.Context(), a, target, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a campaign list. err: %v", err)
 		c.AbortWithStatus(400)

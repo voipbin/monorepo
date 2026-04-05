@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
@@ -36,7 +37,7 @@ func (h *serviceHandler) agentGet(ctx context.Context, id uuid.UUID) (*amagent.A
 // it returns created agent info if it succeed.
 func (h *serviceHandler) AgentCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	username string,
 	password string,
 	name string,
@@ -46,10 +47,14 @@ func (h *serviceHandler) AgentCreate(
 	tagIDs []uuid.UUID,
 	addresses []commonaddress.Address,
 ) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -71,11 +76,15 @@ func (h *serviceHandler) AgentCreate(
 
 // AgentGet sends a request to agent-manager
 // to getting an agent.
-func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentGet(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 		"agent_id":    agentID,
 	})
 
@@ -85,7 +94,7 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 		return nil, err
 	}
 
-	if a.ID != agentID && !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if a.AgentID() != agentID && !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -96,10 +105,14 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *amagent.Agent, agentID
 // AgentGets sends a request to agent-manager
 // to getting a list of agents.
 // it returns list of agents if it succeed.
-func (h *serviceHandler) AgentList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "AgentGets",
-		"agent":   a,
+		"auth":    a.DisplayName(),
 		"size":    size,
 		"token":   token,
 		"filters": filters,
@@ -162,11 +175,15 @@ func (h *serviceHandler) agentList(ctx context.Context, size uint64, token strin
 
 // AgentDelete sends a request to call-manager
 // to delete the agent.
-func (h *serviceHandler) AgentDelete(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentDelete(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 		"agent_id":    agentID,
 	})
 
@@ -193,11 +210,15 @@ func (h *serviceHandler) AgentDelete(ctx context.Context, a *amagent.Agent, agen
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent info.
-func (h *serviceHandler) AgentUpdate(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 		"agent_id":    agentID,
 	})
 
@@ -207,7 +228,7 @@ func (h *serviceHandler) AgentUpdate(ctx context.Context, a *amagent.Agent, agen
 		return nil, err
 	}
 
-	if a.ID != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if a.AgentID() != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -233,11 +254,15 @@ func (h *serviceHandler) agentUpdate(ctx context.Context, agentID uuid.UUID, nam
 
 // AgentUpdate sends a request to agent-manager
 // to update the agent's addresses info.
-func (h *serviceHandler) AgentUpdateAddresses(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentUpdateAddresses(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateAddresses",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 		"agent_id":    agentID,
 	})
 
@@ -273,11 +298,15 @@ func (h *serviceHandler) agentUpdateAddresses(ctx context.Context, agentID uuid.
 
 // AgentUpdateTagIDs sends a request to agent-manager
 // to update the agent's tag_ids info.
-func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateTagIDs",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 		"agent_id":    agentID,
 	})
 
@@ -304,11 +333,15 @@ func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, a *amagent.Agent
 
 // AgentUpdateStatus sends a request to agent-manager
 // to update the agent status info.
-func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdateStatus",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 		"agent_id":    agentID,
 	})
 
@@ -318,7 +351,7 @@ func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *amagent.Agent
 		return nil, err
 	}
 
-	if a.ID != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if a.AgentID() != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
 	}
 
@@ -344,11 +377,15 @@ func (h *serviceHandler) agentUpdateStatus(ctx context.Context, agentID uuid.UUI
 
 // AgentUpdatePermission sends a request to agent-manager
 // to update the agent permission info.
-func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, permission amagent.Permission) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, permission amagent.Permission) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentUpdatePermission",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"auth":        a.DisplayName(),
 		"agent_id":    agentID,
 	})
 
@@ -387,10 +424,14 @@ func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *amagent.A
 
 // AgentUpdatePassword sends a request to agent-manager
 // to update the agent password.
-func (h *serviceHandler) AgentUpdatePassword(ctx context.Context, a *amagent.Agent, agentID uuid.UUID, password string) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentUpdatePassword(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, password string) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "AgentUpdatePassword",
-		"agent":    a,
+		"auth":     a.DisplayName(),
 		"password": len(password),
 	})
 
@@ -427,7 +468,11 @@ func (h *serviceHandler) agentUpdatePassword(ctx context.Context, agentID uuid.U
 }
 
 // AgentDirectHashRegenerate regenerates the direct hash for the agent.
-func (h *serviceHandler) AgentDirectHashRegenerate(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) AgentDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AgentDirectHashRegenerate",
 		"customer_id": a.CustomerID,

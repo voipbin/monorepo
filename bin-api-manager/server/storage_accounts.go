@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -15,13 +14,12 @@ func (h *server) GetStorageAccounts(c *gin.Context, params openapi_server.GetSto
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -40,7 +38,7 @@ func (h *server) GetStorageAccounts(c *gin.Context, params openapi_server.GetSto
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.StorageAccountList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.StorageAccountList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a storage list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -62,13 +60,12 @@ func (h *server) PostStorageAccounts(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -82,7 +79,7 @@ func (h *server) PostStorageAccounts(c *gin.Context) {
 
 	customerID := uuid.FromStringOrNil(req.CustomerId)
 
-	res, err := h.serviceHandler.StorageAccountCreate(c.Request.Context(), &a, customerID)
+	res, err := h.serviceHandler.StorageAccountCreate(c.Request.Context(), a, customerID)
 	if err != nil {
 		log.Errorf("Could not create a storage account. err: %v", err)
 		c.AbortWithStatus(400)
@@ -98,13 +95,12 @@ func (h *server) GetStorageAccountsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -116,7 +112,7 @@ func (h *server) GetStorageAccountsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.StorageAccountGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.StorageAccountGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -132,13 +128,12 @@ func (h *server) DeleteStorageAccountsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -150,7 +145,7 @@ func (h *server) DeleteStorageAccountsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.StorageAccountDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.StorageAccountDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the storage account. err: %v", err)
 		c.AbortWithStatus(400)

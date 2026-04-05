@@ -19,6 +19,7 @@ import (
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
 	tool "monorepo/bin-ai-manager/models/tool"
+	auth "monorepo/bin-api-manager/models/auth"
 	account "monorepo/bin-billing-manager/models/account"
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
@@ -99,7 +100,7 @@ func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 }
 
 // AICreate mocks base method.
-func (m *MockServiceHandler) AICreate(ctx context.Context, a *agent.Agent, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AICreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AICreate", ctx, a, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
@@ -114,7 +115,7 @@ func (mr *MockServiceHandlerMockRecorder) AICreate(ctx, a, name, detail, engineM
 }
 
 // AIDelete mocks base method.
-func (m *MockServiceHandler) AIDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIDelete", ctx, a, id)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
@@ -129,7 +130,7 @@ func (mr *MockServiceHandlerMockRecorder) AIDelete(ctx, a, id any) *gomock.Call 
 }
 
 // AIDirectHashRegenerate mocks base method.
-func (m *MockServiceHandler) AIDirectHashRegenerate(ctx context.Context, a *agent.Agent, aiID uuid.UUID) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIDirectHashRegenerate", ctx, a, aiID)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
@@ -144,7 +145,7 @@ func (mr *MockServiceHandlerMockRecorder) AIDirectHashRegenerate(ctx, a, aiID an
 }
 
 // AIGet mocks base method.
-func (m *MockServiceHandler) AIGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIGet", ctx, a, id)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
@@ -159,7 +160,7 @@ func (mr *MockServiceHandlerMockRecorder) AIGet(ctx, a, id any) *gomock.Call {
 }
 
 // AIGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) AIGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*ai.WebhookMessage)
@@ -174,7 +175,7 @@ func (mr *MockServiceHandlerMockRecorder) AIGetsByCustomerID(ctx, a, size, token
 }
 
 // AISummaryCreate mocks base method.
-func (m *MockServiceHandler) AISummaryCreate(ctx context.Context, a *agent.Agent, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string) (*summary.WebhookMessage, error) {
+func (m *MockServiceHandler) AISummaryCreate(ctx context.Context, a *auth.AuthIdentity, onEndFlowID uuid.UUID, referenceType summary.ReferenceType, referenceID uuid.UUID, language string) (*summary.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AISummaryCreate", ctx, a, onEndFlowID, referenceType, referenceID, language)
 	ret0, _ := ret[0].(*summary.WebhookMessage)
@@ -189,7 +190,7 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryCreate(ctx, a, onEndFlowID, r
 }
 
 // AISummaryDelete mocks base method.
-func (m *MockServiceHandler) AISummaryDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*summary.WebhookMessage, error) {
+func (m *MockServiceHandler) AISummaryDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*summary.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AISummaryDelete", ctx, a, id)
 	ret0, _ := ret[0].(*summary.WebhookMessage)
@@ -204,7 +205,7 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryDelete(ctx, a, id any) *gomoc
 }
 
 // AISummaryGet mocks base method.
-func (m *MockServiceHandler) AISummaryGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*summary.WebhookMessage, error) {
+func (m *MockServiceHandler) AISummaryGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*summary.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AISummaryGet", ctx, a, id)
 	ret0, _ := ret[0].(*summary.WebhookMessage)
@@ -219,7 +220,7 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryGet(ctx, a, id any) *gomock.C
 }
 
 // AISummaryGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*summary.WebhookMessage, error) {
+func (m *MockServiceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*summary.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AISummaryGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*summary.WebhookMessage)
@@ -234,7 +235,7 @@ func (mr *MockServiceHandlerMockRecorder) AISummaryGetsByCustomerID(ctx, a, size
 }
 
 // AIUpdate mocks base method.
-func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName) (*ai.WebhookMessage, error) {
+func (m *MockServiceHandler) AIUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, engineModel ai.EngineModel, parameter map[string]any, engineKey string, ragID uuid.UUID, initPrompt string, ttsType ai.TTSType, ttsVoiceID string, sttType ai.STTType, sttLanguage string, toolNames []tool.ToolName) (*ai.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIUpdate", ctx, a, id, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames)
 	ret0, _ := ret[0].(*ai.WebhookMessage)
@@ -249,7 +250,7 @@ func (mr *MockServiceHandlerMockRecorder) AIUpdate(ctx, a, id, name, detail, eng
 }
 
 // AIcallCreate mocks base method.
-func (m *MockServiceHandler) AIcallCreate(ctx context.Context, a *agent.Agent, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID) (*aicall.WebhookMessage, error) {
+func (m *MockServiceHandler) AIcallCreate(ctx context.Context, a *auth.AuthIdentity, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, referenceType aicall.ReferenceType, referenceID uuid.UUID) (*aicall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIcallCreate", ctx, a, assistanceType, assistanceID, referenceType, referenceID)
 	ret0, _ := ret[0].(*aicall.WebhookMessage)
@@ -264,7 +265,7 @@ func (mr *MockServiceHandlerMockRecorder) AIcallCreate(ctx, a, assistanceType, a
 }
 
 // AIcallDelete mocks base method.
-func (m *MockServiceHandler) AIcallDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*aicall.WebhookMessage, error) {
+func (m *MockServiceHandler) AIcallDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aicall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIcallDelete", ctx, a, id)
 	ret0, _ := ret[0].(*aicall.WebhookMessage)
@@ -279,7 +280,7 @@ func (mr *MockServiceHandlerMockRecorder) AIcallDelete(ctx, a, id any) *gomock.C
 }
 
 // AIcallGet mocks base method.
-func (m *MockServiceHandler) AIcallGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*aicall.WebhookMessage, error) {
+func (m *MockServiceHandler) AIcallGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aicall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIcallGet", ctx, a, id)
 	ret0, _ := ret[0].(*aicall.WebhookMessage)
@@ -294,7 +295,7 @@ func (mr *MockServiceHandlerMockRecorder) AIcallGet(ctx, a, id any) *gomock.Call
 }
 
 // AIcallGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) AIcallGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*aicall.WebhookMessage, error) {
+func (m *MockServiceHandler) AIcallGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*aicall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AIcallGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*aicall.WebhookMessage)
@@ -309,7 +310,7 @@ func (mr *MockServiceHandlerMockRecorder) AIcallGetsByCustomerID(ctx, a, size, t
 }
 
 // AImessageCreate mocks base method.
-func (m *MockServiceHandler) AImessageCreate(ctx context.Context, a *agent.Agent, aicallID uuid.UUID, role message.Role, content string) (*message.WebhookMessage, error) {
+func (m *MockServiceHandler) AImessageCreate(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, role message.Role, content string) (*message.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AImessageCreate", ctx, a, aicallID, role, content)
 	ret0, _ := ret[0].(*message.WebhookMessage)
@@ -324,7 +325,7 @@ func (mr *MockServiceHandlerMockRecorder) AImessageCreate(ctx, a, aicallID, role
 }
 
 // AImessageDelete mocks base method.
-func (m *MockServiceHandler) AImessageDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*message.WebhookMessage, error) {
+func (m *MockServiceHandler) AImessageDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*message.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AImessageDelete", ctx, a, id)
 	ret0, _ := ret[0].(*message.WebhookMessage)
@@ -339,7 +340,7 @@ func (mr *MockServiceHandlerMockRecorder) AImessageDelete(ctx, a, id any) *gomoc
 }
 
 // AImessageGet mocks base method.
-func (m *MockServiceHandler) AImessageGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*message.WebhookMessage, error) {
+func (m *MockServiceHandler) AImessageGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*message.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AImessageGet", ctx, a, id)
 	ret0, _ := ret[0].(*message.WebhookMessage)
@@ -354,7 +355,7 @@ func (mr *MockServiceHandlerMockRecorder) AImessageGet(ctx, a, id any) *gomock.C
 }
 
 // AImessageGetsByAIcallID mocks base method.
-func (m *MockServiceHandler) AImessageGetsByAIcallID(ctx context.Context, a *agent.Agent, aicallID uuid.UUID, size uint64, token string) ([]*message.WebhookMessage, error) {
+func (m *MockServiceHandler) AImessageGetsByAIcallID(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, size uint64, token string) ([]*message.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AImessageGetsByAIcallID", ctx, a, aicallID, size, token)
 	ret0, _ := ret[0].([]*message.WebhookMessage)
@@ -369,7 +370,7 @@ func (mr *MockServiceHandlerMockRecorder) AImessageGetsByAIcallID(ctx, a, aicall
 }
 
 // AccesskeyCreate mocks base method.
-func (m *MockServiceHandler) AccesskeyCreate(ctx context.Context, a *agent.Agent, name, detail string, expire int32) (*accesskey.WebhookMessage, error) {
+func (m *MockServiceHandler) AccesskeyCreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, expire int32) (*accesskey.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccesskeyCreate", ctx, a, name, detail, expire)
 	ret0, _ := ret[0].(*accesskey.WebhookMessage)
@@ -384,7 +385,7 @@ func (mr *MockServiceHandlerMockRecorder) AccesskeyCreate(ctx, a, name, detail, 
 }
 
 // AccesskeyDelete mocks base method.
-func (m *MockServiceHandler) AccesskeyDelete(ctx context.Context, a *agent.Agent, accesskeyID uuid.UUID) (*accesskey.WebhookMessage, error) {
+func (m *MockServiceHandler) AccesskeyDelete(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID) (*accesskey.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccesskeyDelete", ctx, a, accesskeyID)
 	ret0, _ := ret[0].(*accesskey.WebhookMessage)
@@ -399,7 +400,7 @@ func (mr *MockServiceHandlerMockRecorder) AccesskeyDelete(ctx, a, accesskeyID an
 }
 
 // AccesskeyGet mocks base method.
-func (m *MockServiceHandler) AccesskeyGet(ctx context.Context, a *agent.Agent, accesskeyID uuid.UUID) (*accesskey.WebhookMessage, error) {
+func (m *MockServiceHandler) AccesskeyGet(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID) (*accesskey.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccesskeyGet", ctx, a, accesskeyID)
 	ret0, _ := ret[0].(*accesskey.WebhookMessage)
@@ -414,7 +415,7 @@ func (mr *MockServiceHandlerMockRecorder) AccesskeyGet(ctx, a, accesskeyID any) 
 }
 
 // AccesskeyList mocks base method.
-func (m *MockServiceHandler) AccesskeyList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*accesskey.WebhookMessage, error) {
+func (m *MockServiceHandler) AccesskeyList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*accesskey.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccesskeyList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*accesskey.WebhookMessage)
@@ -444,7 +445,7 @@ func (mr *MockServiceHandlerMockRecorder) AccesskeyRawGetByToken(ctx, token any)
 }
 
 // AccesskeyUpdate mocks base method.
-func (m *MockServiceHandler) AccesskeyUpdate(ctx context.Context, a *agent.Agent, accesskeyID uuid.UUID, name, detail string) (*accesskey.WebhookMessage, error) {
+func (m *MockServiceHandler) AccesskeyUpdate(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID, name, detail string) (*accesskey.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AccesskeyUpdate", ctx, a, accesskeyID, name, detail)
 	ret0, _ := ret[0].(*accesskey.WebhookMessage)
@@ -459,7 +460,7 @@ func (mr *MockServiceHandlerMockRecorder) AccesskeyUpdate(ctx, a, accesskeyID, n
 }
 
 // ActiveflowCreate mocks base method.
-func (m *MockServiceHandler) ActiveflowCreate(ctx context.Context, a *agent.Agent, activeflowID, flowID uuid.UUID, actions []action.Action) (*activeflow.WebhookMessage, error) {
+func (m *MockServiceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID, flowID uuid.UUID, actions []action.Action) (*activeflow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveflowCreate", ctx, a, activeflowID, flowID, actions)
 	ret0, _ := ret[0].(*activeflow.WebhookMessage)
@@ -474,7 +475,7 @@ func (mr *MockServiceHandlerMockRecorder) ActiveflowCreate(ctx, a, activeflowID,
 }
 
 // ActiveflowDelete mocks base method.
-func (m *MockServiceHandler) ActiveflowDelete(ctx context.Context, a *agent.Agent, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
+func (m *MockServiceHandler) ActiveflowDelete(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveflowDelete", ctx, a, activeflowID)
 	ret0, _ := ret[0].(*activeflow.WebhookMessage)
@@ -489,7 +490,7 @@ func (mr *MockServiceHandlerMockRecorder) ActiveflowDelete(ctx, a, activeflowID 
 }
 
 // ActiveflowGet mocks base method.
-func (m *MockServiceHandler) ActiveflowGet(ctx context.Context, a *agent.Agent, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
+func (m *MockServiceHandler) ActiveflowGet(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveflowGet", ctx, a, activeflowID)
 	ret0, _ := ret[0].(*activeflow.WebhookMessage)
@@ -504,7 +505,7 @@ func (mr *MockServiceHandlerMockRecorder) ActiveflowGet(ctx, a, activeflowID any
 }
 
 // ActiveflowList mocks base method.
-func (m *MockServiceHandler) ActiveflowList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*activeflow.WebhookMessage, error) {
+func (m *MockServiceHandler) ActiveflowList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*activeflow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveflowList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*activeflow.WebhookMessage)
@@ -519,7 +520,7 @@ func (mr *MockServiceHandlerMockRecorder) ActiveflowList(ctx, a, size, token any
 }
 
 // ActiveflowStop mocks base method.
-func (m *MockServiceHandler) ActiveflowStop(ctx context.Context, a *agent.Agent, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
+func (m *MockServiceHandler) ActiveflowStop(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*activeflow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ActiveflowStop", ctx, a, activeflowID)
 	ret0, _ := ret[0].(*activeflow.WebhookMessage)
@@ -534,7 +535,7 @@ func (mr *MockServiceHandlerMockRecorder) ActiveflowStop(ctx, a, activeflowID an
 }
 
 // AgentCreate mocks base method.
-func (m *MockServiceHandler) AgentCreate(ctx context.Context, a *agent.Agent, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentCreate(ctx context.Context, a *auth.AuthIdentity, username, password, name, detail string, ringMethod agent.RingMethod, permission agent.Permission, tagIDs []uuid.UUID, addresses []address.Address) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentCreate", ctx, a, username, password, name, detail, ringMethod, permission, tagIDs, addresses)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -549,7 +550,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentCreate(ctx, a, username, password
 }
 
 // AgentDelete mocks base method.
-func (m *MockServiceHandler) AgentDelete(ctx context.Context, a *agent.Agent, agentID uuid.UUID) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentDelete(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentDelete", ctx, a, agentID)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -564,7 +565,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentDelete(ctx, a, agentID any) *gomo
 }
 
 // AgentDirectHashRegenerate mocks base method.
-func (m *MockServiceHandler) AgentDirectHashRegenerate(ctx context.Context, a *agent.Agent, agentID uuid.UUID) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentDirectHashRegenerate", ctx, a, agentID)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -579,7 +580,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentDirectHashRegenerate(ctx, a, agen
 }
 
 // AgentGet mocks base method.
-func (m *MockServiceHandler) AgentGet(ctx context.Context, a *agent.Agent, agentID uuid.UUID) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentGet(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentGet", ctx, a, agentID)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -594,7 +595,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentGet(ctx, a, agentID any) *gomock.
 }
 
 // AgentList mocks base method.
-func (m *MockServiceHandler) AgentList(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentList", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*agent.WebhookMessage)
@@ -609,7 +610,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentList(ctx, a, size, token, filters
 }
 
 // AgentUpdate mocks base method.
-func (m *MockServiceHandler) AgentUpdate(ctx context.Context, a *agent.Agent, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name, detail string, ringMethod agent.RingMethod) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdate", ctx, a, agentID, name, detail, ringMethod)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -624,7 +625,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdate(ctx, a, agentID, name, det
 }
 
 // AgentUpdateAddresses mocks base method.
-func (m *MockServiceHandler) AgentUpdateAddresses(ctx context.Context, a *agent.Agent, agentID uuid.UUID, addresses []address.Address) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentUpdateAddresses(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, addresses []address.Address) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateAddresses", ctx, a, agentID, addresses)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -639,7 +640,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateAddresses(ctx, a, agentID, 
 }
 
 // AgentUpdatePassword mocks base method.
-func (m *MockServiceHandler) AgentUpdatePassword(ctx context.Context, a *agent.Agent, agentID uuid.UUID, password string) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentUpdatePassword(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, password string) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdatePassword", ctx, a, agentID, password)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -654,7 +655,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdatePassword(ctx, a, agentID, p
 }
 
 // AgentUpdatePermission mocks base method.
-func (m *MockServiceHandler) AgentUpdatePermission(ctx context.Context, a *agent.Agent, agentID uuid.UUID, permission agent.Permission) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentUpdatePermission(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, permission agent.Permission) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdatePermission", ctx, a, agentID, permission)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -669,7 +670,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdatePermission(ctx, a, agentID,
 }
 
 // AgentUpdateStatus mocks base method.
-func (m *MockServiceHandler) AgentUpdateStatus(ctx context.Context, a *agent.Agent, agentID uuid.UUID, status agent.Status) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentUpdateStatus(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, status agent.Status) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateStatus", ctx, a, agentID, status)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -684,7 +685,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateStatus(ctx, a, agentID, sta
 }
 
 // AgentUpdateTagIDs mocks base method.
-func (m *MockServiceHandler) AgentUpdateTagIDs(ctx context.Context, a *agent.Agent, agentID uuid.UUID, tagIDs []uuid.UUID) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) AgentUpdateTagIDs(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, tagIDs []uuid.UUID) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AgentUpdateTagIDs", ctx, a, agentID, tagIDs)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -699,7 +700,7 @@ func (mr *MockServiceHandlerMockRecorder) AgentUpdateTagIDs(ctx, a, agentID, tag
 }
 
 // AggregatedEventList mocks base method.
-func (m *MockServiceHandler) AggregatedEventList(ctx context.Context, a *agent.Agent, activeflowID, callID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error) {
+func (m *MockServiceHandler) AggregatedEventList(ctx context.Context, a *auth.AuthIdentity, activeflowID, callID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AggregatedEventList", ctx, a, activeflowID, callID, pageSize, pageToken)
 	ret0, _ := ret[0].([]*TimelineEvent)
@@ -712,21 +713,6 @@ func (m *MockServiceHandler) AggregatedEventList(ctx context.Context, a *agent.A
 func (mr *MockServiceHandlerMockRecorder) AggregatedEventList(ctx, a, activeflowID, callID, pageSize, pageToken any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedEventList", reflect.TypeOf((*MockServiceHandler)(nil).AggregatedEventList), ctx, a, activeflowID, callID, pageSize, pageToken)
-}
-
-// AuthAccesskeyParse mocks base method.
-func (m *MockServiceHandler) AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]any, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AuthAccesskeyParse", ctx, accesskey)
-	ret0, _ := ret[0].(map[string]any)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AuthAccesskeyParse indicates an expected call of AuthAccesskeyParse.
-func (mr *MockServiceHandlerMockRecorder) AuthAccesskeyParse(ctx, accesskey any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthAccesskeyParse", reflect.TypeOf((*MockServiceHandler)(nil).AuthAccesskeyParse), ctx, accesskey)
 }
 
 // AuthJWTGenerate mocks base method.
@@ -803,7 +789,7 @@ func (mr *MockServiceHandlerMockRecorder) AuthPasswordReset(ctx, token, password
 }
 
 // AvailableNumberList mocks base method.
-func (m *MockServiceHandler) AvailableNumberList(ctx context.Context, a *agent.Agent, size uint64, countryCode, numType string) ([]*availablenumber.WebhookMessage, error) {
+func (m *MockServiceHandler) AvailableNumberList(ctx context.Context, a *auth.AuthIdentity, size uint64, countryCode, numType string) ([]*availablenumber.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AvailableNumberList", ctx, a, size, countryCode, numType)
 	ret0, _ := ret[0].([]*availablenumber.WebhookMessage)
@@ -818,7 +804,7 @@ func (mr *MockServiceHandlerMockRecorder) AvailableNumberList(ctx, a, size, coun
 }
 
 // BillingAccountAddBalanceForce mocks base method.
-func (m *MockServiceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.Account, error) {
+func (m *MockServiceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID, balance int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountAddBalanceForce", ctx, a, billingAccountID, balance)
 	ret0, _ := ret[0].(*account.Account)
@@ -833,7 +819,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountAddBalanceForce(ctx, a, 
 }
 
 // BillingAccountGet mocks base method.
-func (m *MockServiceHandler) BillingAccountGet(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID) (*account.Account, error) {
+func (m *MockServiceHandler) BillingAccountGet(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountGet", ctx, a, billingAccountID)
 	ret0, _ := ret[0].(*account.Account)
@@ -848,7 +834,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountGet(ctx, a, billingAccou
 }
 
 // BillingAccountList mocks base method.
-func (m *MockServiceHandler) BillingAccountList(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
+func (m *MockServiceHandler) BillingAccountList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountList", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*account.Account)
@@ -863,7 +849,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountList(ctx, a, size, token
 }
 
 // BillingAccountSelfCreatePaddlePortalSession mocks base method.
-func (m *MockServiceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context.Context, a *agent.Agent) (string, error) {
+func (m *MockServiceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context.Context, a *auth.AuthIdentity) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountSelfCreatePaddlePortalSession", ctx, a)
 	ret0, _ := ret[0].(string)
@@ -878,7 +864,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountSelfCreatePaddlePortalSe
 }
 
 // BillingAccountSelfGet mocks base method.
-func (m *MockServiceHandler) BillingAccountSelfGet(ctx context.Context, a *agent.Agent) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingAccountSelfGet(ctx context.Context, a *auth.AuthIdentity) (*account.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountSelfGet", ctx, a)
 	ret0, _ := ret[0].(*account.WebhookMessage)
@@ -893,7 +879,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountSelfGet(ctx, a any) *gom
 }
 
 // BillingAccountSelfUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, a *agent.Agent, name, detail string) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, name, detail string) (*account.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountSelfUpdateBasicInfo", ctx, a, name, detail)
 	ret0, _ := ret[0].(*account.WebhookMessage)
@@ -908,7 +894,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountSelfUpdateBasicInfo(ctx,
 }
 
 // BillingAccountSelfUpdatePaymentInfo mocks base method.
-func (m *MockServiceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context, a *agent.Agent, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context, a *auth.AuthIdentity, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountSelfUpdatePaymentInfo", ctx, a, paymentType, paymentMethod)
 	ret0, _ := ret[0].(*account.WebhookMessage)
@@ -923,7 +909,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountSelfUpdatePaymentInfo(ct
 }
 
 // BillingAccountSubtractBalanceForce mocks base method.
-func (m *MockServiceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, balance int64) (*account.Account, error) {
+func (m *MockServiceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID, balance int64) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountSubtractBalanceForce", ctx, a, billingAccountID, balance)
 	ret0, _ := ret[0].(*account.Account)
@@ -938,7 +924,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountSubtractBalanceForce(ctx
 }
 
 // BillingAccountUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, name, detail string) (*account.Account, error) {
+func (m *MockServiceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID, name, detail string) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountUpdateBasicInfo", ctx, a, billingAccountID, name, detail)
 	ret0, _ := ret[0].(*account.Account)
@@ -953,7 +939,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountUpdateBasicInfo(ctx, a, 
 }
 
 // BillingAccountUpdatePaymentInfo mocks base method.
-func (m *MockServiceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error) {
+func (m *MockServiceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID, paymentType account.PaymentType, paymentMethod account.PaymentMethod) (*account.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingAccountUpdatePaymentInfo", ctx, a, billingAccountID, paymentType, paymentMethod)
 	ret0, _ := ret[0].(*account.Account)
@@ -968,7 +954,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingAccountUpdatePaymentInfo(ctx, a
 }
 
 // BillingGet mocks base method.
-func (m *MockServiceHandler) BillingGet(ctx context.Context, a *agent.Agent, billingID uuid.UUID) (*billing.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingGet(ctx context.Context, a *auth.AuthIdentity, billingID uuid.UUID) (*billing.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingGet", ctx, a, billingID)
 	ret0, _ := ret[0].(*billing.WebhookMessage)
@@ -983,7 +969,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingGet(ctx, a, billingID any) *gom
 }
 
 // BillingList mocks base method.
-func (m *MockServiceHandler) BillingList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*billing.WebhookMessage, error) {
+func (m *MockServiceHandler) BillingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*billing.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BillingList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*billing.WebhookMessage)
@@ -998,7 +984,7 @@ func (mr *MockServiceHandlerMockRecorder) BillingList(ctx, a, size, token any) *
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(ctx context.Context, a *agent.Agent, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address) ([]*call.WebhookMessage, []*groupcall.WebhookMessage, error) {
+func (m *MockServiceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address) ([]*call.WebhookMessage, []*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallCreate", ctx, a, flowID, actions, source, destinations)
 	ret0, _ := ret[0].([]*call.WebhookMessage)
@@ -1014,7 +1000,7 @@ func (mr *MockServiceHandlerMockRecorder) CallCreate(ctx, a, flowID, actions, so
 }
 
 // CallDelete mocks base method.
-func (m *MockServiceHandler) CallDelete(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallDelete(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallDelete", ctx, a, callID)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -1029,7 +1015,7 @@ func (mr *MockServiceHandlerMockRecorder) CallDelete(ctx, a, callID any) *gomock
 }
 
 // CallGet mocks base method.
-func (m *MockServiceHandler) CallGet(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallGet", ctx, a, callID)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -1044,7 +1030,7 @@ func (mr *MockServiceHandlerMockRecorder) CallGet(ctx, a, callID any) *gomock.Ca
 }
 
 // CallHangup mocks base method.
-func (m *MockServiceHandler) CallHangup(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallHangup(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallHangup", ctx, a, callID)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -1059,7 +1045,7 @@ func (mr *MockServiceHandlerMockRecorder) CallHangup(ctx, a, callID any) *gomock
 }
 
 // CallHoldOff mocks base method.
-func (m *MockServiceHandler) CallHoldOff(ctx context.Context, a *agent.Agent, callID uuid.UUID) error {
+func (m *MockServiceHandler) CallHoldOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallHoldOff", ctx, a, callID)
 	ret0, _ := ret[0].(error)
@@ -1073,7 +1059,7 @@ func (mr *MockServiceHandlerMockRecorder) CallHoldOff(ctx, a, callID any) *gomoc
 }
 
 // CallHoldOn mocks base method.
-func (m *MockServiceHandler) CallHoldOn(ctx context.Context, a *agent.Agent, callID uuid.UUID) error {
+func (m *MockServiceHandler) CallHoldOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallHoldOn", ctx, a, callID)
 	ret0, _ := ret[0].(error)
@@ -1087,7 +1073,7 @@ func (mr *MockServiceHandlerMockRecorder) CallHoldOn(ctx, a, callID any) *gomock
 }
 
 // CallList mocks base method.
-func (m *MockServiceHandler) CallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*call.WebhookMessage)
@@ -1102,7 +1088,7 @@ func (mr *MockServiceHandlerMockRecorder) CallList(ctx, a, size, token any) *gom
 }
 
 // CallMOHOff mocks base method.
-func (m *MockServiceHandler) CallMOHOff(ctx context.Context, a *agent.Agent, callID uuid.UUID) error {
+func (m *MockServiceHandler) CallMOHOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallMOHOff", ctx, a, callID)
 	ret0, _ := ret[0].(error)
@@ -1116,7 +1102,7 @@ func (mr *MockServiceHandlerMockRecorder) CallMOHOff(ctx, a, callID any) *gomock
 }
 
 // CallMOHOn mocks base method.
-func (m *MockServiceHandler) CallMOHOn(ctx context.Context, a *agent.Agent, callID uuid.UUID) error {
+func (m *MockServiceHandler) CallMOHOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallMOHOn", ctx, a, callID)
 	ret0, _ := ret[0].(error)
@@ -1130,7 +1116,7 @@ func (mr *MockServiceHandlerMockRecorder) CallMOHOn(ctx, a, callID any) *gomock.
 }
 
 // CallMediaStreamStart mocks base method.
-func (m *MockServiceHandler) CallMediaStreamStart(ctx context.Context, a *agent.Agent, callID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
+func (m *MockServiceHandler) CallMediaStreamStart(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallMediaStreamStart", ctx, a, callID, encapsulation, w, r)
 	ret0, _ := ret[0].(error)
@@ -1144,7 +1130,7 @@ func (mr *MockServiceHandlerMockRecorder) CallMediaStreamStart(ctx, a, callID, e
 }
 
 // CallMuteOff mocks base method.
-func (m *MockServiceHandler) CallMuteOff(ctx context.Context, a *agent.Agent, callID uuid.UUID, direction call.MuteDirection) error {
+func (m *MockServiceHandler) CallMuteOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, direction call.MuteDirection) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallMuteOff", ctx, a, callID, direction)
 	ret0, _ := ret[0].(error)
@@ -1158,7 +1144,7 @@ func (mr *MockServiceHandlerMockRecorder) CallMuteOff(ctx, a, callID, direction 
 }
 
 // CallMuteOn mocks base method.
-func (m *MockServiceHandler) CallMuteOn(ctx context.Context, a *agent.Agent, callID uuid.UUID, direction call.MuteDirection) error {
+func (m *MockServiceHandler) CallMuteOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, direction call.MuteDirection) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallMuteOn", ctx, a, callID, direction)
 	ret0, _ := ret[0].(error)
@@ -1172,7 +1158,7 @@ func (mr *MockServiceHandlerMockRecorder) CallMuteOn(ctx, a, callID, direction a
 }
 
 // CallRecordingStart mocks base method.
-func (m *MockServiceHandler) CallRecordingStart(ctx context.Context, a *agent.Agent, callID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int, onEndFlowID uuid.UUID) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallRecordingStart(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, format recording.Format, endOfSilence int, endOfKey string, duration int, onEndFlowID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallRecordingStart", ctx, a, callID, format, endOfSilence, endOfKey, duration, onEndFlowID)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -1187,7 +1173,7 @@ func (mr *MockServiceHandlerMockRecorder) CallRecordingStart(ctx, a, callID, for
 }
 
 // CallRecordingStop mocks base method.
-func (m *MockServiceHandler) CallRecordingStop(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) CallRecordingStop(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallRecordingStop", ctx, a, callID)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -1202,7 +1188,7 @@ func (mr *MockServiceHandlerMockRecorder) CallRecordingStop(ctx, a, callID any) 
 }
 
 // CallSilenceOff mocks base method.
-func (m *MockServiceHandler) CallSilenceOff(ctx context.Context, a *agent.Agent, callID uuid.UUID) error {
+func (m *MockServiceHandler) CallSilenceOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSilenceOff", ctx, a, callID)
 	ret0, _ := ret[0].(error)
@@ -1216,7 +1202,7 @@ func (mr *MockServiceHandlerMockRecorder) CallSilenceOff(ctx, a, callID any) *go
 }
 
 // CallSilenceOn mocks base method.
-func (m *MockServiceHandler) CallSilenceOn(ctx context.Context, a *agent.Agent, callID uuid.UUID) error {
+func (m *MockServiceHandler) CallSilenceOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallSilenceOn", ctx, a, callID)
 	ret0, _ := ret[0].(error)
@@ -1230,7 +1216,7 @@ func (mr *MockServiceHandlerMockRecorder) CallSilenceOn(ctx, a, callID any) *gom
 }
 
 // CallTalk mocks base method.
-func (m *MockServiceHandler) CallTalk(ctx context.Context, a *agent.Agent, callID uuid.UUID, text, language, provider, voiceID string) error {
+func (m *MockServiceHandler) CallTalk(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID, text, language, provider, voiceID string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CallTalk", ctx, a, callID, text, language, provider, voiceID)
 	ret0, _ := ret[0].(error)
@@ -1244,7 +1230,7 @@ func (mr *MockServiceHandlerMockRecorder) CallTalk(ctx, a, callID, text, languag
 }
 
 // CampaignCreate mocks base method.
-func (m *MockServiceHandler) CampaignCreate(ctx context.Context, a *agent.Agent, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignCreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle, actions []action.Action, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignCreate", ctx, a, name, detail, campaignType, serviceLevel, endHandle, actions, outplanID, outdialID, queueID, nextCampaignID)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1259,7 +1245,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignCreate(ctx, a, name, detail, c
 }
 
 // CampaignDelete mocks base method.
-func (m *MockServiceHandler) CampaignDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignDelete", ctx, a, id)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1274,7 +1260,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignDelete(ctx, a, id any) *gomock
 }
 
 // CampaignGet mocks base method.
-func (m *MockServiceHandler) CampaignGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignGet", ctx, a, id)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1289,7 +1275,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignGet(ctx, a, id any) *gomock.Ca
 }
 
 // CampaignGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) CampaignGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*campaign.WebhookMessage)
@@ -1304,7 +1290,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignGetsByCustomerID(ctx, a, size,
 }
 
 // CampaignUpdateActions mocks base method.
-func (m *MockServiceHandler) CampaignUpdateActions(ctx context.Context, a *agent.Agent, id uuid.UUID, actions []action.Action) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateActions(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, actions []action.Action) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignUpdateActions", ctx, a, id, actions)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1319,7 +1305,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateActions(ctx, a, id, acti
 }
 
 // CampaignUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) CampaignUpdateBasicInfo(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, campaignType campaign.Type, serviceLevel int, endHandle campaign.EndHandle) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignUpdateBasicInfo", ctx, a, id, name, detail, campaignType, serviceLevel, endHandle)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1334,7 +1320,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateBasicInfo(ctx, a, id, na
 }
 
 // CampaignUpdateNextCampaignID mocks base method.
-func (m *MockServiceHandler) CampaignUpdateNextCampaignID(ctx context.Context, a *agent.Agent, id, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateNextCampaignID(ctx context.Context, a *auth.AuthIdentity, id, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignUpdateNextCampaignID", ctx, a, id, nextCampaignID)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1349,7 +1335,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateNextCampaignID(ctx, a, i
 }
 
 // CampaignUpdateResourceInfo mocks base method.
-func (m *MockServiceHandler) CampaignUpdateResourceInfo(ctx context.Context, a *agent.Agent, id, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateResourceInfo(ctx context.Context, a *auth.AuthIdentity, id, outplanID, outdialID, queueID, nextCampaignID uuid.UUID) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignUpdateResourceInfo", ctx, a, id, outplanID, outdialID, queueID, nextCampaignID)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1364,7 +1350,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateResourceInfo(ctx, a, id,
 }
 
 // CampaignUpdateServiceLevel mocks base method.
-func (m *MockServiceHandler) CampaignUpdateServiceLevel(ctx context.Context, a *agent.Agent, id uuid.UUID, serviceLevel int) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateServiceLevel(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, serviceLevel int) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignUpdateServiceLevel", ctx, a, id, serviceLevel)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1379,7 +1365,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateServiceLevel(ctx, a, id,
 }
 
 // CampaignUpdateStatus mocks base method.
-func (m *MockServiceHandler) CampaignUpdateStatus(ctx context.Context, a *agent.Agent, id uuid.UUID, status campaign.Status) (*campaign.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaignUpdateStatus(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, status campaign.Status) (*campaign.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaignUpdateStatus", ctx, a, id, status)
 	ret0, _ := ret[0].(*campaign.WebhookMessage)
@@ -1394,7 +1380,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaignUpdateStatus(ctx, a, id, statu
 }
 
 // CampaigncallDelete mocks base method.
-func (m *MockServiceHandler) CampaigncallDelete(ctx context.Context, a *agent.Agent, campaigncallID uuid.UUID) (*campaigncall.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaigncallDelete(ctx context.Context, a *auth.AuthIdentity, campaigncallID uuid.UUID) (*campaigncall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaigncallDelete", ctx, a, campaigncallID)
 	ret0, _ := ret[0].(*campaigncall.WebhookMessage)
@@ -1409,7 +1395,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaigncallDelete(ctx, a, campaigncal
 }
 
 // CampaigncallGet mocks base method.
-func (m *MockServiceHandler) CampaigncallGet(ctx context.Context, a *agent.Agent, campaigncallID uuid.UUID) (*campaigncall.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaigncallGet(ctx context.Context, a *auth.AuthIdentity, campaigncallID uuid.UUID) (*campaigncall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaigncallGet", ctx, a, campaigncallID)
 	ret0, _ := ret[0].(*campaigncall.WebhookMessage)
@@ -1424,7 +1410,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaigncallGet(ctx, a, campaigncallID
 }
 
 // CampaigncallGetsByCampaignID mocks base method.
-func (m *MockServiceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *agent.Agent, campaignID uuid.UUID, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *auth.AuthIdentity, campaignID uuid.UUID, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaigncallGetsByCampaignID", ctx, a, campaignID, size, token)
 	ret0, _ := ret[0].([]*campaigncall.WebhookMessage)
@@ -1439,7 +1425,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaigncallGetsByCampaignID(ctx, a, c
 }
 
 // CampaigncallList mocks base method.
-func (m *MockServiceHandler) CampaigncallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
+func (m *MockServiceHandler) CampaigncallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*campaigncall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CampaigncallList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*campaigncall.WebhookMessage)
@@ -1454,7 +1440,7 @@ func (mr *MockServiceHandlerMockRecorder) CampaigncallList(ctx, a, size, token a
 }
 
 // ConferenceCreate mocks base method.
-func (m *MockServiceHandler) ConferenceCreate(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID, confType conference.Type, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceCreate(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, confType conference.Type, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceCreate", ctx, a, conferenceID, confType, name, detail, data, timeout, preFlowID, postFlowID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1469,7 +1455,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceCreate(ctx, a, conferenceID,
 }
 
 // ConferenceDelete mocks base method.
-func (m *MockServiceHandler) ConferenceDelete(ctx context.Context, a *agent.Agent, confID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceDelete(ctx context.Context, a *auth.AuthIdentity, confID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceDelete", ctx, a, confID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1484,7 +1470,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceDelete(ctx, a, confID any) *
 }
 
 // ConferenceDirectHashRegenerate mocks base method.
-func (m *MockServiceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceDirectHashRegenerate", ctx, a, conferenceID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1499,7 +1485,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceDirectHashRegenerate(ctx, a,
 }
 
 // ConferenceGet mocks base method.
-func (m *MockServiceHandler) ConferenceGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceGet", ctx, a, id)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1514,7 +1500,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceGet(ctx, a, id any) *gomock.
 }
 
 // ConferenceList mocks base method.
-func (m *MockServiceHandler) ConferenceList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*conference.WebhookMessage)
@@ -1529,7 +1515,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceList(ctx, a, size, token any
 }
 
 // ConferenceMediaStreamStart mocks base method.
-func (m *MockServiceHandler) ConferenceMediaStreamStart(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
+func (m *MockServiceHandler) ConferenceMediaStreamStart(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, encapsulation string, w http.ResponseWriter, r *http.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceMediaStreamStart", ctx, a, conferenceID, encapsulation, w, r)
 	ret0, _ := ret[0].(error)
@@ -1543,7 +1529,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceMediaStreamStart(ctx, a, con
 }
 
 // ConferenceRecordingStart mocks base method.
-func (m *MockServiceHandler) ConferenceRecordingStart(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID, format recording.Format, duration int, onEndFlowID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceRecordingStart(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, format recording.Format, duration int, onEndFlowID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceRecordingStart", ctx, a, conferenceID, format, duration, onEndFlowID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1558,7 +1544,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceRecordingStart(ctx, a, confe
 }
 
 // ConferenceRecordingStop mocks base method.
-func (m *MockServiceHandler) ConferenceRecordingStop(ctx context.Context, a *agent.Agent, confID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceRecordingStop(ctx context.Context, a *auth.AuthIdentity, confID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceRecordingStop", ctx, a, confID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1573,7 +1559,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceRecordingStop(ctx, a, confID
 }
 
 // ConferenceTranscribeStart mocks base method.
-func (m *MockServiceHandler) ConferenceTranscribeStart(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID, language string) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceTranscribeStart(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, language string) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceTranscribeStart", ctx, a, conferenceID, language)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1588,7 +1574,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceTranscribeStart(ctx, a, conf
 }
 
 // ConferenceTranscribeStop mocks base method.
-func (m *MockServiceHandler) ConferenceTranscribeStop(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceTranscribeStop(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceTranscribeStop", ctx, a, conferenceID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1603,7 +1589,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceTranscribeStop(ctx, a, confe
 }
 
 // ConferenceUpdate mocks base method.
-func (m *MockServiceHandler) ConferenceUpdate(ctx context.Context, a *agent.Agent, conferenceID uuid.UUID, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferenceUpdate(ctx context.Context, a *auth.AuthIdentity, conferenceID uuid.UUID, name, detail string, data map[string]any, timeout int, preFlowID, postFlowID uuid.UUID) (*conference.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferenceUpdate", ctx, a, conferenceID, name, detail, data, timeout, preFlowID, postFlowID)
 	ret0, _ := ret[0].(*conference.WebhookMessage)
@@ -1618,7 +1604,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferenceUpdate(ctx, a, conferenceID,
 }
 
 // ConferencecallGet mocks base method.
-func (m *MockServiceHandler) ConferencecallGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*conferencecall.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferencecallGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*conferencecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferencecallGet", ctx, a, id)
 	ret0, _ := ret[0].(*conferencecall.WebhookMessage)
@@ -1633,7 +1619,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferencecallGet(ctx, a, id any) *gom
 }
 
 // ConferencecallKick mocks base method.
-func (m *MockServiceHandler) ConferencecallKick(ctx context.Context, a *agent.Agent, conferencecallID uuid.UUID) (*conferencecall.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferencecallKick(ctx context.Context, a *auth.AuthIdentity, conferencecallID uuid.UUID) (*conferencecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferencecallKick", ctx, a, conferencecallID)
 	ret0, _ := ret[0].(*conferencecall.WebhookMessage)
@@ -1648,7 +1634,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferencecallKick(ctx, a, conferencec
 }
 
 // ConferencecallList mocks base method.
-func (m *MockServiceHandler) ConferencecallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conferencecall.WebhookMessage, error) {
+func (m *MockServiceHandler) ConferencecallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*conferencecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConferencecallList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*conferencecall.WebhookMessage)
@@ -1663,7 +1649,7 @@ func (mr *MockServiceHandlerMockRecorder) ConferencecallList(ctx, a, size, token
 }
 
 // ContactCreate mocks base method.
-func (m *MockServiceHandler) ContactCreate(ctx context.Context, a *agent.Agent, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, phoneNumbers []request.PhoneNumberCreate, emails []request.EmailCreate, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactCreate(ctx context.Context, a *auth.AuthIdentity, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, phoneNumbers []request.PhoneNumberCreate, emails []request.EmailCreate, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactCreate", ctx, a, firstName, lastName, displayName, company, jobTitle, source, externalID, notes, phoneNumbers, emails, tagIDs)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1678,7 +1664,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactCreate(ctx, a, firstName, lastN
 }
 
 // ContactDelete mocks base method.
-func (m *MockServiceHandler) ContactDelete(ctx context.Context, a *agent.Agent, contactID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactDelete", ctx, a, contactID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1693,7 +1679,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactDelete(ctx, a, contactID any) *
 }
 
 // ContactEmailCreate mocks base method.
-func (m *MockServiceHandler) ContactEmailCreate(ctx context.Context, a *agent.Agent, contactID uuid.UUID, address, emailType string, isPrimary bool) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactEmailCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, address, emailType string, isPrimary bool) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactEmailCreate", ctx, a, contactID, address, emailType, isPrimary)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1708,7 +1694,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactEmailCreate(ctx, a, contactID, 
 }
 
 // ContactEmailDelete mocks base method.
-func (m *MockServiceHandler) ContactEmailDelete(ctx context.Context, a *agent.Agent, contactID, emailID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID, emailID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactEmailDelete", ctx, a, contactID, emailID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1723,7 +1709,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactEmailDelete(ctx, a, contactID, 
 }
 
 // ContactEmailUpdate mocks base method.
-func (m *MockServiceHandler) ContactEmailUpdate(ctx context.Context, a *agent.Agent, contactID, emailID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactEmailUpdate(ctx context.Context, a *auth.AuthIdentity, contactID, emailID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactEmailUpdate", ctx, a, contactID, emailID, fields)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1738,7 +1724,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactEmailUpdate(ctx, a, contactID, 
 }
 
 // ContactGet mocks base method.
-func (m *MockServiceHandler) ContactGet(ctx context.Context, a *agent.Agent, contactID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactGet", ctx, a, contactID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1753,7 +1739,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactGet(ctx, a, contactID any) *gom
 }
 
 // ContactList mocks base method.
-func (m *MockServiceHandler) ContactList(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactList", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*contact.WebhookMessage)
@@ -1768,7 +1754,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactList(ctx, a, size, token, filte
 }
 
 // ContactLookup mocks base method.
-func (m *MockServiceHandler) ContactLookup(ctx context.Context, a *agent.Agent, phoneE164, email string) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164, email string) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactLookup", ctx, a, phoneE164, email)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1783,7 +1769,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactLookup(ctx, a, phoneE164, email
 }
 
 // ContactPhoneNumberCreate mocks base method.
-func (m *MockServiceHandler) ContactPhoneNumberCreate(ctx context.Context, a *agent.Agent, contactID uuid.UUID, number, numberE164, phoneType string, isPrimary bool) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number, numberE164, phoneType string, isPrimary bool) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactPhoneNumberCreate", ctx, a, contactID, number, numberE164, phoneType, isPrimary)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1798,7 +1784,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactPhoneNumberCreate(ctx, a, conta
 }
 
 // ContactPhoneNumberDelete mocks base method.
-func (m *MockServiceHandler) ContactPhoneNumberDelete(ctx context.Context, a *agent.Agent, contactID, phoneNumberID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID, phoneNumberID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactPhoneNumberDelete", ctx, a, contactID, phoneNumberID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1813,7 +1799,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactPhoneNumberDelete(ctx, a, conta
 }
 
 // ContactPhoneNumberUpdate mocks base method.
-func (m *MockServiceHandler) ContactPhoneNumberUpdate(ctx context.Context, a *agent.Agent, contactID, phoneNumberID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactPhoneNumberUpdate(ctx context.Context, a *auth.AuthIdentity, contactID, phoneNumberID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactPhoneNumberUpdate", ctx, a, contactID, phoneNumberID, fields)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1828,7 +1814,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactPhoneNumberUpdate(ctx, a, conta
 }
 
 // ContactTagAdd mocks base method.
-func (m *MockServiceHandler) ContactTagAdd(ctx context.Context, a *agent.Agent, contactID, tagID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID, tagID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactTagAdd", ctx, a, contactID, tagID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1843,7 +1829,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactTagAdd(ctx, a, contactID, tagID
 }
 
 // ContactTagRemove mocks base method.
-func (m *MockServiceHandler) ContactTagRemove(ctx context.Context, a *agent.Agent, contactID, tagID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID, tagID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactTagRemove", ctx, a, contactID, tagID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1858,7 +1844,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactTagRemove(ctx, a, contactID, ta
 }
 
 // ContactUpdate mocks base method.
-func (m *MockServiceHandler) ContactUpdate(ctx context.Context, a *agent.Agent, contactID uuid.UUID, firstName, lastName, displayName, company, jobTitle, externalID, notes *string) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, firstName, lastName, displayName, company, jobTitle, externalID, notes *string) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactUpdate", ctx, a, contactID, firstName, lastName, displayName, company, jobTitle, externalID, notes)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -1873,7 +1859,7 @@ func (mr *MockServiceHandlerMockRecorder) ContactUpdate(ctx, a, contactID, first
 }
 
 // ConversationAccountCreate mocks base method.
-func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, a *agent.Agent, accountType account0.Type, name, detail, secret, token string, messageFlowID uuid.UUID) (*account0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, a *auth.AuthIdentity, accountType account0.Type, name, detail, secret, token string, messageFlowID uuid.UUID) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountCreate", ctx, a, accountType, name, detail, secret, token, messageFlowID)
 	ret0, _ := ret[0].(*account0.WebhookMessage)
@@ -1888,7 +1874,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountCreate(ctx, a, acco
 }
 
 // ConversationAccountDelete mocks base method.
-func (m *MockServiceHandler) ConversationAccountDelete(ctx context.Context, a *agent.Agent, accountID uuid.UUID) (*account0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountDelete(ctx context.Context, a *auth.AuthIdentity, accountID uuid.UUID) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountDelete", ctx, a, accountID)
 	ret0, _ := ret[0].(*account0.WebhookMessage)
@@ -1903,7 +1889,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountDelete(ctx, a, acco
 }
 
 // ConversationAccountGet mocks base method.
-func (m *MockServiceHandler) ConversationAccountGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*account0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountGet", ctx, a, id)
 	ret0, _ := ret[0].(*account0.WebhookMessage)
@@ -1918,7 +1904,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountGet(ctx, a, id any)
 }
 
 // ConversationAccountGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) ConversationAccountGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*account0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*account0.WebhookMessage)
@@ -1933,7 +1919,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountGetsByCustomerID(ct
 }
 
 // ConversationAccountUpdate mocks base method.
-func (m *MockServiceHandler) ConversationAccountUpdate(ctx context.Context, a *agent.Agent, accountID uuid.UUID, fields map[account0.Field]any) (*account0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountUpdate(ctx context.Context, a *auth.AuthIdentity, accountID uuid.UUID, fields map[account0.Field]any) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationAccountUpdate", ctx, a, accountID, fields)
 	ret0, _ := ret[0].(*account0.WebhookMessage)
@@ -1948,7 +1934,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationAccountUpdate(ctx, a, acco
 }
 
 // ConversationGet mocks base method.
-func (m *MockServiceHandler) ConversationGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*conversation.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationGet", ctx, a, id)
 	ret0, _ := ret[0].(*conversation.WebhookMessage)
@@ -1963,7 +1949,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationGet(ctx, a, id any) *gomoc
 }
 
 // ConversationGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) ConversationGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conversation.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*conversation.WebhookMessage)
@@ -1978,7 +1964,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationGetsByCustomerID(ctx, a, s
 }
 
 // ConversationMessageGetsByConversationID mocks base method.
-func (m *MockServiceHandler) ConversationMessageGetsByConversationID(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*message0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationMessageGetsByConversationID(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, size uint64, token string) ([]*message0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationMessageGetsByConversationID", ctx, a, conversationID, size, token)
 	ret0, _ := ret[0].([]*message0.WebhookMessage)
@@ -1993,7 +1979,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationMessageGetsByConversationI
 }
 
 // ConversationMessageSend mocks base method.
-func (m *MockServiceHandler) ConversationMessageSend(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, text string, medias []media.Media) (*message0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationMessageSend(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, text string, medias []media.Media) (*message0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationMessageSend", ctx, a, conversationID, text, medias)
 	ret0, _ := ret[0].(*message0.WebhookMessage)
@@ -2008,7 +1994,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationMessageSend(ctx, a, conver
 }
 
 // ConversationUpdate mocks base method.
-func (m *MockServiceHandler) ConversationUpdate(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, fields map[conversation.Field]any) (*conversation.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, fields map[conversation.Field]any) (*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConversationUpdate", ctx, a, conversationID, fields)
 	ret0, _ := ret[0].(*conversation.WebhookMessage)
@@ -2023,7 +2009,7 @@ func (mr *MockServiceHandlerMockRecorder) ConversationUpdate(ctx, a, conversatio
 }
 
 // CustomerCreate mocks base method.
-func (m *MockServiceHandler) CustomerCreate(ctx context.Context, a *agent.Agent, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerCreate(ctx context.Context, a *auth.AuthIdentity, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerCreate", ctx, a, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -2038,7 +2024,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerCreate(ctx, a, name, detail, e
 }
 
 // CustomerDelete mocks base method.
-func (m *MockServiceHandler) CustomerDelete(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerDelete", ctx, a, customerID)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -2068,7 +2054,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerEmailVerify(ctx, token any) *g
 }
 
 // CustomerFreeze mocks base method.
-func (m *MockServiceHandler) CustomerFreeze(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerFreeze", ctx, a, customerID)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -2083,7 +2069,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerFreeze(ctx, a, customerID any)
 }
 
 // CustomerGet mocks base method.
-func (m *MockServiceHandler) CustomerGet(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerGet", ctx, a, customerID)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -2098,7 +2084,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerGet(ctx, a, customerID any) *g
 }
 
 // CustomerList mocks base method.
-func (m *MockServiceHandler) CustomerList(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerList", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*customer.Customer)
@@ -2113,7 +2099,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerList(ctx, a, size, token, filt
 }
 
 // CustomerRecover mocks base method.
-func (m *MockServiceHandler) CustomerRecover(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerRecover", ctx, a, customerID)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -2128,7 +2114,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerRecover(ctx, a, customerID any
 }
 
 // CustomerSelfFreeze mocks base method.
-func (m *MockServiceHandler) CustomerSelfFreeze(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfFreeze(ctx context.Context, a *auth.AuthIdentity) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfFreeze", ctx, a)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -2143,7 +2129,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfFreeze(ctx, a any) *gomock
 }
 
 // CustomerSelfFreezeAndDelete mocks base method.
-func (m *MockServiceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *auth.AuthIdentity) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfFreezeAndDelete", ctx, a)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -2158,7 +2144,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfFreezeAndDelete(ctx, a any
 }
 
 // CustomerSelfGet mocks base method.
-func (m *MockServiceHandler) CustomerSelfGet(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdentity) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfGet", ctx, a)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -2173,7 +2159,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfGet(ctx, a any) *gomock.Ca
 }
 
 // CustomerSelfRecover mocks base method.
-func (m *MockServiceHandler) CustomerSelfRecover(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfRecover(ctx context.Context, a *auth.AuthIdentity) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfRecover", ctx, a)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -2188,7 +2174,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfRecover(ctx, a any) *gomoc
 }
 
 // CustomerSelfUpdate mocks base method.
-func (m *MockServiceHandler) CustomerSelfUpdate(ctx context.Context, a *agent.Agent, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfUpdate(ctx context.Context, a *auth.AuthIdentity, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfUpdate", ctx, a, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -2203,7 +2189,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfUpdate(ctx, a, name, detai
 }
 
 // CustomerSelfUpdateBillingAccountID mocks base method.
-func (m *MockServiceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context, a *agent.Agent, billingAccountID uuid.UUID) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfUpdateBillingAccountID", ctx, a, billingAccountID)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -2218,7 +2204,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfUpdateBillingAccountID(ctx
 }
 
 // CustomerSelfUpdateMetadata mocks base method.
-func (m *MockServiceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *agent.Agent, metadata customer.Metadata) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, metadata customer.Metadata) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerSelfUpdateMetadata", ctx, a, metadata)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -2248,7 +2234,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSignup(ctx, name, detail, emai
 }
 
 // CustomerUpdate mocks base method.
-func (m *MockServiceHandler) CustomerUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, email, phoneNumber, address string, webhookMethod customer.WebhookMethod, webhookURI string) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerUpdate", ctx, a, id, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -2263,7 +2249,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerUpdate(ctx, a, id, name, detai
 }
 
 // CustomerUpdateBillingAccountID mocks base method.
-func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *agent.Agent, customerID, billingAccountID uuid.UUID) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID, billingAccountID uuid.UUID) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerUpdateBillingAccountID", ctx, a, customerID, billingAccountID)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -2278,7 +2264,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerUpdateBillingAccountID(ctx, a,
 }
 
 // CustomerUpdateMetadata mocks base method.
-func (m *MockServiceHandler) CustomerUpdateMetadata(ctx context.Context, a *agent.Agent, customerID uuid.UUID, metadata customer.Metadata) (*customer.Customer, error) {
+func (m *MockServiceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata customer.Metadata) (*customer.Customer, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CustomerUpdateMetadata", ctx, a, customerID, metadata)
 	ret0, _ := ret[0].(*customer.Customer)
@@ -2293,7 +2279,7 @@ func (mr *MockServiceHandlerMockRecorder) CustomerUpdateMetadata(ctx, a, custome
 }
 
 // EmailDelete mocks base method.
-func (m *MockServiceHandler) EmailDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*email.WebhookMessage, error) {
+func (m *MockServiceHandler) EmailDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*email.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EmailDelete", ctx, a, id)
 	ret0, _ := ret[0].(*email.WebhookMessage)
@@ -2308,7 +2294,7 @@ func (mr *MockServiceHandlerMockRecorder) EmailDelete(ctx, a, id any) *gomock.Ca
 }
 
 // EmailGet mocks base method.
-func (m *MockServiceHandler) EmailGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*email.WebhookMessage, error) {
+func (m *MockServiceHandler) EmailGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*email.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EmailGet", ctx, a, id)
 	ret0, _ := ret[0].(*email.WebhookMessage)
@@ -2323,7 +2309,7 @@ func (mr *MockServiceHandlerMockRecorder) EmailGet(ctx, a, id any) *gomock.Call 
 }
 
 // EmailList mocks base method.
-func (m *MockServiceHandler) EmailList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*email.WebhookMessage, error) {
+func (m *MockServiceHandler) EmailList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*email.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EmailList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*email.WebhookMessage)
@@ -2338,7 +2324,7 @@ func (mr *MockServiceHandlerMockRecorder) EmailList(ctx, a, size, token any) *go
 }
 
 // EmailSend mocks base method.
-func (m *MockServiceHandler) EmailSend(ctx context.Context, a *agent.Agent, destinations []address.Address, subject, content string, attachments []email.Attachment) (*email.WebhookMessage, error) {
+func (m *MockServiceHandler) EmailSend(ctx context.Context, a *auth.AuthIdentity, destinations []address.Address, subject, content string, attachments []email.Attachment) (*email.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EmailSend", ctx, a, destinations, subject, content, attachments)
 	ret0, _ := ret[0].(*email.WebhookMessage)
@@ -2353,7 +2339,7 @@ func (mr *MockServiceHandlerMockRecorder) EmailSend(ctx, a, destinations, subjec
 }
 
 // ExtensionCreate mocks base method.
-func (m *MockServiceHandler) ExtensionCreate(ctx context.Context, a *agent.Agent, ext, password, name, detail string) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionCreate(ctx context.Context, a *auth.AuthIdentity, ext, password, name, detail string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionCreate", ctx, a, ext, password, name, detail)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
@@ -2368,7 +2354,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionCreate(ctx, a, ext, password,
 }
 
 // ExtensionDelete mocks base method.
-func (m *MockServiceHandler) ExtensionDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionDelete", ctx, a, id)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
@@ -2383,7 +2369,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionDelete(ctx, a, id any) *gomoc
 }
 
 // ExtensionDirectHashRegenerate mocks base method.
-func (m *MockServiceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *agent.Agent, extensionID uuid.UUID) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionDirectHashRegenerate", ctx, a, extensionID)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
@@ -2398,7 +2384,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionDirectHashRegenerate(ctx, a, 
 }
 
 // ExtensionGet mocks base method.
-func (m *MockServiceHandler) ExtensionGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionGet", ctx, a, id)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
@@ -2413,7 +2399,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionGet(ctx, a, id any) *gomock.C
 }
 
 // ExtensionList mocks base method.
-func (m *MockServiceHandler) ExtensionList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*extension.WebhookMessage)
@@ -2428,7 +2414,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionList(ctx, a, size, token any)
 }
 
 // ExtensionUpdate mocks base method.
-func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail, password string) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail, password string) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExtensionUpdate", ctx, a, id, name, detail, password)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
@@ -2443,7 +2429,7 @@ func (mr *MockServiceHandlerMockRecorder) ExtensionUpdate(ctx, a, id, name, deta
 }
 
 // FlowCreate mocks base method.
-func (m *MockServiceHandler) FlowCreate(ctx context.Context, a *agent.Agent, name, detail string, actions []action.Action, onCompleteID uuid.UUID, persist bool) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowCreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, actions []action.Action, onCompleteID uuid.UUID, persist bool) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowCreate", ctx, a, name, detail, actions, onCompleteID, persist)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
@@ -2458,7 +2444,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowCreate(ctx, a, name, detail, actio
 }
 
 // FlowDelete mocks base method.
-func (m *MockServiceHandler) FlowDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowDelete", ctx, a, id)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
@@ -2473,7 +2459,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowDelete(ctx, a, id any) *gomock.Cal
 }
 
 // FlowDirectHashRegenerate mocks base method.
-func (m *MockServiceHandler) FlowDirectHashRegenerate(ctx context.Context, a *agent.Agent, flowID uuid.UUID) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowDirectHashRegenerate", ctx, a, flowID)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
@@ -2488,7 +2474,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowDirectHashRegenerate(ctx, a, flowI
 }
 
 // FlowGet mocks base method.
-func (m *MockServiceHandler) FlowGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowGet", ctx, a, id)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
@@ -2503,7 +2489,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowGet(ctx, a, id any) *gomock.Call {
 }
 
 // FlowList mocks base method.
-func (m *MockServiceHandler) FlowList(ctx context.Context, a *agent.Agent, pageSize uint64, pageToken string) ([]*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowList(ctx context.Context, a *auth.AuthIdentity, pageSize uint64, pageToken string) ([]*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowList", ctx, a, pageSize, pageToken)
 	ret0, _ := ret[0].([]*flow.WebhookMessage)
@@ -2518,7 +2504,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowList(ctx, a, pageSize, pageToken a
 }
 
 // FlowUpdate mocks base method.
-func (m *MockServiceHandler) FlowUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, actions []action.Action, onCompleteID uuid.UUID) (*flow.WebhookMessage, error) {
+func (m *MockServiceHandler) FlowUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, actions []action.Action, onCompleteID uuid.UUID) (*flow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FlowUpdate", ctx, a, id, name, detail, actions, onCompleteID)
 	ret0, _ := ret[0].(*flow.WebhookMessage)
@@ -2533,7 +2519,7 @@ func (mr *MockServiceHandlerMockRecorder) FlowUpdate(ctx, a, id, name, detail, a
 }
 
 // GroupcallCreate mocks base method.
-func (m *MockServiceHandler) GroupcallCreate(ctx context.Context, a *agent.Agent, source address.Address, destinations []address.Address, flowID uuid.UUID, actions []action.Action, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.WebhookMessage, error) {
+func (m *MockServiceHandler) GroupcallCreate(ctx context.Context, a *auth.AuthIdentity, source address.Address, destinations []address.Address, flowID uuid.UUID, actions []action.Action, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GroupcallCreate", ctx, a, source, destinations, flowID, actions, ringMethod, answerMethod)
 	ret0, _ := ret[0].(*groupcall.WebhookMessage)
@@ -2548,7 +2534,7 @@ func (mr *MockServiceHandlerMockRecorder) GroupcallCreate(ctx, a, source, destin
 }
 
 // GroupcallDelete mocks base method.
-func (m *MockServiceHandler) GroupcallDelete(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*groupcall.WebhookMessage, error) {
+func (m *MockServiceHandler) GroupcallDelete(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GroupcallDelete", ctx, a, callID)
 	ret0, _ := ret[0].(*groupcall.WebhookMessage)
@@ -2563,7 +2549,7 @@ func (mr *MockServiceHandlerMockRecorder) GroupcallDelete(ctx, a, callID any) *g
 }
 
 // GroupcallGet mocks base method.
-func (m *MockServiceHandler) GroupcallGet(ctx context.Context, a *agent.Agent, groupcallID uuid.UUID) (*groupcall.WebhookMessage, error) {
+func (m *MockServiceHandler) GroupcallGet(ctx context.Context, a *auth.AuthIdentity, groupcallID uuid.UUID) (*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GroupcallGet", ctx, a, groupcallID)
 	ret0, _ := ret[0].(*groupcall.WebhookMessage)
@@ -2578,7 +2564,7 @@ func (mr *MockServiceHandlerMockRecorder) GroupcallGet(ctx, a, groupcallID any) 
 }
 
 // GroupcallHangup mocks base method.
-func (m *MockServiceHandler) GroupcallHangup(ctx context.Context, a *agent.Agent, groupcallID uuid.UUID) (*groupcall.WebhookMessage, error) {
+func (m *MockServiceHandler) GroupcallHangup(ctx context.Context, a *auth.AuthIdentity, groupcallID uuid.UUID) (*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GroupcallHangup", ctx, a, groupcallID)
 	ret0, _ := ret[0].(*groupcall.WebhookMessage)
@@ -2593,7 +2579,7 @@ func (mr *MockServiceHandlerMockRecorder) GroupcallHangup(ctx, a, groupcallID an
 }
 
 // GroupcallList mocks base method.
-func (m *MockServiceHandler) GroupcallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*groupcall.WebhookMessage, error) {
+func (m *MockServiceHandler) GroupcallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GroupcallList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*groupcall.WebhookMessage)
@@ -2608,7 +2594,7 @@ func (mr *MockServiceHandlerMockRecorder) GroupcallList(ctx, a, size, token any)
 }
 
 // MessageDelete mocks base method.
-func (m *MockServiceHandler) MessageDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*message1.WebhookMessage, error) {
+func (m *MockServiceHandler) MessageDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*message1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageDelete", ctx, a, id)
 	ret0, _ := ret[0].(*message1.WebhookMessage)
@@ -2623,7 +2609,7 @@ func (mr *MockServiceHandlerMockRecorder) MessageDelete(ctx, a, id any) *gomock.
 }
 
 // MessageGet mocks base method.
-func (m *MockServiceHandler) MessageGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*message1.WebhookMessage, error) {
+func (m *MockServiceHandler) MessageGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*message1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageGet", ctx, a, id)
 	ret0, _ := ret[0].(*message1.WebhookMessage)
@@ -2638,7 +2624,7 @@ func (mr *MockServiceHandlerMockRecorder) MessageGet(ctx, a, id any) *gomock.Cal
 }
 
 // MessageList mocks base method.
-func (m *MockServiceHandler) MessageList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*message1.WebhookMessage, error) {
+func (m *MockServiceHandler) MessageList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*message1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*message1.WebhookMessage)
@@ -2653,7 +2639,7 @@ func (mr *MockServiceHandlerMockRecorder) MessageList(ctx, a, size, token any) *
 }
 
 // MessageSend mocks base method.
-func (m *MockServiceHandler) MessageSend(ctx context.Context, a *agent.Agent, source *address.Address, destinations []address.Address, text string) (*message1.WebhookMessage, error) {
+func (m *MockServiceHandler) MessageSend(ctx context.Context, a *auth.AuthIdentity, source *address.Address, destinations []address.Address, text string) (*message1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MessageSend", ctx, a, source, destinations, text)
 	ret0, _ := ret[0].(*message1.WebhookMessage)
@@ -2668,7 +2654,7 @@ func (mr *MockServiceHandlerMockRecorder) MessageSend(ctx, a, source, destinatio
 }
 
 // NumberCreate mocks base method.
-func (m *MockServiceHandler) NumberCreate(ctx context.Context, a *agent.Agent, num string, numType number.Type, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity, num string, numType number.Type, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberCreate", ctx, a, num, numType, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.WebhookMessage)
@@ -2683,7 +2669,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberCreate(ctx, a, num, numType, cal
 }
 
 // NumberDelete mocks base method.
-func (m *MockServiceHandler) NumberDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberDelete", ctx, a, id)
 	ret0, _ := ret[0].(*number.WebhookMessage)
@@ -2698,7 +2684,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberDelete(ctx, a, id any) *gomock.C
 }
 
 // NumberGet mocks base method.
-func (m *MockServiceHandler) NumberGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberGet", ctx, a, id)
 	ret0, _ := ret[0].(*number.WebhookMessage)
@@ -2713,7 +2699,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberGet(ctx, a, id any) *gomock.Call
 }
 
 // NumberList mocks base method.
-func (m *MockServiceHandler) NumberList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*number.WebhookMessage)
@@ -2728,7 +2714,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberList(ctx, a, size, token any) *g
 }
 
 // NumberRenew mocks base method.
-func (m *MockServiceHandler) NumberRenew(ctx context.Context, a *agent.Agent, tmRenew string) ([]*number.Number, error) {
+func (m *MockServiceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, tmRenew string) ([]*number.Number, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberRenew", ctx, a, tmRenew)
 	ret0, _ := ret[0].([]*number.Number)
@@ -2743,7 +2729,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberRenew(ctx, a, tmRenew any) *gomo
 }
 
 // NumberUpdate mocks base method.
-func (m *MockServiceHandler) NumberUpdate(ctx context.Context, a *agent.Agent, id, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity, id, callFlowID, messageFlowID uuid.UUID, name, detail string) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberUpdate", ctx, a, id, callFlowID, messageFlowID, name, detail)
 	ret0, _ := ret[0].(*number.WebhookMessage)
@@ -2758,7 +2744,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberUpdate(ctx, a, id, callFlowID, m
 }
 
 // NumberUpdateFlowIDs mocks base method.
-func (m *MockServiceHandler) NumberUpdateFlowIDs(ctx context.Context, a *agent.Agent, id, callFlowID, messageFlowID uuid.UUID) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthIdentity, id, callFlowID, messageFlowID uuid.UUID) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberUpdateFlowIDs", ctx, a, id, callFlowID, messageFlowID)
 	ret0, _ := ret[0].(*number.WebhookMessage)
@@ -2773,7 +2759,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberUpdateFlowIDs(ctx, a, id, callFl
 }
 
 // NumberUpdateMetadata mocks base method.
-func (m *MockServiceHandler) NumberUpdateMetadata(ctx context.Context, a *agent.Agent, id uuid.UUID, metadata number.Metadata) (*number.WebhookMessage, error) {
+func (m *MockServiceHandler) NumberUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, metadata number.Metadata) (*number.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NumberUpdateMetadata", ctx, a, id, metadata)
 	ret0, _ := ret[0].(*number.WebhookMessage)
@@ -2788,7 +2774,7 @@ func (mr *MockServiceHandlerMockRecorder) NumberUpdateMetadata(ctx, a, id, metad
 }
 
 // OutdialCreate mocks base method.
-func (m *MockServiceHandler) OutdialCreate(ctx context.Context, a *agent.Agent, campaignID uuid.UUID, name, detail, data string) (*outdial.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialCreate(ctx context.Context, a *auth.AuthIdentity, campaignID uuid.UUID, name, detail, data string) (*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialCreate", ctx, a, campaignID, name, detail, data)
 	ret0, _ := ret[0].(*outdial.WebhookMessage)
@@ -2803,7 +2789,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialCreate(ctx, a, campaignID, name
 }
 
 // OutdialDelete mocks base method.
-func (m *MockServiceHandler) OutdialDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*outdial.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialDelete", ctx, a, id)
 	ret0, _ := ret[0].(*outdial.WebhookMessage)
@@ -2818,7 +2804,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialDelete(ctx, a, id any) *gomock.
 }
 
 // OutdialGet mocks base method.
-func (m *MockServiceHandler) OutdialGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*outdial.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialGet", ctx, a, id)
 	ret0, _ := ret[0].(*outdial.WebhookMessage)
@@ -2833,7 +2819,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialGet(ctx, a, id any) *gomock.Cal
 }
 
 // OutdialGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) OutdialGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*outdial.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*outdial.WebhookMessage)
@@ -2848,7 +2834,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialGetsByCustomerID(ctx, a, size, 
 }
 
 // OutdialUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) OutdialUpdateBasicInfo(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string) (*outdial.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string) (*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialUpdateBasicInfo", ctx, a, id, name, detail)
 	ret0, _ := ret[0].(*outdial.WebhookMessage)
@@ -2863,7 +2849,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialUpdateBasicInfo(ctx, a, id, nam
 }
 
 // OutdialUpdateCampaignID mocks base method.
-func (m *MockServiceHandler) OutdialUpdateCampaignID(ctx context.Context, a *agent.Agent, id, campaignID uuid.UUID) (*outdial.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialUpdateCampaignID(ctx context.Context, a *auth.AuthIdentity, id, campaignID uuid.UUID) (*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialUpdateCampaignID", ctx, a, id, campaignID)
 	ret0, _ := ret[0].(*outdial.WebhookMessage)
@@ -2878,7 +2864,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialUpdateCampaignID(ctx, a, id, ca
 }
 
 // OutdialUpdateData mocks base method.
-func (m *MockServiceHandler) OutdialUpdateData(ctx context.Context, a *agent.Agent, id uuid.UUID, data string) (*outdial.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialUpdateData(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, data string) (*outdial.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialUpdateData", ctx, a, id, data)
 	ret0, _ := ret[0].(*outdial.WebhookMessage)
@@ -2893,7 +2879,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialUpdateData(ctx, a, id, data any
 }
 
 // OutdialtargetCreate mocks base method.
-func (m *MockServiceHandler) OutdialtargetCreate(ctx context.Context, a *agent.Agent, outdialID uuid.UUID, name, detail, data string, destination0, destination1, destination2, destination3, destination4 *address.Address) (*outdialtarget.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialtargetCreate(ctx context.Context, a *auth.AuthIdentity, outdialID uuid.UUID, name, detail, data string, destination0, destination1, destination2, destination3, destination4 *address.Address) (*outdialtarget.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialtargetCreate", ctx, a, outdialID, name, detail, data, destination0, destination1, destination2, destination3, destination4)
 	ret0, _ := ret[0].(*outdialtarget.WebhookMessage)
@@ -2908,7 +2894,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialtargetCreate(ctx, a, outdialID,
 }
 
 // OutdialtargetDelete mocks base method.
-func (m *MockServiceHandler) OutdialtargetDelete(ctx context.Context, a *agent.Agent, outdialID, outdialtargetID uuid.UUID) (*outdialtarget.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialtargetDelete(ctx context.Context, a *auth.AuthIdentity, outdialID, outdialtargetID uuid.UUID) (*outdialtarget.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialtargetDelete", ctx, a, outdialID, outdialtargetID)
 	ret0, _ := ret[0].(*outdialtarget.WebhookMessage)
@@ -2923,7 +2909,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialtargetDelete(ctx, a, outdialID,
 }
 
 // OutdialtargetGet mocks base method.
-func (m *MockServiceHandler) OutdialtargetGet(ctx context.Context, a *agent.Agent, outdialID, outdialtargetID uuid.UUID) (*outdialtarget.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialtargetGet(ctx context.Context, a *auth.AuthIdentity, outdialID, outdialtargetID uuid.UUID) (*outdialtarget.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialtargetGet", ctx, a, outdialID, outdialtargetID)
 	ret0, _ := ret[0].(*outdialtarget.WebhookMessage)
@@ -2938,7 +2924,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialtargetGet(ctx, a, outdialID, ou
 }
 
 // OutdialtargetGetsByOutdialID mocks base method.
-func (m *MockServiceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *agent.Agent, outdialID uuid.UUID, size uint64, token string) ([]*outdialtarget.WebhookMessage, error) {
+func (m *MockServiceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *auth.AuthIdentity, outdialID uuid.UUID, size uint64, token string) ([]*outdialtarget.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutdialtargetGetsByOutdialID", ctx, a, outdialID, size, token)
 	ret0, _ := ret[0].([]*outdialtarget.WebhookMessage)
@@ -2953,7 +2939,7 @@ func (mr *MockServiceHandlerMockRecorder) OutdialtargetGetsByOutdialID(ctx, a, o
 }
 
 // OutplanCreate mocks base method.
-func (m *MockServiceHandler) OutplanCreate(ctx context.Context, a *agent.Agent, name, detail string, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.WebhookMessage, error) {
+func (m *MockServiceHandler) OutplanCreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutplanCreate", ctx, a, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(*outplan.WebhookMessage)
@@ -2968,7 +2954,7 @@ func (mr *MockServiceHandlerMockRecorder) OutplanCreate(ctx, a, name, detail, so
 }
 
 // OutplanDelete mocks base method.
-func (m *MockServiceHandler) OutplanDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*outplan.WebhookMessage, error) {
+func (m *MockServiceHandler) OutplanDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*outplan.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutplanDelete", ctx, a, id)
 	ret0, _ := ret[0].(*outplan.WebhookMessage)
@@ -2983,7 +2969,7 @@ func (mr *MockServiceHandlerMockRecorder) OutplanDelete(ctx, a, id any) *gomock.
 }
 
 // OutplanGet mocks base method.
-func (m *MockServiceHandler) OutplanGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*outplan.WebhookMessage, error) {
+func (m *MockServiceHandler) OutplanGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*outplan.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutplanGet", ctx, a, id)
 	ret0, _ := ret[0].(*outplan.WebhookMessage)
@@ -2998,7 +2984,7 @@ func (mr *MockServiceHandlerMockRecorder) OutplanGet(ctx, a, id any) *gomock.Cal
 }
 
 // OutplanGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) OutplanGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*outplan.WebhookMessage, error) {
+func (m *MockServiceHandler) OutplanGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*outplan.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutplanGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*outplan.WebhookMessage)
@@ -3013,7 +2999,7 @@ func (mr *MockServiceHandlerMockRecorder) OutplanGetsByCustomerID(ctx, a, size, 
 }
 
 // OutplanUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string) (*outplan.WebhookMessage, error) {
+func (m *MockServiceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string) (*outplan.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutplanUpdateBasicInfo", ctx, a, id, name, detail)
 	ret0, _ := ret[0].(*outplan.WebhookMessage)
@@ -3028,7 +3014,7 @@ func (mr *MockServiceHandlerMockRecorder) OutplanUpdateBasicInfo(ctx, a, id, nam
 }
 
 // OutplanUpdateDialInfo mocks base method.
-func (m *MockServiceHandler) OutplanUpdateDialInfo(ctx context.Context, a *agent.Agent, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.WebhookMessage, error) {
+func (m *MockServiceHandler) OutplanUpdateDialInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, source *address.Address, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 int) (*outplan.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "OutplanUpdateDialInfo", ctx, a, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
 	ret0, _ := ret[0].(*outplan.WebhookMessage)
@@ -3043,7 +3029,7 @@ func (mr *MockServiceHandlerMockRecorder) OutplanUpdateDialInfo(ctx, a, id, sour
 }
 
 // ProviderCreate mocks base method.
-func (m *MockServiceHandler) ProviderCreate(ctx context.Context, a *agent.Agent, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
+func (m *MockServiceHandler) ProviderCreate(ctx context.Context, a *auth.AuthIdentity, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderCreate", ctx, a, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
 	ret0, _ := ret[0].(*provider.Provider)
@@ -3058,7 +3044,7 @@ func (mr *MockServiceHandlerMockRecorder) ProviderCreate(ctx, a, providerType, h
 }
 
 // ProviderDelete mocks base method.
-func (m *MockServiceHandler) ProviderDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*provider.Provider, error) {
+func (m *MockServiceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderDelete", ctx, a, id)
 	ret0, _ := ret[0].(*provider.Provider)
@@ -3073,7 +3059,7 @@ func (mr *MockServiceHandlerMockRecorder) ProviderDelete(ctx, a, id any) *gomock
 }
 
 // ProviderGet mocks base method.
-func (m *MockServiceHandler) ProviderGet(ctx context.Context, a *agent.Agent, providerID uuid.UUID) (*provider.Provider, error) {
+func (m *MockServiceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderGet", ctx, a, providerID)
 	ret0, _ := ret[0].(*provider.Provider)
@@ -3088,7 +3074,7 @@ func (mr *MockServiceHandlerMockRecorder) ProviderGet(ctx, a, providerID any) *g
 }
 
 // ProviderList mocks base method.
-func (m *MockServiceHandler) ProviderList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*provider.Provider, error) {
+func (m *MockServiceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*provider.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*provider.Provider)
@@ -3103,7 +3089,7 @@ func (mr *MockServiceHandlerMockRecorder) ProviderList(ctx, a, size, token any) 
 }
 
 // ProviderUpdate mocks base method.
-func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *agent.Agent, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
+func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ProviderUpdate", ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
 	ret0, _ := ret[0].(*provider.Provider)
@@ -3118,7 +3104,7 @@ func (mr *MockServiceHandlerMockRecorder) ProviderUpdate(ctx, a, providerID, pro
 }
 
 // QueueCreate mocks base method.
-func (m *MockServiceHandler) QueueCreate(ctx context.Context, a *agent.Agent, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueCreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueCreate", ctx, a, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -3133,7 +3119,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueCreate(ctx, a, name, detail, rout
 }
 
 // QueueDelete mocks base method.
-func (m *MockServiceHandler) QueueDelete(ctx context.Context, a *agent.Agent, queueID uuid.UUID) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueDelete(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueDelete", ctx, a, queueID)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -3148,7 +3134,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueDelete(ctx, a, queueID any) *gomo
 }
 
 // QueueDirectHashRegenerate mocks base method.
-func (m *MockServiceHandler) QueueDirectHashRegenerate(ctx context.Context, a *agent.Agent, queueID uuid.UUID) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueDirectHashRegenerate", ctx, a, queueID)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -3163,7 +3149,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueDirectHashRegenerate(ctx, a, queu
 }
 
 // QueueGet mocks base method.
-func (m *MockServiceHandler) QueueGet(ctx context.Context, a *agent.Agent, queueID uuid.UUID) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueGet(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueGet", ctx, a, queueID)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -3178,7 +3164,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueGet(ctx, a, queueID any) *gomock.
 }
 
 // QueueList mocks base method.
-func (m *MockServiceHandler) QueueList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*queue.WebhookMessage)
@@ -3193,7 +3179,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueList(ctx, a, size, token any) *go
 }
 
 // QueueUpdate mocks base method.
-func (m *MockServiceHandler) QueueUpdate(ctx context.Context, a *agent.Agent, queueID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueUpdate(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, name, detail string, routingMethod queue.RoutingMethod, tagIDs []uuid.UUID, waitFlowID uuid.UUID, timeoutWait, timeoutService int) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdate", ctx, a, queueID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, timeoutService)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -3208,7 +3194,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdate(ctx, a, queueID, name, det
 }
 
 // QueueUpdateRoutingMethod mocks base method.
-func (m *MockServiceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *agent.Agent, queueID uuid.UUID, routingMethod queue.RoutingMethod) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, routingMethod queue.RoutingMethod) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdateRoutingMethod", ctx, a, queueID, routingMethod)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -3223,7 +3209,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdateRoutingMethod(ctx, a, queue
 }
 
 // QueueUpdateTagIDs mocks base method.
-func (m *MockServiceHandler) QueueUpdateTagIDs(ctx context.Context, a *agent.Agent, queueID uuid.UUID, tagIDs []uuid.UUID) (*queue.WebhookMessage, error) {
+func (m *MockServiceHandler) QueueUpdateTagIDs(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, tagIDs []uuid.UUID) (*queue.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueueUpdateTagIDs", ctx, a, queueID, tagIDs)
 	ret0, _ := ret[0].(*queue.WebhookMessage)
@@ -3238,7 +3224,7 @@ func (mr *MockServiceHandlerMockRecorder) QueueUpdateTagIDs(ctx, a, queueID, tag
 }
 
 // QueuecallDelete mocks base method.
-func (m *MockServiceHandler) QueuecallDelete(ctx context.Context, a *agent.Agent, queuecallID uuid.UUID) (*queuecall.WebhookMessage, error) {
+func (m *MockServiceHandler) QueuecallDelete(ctx context.Context, a *auth.AuthIdentity, queuecallID uuid.UUID) (*queuecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallDelete", ctx, a, queuecallID)
 	ret0, _ := ret[0].(*queuecall.WebhookMessage)
@@ -3253,7 +3239,7 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallDelete(ctx, a, queuecallID an
 }
 
 // QueuecallGet mocks base method.
-func (m *MockServiceHandler) QueuecallGet(ctx context.Context, a *agent.Agent, queueID uuid.UUID) (*queuecall.WebhookMessage, error) {
+func (m *MockServiceHandler) QueuecallGet(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*queuecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallGet", ctx, a, queueID)
 	ret0, _ := ret[0].(*queuecall.WebhookMessage)
@@ -3268,7 +3254,7 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallGet(ctx, a, queueID any) *gom
 }
 
 // QueuecallKick mocks base method.
-func (m *MockServiceHandler) QueuecallKick(ctx context.Context, a *agent.Agent, queuecallID uuid.UUID) (*queuecall.WebhookMessage, error) {
+func (m *MockServiceHandler) QueuecallKick(ctx context.Context, a *auth.AuthIdentity, queuecallID uuid.UUID) (*queuecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallKick", ctx, a, queuecallID)
 	ret0, _ := ret[0].(*queuecall.WebhookMessage)
@@ -3283,7 +3269,7 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallKick(ctx, a, queuecallID any)
 }
 
 // QueuecallKickByReferenceID mocks base method.
-func (m *MockServiceHandler) QueuecallKickByReferenceID(ctx context.Context, a *agent.Agent, referenceID uuid.UUID) (*queuecall.WebhookMessage, error) {
+func (m *MockServiceHandler) QueuecallKickByReferenceID(ctx context.Context, a *auth.AuthIdentity, referenceID uuid.UUID) (*queuecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallKickByReferenceID", ctx, a, referenceID)
 	ret0, _ := ret[0].(*queuecall.WebhookMessage)
@@ -3298,7 +3284,7 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallKickByReferenceID(ctx, a, ref
 }
 
 // QueuecallList mocks base method.
-func (m *MockServiceHandler) QueuecallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*queuecall.WebhookMessage, error) {
+func (m *MockServiceHandler) QueuecallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*queuecall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "QueuecallList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*queuecall.WebhookMessage)
@@ -3313,7 +3299,7 @@ func (mr *MockServiceHandlerMockRecorder) QueuecallList(ctx, a, size, token any)
 }
 
 // RagAddSources mocks base method.
-func (m *MockServiceHandler) RagAddSources(ctx context.Context, a *agent.Agent, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.WebhookMessage, error) {
+func (m *MockServiceHandler) RagAddSources(ctx context.Context, a *auth.AuthIdentity, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RagAddSources", ctx, a, ragID, storageFileIDs, sourceURLs)
 	ret0, _ := ret[0].(*rag.WebhookMessage)
@@ -3328,7 +3314,7 @@ func (mr *MockServiceHandlerMockRecorder) RagAddSources(ctx, a, ragID, storageFi
 }
 
 // RagCreate mocks base method.
-func (m *MockServiceHandler) RagCreate(ctx context.Context, a *agent.Agent, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.WebhookMessage, error) {
+func (m *MockServiceHandler) RagCreate(ctx context.Context, a *auth.AuthIdentity, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RagCreate", ctx, a, name, description, storageFileIDs, sourceURLs)
 	ret0, _ := ret[0].(*rag.WebhookMessage)
@@ -3343,7 +3329,7 @@ func (mr *MockServiceHandlerMockRecorder) RagCreate(ctx, a, name, description, s
 }
 
 // RagDelete mocks base method.
-func (m *MockServiceHandler) RagDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*rag.WebhookMessage, error) {
+func (m *MockServiceHandler) RagDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RagDelete", ctx, a, id)
 	ret0, _ := ret[0].(*rag.WebhookMessage)
@@ -3358,7 +3344,7 @@ func (mr *MockServiceHandlerMockRecorder) RagDelete(ctx, a, id any) *gomock.Call
 }
 
 // RagGet mocks base method.
-func (m *MockServiceHandler) RagGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*rag.WebhookMessage, error) {
+func (m *MockServiceHandler) RagGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RagGet", ctx, a, id)
 	ret0, _ := ret[0].(*rag.WebhookMessage)
@@ -3373,7 +3359,7 @@ func (mr *MockServiceHandlerMockRecorder) RagGet(ctx, a, id any) *gomock.Call {
 }
 
 // RagGets mocks base method.
-func (m *MockServiceHandler) RagGets(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*rag.WebhookMessage, error) {
+func (m *MockServiceHandler) RagGets(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RagGets", ctx, a, size, token)
 	ret0, _ := ret[0].([]*rag.WebhookMessage)
@@ -3388,7 +3374,7 @@ func (mr *MockServiceHandlerMockRecorder) RagGets(ctx, a, size, token any) *gomo
 }
 
 // RagRemoveSource mocks base method.
-func (m *MockServiceHandler) RagRemoveSource(ctx context.Context, a *agent.Agent, ragID, sourceID uuid.UUID) (*rag.WebhookMessage, error) {
+func (m *MockServiceHandler) RagRemoveSource(ctx context.Context, a *auth.AuthIdentity, ragID, sourceID uuid.UUID) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RagRemoveSource", ctx, a, ragID, sourceID)
 	ret0, _ := ret[0].(*rag.WebhookMessage)
@@ -3403,7 +3389,7 @@ func (mr *MockServiceHandlerMockRecorder) RagRemoveSource(ctx, a, ragID, sourceI
 }
 
 // RagUpdate mocks base method.
-func (m *MockServiceHandler) RagUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, fields map[rag.Field]any) (*rag.WebhookMessage, error) {
+func (m *MockServiceHandler) RagUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, fields map[rag.Field]any) (*rag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RagUpdate", ctx, a, id, fields)
 	ret0, _ := ret[0].(*rag.WebhookMessage)
@@ -3418,7 +3404,7 @@ func (mr *MockServiceHandlerMockRecorder) RagUpdate(ctx, a, id, fields any) *gom
 }
 
 // RecordingDelete mocks base method.
-func (m *MockServiceHandler) RecordingDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*recording.WebhookMessage, error) {
+func (m *MockServiceHandler) RecordingDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*recording.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingDelete", ctx, a, id)
 	ret0, _ := ret[0].(*recording.WebhookMessage)
@@ -3433,7 +3419,7 @@ func (mr *MockServiceHandlerMockRecorder) RecordingDelete(ctx, a, id any) *gomoc
 }
 
 // RecordingGet mocks base method.
-func (m *MockServiceHandler) RecordingGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*recording.WebhookMessage, error) {
+func (m *MockServiceHandler) RecordingGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*recording.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingGet", ctx, a, id)
 	ret0, _ := ret[0].(*recording.WebhookMessage)
@@ -3448,7 +3434,7 @@ func (mr *MockServiceHandlerMockRecorder) RecordingGet(ctx, a, id any) *gomock.C
 }
 
 // RecordingList mocks base method.
-func (m *MockServiceHandler) RecordingList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*recording.WebhookMessage, error) {
+func (m *MockServiceHandler) RecordingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*recording.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*recording.WebhookMessage)
@@ -3463,7 +3449,7 @@ func (mr *MockServiceHandlerMockRecorder) RecordingList(ctx, a, size, token any)
 }
 
 // RecordingfileGet mocks base method.
-func (m *MockServiceHandler) RecordingfileGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (string, error) {
+func (m *MockServiceHandler) RecordingfileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RecordingfileGet", ctx, a, id)
 	ret0, _ := ret[0].(string)
@@ -3478,7 +3464,7 @@ func (mr *MockServiceHandlerMockRecorder) RecordingfileGet(ctx, a, id any) *gomo
 }
 
 // RouteCreate mocks base method.
-func (m *MockServiceHandler) RouteCreate(ctx context.Context, a *agent.Agent, customerID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockServiceHandler) RouteCreate(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteCreate", ctx, a, customerID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)
@@ -3493,7 +3479,7 @@ func (mr *MockServiceHandlerMockRecorder) RouteCreate(ctx, a, customerID, name, 
 }
 
 // RouteDelete mocks base method.
-func (m *MockServiceHandler) RouteDelete(ctx context.Context, a *agent.Agent, routeID uuid.UUID) (*route.Route, error) {
+func (m *MockServiceHandler) RouteDelete(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID) (*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteDelete", ctx, a, routeID)
 	ret0, _ := ret[0].(*route.Route)
@@ -3508,7 +3494,7 @@ func (mr *MockServiceHandlerMockRecorder) RouteDelete(ctx, a, routeID any) *gomo
 }
 
 // RouteGet mocks base method.
-func (m *MockServiceHandler) RouteGet(ctx context.Context, a *agent.Agent, routeID uuid.UUID) (*route.Route, error) {
+func (m *MockServiceHandler) RouteGet(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID) (*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteGet", ctx, a, routeID)
 	ret0, _ := ret[0].(*route.Route)
@@ -3523,7 +3509,7 @@ func (mr *MockServiceHandlerMockRecorder) RouteGet(ctx, a, routeID any) *gomock.
 }
 
 // RouteGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) RouteGetsByCustomerID(ctx context.Context, a *agent.Agent, customerID uuid.UUID, size uint64, token string) ([]*route.Route, error) {
+func (m *MockServiceHandler) RouteGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, size uint64, token string) ([]*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteGetsByCustomerID", ctx, a, customerID, size, token)
 	ret0, _ := ret[0].([]*route.Route)
@@ -3538,7 +3524,7 @@ func (mr *MockServiceHandlerMockRecorder) RouteGetsByCustomerID(ctx, a, customer
 }
 
 // RouteList mocks base method.
-func (m *MockServiceHandler) RouteList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*route.Route, error) {
+func (m *MockServiceHandler) RouteList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*route.Route)
@@ -3553,7 +3539,7 @@ func (mr *MockServiceHandlerMockRecorder) RouteList(ctx, a, size, token any) *go
 }
 
 // RouteUpdate mocks base method.
-func (m *MockServiceHandler) RouteUpdate(ctx context.Context, a *agent.Agent, routeID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
+func (m *MockServiceHandler) RouteUpdate(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID, name, detail string, providerID uuid.UUID, priority int, target string) (*route.Route, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RouteUpdate", ctx, a, routeID, name, detail, providerID, priority, target)
 	ret0, _ := ret[0].(*route.Route)
@@ -3568,7 +3554,7 @@ func (mr *MockServiceHandlerMockRecorder) RouteUpdate(ctx, a, routeID, name, det
 }
 
 // ServiceAgentAgentGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentAgentGet(ctx context.Context, a *agent.Agent, agentID uuid.UUID) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentAgentGet(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentAgentGet", ctx, a, agentID)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -3583,7 +3569,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentAgentGet(ctx, a, agentID a
 }
 
 // ServiceAgentAgentList mocks base method.
-func (m *MockServiceHandler) ServiceAgentAgentList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentAgentList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentAgentList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*agent.WebhookMessage)
@@ -3598,7 +3584,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentAgentList(ctx, a, size, to
 }
 
 // ServiceAgentCallDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentCallDelete(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentCallDelete(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentCallDelete", ctx, a, callID)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -3613,7 +3599,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallDelete(ctx, a, callID 
 }
 
 // ServiceAgentCallGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentCallGet(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*call.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentCallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentCallGet", ctx, a, callID)
 	ret0, _ := ret[0].(*call.WebhookMessage)
@@ -3628,7 +3614,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallGet(ctx, a, callID any
 }
 
 // ServiceAgentCallList mocks base method.
-func (m *MockServiceHandler) ServiceAgentCallList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*call.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentCallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*call.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentCallList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*call.WebhookMessage)
@@ -3643,7 +3629,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCallList(ctx, a, size, tok
 }
 
 // ServiceAgentContactCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactCreate(ctx context.Context, a *agent.Agent, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, phoneNumbers []request.PhoneNumberCreate, emails []request.EmailCreate, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactCreate(ctx context.Context, a *auth.AuthIdentity, firstName, lastName, displayName, company, jobTitle, source, externalID, notes string, phoneNumbers []request.PhoneNumberCreate, emails []request.EmailCreate, tagIDs []uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactCreate", ctx, a, firstName, lastName, displayName, company, jobTitle, source, externalID, notes, phoneNumbers, emails, tagIDs)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3658,7 +3644,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactCreate(ctx, a, firs
 }
 
 // ServiceAgentContactDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactDelete(ctx context.Context, a *agent.Agent, contactID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactDelete", ctx, a, contactID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3673,7 +3659,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactDelete(ctx, a, cont
 }
 
 // ServiceAgentContactEmailCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactEmailCreate(ctx context.Context, a *agent.Agent, contactID uuid.UUID, address, emailType string, isPrimary bool) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactEmailCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, address, emailType string, isPrimary bool) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactEmailCreate", ctx, a, contactID, address, emailType, isPrimary)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3688,7 +3674,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactEmailCreate(ctx, a,
 }
 
 // ServiceAgentContactEmailDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *agent.Agent, contactID, emailID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID, emailID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactEmailDelete", ctx, a, contactID, emailID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3703,7 +3689,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactEmailDelete(ctx, a,
 }
 
 // ServiceAgentContactEmailUpdate mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactEmailUpdate(ctx context.Context, a *agent.Agent, contactID, emailID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactEmailUpdate(ctx context.Context, a *auth.AuthIdentity, contactID, emailID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactEmailUpdate", ctx, a, contactID, emailID, fields)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3718,7 +3704,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactEmailUpdate(ctx, a,
 }
 
 // ServiceAgentContactGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactGet(ctx context.Context, a *agent.Agent, contactID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactGet", ctx, a, contactID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3733,7 +3719,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactGet(ctx, a, contact
 }
 
 // ServiceAgentContactList mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactList(ctx context.Context, a *agent.Agent, size uint64, token string, filters map[string]string) ([]*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactList", ctx, a, size, token, filters)
 	ret0, _ := ret[0].([]*contact.WebhookMessage)
@@ -3748,7 +3734,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactList(ctx, a, size, 
 }
 
 // ServiceAgentContactLookup mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactLookup(ctx context.Context, a *agent.Agent, phoneE164, email string) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164, email string) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactLookup", ctx, a, phoneE164, email)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3763,7 +3749,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactLookup(ctx, a, phon
 }
 
 // ServiceAgentContactPhoneNumberCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactPhoneNumberCreate(ctx context.Context, a *agent.Agent, contactID uuid.UUID, number, numberE164, phoneType string, isPrimary bool) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number, numberE164, phoneType string, isPrimary bool) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactPhoneNumberCreate", ctx, a, contactID, number, numberE164, phoneType, isPrimary)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3778,7 +3764,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactPhoneNumberCreate(c
 }
 
 // ServiceAgentContactPhoneNumberDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactPhoneNumberDelete(ctx context.Context, a *agent.Agent, contactID, phoneNumberID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID, phoneNumberID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactPhoneNumberDelete", ctx, a, contactID, phoneNumberID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3793,7 +3779,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactPhoneNumberDelete(c
 }
 
 // ServiceAgentContactPhoneNumberUpdate mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactPhoneNumberUpdate(ctx context.Context, a *agent.Agent, contactID, phoneNumberID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactPhoneNumberUpdate(ctx context.Context, a *auth.AuthIdentity, contactID, phoneNumberID uuid.UUID, fields map[string]any) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactPhoneNumberUpdate", ctx, a, contactID, phoneNumberID, fields)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3808,7 +3794,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactPhoneNumberUpdate(c
 }
 
 // ServiceAgentContactTagAdd mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactTagAdd(ctx context.Context, a *agent.Agent, contactID, tagID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID, tagID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactTagAdd", ctx, a, contactID, tagID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3823,7 +3809,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactTagAdd(ctx, a, cont
 }
 
 // ServiceAgentContactTagRemove mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactTagRemove(ctx context.Context, a *agent.Agent, contactID, tagID uuid.UUID) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID, tagID uuid.UUID) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactTagRemove", ctx, a, contactID, tagID)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3838,7 +3824,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactTagRemove(ctx, a, c
 }
 
 // ServiceAgentContactUpdate mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactUpdate(ctx context.Context, a *agent.Agent, contactID uuid.UUID, firstName, lastName, displayName, company, jobTitle, externalID, notes *string) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, firstName, lastName, displayName, company, jobTitle, externalID, notes *string) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentContactUpdate", ctx, a, contactID, firstName, lastName, displayName, company, jobTitle, externalID, notes)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
@@ -3853,7 +3839,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactUpdate(ctx, a, cont
 }
 
 // ServiceAgentConversationGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentConversationGet(ctx context.Context, a *agent.Agent, conversationID uuid.UUID) (*conversation.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentConversationGet(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentConversationGet", ctx, a, conversationID)
 	ret0, _ := ret[0].(*conversation.WebhookMessage)
@@ -3868,7 +3854,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationGet(ctx, a, co
 }
 
 // ServiceAgentConversationList mocks base method.
-func (m *MockServiceHandler) ServiceAgentConversationList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*conversation.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentConversationList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentConversationList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*conversation.WebhookMessage)
@@ -3883,7 +3869,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationList(ctx, a, s
 }
 
 // ServiceAgentConversationMessageList mocks base method.
-func (m *MockServiceHandler) ServiceAgentConversationMessageList(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, size uint64, token string) ([]*message0.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentConversationMessageList(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, size uint64, token string) ([]*message0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentConversationMessageList", ctx, a, conversationID, size, token)
 	ret0, _ := ret[0].([]*message0.WebhookMessage)
@@ -3898,7 +3884,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageList(ct
 }
 
 // ServiceAgentConversationMessageSend mocks base method.
-func (m *MockServiceHandler) ServiceAgentConversationMessageSend(ctx context.Context, a *agent.Agent, conversationID uuid.UUID, text string, medias []media.Media) (*message0.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentConversationMessageSend(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, text string, medias []media.Media) (*message0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentConversationMessageSend", ctx, a, conversationID, text, medias)
 	ret0, _ := ret[0].(*message0.WebhookMessage)
@@ -3913,7 +3899,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageSend(ct
 }
 
 // ServiceAgentCustomerGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentCustomerGet(ctx context.Context, a *agent.Agent) (*customer.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentCustomerGet(ctx context.Context, a *auth.AuthIdentity) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentCustomerGet", ctx, a)
 	ret0, _ := ret[0].(*customer.WebhookMessage)
@@ -3928,7 +3914,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentCustomerGet(ctx, a any) *g
 }
 
 // ServiceAgentExtensionGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentExtensionGet(ctx context.Context, a *agent.Agent, extensionID uuid.UUID) (*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentExtensionGet(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentExtensionGet", ctx, a, extensionID)
 	ret0, _ := ret[0].(*extension.WebhookMessage)
@@ -3943,7 +3929,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionGet(ctx, a, exten
 }
 
 // ServiceAgentExtensionList mocks base method.
-func (m *MockServiceHandler) ServiceAgentExtensionList(ctx context.Context, a *agent.Agent) ([]*extension.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentExtensionList(ctx context.Context, a *auth.AuthIdentity) ([]*extension.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentExtensionList", ctx, a)
 	ret0, _ := ret[0].([]*extension.WebhookMessage)
@@ -3958,7 +3944,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentExtensionList(ctx, a any) 
 }
 
 // ServiceAgentFileCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, fileType file.Type, name, detail, filename string) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentFileCreate(ctx context.Context, a *auth.AuthIdentity, f multipart.File, fileType file.Type, name, detail, filename string) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentFileCreate", ctx, a, f, fileType, name, detail, filename)
 	ret0, _ := ret[0].(*file.WebhookMessage)
@@ -3973,7 +3959,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileCreate(ctx, a, f, file
 }
 
 // ServiceAgentFileDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentFileDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentFileDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentFileDelete", ctx, a, id)
 	ret0, _ := ret[0].(*file.WebhookMessage)
@@ -3988,7 +3974,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileDelete(ctx, a, id any)
 }
 
 // ServiceAgentFileDownloadRedirect mocks base method.
-func (m *MockServiceHandler) ServiceAgentFileDownloadRedirect(ctx context.Context, a *agent.Agent, id uuid.UUID) (string, error) {
+func (m *MockServiceHandler) ServiceAgentFileDownloadRedirect(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentFileDownloadRedirect", ctx, a, id)
 	ret0, _ := ret[0].(string)
@@ -4003,7 +3989,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileDownloadRedirect(ctx, 
 }
 
 // ServiceAgentFileGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentFileGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentFileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentFileGet", ctx, a, id)
 	ret0, _ := ret[0].(*file.WebhookMessage)
@@ -4018,7 +4004,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileGet(ctx, a, id any) *g
 }
 
 // ServiceAgentFileList mocks base method.
-func (m *MockServiceHandler) ServiceAgentFileList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentFileList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentFileList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*file.WebhookMessage)
@@ -4033,7 +4019,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentFileList(ctx, a, size, tok
 }
 
 // ServiceAgentMeGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentMeGet(ctx context.Context, a *agent.Agent) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentMeGet(ctx context.Context, a *auth.AuthIdentity) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentMeGet", ctx, a)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -4048,7 +4034,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeGet(ctx, a any) *gomock.
 }
 
 // ServiceAgentMeUpdate mocks base method.
-func (m *MockServiceHandler) ServiceAgentMeUpdate(ctx context.Context, a *agent.Agent, name, detail string, ringMethod agent.RingMethod) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthIdentity, name, detail string, ringMethod agent.RingMethod) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentMeUpdate", ctx, a, name, detail, ringMethod)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -4063,7 +4049,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdate(ctx, a, name, det
 }
 
 // ServiceAgentMeUpdateAddresses mocks base method.
-func (m *MockServiceHandler) ServiceAgentMeUpdateAddresses(ctx context.Context, a *agent.Agent, addresses []address.Address) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentMeUpdateAddresses(ctx context.Context, a *auth.AuthIdentity, addresses []address.Address) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentMeUpdateAddresses", ctx, a, addresses)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -4078,7 +4064,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdateAddresses(ctx, a, 
 }
 
 // ServiceAgentMeUpdatePassword mocks base method.
-func (m *MockServiceHandler) ServiceAgentMeUpdatePassword(ctx context.Context, a *agent.Agent, password string) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentMeUpdatePassword(ctx context.Context, a *auth.AuthIdentity, password string) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentMeUpdatePassword", ctx, a, password)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -4093,7 +4079,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdatePassword(ctx, a, p
 }
 
 // ServiceAgentMeUpdateStatus mocks base method.
-func (m *MockServiceHandler) ServiceAgentMeUpdateStatus(ctx context.Context, a *agent.Agent, status agent.Status) (*agent.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentMeUpdateStatus(ctx context.Context, a *auth.AuthIdentity, status agent.Status) (*agent.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentMeUpdateStatus", ctx, a, status)
 	ret0, _ := ret[0].(*agent.WebhookMessage)
@@ -4108,7 +4094,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentMeUpdateStatus(ctx, a, sta
 }
 
 // ServiceAgentTagGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentTagGet(ctx context.Context, a *agent.Agent, tagID uuid.UUID) (*tag.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTagGet(ctx context.Context, a *auth.AuthIdentity, tagID uuid.UUID) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTagGet", ctx, a, tagID)
 	ret0, _ := ret[0].(*tag.WebhookMessage)
@@ -4123,7 +4109,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTagGet(ctx, a, tagID any) 
 }
 
 // ServiceAgentTagList mocks base method.
-func (m *MockServiceHandler) ServiceAgentTagList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*tag.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTagList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTagList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*tag.WebhookMessage)
@@ -4138,7 +4124,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTagList(ctx, a, size, toke
 }
 
 // ServiceAgentTalkChannelList mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChannelList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*chat.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChannelList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*chat.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChannelList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*chat.WebhookMessage)
@@ -4153,7 +4139,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChannelList(ctx, a, si
 }
 
 // ServiceAgentTalkChatCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *agent.Agent, talkType chat.Type, name, detail string, participants []participant.ParticipantInput) (*chat.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *auth.AuthIdentity, talkType chat.Type, name, detail string, participants []participant.ParticipantInput) (*chat.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChatCreate", ctx, a, talkType, name, detail, participants)
 	ret0, _ := ret[0].(*chat.WebhookMessage)
@@ -4168,7 +4154,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatCreate(ctx, a, tal
 }
 
 // ServiceAgentTalkChatDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *agent.Agent, chatID uuid.UUID) (*chat.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*chat.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChatDelete", ctx, a, chatID)
 	ret0, _ := ret[0].(*chat.WebhookMessage)
@@ -4183,7 +4169,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatDelete(ctx, a, cha
 }
 
 // ServiceAgentTalkChatGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatGet(ctx context.Context, a *agent.Agent, chatID uuid.UUID) (*chat.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatGet(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*chat.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChatGet", ctx, a, chatID)
 	ret0, _ := ret[0].(*chat.WebhookMessage)
@@ -4198,7 +4184,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatGet(ctx, a, chatID
 }
 
 // ServiceAgentTalkChatJoin mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatJoin(ctx context.Context, a *agent.Agent, chatID uuid.UUID) (*participant.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatJoin(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*participant.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChatJoin", ctx, a, chatID)
 	ret0, _ := ret[0].(*participant.WebhookMessage)
@@ -4213,7 +4199,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatJoin(ctx, a, chatI
 }
 
 // ServiceAgentTalkChatList mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*chat.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*chat.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChatList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*chat.WebhookMessage)
@@ -4228,7 +4214,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatList(ctx, a, size,
 }
 
 // ServiceAgentTalkChatUpdate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatUpdate(ctx context.Context, a *agent.Agent, chatID uuid.UUID, name, detail *string) (*chat.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatUpdate(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, name, detail *string) (*chat.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChatUpdate", ctx, a, chatID, name, detail)
 	ret0, _ := ret[0].(*chat.WebhookMessage)
@@ -4243,7 +4229,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatUpdate(ctx, a, cha
 }
 
 // ServiceAgentTalkMessageCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *agent.Agent, chatID uuid.UUID, parentID *uuid.UUID, msgType message2.Type, text string, medias []message2.Media) (*message2.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, parentID *uuid.UUID, msgType message2.Type, text string, medias []message2.Media) (*message2.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkMessageCreate", ctx, a, chatID, parentID, msgType, text, medias)
 	ret0, _ := ret[0].(*message2.WebhookMessage)
@@ -4258,7 +4244,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkMessageCreate(ctx, a, 
 }
 
 // ServiceAgentTalkMessageDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkMessageDelete(ctx context.Context, a *agent.Agent, messageID uuid.UUID) (*message2.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkMessageDelete(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID) (*message2.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkMessageDelete", ctx, a, messageID)
 	ret0, _ := ret[0].(*message2.WebhookMessage)
@@ -4273,7 +4259,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkMessageDelete(ctx, a, 
 }
 
 // ServiceAgentTalkMessageGet mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkMessageGet(ctx context.Context, a *agent.Agent, messageID uuid.UUID) (*message2.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkMessageGet(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID) (*message2.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkMessageGet", ctx, a, messageID)
 	ret0, _ := ret[0].(*message2.WebhookMessage)
@@ -4288,7 +4274,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkMessageGet(ctx, a, mes
 }
 
 // ServiceAgentTalkMessageList mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *agent.Agent, chatID uuid.UUID, size uint64, token string) ([]*message2.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, size uint64, token string) ([]*message2.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkMessageList", ctx, a, chatID, size, token)
 	ret0, _ := ret[0].([]*message2.WebhookMessage)
@@ -4303,7 +4289,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkMessageList(ctx, a, ch
 }
 
 // ServiceAgentTalkMessageReactionCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Context, a *agent.Agent, messageID uuid.UUID, emoji string) (*message2.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Context, a *auth.AuthIdentity, messageID uuid.UUID, emoji string) (*message2.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkMessageReactionCreate", ctx, a, messageID, emoji)
 	ret0, _ := ret[0].(*message2.WebhookMessage)
@@ -4318,7 +4304,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkMessageReactionCreate(
 }
 
 // ServiceAgentTalkParticipantCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, a *agent.Agent, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) (*participant.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) (*participant.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkParticipantCreate", ctx, a, chatID, ownerType, ownerID)
 	ret0, _ := ret[0].(*participant.WebhookMessage)
@@ -4333,7 +4319,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantCreate(ctx,
 }
 
 // ServiceAgentTalkParticipantDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, a *agent.Agent, chatID, participantID uuid.UUID) (*participant.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, a *auth.AuthIdentity, chatID, participantID uuid.UUID) (*participant.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkParticipantDelete", ctx, a, chatID, participantID)
 	ret0, _ := ret[0].(*participant.WebhookMessage)
@@ -4348,7 +4334,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantDelete(ctx,
 }
 
 // ServiceAgentTalkParticipantList mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a *agent.Agent, chatID uuid.UUID) ([]*participant.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) ([]*participant.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkParticipantList", ctx, a, chatID)
 	ret0, _ := ret[0].([]*participant.WebhookMessage)
@@ -4363,7 +4349,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantList(ctx, a
 }
 
 // SpeakingCreate mocks base method.
-func (m *MockServiceHandler) SpeakingCreate(ctx context.Context, a *agent.Agent, referenceType streaming.ReferenceType, referenceID uuid.UUID, language, provider, voiceID string, direction streaming.Direction) (*speaking.WebhookMessage, error) {
+func (m *MockServiceHandler) SpeakingCreate(ctx context.Context, a *auth.AuthIdentity, referenceType streaming.ReferenceType, referenceID uuid.UUID, language, provider, voiceID string, direction streaming.Direction) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingCreate", ctx, a, referenceType, referenceID, language, provider, voiceID, direction)
 	ret0, _ := ret[0].(*speaking.WebhookMessage)
@@ -4378,7 +4364,7 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingCreate(ctx, a, referenceType, 
 }
 
 // SpeakingDelete mocks base method.
-func (m *MockServiceHandler) SpeakingDelete(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
+func (m *MockServiceHandler) SpeakingDelete(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingDelete", ctx, a, speakingID)
 	ret0, _ := ret[0].(*speaking.WebhookMessage)
@@ -4393,7 +4379,7 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingDelete(ctx, a, speakingID any)
 }
 
 // SpeakingFlush mocks base method.
-func (m *MockServiceHandler) SpeakingFlush(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
+func (m *MockServiceHandler) SpeakingFlush(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingFlush", ctx, a, speakingID)
 	ret0, _ := ret[0].(*speaking.WebhookMessage)
@@ -4408,7 +4394,7 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingFlush(ctx, a, speakingID any) 
 }
 
 // SpeakingGet mocks base method.
-func (m *MockServiceHandler) SpeakingGet(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
+func (m *MockServiceHandler) SpeakingGet(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingGet", ctx, a, speakingID)
 	ret0, _ := ret[0].(*speaking.WebhookMessage)
@@ -4423,7 +4409,7 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingGet(ctx, a, speakingID any) *g
 }
 
 // SpeakingList mocks base method.
-func (m *MockServiceHandler) SpeakingList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*speaking.WebhookMessage, error) {
+func (m *MockServiceHandler) SpeakingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*speaking.WebhookMessage)
@@ -4438,7 +4424,7 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingList(ctx, a, size, token any) 
 }
 
 // SpeakingSay mocks base method.
-func (m *MockServiceHandler) SpeakingSay(ctx context.Context, a *agent.Agent, speakingID uuid.UUID, text string) (*speaking.WebhookMessage, error) {
+func (m *MockServiceHandler) SpeakingSay(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID, text string) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingSay", ctx, a, speakingID, text)
 	ret0, _ := ret[0].(*speaking.WebhookMessage)
@@ -4453,7 +4439,7 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingSay(ctx, a, speakingID, text a
 }
 
 // SpeakingStop mocks base method.
-func (m *MockServiceHandler) SpeakingStop(ctx context.Context, a *agent.Agent, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
+func (m *MockServiceHandler) SpeakingStop(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*speaking.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SpeakingStop", ctx, a, speakingID)
 	ret0, _ := ret[0].(*speaking.WebhookMessage)
@@ -4468,7 +4454,7 @@ func (mr *MockServiceHandlerMockRecorder) SpeakingStop(ctx, a, speakingID any) *
 }
 
 // StorageAccountCreate mocks base method.
-func (m *MockServiceHandler) StorageAccountCreate(ctx context.Context, a *agent.Agent, customerID uuid.UUID) (*account1.Account, error) {
+func (m *MockServiceHandler) StorageAccountCreate(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID) (*account1.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageAccountCreate", ctx, a, customerID)
 	ret0, _ := ret[0].(*account1.Account)
@@ -4483,7 +4469,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountCreate(ctx, a, customerI
 }
 
 // StorageAccountDelete mocks base method.
-func (m *MockServiceHandler) StorageAccountDelete(ctx context.Context, a *agent.Agent, storageAccountID uuid.UUID) (*account1.Account, error) {
+func (m *MockServiceHandler) StorageAccountDelete(ctx context.Context, a *auth.AuthIdentity, storageAccountID uuid.UUID) (*account1.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageAccountDelete", ctx, a, storageAccountID)
 	ret0, _ := ret[0].(*account1.Account)
@@ -4498,7 +4484,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountDelete(ctx, a, storageAc
 }
 
 // StorageAccountGet mocks base method.
-func (m *MockServiceHandler) StorageAccountGet(ctx context.Context, a *agent.Agent, storageAccountID uuid.UUID) (*account1.WebhookMessage, error) {
+func (m *MockServiceHandler) StorageAccountGet(ctx context.Context, a *auth.AuthIdentity, storageAccountID uuid.UUID) (*account1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageAccountGet", ctx, a, storageAccountID)
 	ret0, _ := ret[0].(*account1.WebhookMessage)
@@ -4513,7 +4499,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountGet(ctx, a, storageAccou
 }
 
 // StorageAccountGetByCustomerID mocks base method.
-func (m *MockServiceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *agent.Agent) (*account1.WebhookMessage, error) {
+func (m *MockServiceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *auth.AuthIdentity) (*account1.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageAccountGetByCustomerID", ctx, a)
 	ret0, _ := ret[0].(*account1.WebhookMessage)
@@ -4528,7 +4514,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountGetByCustomerID(ctx, a a
 }
 
 // StorageAccountList mocks base method.
-func (m *MockServiceHandler) StorageAccountList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*account1.Account, error) {
+func (m *MockServiceHandler) StorageAccountList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*account1.Account, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageAccountList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*account1.Account)
@@ -4543,7 +4529,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageAccountList(ctx, a, size, token
 }
 
 // StorageFileCreate mocks base method.
-func (m *MockServiceHandler) StorageFileCreate(ctx context.Context, a *agent.Agent, f multipart.File, fileType file.Type, name, detail, filename string) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) StorageFileCreate(ctx context.Context, a *auth.AuthIdentity, f multipart.File, fileType file.Type, name, detail, filename string) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageFileCreate", ctx, a, f, fileType, name, detail, filename)
 	ret0, _ := ret[0].(*file.WebhookMessage)
@@ -4558,7 +4544,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageFileCreate(ctx, a, f, fileType,
 }
 
 // StorageFileDelete mocks base method.
-func (m *MockServiceHandler) StorageFileDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) StorageFileDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageFileDelete", ctx, a, id)
 	ret0, _ := ret[0].(*file.WebhookMessage)
@@ -4573,7 +4559,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageFileDelete(ctx, a, id any) *gom
 }
 
 // StorageFileDownloadRedirect mocks base method.
-func (m *MockServiceHandler) StorageFileDownloadRedirect(ctx context.Context, a *agent.Agent, id uuid.UUID) (string, error) {
+func (m *MockServiceHandler) StorageFileDownloadRedirect(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageFileDownloadRedirect", ctx, a, id)
 	ret0, _ := ret[0].(string)
@@ -4588,7 +4574,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageFileDownloadRedirect(ctx, a, id
 }
 
 // StorageFileGet mocks base method.
-func (m *MockServiceHandler) StorageFileGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*file.WebhookMessage, error) {
+func (m *MockServiceHandler) StorageFileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageFileGet", ctx, a, id)
 	ret0, _ := ret[0].(*file.WebhookMessage)
@@ -4603,7 +4589,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageFileGet(ctx, a, id any) *gomock
 }
 
 // StorageFileList mocks base method.
-func (m *MockServiceHandler) StorageFileList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*file.WebhookMessage, error) {
+func (m *MockServiceHandler) StorageFileList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*file.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "StorageFileList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*file.WebhookMessage)
@@ -4618,7 +4604,7 @@ func (mr *MockServiceHandlerMockRecorder) StorageFileList(ctx, a, size, token an
 }
 
 // TagCreate mocks base method.
-func (m *MockServiceHandler) TagCreate(ctx context.Context, a *agent.Agent, name, detail string) (*tag.WebhookMessage, error) {
+func (m *MockServiceHandler) TagCreate(ctx context.Context, a *auth.AuthIdentity, name, detail string) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagCreate", ctx, a, name, detail)
 	ret0, _ := ret[0].(*tag.WebhookMessage)
@@ -4633,7 +4619,7 @@ func (mr *MockServiceHandlerMockRecorder) TagCreate(ctx, a, name, detail any) *g
 }
 
 // TagDelete mocks base method.
-func (m *MockServiceHandler) TagDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*tag.WebhookMessage, error) {
+func (m *MockServiceHandler) TagDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagDelete", ctx, a, id)
 	ret0, _ := ret[0].(*tag.WebhookMessage)
@@ -4648,7 +4634,7 @@ func (mr *MockServiceHandlerMockRecorder) TagDelete(ctx, a, id any) *gomock.Call
 }
 
 // TagGet mocks base method.
-func (m *MockServiceHandler) TagGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*tag.WebhookMessage, error) {
+func (m *MockServiceHandler) TagGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagGet", ctx, a, id)
 	ret0, _ := ret[0].(*tag.WebhookMessage)
@@ -4663,7 +4649,7 @@ func (mr *MockServiceHandlerMockRecorder) TagGet(ctx, a, id any) *gomock.Call {
 }
 
 // TagList mocks base method.
-func (m *MockServiceHandler) TagList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*tag.WebhookMessage, error) {
+func (m *MockServiceHandler) TagList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*tag.WebhookMessage)
@@ -4678,7 +4664,7 @@ func (mr *MockServiceHandlerMockRecorder) TagList(ctx, a, size, token any) *gomo
 }
 
 // TagUpdate mocks base method.
-func (m *MockServiceHandler) TagUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string) (*tag.WebhookMessage, error) {
+func (m *MockServiceHandler) TagUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string) (*tag.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TagUpdate", ctx, a, id, name, detail)
 	ret0, _ := ret[0].(*tag.WebhookMessage)
@@ -4693,7 +4679,7 @@ func (mr *MockServiceHandlerMockRecorder) TagUpdate(ctx, a, id, name, detail any
 }
 
 // TeamCreate mocks base method.
-func (m *MockServiceHandler) TeamCreate(ctx context.Context, a *agent.Agent, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamCreate(ctx context.Context, a *auth.AuthIdentity, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TeamCreate", ctx, a, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.WebhookMessage)
@@ -4708,7 +4694,7 @@ func (mr *MockServiceHandlerMockRecorder) TeamCreate(ctx, a, name, detail, start
 }
 
 // TeamDelete mocks base method.
-func (m *MockServiceHandler) TeamDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TeamDelete", ctx, a, id)
 	ret0, _ := ret[0].(*team.WebhookMessage)
@@ -4723,7 +4709,7 @@ func (mr *MockServiceHandlerMockRecorder) TeamDelete(ctx, a, id any) *gomock.Cal
 }
 
 // TeamDirectHashRegenerate mocks base method.
-func (m *MockServiceHandler) TeamDirectHashRegenerate(ctx context.Context, a *agent.Agent, teamID uuid.UUID) (*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, teamID uuid.UUID) (*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TeamDirectHashRegenerate", ctx, a, teamID)
 	ret0, _ := ret[0].(*team.WebhookMessage)
@@ -4738,7 +4724,7 @@ func (mr *MockServiceHandlerMockRecorder) TeamDirectHashRegenerate(ctx, a, teamI
 }
 
 // TeamGet mocks base method.
-func (m *MockServiceHandler) TeamGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TeamGet", ctx, a, id)
 	ret0, _ := ret[0].(*team.WebhookMessage)
@@ -4753,7 +4739,7 @@ func (mr *MockServiceHandlerMockRecorder) TeamGet(ctx, a, id any) *gomock.Call {
 }
 
 // TeamGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) TeamGetsByCustomerID(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TeamGetsByCustomerID", ctx, a, size, token)
 	ret0, _ := ret[0].([]*team.WebhookMessage)
@@ -4768,7 +4754,7 @@ func (mr *MockServiceHandlerMockRecorder) TeamGetsByCustomerID(ctx, a, size, tok
 }
 
 // TeamUpdate mocks base method.
-func (m *MockServiceHandler) TeamUpdate(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.WebhookMessage, error) {
+func (m *MockServiceHandler) TeamUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, startMemberID uuid.UUID, members []team.Member, parameter map[string]any) (*team.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TeamUpdate", ctx, a, id, name, detail, startMemberID, members, parameter)
 	ret0, _ := ret[0].(*team.WebhookMessage)
@@ -4783,7 +4769,7 @@ func (mr *MockServiceHandlerMockRecorder) TeamUpdate(ctx, a, id, name, detail, s
 }
 
 // TimelineEventList mocks base method.
-func (m *MockServiceHandler) TimelineEventList(ctx context.Context, a *agent.Agent, resourceType string, resourceID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error) {
+func (m *MockServiceHandler) TimelineEventList(ctx context.Context, a *auth.AuthIdentity, resourceType string, resourceID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TimelineEventList", ctx, a, resourceType, resourceID, pageSize, pageToken)
 	ret0, _ := ret[0].([]*TimelineEvent)
@@ -4799,7 +4785,7 @@ func (mr *MockServiceHandlerMockRecorder) TimelineEventList(ctx, a, resourceType
 }
 
 // TimelineSIPAnalysisGet mocks base method.
-func (m *MockServiceHandler) TimelineSIPAnalysisGet(ctx context.Context, a *agent.Agent, callID uuid.UUID) (*sipmessage.SIPAnalysisResponse, error) {
+func (m *MockServiceHandler) TimelineSIPAnalysisGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*sipmessage.SIPAnalysisResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TimelineSIPAnalysisGet", ctx, a, callID)
 	ret0, _ := ret[0].(*sipmessage.SIPAnalysisResponse)
@@ -4814,7 +4800,7 @@ func (mr *MockServiceHandlerMockRecorder) TimelineSIPAnalysisGet(ctx, a, callID 
 }
 
 // TimelineSIPPcapGet mocks base method.
-func (m *MockServiceHandler) TimelineSIPPcapGet(ctx context.Context, a *agent.Agent, callID uuid.UUID) ([]byte, error) {
+func (m *MockServiceHandler) TimelineSIPPcapGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TimelineSIPPcapGet", ctx, a, callID)
 	ret0, _ := ret[0].([]byte)
@@ -4829,7 +4815,7 @@ func (mr *MockServiceHandlerMockRecorder) TimelineSIPPcapGet(ctx, a, callID any)
 }
 
 // TranscribeDelete mocks base method.
-func (m *MockServiceHandler) TranscribeDelete(ctx context.Context, a *agent.Agent, transcribeID uuid.UUID) (*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscribeDelete(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeDelete", ctx, a, transcribeID)
 	ret0, _ := ret[0].(*transcribe.WebhookMessage)
@@ -4844,7 +4830,7 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeDelete(ctx, a, transcribeID 
 }
 
 // TranscribeGet mocks base method.
-func (m *MockServiceHandler) TranscribeGet(ctx context.Context, a *agent.Agent, routeID uuid.UUID) (*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscribeGet(ctx context.Context, a *auth.AuthIdentity, routeID uuid.UUID) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeGet", ctx, a, routeID)
 	ret0, _ := ret[0].(*transcribe.WebhookMessage)
@@ -4859,7 +4845,7 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeGet(ctx, a, routeID any) *go
 }
 
 // TranscribeList mocks base method.
-func (m *MockServiceHandler) TranscribeList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*transcribe.WebhookMessage)
@@ -4874,7 +4860,7 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeList(ctx, a, size, token any
 }
 
 // TranscribeStart mocks base method.
-func (m *MockServiceHandler) TranscribeStart(ctx context.Context, a *agent.Agent, referenceType string, referenceID uuid.UUID, language string, direction transcribe.Direction, onEndFlowID uuid.UUID, provider transcribe.Provider) (*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscribeStart(ctx context.Context, a *auth.AuthIdentity, referenceType string, referenceID uuid.UUID, language string, direction transcribe.Direction, onEndFlowID uuid.UUID, provider transcribe.Provider) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeStart", ctx, a, referenceType, referenceID, language, direction, onEndFlowID, provider)
 	ret0, _ := ret[0].(*transcribe.WebhookMessage)
@@ -4889,7 +4875,7 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeStart(ctx, a, referenceType,
 }
 
 // TranscribeStop mocks base method.
-func (m *MockServiceHandler) TranscribeStop(ctx context.Context, a *agent.Agent, transcribeID uuid.UUID) (*transcribe.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscribeStop(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) (*transcribe.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscribeStop", ctx, a, transcribeID)
 	ret0, _ := ret[0].(*transcribe.WebhookMessage)
@@ -4904,7 +4890,7 @@ func (mr *MockServiceHandlerMockRecorder) TranscribeStop(ctx, a, transcribeID an
 }
 
 // TranscriptList mocks base method.
-func (m *MockServiceHandler) TranscriptList(ctx context.Context, a *agent.Agent, transcribeID uuid.UUID) ([]*transcript.WebhookMessage, error) {
+func (m *MockServiceHandler) TranscriptList(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) ([]*transcript.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TranscriptList", ctx, a, transcribeID)
 	ret0, _ := ret[0].([]*transcript.WebhookMessage)
@@ -4919,7 +4905,7 @@ func (mr *MockServiceHandlerMockRecorder) TranscriptList(ctx, a, transcribeID an
 }
 
 // TransferStart mocks base method.
-func (m *MockServiceHandler) TransferStart(ctx context.Context, a *agent.Agent, transferType transfer.Type, transfererCallID uuid.UUID, transfereeAddresses []address.Address) (*transfer.WebhookMessage, error) {
+func (m *MockServiceHandler) TransferStart(ctx context.Context, a *auth.AuthIdentity, transferType transfer.Type, transfererCallID uuid.UUID, transfereeAddresses []address.Address) (*transfer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TransferStart", ctx, a, transferType, transfererCallID, transfereeAddresses)
 	ret0, _ := ret[0].(*transfer.WebhookMessage)
@@ -4934,7 +4920,7 @@ func (mr *MockServiceHandlerMockRecorder) TransferStart(ctx, a, transferType, tr
 }
 
 // TrunkCreate mocks base method.
-func (m *MockServiceHandler) TrunkCreate(ctx context.Context, a *agent.Agent, name, detail, domainName string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
+func (m *MockServiceHandler) TrunkCreate(ctx context.Context, a *auth.AuthIdentity, name, detail, domainName string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkCreate", ctx, a, name, detail, domainName, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.WebhookMessage)
@@ -4949,7 +4935,7 @@ func (mr *MockServiceHandlerMockRecorder) TrunkCreate(ctx, a, name, detail, doma
 }
 
 // TrunkDelete mocks base method.
-func (m *MockServiceHandler) TrunkDelete(ctx context.Context, a *agent.Agent, id uuid.UUID) (*trunk.WebhookMessage, error) {
+func (m *MockServiceHandler) TrunkDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkDelete", ctx, a, id)
 	ret0, _ := ret[0].(*trunk.WebhookMessage)
@@ -4964,7 +4950,7 @@ func (mr *MockServiceHandlerMockRecorder) TrunkDelete(ctx, a, id any) *gomock.Ca
 }
 
 // TrunkGet mocks base method.
-func (m *MockServiceHandler) TrunkGet(ctx context.Context, a *agent.Agent, id uuid.UUID) (*trunk.WebhookMessage, error) {
+func (m *MockServiceHandler) TrunkGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkGet", ctx, a, id)
 	ret0, _ := ret[0].(*trunk.WebhookMessage)
@@ -4979,7 +4965,7 @@ func (mr *MockServiceHandlerMockRecorder) TrunkGet(ctx, a, id any) *gomock.Call 
 }
 
 // TrunkList mocks base method.
-func (m *MockServiceHandler) TrunkList(ctx context.Context, a *agent.Agent, size uint64, token string) ([]*trunk.WebhookMessage, error) {
+func (m *MockServiceHandler) TrunkList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkList", ctx, a, size, token)
 	ret0, _ := ret[0].([]*trunk.WebhookMessage)
@@ -4994,7 +4980,7 @@ func (mr *MockServiceHandlerMockRecorder) TrunkList(ctx, a, size, token any) *go
 }
 
 // TrunkUpdateBasicInfo mocks base method.
-func (m *MockServiceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *agent.Agent, id uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
+func (m *MockServiceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string, authTypes []sipauth.AuthType, username, password string, allowedIPs []string) (*trunk.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TrunkUpdateBasicInfo", ctx, a, id, name, detail, authTypes, username, password, allowedIPs)
 	ret0, _ := ret[0].(*trunk.WebhookMessage)
@@ -5009,7 +4995,7 @@ func (mr *MockServiceHandlerMockRecorder) TrunkUpdateBasicInfo(ctx, a, id, name,
 }
 
 // WebsockCreate mocks base method.
-func (m *MockServiceHandler) WebsockCreate(ctx context.Context, a *agent.Agent, w http.ResponseWriter, r *http.Request) error {
+func (m *MockServiceHandler) WebsockCreate(ctx context.Context, a *auth.AuthIdentity, w http.ResponseWriter, r *http.Request) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WebsockCreate", ctx, a, w, r)
 	ret0, _ := ret[0].(error)

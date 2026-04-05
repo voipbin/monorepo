@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -23,7 +24,7 @@ func Test_conversationsGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -37,11 +38,11 @@ func Test_conversationsGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/conversations?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -74,14 +75,14 @@ func Test_conversationsGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConversations, nil)
+			mockSvc.EXPECT().ConversationGetsByCustomerID(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConversations, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -99,7 +100,7 @@ func Test_conversationsIDGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -112,11 +113,11 @@ func Test_conversationsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/conversations/4d9ae3d4-ed2e-11ec-a384-1b8e70bb589d",
 
@@ -146,7 +147,7 @@ func Test_conversationsIDGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -154,7 +155,7 @@ func Test_conversationsIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationGet(req.Context(), &tt.agent, tt.expectConversationID).Return(tt.responseConversation, nil)
+			mockSvc.EXPECT().ConversationGet(req.Context(), tt.agent, tt.expectConversationID).Return(tt.responseConversation, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -172,7 +173,7 @@ func Test_GetConversationsIdMessages(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -187,11 +188,11 @@ func Test_GetConversationsIdMessages(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/conversations/a09b01e0-ed2e-11ec-bdf1-8fa58d1092ad/messages?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -225,14 +226,14 @@ func Test_GetConversationsIdMessages(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationMessageGetsByConversationID(req.Context(), &tt.agent, tt.expectConversationID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseMessages, nil)
+			mockSvc.EXPECT().ConversationMessageGetsByConversationID(req.Context(), tt.agent, tt.expectConversationID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseMessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -250,7 +251,7 @@ func Test_PostConversationsIdMessages(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -265,11 +266,11 @@ func Test_PostConversationsIdMessages(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/conversations/5950b02c-ed2f-11ec-9093-d3dcc91a72fa/messages",
 			reqBody:  []byte(`{"text":"hello world."}`),
@@ -301,14 +302,14 @@ func Test_PostConversationsIdMessages(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationMessageSend(req.Context(), &tt.agent, tt.expectConversationID, tt.expectText, []cvmedia.Media{}).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().ConversationMessageSend(req.Context(), tt.agent, tt.expectConversationID, tt.expectText, []cvmedia.Media{}).Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -326,7 +327,7 @@ func Test_conversationsIDPut(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -341,11 +342,11 @@ func Test_conversationsIDPut(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/conversations/0e288b58-007d-11ee-b0ac-8be49d249ca9",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail"}`),
@@ -380,14 +381,14 @@ func Test_conversationsIDPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationUpdate(req.Context(), &tt.agent, tt.expectConversationID, tt.expectFields).Return(tt.responseConversation, nil)
+			mockSvc.EXPECT().ConversationUpdate(req.Context(), tt.agent, tt.expectConversationID, tt.expectFields).Return(tt.responseConversation, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

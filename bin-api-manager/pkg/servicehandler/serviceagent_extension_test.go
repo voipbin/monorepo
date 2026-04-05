@@ -12,6 +12,7 @@ import (
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -23,7 +24,7 @@ func Test_ServiceAgentExtensionList(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseAgent      *amagent.Agent
 		responseExtensions []*rmextension.Extension
@@ -33,7 +34,7 @@ func Test_ServiceAgentExtensionList(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2ddf1c90-bbc1-11ef-b991-1bd6ee52cbc5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -49,7 +50,7 @@ func Test_ServiceAgentExtensionList(t *testing.T) {
 						Target: "2e67d562-bbc1-11ef-b531-a3248f6d1477",
 					},
 				},
-			},
+			}),
 
 			responseAgent: &amagent.Agent{
 				Addresses: []commonaddress.Address{
@@ -104,7 +105,7 @@ func Test_ServiceAgentExtensionList(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			for i, address := range tt.agent.Addresses {
+			for i, address := range tt.agent.Agent.Addresses {
 				extensionID := uuid.FromStringOrNil(address.Target)
 				mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, extensionID).Return(tt.responseExtensions[i], nil)
 			}

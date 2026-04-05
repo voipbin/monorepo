@@ -2,6 +2,7 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -20,7 +21,7 @@ func Test_queuecallsGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -34,11 +35,11 @@ func Test_queuecallsGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queuecalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -57,11 +58,11 @@ func Test_queuecallsGet(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queuecalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -107,13 +108,13 @@ func Test_queuecallsGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
+			mockSvc.EXPECT().QueuecallList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -131,7 +132,7 @@ func Test_queuecallsIDGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -144,11 +145,11 @@ func Test_queuecallsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queuecalls/7d54d626-1681-11ed-ab05-473fa9aa2542",
 
@@ -179,13 +180,13 @@ func Test_queuecallsIDGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallGet(req.Context(), &tt.agent, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
+			mockSvc.EXPECT().QueuecallGet(req.Context(), tt.agent, tt.responseQueuecall.ID).Return(tt.responseQueuecall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -203,7 +204,7 @@ func Test_queuecallsIDDelete(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -216,11 +217,11 @@ func Test_queuecallsIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queuecalls/bef4b4ca-2114-11f0-9f06-c39316274542",
 
@@ -250,13 +251,13 @@ func Test_queuecallsIDDelete(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueuecallDelete(req.Context(), &tt.agent, tt.expectQueuecallID).Return(tt.responseQueuecall, nil)
+			mockSvc.EXPECT().QueuecallDelete(req.Context(), tt.agent, tt.expectQueuecallID).Return(tt.responseQueuecall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -274,7 +275,7 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		requQuery string
 
@@ -287,11 +288,11 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			requQuery: "/queuecalls/72c9dfb0-bcbe-11ed-853f-7f662faaee5b/kick",
 
@@ -321,13 +322,13 @@ func Test_queuecallsIDKickPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.requQuery, nil)
 
-			mockSvc.EXPECT().QueuecallKick(req.Context(), &tt.agent, tt.expectQueuecallID).Return(tt.responseQueuecall, nil)
+			mockSvc.EXPECT().QueuecallKick(req.Context(), tt.agent, tt.expectQueuecallID).Return(tt.responseQueuecall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -344,7 +345,7 @@ func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		requQuery string
 
@@ -357,11 +358,11 @@ func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			requQuery: "/queuecalls/reference_id/e01d78ce-bcbe-11ed-8164-f3c4a472391e/kick",
 
@@ -391,13 +392,13 @@ func Test_queuecallsReferenceIDIDKickPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.requQuery, nil)
 
-			mockSvc.EXPECT().QueuecallKickByReferenceID(req.Context(), &tt.agent, tt.expectReferenceID).Return(tt.responseQueuecall, nil)
+			mockSvc.EXPECT().QueuecallKickByReferenceID(req.Context(), tt.agent, tt.expectReferenceID).Return(tt.responseQueuecall, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

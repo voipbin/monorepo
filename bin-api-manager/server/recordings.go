@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -25,16 +24,13 @@ func (h *server) GetRecordings(c *gin.Context, params openapi_server.GetRecordin
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -50,7 +46,7 @@ func (h *server) GetRecordings(c *gin.Context, params openapi_server.GetRecordin
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.RecordingList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.RecordingList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get a recordings. err: %v", err)
 		c.AbortWithStatus(400)
@@ -73,16 +69,13 @@ func (h *server) GetRecordingsId(c *gin.Context, id string) {
 		"recording_id":    id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -91,7 +84,7 @@ func (h *server) GetRecordingsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.RecordingGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.RecordingGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a recording info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -108,16 +101,13 @@ func (h *server) DeleteRecordingsId(c *gin.Context, id string) {
 		"recording_id":    id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -126,7 +116,7 @@ func (h *server) DeleteRecordingsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.RecordingDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.RecordingDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a recording info. err: %v", err)
 		c.AbortWithStatus(400)

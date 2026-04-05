@@ -2,7 +2,8 @@ package servicehandler
 
 import (
 	"context"
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"fmt"
+	"monorepo/bin-api-manager/models/auth"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/sirupsen/logrus"
@@ -11,7 +12,11 @@ import (
 // ServiceAgentCustomerGet
 // getting the defail of customer.
 // it returns detail of customer if it succeed.
-func (h *serviceHandler) ServiceAgentCustomerGet(ctx context.Context, a *amagent.Agent) (*cscustomer.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentCustomerGet(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ServiceAgentCustomerGet",
 		"agent": a,

@@ -16,6 +16,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -23,7 +24,7 @@ func Test_TrunkCreate(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		trunkName  string
 		detail     string
@@ -40,13 +41,13 @@ func Test_TrunkCreate(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			trunkName:  "test name",
 			detail:     "test detail",
@@ -102,7 +103,7 @@ func Test_TrunkDelete(t *testing.T) {
 
 	type test struct {
 		name    string
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		trunkID uuid.UUID
 
 		response  *rmtrunk.Trunk
@@ -112,13 +113,13 @@ func Test_TrunkDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("02369970-54a6-11ee-8436-576a6c6712f2"),
 
 			&rmtrunk.Trunk{
@@ -169,7 +170,7 @@ func Test_TrunkGet(t *testing.T) {
 
 	type test struct {
 		name    string
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		trunkID uuid.UUID
 
 		response  *rmtrunk.Trunk
@@ -179,13 +180,13 @@ func Test_TrunkGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("32309590-54a6-11ee-8466-9b257305288b"),
 
 			&rmtrunk.Trunk{
@@ -235,7 +236,7 @@ func Test_TrunkList(t *testing.T) {
 
 	type test struct {
 		name      string
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -248,13 +249,13 @@ func Test_TrunkList(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"2020-10-20T01:00:00.995000Z",
 			10,
 
@@ -322,7 +323,7 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		id         uuid.UUID
 		trunkName  string
@@ -339,13 +340,13 @@ func Test_TrunkUpdateBasicInfo(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("bdf14732-54a6-11ee-b262-1f9dcbae10b2"),
 			"update name",

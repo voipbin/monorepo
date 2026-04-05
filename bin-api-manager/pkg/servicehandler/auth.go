@@ -4,10 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
-
-	amagent "monorepo/bin-agent-manager/models/agent"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
@@ -86,39 +82,6 @@ func (h *serviceHandler) AuthJWTParse(ctx context.Context, tokenString string) (
 	curTime := h.utilHandler.TimeGetCurTime()
 	if res["expire"].(string) < curTime {
 		return nil, errors.New("token expired")
-	}
-
-	return res, nil
-}
-
-func (h *serviceHandler) AuthAccesskeyParse(ctx context.Context, accesskey string) (map[string]interface{}, error) {
-
-	ak, err := h.AccesskeyRawGetByToken(ctx, accesskey)
-	if err != nil {
-		return nil, err
-	}
-
-	curTime := time.Now().UTC()
-	if ak.TMExpire != nil && ak.TMExpire.Before(curTime) {
-		return nil, errors.New("token expired")
-	} else if ak.TMDelete != nil {
-		return nil, errors.New("access key deleted")
-	}
-
-	// generate dummy agent with
-	dummyAgent := &amagent.Agent{
-		Identity: commonidentity.Identity{
-			ID:         ak.ID,
-			CustomerID: ak.CustomerID,
-		},
-		Name:   ak.Name,
-		Detail: ak.Detail,
-
-		Permission: amagent.PermissionCustomerAdmin,
-	}
-
-	res := map[string]interface{}{
-		"agent": dummyAgent,
 	}
 
 	return res, nil

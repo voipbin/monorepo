@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"monorepo/bin-api-manager/models/auth"
 	smcompressfile "monorepo/bin-storage-manager/models/compressfile"
 
 	"github.com/gofrs/uuid"
@@ -23,7 +25,7 @@ func Test_RecordingfileGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		id uuid.UUID
 
@@ -37,13 +39,13 @@ func Test_RecordingfileGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("59a394e4-610e-11eb-b8c6-aff7333845f1"),
 

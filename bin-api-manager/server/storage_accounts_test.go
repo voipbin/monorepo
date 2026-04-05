@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_storageAccountsGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,11 +36,11 @@ func Test_storageAccountsGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_accounts?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -70,14 +71,14 @@ func Test_storageAccountsGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAccounts, nil)
+			mockSvc.EXPECT().StorageAccountList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseAccounts, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -95,7 +96,7 @@ func Test_storageAccountsPost(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -109,11 +110,11 @@ func Test_storageAccountsPost(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_accounts",
 			reqBody:  []byte(`{"customer_id":"a77397a6-1bef-11ef-bb4f-d76f9d478e32"}`),
@@ -142,14 +143,14 @@ func Test_storageAccountsPost(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountCreate(req.Context(), &tt.agent, tt.expectCustomerID).Return(tt.responseAccount, nil)
+			mockSvc.EXPECT().StorageAccountCreate(req.Context(), tt.agent, tt.expectCustomerID).Return(tt.responseAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -167,7 +168,7 @@ func Test_storageAccountsIDGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -180,11 +181,11 @@ func Test_storageAccountsIDGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ab2f092e-004e-11ee-b834-b7077f22c1eb"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_accounts/c85cf9d0-1bef-11ef-a736-e75259c323b2",
 
@@ -212,7 +213,7 @@ func Test_storageAccountsIDGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -220,7 +221,7 @@ func Test_storageAccountsIDGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountGet(req.Context(), &tt.agent, tt.expectStorageAccountID).Return(tt.responseStorageAccount, nil)
+			mockSvc.EXPECT().StorageAccountGet(req.Context(), tt.agent, tt.expectStorageAccountID).Return(tt.responseStorageAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -238,7 +239,7 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -250,11 +251,11 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("59d63b06-004e-11ee-b272-731775b3fdc8"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_accounts/c88754b4-1bef-11ef-b6d2-0b09724bcbc3",
 
@@ -282,7 +283,7 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -290,7 +291,7 @@ func Test_storageAccountsIDDelete(t *testing.T) {
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().StorageAccountDelete(req.Context(), &tt.agent, tt.expectStorageAccountID).Return(tt.responseAccount, nil)
+			mockSvc.EXPECT().StorageAccountDelete(req.Context(), tt.agent, tt.expectStorageAccountID).Return(tt.responseAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

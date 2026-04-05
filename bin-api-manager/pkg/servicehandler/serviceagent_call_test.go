@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -19,7 +20,7 @@ func Test_ServiceAgentCallList(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -32,13 +33,13 @@ func Test_ServiceAgentCallList(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			size:  100,
 			token: "2021-03-01T01:00:00.995000Z",
 
@@ -107,7 +108,7 @@ func Test_ServiceAgentCallGet(t *testing.T) {
 	type test struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall *cmcall.Call
@@ -118,13 +119,13 @@ func Test_ServiceAgentCallGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			callID: uuid.FromStringOrNil("dbee2cd4-3f9f-11ef-bafc-33410c3df327"),
 
 			responseCall: &cmcall.Call{
@@ -181,7 +182,7 @@ func Test_ServiceAgentCallDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		callID uuid.UUID
 
 		responseCall *cmcall.Call
@@ -192,13 +193,13 @@ func Test_ServiceAgentCallDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Permission: amagent.PermissionCustomerAgent,
-			},
+			}),
 			callID: uuid.FromStringOrNil("4568ee74-3fa0-11ef-b393-9b1928f41f55"),
 
 			responseCall: &cmcall.Call{

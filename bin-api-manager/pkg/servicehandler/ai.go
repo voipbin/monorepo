@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	amai "monorepo/bin-ai-manager/models/ai"
 	amtool "monorepo/bin-ai-manager/models/tool"
-
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -34,7 +34,7 @@ func (h *serviceHandler) aiGet(ctx context.Context, id uuid.UUID) (*amai.AI, err
 // AICreate is a service handler for AI creation.
 func (h *serviceHandler) AICreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	name string,
 	detail string,
 	engineModel amai.EngineModel,
@@ -48,6 +48,10 @@ func (h *serviceHandler) AICreate(
 	sttLanguage string,
 	toolNames []amtool.ToolName,
 ) (*amai.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AICreate",
 		"customer_id":  a.CustomerID,
@@ -112,7 +116,11 @@ func (h *serviceHandler) AICreate(
 }
 
 // AIDirectHashRegenerate regenerates the direct hash for the AI.
-func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *amagent.Agent, aiID uuid.UUID) (*amai.WebhookMessage, error) {
+func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AIDirectHashRegenerate",
 		"customer_id": a.CustomerID,
@@ -143,11 +151,15 @@ func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *amagent.
 
 // AIGetsByCustomerID gets the list of AIs of the given customer id.
 // It returns list of AIs if it succeed.
-func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amai.WebhookMessage, error) {
+func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amai.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AIGetsByCustomerID",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
@@ -215,11 +227,15 @@ func (h *serviceHandler) convertAIFilters(filters map[string]string) (map[amai.F
 
 // AIGet gets the AI of the given id.
 // It returns AI if it succeed.
-func (h *serviceHandler) AIGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amai.WebhookMessage, error) {
+func (h *serviceHandler) AIGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AIGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"ai_id":       id,
 	})
 
@@ -239,11 +255,15 @@ func (h *serviceHandler) AIGet(ctx context.Context, a *amagent.Agent, id uuid.UU
 }
 
 // AIDelete deletes the ai.
-func (h *serviceHandler) AIDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amai.WebhookMessage, error) {
+func (h *serviceHandler) AIDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AIDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"ai_id":       id,
 	})
 	log.Debug("Deleting an ai.")
@@ -273,7 +293,7 @@ func (h *serviceHandler) AIDelete(ctx context.Context, a *amagent.Agent, id uuid
 // AIUpdate is a service handler for ai update.
 func (h *serviceHandler) AIUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	id uuid.UUID,
 	name string,
 	detail string,
@@ -288,6 +308,10 @@ func (h *serviceHandler) AIUpdate(
 	sttLanguage string,
 	toolNames []amtool.ToolName,
 ) (*amai.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AIUpdate",
 		"customer_id":  a.CustomerID,

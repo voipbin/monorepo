@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func Test_AgentCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		username      string
 		password      string
 		agentName     string
@@ -40,13 +41,13 @@ func Test_AgentCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"test1",
 			"password1",
 			"test1 name",
@@ -71,13 +72,13 @@ func Test_AgentCreate(t *testing.T) {
 		},
 		{
 			"have webhook",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("1ed3b04a-7ffa-11ec-a974-cbbe9a9538b3"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"test1",
 			"password1",
 			"test1 name",
@@ -135,7 +136,7 @@ func Test_AgentGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		agentID uuid.UUID
 
 		response  *amagent.Agent
@@ -143,13 +144,13 @@ func Test_AgentGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("450c8f6a-5067-11ec-bda4-039a4b9a1158"),
 
 			&amagent.Agent{
@@ -199,7 +200,7 @@ func Test_AgentList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		size          uint64
 		token         string
 		filters       map[string]string
@@ -210,13 +211,13 @@ func Test_AgentList(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			10,
 			"2020-09-20T03:23:20.995000Z",
 			map[string]string{
@@ -243,13 +244,13 @@ func Test_AgentList(t *testing.T) {
 		},
 		{
 			"2 agents",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			10,
 			"2020-09-20T03:23:20.995000Z",
 			map[string]string{
@@ -320,20 +321,20 @@ func TestAgentDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		agentID uuid.UUID
 
 		resAgentGet *amagent.Agent
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 
 			&amagent.Agent{
@@ -377,7 +378,7 @@ func Test_AgentUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent      *auth.AuthIdentity
 		agentID    uuid.UUID
 		agentName  string
 		detail     string
@@ -389,13 +390,13 @@ func Test_AgentUpdate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			"test1",
 			"detail",
@@ -457,7 +458,7 @@ func Test_AgentUpdateAddresses(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		agentID   uuid.UUID
 		addresses []commonaddress.Address
 
@@ -466,13 +467,13 @@ func Test_AgentUpdateAddresses(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			[]commonaddress.Address{
 				{
@@ -530,7 +531,7 @@ func Test_AgentUpdateTagIDs(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		agentID uuid.UUID
 		tagIDs  []uuid.UUID
 
@@ -539,13 +540,13 @@ func Test_AgentUpdateTagIDs(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			[]uuid.UUID{
 				uuid.FromStringOrNil("29d3e984-5065-11ec-ad4e-5765fa1c5b55"),
@@ -600,7 +601,7 @@ func Test_AgentUpdateStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		agentID uuid.UUID
 		status  amagent.Status
 
@@ -609,13 +610,13 @@ func Test_AgentUpdateStatus(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			amagent.StatusAvailable,
 
@@ -668,7 +669,7 @@ func Test_AgentUpdatePermission(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent      *auth.AuthIdentity
 		agentID    uuid.UUID
 		permission amagent.Permission
 
@@ -677,13 +678,13 @@ func Test_AgentUpdatePermission(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("14003656-8e5e-11ee-b952-0ff7940c8c0e"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("97508ea4-4fc0-11ec-b4fb-e7721649d9b8"),
 			amagent.PermissionCustomerAdmin,
 
@@ -736,7 +737,7 @@ func Test_AgentUpdatePassword(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent    *amagent.Agent
+		agent    *auth.AuthIdentity
 		agentID  uuid.UUID
 		password string
 
@@ -745,13 +746,13 @@ func Test_AgentUpdatePassword(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b1d714c0-d3ce-11ee-9b07-b791568f3fa9"),
 					CustomerID: uuid.FromStringOrNil("51639bbe-8e5e-11ee-afc4-4fbef5d3d983"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("b1d714c0-d3ce-11ee-9b07-b791568f3fa9"),
 			"update password",
 

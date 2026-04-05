@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_queuesGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,11 +36,11 @@ func Test_queuesGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queues?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -58,11 +59,11 @@ func Test_queuesGet(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queues?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -120,13 +121,13 @@ func Test_queuesGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueueList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseQueues, nil)
+			mockSvc.EXPECT().QueueList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseQueues, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -144,7 +145,7 @@ func Test_queuesPost(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -164,11 +165,11 @@ func Test_queuesPost(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queues",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","routing_method":"random","tag_ids":["296b096c-6476-11ec-8fc0-2f39371fef93"],"wait_flow_id":"74341d62-2115-11f0-b44e-871d5b4ad40e","wait_timeout":10000,"service_timeout":100000}`),
@@ -207,7 +208,7 @@ func Test_queuesPost(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -216,7 +217,7 @@ func Test_queuesPost(t *testing.T) {
 
 			mockSvc.EXPECT().QueueCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectName,
 				tt.expectDetail,
 				tt.expectRoutingMethod,
@@ -242,7 +243,7 @@ func Test_queuesIDGet(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -255,11 +256,11 @@ func Test_queuesIDGet(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queues/395518ca-830a-11eb-badc-b3582bc51917",
 
@@ -289,13 +290,13 @@ func Test_queuesIDGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueueGet(req.Context(), &tt.agent, tt.expectQueueID).Return(tt.responseQueue, nil)
+			mockSvc.EXPECT().QueueGet(req.Context(), tt.agent, tt.expectQueueID).Return(tt.responseQueue, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -312,7 +313,7 @@ func Test_queuesIDDelete(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -325,11 +326,11 @@ func Test_queuesIDDelete(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queues/5842d88a-6478-11ec-92cc-7fb5eb5d5e5a",
 
@@ -359,13 +360,13 @@ func Test_queuesIDDelete(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().QueueDelete(req.Context(), &tt.agent, tt.expectQueueID).Return(tt.responseQueue, nil)
+			mockSvc.EXPECT().QueueDelete(req.Context(), tt.agent, tt.expectQueueID).Return(tt.responseQueue, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -382,7 +383,7 @@ func Test_queuesIDPut(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -403,11 +404,11 @@ func Test_queuesIDPut(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queues/39a61292-6479-11ec-8cee-d7ba44bf24ac",
 			reqBody:  []byte(`{"name":"new name","detail":"new detail","routing_method":"random","tag_ids":["7e1be274-4a89-11ee-84ec-5b122e282794","7e762acc-4a89-11ee-9c08-43e00aea3bd6"],"wait_flow_id":"c02a144c-2115-11f0-a9d5-97e0c247bb7b","wait_timeout":60000,"service_timeout":6000000}`),
@@ -448,12 +449,12 @@ func Test_queuesIDPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().QueueUpdate(req.Context(), &tt.agent, tt.expectQueueID, tt.expectQueueName, tt.expectDetail, tt.expectRoutingMethod, tt.expectTagIDs, tt.expectWaitFlowID, tt.expectTimeoutWait, tt.expectTimeoutService).Return(tt.responseQueue, nil)
+			mockSvc.EXPECT().QueueUpdate(req.Context(), tt.agent, tt.expectQueueID, tt.expectQueueName, tt.expectDetail, tt.expectRoutingMethod, tt.expectTagIDs, tt.expectWaitFlowID, tt.expectTimeoutWait, tt.expectTimeoutService).Return(tt.responseQueue, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -470,7 +471,7 @@ func Test_queuesIDTagIDsPut(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -485,11 +486,11 @@ func Test_queuesIDTagIDsPut(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queues/9ec11e74-6479-11ec-8956-9b1c6c142f77/tag_ids",
 			reqBody:  []byte(`{"tag_ids":["aa740178-6479-11ec-879d-ab827778d4dd"]}`),
@@ -523,12 +524,12 @@ func Test_queuesIDTagIDsPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().QueueUpdateTagIDs(req.Context(), &tt.agent, tt.expectQueueID, tt.expectTagIDs).Return(tt.responseQueue, nil)
+			mockSvc.EXPECT().QueueUpdateTagIDs(req.Context(), tt.agent, tt.expectQueueID, tt.expectTagIDs).Return(tt.responseQueue, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -545,7 +546,7 @@ func Test_queuesIDRoutingMethodPut(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -560,11 +561,11 @@ func Test_queuesIDRoutingMethodPut(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/queues/9ec11e74-6479-11ec-8956-9b1c6c142f77/routing_method",
 			reqBody:  []byte(`{"routing_method":"random"}`),
@@ -596,12 +597,12 @@ func Test_queuesIDRoutingMethodPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			mockSvc.EXPECT().QueueUpdateRoutingMethod(req.Context(), &tt.agent, tt.expectQueueID, tt.expectRoutingMethod).Return(tt.responseQueue, nil)
+			mockSvc.EXPECT().QueueUpdateRoutingMethod(req.Context(), tt.agent, tt.expectQueueID, tt.expectRoutingMethod).Return(tt.responseQueue, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

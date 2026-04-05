@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -22,7 +23,7 @@ func Test_PostStorageFiles(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery     string
 		filename     string
@@ -32,11 +33,11 @@ func Test_PostStorageFiles(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files",
 			filename: "testfile.txt",
@@ -65,7 +66,7 @@ func Test_PostStorageFiles(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -88,7 +89,7 @@ func Test_PostStorageFiles(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, body)
 			req.Header.Add("Content-Type", writer.FormDataContentType())
 
-			mockSvc.EXPECT().StorageFileCreate(req.Context(), &tt.agent, gomock.Any(), smfile.Type("rag"), "", "", tt.filename).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().StorageFileCreate(req.Context(), tt.agent, gomock.Any(), smfile.Type("rag"), "", "", tt.filename).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -102,7 +103,7 @@ func Test_PostStorageFiles_err(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		filename string
@@ -111,11 +112,11 @@ func Test_PostStorageFiles_err(t *testing.T) {
 	}{
 		{
 			name: "file size over max size",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files",
 			filename: "testfile.txt",
@@ -124,11 +125,11 @@ func Test_PostStorageFiles_err(t *testing.T) {
 		},
 		{
 			name: "empty type",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files",
 			filename: "testfile.txt",
@@ -137,11 +138,11 @@ func Test_PostStorageFiles_err(t *testing.T) {
 		},
 		{
 			name: "wrong type talk",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files",
 			filename: "testfile.txt",
@@ -150,11 +151,11 @@ func Test_PostStorageFiles_err(t *testing.T) {
 		},
 		{
 			name: "invalid type",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files",
 			filename: "testfile.txt",
@@ -178,7 +179,7 @@ func Test_PostStorageFiles_err(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -215,7 +216,7 @@ func Test_GetStorageFiles(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -229,11 +230,11 @@ func Test_GetStorageFiles(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files?page_size=20&page_token=2020-09-20T03:23:20.995000Z",
 			responseExtension: []*smfile.WebhookMessage{
@@ -265,12 +266,12 @@ func Test_GetStorageFiles(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().StorageFileList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -288,7 +289,7 @@ func Test_GetStorageFilesId(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -301,11 +302,11 @@ func Test_GetStorageFilesId(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files/e1eb02c2-1715-11ef-b15f-f3c445db0e34",
 			responseFile: &smfile.WebhookMessage{
@@ -334,12 +335,12 @@ func Test_GetStorageFilesId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileGet(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().StorageFileGet(req.Context(), tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -357,7 +358,7 @@ func Test_DeleteStorageFilesId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery     string
 		responseFile *smfile.WebhookMessage
@@ -367,11 +368,11 @@ func Test_DeleteStorageFilesId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files/22bad83e-1718-11ef-8e93-63a03937356b",
 			responseFile: &smfile.WebhookMessage{
@@ -400,12 +401,12 @@ func Test_DeleteStorageFilesId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileDelete(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
+			mockSvc.EXPECT().StorageFileDelete(req.Context(), tt.agent, tt.expectFileID).Return(tt.responseFile, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -423,7 +424,7 @@ func Test_GetStorageFilesIdFile(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -433,11 +434,11 @@ func Test_GetStorageFilesIdFile(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files/e1eb02c2-1715-11ef-b15f-f3c445db0e34/file",
 
@@ -462,12 +463,12 @@ func Test_GetStorageFilesIdFile(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileDownloadRedirect(req.Context(), &tt.agent, tt.expectFileID).Return(tt.responseDownloadURL, nil)
+			mockSvc.EXPECT().StorageFileDownloadRedirect(req.Context(), tt.agent, tt.expectFileID).Return(tt.responseDownloadURL, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusTemporaryRedirect {
@@ -523,16 +524,16 @@ func Test_GetStorageFilesIdFile_InvalidUUID(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		agent    amagent.Agent
+		agent *auth.AuthIdentity
 		reqQuery string
 	}{
 		{
 			name: "invalid UUID",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 			reqQuery: "/storage_files/invalid-uuid/file",
 		},
 	}
@@ -551,7 +552,7 @@ func Test_GetStorageFilesIdFile_InvalidUUID(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -569,7 +570,7 @@ func Test_GetStorageFilesIdFile_ServiceError(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -577,11 +578,11 @@ func Test_GetStorageFilesIdFile_ServiceError(t *testing.T) {
 	}{
 		{
 			name: "service returns error",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/storage_files/e1eb02c2-1715-11ef-b15f-f3c445db0e34/file",
 
@@ -603,12 +604,12 @@ func Test_GetStorageFilesIdFile_ServiceError(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileDownloadRedirect(req.Context(), &tt.agent, tt.expectFileID).Return("", fmt.Errorf("file not found"))
+			mockSvc.EXPECT().StorageFileDownloadRedirect(req.Context(), tt.agent, tt.expectFileID).Return("", fmt.Errorf("file not found"))
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusBadRequest {

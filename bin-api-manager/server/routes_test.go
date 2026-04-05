@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_routesGet_customer_id(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -34,11 +35,11 @@ func Test_routesGet_customer_id(t *testing.T) {
 	}{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/routes?customer_id=de748080-7939-4625-a929-459c09a08448&page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -57,11 +58,11 @@ func Test_routesGet_customer_id(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/routes?customer_id=0e4bcfb0-f90a-4abf-83e1-08a4f0cd0260&page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -105,13 +106,13 @@ func Test_routesGet_customer_id(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteGetsByCustomerID(req.Context(), &tt.agent, tt.expectCustomerID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseRoutes, nil)
+			mockSvc.EXPECT().RouteGetsByCustomerID(req.Context(), tt.agent, tt.expectCustomerID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseRoutes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -129,7 +130,7 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -141,11 +142,11 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 	}{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/routes?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -162,11 +163,11 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 			reqQuery: "/routes?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
 			responseRoutes: []*rmroute.Route{
@@ -205,13 +206,13 @@ func Test_routesGet_without_customer_id(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseRoutes, nil)
+			mockSvc.EXPECT().RouteList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseRoutes, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -229,7 +230,7 @@ func Test_routesPost(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -246,11 +247,11 @@ func Test_routesPost(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/routes",
 			reqBody:  []byte(`{"customer_id":"04303d61-d8c9-477c-8b54-254af0cb499f","name":"test name","detail":"test detail","provider_id":"a7efc236-5166-11ed-bdea-631379fb1515","priority":1,"target":"+82"}`),
@@ -284,7 +285,7 @@ func Test_routesPost(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -293,7 +294,7 @@ func Test_routesPost(t *testing.T) {
 
 			mockSvc.EXPECT().RouteCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectCustomerID,
 				tt.expectName,
 				tt.expectDetail,
@@ -315,7 +316,7 @@ func Test_routesIDGet(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -326,11 +327,11 @@ func Test_routesIDGet(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/routes/1c776852-5167-11ed-bf9a-eba39c6546e4",
 
@@ -359,13 +360,13 @@ func Test_routesIDGet(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteGet(req.Context(), &tt.agent, tt.expectRouteID).Return(tt.responseRoute, nil)
+			mockSvc.EXPECT().RouteGet(req.Context(), tt.agent, tt.expectRouteID).Return(tt.responseRoute, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -383,7 +384,7 @@ func Test_routesIDDelete(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -394,11 +395,11 @@ func Test_routesIDDelete(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4d1e5ab0-5167-11ed-98ff-f7ff08fc0833"),
 				},
-			},
+			}),
 
 			reqQuery: "/routes/4d1e5ab0-5167-11ed-98ff-f7ff08fc0833",
 
@@ -426,13 +427,13 @@ func Test_routesIDDelete(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().RouteDelete(req.Context(), &tt.agent, tt.expectRouteID).Return(tt.responseRoute, nil)
+			mockSvc.EXPECT().RouteDelete(req.Context(), tt.agent, tt.expectRouteID).Return(tt.responseRoute, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -450,7 +451,7 @@ func Test_routesIDPut(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -467,11 +468,11 @@ func Test_routesIDPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/routes/cd2b8926-5167-11ed-a158-ffb3472a3a4d",
 			reqBody:  []byte(`{"name":"update name","detail":"update detail","provider_id":"cd58db88-5167-11ed-8d35-e3209648ccf8","priority":1,"target":"+82"}`),
@@ -505,7 +506,7 @@ func Test_routesIDPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -513,7 +514,7 @@ func Test_routesIDPut(t *testing.T) {
 
 			mockSvc.EXPECT().RouteUpdate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectRouteID,
 				tt.expectName,
 				tt.expectDetail,

@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
 	"github.com/gin-gonic/gin"
@@ -17,14 +16,13 @@ func (h *server) GetAggregatedEvents(c *gin.Context, params openapi_server.GetAg
 		"request_address": c.ClientIP(),
 	})
 
-	// Get agent from context
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Error("Could not find agent info")
+	// Get auth identity from context
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Error("Could not find auth identity")
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "authentication required"})
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithField("customer_id", a.CustomerID)
 
 	// Parse query params
@@ -63,7 +61,7 @@ func (h *server) GetAggregatedEvents(c *gin.Context, params openapi_server.GetAg
 	}
 
 	// Call servicehandler
-	events, nextPageToken, err := h.serviceHandler.AggregatedEventList(c.Request.Context(), &a, activeflowID, callID, pageSize, pageToken)
+	events, nextPageToken, err := h.serviceHandler.AggregatedEventList(c.Request.Context(), a, activeflowID, callID, pageSize, pageToken)
 	if err != nil {
 		log.Infof("Failed to get aggregated events: %v", err)
 		if err.Error() == "user has no permission" || err.Error() == "not found" {

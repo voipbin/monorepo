@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -32,15 +33,19 @@ func (h *serviceHandler) campaigncallGet(ctx context.Context, campaigncallID uui
 
 // CampaigncallGets gets the list of campaigncalls.
 // It returns list of campaigncalls if it succeed.
-func (h *serviceHandler) CampaigncallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaigncallGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
 	log.Debug("Getting campaigncalls.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -72,15 +77,19 @@ func (h *serviceHandler) CampaigncallList(ctx context.Context, a *amagent.Agent,
 
 // CampaigncallGetsByCampaignID gets the list of campaigncalls of the given campaign id.
 // It returns list of campaigncalls if it succeed.
-func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *amagent.Agent, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *auth.AuthIdentity, campaignID uuid.UUID, size uint64, token string) ([]*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CampaigncallGetsByCampaignID",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
 	log.Debug("Getting campaigncalls.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -119,14 +128,18 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *am
 
 // CampaigncallGet gets the campaigncall of the given id.
 // It returns campaigncall if it succeed.
-func (h *serviceHandler) CampaigncallGet(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallGet(ctx context.Context, a *auth.AuthIdentity, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CampaigncallGet",
 		"customer_id":     a.CustomerID,
-		"username":        a.Username,
+		"username":        a.DisplayName(),
 		"campaigncall_id": campaigncallID,
 	})
 	log.Debug("Getting campaigncall.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	tmp, err := h.campaigncallGet(ctx, campaigncallID)
 	if err != nil {
@@ -143,13 +156,17 @@ func (h *serviceHandler) CampaigncallGet(ctx context.Context, a *amagent.Agent, 
 }
 
 // CampaigncallDelete deletes the campaigncall.
-func (h *serviceHandler) CampaigncallDelete(ctx context.Context, a *amagent.Agent, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
+func (h *serviceHandler) CampaigncallDelete(ctx context.Context, a *auth.AuthIdentity, campaigncallID uuid.UUID) (*cacampaigncall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CampaigncallDelete",
 		"agent":           a,
 		"campaigncall_id": campaigncallID,
 	})
 	log.Debug("Deleting a campaigncall.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get campaign
 	c, err := h.campaigncallGet(ctx, campaigncallID)

@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
@@ -16,16 +15,13 @@ func (h *server) GetMessages(c *gin.Context, params openapi_server.GetMessagesPa
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -41,7 +37,7 @@ func (h *server) GetMessages(c *gin.Context, params openapi_server.GetMessagesPa
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.MessageList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.MessageList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get messages list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -63,16 +59,13 @@ func (h *server) PostMessages(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostMessagesJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -87,7 +80,7 @@ func (h *server) PostMessages(c *gin.Context) {
 		destinations = append(destinations, ConvertCommonAddress(v))
 	}
 
-	res, err := h.serviceHandler.MessageSend(c.Request.Context(), &a, &source, destinations, req.Text)
+	res, err := h.serviceHandler.MessageSend(c.Request.Context(), a, &source, destinations, req.Text)
 	if err != nil {
 		log.Errorf("Could not send the message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -104,16 +97,13 @@ func (h *server) DeleteMessagesId(c *gin.Context, id string) {
 		"message_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -122,7 +112,7 @@ func (h *server) DeleteMessagesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.MessageDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.MessageDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete a message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -139,16 +129,13 @@ func (h *server) GetMessagesId(c *gin.Context, id string) {
 		"message_id":      id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -157,7 +144,7 @@ func (h *server) GetMessagesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.MessageGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.MessageGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get an message. err: %v", err)
 		c.AbortWithStatus(400)

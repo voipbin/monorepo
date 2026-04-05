@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_GetActiveflows(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,12 +36,12 @@ func Test_GetActiveflows(t *testing.T) {
 	tests := []test{
 		{
 			name: "empty request",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("9b7a30c4-ab4e-11ef-9068-1b1141edabd3"),
 				},
-			},
+			}),
 
 			reqQuery: "/activeflows",
 
@@ -58,12 +59,12 @@ func Test_GetActiveflows(t *testing.T) {
 		},
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("9b7a30c4-ab4e-11ef-9068-1b1141edabd3"),
 				},
-			},
+			}),
 
 			reqQuery: "/activeflows?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -81,12 +82,12 @@ func Test_GetActiveflows(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("cb8453ee-ab4e-11ef-9a1c-dfc505495abd"),
 				},
-			},
+			}),
 
 			reqQuery: "/activeflows?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -128,12 +129,12 @@ func Test_GetActiveflows(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowList(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.resActiveflows, nil)
+			mockSvc.EXPECT().ActiveflowList(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.resActiveflows, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -151,7 +152,7 @@ func Test_PostActiveflows(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -165,11 +166,11 @@ func Test_PostActiveflows(t *testing.T) {
 	}{
 		{
 			name: "full data",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/activeflows",
 			reqBody:  []byte(`{"actions":[{"id":"692de0d6-d3ab-11ef-a2cd-07af60d8bb91"}],"flow_id":"8917167e-d3ab-11ef-b322-b36809068d12","id":"88eaacce-d3ab-11ef-ac99-23f970b154a2"}`),
@@ -191,11 +192,11 @@ func Test_PostActiveflows(t *testing.T) {
 		},
 		{
 			name: "empty",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/activeflows",
 			reqBody:  []byte(`{}`),
@@ -227,7 +228,7 @@ func Test_PostActiveflows(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -235,7 +236,7 @@ func Test_PostActiveflows(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().ActiveflowCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectedID,
 				tt.expectedFlowID,
 				tt.expectedActions,
@@ -257,7 +258,7 @@ func Test_GetActiveflowsId(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -270,11 +271,11 @@ func Test_GetActiveflowsId(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 				},
-			},
+			}),
 
 			reqQuery: "/activeflows/31c3088a-cb2c-11ed-b323-2b5e8c1da422",
 
@@ -304,12 +305,12 @@ func Test_GetActiveflowsId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowGet(req.Context(), &tt.agent, tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowGet(req.Context(), tt.agent, tt.expectedActiveflowID).Return(tt.responseActiveflow, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
@@ -326,7 +327,7 @@ func Test_DeleteActiveflowsId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -337,11 +338,11 @@ func Test_DeleteActiveflowsId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/activeflows/8abf67b2-cb2c-11ed-997d-4ff8509599f7",
 
@@ -370,12 +371,12 @@ func Test_DeleteActiveflowsId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowDelete(req.Context(), &tt.agent, tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowDelete(req.Context(), tt.agent, tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -393,7 +394,7 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -404,11 +405,11 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/activeflows/da10d24c-cb2c-11ed-be08-1fca5d4747f4/stop",
 
@@ -437,12 +438,12 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
-			mockSvc.EXPECT().ActiveflowStop(req.Context(), &tt.agent, tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
+			mockSvc.EXPECT().ActiveflowStop(req.Context(), tt.agent, tt.expectActiveflowID).Return(tt.responseActiveflow, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

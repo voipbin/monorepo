@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -20,7 +21,7 @@ func Test_PostAisummaries(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -35,11 +36,11 @@ func Test_PostAisummaries(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aisummaries",
 			reqBody:  []byte(`{"language":"en-US","on_end_flow_id":"1c723502-0ccd-11f0-8c43-17bfdea221c5","reference_type":"call","reference_id":"1ca46b4e-0ccd-11f0-8a52-2f20e29cf20a"}`),
@@ -73,7 +74,7 @@ func Test_PostAisummaries(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -81,7 +82,7 @@ func Test_PostAisummaries(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().AISummaryCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectedOnEndFlowID,
 				tt.expectedReferenceType,
 				tt.expectedReferenceID,
@@ -104,7 +105,7 @@ func Test_GetAisummaries(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -118,11 +119,11 @@ func Test_GetAisummaries(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("ef9f2bd8-0ccd-11f0-9c5b-0b861eb38bff"),
 				},
-			},
+			}),
 
 			reqQuery: "/aisummaries?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -155,12 +156,12 @@ func Test_GetAisummaries(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AISummaryGetsByCustomerID(req.Context(), &tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAIsummaries, nil)
+			mockSvc.EXPECT().AISummaryGetsByCustomerID(req.Context(), tt.agent, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAIsummaries, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -178,7 +179,7 @@ func Test_GetAisummariesId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -189,11 +190,11 @@ func Test_GetAisummariesId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aisummaries/f04d646e-0ccd-11f0-aa34-e39ff78be410",
 
@@ -223,12 +224,12 @@ func Test_GetAisummariesId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AISummaryGet(req.Context(), &tt.agent, tt.expectAIID).Return(tt.responseAI, nil)
+			mockSvc.EXPECT().AISummaryGet(req.Context(), tt.agent, tt.expectAIID).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -246,7 +247,7 @@ func Test_DeleteAisummariesId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -257,11 +258,11 @@ func Test_DeleteAisummariesId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aisummaries/f07adf48-0ccd-11f0-9b39-932e754611a0",
 
@@ -291,12 +292,12 @@ func Test_DeleteAisummariesId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AISummaryDelete(req.Context(), &tt.agent, tt.expectAIID).Return(tt.responseAI, nil)
+			mockSvc.EXPECT().AISummaryDelete(req.Context(), tt.agent, tt.expectAIID).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

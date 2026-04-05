@@ -4,6 +4,7 @@ import (
 	"context"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amsummary "monorepo/bin-ai-manager/models/summary"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -21,7 +22,7 @@ func Test_AISummaryCreate_referencetype_call(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		onEndFlowID   uuid.UUID
 		referenceType amsummary.ReferenceType
 		referenceID   uuid.UUID
@@ -37,13 +38,13 @@ func Test_AISummaryCreate_referencetype_call(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("de017e84-0cc9-11f0-a6dd-cb4073c0bd22"),
 					CustomerID: uuid.FromStringOrNil("de33d3a2-0cc9-11f0-a377-37b9ae47ee38"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			onEndFlowID:   uuid.FromStringOrNil("dec1600a-0cc9-11f0-b561-0f25e91332c8"),
 			referenceType: amsummary.ReferenceTypeCall,
 			referenceID:   uuid.FromStringOrNil("deefe77c-0cc9-11f0-9a60-f338d9acb104"),
@@ -115,7 +116,7 @@ func Test_AISummaryListByCustomerID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent   *amagent.Agent
+		agent   *auth.AuthIdentity
 		size    uint64
 		token   string
 		filters map[amsummary.Field]any
@@ -126,13 +127,13 @@ func Test_AISummaryListByCustomerID(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1fe023c2-0ccb-11f0-919d-b3e9faacb57a"),
 					CustomerID: uuid.FromStringOrNil("2017e1fe-0ccb-11f0-9c4f-73268b39a2cc"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			size:  10,
 			token: "2020-09-20T03:23:20.995000Z",
 			filters: map[amsummary.Field]any{
@@ -190,7 +191,7 @@ func Test_AISummaryGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
+		agent       *auth.AuthIdentity
 		aisummaryID uuid.UUID
 
 		response  *amsummary.Summary
@@ -199,13 +200,13 @@ func Test_AISummaryGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			aisummaryID: uuid.FromStringOrNil("209b8da6-0ccb-11f0-a7ac-23a112c89568"),
 
 			response: &amsummary.Summary{
@@ -255,7 +256,7 @@ func Test_AISummaryDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent       *amagent.Agent
+		agent       *auth.AuthIdentity
 		aisummaryID uuid.UUID
 
 		responseAISummary *amsummary.Summary
@@ -264,13 +265,13 @@ func Test_AISummaryDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			aisummaryID: uuid.FromStringOrNil("b54b6336-0ccb-11f0-818d-07adf86344ed"),
 
 			responseAISummary: &amsummary.Summary{

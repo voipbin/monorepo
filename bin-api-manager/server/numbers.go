@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	nmnumber "monorepo/bin-number-manager/models/number"
 
@@ -16,16 +15,13 @@ func (h *server) GetNumbers(c *gin.Context, params openapi_server.GetNumbersPara
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -41,7 +37,7 @@ func (h *server) GetNumbers(c *gin.Context, params openapi_server.GetNumbersPara
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.NumberList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.NumberList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a order number list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -63,16 +59,13 @@ func (h *server) GetNumbersId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -81,7 +74,7 @@ func (h *server) GetNumbersId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.NumberGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.NumberGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get an order number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -97,16 +90,13 @@ func (h *server) PostNumbers(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostNumbersJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -123,7 +113,7 @@ func (h *server) PostNumbers(c *gin.Context) {
 	callFlowID := uuid.FromStringOrNil(req.CallFlowId)
 	messageFlowID := uuid.FromStringOrNil(req.MessageFlowId)
 
-	numb, err := h.serviceHandler.NumberCreate(c.Request.Context(), &a, req.Number, numType, callFlowID, messageFlowID, req.Name, req.Detail)
+	numb, err := h.serviceHandler.NumberCreate(c.Request.Context(), a, req.Number, numType, callFlowID, messageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create the number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -139,16 +129,13 @@ func (h *server) DeleteNumbersId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -157,7 +144,7 @@ func (h *server) DeleteNumbersId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.NumberDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.NumberDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete an order number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -173,16 +160,13 @@ func (h *server) PutNumbersId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -201,7 +185,7 @@ func (h *server) PutNumbersId(c *gin.Context, id string) {
 	callFlowID := uuid.FromStringOrNil(req.CallFlowId)
 	messageFlowID := uuid.FromStringOrNil(req.MessageFlowId)
 
-	res, err := h.serviceHandler.NumberUpdate(c.Request.Context(), &a, target, callFlowID, messageFlowID, req.Name, req.Detail)
+	res, err := h.serviceHandler.NumberUpdate(c.Request.Context(), a, target, callFlowID, messageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -218,16 +202,13 @@ func (h *server) PutNumbersIdFlowIds(c *gin.Context, id string) {
 		"number_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -246,7 +227,7 @@ func (h *server) PutNumbersIdFlowIds(c *gin.Context, id string) {
 	callFlowID := uuid.FromStringOrNil(req.CallFlowId)
 	messageFlowID := uuid.FromStringOrNil(req.MessageFlowId)
 
-	res, err := h.serviceHandler.NumberUpdateFlowIDs(c.Request.Context(), &a, target, callFlowID, messageFlowID)
+	res, err := h.serviceHandler.NumberUpdateFlowIDs(c.Request.Context(), a, target, callFlowID, messageFlowID)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
 		c.AbortWithStatus(400)
@@ -263,16 +244,13 @@ func (h *server) PutNumbersIdMetadata(c *gin.Context, id string) {
 		"number_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -297,7 +275,7 @@ func (h *server) PutNumbersIdMetadata(c *gin.Context, id string) {
 		RTPDebug: rtpDebug,
 	}
 
-	res, err := h.serviceHandler.NumberUpdateMetadata(c.Request.Context(), &a, target, metadata)
+	res, err := h.serviceHandler.NumberUpdateMetadata(c.Request.Context(), a, target, metadata)
 	if err != nil {
 		log.Errorf("Could not update the number's metadata. err: %v", err)
 		c.AbortWithStatus(400)
@@ -313,16 +291,13 @@ func (h *server) PostNumbersRenew(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostNumbersRenewJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -331,7 +306,7 @@ func (h *server) PostNumbersRenew(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.NumberRenew(c.Request.Context(), &a, req.TmRenew)
+	res, err := h.serviceHandler.NumberRenew(c.Request.Context(), a, req.TmRenew)
 	if err != nil {
 		log.Errorf("Could not renew the numbers. err: %v", err)
 		c.AbortWithStatus(400)

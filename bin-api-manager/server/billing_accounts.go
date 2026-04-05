@@ -3,7 +3,6 @@ package server
 import (
 	"math"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 
@@ -18,14 +17,13 @@ func (h *server) GetBillingAccounts(c *gin.Context, params openapi_server.GetBil
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithField("agent", a)
+	log = log.WithField("auth", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -45,7 +43,7 @@ func (h *server) GetBillingAccounts(c *gin.Context, params openapi_server.GetBil
 		"deleted": "false",
 	}
 
-	tmps, err := h.serviceHandler.BillingAccountList(c.Request.Context(), &a, pageSize, pageToken, filters)
+	tmps, err := h.serviceHandler.BillingAccountList(c.Request.Context(), a, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get billing accounts list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -69,15 +67,14 @@ func (h *server) GetBillingAccountsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -87,7 +84,7 @@ func (h *server) GetBillingAccountsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.BillingAccountGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.BillingAccountGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a billing account. err: %v", err)
 		c.AbortWithStatus(400)
@@ -103,15 +100,14 @@ func (h *server) PutBillingAccountsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -138,7 +134,7 @@ func (h *server) PutBillingAccountsId(c *gin.Context, id string) {
 		detail = *req.Detail
 	}
 
-	res, err := h.serviceHandler.BillingAccountUpdateBasicInfo(c.Request.Context(), &a, target, name, detail)
+	res, err := h.serviceHandler.BillingAccountUpdateBasicInfo(c.Request.Context(), a, target, name, detail)
 	if err != nil {
 		log.Errorf("Could not update. err: %v", err)
 		c.AbortWithStatus(400)
@@ -154,15 +150,14 @@ func (h *server) PutBillingAccountsIdPaymentInfo(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -189,7 +184,7 @@ func (h *server) PutBillingAccountsIdPaymentInfo(c *gin.Context, id string) {
 		paymentMethod = bmaccount.PaymentMethod(*req.PaymentMethod)
 	}
 
-	res, err := h.serviceHandler.BillingAccountUpdatePaymentInfo(c.Request.Context(), &a, target, paymentType, paymentMethod)
+	res, err := h.serviceHandler.BillingAccountUpdatePaymentInfo(c.Request.Context(), a, target, paymentType, paymentMethod)
 	if err != nil {
 		log.Errorf("Could not update. info err: %v", err)
 		c.AbortWithStatus(400)
@@ -205,15 +200,14 @@ func (h *server) PostBillingAccountsIdBalanceAddForce(c *gin.Context, id string)
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -240,7 +234,7 @@ func (h *server) PostBillingAccountsIdBalanceAddForce(c *gin.Context, id string)
 		return
 	}
 
-	res, err := h.serviceHandler.BillingAccountAddBalanceForce(c.Request.Context(), &a, target, balance)
+	res, err := h.serviceHandler.BillingAccountAddBalanceForce(c.Request.Context(), a, target, balance)
 	if err != nil {
 		log.Errorf("Could not add the balance to the billing account. err: %v", err)
 		c.AbortWithStatus(400)
@@ -256,15 +250,14 @@ func (h *server) PostBillingAccountsIdBalanceSubtractForce(c *gin.Context, id st
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -291,7 +284,7 @@ func (h *server) PostBillingAccountsIdBalanceSubtractForce(c *gin.Context, id st
 		return
 	}
 
-	res, err := h.serviceHandler.BillingAccountSubtractBalanceForce(c.Request.Context(), &a, target, balance)
+	res, err := h.serviceHandler.BillingAccountSubtractBalanceForce(c.Request.Context(), a, target, balance)
 	if err != nil {
 		log.Errorf("Could not subtract the balance from the billing account. err: %v", err)
 		c.AbortWithStatus(400)

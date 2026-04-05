@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -21,7 +22,7 @@ func Test_PostAimessages(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -35,11 +36,11 @@ func Test_PostAimessages(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aimessages",
 			reqBody:  []byte(`{"aicall_id":"9fa30c3a-f31e-11ef-a4df-9f6bf108282e","role":"user","content":"test text"}`),
@@ -73,7 +74,7 @@ func Test_PostAimessages(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -81,7 +82,7 @@ func Test_PostAimessages(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().AImessageCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectedAIcallID,
 				tt.expectedRole,
 				tt.expectedContent,
@@ -103,7 +104,7 @@ func Test_GetAimessages(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -118,11 +119,11 @@ func Test_GetAimessages(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aimessages?page_size=10&page_token=2020-09-20T03:23:20.995000Z&aicall_id=ecebd332-f31e-11ef-9ab5-33426e3ee4ff",
 
@@ -142,11 +143,11 @@ func Test_GetAimessages(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aimessages?page_size=10&page_token=2020-09-20T03:23:20.995000Z&aicall_id=ed487b96-f31e-11ef-9337-e792818f3609",
 
@@ -193,12 +194,12 @@ func Test_GetAimessages(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AImessageGetsByAIcallID(req.Context(), &tt.agent, tt.expectedAIcallID, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAImessages, nil)
+			mockSvc.EXPECT().AImessageGetsByAIcallID(req.Context(), tt.agent, tt.expectedAIcallID, tt.expectedPageSize, tt.expectedPageToken).Return(tt.responseAImessages, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -216,7 +217,7 @@ func Test_GetAimessagesId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -227,11 +228,11 @@ func Test_GetAimessagesId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aimessages/796924c2-f31f-11ef-8589-c3efd79e11d5",
 
@@ -261,12 +262,12 @@ func Test_GetAimessagesId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().AImessageGet(req.Context(), &tt.agent, tt.expectedAImessageID).Return(tt.responseAImessage, nil)
+			mockSvc.EXPECT().AImessageGet(req.Context(), tt.agent, tt.expectedAImessageID).Return(tt.responseAImessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -284,7 +285,7 @@ func Test_DeleteAimessagesId(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -295,11 +296,11 @@ func Test_DeleteAimessagesId(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aimessages/b3fc4312-f31f-11ef-8661-939776978f23",
 
@@ -329,12 +330,12 @@ func Test_DeleteAimessagesId(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().AImessageDelete(req.Context(), &tt.agent, tt.expectedAImessageID).Return(tt.responseAImessage, nil)
+			mockSvc.EXPECT().AImessageDelete(req.Context(), tt.agent, tt.expectedAImessageID).Return(tt.responseAImessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -2,6 +2,7 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cmrecording "monorepo/bin-call-manager/models/recording"
@@ -20,7 +21,7 @@ func Test_recordingsIDGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -33,11 +34,11 @@ func Test_recordingsIDGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/recordings/31982926-61e3-11eb-a373-37c520973929",
 
@@ -67,12 +68,12 @@ func Test_recordingsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().RecordingGet(req.Context(), &tt.agent, tt.expectRecordingID).Return(tt.responseRecording, nil)
+			mockSvc.EXPECT().RecordingGet(req.Context(), tt.agent, tt.expectRecordingID).Return(tt.responseRecording, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -90,7 +91,7 @@ func Test_recordingsIDDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery          string
 		responseRecording *cmrecording.WebhookMessage
@@ -102,11 +103,11 @@ func Test_recordingsIDDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/recordings/ca5f68bc-8f1e-11ed-957c-9b7ba0e03f3c",
 			responseRecording: &cmrecording.WebhookMessage{
@@ -135,12 +136,12 @@ func Test_recordingsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().RecordingDelete(req.Context(), &tt.agent, tt.expectRecordingID).Return(tt.responseRecording, nil)
+			mockSvc.EXPECT().RecordingDelete(req.Context(), tt.agent, tt.expectRecordingID).Return(tt.responseRecording, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

@@ -10,6 +10,7 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -22,7 +23,7 @@ func Test_ServiceAgentCustomerGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseCustomer *cscustomer.Customer
 		expectedRes      *cscustomer.WebhookMessage
@@ -30,11 +31,11 @@ func Test_ServiceAgentCustomerGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("31cd5e88-b898-11ef-981c-b7b9c42c9e03"),
 				},
-			},
+			}),
 
 			responseCustomer: &cscustomer.Customer{
 				ID: uuid.FromStringOrNil("fd9e1d8c-bc89-11ef-9c59-e39b69889bbf"),

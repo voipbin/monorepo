@@ -11,6 +11,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -22,20 +24,20 @@ func Test_storageAccountGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent            *amagent.Agent
+		agent *auth.AuthIdentity
 		storageAccountID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b7ef6ea6-1bd7-11ef-88a6-ff71fa05d8bd"),
 					CustomerID: uuid.FromStringOrNil("b83e3c98-1bd7-11ef-8f14-9f07e5f6c56b"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("b87c0fc8-1bd7-11ef-84a7-3b073405f0cd"),
 			&smaccount.Account{
 				ID:         uuid.FromStringOrNil("b87c0fc8-1bd7-11ef-84a7-3b073405f0cd"),
@@ -78,7 +80,7 @@ func Test_StorageAccountDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent            *amagent.Agent
+		agent *auth.AuthIdentity
 		storageAccountID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
@@ -87,13 +89,13 @@ func Test_StorageAccountDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
 					CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			storageAccountID: uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
 
 			responseStorageAccount: &smaccount.Account{
@@ -143,7 +145,7 @@ func Test_StorageAccountList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -153,13 +155,13 @@ func Test_StorageAccountList(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6998ca62-1bd8-11ef-bfe1-f3c47f813931"),
 					CustomerID: uuid.FromStringOrNil("69dc78e8-1bd8-11ef-9710-ffa2bc5ebf93"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			size:  10,
 			token: "2020-09-20T03:23:20.995000Z",
 
@@ -219,7 +221,7 @@ func Test_StorageAccountCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent *auth.AuthIdentity
 		customerID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
@@ -228,13 +230,13 @@ func Test_StorageAccountCreate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("f2295586-1bd8-11ef-8610-73602171ce63"),
 					CustomerID: uuid.FromStringOrNil("f24de752-1bd8-11ef-b438-4361eeff2690"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			customerID: uuid.FromStringOrNil("e9942acc-1bd8-11ef-9c19-33ff4d2cf1ae"),
 
 			responseStorageAccount: &smaccount.Account{

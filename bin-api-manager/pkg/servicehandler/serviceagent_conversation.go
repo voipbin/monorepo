@@ -3,7 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	"github.com/gofrs/uuid"
@@ -12,14 +12,18 @@ import (
 
 // ServiceAgentConversationGet gets the conversation of the given id.
 // It returns conversation if it succeed.
-func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	// get
 	tmp, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not get conversation.")
 	}
 
-	if tmp.OwnerID != a.ID {
+	if tmp.OwnerID != a.AgentID() {
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
@@ -30,7 +34,11 @@ func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *ama
 // ServiceAgentConversationGets sends a request to conversation-manager
 // to getting the list of conversation.
 // it returns list of chatroom messages if it succeed.
-func (h *serviceHandler) ServiceAgentConversationList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentConversationList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -38,7 +46,7 @@ func (h *serviceHandler) ServiceAgentConversationList(ctx context.Context, a *am
 	// filters
 	filters := map[cvconversation.Field]any{
 		cvconversation.FieldDeleted: false,
-		cvconversation.FieldOwnerID: a.ID,
+		cvconversation.FieldOwnerID: a.AgentID(),
 	}
 
 	tmps, err := h.conversationList(ctx, a, size, token, filters)

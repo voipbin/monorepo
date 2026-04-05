@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -18,16 +17,13 @@ func (h *server) PostGroupcalls(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostGroupcallsJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -47,7 +43,7 @@ func (h *server) PostGroupcalls(c *gin.Context) {
 		actions = append(actions, ConvertFlowManagerAction(v))
 	}
 
-	res, err := h.serviceHandler.GroupcallCreate(c.Request.Context(), &a, source, destinations, flowID, actions, cmgroupcall.RingMethod(req.RingMethod), cmgroupcall.AnswerMethod(req.AnswerMethod))
+	res, err := h.serviceHandler.GroupcallCreate(c.Request.Context(), a, source, destinations, flowID, actions, cmgroupcall.RingMethod(req.RingMethod), cmgroupcall.AnswerMethod(req.AnswerMethod))
 	if err != nil {
 		log.Errorf("Could not create a groupcall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -63,16 +59,13 @@ func (h *server) GetGroupcalls(c *gin.Context, params openapi_server.GetGroupcal
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -88,7 +81,7 @@ func (h *server) GetGroupcalls(c *gin.Context, params openapi_server.GetGroupcal
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.GroupcallList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.GroupcallList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a groupcall list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -111,16 +104,13 @@ func (h *server) GetGroupcallsId(c *gin.Context, id string) {
 		"groupcall_id":    id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -129,7 +119,7 @@ func (h *server) GetGroupcallsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.GroupcallGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.GroupcallGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a groupcall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -145,16 +135,13 @@ func (h *server) PostGroupcallsIdHangup(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -163,7 +150,7 @@ func (h *server) PostGroupcallsIdHangup(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.GroupcallHangup(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.GroupcallHangup(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not hangup the groupcall. err: %v", err)
 		c.AbortWithStatus(400)
@@ -179,16 +166,13 @@ func (h *server) DeleteGroupcallsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -197,7 +181,7 @@ func (h *server) DeleteGroupcallsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.GroupcallDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.GroupcallDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the groupcall. err: %v", err)
 		c.AbortWithStatus(400)

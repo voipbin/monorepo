@@ -5,6 +5,7 @@ import (
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amsummary "monorepo/bin-ai-manager/models/summary"
+	"monorepo/bin-api-manager/models/auth"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -14,12 +15,15 @@ import (
 // AISummaryCreate is a service handler for ai summary creation.
 func (h *serviceHandler) AISummaryCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	onEndFlowID uuid.UUID,
 	referenceType amsummary.ReferenceType,
 	referenceID uuid.UUID,
 	language string,
 ) (*amsummary.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	var tmpCustomerID uuid.UUID
 	// get reference's customer info
@@ -91,7 +95,10 @@ func (h *serviceHandler) aisummaryGet(ctx context.Context, id uuid.UUID) (*amsum
 
 // AISummaryGetsByCustomerID gets the list of aisummaries of the given customer id.
 // It returns list of aisummaries if it succeed.
-func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amsummary.WebhookMessage, error) {
+func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amsummary.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -153,7 +160,11 @@ func (h *serviceHandler) convertAISummaryFilters(filters map[string]string) (map
 
 // AISummaryGet gets the ai summary of the given id.
 // It returns ai summary if it succeed.
-func (h *serviceHandler) AISummaryGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amsummary.WebhookMessage, error) {
+func (h *serviceHandler) AISummaryGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amsummary.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	tmp, err := h.aisummaryGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get ai summaries info")
@@ -168,7 +179,11 @@ func (h *serviceHandler) AISummaryGet(ctx context.Context, a *amagent.Agent, id 
 }
 
 // AISummaryDelete deletes the ai summary.
-func (h *serviceHandler) AISummaryDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amsummary.WebhookMessage, error) {
+func (h *serviceHandler) AISummaryDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amsummary.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	c, err := h.aisummaryGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get ai summary info")

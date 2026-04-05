@@ -13,6 +13,7 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -25,20 +26,20 @@ func Test_billingAccountGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent            *amagent.Agent
+		agent            *auth.AuthIdentity
 		billingAccountID uuid.UUID
 
 		responseBillingAccount *bmaccount.Account
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
 			&bmaccount.Account{
 				Identity: commonidentity.Identity{
@@ -129,19 +130,19 @@ func Test_BillingAccountGet_NoPermission(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent            *amagent.Agent
+		agent            *auth.AuthIdentity
 		billingAccountID uuid.UUID
 	}{
 		{
 			name: "customer admin has no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			billingAccountID: uuid.FromStringOrNil("d18d036a-105b-11ee-9f29-bb51d45198bc"),
 		},
 	}
@@ -173,7 +174,7 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent              *amagent.Agent
+		agent              *auth.AuthIdentity
 		billingAccountID   uuid.UUID
 		billingAccountName string
 		detail             string
@@ -184,13 +185,13 @@ func Test_BillingAccountUpdateBasicInfo(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			billingAccountID:   uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
 			billingAccountName: "test name",
 			detail:             "test detail",
@@ -245,7 +246,7 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent            *amagent.Agent
+		agent            *auth.AuthIdentity
 		billingAccountID uuid.UUID
 		paymentType      bmaccount.PaymentType
 		paymentMethod    bmaccount.PaymentMethod
@@ -256,13 +257,13 @@ func Test_BillingAccountUpdatePaymentInfo(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			billingAccountID: uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
 			paymentType:      bmaccount.PaymentTypePrepaid,
 			paymentMethod:    bmaccount.PaymentMethodCreditCard,
@@ -317,7 +318,7 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		accountID uuid.UUID
 		balance   int64
 
@@ -327,13 +328,13 @@ func Test_BillingAccountAddBalanceForce(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			accountID: uuid.FromStringOrNil("55867314-4cd8-11ee-b465-73c0486f35ff"),
 			balance:   32210000,
 
@@ -383,19 +384,19 @@ func Test_BillingAccountUpdateBasicInfo_NoPermission(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent            *amagent.Agent
+		agent            *auth.AuthIdentity
 		billingAccountID uuid.UUID
 	}{
 		{
 			name: "customer admin has no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			billingAccountID: uuid.FromStringOrNil("91aea826-4cdc-11ee-9e0f-7bde2e963cc8"),
 		},
 	}
@@ -426,19 +427,19 @@ func Test_BillingAccountUpdatePaymentInfo_NoPermission(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent            *amagent.Agent
+		agent            *auth.AuthIdentity
 		billingAccountID uuid.UUID
 	}{
 		{
 			name: "customer admin has no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			billingAccountID: uuid.FromStringOrNil("0a0fc97c-4cdc-11ee-ac88-130f1afddcfa"),
 		},
 	}
@@ -469,7 +470,7 @@ func Test_BillingAccountSubtractBalanceForce(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		accountID uuid.UUID
 		balance   int64
 
@@ -479,13 +480,13 @@ func Test_BillingAccountSubtractBalanceForce(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			accountID: uuid.FromStringOrNil("55867314-4cd8-11ee-b465-73c0486f35ff"),
 			balance:   10000000,
 
@@ -535,18 +536,18 @@ func Test_BillingAccountList_NoPermission(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 	}{
 		{
 			name: "customer admin has no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 		},
 	}
 
@@ -577,7 +578,7 @@ func Test_BillingAccountSelfGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseCustomer       *cscustomer.Customer
 		responseBillingAccount *bmaccount.Account
@@ -586,13 +587,13 @@ func Test_BillingAccountSelfGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			responseCustomer: &cscustomer.Customer{
 				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -647,20 +648,20 @@ func Test_BillingAccountSelfGet_NoBillingAccount(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseCustomer *cscustomer.Customer
 	}{
 		{
 			name: "no billing account",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			responseCustomer: &cscustomer.Customer{
 				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -698,18 +699,18 @@ func Test_BillingAccountSelfGet_NoPermission(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 	}{
 		{
 			name: "no permission",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: 0,
-			},
+			}),
 		},
 	}
 
@@ -740,18 +741,18 @@ func Test_BillingAccountSelfGet_CustomerNotFound(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 	}{
 		{
 			name: "customer not found",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 		},
 	}
 
@@ -784,7 +785,7 @@ func Test_BillingAccountSelfUpdateBasicInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		baName string
 		detail string
 
@@ -795,13 +796,13 @@ func Test_BillingAccountSelfUpdateBasicInfo(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			baName: "test name",
 			detail: "test detail",
 
@@ -858,20 +859,20 @@ func Test_BillingAccountSelfUpdateBasicInfo_NoBillingAccount(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseCustomer *cscustomer.Customer
 	}{
 		{
 			name: "no billing account",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			responseCustomer: &cscustomer.Customer{
 				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -909,7 +910,7 @@ func Test_BillingAccountSelfUpdatePaymentInfo(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		paymentType   bmaccount.PaymentType
 		paymentMethod bmaccount.PaymentMethod
 
@@ -920,13 +921,13 @@ func Test_BillingAccountSelfUpdatePaymentInfo(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			paymentType:   bmaccount.PaymentTypePrepaid,
 			paymentMethod: bmaccount.PaymentMethodCreditCard,
 
@@ -983,20 +984,20 @@ func Test_BillingAccountSelfUpdatePaymentInfo_NoBillingAccount(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseCustomer *cscustomer.Customer
 	}{
 		{
 			name: "no billing account",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			responseCustomer: &cscustomer.Customer{
 				ID:               uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
@@ -1034,7 +1035,7 @@ func Test_BillingAccountList(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		size          uint64
 		token         string
 		filters       map[string]string
@@ -1048,12 +1049,12 @@ func Test_BillingAccountList(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 
 			10,
 			"2020-09-20T03:23:20.995000Z",

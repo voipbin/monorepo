@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
@@ -18,16 +17,13 @@ func (h *server) GetQueues(c *gin.Context, params openapi_server.GetQueuesParams
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -43,7 +39,7 @@ func (h *server) GetQueues(c *gin.Context, params openapi_server.GetQueuesParams
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.QueueList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.QueueList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get queues info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -65,16 +61,13 @@ func (h *server) PostQueues(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostQueuesJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -92,7 +85,7 @@ func (h *server) PostQueues(c *gin.Context) {
 
 	res, err := h.serviceHandler.QueueCreate(
 		c.Request.Context(),
-		&a,
+		a,
 		req.Name,
 		req.Detail,
 		qmqueue.RoutingMethod(req.RoutingMethod),
@@ -117,16 +110,13 @@ func (h *server) DeleteQueuesId(c *gin.Context, id string) {
 		"queue_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -135,7 +125,7 @@ func (h *server) DeleteQueuesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.QueueDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.QueueDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the delete the queue info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -152,16 +142,13 @@ func (h *server) GetQueuesId(c *gin.Context, id string) {
 		"queue_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -170,7 +157,7 @@ func (h *server) GetQueuesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.QueueGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.QueueGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the queue info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -187,16 +174,13 @@ func (h *server) PutQueuesId(c *gin.Context, id string) {
 		"queue_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -219,7 +203,7 @@ func (h *server) PutQueuesId(c *gin.Context, id string) {
 
 	waitFlowID := uuid.FromStringOrNil(req.WaitFlowId)
 
-	res, err := h.serviceHandler.QueueUpdate(c.Request.Context(), &a, target, req.Name, req.Detail, qmqueue.RoutingMethod(req.RoutingMethod), tagIDs, waitFlowID, req.WaitTimeout, req.ServiceTimeout)
+	res, err := h.serviceHandler.QueueUpdate(c.Request.Context(), a, target, req.Name, req.Detail, qmqueue.RoutingMethod(req.RoutingMethod), tagIDs, waitFlowID, req.WaitTimeout, req.ServiceTimeout)
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		c.AbortWithStatus(400)
@@ -236,16 +220,13 @@ func (h *server) PutQueuesIdTagIds(c *gin.Context, id string) {
 		"queue_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -266,7 +247,7 @@ func (h *server) PutQueuesIdTagIds(c *gin.Context, id string) {
 		tagIDs = append(tagIDs, uuid.FromStringOrNil(v))
 	}
 
-	res, err := h.serviceHandler.QueueUpdateTagIDs(c.Request.Context(), &a, target, tagIDs)
+	res, err := h.serviceHandler.QueueUpdateTagIDs(c.Request.Context(), a, target, tagIDs)
 	if err != nil {
 		log.Errorf("Could not update the agent. err: %v", err)
 		c.AbortWithStatus(400)
@@ -283,16 +264,13 @@ func (h *server) PutQueuesIdRoutingMethod(c *gin.Context, id string) {
 		"queue_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -308,7 +286,7 @@ func (h *server) PutQueuesIdRoutingMethod(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.QueueUpdateRoutingMethod(c.Request.Context(), &a, target, qmqueue.RoutingMethod(req.RoutingMethod))
+	res, err := h.serviceHandler.QueueUpdateRoutingMethod(c.Request.Context(), a, target, qmqueue.RoutingMethod(req.RoutingMethod))
 	if err != nil {
 		log.Errorf("Could not update the queue. err: %v", err)
 		c.AbortWithStatus(400)
@@ -325,16 +303,13 @@ func (h *server) PostQueuesIdDirectHashRegenerate(c *gin.Context, id openapi_typ
 		"queue_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	// Convert openapi_types.UUID to uuid.UUID
 	queueID, err := uuid.FromString(id.String())
@@ -344,7 +319,7 @@ func (h *server) PostQueuesIdDirectHashRegenerate(c *gin.Context, id openapi_typ
 		return
 	}
 
-	res, err := h.serviceHandler.QueueDirectHashRegenerate(c.Request.Context(), &a, queueID)
+	res, err := h.serviceHandler.QueueDirectHashRegenerate(c.Request.Context(), a, queueID)
 	if err != nil {
 		log.Errorf("Could not regenerate queue direct hash. err: %v", err)
 		c.AbortWithStatus(400)

@@ -15,6 +15,7 @@ import (
 	cfconference "monorepo/bin-conference-manager/models/conference"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -27,7 +28,7 @@ func Test_ConferenceCreate(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		agent            *amagent.Agent
+		agent            *auth.AuthIdentity
 		id               uuid.UUID
 		confType         cfconference.Type
 		confName         string
@@ -41,13 +42,13 @@ func Test_ConferenceCreate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			id:         uuid.FromStringOrNil("b6573ab8-1e1c-11f0-9350-cb7934970eb4"),
 			confType:   cfconference.TypeConference,
 			confName:   "test name",
@@ -82,13 +83,13 @@ func Test_ConferenceCreate(t *testing.T) {
 		},
 		{
 			name: "empty",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			id:         uuid.Nil,
 			confType:   cfconference.TypeConference,
@@ -174,7 +175,7 @@ func Test_ConferenceDelete(t *testing.T) {
 
 	tests := []struct {
 		name               string
-		agent              *amagent.Agent
+		agent              *auth.AuthIdentity
 		conferenceID       uuid.UUID
 		responseConference *cfconference.Conference
 
@@ -182,13 +183,13 @@ func Test_ConferenceDelete(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			conferenceID: uuid.FromStringOrNil("7bf5c33a-f086-11ea-9f7c-5f596f1dbfd0"),
 
 			responseConference: &cfconference.Conference{
@@ -238,7 +239,7 @@ func Test_ConferenceList(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		token string
 		limit uint64
@@ -249,13 +250,13 @@ func Test_ConferenceList(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			"2020-09-20T03:23:20.995000Z",
 			10,
@@ -315,20 +316,20 @@ func Test_ConferenceGet(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		id        uuid.UUID
 		response  *cfconference.Conference
 		expectRes *cfconference.WebhookMessage
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 			&cfconference.Conference{
 				Identity: commonidentity.Identity{
@@ -376,7 +377,7 @@ func Test_ConferenceUpdate(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		agent      *amagent.Agent
+		agent      *auth.AuthIdentity
 		id         uuid.UUID
 		updateName string
 		detail     string
@@ -390,13 +391,13 @@ func Test_ConferenceUpdate(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			id:         uuid.FromStringOrNil("78396a1c-202d-11ec-a85f-67fefb00b6a7"),
 			updateName: "update name",
 			detail:     "update detail",
@@ -451,7 +452,7 @@ func Test_ConferenceRecordingStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		conferenceID uuid.UUID
 		format       cmrecording.Format
 		duration     int
@@ -463,13 +464,13 @@ func Test_ConferenceRecordingStart(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			conferenceID: uuid.FromStringOrNil("6d48be14-910b-11ed-b644-eb3bf9ff8517"),
 			format:       cmrecording.FormatWAV,
 			duration:     3600,
@@ -523,7 +524,7 @@ func Test_ConferenceRecordingStop(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		conferenceID uuid.UUID
 
 		responseconference *cfconference.Conference
@@ -532,13 +533,13 @@ func Test_ConferenceRecordingStop(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("f6e67710-910b-11ed-b11d-abaf81af53bf"),
 
 			&cfconference.Conference{
@@ -589,7 +590,7 @@ func Test_ConferenceTranscribeStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		conferenceID uuid.UUID
 		language     string
 
@@ -599,13 +600,13 @@ func Test_ConferenceTranscribeStart(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("729da1a8-98eb-11ed-8fa8-1b689360397c"),
 			"en-US",
 
@@ -657,7 +658,7 @@ func Test_ConferenceTranscribeStop(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		conferenceID uuid.UUID
 
 		responseconference *cfconference.Conference
@@ -666,13 +667,13 @@ func Test_ConferenceTranscribeStop(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("72d42a48-98eb-11ed-bd79-f3b90badd9ad"),
 
 			&cfconference.Conference{
@@ -723,7 +724,7 @@ func Test_ConferenceMediaStreamStart(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		conferenceID  uuid.UUID
 		encapsulation string
 		writer        http.ResponseWriter
@@ -736,13 +737,13 @@ func Test_ConferenceMediaStreamStart(t *testing.T) {
 		{
 			"normal",
 
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("9543aae2-eb4a-11ee-987e-e725fbe471f2"),
 			"rtp",
 			&mockResponseWriter{},

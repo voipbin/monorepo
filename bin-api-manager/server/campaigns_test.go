@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cacampaign "monorepo/bin-campaign-manager/models/campaign"
@@ -23,7 +24,7 @@ func Test_campaignsPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -44,11 +45,11 @@ func Test_campaignsPOST(t *testing.T) {
 	}{
 		{
 			name: "full data",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","type":"call","service_level":100,"end_handle":"stop","actions":[{"type":"answer"}],"outplan_id":"a1380082-c68a-11ec-9fa9-d7588fa9c904","outdial_id":"a16d488c-c68a-11ec-8252-375e8f888c2f","queue_id":"a19393ca-c68a-11ec-a78d-a7110df02eb3","next_campaign_id":"a1ba021c-c68a-11ec-b81e-f3e6f905293b"}`),
@@ -91,7 +92,7 @@ func Test_campaignsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -99,7 +100,7 @@ func Test_campaignsPOST(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			mockSvc.EXPECT().CampaignCreate(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectName,
 				tt.expectDetail,
 				tt.expectType,
@@ -128,7 +129,7 @@ func Test_campaignsGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -142,11 +143,11 @@ func Test_campaignsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -165,11 +166,11 @@ func Test_campaignsGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -214,12 +215,12 @@ func Test_campaignsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignGetsByCustomerID(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCampaigns, nil)
+			mockSvc.EXPECT().CampaignGetsByCustomerID(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseCampaigns, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -237,7 +238,7 @@ func Test_campaignsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -248,11 +249,11 @@ func Test_campaignsIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns/832bd31a-c68b-11ec-bcd0-7f66f70ae88d",
 
@@ -282,12 +283,12 @@ func Test_campaignsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignGet(req.Context(), &tt.agent, tt.expectCampaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignGet(req.Context(), tt.agent, tt.expectCampaignID).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -305,7 +306,7 @@ func Test_campaignsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -316,11 +317,11 @@ func Test_campaignsIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns/aa1a055a-c68b-11ec-99c7-173b42898a47",
 
@@ -350,12 +351,12 @@ func Test_campaignsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().CampaignDelete(req.Context(), &tt.agent, tt.expectCampaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignDelete(req.Context(), tt.agent, tt.expectCampaignID).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -373,7 +374,7 @@ func Test_campaignsIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -390,11 +391,11 @@ func Test_campaignsIDPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns/e2758bfe-c68b-11ec-a1d0-ff54494682b4",
 			reqBody:  []byte(`{"name":"test name","detail":"test detail","type":"call","service_level":100,"end_handle":"continue"}`),
@@ -430,13 +431,13 @@ func Test_campaignsIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectName, tt.expectDetail, tt.expectType, tt.expectServiceLevel, tt.expectEndHandle).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateBasicInfo(req.Context(), tt.agent, tt.expectCampaignID, tt.expectName, tt.expectDetail, tt.expectType, tt.expectServiceLevel, tt.expectEndHandle).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -455,7 +456,7 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -468,11 +469,11 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns/1bbc5316-c68c-11ec-a2cd-7b9fb7e1e855/status",
 			reqBody:  []byte(`{"status":"run"}`),
@@ -504,13 +505,13 @@ func Test_campaignsIDStatusPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateStatus(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectStatus).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateStatus(req.Context(), tt.agent, tt.expectCampaignID, tt.expectStatus).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -529,7 +530,7 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery         string
 		reqBody          []byte
@@ -541,11 +542,11 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns/40460ace-c68c-11ec-9694-830803c448f7/service_level",
 			reqBody:  []byte(`{"service_level":100}`),
@@ -576,13 +577,13 @@ func Test_campaignsIDServiceLevelPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateServiceLevel(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectServiceLevel).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateServiceLevel(req.Context(), tt.agent, tt.expectCampaignID, tt.expectServiceLevel).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -600,7 +601,7 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -613,11 +614,11 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns/79027712-c68c-11ec-b75e-27bce33a22a8/actions",
 			reqBody:  []byte(`{"actions":[{"type":"answer"},{"type":"talk","option":{"text":"hello"}}]}`),
@@ -660,13 +661,13 @@ func Test_campaignsIDActionsPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateActions(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectActions).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateActions(req.Context(), tt.agent, tt.expectCampaignID, tt.expectActions).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -684,7 +685,7 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -700,11 +701,11 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/campaigns/47a64a88-c6b7-11ec-973d-1f139c4db335/resource_info",
 			reqBody:  []byte(`{"outplan_id":"60fbac4e-c6b7-11ec-869d-3bb7acd5d21a","outdial_id":"61276366-c6b7-11ec-9a5f-07c38e459ee5","queue_id":"614def2c-c6b7-11ec-be49-f350c18391d0","next_campaign_id":"2d21918e-7cd4-11ee-9f07-c3d4e266f6f6"}`),
@@ -739,13 +740,13 @@ func Test_campaignsIDResourceInfoPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectOutplanID, tt.expectOutdialID, tt.expectQueueID, tt.expectNextCampaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateResourceInfo(req.Context(), tt.agent, tt.expectCampaignID, tt.expectOutplanID, tt.expectOutdialID, tt.expectQueueID, tt.expectNextCampaignID).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -763,7 +764,7 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -776,11 +777,11 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 			expectCampaignID: uuid.FromStringOrNil("a76dcb26-c6b7-11ec-b0dc-23d4f8625f83"),
 
 			reqQuery: "/campaigns/a76dcb26-c6b7-11ec-b0dc-23d4f8625f83/next_campaign_id",
@@ -812,13 +813,13 @@ func Test_campaignsIDNextCampaignIDPUT(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), &tt.agent, tt.expectCampaignID, tt.expectNextCampaignID).Return(tt.responseCampaign, nil)
+			mockSvc.EXPECT().CampaignUpdateNextCampaignID(req.Context(), tt.agent, tt.expectCampaignID, tt.expectNextCampaignID).Return(tt.responseCampaign, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -836,7 +837,7 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 
 	type test struct {
 		name       string
-		agent      amagent.Agent
+		agent *auth.AuthIdentity
 		campaignID uuid.UUID
 
 		reqQuery         string
@@ -850,11 +851,11 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "1 item",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 			campaignID: uuid.FromStringOrNil("571e5aa6-c86e-11ec-a62f-d7989ff2e4dd"),
 
 			reqQuery: "/campaigns/571e5aa6-c86e-11ec-a62f-d7989ff2e4dd/campaigncalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
@@ -873,11 +874,11 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 		},
 		{
 			name: "more than 2 items",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 			campaignID: uuid.FromStringOrNil("ef319a88-c86e-11ec-a8b2-abe87e962b9b"),
 
 			reqQuery: "/campaigns/ef319a88-c86e-11ec-a8b2-abe87e962b9b/campaigncalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
@@ -924,13 +925,13 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().CampaigncallGetsByCampaignID(req.Context(), &tt.agent, tt.campaignID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutdials, nil)
+			mockSvc.EXPECT().CampaigncallGetsByCampaignID(req.Context(), tt.agent, tt.campaignID, tt.expectPageSize, tt.expectPageToken).Return(tt.responseOutdials, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

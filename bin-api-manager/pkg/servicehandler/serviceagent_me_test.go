@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -22,7 +23,7 @@ func Test_ServiceAgentMeGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseAgent *amagent.Agent
 		expectedRes   *amagent.WebhookMessage
@@ -30,11 +31,11 @@ func Test_ServiceAgentMeGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("31cd5e88-b898-11ef-981c-b7b9c42c9e03"),
 				},
-			},
+			}),
 
 			responseAgent: &amagent.Agent{
 				Identity: commonidentity.Identity{
@@ -63,7 +64,7 @@ func Test_ServiceAgentMeGet(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agent.ID).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentGet(ctx, tt.agent.AgentID()).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeGet(ctx, tt.agent)
 			if err != nil {
@@ -82,7 +83,7 @@ func Test_ServiceAgentMeUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent      *amagent.Agent
+		agent      *auth.AuthIdentity
 		agentName  string
 		detail     string
 		ringMethod amagent.RingMethod
@@ -93,11 +94,11 @@ func Test_ServiceAgentMeUpdate(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("31cd5e88-b898-11ef-981c-b7b9c42c9e03"),
 				},
-			},
+			}),
 			agentName:  "update name",
 			detail:     "update detail",
 			ringMethod: amagent.RingMethodRingAll,
@@ -129,7 +130,7 @@ func Test_ServiceAgentMeUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentUpdate(ctx, tt.agent.ID, tt.agentName, tt.detail, tt.ringMethod).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdate(ctx, tt.agent.AgentID(), tt.agentName, tt.detail, tt.ringMethod).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeUpdate(ctx, tt.agent, tt.agentName, tt.detail, tt.ringMethod)
 			if err != nil {
@@ -148,7 +149,7 @@ func Test_ServiceAgentMeUpdateAddresses(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		addresses []commonaddress.Address
 
 		responseAgent *amagent.Agent
@@ -157,11 +158,11 @@ func Test_ServiceAgentMeUpdateAddresses(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("31cd5e88-b898-11ef-981c-b7b9c42c9e03"),
 				},
-			},
+			}),
 			addresses: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeTel,
@@ -196,7 +197,7 @@ func Test_ServiceAgentMeUpdateAddresses(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentUpdateAddresses(ctx, tt.agent.ID, tt.addresses).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdateAddresses(ctx, tt.agent.AgentID(), tt.addresses).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeUpdateAddresses(ctx, tt.agent, tt.addresses)
 			if err != nil {
@@ -215,7 +216,7 @@ func Test_ServiceAgentMeUpdateStatus(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		status amagent.Status
 
 		responseAgent *amagent.Agent
@@ -224,11 +225,11 @@ func Test_ServiceAgentMeUpdateStatus(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("31cd5e88-b898-11ef-981c-b7b9c42c9e03"),
 				},
-			},
+			}),
 			status: amagent.StatusAvailable,
 
 			responseAgent: &amagent.Agent{
@@ -258,7 +259,7 @@ func Test_ServiceAgentMeUpdateStatus(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentUpdateStatus(ctx, tt.agent.ID, tt.status).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdateStatus(ctx, tt.agent.AgentID(), tt.status).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeUpdateStatus(ctx, tt.agent, tt.status)
 			if err != nil {
@@ -277,7 +278,7 @@ func Test_ServiceAgentMeUpdatePassword(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent    *amagent.Agent
+		agent    *auth.AuthIdentity
 		password string
 
 		responseAgent *amagent.Agent
@@ -286,11 +287,11 @@ func Test_ServiceAgentMeUpdatePassword(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("31cd5e88-b898-11ef-981c-b7b9c42c9e03"),
 				},
-			},
+			}),
 			password: "update_password",
 
 			responseAgent: &amagent.Agent{
@@ -320,7 +321,7 @@ func Test_ServiceAgentMeUpdatePassword(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AgentV1AgentUpdatePassword(ctx, gomock.Any(), tt.agent.ID, tt.password).Return(tt.responseAgent, nil)
+			mockReq.EXPECT().AgentV1AgentUpdatePassword(ctx, gomock.Any(), tt.agent.AgentID(), tt.password).Return(tt.responseAgent, nil)
 
 			res, err := h.ServiceAgentMeUpdatePassword(ctx, tt.agent, tt.password)
 			if err != nil {

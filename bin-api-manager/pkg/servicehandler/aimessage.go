@@ -5,6 +5,7 @@ import (
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	ammessage "monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-api-manager/models/auth"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -23,11 +24,15 @@ func (h *serviceHandler) aimessageGet(ctx context.Context, id uuid.UUID) (*ammes
 // AImessageCreate sends a message to the aicall.
 func (h *serviceHandler) AImessageCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	aicallID uuid.UUID,
 	role ammessage.Role,
 	content string,
 ) (*ammessage.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	_, err := h.AIcallGet(ctx, a, aicallID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the aicall info. aicall_id: %v", aicallID)
@@ -44,7 +49,11 @@ func (h *serviceHandler) AImessageCreate(
 
 // AImessageGetsByAIcallID gets the list of ai messages of the given aicall id.
 // It returns list of ai messages if it succeed.
-func (h *serviceHandler) AImessageGetsByAIcallID(ctx context.Context, a *amagent.Agent, aicallID uuid.UUID, size uint64, token string) ([]*ammessage.WebhookMessage, error) {
+func (h *serviceHandler) AImessageGetsByAIcallID(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, size uint64, token string) ([]*ammessage.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -108,7 +117,11 @@ func (h *serviceHandler) convertAImessageFilters(filters map[string]string) (map
 
 // AImessageGet gets the ai message of the given id.
 // It returns ai message if it succeed.
-func (h *serviceHandler) AImessageGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ammessage.WebhookMessage, error) {
+func (h *serviceHandler) AImessageGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammessage.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	tmp, err := h.aimessageGet(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not find ai message info. err: %v", err)
@@ -123,7 +136,11 @@ func (h *serviceHandler) AImessageGet(ctx context.Context, a *amagent.Agent, id 
 }
 
 // AImessageDelete deletes the aimessage.
-func (h *serviceHandler) AImessageDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*ammessage.WebhookMessage, error) {
+func (h *serviceHandler) AImessageDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammessage.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	_, err := h.AImessageGet(ctx, a, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not find aimessage info. err: %v", err)

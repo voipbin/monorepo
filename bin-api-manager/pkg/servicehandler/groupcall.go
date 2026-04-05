@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -38,14 +39,18 @@ func (h *serviceHandler) groupcallGet(ctx context.Context, groupcallID uuid.UUID
 // CallGets sends a request to call-manager
 // to getting a list of calls.
 // it returns list of calls if it succeed.
-func (h *serviceHandler) GroupcallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GroupcallGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -88,13 +93,17 @@ func (h *serviceHandler) GroupcallList(ctx context.Context, a *amagent.Agent, si
 // GroupcallGet sends a request to call-manager
 // to getting a groupcall.
 // it returns groupcall if it succeed.
-func (h *serviceHandler) GroupcallGet(ctx context.Context, a *amagent.Agent, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallGet(ctx context.Context, a *auth.AuthIdentity, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "GroupcallGet",
 		"customer_id":  a.CustomerID,
-		"username":     a.Username,
+		"username":     a.DisplayName(),
 		"groupcall_id": groupcallID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get call
 	c, err := h.groupcallGet(ctx, groupcallID)
@@ -117,11 +126,11 @@ func (h *serviceHandler) GroupcallGet(ctx context.Context, a *amagent.Agent, gro
 // GroupcallCreate sends a request to call-manager
 // to creating a groupcall.
 // it returns created groupcall info if it succeed.
-func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *amagent.Agent, source commonaddress.Address, destinations []commonaddress.Address, flowID uuid.UUID, actions []fmaction.Action, ringMethod cmgroupcall.RingMethod, answerMethod cmgroupcall.AnswerMethod) (*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *auth.AuthIdentity, source commonaddress.Address, destinations []commonaddress.Address, flowID uuid.UUID, actions []fmaction.Action, ringMethod cmgroupcall.RingMethod, answerMethod cmgroupcall.AnswerMethod) (*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "GroupcallCreate",
 		"customer_id":   a.CustomerID,
-		"username":      a.Username,
+		"username":      a.DisplayName(),
 		"flow_id":       flowID,
 		"actions":       actions,
 		"source":        source,
@@ -129,6 +138,10 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *amagent.Agent, 
 		"ring_method":   ringMethod,
 		"answer_method": answerMethod,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Creating a new groupcall.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -162,13 +175,17 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *amagent.Agent, 
 // GroupcallHangup sends a request to groupcall-manager
 // to hangup the groupcall.
 // it returns groupcall if it succeed.
-func (h *serviceHandler) GroupcallHangup(ctx context.Context, a *amagent.Agent, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallHangup(ctx context.Context, a *auth.AuthIdentity, groupcallID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "GroupcallHangup",
 		"customer_id":  a.CustomerID,
-		"username":     a.Username,
+		"username":     a.DisplayName(),
 		"groupcall_id": groupcallID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	gc, err := h.groupcallGet(ctx, groupcallID)
 	if err != nil {
@@ -199,13 +216,17 @@ func (h *serviceHandler) GroupcallHangup(ctx context.Context, a *amagent.Agent, 
 // GroupcallDelete sends a request to groupcall-manager
 // to delete the groupcall.
 // it returns groupcall if it succeed.
-func (h *serviceHandler) GroupcallDelete(ctx context.Context, a *amagent.Agent, callID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) GroupcallDelete(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "GroupcallDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"call_id":     callID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	gc, err := h.groupcallGet(ctx, callID)
 	if err != nil {

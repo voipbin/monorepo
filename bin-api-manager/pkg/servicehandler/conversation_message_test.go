@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -21,7 +22,7 @@ func Test_ConversationMessageListByConversationID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer       *amagent.Agent
+		customer       *auth.AuthIdentity
 		conversationID uuid.UUID
 		pageToken      string
 		pageSize       uint64
@@ -35,13 +36,13 @@ func Test_ConversationMessageListByConversationID(t *testing.T) {
 		{
 			name: "normal",
 
-			customer: &amagent.Agent{
+			customer: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			conversationID: uuid.FromStringOrNil("ee26103a-ed24-11ec-bfa1-7b247ecf7e93"),
 			pageToken:      "2020-10-20T01:00:00.995000Z",
 			pageSize:       10,
@@ -119,7 +120,7 @@ func Test_ConversationMessageSend(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customer       *amagent.Agent
+		customer       *auth.AuthIdentity
 		conversationID uuid.UUID
 		text           string
 		medias         []cvmedia.Media
@@ -132,13 +133,13 @@ func Test_ConversationMessageSend(t *testing.T) {
 		{
 			name: "simple text message",
 
-			customer: &amagent.Agent{
+			customer: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			conversationID: uuid.FromStringOrNil("8dd8eda0-ed25-11ec-9b1a-07913127a65a"),
 			text:           "hello world",
 			medias:         []cvmedia.Media{},

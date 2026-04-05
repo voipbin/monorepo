@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -14,18 +13,17 @@ func (h *server) GetWs(c *gin.Context) {
 	})
 	log.Debugf("Received websocket request.")
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
 
-	if err := h.serviceHandler.WebsockCreate(c.Request.Context(), &a, c.Writer, c.Request); err != nil {
+	if err := h.serviceHandler.WebsockCreate(c.Request.Context(), a, c.Writer, c.Request); err != nil {
 		log.Errorf("Could not handler the websocket correctly. err: %v", err)
 	}
 }

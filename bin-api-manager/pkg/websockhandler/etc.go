@@ -5,12 +5,13 @@ import (
 	"strings"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 )
 
 // validateTopics returns true if the given topics are valid all for the given agent.
-func (h *websockHandler) validateTopics(ctx context.Context, a *amagent.Agent, topics []string) bool {
+func (h *websockHandler) validateTopics(ctx context.Context, a *auth.AuthIdentity, topics []string) bool {
 
 	if a.HasPermission(amagent.PermissionProjectSuperAdmin) {
 		// for the project super admin, all topics are valid
@@ -45,7 +46,7 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *amagent.Agent, t
 			}
 
 		case "agent_id":
-			if tmpID != a.ID {
+			if tmpID != a.AgentID() {
 				//
 				return false
 			}
@@ -59,7 +60,7 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *amagent.Agent, t
 	return true
 }
 
-func (h *websockHandler) validateTopic(ctx context.Context, a *amagent.Agent, topic string) bool {
+func (h *websockHandler) validateTopic(ctx context.Context, a *auth.AuthIdentity, topic string) bool {
 
 	tmps := strings.Split(topic, ":")
 	if len(tmps) < 2 {
@@ -87,7 +88,7 @@ func (h *websockHandler) validateTopic(ctx context.Context, a *amagent.Agent, to
 		}
 
 	case "agent_id":
-		if tmpID != a.ID {
+		if tmpID != a.AgentID() {
 			//
 			return false
 		}

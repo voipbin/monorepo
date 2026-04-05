@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -33,15 +34,19 @@ func (h *serviceHandler) conversationGet(ctx context.Context, conversationID uui
 
 // ConversationGetsByCustomerID gets the list of conversations of the given customer id.
 // It returns list of conversations if it succeed.
-func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
+func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationGetsByCustomerID",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
 	log.Debug("Getting a conversations.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -75,7 +80,7 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *am
 
 // conversationGets gets the list of conversations.
 // It returns list of conversations if it succeed.
-func (h *serviceHandler) conversationList(ctx context.Context, a *amagent.Agent, size uint64, token string, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {
+func (h *serviceHandler) conversationList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, fields map[cvconversation.Field]any) ([]cvconversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "ConversationGetsByCustomerID",
 		"agent": a,
@@ -100,14 +105,18 @@ func (h *serviceHandler) conversationList(ctx context.Context, a *amagent.Agent,
 
 // ConversationGet gets the conversation of the given id.
 // It returns conversation if it succeed.
-func (h *serviceHandler) ConversationGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*cvconversation.WebhookMessage, error) {
+func (h *serviceHandler) ConversationGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cvconversation.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ConversationGet",
 		"customer_id":     a.CustomerID,
-		"username":        a.Username,
+		"username":        a.DisplayName(),
 		"conversation_id": id,
 	})
 	log.Debug("Getting an conversation.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get campaign
 	tmp, err := h.conversationGet(ctx, id)
@@ -127,14 +136,18 @@ func (h *serviceHandler) ConversationGet(ctx context.Context, a *amagent.Agent, 
 
 // ConversationUpdate update the conversation of the given id.
 // It returns updated conversation if it succeed.
-func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *amagent.Agent, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.WebhookMessage, error) {
+func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ConversationUpdate",
 		"customer_id":     a.CustomerID,
-		"username":        a.Username,
+		"username":        a.DisplayName(),
 		"conversation_id": conversationID,
 	})
 	log.Debug("Updating the conversation.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get campaign
 	c, err := h.conversationGet(ctx, conversationID)

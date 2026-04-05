@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -16,16 +15,15 @@ func (h *server) GetCustomer(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithField("agent", a)
 
-	res, err := h.serviceHandler.CustomerSelfGet(c.Request.Context(), &a)
+	res, err := h.serviceHandler.CustomerSelfGet(c.Request.Context(), a)
 	if err != nil {
 		log.Infof("Could not get the customer info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -41,13 +39,12 @@ func (h *server) PutCustomer(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	var req openapi_server.PutCustomerJSONBody
@@ -57,7 +54,7 @@ func (h *server) PutCustomer(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerSelfUpdate(c.Request.Context(), &a, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, cmcustomer.WebhookMethod(req.WebhookMethod), req.WebhookUri)
+	res, err := h.serviceHandler.CustomerSelfUpdate(c.Request.Context(), a, req.Name, req.Detail, req.Email, req.PhoneNumber, req.Address, cmcustomer.WebhookMethod(req.WebhookMethod), req.WebhookUri)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -73,13 +70,12 @@ func (h *server) PutCustomerMetadata(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	var req openapi_server.PutCustomerMetadataJSONRequestBody
@@ -93,7 +89,7 @@ func (h *server) PutCustomerMetadata(c *gin.Context) {
 		RTPDebug: req.RtpDebug != nil && *req.RtpDebug,
 	}
 
-	res, err := h.serviceHandler.CustomerSelfUpdateMetadata(c.Request.Context(), &a, metadata)
+	res, err := h.serviceHandler.CustomerSelfUpdateMetadata(c.Request.Context(), a, metadata)
 	if err != nil {
 		log.Errorf("Could not update the customer metadata. err: %v", err)
 		c.AbortWithStatus(400)
@@ -109,13 +105,12 @@ func (h *server) PutCustomerBillingAccountId(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithField("agent", a)
 
 	var req openapi_server.PutCustomerBillingAccountIdJSONBody
@@ -132,7 +127,7 @@ func (h *server) PutCustomerBillingAccountId(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.CustomerSelfUpdateBillingAccountID(c.Request.Context(), &a, billingAccountID)
+	res, err := h.serviceHandler.CustomerSelfUpdateBillingAccountID(c.Request.Context(), a, billingAccountID)
 	if err != nil {
 		log.Errorf("Could not update the customer. err: %v", err)
 		c.AbortWithStatus(400)

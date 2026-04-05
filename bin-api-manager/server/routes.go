@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
@@ -17,16 +16,13 @@ func (h *server) GetRoutes(c *gin.Context, params openapi_server.GetRoutesParams
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -47,9 +43,9 @@ func (h *server) GetRoutes(c *gin.Context, params openapi_server.GetRoutesParams
 
 	if params.CustomerId != nil {
 		customerID := uuid.FromStringOrNil(*params.CustomerId)
-		tmps, err = h.serviceHandler.RouteGetsByCustomerID(c.Request.Context(), &a, customerID, pageSize, pageToken)
+		tmps, err = h.serviceHandler.RouteGetsByCustomerID(c.Request.Context(), a, customerID, pageSize, pageToken)
 	} else {
-		tmps, err = h.serviceHandler.RouteList(c.Request.Context(), &a, pageSize, pageToken)
+		tmps, err = h.serviceHandler.RouteList(c.Request.Context(), a, pageSize, pageToken)
 	}
 	if err != nil {
 		logrus.Errorf("Could not get routes info. err: %v", err)
@@ -72,16 +68,13 @@ func (h *server) PostRoutes(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostRoutesJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -95,7 +88,7 @@ func (h *server) PostRoutes(c *gin.Context) {
 
 	res, err := h.serviceHandler.RouteCreate(
 		c.Request.Context(),
-		&a,
+		a,
 		customerID,
 		req.Name,
 		req.Detail,
@@ -119,16 +112,13 @@ func (h *server) DeleteRoutesId(c *gin.Context, id string) {
 		"route_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -137,7 +127,7 @@ func (h *server) DeleteRoutesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.RouteDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.RouteDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the delete the route info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -154,16 +144,13 @@ func (h *server) GetRoutesId(c *gin.Context, id string) {
 		"route_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -172,7 +159,7 @@ func (h *server) GetRoutesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.RouteGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.RouteGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the route info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -189,16 +176,13 @@ func (h *server) PutRoutesId(c *gin.Context, id string) {
 		"route_id":        id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
@@ -218,7 +202,7 @@ func (h *server) PutRoutesId(c *gin.Context, id string) {
 
 	res, err := h.serviceHandler.RouteUpdate(
 		c.Request.Context(),
-		&a,
+		a,
 		target,
 		req.Name,
 		req.Detail,

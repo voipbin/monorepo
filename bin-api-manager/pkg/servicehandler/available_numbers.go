@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -14,15 +15,19 @@ import (
 // AvailableNumberGets sends a handles available number get
 // It sends a request to the number-manager to getting a list of calls.
 // it returns list of available numbers if it succeed.
-func (h *serviceHandler) AvailableNumberList(ctx context.Context, a *amagent.Agent, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error) {
+func (h *serviceHandler) AvailableNumberList(ctx context.Context, a *auth.AuthIdentity, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "AvailableNumberGets",
 		"customer_id":  a.CustomerID,
-		"username":     a.Username,
+		"username":     a.DisplayName(),
 		"size":         size,
 		"country_code": countryCode,
 		"type":         numType,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")

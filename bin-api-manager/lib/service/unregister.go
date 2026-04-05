@@ -1,7 +1,7 @@
 package service
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
@@ -25,14 +25,19 @@ func PostAuthUnregister(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
+	tmp, exists := c.Get("auth_identity")
 	if !exists {
-		log.Errorf("Could not find agent info.")
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithField("agent", a)
+	a, ok := tmp.(*auth.AuthIdentity)
+	if !ok {
+		log.Errorf("Could not assert auth identity.")
+		c.AbortWithStatus(400)
+		return
+	}
+	log = log.WithField("auth_identity", a)
 
 	var req RequestBodyUnregisterPOST
 	if err := c.BindJSON(&req); err != nil {
@@ -55,7 +60,7 @@ func PostAuthUnregister(c *gin.Context) {
 	// Validate credentials
 	if hasPassword {
 		// Validate password by attempting login
-		if _, err := serviceHandler.AuthLogin(c.Request.Context(), a.Username, req.Password); err != nil {
+		if _, err := serviceHandler.AuthLogin(c.Request.Context(), a.AgentUsername(), req.Password); err != nil {
 			log.Debugf("Password validation failed. err: %v", err)
 			c.AbortWithStatus(400)
 			return
@@ -74,14 +79,14 @@ func PostAuthUnregister(c *gin.Context) {
 		err error
 	)
 	if req.Immediate {
-		res, err = serviceHandler.CustomerSelfFreezeAndDelete(c.Request.Context(), &a)
+		res, err = serviceHandler.CustomerSelfFreezeAndDelete(c.Request.Context(), a)
 		if err != nil {
 			log.Errorf("Could not freeze and delete the customer. err: %v", err)
 			c.AbortWithStatus(400)
 			return
 		}
 	} else {
-		res, err = serviceHandler.CustomerSelfFreeze(c.Request.Context(), &a)
+		res, err = serviceHandler.CustomerSelfFreeze(c.Request.Context(), a)
 		if err != nil {
 			log.Errorf("Could not freeze the customer. err: %v", err)
 			c.AbortWithStatus(400)
@@ -100,18 +105,23 @@ func DeleteAuthUnregister(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
+	tmp, exists := c.Get("auth_identity")
 	if !exists {
-		log.Errorf("Could not find agent info.")
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
-	log = log.WithField("agent", a)
+	a, ok := tmp.(*auth.AuthIdentity)
+	if !ok {
+		log.Errorf("Could not assert auth identity.")
+		c.AbortWithStatus(400)
+		return
+	}
+	log = log.WithField("auth_identity", a)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
 
-	res, err := serviceHandler.CustomerSelfRecover(c.Request.Context(), &a)
+	res, err := serviceHandler.CustomerSelfRecover(c.Request.Context(), a)
 	if err != nil {
 		log.Errorf("Could not recover the customer. err: %v", err)
 		c.AbortWithStatus(400)

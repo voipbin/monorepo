@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	cbmessage "monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
@@ -16,15 +15,14 @@ func (h *server) PostAimessages(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	var req openapi_server.PostAimessagesJSONBody
@@ -36,7 +34,7 @@ func (h *server) PostAimessages(c *gin.Context) {
 
 	aicallID := uuid.FromStringOrNil(req.AicallId)
 
-	res, err := h.serviceHandler.AImessageCreate(c.Request.Context(), &a, aicallID, cbmessage.Role(req.Role), req.Content)
+	res, err := h.serviceHandler.AImessageCreate(c.Request.Context(), a, aicallID, cbmessage.Role(req.Role), req.Content)
 	if err != nil {
 		log.Errorf("Could not create a aimessage. err: %v", err)
 		c.AbortWithStatus(400)
@@ -52,15 +50,14 @@ func (h *server) GetAimessages(c *gin.Context, params openapi_server.GetAimessag
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -84,7 +81,7 @@ func (h *server) GetAimessages(c *gin.Context, params openapi_server.GetAimessag
 		return
 	}
 
-	tmps, err := h.serviceHandler.AImessageGetsByAIcallID(c.Request.Context(), &a, aicallID, pageSize, pageToken)
+	tmps, err := h.serviceHandler.AImessageGetsByAIcallID(c.Request.Context(), a, aicallID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a aimessage list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -106,15 +103,14 @@ func (h *server) GetAimessagesId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -124,7 +120,7 @@ func (h *server) GetAimessagesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AImessageGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AImessageGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a aimessage. err: %v", err)
 		c.AbortWithStatus(400)
@@ -140,15 +136,14 @@ func (h *server) DeleteAimessagesId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -158,7 +153,7 @@ func (h *server) DeleteAimessagesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.AImessageDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.AImessageDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete a aimessage. err: %v", err)
 		c.AbortWithStatus(400)

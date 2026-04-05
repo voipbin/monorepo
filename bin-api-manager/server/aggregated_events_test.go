@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -20,7 +21,7 @@ func Test_GetAggregatedEvents(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -35,12 +36,12 @@ func Test_GetAggregatedEvents(t *testing.T) {
 	}{
 		{
 			name: "valid request with activeflow_id",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a&page_size=10",
 
@@ -61,12 +62,12 @@ func Test_GetAggregatedEvents(t *testing.T) {
 		},
 		{
 			name: "valid request with call_id",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aggregated-events?call_id=fe003a08-8f36-11ed-a01a-efb53befe93a&page_size=20&page_token=some-token",
 
@@ -87,12 +88,12 @@ func Test_GetAggregatedEvents(t *testing.T) {
 		},
 		{
 			name: "pagination defaults when no page_size or page_token",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a",
 
@@ -121,7 +122,7 @@ func Test_GetAggregatedEvents(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -129,7 +130,7 @@ func Test_GetAggregatedEvents(t *testing.T) {
 
 			mockSvc.EXPECT().AggregatedEventList(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectActiveflowID,
 				tt.expectCallID,
 				tt.expectPageSize,
@@ -190,7 +191,7 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -203,12 +204,12 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 	}{
 		{
 			name: "not found returns 404",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a",
 
@@ -221,12 +222,12 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 		},
 		{
 			name: "permission denied returns 404",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a",
 
@@ -253,7 +254,7 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -261,7 +262,7 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 
 			mockSvc.EXPECT().AggregatedEventList(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectActiveflowID,
 				tt.expectCallID,
 				tt.expectPageSize,
@@ -280,7 +281,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -293,12 +294,12 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 	}{
 		{
 			name: "neither activeflow_id nor call_id provided returns 400",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aggregated-events",
 
@@ -311,12 +312,12 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 		},
 		{
 			name: "both activeflow_id and call_id provided returns 400",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a&call_id=fe003a08-8f36-11ed-a01a-efb53befe93a",
 
@@ -343,7 +344,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -351,7 +352,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 
 			mockSvc.EXPECT().AggregatedEventList(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectActiveflowID,
 				tt.expectCallID,
 				tt.expectPageSize,
@@ -370,7 +371,7 @@ func Test_GetAggregatedEvents_internal_error(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -383,12 +384,12 @@ func Test_GetAggregatedEvents_internal_error(t *testing.T) {
 	}{
 		{
 			name: "internal error returns 500",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-			},
+			}),
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a",
 
@@ -415,7 +416,7 @@ func Test_GetAggregatedEvents_internal_error(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
@@ -423,7 +424,7 @@ func Test_GetAggregatedEvents_internal_error(t *testing.T) {
 
 			mockSvc.EXPECT().AggregatedEventList(
 				req.Context(),
-				&tt.agent,
+				tt.agent,
 				tt.expectActiveflowID,
 				tt.expectCallID,
 				tt.expectPageSize,

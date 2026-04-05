@@ -18,6 +18,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 )
 
@@ -26,7 +27,7 @@ func Test_TranscribeGet(t *testing.T) {
 	type test struct {
 		name string
 
-		agent        *amagent.Agent
+		agent        *auth.AuthIdentity
 		transcribeID uuid.UUID
 
 		responseTranscribe *tmtranscribe.Transcribe
@@ -37,13 +38,13 @@ func Test_TranscribeGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("808d6e70-826f-11ed-8442-1702cf185b93"),
 
@@ -96,7 +97,7 @@ func Test_TranscribeList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *amagent.Agent
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -107,13 +108,13 @@ func Test_TranscribeList(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"2020-10-20T01:00:00.995000Z",
 			10,
 
@@ -181,7 +182,7 @@ func Test_TranscribeStart(t *testing.T) {
 	type test struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		referenceType string
 		referenceID   uuid.UUID
 		language      string
@@ -201,13 +202,13 @@ func Test_TranscribeStart(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			referenceType: "call",
 			referenceID:   uuid.FromStringOrNil("cafe48aa-8281-11ed-ae72-b7dd7e37dc39"),
 			language:      "en-US",
@@ -291,7 +292,7 @@ func Test_TranscribeStop(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		transcribeID uuid.UUID
 
@@ -304,13 +305,13 @@ func Test_TranscribeStop(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			transcribeID: uuid.FromStringOrNil("d86d88d8-8282-11ed-b6c2-c3ac86331ed9"),
 
 			responseTranscribe: &tmtranscribe.Transcribe{
@@ -365,7 +366,7 @@ func Test_TranscribeDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		transcribeID uuid.UUID
 
@@ -378,13 +379,13 @@ func Test_TranscribeDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			transcribeID: uuid.FromStringOrNil("719adccc-8283-11ed-973c-df1113145910"),
 
 			responseTranscribe: &tmtranscribe.Transcribe{

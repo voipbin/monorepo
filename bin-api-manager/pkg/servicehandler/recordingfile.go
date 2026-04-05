@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	amagent "monorepo/bin-agent-manager/models/agent"
 
 	"github.com/gofrs/uuid"
@@ -11,12 +13,16 @@ import (
 )
 
 // RecordingfileGet returns downloadable url for recording
-func (h *serviceHandler) RecordingfileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (string, error) {
+func (h *serviceHandler) RecordingfileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "RecordingfileGet",
 		"customer_id": a.CustomerID,
 		"recording":   id,
 	})
+
+	if a.IsDirect() {
+		return "", fmt.Errorf("direct access not supported")
+	}
 
 	// get r info from call-manager
 	r, err := h.recordingGet(ctx, id)

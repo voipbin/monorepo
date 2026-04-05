@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
@@ -17,13 +16,12 @@ func (h *server) PostTranscribes(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -45,7 +43,7 @@ func (h *server) PostTranscribes(c *gin.Context) {
 
 	res, err := h.serviceHandler.TranscribeStart(
 		c.Request.Context(),
-		&a,
+		a,
 		string(req.ReferenceType),
 		referenceID,
 		req.Language,
@@ -68,13 +66,12 @@ func (h *server) GetTranscribes(c *gin.Context, params openapi_server.GetTranscr
 		"request_address": c.ClientIP,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -93,7 +90,7 @@ func (h *server) GetTranscribes(c *gin.Context, params openapi_server.GetTranscr
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.TranscribeList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.TranscribeList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get transcribes info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -116,13 +113,12 @@ func (h *server) GetTranscribesId(c *gin.Context, id string) {
 		"transcribe_id":   id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -134,7 +130,7 @@ func (h *server) GetTranscribesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TranscribeGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TranscribeGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a transcribe. err: %v", err)
 		c.AbortWithStatus(400)
@@ -151,13 +147,12 @@ func (h *server) DeleteTranscribesId(c *gin.Context, id string) {
 		"transcribe_id":   id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -169,7 +164,7 @@ func (h *server) DeleteTranscribesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TranscribeDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TranscribeDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the transcribe. err: %v", err)
 		c.AbortWithStatus(400)
@@ -186,13 +181,12 @@ func (h *server) PostTranscribesIdStop(c *gin.Context, id string) {
 		"transcribe_id":   id,
 	})
 
-	tmpAgent, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmpAgent.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -204,7 +198,7 @@ func (h *server) PostTranscribesIdStop(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TranscribeStop(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TranscribeStop(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not stop the transcribe. err: %v", err)
 		c.AbortWithStatus(400)

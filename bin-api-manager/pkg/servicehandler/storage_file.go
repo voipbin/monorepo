@@ -8,6 +8,7 @@ import (
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	"github.com/gofrs/uuid"
@@ -27,11 +28,15 @@ func (h *serviceHandler) storageFileGet(ctx context.Context, fileID uuid.UUID) (
 	return res, nil
 }
 
-func (h *serviceHandler) StorageFileGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error) {
+func (h *serviceHandler) StorageFileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*smfile.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageFileGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"file_id":     id,
 	})
 	log.Debug("Getting a file.")
@@ -53,11 +58,15 @@ func (h *serviceHandler) StorageFileGet(ctx context.Context, a *amagent.Agent, i
 
 // StorageFileDownloadRedirect returns a working download URL for the given file.
 // If the stored URL has expired, it refreshes via storage-manager RPC.
-func (h *serviceHandler) StorageFileDownloadRedirect(ctx context.Context, a *amagent.Agent, id uuid.UUID) (string, error) {
+func (h *serviceHandler) StorageFileDownloadRedirect(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error) {
+	if a.IsDirect() {
+		return "", fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageFileDownloadRedirect",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"file_id":     id,
 	})
 	log.Debug("Getting file download URL.")
@@ -93,11 +102,15 @@ func (h *serviceHandler) StorageFileDownloadRedirect(ctx context.Context, a *ama
 }
 
 // StorageFileDelete deletes the file of the given id.
-func (h *serviceHandler) StorageFileDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*smfile.WebhookMessage, error) {
+func (h *serviceHandler) StorageFileDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*smfile.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageFileDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"file_id":     id,
 	})
 	log.Debug("Deleting a file.")
@@ -135,7 +148,11 @@ func (h *serviceHandler) storageFileDelete(ctx context.Context, id uuid.UUID) (*
 // StorageFileCreate sends a request to storage-manager
 // to creating a file.
 // it returns created file info if it succeed.
-func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *amagent.Agent, f multipart.File, fileType smfile.Type, name string, detail string, filename string) (*smfile.WebhookMessage, error) {
+func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *auth.AuthIdentity, f multipart.File, fileType smfile.Type, name string, detail string, filename string) (*smfile.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":     "StorageFileCreate",
 		"agent":    a,
@@ -167,9 +184,15 @@ func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *amagent.Agent
 		return nil, err
 	}
 
+	// determine owner ID based on auth type
+	ownerID := a.AgentID()
+	if a.IsAccesskey() {
+		ownerID = a.AccesskeyID()
+	}
+
 	// create file
 	// set timeout for 60 secs
-	tmp, err := h.storageFileCreate(ctx, a.CustomerID, a.ID, smfile.ReferenceTypeNone, uuid.Nil, fileType, name, detail, filename, h.bucketName, filepath)
+	tmp, err := h.storageFileCreate(ctx, a.CustomerID, ownerID, smfile.ReferenceTypeNone, uuid.Nil, fileType, name, detail, filename, h.bucketName, filepath)
 	if err != nil {
 		log.Errorf("Could not create a file. err: %v", err)
 		return nil, err
@@ -203,11 +226,15 @@ func (h *serviceHandler) storageFileCreate(
 
 // StorageFileGets gets the list of file of the given customer id.
 // It returns list of files if it succeed.
-func (h *serviceHandler) StorageFileList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*smfile.WebhookMessage, error) {
+func (h *serviceHandler) StorageFileList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*smfile.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "StorageFileGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})

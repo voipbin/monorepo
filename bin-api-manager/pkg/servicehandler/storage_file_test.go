@@ -8,6 +8,8 @@ import (
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"monorepo/bin-api-manager/models/auth"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	smfile "monorepo/bin-storage-manager/models/file"
@@ -23,7 +25,7 @@ func Test_StorageFileGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent *auth.AuthIdentity
 		fileID uuid.UUID
 
 		responseStorageFile *smfile.File
@@ -32,13 +34,13 @@ func Test_StorageFileGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1b2c3d4-1111-1111-1111-000000000001"),
 					CustomerID: uuid.FromStringOrNil("a1b2c3d4-1111-1111-1111-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			fileID: uuid.FromStringOrNil("a1b2c3d4-1111-1111-1111-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -97,7 +99,7 @@ func Test_StorageFileDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent *auth.AuthIdentity
 		fileID uuid.UUID
 
 		responseStorageFile *smfile.File
@@ -106,13 +108,13 @@ func Test_StorageFileDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b1b2c3d4-2222-2222-2222-000000000001"),
 					CustomerID: uuid.FromStringOrNil("b1b2c3d4-2222-2222-2222-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			fileID: uuid.FromStringOrNil("b1b2c3d4-2222-2222-2222-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -175,7 +177,7 @@ func Test_StorageFileDownloadRedirect(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent *auth.AuthIdentity
 		fileID uuid.UUID
 
 		responseStorageFile  *smfile.File
@@ -189,13 +191,13 @@ func Test_StorageFileDownloadRedirect(t *testing.T) {
 		{
 			name: "valid URL not expired",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d1b2c3d4-1111-1111-1111-000000000001"),
 					CustomerID: uuid.FromStringOrNil("d1b2c3d4-1111-1111-1111-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			fileID: uuid.FromStringOrNil("d1b2c3d4-1111-1111-1111-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -213,13 +215,13 @@ func Test_StorageFileDownloadRedirect(t *testing.T) {
 		{
 			name: "expired URL triggers refresh",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d1b2c3d4-2222-2222-2222-000000000001"),
 					CustomerID: uuid.FromStringOrNil("d1b2c3d4-2222-2222-2222-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerManager,
-			},
+			}),
 			fileID: uuid.FromStringOrNil("d1b2c3d4-2222-2222-2222-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -238,13 +240,13 @@ func Test_StorageFileDownloadRedirect(t *testing.T) {
 		{
 			name: "nil expiration triggers refresh",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d1b2c3d4-3333-3333-3333-000000000001"),
 					CustomerID: uuid.FromStringOrNil("d1b2c3d4-3333-3333-3333-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			fileID: uuid.FromStringOrNil("d1b2c3d4-3333-3333-3333-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -263,13 +265,13 @@ func Test_StorageFileDownloadRedirect(t *testing.T) {
 		{
 			name: "empty URIDownload triggers refresh",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d1b2c3d4-4444-4444-4444-000000000001"),
 					CustomerID: uuid.FromStringOrNil("d1b2c3d4-4444-4444-4444-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			fileID: uuid.FromStringOrNil("d1b2c3d4-4444-4444-4444-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -288,13 +290,13 @@ func Test_StorageFileDownloadRedirect(t *testing.T) {
 		{
 			name: "permission denied - different customer",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d1b2c3d4-5555-5555-5555-000000000001"),
 					CustomerID: uuid.FromStringOrNil("d1b2c3d4-5555-5555-5555-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			fileID: uuid.FromStringOrNil("d1b2c3d4-5555-5555-5555-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -311,13 +313,13 @@ func Test_StorageFileDownloadRedirect(t *testing.T) {
 		{
 			name: "file not found",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d1b2c3d4-6666-6666-6666-000000000001"),
 					CustomerID: uuid.FromStringOrNil("d1b2c3d4-6666-6666-6666-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			fileID: uuid.FromStringOrNil("d1b2c3d4-6666-6666-6666-000000000003"),
 
 			responseStorageFile: nil,
@@ -371,7 +373,7 @@ func Test_StorageFileList_StorageFile(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -382,13 +384,13 @@ func Test_StorageFileList_StorageFile(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c1b2c3d4-3333-3333-3333-000000000001"),
 					CustomerID: uuid.FromStringOrNil("c1b2c3d4-3333-3333-3333-000000000002"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			size:  10,
 			token: "2020-09-20T03:23:20.995000Z",
 

@@ -2,6 +2,7 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -19,7 +20,7 @@ func Test_extensionsGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery           string
 		responseExtensions []*rmextension.WebhookMessage
@@ -30,11 +31,11 @@ func Test_extensionsGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/extensions",
 
@@ -70,12 +71,12 @@ func Test_extensionsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentExtensionList(req.Context(), &tt.agent).Return(tt.responseExtensions, nil)
+			mockSvc.EXPECT().ServiceAgentExtensionList(req.Context(), tt.agent).Return(tt.responseExtensions, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -93,7 +94,7 @@ func Test_extensionsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery          string
 		responseExtension *rmextension.WebhookMessage
@@ -103,11 +104,11 @@ func Test_extensionsIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/extensions/7f22ea24-bbc5-11ef-8c3f-139aa5535776",
 			responseExtension: &rmextension.WebhookMessage{
@@ -136,12 +137,12 @@ func Test_extensionsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().ServiceAgentExtensionGet(req.Context(), &tt.agent, tt.expectedExtensionID).Return(tt.responseExtension, nil)
+			mockSvc.EXPECT().ServiceAgentExtensionGet(req.Context(), tt.agent, tt.expectedExtensionID).Return(tt.responseExtension, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

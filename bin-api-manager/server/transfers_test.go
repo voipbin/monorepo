@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -22,7 +23,7 @@ func Test_transfersPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -38,11 +39,11 @@ func Test_transfersPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
 				},
-			},
+			}),
 
 			reqQuery: "/transfers",
 			reqBody:  []byte(`{"transfer_type":"attended","transferer_call_id":"204aaffe-dd3d-11ed-8c3a-5f454beaba92","transferee_addresses":[{"type":"tel","target":"+821100000001"}]}`),
@@ -80,13 +81,13 @@ func Test_transfersPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().TransferStart(req.Context(), &tt.agent, tt.expectTransferType, tt.expectTransfererCallID, tt.expectTransfereeAddresses).Return(tt.responseTransfer, nil)
+			mockSvc.EXPECT().TransferStart(req.Context(), tt.agent, tt.expectTransferType, tt.expectTransfererCallID, tt.expectTransfereeAddresses).Return(tt.responseTransfer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

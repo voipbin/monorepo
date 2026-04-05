@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
@@ -39,10 +40,14 @@ func (h *serviceHandler) activeflowGet(ctx context.Context, activeflowID uuid.UU
 // ActiveflowCreate sends a request to flow-manager
 // to create a activeflow and execute.
 // it returns created activeflow info if it succeed.
-func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.WebhookMessage, error) {
+func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ActiveflowCreate",
-		"agent":         a,
+		"auth":          a.DisplayName(),
 		"activeflow_id": activeflowID,
 		"flow_id":       flowID,
 		"actions":       actions,
@@ -103,11 +108,15 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *amagent.Agent,
 // ActiveflowGet sends a request to flow-manager
 // to getting a activeflow.
 // it returns activeflow if it succeed.
-func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
+func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ActiveflowGet",
 		"customer_id":   a.CustomerID,
-		"agent_id":      a.ID,
+		"auth":          a.DisplayName(),
 		"activeflow_id": activeflowID,
 	})
 
@@ -132,11 +141,14 @@ func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *amagent.Agent, ac
 // ActiveflowGets sends a request to flow-manager
 // to getting a list of activeflows.
 // it returns list of activeflows if it succeed.
-func (h *serviceHandler) ActiveflowList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error) {
+func (h *serviceHandler) ActiveflowList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ActiveflowGets",
 		"customer_id": a.CustomerID,
-		"agent_id":    a.ID,
 		"size":        size,
 		"token":       token,
 	})
@@ -174,11 +186,15 @@ func (h *serviceHandler) ActiveflowList(ctx context.Context, a *amagent.Agent, s
 // ActiveflowStop sends a request to flow-manager
 // to stopping the activeflow.
 // it returns activeflow if it succeed.
-func (h *serviceHandler) ActiveflowStop(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
+func (h *serviceHandler) ActiveflowStop(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ActiveflowStop",
 		"customer_id":   a.CustomerID,
-		"agent_id":      a.ID,
+		"auth":          a.DisplayName(),
 		"activeflow_id": activeflowID,
 	})
 
@@ -209,11 +225,15 @@ func (h *serviceHandler) ActiveflowStop(ctx context.Context, a *amagent.Agent, a
 // ActiveflowDelete sends a request to flow-manager
 // to delete the activeflow.
 // it returns activeflow if it succeed.
-func (h *serviceHandler) ActiveflowDelete(ctx context.Context, a *amagent.Agent, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
+func (h *serviceHandler) ActiveflowDelete(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "ActiveflowDelete",
 		"customer_id":   a.CustomerID,
-		"agent_id":      a.ID,
+		"auth":          a.DisplayName(),
 		"activeflow_id": activeflowID,
 	})
 

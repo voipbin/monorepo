@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
@@ -40,13 +41,17 @@ func (h *serviceHandler) billingAccountGet(ctx context.Context, accountID uuid.U
 // BillingAccountGet sends a request to billing-manager
 // to getting a billing account.
 // it returns billing account if it succeed.
-func (h *serviceHandler) BillingAccountGet(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID) (*bmaccount.Account, error) {
+func (h *serviceHandler) BillingAccountGet(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountGet",
 		"customer_id":        a.CustomerID,
-		"username":           a.Username,
+		"username":           a.DisplayName(),
 		"billing_account_id": billingAccountID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		return nil, fmt.Errorf("user has no permission")
@@ -65,12 +70,16 @@ func (h *serviceHandler) BillingAccountGet(ctx context.Context, a *amagent.Agent
 // BillingAccountUpdateBasicInfo sends a request to billing-manager
 // to update the billing account's basic info.
 // it returns updated billing account if it succeed.
-func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.Account, error) {
+func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID, name string, detail string) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountUpdateBasicInfo",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		return nil, fmt.Errorf("user has no permission")
@@ -89,12 +98,16 @@ func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *a
 // BillingAccountUpdatePaymentInfo sends a request to billing-manager
 // to update the billing account's payment info.
 // it returns updated billing account if it succeed.
-func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error) {
+func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountUpdatePaymentInfo",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		return nil, fmt.Errorf("user has no permission")
@@ -113,14 +126,18 @@ func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a 
 // BillingAccountAddBalanceForce sends a request to billing-manager
 // to add the given billing account's balance.
 // NOTE: This is an internal admin-only operation. Do NOT document in user-facing RST docs.
-func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error) {
+func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountAddBalanceForce",
 		"customer_id":        a.CustomerID,
-		"username":           a.Username,
+		"username":           a.DisplayName(),
 		"billing_account_id": billingAccountID,
 		"balance":            balance,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// need a project super admin permission
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -139,14 +156,18 @@ func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *a
 // BillingAccountSubtractBalanceForce sends a request to billing-manager
 // to subtract the given billing account's balance.
 // NOTE: This is an internal admin-only operation. Do NOT document in user-facing RST docs.
-func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *amagent.Agent, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error) {
+func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID, balance int64) (*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "BillingAccountSubtractBalanceForce",
 		"customer_id":        a.CustomerID,
-		"username":           a.Username,
+		"username":           a.DisplayName(),
 		"billing_account_id": billingAccountID,
 		"balance":            balance,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// need a project super admin permission
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -163,11 +184,15 @@ func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context,
 }
 
 // BillingAccountSelfGet returns the authenticated agent's own billing account.
-func (h *serviceHandler) BillingAccountSelfGet(ctx context.Context, a *amagent.Agent) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountSelfGet(ctx context.Context, a *auth.AuthIdentity) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountSelfGet",
 		"customer_id": a.CustomerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
@@ -198,11 +223,15 @@ func (h *serviceHandler) BillingAccountSelfGet(ctx context.Context, a *amagent.A
 }
 
 // BillingAccountSelfUpdateBasicInfo updates the authenticated agent's own billing account's basic info.
-func (h *serviceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, a *amagent.Agent, name string, detail string) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, name string, detail string) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountSelfUpdateBasicInfo",
 		"customer_id": a.CustomerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
@@ -231,11 +260,15 @@ func (h *serviceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, 
 }
 
 // BillingAccountSelfUpdatePaymentInfo updates the authenticated agent's own billing account's payment info.
-func (h *serviceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context, a *amagent.Agent, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error) {
+func (h *serviceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context, a *auth.AuthIdentity, paymentType bmaccount.PaymentType, paymentMethod bmaccount.PaymentMethod) (*bmaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountSelfUpdatePaymentInfo",
 		"customer_id": a.CustomerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
@@ -264,12 +297,16 @@ func (h *serviceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context
 }
 
 // BillingAccountSelfCreatePaddlePortalSession creates a Paddle portal session for the authenticated user.
-func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context.Context, a *amagent.Agent) (string, error) {
+func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context.Context, a *auth.AuthIdentity) (string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingAccountSelfCreatePaddlePortalSession",
 		"agent":       a,
 		"customer_id": a.CustomerID,
 	})
+
+	if a.IsDirect() {
+		return "", fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Infof("User has no permission.")
@@ -299,7 +336,7 @@ func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context
 }
 
 // BillingAccountList returns a list of all billing accounts.
-func (h *serviceHandler) BillingAccountList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*bmaccount.Account, error) {
+func (h *serviceHandler) BillingAccountList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*bmaccount.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "BillingAccountList",
 		"agent":   a,
@@ -308,6 +345,10 @@ func (h *serviceHandler) BillingAccountList(ctx context.Context, a *amagent.Agen
 		"filters": filters,
 	})
 	log.Debug("Received request detail.")
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		return nil, fmt.Errorf("user has no permission")

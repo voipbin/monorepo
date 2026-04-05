@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 
@@ -16,15 +15,14 @@ func (h *server) GetConversationAccounts(c *gin.Context, params openapi_server.G
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -41,7 +39,7 @@ func (h *server) GetConversationAccounts(c *gin.Context, params openapi_server.G
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ConversationAccountGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ConversationAccountGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a conversation list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -63,15 +61,14 @@ func (h *server) PostConversationAccounts(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	var req openapi_server.PostConversationAccountsJSONBody
@@ -88,7 +85,7 @@ func (h *server) PostConversationAccounts(c *gin.Context) {
 
 	res, err := h.serviceHandler.ConversationAccountCreate(
 		c.Request.Context(),
-		&a,
+		a,
 		cvaccount.Type(req.Type),
 		req.Name,
 		req.Detail,
@@ -111,15 +108,14 @@ func (h *server) GetConversationAccountsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -129,7 +125,7 @@ func (h *server) GetConversationAccountsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConversationAccountGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ConversationAccountGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a conversation account. err: %v", err)
 		c.AbortWithStatus(400)
@@ -145,15 +141,14 @@ func (h *server) PutConversationAccountsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -184,7 +179,7 @@ func (h *server) PutConversationAccountsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConversationAccountUpdate(c.Request.Context(), &a, target, fields)
+	res, err := h.serviceHandler.ConversationAccountUpdate(c.Request.Context(), a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update the conversation account. err: %v", err)
 		c.AbortWithStatus(400)
@@ -200,15 +195,14 @@ func (h *server) DeleteConversationAccountsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -218,7 +212,7 @@ func (h *server) DeleteConversationAccountsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConversationAccountDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ConversationAccountDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the conversation account. err: %v", err)
 		c.AbortWithStatus(400)

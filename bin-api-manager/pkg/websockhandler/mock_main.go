@@ -11,7 +11,7 @@ package websockhandler
 
 import (
 	context "context"
-	agent "monorepo/bin-agent-manager/models/agent"
+	auth "monorepo/bin-api-manager/models/auth"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	http "net/http"
 	reflect "reflect"
@@ -59,7 +59,7 @@ func (mr *MockWebsockHandlerMockRecorder) RunMediaStream(ctx, w, r, referenceTyp
 }
 
 // RunSubscription mocks base method.
-func (m *MockWebsockHandler) RunSubscription(ctx context.Context, w http.ResponseWriter, r *http.Request, a *agent.Agent) error {
+func (m *MockWebsockHandler) RunSubscription(ctx context.Context, w http.ResponseWriter, r *http.Request, a *auth.AuthIdentity) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RunSubscription", ctx, w, r, a)
 	ret0, _ := ret[0].(error)

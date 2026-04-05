@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
-
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -16,11 +16,15 @@ import (
 // TranscriptGets sends a request to transcribe-manager
 // to getting a list of transcribes.
 // it returns list of transcribe info if it succeed.
-func (h *serviceHandler) TranscriptList(ctx context.Context, a *amagent.Agent, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error) {
+func (h *serviceHandler) TranscriptList(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "TranscribeGets",
 		"customer_id":   a.CustomerID,
-		"username":      a.Username,
+		"username":      a.DisplayName(),
 		"transcribe_id": transcribeID,
 	})
 

@@ -11,6 +11,7 @@ import (
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -22,7 +23,7 @@ func Test_ExtensionCreate(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		ext      string
 		password string
@@ -36,13 +37,13 @@ func Test_ExtensionCreate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			"test",
 			"password",
@@ -96,7 +97,7 @@ func Test_ExtensionUpdate(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		id       uuid.UUID
 		extName  string
@@ -110,13 +111,13 @@ func Test_ExtensionUpdate(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("50c1e4ca-6fa5-11eb-8a12-67425d88ba43"),
 			"update name",
@@ -182,7 +183,7 @@ func Test_ExtensionDelete(t *testing.T) {
 
 	type test struct {
 		name        string
-		agent       *amagent.Agent
+		agent       *auth.AuthIdentity
 		extensionID uuid.UUID
 
 		response  *rmextension.Extension
@@ -192,13 +193,13 @@ func Test_ExtensionDelete(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("aa1fda4e-6fa6-11eb-8385-a3288e16c056"),
 
 			&rmextension.Extension{
@@ -261,7 +262,7 @@ func Test_ExtensionGet(t *testing.T) {
 
 	type test struct {
 		name        string
-		agent       *amagent.Agent
+		agent       *auth.AuthIdentity
 		extensionID uuid.UUID
 
 		response  *rmextension.Extension
@@ -271,13 +272,13 @@ func Test_ExtensionGet(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("27a0b1ba-6fab-11eb-9aec-6b59dbde86d8"),
 
 			&rmextension.Extension{
@@ -332,7 +333,7 @@ func Test_ExtensionList(t *testing.T) {
 
 	type test struct {
 		name          string
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		pageToken     string
 		pageSize      uint64
 		expectFilters map[rmextension.Field]any
@@ -344,13 +345,13 @@ func Test_ExtensionList(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			"2020-10-20T01:00:00.995000Z",
 			10,
 			map[rmextension.Field]any{

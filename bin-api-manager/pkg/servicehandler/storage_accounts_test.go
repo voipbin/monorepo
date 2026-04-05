@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+
+	"monorepo/bin-api-manager/models/auth"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	smaccount "monorepo/bin-storage-manager/models/account"
@@ -21,7 +23,7 @@ func Test_StorageAccountGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent            *amagent.Agent
+		agent *auth.AuthIdentity
 		storageAccountID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
@@ -30,13 +32,13 @@ func Test_StorageAccountGet(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("c42a90e0-2c01-11ef-9a00-7b5a2f8e1d3a"),
 					CustomerID: uuid.FromStringOrNil("c45e7f12-2c01-11ef-a2b4-4f6d8c3e7a1b"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			storageAccountID: uuid.FromStringOrNil("c4923d44-2c01-11ef-b8c6-2b9e1a5f4d7c"),
 
 			responseStorageAccount: &smaccount.Account{
@@ -85,7 +87,7 @@ func Test_StorageAccountGetByCustomerID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		responseStorageAccounts []smaccount.Account
 		expectFilters           map[smaccount.Field]any
@@ -94,13 +96,13 @@ func Test_StorageAccountGetByCustomerID(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d52a90e0-2c01-11ef-9a00-7b5a2f8e1d3a"),
 					CustomerID: uuid.FromStringOrNil("d55e7f12-2c01-11ef-a2b4-4f6d8c3e7a1b"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			responseStorageAccounts: []smaccount.Account{
 				{

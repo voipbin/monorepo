@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -37,7 +38,7 @@ func (h *serviceHandler) contactGet(ctx context.Context, id uuid.UUID) (*cmconta
 // it returns created contact info if it succeeds.
 func (h *serviceHandler) ContactCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	firstName string,
 	lastName string,
 	displayName string,
@@ -54,6 +55,10 @@ func (h *serviceHandler) ContactCreate(
 		"func":        "ContactCreate",
 		"customer_id": a.CustomerID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
@@ -88,12 +93,16 @@ func (h *serviceHandler) ContactCreate(
 
 // ContactGet sends a request to contact-manager
 // to get a contact.
-func (h *serviceHandler) ContactGet(ctx context.Context, a *amagent.Agent, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactGet",
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	tmp, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -112,7 +121,7 @@ func (h *serviceHandler) ContactGet(ctx context.Context, a *amagent.Agent, conta
 // ContactList sends a request to contact-manager
 // to get a list of contacts.
 // it returns list of contacts if it succeeds.
-func (h *serviceHandler) ContactList(ctx context.Context, a *amagent.Agent, size uint64, token string, filters map[string]string) ([]*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ContactList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "ContactList",
 		"agent":   a,
@@ -120,6 +129,10 @@ func (h *serviceHandler) ContactList(ctx context.Context, a *amagent.Agent, size
 		"token":   token,
 		"filters": filters,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -180,7 +193,7 @@ func (h *serviceHandler) contactList(ctx context.Context, size uint64, token str
 // to update the contact info.
 func (h *serviceHandler) ContactUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	firstName *string,
 	lastName *string,
@@ -195,6 +208,10 @@ func (h *serviceHandler) ContactUpdate(
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -229,12 +246,16 @@ func (h *serviceHandler) ContactUpdate(
 
 // ContactDelete sends a request to contact-manager
 // to delete the contact.
-func (h *serviceHandler) ContactDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactDelete",
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -259,13 +280,17 @@ func (h *serviceHandler) ContactDelete(ctx context.Context, a *amagent.Agent, co
 
 // ContactLookup sends a request to contact-manager
 // to lookup a contact by phone number or email.
-func (h *serviceHandler) ContactLookup(ctx context.Context, a *amagent.Agent, phoneE164 string, email string) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactLookup",
 		"customer_id": a.CustomerID,
 		"phone_e164":  phoneE164,
 		"email":       email,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
@@ -286,7 +311,7 @@ func (h *serviceHandler) ContactLookup(ctx context.Context, a *amagent.Agent, ph
 // to add a phone number to a contact.
 func (h *serviceHandler) ContactPhoneNumberCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	number string,
 	numberE164 string,
@@ -298,6 +323,10 @@ func (h *serviceHandler) ContactPhoneNumberCreate(
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -324,7 +353,7 @@ func (h *serviceHandler) ContactPhoneNumberCreate(
 // to update a phone number on a contact.
 func (h *serviceHandler) ContactPhoneNumberUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	phoneNumberID uuid.UUID,
 	fields map[string]any,
@@ -335,6 +364,10 @@ func (h *serviceHandler) ContactPhoneNumberUpdate(
 		"contact_id":      contactID,
 		"phone_number_id": phoneNumberID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -359,13 +392,17 @@ func (h *serviceHandler) ContactPhoneNumberUpdate(
 
 // ContactPhoneNumberDelete sends a request to contact-manager
 // to remove a phone number from a contact.
-func (h *serviceHandler) ContactPhoneNumberDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ContactPhoneNumberDelete",
 		"customer_id":     a.CustomerID,
 		"contact_id":      contactID,
 		"phone_number_id": phoneNumberID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -392,7 +429,7 @@ func (h *serviceHandler) ContactPhoneNumberDelete(ctx context.Context, a *amagen
 // to add an email to a contact.
 func (h *serviceHandler) ContactEmailCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	address string,
 	emailType string,
@@ -403,6 +440,10 @@ func (h *serviceHandler) ContactEmailCreate(
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -429,7 +470,7 @@ func (h *serviceHandler) ContactEmailCreate(
 // to update an email on a contact.
 func (h *serviceHandler) ContactEmailUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	emailID uuid.UUID,
 	fields map[string]any,
@@ -440,6 +481,10 @@ func (h *serviceHandler) ContactEmailUpdate(
 		"contact_id":  contactID,
 		"email_id":    emailID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -464,13 +509,17 @@ func (h *serviceHandler) ContactEmailUpdate(
 
 // ContactEmailDelete sends a request to contact-manager
 // to remove an email from a contact.
-func (h *serviceHandler) ContactEmailDelete(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactEmailDelete",
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 		"email_id":    emailID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -495,13 +544,17 @@ func (h *serviceHandler) ContactEmailDelete(ctx context.Context, a *amagent.Agen
 
 // ContactTagAdd sends a request to contact-manager
 // to add a tag to a contact.
-func (h *serviceHandler) ContactTagAdd(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactTagAdd",
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 		"tag_id":      tagID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {
@@ -526,13 +579,17 @@ func (h *serviceHandler) ContactTagAdd(ctx context.Context, a *amagent.Agent, co
 
 // ContactTagRemove sends a request to contact-manager
 // to remove a tag from a contact.
-func (h *serviceHandler) ContactTagRemove(ctx context.Context, a *amagent.Agent, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
+func (h *serviceHandler) ContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactTagRemove",
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 		"tag_id":      tagID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	ct, err := h.contactGet(ctx, contactID)
 	if err != nil {

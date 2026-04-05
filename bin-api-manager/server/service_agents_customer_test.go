@@ -2,6 +2,7 @@ package server
 
 import (
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -20,7 +21,7 @@ func Test_GetServiceAgentsCustomer(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -31,12 +32,12 @@ func Test_GetServiceAgentsCustomer(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("9a653b20-bc88-11ef-be5c-5322f7693f99"),
 					CustomerID: uuid.FromStringOrNil("9aae8ff0-bc88-11ef-8111-0fd82660b367"),
 				},
-			},
+			}),
 
 			reqQuery: "/service_agents/customer",
 
@@ -61,13 +62,13 @@ func Test_GetServiceAgentsCustomer(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().ServiceAgentCustomerGet(req.Context(), &tt.agent).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().ServiceAgentCustomerGet(req.Context(), tt.agent).Return(tt.responseCustomer, nil)
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)

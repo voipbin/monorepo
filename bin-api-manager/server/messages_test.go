@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -22,7 +23,7 @@ func Test_MessagesGET(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		agent    amagent.Agent
+		agent *auth.AuthIdentity
 		reqQuery string
 
 		responseGets []*mmmessage.WebhookMessage
@@ -33,11 +34,11 @@ func Test_MessagesGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("27db3e44-a2e9-11ec-a397-43b3625cf0d3"),
 				},
-			},
+			}),
 
 			reqQuery: "/messages?page_size=10&page_token=2021-03-02T03:23:20.995000Z",
 
@@ -70,12 +71,12 @@ func Test_MessagesGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().MessageList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGets, nil)
+			mockSvc.EXPECT().MessageList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGets, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -93,7 +94,7 @@ func Test_MessagesIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -104,11 +105,11 @@ func Test_MessagesIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("55882316-a2e9-11ec-aaeb-3b99d4cc0a71"),
 				},
-			},
+			}),
 
 			reqQuery: "/messages/55b11820-a2e9-11ec-bc5e-936e4fe1096f",
 
@@ -138,12 +139,12 @@ func Test_MessagesIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().MessageGet(req.Context(), &tt.agent, tt.expectMessageID).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().MessageGet(req.Context(), tt.agent, tt.expectMessageID).Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -161,7 +162,7 @@ func Test_messagesIDDELETE(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -174,11 +175,11 @@ func Test_messagesIDDELETE(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("9d9efc88-a2e9-11ec-a22a-9369e8662ddd"),
 				},
-			},
+			}),
 
 			reqQuery: "/messages/9dd8042e-a2e9-11ec-b9b1-5740852cabef",
 
@@ -208,12 +209,12 @@ func Test_messagesIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().MessageDelete(req.Context(), &tt.agent, tt.expectMessageID).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().MessageDelete(req.Context(), tt.agent, tt.expectMessageID).Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -231,7 +232,7 @@ func Test_messagesPOST(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -247,11 +248,11 @@ func Test_messagesPOST(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("c96bf1c2-a2e9-11ec-a8e3-a716ee72ed9d"),
 				},
-			},
+			}),
 
 			reqQuery: "/messages",
 			reqBody:  []byte(`{"source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"}],"text":"hello world"}`),
@@ -292,13 +293,13 @@ func Test_messagesPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 
-			mockSvc.EXPECT().MessageSend(req.Context(), &tt.agent, tt.expectSource, tt.expectDestinations, tt.expectText).Return(tt.responseMessage, nil)
+			mockSvc.EXPECT().MessageSend(req.Context(), tt.agent, tt.expectSource, tt.expectDestinations, tt.expectText).Return(tt.responseMessage, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

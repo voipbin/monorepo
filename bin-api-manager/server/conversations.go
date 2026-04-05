@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
@@ -17,15 +16,14 @@ func (h *server) GetConversations(c *gin.Context, params openapi_server.GetConve
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	pageSize := uint64(100)
@@ -42,7 +40,7 @@ func (h *server) GetConversations(c *gin.Context, params openapi_server.GetConve
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ConversationGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ConversationGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a conversation list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -65,15 +63,14 @@ func (h *server) GetConversationsId(c *gin.Context, id string) {
 		"conversation_id": id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -83,7 +80,7 @@ func (h *server) GetConversationsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConversationGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ConversationGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a customer. err: %v", err)
 		c.AbortWithStatus(400)
@@ -100,15 +97,14 @@ func (h *server) PutConversationsId(c *gin.Context, id string) {
 		"conversation_id": id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -139,7 +135,7 @@ func (h *server) PutConversationsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConversationUpdate(c.Request.Context(), &a, target, fields)
+	res, err := h.serviceHandler.ConversationUpdate(c.Request.Context(), a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update the conversation. err: %v", err)
 		c.AbortWithStatus(400)
@@ -156,15 +152,14 @@ func (h *server) GetConversationsIdMessages(c *gin.Context, id string, params op
 		"conversation_id": id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -188,7 +183,7 @@ func (h *server) GetConversationsIdMessages(c *gin.Context, id string, params op
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ConversationMessageGetsByConversationID(c.Request.Context(), &a, target, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ConversationMessageGetsByConversationID(c.Request.Context(), a, target, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a conversation message list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -211,15 +206,14 @@ func (h *server) PostConversationsIdMessages(c *gin.Context, id string) {
 		"conversation_id": id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	target := uuid.FromStringOrNil(id)
@@ -236,7 +230,7 @@ func (h *server) PostConversationsIdMessages(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ConversationMessageSend(c.Request.Context(), &a, target, req.Text, []cvmedia.Media{})
+	res, err := h.serviceHandler.ConversationMessageSend(c.Request.Context(), a, target, req.Text, []cvmedia.Media{})
 	if err != nil {
 		log.Errorf("Could not create a customer. err: %v", err)
 		c.AbortWithStatus(400)

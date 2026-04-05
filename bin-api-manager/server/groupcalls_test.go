@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
@@ -23,7 +24,7 @@ func Test_groupcallsPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -40,11 +41,11 @@ func Test_groupcallsPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/groupcalls",
 			reqBody:  []byte(`{"source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"},{"type":"tel","target":"+821100000003"}],"flow_id":"6b83babe-bf07-11ed-930f-8f4a33752b7f","actions":[{"type":"answer"}],"ring_method":"ring_all","answer_method":"hangup_others"}`),
@@ -96,13 +97,13 @@ func Test_groupcallsPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
-			mockSvc.EXPECT().GroupcallCreate(req.Context(), &tt.agent, tt.expectSource, tt.expectDestinations, tt.expectFlowID, tt.expectActions, tt.expectRingMethod, tt.expectAnswerMethod).Return(tt.responseGroupcall, nil)
+			mockSvc.EXPECT().GroupcallCreate(req.Context(), tt.agent, tt.expectSource, tt.expectDestinations, tt.expectFlowID, tt.expectActions, tt.expectRingMethod, tt.expectAnswerMethod).Return(tt.responseGroupcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -120,7 +121,7 @@ func Test_groupcallsGET(t *testing.T) {
 
 	type test struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -134,11 +135,11 @@ func Test_groupcallsGET(t *testing.T) {
 	tests := []test{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d98435c4-bf08-11ed-af72-f7e533f63816"),
 				},
-			},
+			}),
 
 			reqQuery: "/groupcalls?page_size=10&page_token=2020-09-20T03:23:20.995000Z",
 
@@ -178,12 +179,12 @@ func Test_groupcallsGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().GroupcallList(req.Context(), &tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGroupcalls, nil)
+			mockSvc.EXPECT().GroupcallList(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseGroupcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -201,7 +202,7 @@ func Test_groupcallsIDGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -212,11 +213,11 @@ func Test_groupcallsIDGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/groupcalls/c1423b7c-bf09-11ed-a3f8-cb3f5a42b528",
 
@@ -246,12 +247,12 @@ func Test_groupcallsIDGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().GroupcallGet(req.Context(), &tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
+			mockSvc.EXPECT().GroupcallGet(req.Context(), tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -269,7 +270,7 @@ func Test_groupcallsIDHangupPOST(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -280,11 +281,11 @@ func Test_groupcallsIDHangupPOST(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/groupcalls/0410089e-bf0a-11ed-93b7-f3a49f2b479f/hangup",
 
@@ -314,13 +315,13 @@ func Test_groupcallsIDHangupPOST(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
 
-			mockSvc.EXPECT().GroupcallHangup(req.Context(), &tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
+			mockSvc.EXPECT().GroupcallHangup(req.Context(), tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -338,7 +339,7 @@ func Test_groupcallsIDDELETE(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -349,11 +350,11 @@ func Test_groupcallsIDDELETE(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 				},
-			},
+			}),
 
 			reqQuery: "/groupcalls/487fd892-bf0a-11ed-9f7c-b3eaa708de0a",
 
@@ -383,12 +384,12 @@ func Test_groupcallsIDDELETE(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("DELETE", tt.reqQuery, nil)
-			mockSvc.EXPECT().GroupcallDelete(req.Context(), &tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
+			mockSvc.EXPECT().GroupcallDelete(req.Context(), tt.agent, tt.expectGroupcallID).Return(tt.responseGroupcall, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

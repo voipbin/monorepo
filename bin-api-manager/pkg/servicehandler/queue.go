@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -33,13 +34,17 @@ func (h *serviceHandler) queueGet(ctx context.Context, id uuid.UUID) (*qmqueue.Q
 
 // QueueGet sends a request to queue-manager
 // to getting the queue.
-func (h *serviceHandler) QueueGet(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueGet(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"queue_id":    queueID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	tmp, err := h.queueGet(ctx, queueID)
 	if err != nil {
@@ -60,14 +65,18 @@ func (h *serviceHandler) QueueGet(ctx context.Context, a *amagent.Agent, queueID
 // QueueGets sends a request to queue-manager
 // to getting a list of queues.
 // it returns queue info if it succeed.
-func (h *serviceHandler) QueueList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -111,7 +120,7 @@ func (h *serviceHandler) QueueList(ctx context.Context, a *amagent.Agent, size u
 // it returns created queue info if it succeed.
 func (h *serviceHandler) QueueCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	name string,
 	detail string,
 	routingMethod qmqueue.RoutingMethod,
@@ -123,8 +132,12 @@ func (h *serviceHandler) QueueCreate(
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -156,12 +169,16 @@ func (h *serviceHandler) QueueCreate(
 // QueueDelete sends a request to queue-manager
 // to deleting the queue.
 // it returns error if it failed.
-func (h *serviceHandler) QueueDelete(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueDelete(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
@@ -191,7 +208,7 @@ func (h *serviceHandler) QueueDelete(ctx context.Context, a *amagent.Agent, queu
 // it returns error if it failed.
 func (h *serviceHandler) QueueUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	queueID uuid.UUID,
 	name string,
 	detail string,
@@ -204,7 +221,7 @@ func (h *serviceHandler) QueueUpdate(
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "QueueUpdate",
 		"customer_id":     a.CustomerID,
-		"username":        a.Username,
+		"username":        a.DisplayName(),
 		"name":            name,
 		"detail":          detail,
 		"routing_method":  routingMethod,
@@ -212,6 +229,10 @@ func (h *serviceHandler) QueueUpdate(
 		"wait_timeout":    timeoutWait,
 		"service_timeout": serviceTimeout,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
@@ -239,12 +260,16 @@ func (h *serviceHandler) QueueUpdate(
 // QueueUpdateTagIDs sends a request to queue-manager
 // to updating the queue's tag_ids.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdateTagIDs(ctx context.Context, a *amagent.Agent, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueUpdateTagIDs(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, tagIDs []uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueUpdateTagIDs",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
@@ -272,12 +297,16 @@ func (h *serviceHandler) QueueUpdateTagIDs(ctx context.Context, a *amagent.Agent
 // QueueUpdateRoutingMethod sends a request to queue-manager
 // to updating the queue's routing_method.
 // it returns error if it failed.
-func (h *serviceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *amagent.Agent, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID, routingMethod qmqueue.RoutingMethod) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueUpdateRoutingMethod",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	q, err := h.queueGet(ctx, queueID)
 	if err != nil {
@@ -303,12 +332,16 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *amagen
 }
 
 // QueueDirectHashRegenerate regenerates the direct hash for the queue.
-func (h *serviceHandler) QueueDirectHashRegenerate(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
+func (h *serviceHandler) QueueDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*qmqueue.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueDirectHashRegenerate",
 		"customer_id": a.CustomerID,
 		"queue_id":    queueID,
 	})
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Regenerating queue direct hash.")
 
 	q, err := h.queueGet(ctx, queueID)

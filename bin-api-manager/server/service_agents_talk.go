@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
@@ -19,13 +18,12 @@ func (h *server) GetServiceAgentsTalkChats(c *gin.Context, params openapi_server
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -44,7 +42,7 @@ func (h *server) GetServiceAgentsTalkChats(c *gin.Context, params openapi_server
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentTalkChatList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentTalkChatList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get talks info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -68,13 +66,12 @@ func (h *server) GetServiceAgentsTalkChannels(c *gin.Context, params openapi_ser
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -93,7 +90,7 @@ func (h *server) GetServiceAgentsTalkChannels(c *gin.Context, params openapi_ser
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentTalkChannelList(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentTalkChannelList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get channels info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -116,13 +113,12 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -164,7 +160,7 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 		}
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkChatCreate(c.Request.Context(), &a, talkType, name, detail, participants)
+	res, err := h.serviceHandler.ServiceAgentTalkChatCreate(c.Request.Context(), a, talkType, name, detail, participants)
 	if err != nil {
 		log.Errorf("Could not create talk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -181,13 +177,12 @@ func (h *server) GetServiceAgentsTalkChatsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -199,7 +194,7 @@ func (h *server) GetServiceAgentsTalkChatsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkChatGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTalkChatGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get talk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -216,13 +211,12 @@ func (h *server) PutServiceAgentsTalkChatsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -241,7 +235,7 @@ func (h *server) PutServiceAgentsTalkChatsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkChatUpdate(c.Request.Context(), &a, target, req.Name, req.Detail)
+	res, err := h.serviceHandler.ServiceAgentTalkChatUpdate(c.Request.Context(), a, target, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update talk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -258,13 +252,12 @@ func (h *server) DeleteServiceAgentsTalkChatsId(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -276,7 +269,7 @@ func (h *server) DeleteServiceAgentsTalkChatsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkChatDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTalkChatDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete talk. err: %v", err)
 		c.AbortWithStatus(400)
@@ -293,13 +286,12 @@ func (h *server) PostServiceAgentsTalkChatsIdJoin(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -311,7 +303,7 @@ func (h *server) PostServiceAgentsTalkChatsIdJoin(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkChatJoin(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTalkChatJoin(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not join chat. err: %v", err)
 		c.AbortWithStatus(400)
@@ -328,13 +320,12 @@ func (h *server) GetServiceAgentsTalkChatsIdParticipants(c *gin.Context, id stri
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -346,7 +337,7 @@ func (h *server) GetServiceAgentsTalkChatsIdParticipants(c *gin.Context, id stri
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkParticipantList(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTalkParticipantList(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get participants. err: %v", err)
 		c.AbortWithStatus(400)
@@ -363,13 +354,12 @@ func (h *server) PostServiceAgentsTalkChatsIdParticipants(c *gin.Context, id str
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -395,7 +385,7 @@ func (h *server) PostServiceAgentsTalkChatsIdParticipants(c *gin.Context, id str
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkParticipantCreate(c.Request.Context(), &a, target, req.OwnerType, ownerID)
+	res, err := h.serviceHandler.ServiceAgentTalkParticipantCreate(c.Request.Context(), a, target, req.OwnerType, ownerID)
 	if err != nil {
 		log.Errorf("Could not add participant. err: %v", err)
 		c.AbortWithStatus(400)
@@ -412,13 +402,12 @@ func (h *server) DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -437,7 +426,7 @@ func (h *server) DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkParticipantDelete(c.Request.Context(), &a, talkID, participantID)
+	res, err := h.serviceHandler.ServiceAgentTalkParticipantDelete(c.Request.Context(), a, talkID, participantID)
 	if err != nil {
 		log.Errorf("Could not delete participant. err: %v", err)
 		c.AbortWithStatus(400)
@@ -454,13 +443,12 @@ func (h *server) GetServiceAgentsTalkMessages(c *gin.Context, params openapi_ser
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -487,7 +475,7 @@ func (h *server) GetServiceAgentsTalkMessages(c *gin.Context, params openapi_ser
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ServiceAgentTalkMessageList(c.Request.Context(), &a, chatID, pageSize, pageToken)
+	tmps, err := h.serviceHandler.ServiceAgentTalkMessageList(c.Request.Context(), a, chatID, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get messages info. err: %v", err)
 		c.AbortWithStatus(400)
@@ -510,13 +498,12 @@ func (h *server) PostServiceAgentsTalkMessages(c *gin.Context) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -566,7 +553,7 @@ func (h *server) PostServiceAgentsTalkMessages(c *gin.Context) {
 		}
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkMessageCreate(c.Request.Context(), &a, chatID, parentID, msgType, req.Text, medias)
+	res, err := h.serviceHandler.ServiceAgentTalkMessageCreate(c.Request.Context(), a, chatID, parentID, msgType, req.Text, medias)
 	if err != nil {
 		log.Errorf("Could not create message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -583,13 +570,12 @@ func (h *server) GetServiceAgentsTalkMessagesId(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -601,7 +587,7 @@ func (h *server) GetServiceAgentsTalkMessagesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkMessageGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTalkMessageGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -618,13 +604,12 @@ func (h *server) DeleteServiceAgentsTalkMessagesId(c *gin.Context, id string) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -636,7 +621,7 @@ func (h *server) DeleteServiceAgentsTalkMessagesId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkMessageDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.ServiceAgentTalkMessageDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete message. err: %v", err)
 		c.AbortWithStatus(400)
@@ -653,13 +638,12 @@ func (h *server) PostServiceAgentsTalkMessagesIdReactions(c *gin.Context, id str
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -678,7 +662,7 @@ func (h *server) PostServiceAgentsTalkMessagesIdReactions(c *gin.Context, id str
 		return
 	}
 
-	res, err := h.serviceHandler.ServiceAgentTalkMessageReactionCreate(c.Request.Context(), &a, target, req.Emoji)
+	res, err := h.serviceHandler.ServiceAgentTalkMessageReactionCreate(c.Request.Context(), a, target, req.Emoji)
 	if err != nil {
 		log.Errorf("Could not add reaction. err: %v", err)
 		c.AbortWithStatus(400)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -12,11 +13,15 @@ import (
 // ServiceAgentAgentGets
 // getting the list of agents.
 // it returns list of agents if it succeed.
-func (h *serviceHandler) ServiceAgentAgentList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amagent.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentAgentList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amagent.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentAgentGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
@@ -58,7 +63,11 @@ func (h *serviceHandler) ServiceAgentAgentList(ctx context.Context, a *amagent.A
 }
 
 // ServiceAgentAgentGet returns the given agent info.
-func (h *serviceHandler) ServiceAgentAgentGet(ctx context.Context, a *amagent.Agent, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentAgentGet(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentAgentGet",
 		"agent":       a,

@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	amteam "monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-api-manager/gens/openapi_server"
 
@@ -17,13 +16,12 @@ func (h *server) PostTeams(c *gin.Context) {
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -45,7 +43,7 @@ func (h *server) PostTeams(c *gin.Context) {
 
 	res, err := h.serviceHandler.TeamCreate(
 		c.Request.Context(),
-		&a,
+		a,
 		req.Name,
 		req.Detail,
 		startMemberID,
@@ -67,13 +65,12 @@ func (h *server) GetTeams(c *gin.Context, params openapi_server.GetTeamsParams) 
 		"request_address": c.ClientIP,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -92,7 +89,7 @@ func (h *server) GetTeams(c *gin.Context, params openapi_server.GetTeamsParams) 
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.TeamGetsByCustomerID(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.TeamGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a team list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -117,13 +114,12 @@ func (h *server) GetTeamsId(c *gin.Context, id string) {
 		"team_id":         id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -135,7 +131,7 @@ func (h *server) GetTeamsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TeamGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TeamGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a team. err: %v", err)
 		c.AbortWithStatus(400)
@@ -152,13 +148,12 @@ func (h *server) DeleteTeamsId(c *gin.Context, id string) {
 		"team_id":         id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -170,7 +165,7 @@ func (h *server) DeleteTeamsId(c *gin.Context, id string) {
 		return
 	}
 
-	res, err := h.serviceHandler.TeamDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.TeamDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the team. err: %v", err)
 		c.AbortWithStatus(400)
@@ -187,13 +182,12 @@ func (h *server) PutTeamsId(c *gin.Context, id string) {
 		"team_id":         id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -222,7 +216,7 @@ func (h *server) PutTeamsId(c *gin.Context, id string) {
 
 	res, err := h.serviceHandler.TeamUpdate(
 		c.Request.Context(),
-		&a,
+		a,
 		target,
 		req.Name,
 		req.Detail,
@@ -272,13 +266,12 @@ func (h *server) PostTeamsIdDirectHashRegenerate(c *gin.Context, id openapi_type
 		"team_id":         id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
 	log = log.WithFields(logrus.Fields{
 		"agent": a,
 	})
@@ -291,7 +284,7 @@ func (h *server) PostTeamsIdDirectHashRegenerate(c *gin.Context, id openapi_type
 		return
 	}
 
-	res, err := h.serviceHandler.TeamDirectHashRegenerate(c.Request.Context(), &a, teamID)
+	res, err := h.serviceHandler.TeamDirectHashRegenerate(c.Request.Context(), a, teamID)
 	if err != nil {
 		log.Errorf("Could not regenerate team direct hash. err: %v", err)
 		c.AbortWithStatus(400)

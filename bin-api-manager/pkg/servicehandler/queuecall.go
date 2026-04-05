@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -32,7 +33,7 @@ func (h *serviceHandler) queuecallGet(ctx context.Context, id uuid.UUID) (*qmque
 }
 
 // queuecallGetByReferenceID validates the queuecall's ownership and returns the queuecall info of the given reference id.
-func (h *serviceHandler) queuecallGetByReferenceID(ctx context.Context, a *amagent.Agent, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error) {
+func (h *serviceHandler) queuecallGetByReferenceID(ctx context.Context, a *auth.AuthIdentity, referenceID uuid.UUID) (*qmqueuecall.Queuecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "queuecallGetByReferenceID",
 		"customer_id": a.CustomerID,
@@ -58,13 +59,17 @@ func (h *serviceHandler) queuecallGetByReferenceID(ctx context.Context, a *amage
 
 // QueuecallGet sends a request to queue-manager
 // to getting the queuecall.
-func (h *serviceHandler) QueuecallGet(ctx context.Context, a *amagent.Agent, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
+func (h *serviceHandler) QueuecallGet(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueueGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"agent_id":    queueID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	tmp, err := h.queuecallGet(ctx, queueID)
 	if err != nil {
@@ -85,14 +90,18 @@ func (h *serviceHandler) QueuecallGet(ctx context.Context, a *amagent.Agent, que
 // QueuecallGets sends a request to queue-manager
 // to getting a list of queuecalls.
 // it returns queuecall info if it succeed.
-func (h *serviceHandler) QueuecallList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error) {
+func (h *serviceHandler) QueuecallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueuecallGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -133,12 +142,16 @@ func (h *serviceHandler) QueuecallList(ctx context.Context, a *amagent.Agent, si
 
 // QueuecallDelete sends a request to the queue-manager
 // to delets the given queuecall.
-func (h *serviceHandler) QueuecallDelete(ctx context.Context, a *amagent.Agent, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
+func (h *serviceHandler) QueuecallDelete(ctx context.Context, a *auth.AuthIdentity, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueuecallDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	qc, err := h.queuecallGet(ctx, queuecallID)
 	if err != nil {
@@ -165,12 +178,16 @@ func (h *serviceHandler) QueuecallDelete(ctx context.Context, a *amagent.Agent, 
 
 // QueuecallKick sends a request to the queue-manager
 // to kick out the given queuecall.
-func (h *serviceHandler) QueuecallKick(ctx context.Context, a *amagent.Agent, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
+func (h *serviceHandler) QueuecallKick(ctx context.Context, a *auth.AuthIdentity, queuecallID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueuecallKick",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	qc, err := h.queuecallGet(ctx, queuecallID)
 	if err != nil {
@@ -197,12 +214,16 @@ func (h *serviceHandler) QueuecallKick(ctx context.Context, a *amagent.Agent, qu
 
 // QueuecallKickByReferenceID sends a request to the queue-manager
 // to kick out the given reference id.
-func (h *serviceHandler) QueuecallKickByReferenceID(ctx context.Context, a *amagent.Agent, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
+func (h *serviceHandler) QueuecallKickByReferenceID(ctx context.Context, a *auth.AuthIdentity, referenceID uuid.UUID) (*qmqueuecall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "QueuecallKickByReferenceID",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	qc, err := h.queuecallGetByReferenceID(ctx, a, referenceID)
 	if err != nil {

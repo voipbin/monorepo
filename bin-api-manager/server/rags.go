@@ -1,7 +1,6 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	rmrag "monorepo/bin-rag-manager/models/rag"
 
@@ -17,16 +16,13 @@ func (h *server) PostRags(c *gin.Context) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	var req openapi_server.PostRagsJSONBody
 	if err := c.BindJSON(&req); err != nil {
@@ -58,7 +54,7 @@ func (h *server) PostRags(c *gin.Context) {
 		sourceURLs = *req.SourceUrls
 	}
 
-	res, err := h.serviceHandler.RagCreate(c.Request.Context(), &a, req.Name, description, storageFileIDs, sourceURLs)
+	res, err := h.serviceHandler.RagCreate(c.Request.Context(), a, req.Name, description, storageFileIDs, sourceURLs)
 	if err != nil {
 		log.Errorf("Could not create data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -74,16 +70,13 @@ func (h *server) GetRags(c *gin.Context, params openapi_server.GetRagsParams) {
 		"request_address": c.ClientIP(),
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {
@@ -99,7 +92,7 @@ func (h *server) GetRags(c *gin.Context, params openapi_server.GetRagsParams) {
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.RagGets(c.Request.Context(), &a, pageSize, pageToken)
+	tmps, err := h.serviceHandler.RagGets(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get data list. err: %v", err)
 		c.AbortWithStatus(400)
@@ -124,16 +117,13 @@ func (h *server) GetRagsId(c *gin.Context, id openapi_types.UUID) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target, err := uuid.FromString(id.String())
 	if err != nil {
@@ -142,7 +132,7 @@ func (h *server) GetRagsId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	res, err := h.serviceHandler.RagGet(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.RagGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -159,16 +149,13 @@ func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target, err := uuid.FromString(id.String())
 	if err != nil {
@@ -198,7 +185,7 @@ func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	res, err := h.serviceHandler.RagUpdate(c.Request.Context(), &a, target, fields)
+	res, err := h.serviceHandler.RagUpdate(c.Request.Context(), a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update data. err: %v", err)
 		c.AbortWithStatus(400)
@@ -215,16 +202,13 @@ func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target, err := uuid.FromString(id.String())
 	if err != nil {
@@ -258,7 +242,7 @@ func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
 		sourceURLs = *req.SourceUrls
 	}
 
-	res, err := h.serviceHandler.RagAddSources(c.Request.Context(), &a, target, storageFileIDs, sourceURLs)
+	res, err := h.serviceHandler.RagAddSources(c.Request.Context(), a, target, storageFileIDs, sourceURLs)
 	if err != nil {
 		log.Errorf("Could not add sources. err: %v", err)
 		c.AbortWithStatus(400)
@@ -276,16 +260,13 @@ func (h *server) DeleteRagsIdSourcesSourceId(c *gin.Context, id openapi_types.UU
 		"source_id":       sourceId,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	ragID, err := uuid.FromString(id.String())
 	if err != nil {
@@ -301,7 +282,7 @@ func (h *server) DeleteRagsIdSourcesSourceId(c *gin.Context, id openapi_types.UU
 		return
 	}
 
-	res, err := h.serviceHandler.RagRemoveSource(c.Request.Context(), &a, ragID, sourceID)
+	res, err := h.serviceHandler.RagRemoveSource(c.Request.Context(), a, ragID, sourceID)
 	if err != nil {
 		log.Errorf("Could not remove source. err: %v", err)
 		c.AbortWithStatus(400)
@@ -318,16 +299,13 @@ func (h *server) DeleteRagsId(c *gin.Context, id openapi_types.UUID) {
 		"target_id":       id,
 	})
 
-	tmp, exists := c.Get("agent")
-	if !exists {
-		log.Errorf("Could not find agent info.")
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
 		c.AbortWithStatus(400)
 		return
 	}
-	a := tmp.(amagent.Agent)
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
+	log = log.WithField("agent", a)
 
 	target, err := uuid.FromString(id.String())
 	if err != nil {
@@ -336,7 +314,7 @@ func (h *server) DeleteRagsId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	res, err := h.serviceHandler.RagDelete(c.Request.Context(), &a, target)
+	res, err := h.serviceHandler.RagDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete data. err: %v", err)
 		c.AbortWithStatus(400)

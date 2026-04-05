@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
@@ -22,7 +23,7 @@ func Test_customerGET(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 
@@ -32,13 +33,13 @@ func Test_customerGET(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
 					CustomerID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			reqQuery: "/customer",
 
@@ -64,12 +65,12 @@ func Test_customerGET(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().CustomerSelfGet(req.Context(), &tt.agent).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerSelfGet(req.Context(), tt.agent).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -87,7 +88,7 @@ func Test_customerPut(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -105,13 +106,13 @@ func Test_customerPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("4afd144c-c451-11ef-a8d8-6fd67202355e"),
 					CustomerID: uuid.FromStringOrNil("4b7dcc68-c451-11ef-a289-33cbfe065115"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			reqQuery: "/customer",
 			reqBody:  []byte(`{"name":"new name","detail":"new detail","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`),
@@ -145,14 +146,14 @@ func Test_customerPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerSelfUpdate(req.Context(), &tt.agent, tt.expectecName, tt.expectedDetail, tt.expectedEmail, tt.expectedPhoneNumber, tt.expectedAddress, tt.expectedWebhookMethod, tt.expectedWebhookURI).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerSelfUpdate(req.Context(), tt.agent, tt.expectecName, tt.expectedDetail, tt.expectedEmail, tt.expectedPhoneNumber, tt.expectedAddress, tt.expectedWebhookMethod, tt.expectedWebhookURI).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -170,7 +171,7 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -182,13 +183,13 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("23ad14fa-c514-11ef-a03b-af3d499fdf18"),
 					CustomerID: uuid.FromStringOrNil("2422306e-c514-11ef-a89d-2f0585ee15f9"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			reqQuery: "/customer/billing_account_id",
 			reqBody:  []byte(`{"billing_account_id":"245bc55e-c514-11ef-85d3-23d66dfc487a"}`),
@@ -216,14 +217,14 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerSelfUpdateBillingAccountID(req.Context(), &tt.agent, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerSelfUpdateBillingAccountID(req.Context(), tt.agent, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -241,7 +242,7 @@ func Test_customerMetadataPut(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		agent amagent.Agent
+		agent *auth.AuthIdentity
 
 		reqQuery string
 		reqBody  []byte
@@ -253,13 +254,13 @@ func Test_customerMetadataPut(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 					CustomerID: uuid.FromStringOrNil("b2c3d4e5-f6a7-8901-bcde-f12345678901"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			reqQuery: "/customer/metadata",
 			reqBody:  []byte(`{"rtp_debug":true}`),
@@ -292,14 +293,14 @@ func Test_customerMetadataPut(t *testing.T) {
 			_, r := gin.CreateTestContext(w)
 
 			r.Use(func(c *gin.Context) {
-				c.Set("agent", tt.agent)
+				c.Set("auth_identity", tt.agent)
 			})
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CustomerSelfUpdateMetadata(req.Context(), &tt.agent, tt.expectedMetadata).Return(tt.responseCustomer, nil)
+			mockSvc.EXPECT().CustomerSelfUpdateMetadata(req.Context(), tt.agent, tt.expectedMetadata).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

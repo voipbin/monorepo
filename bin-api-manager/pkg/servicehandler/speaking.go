@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	tmspeaking "monorepo/bin-tts-manager/models/speaking"
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
@@ -23,12 +24,16 @@ func (h *serviceHandler) speakingGet(ctx context.Context, speakingID uuid.UUID) 
 }
 
 // SpeakingCreate creates a new speaking session.
-func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *amagent.Agent, referenceType tmstreaming.ReferenceType, referenceID uuid.UUID, language string, provider string, voiceID string, direction tmstreaming.Direction) (*tmspeaking.WebhookMessage, error) {
+func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *auth.AuthIdentity, referenceType tmstreaming.ReferenceType, referenceID uuid.UUID, language string, provider string, voiceID string, direction tmstreaming.Direction) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingCreate",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
@@ -46,13 +51,17 @@ func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *amagent.Agent, r
 }
 
 // SpeakingGet retrieves a speaking session.
-func (h *serviceHandler) SpeakingGet(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
+func (h *serviceHandler) SpeakingGet(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"speaking_id": speakingID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	tmp, err := h.speakingGet(ctx, speakingID)
 	if err != nil {
@@ -69,12 +78,16 @@ func (h *serviceHandler) SpeakingGet(ctx context.Context, a *amagent.Agent, spea
 }
 
 // SpeakingList retrieves a list of speaking sessions.
-func (h *serviceHandler) SpeakingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmspeaking.WebhookMessage, error) {
+func (h *serviceHandler) SpeakingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingList",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -104,13 +117,17 @@ func (h *serviceHandler) SpeakingList(ctx context.Context, a *amagent.Agent, siz
 }
 
 // SpeakingSay sends text to be spoken. Pod-targeted.
-func (h *serviceHandler) SpeakingSay(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID, text string) (*tmspeaking.WebhookMessage, error) {
+func (h *serviceHandler) SpeakingSay(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID, text string) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingSay",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"speaking_id": speakingID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	s, err := h.speakingGet(ctx, speakingID)
 	if err != nil {
@@ -134,13 +151,17 @@ func (h *serviceHandler) SpeakingSay(ctx context.Context, a *amagent.Agent, spea
 }
 
 // SpeakingFlush flushes pending text from the speaking queue. Pod-targeted.
-func (h *serviceHandler) SpeakingFlush(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
+func (h *serviceHandler) SpeakingFlush(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingFlush",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"speaking_id": speakingID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	s, err := h.speakingGet(ctx, speakingID)
 	if err != nil {
@@ -164,13 +185,17 @@ func (h *serviceHandler) SpeakingFlush(ctx context.Context, a *amagent.Agent, sp
 }
 
 // SpeakingStop stops the speaking session. Pod-targeted.
-func (h *serviceHandler) SpeakingStop(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
+func (h *serviceHandler) SpeakingStop(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingStop",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"speaking_id": speakingID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	s, err := h.speakingGet(ctx, speakingID)
 	if err != nil {
@@ -195,13 +220,17 @@ func (h *serviceHandler) SpeakingStop(ctx context.Context, a *amagent.Agent, spe
 
 // SpeakingDelete soft-deletes a speaking session.
 // Stops the streaming session first (pod-targeted) before deleting the DB record (shared queue).
-func (h *serviceHandler) SpeakingDelete(ctx context.Context, a *amagent.Agent, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
+func (h *serviceHandler) SpeakingDelete(ctx context.Context, a *auth.AuthIdentity, speakingID uuid.UUID) (*tmspeaking.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "SpeakingDelete",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"speaking_id": speakingID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	s, err := h.speakingGet(ctx, speakingID)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
@@ -32,13 +33,16 @@ func (h *serviceHandler) flowGet(ctx context.Context, flowID uuid.UUID) (*fmflow
 // FlowCreate is a service handler for flow creation.
 func (h *serviceHandler) FlowCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	name string,
 	detail string,
 	actions []fmaction.Action,
 	onCompleteID uuid.UUID,
 	persist bool,
 ) (*fmflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if persist {
 		// we are making a persist flow here.
@@ -76,7 +80,10 @@ func (h *serviceHandler) FlowCreate(
 }
 
 // FlowDelete deletes the flow of the given id.
-func (h *serviceHandler) FlowDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*fmflow.WebhookMessage, error) {
+func (h *serviceHandler) FlowDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*fmflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get flow
 	f, err := h.flowGet(ctx, id)
@@ -98,12 +105,17 @@ func (h *serviceHandler) FlowDelete(ctx context.Context, a *amagent.Agent, id uu
 }
 
 // FlowDirectHashRegenerate regenerates the direct hash for the flow.
-func (h *serviceHandler) FlowDirectHashRegenerate(ctx context.Context, a *amagent.Agent, flowID uuid.UUID) (*fmflow.WebhookMessage, error) {
+func (h *serviceHandler) FlowDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID) (*fmflow.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "FlowDirectHashRegenerate",
 		"customer_id": a.CustomerID,
 		"flow_id":     flowID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
 	log.Debug("Regenerating flow direct hash.")
 
 	f, err := h.flowGet(ctx, flowID)
@@ -129,7 +141,10 @@ func (h *serviceHandler) FlowDirectHashRegenerate(ctx context.Context, a *amagen
 
 // FlowGet gets the flow of the given id.
 // It returns flow if it succeed.
-func (h *serviceHandler) FlowGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*fmflow.WebhookMessage, error) {
+func (h *serviceHandler) FlowGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*fmflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get flow
 	tmp, err := h.flowGet(ctx, id)
@@ -147,7 +162,10 @@ func (h *serviceHandler) FlowGet(ctx context.Context, a *amagent.Agent, id uuid.
 
 // FlowGets gets the list of flow of the given customer id.
 // It returns list of flows if it succeed.
-func (h *serviceHandler) FlowList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
+func (h *serviceHandler) FlowList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, fmt.Errorf("user has no permission")
@@ -184,13 +202,16 @@ func (h *serviceHandler) FlowList(ctx context.Context, a *amagent.Agent, size ui
 // It returns updated flow if it succeed.
 func (h *serviceHandler) FlowUpdate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	id uuid.UUID,
 	name string,
 	detail string,
 	actions []fmaction.Action,
 	onCompleteID uuid.UUID,
 ) (*fmflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get flows
 	tmpFlow, err := h.flowGet(ctx, id)
@@ -224,7 +245,10 @@ func (h *serviceHandler) FlowUpdate(
 
 // FlowUpdateActions updates the flow's actions.
 // It returns updated flow if it succeed.
-func (h *serviceHandler) FlowUpdateActions(ctx context.Context, a *amagent.Agent, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.WebhookMessage, error) {
+func (h *serviceHandler) FlowUpdateActions(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.WebhookMessage, error) {
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get flows
 	f, err := h.flowGet(ctx, flowID)

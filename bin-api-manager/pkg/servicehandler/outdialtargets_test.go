@@ -14,6 +14,8 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
+	"monorepo/bin-api-manager/models/auth"
+
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
@@ -25,7 +27,7 @@ func Test_OutdialtargetCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 
 		outdialID         uuid.UUID
 		outdialtargetName string
@@ -44,13 +46,13 @@ func Test_OutdialtargetCreate(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("410fa394-8764-4300-a8b0-a6e6108c4208"),
 			"test name",
@@ -93,13 +95,13 @@ func Test_OutdialtargetCreate(t *testing.T) {
 		},
 		{
 			"has 1 address",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("7aff596d-1db2-4456-95b4-bdab04296cd8"),
 			"test name",
@@ -162,7 +164,7 @@ func Test_OutdialtargetGet(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		agent           *amagent.Agent
+		agent *auth.AuthIdentity
 		outdialID       uuid.UUID
 		outdialtargetID uuid.UUID
 
@@ -172,13 +174,13 @@ func Test_OutdialtargetGet(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
 			uuid.FromStringOrNil("27092132-c523-11ec-8626-bb2b11494c8d"),
 
@@ -231,7 +233,7 @@ func Test_OutdialtargetListByOutdialID(t *testing.T) {
 
 	type test struct {
 		name      string
-		agent     *amagent.Agent
+		agent *auth.AuthIdentity
 		outdialID uuid.UUID
 		pageToken string
 		pageSize  uint64
@@ -244,13 +246,13 @@ func Test_OutdialtargetListByOutdialID(t *testing.T) {
 	tests := []test{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("cf21cd20-c829-11ec-8452-6746e25a4103"),
 			"2021-03-01T01:00:00.995000Z",
 			10,
@@ -313,7 +315,7 @@ func Test_OutdialtargetDelete(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		agent           *amagent.Agent
+		agent *auth.AuthIdentity
 		outdialID       uuid.UUID
 		outdialtargetID uuid.UUID
 
@@ -323,13 +325,13 @@ func Test_OutdialtargetDelete(t *testing.T) {
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 
 			uuid.FromStringOrNil("1fc27dbe-2440-4e9d-b209-a8aa526e96d8"),
 			uuid.FromStringOrNil("f814109a-c62e-4cc3-8c8b-616fd91314a6"),

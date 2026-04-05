@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"monorepo/bin-api-manager/models/auth"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -16,14 +17,18 @@ import (
 // BillingGets sends a request to billing-manager
 // to getting a list of billings.
 // it returns list of billings if it succeed.
-func (h *serviceHandler) BillingList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*bmbilling.WebhookMessage, error) {
+func (h *serviceHandler) BillingList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*bmbilling.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingGets",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
@@ -107,13 +112,17 @@ func (h *serviceHandler) billingGet(ctx context.Context, billingID uuid.UUID) (*
 // BillingGet sends a request to billing-manager
 // to getting a billing.
 // it returns billing if it succeed.
-func (h *serviceHandler) BillingGet(ctx context.Context, a *amagent.Agent, billingID uuid.UUID) (*bmbilling.WebhookMessage, error) {
+func (h *serviceHandler) BillingGet(ctx context.Context, a *auth.AuthIdentity, billingID uuid.UUID) (*bmbilling.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "BillingGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"billing_id":  billingID,
 	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
 
 	// get billing
 	b, err := h.billingGet(ctx, billingID)

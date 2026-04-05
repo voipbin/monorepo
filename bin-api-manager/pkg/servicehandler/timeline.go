@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -41,16 +42,20 @@ var resourceTypeConfigs = map[string]resourceTypeConfig{
 // TimelineEventList retrieves timeline events for a resource.
 func (h *serviceHandler) TimelineEventList(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	resourceType string,
 	resourceID uuid.UUID,
 	pageSize int,
 	pageToken string,
 ) ([]*TimelineEvent, string, error) {
+	if a.IsDirect() {
+		return nil, "", fmt.Errorf("direct access not supported")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "TimelineEventList",
 		"customer_id":   a.CustomerID,
-		"username":      a.Username,
+		"username":      a.DisplayName(),
 		"resource_type": resourceType,
 		"resource_id":   resourceID,
 	})

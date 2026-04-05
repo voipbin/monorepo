@@ -12,6 +12,7 @@ import (
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -24,20 +25,20 @@ func Test_storageFileGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		fileID uuid.UUID
 
 		responseStorageFile *smfile.File
 	}{
 		{
 			"normal",
-			&amagent.Agent{
+			auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b7ef6ea6-1bd7-11ef-88a6-ff71fa05d8bd"),
 					CustomerID: uuid.FromStringOrNil("b83e3c98-1bd7-11ef-8f14-9f07e5f6c56b"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
-			},
+			}),
 			uuid.FromStringOrNil("ee294376-1c03-11ef-b40d-372468bd9437"),
 			&smfile.File{
 				Identity: commonidentity.Identity{
@@ -82,7 +83,7 @@ func Test_ServiceAgentFileDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent         *amagent.Agent
+		agent         *auth.AuthIdentity
 		storageFileID uuid.UUID
 
 		responseStorageFile *smfile.File
@@ -91,13 +92,13 @@ func Test_ServiceAgentFileDelete(t *testing.T) {
 		{
 			name: "normal",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("1a49c8f8-1bd8-11ef-b861-bf0a568022b9"),
 					CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			storageFileID: uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
 
 			responseStorageFile: &smfile.File{
@@ -157,7 +158,7 @@ func Test_StorageFileList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *amagent.Agent
+		agent *auth.AuthIdentity
 		size  uint64
 		token string
 
@@ -167,13 +168,13 @@ func Test_StorageFileList(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("6998ca62-1bd8-11ef-bfe1-f3c47f813931"),
 					CustomerID: uuid.FromStringOrNil("69dc78e8-1bd8-11ef-9710-ffa2bc5ebf93"),
 				},
 				Permission: amagent.PermissionProjectSuperAdmin,
-			},
+			}),
 			size:  10,
 			token: "2020-09-20T03:23:20.995000Z",
 
@@ -246,7 +247,7 @@ func Test_ServiceAgentFileDownloadRedirect(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *amagent.Agent
+		agent  *auth.AuthIdentity
 		fileID uuid.UUID
 
 		responseStorageFile *smfile.File
@@ -260,12 +261,12 @@ func Test_ServiceAgentFileDownloadRedirect(t *testing.T) {
 		{
 			name: "valid URL not expired",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e1b2c3d4-1111-1111-1111-000000000001"),
 					CustomerID: uuid.FromStringOrNil("e1b2c3d4-1111-1111-1111-000000000002"),
 				},
-			},
+			}),
 			fileID: uuid.FromStringOrNil("e1b2c3d4-1111-1111-1111-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -283,12 +284,12 @@ func Test_ServiceAgentFileDownloadRedirect(t *testing.T) {
 		{
 			name: "expired URL triggers refresh",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e1b2c3d4-2222-2222-2222-000000000001"),
 					CustomerID: uuid.FromStringOrNil("e1b2c3d4-2222-2222-2222-000000000002"),
 				},
-			},
+			}),
 			fileID: uuid.FromStringOrNil("e1b2c3d4-2222-2222-2222-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -307,12 +308,12 @@ func Test_ServiceAgentFileDownloadRedirect(t *testing.T) {
 		{
 			name: "nil expiration triggers refresh",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e1b2c3d4-3333-3333-3333-000000000001"),
 					CustomerID: uuid.FromStringOrNil("e1b2c3d4-3333-3333-3333-000000000002"),
 				},
-			},
+			}),
 			fileID: uuid.FromStringOrNil("e1b2c3d4-3333-3333-3333-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -331,12 +332,12 @@ func Test_ServiceAgentFileDownloadRedirect(t *testing.T) {
 		{
 			name: "empty URIDownload triggers refresh",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e1b2c3d4-4444-4444-4444-000000000001"),
 					CustomerID: uuid.FromStringOrNil("e1b2c3d4-4444-4444-4444-000000000002"),
 				},
-			},
+			}),
 			fileID: uuid.FromStringOrNil("e1b2c3d4-4444-4444-4444-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -355,12 +356,12 @@ func Test_ServiceAgentFileDownloadRedirect(t *testing.T) {
 		{
 			name: "permission denied - different customer",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e1b2c3d4-5555-5555-5555-000000000001"),
 					CustomerID: uuid.FromStringOrNil("e1b2c3d4-5555-5555-5555-000000000002"),
 				},
-			},
+			}),
 			fileID: uuid.FromStringOrNil("e1b2c3d4-5555-5555-5555-000000000003"),
 
 			responseStorageFile: &smfile.File{
@@ -377,12 +378,12 @@ func Test_ServiceAgentFileDownloadRedirect(t *testing.T) {
 		{
 			name: "file not found",
 
-			agent: &amagent.Agent{
+			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("e1b2c3d4-6666-6666-6666-000000000001"),
 					CustomerID: uuid.FromStringOrNil("e1b2c3d4-6666-6666-6666-000000000002"),
 				},
-			},
+			}),
 			fileID: uuid.FromStringOrNil("e1b2c3d4-6666-6666-6666-000000000003"),
 
 			responseStorageFile: nil,

@@ -7,6 +7,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +17,7 @@ import (
 // AIcallCreate is a service handler for aicall creation.
 func (h *serviceHandler) AIcallCreate(
 	ctx context.Context,
-	a *amagent.Agent,
+	a *auth.AuthIdentity,
 	assistanceType amaicall.AssistanceType,
 	assistanceID uuid.UUID,
 	referenceType amaicall.ReferenceType,
@@ -42,8 +43,18 @@ func (h *serviceHandler) AIcallCreate(
 		return nil, fmt.Errorf("unsupported assistance type: %s", assistanceType)
 	}
 
-	if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+	switch {
+	case a.IsAgent() || a.IsAccesskey():
+		if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission")
+		}
+	case a.IsDirect():
+		if !a.HasAllowedResourceType("aicall") {
+			return nil, fmt.Errorf("resource type not allowed")
+		}
+		if a.DirectScope.ResourceID != assistanceID {
+			return nil, fmt.Errorf("resource not in scope")
+		}
 	}
 
 	tmp, err := h.reqHandler.AIV1AIcallStart(
@@ -75,14 +86,21 @@ func (h *serviceHandler) aicallGet(ctx context.Context, id uuid.UUID) (*amaicall
 
 // AIcallGetsByCustomerID gets the list of aicalls of the given customer id.
 // It returns list of AIs if it succeed.
-func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*amaicall.WebhookMessage, error) {
+func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amaicall.WebhookMessage, error) {
 
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+	switch {
+	case a.IsAgent() || a.IsAccesskey():
+		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission")
+		}
+	case a.IsDirect():
+		if !a.HasAllowedResourceType("aicall") {
+			return nil, fmt.Errorf("resource type not allowed")
+		}
 	}
 
 	// filters
@@ -137,14 +155,24 @@ func (h *serviceHandler) convertAIcallFilters(filters map[string]string) (map[am
 
 // AIcallGet gets the aicall of the given id.
 // It returns aicall if it succeed.
-func (h *serviceHandler) AIcallGet(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amaicall.WebhookMessage, error) {
+func (h *serviceHandler) AIcallGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaicall.WebhookMessage, error) {
 	tmp, err := h.aicallGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get aicall info")
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+	switch {
+	case a.IsAgent() || a.IsAccesskey():
+		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission")
+		}
+	case a.IsDirect():
+		if !a.HasAllowedResourceType("aicall") {
+			return nil, fmt.Errorf("resource type not allowed")
+		}
+		if tmp.CustomerID != a.CustomerID {
+			return nil, fmt.Errorf("resource not in scope")
+		}
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -152,14 +180,24 @@ func (h *serviceHandler) AIcallGet(ctx context.Context, a *amagent.Agent, id uui
 }
 
 // AIcallDelete deletes the aicall.
-func (h *serviceHandler) AIcallDelete(ctx context.Context, a *amagent.Agent, id uuid.UUID) (*amaicall.WebhookMessage, error) {
+func (h *serviceHandler) AIcallDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaicall.WebhookMessage, error) {
 	c, err := h.aicallGet(ctx, id)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get aicall info")
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+	switch {
+	case a.IsAgent() || a.IsAccesskey():
+		if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission")
+		}
+	case a.IsDirect():
+		if !a.HasAllowedResourceType("aicall") {
+			return nil, fmt.Errorf("resource type not allowed")
+		}
+		if c.CustomerID != a.CustomerID {
+			return nil, fmt.Errorf("resource not in scope")
+		}
 	}
 
 	tmp, err := h.reqHandler.AIV1AIcallDelete(ctx, id)

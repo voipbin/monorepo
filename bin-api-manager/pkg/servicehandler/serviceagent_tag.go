@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
 	"github.com/gofrs/uuid"
@@ -12,11 +13,15 @@ import (
 )
 
 // ServiceAgentTagList returns a list of tags for the service agent's customer.
-func (h *serviceHandler) ServiceAgentTagList(ctx context.Context, a *amagent.Agent, size uint64, token string) ([]*tmtag.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTagList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tmtag.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentTagList",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
 	})
@@ -49,11 +54,15 @@ func (h *serviceHandler) ServiceAgentTagList(ctx context.Context, a *amagent.Age
 }
 
 // ServiceAgentTagGet returns the given tag info.
-func (h *serviceHandler) ServiceAgentTagGet(ctx context.Context, a *amagent.Agent, tagID uuid.UUID) (*tmtag.WebhookMessage, error) {
+func (h *serviceHandler) ServiceAgentTagGet(ctx context.Context, a *auth.AuthIdentity, tagID uuid.UUID) (*tmtag.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, fmt.Errorf("agent authentication required")
+	}
+
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ServiceAgentTagGet",
 		"customer_id": a.CustomerID,
-		"username":    a.Username,
+		"username":    a.DisplayName(),
 		"tag_id":      tagID,
 	})
 
