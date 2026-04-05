@@ -71,6 +71,21 @@ func Test_validateTopics(t *testing.T) {
 
 			expectRes: false,
 		},
+		{
+			name: "direct token with valid 4-part topics",
+
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
+				ResourceType:         "ai",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			topics: []string{
+				"customer_id:5f84c116-da29-11ee-b479-a70bca2a0a48:aicall:e5f6a7b8-0000-0000-0000-000000000000",
+			},
+
+			expectRes: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -193,6 +208,58 @@ func Test_validateTopic(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 			topic: "customer_id:0c719e72-da97-11ee-baf5-838bed050454:chatroom",
+
+			expectRes: false,
+		},
+		{
+			name: "direct token can subscribe to scoped 4-part topic",
+
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
+				ResourceType:         "ai",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			topic: "customer_id:5f84c116-da29-11ee-b479-a70bca2a0a48:aicall:e5f6a7b8-0000-0000-0000-000000000000",
+
+			expectRes: true,
+		},
+		{
+			name: "direct token cannot subscribe to 2-part customer topic",
+
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
+				ResourceType:         "ai",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			topic: "customer_id:5f84c116-da29-11ee-b479-a70bca2a0a48",
+
+			expectRes: false,
+		},
+		{
+			name: "direct token cannot subscribe to disallowed resource type",
+
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
+				ResourceType:         "ai",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			topic: "customer_id:5f84c116-da29-11ee-b479-a70bca2a0a48:call:e5f6a7b8-0000-0000-0000-000000000000",
+
+			expectRes: false,
+		},
+		{
+			name: "direct token cannot subscribe to wrong customer id",
+
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
+				ResourceType:         "ai",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			topic: "customer_id:0c719e72-da97-11ee-baf5-838bed050454:aicall:e5f6a7b8-0000-0000-0000-000000000000",
 
 			expectRes: false,
 		},
