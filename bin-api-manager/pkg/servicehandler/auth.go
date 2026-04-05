@@ -26,6 +26,7 @@ func (h *serviceHandler) AuthLogin(ctx context.Context, username string, passwor
 	log.WithField("agent", a).Debugf("Found agent info. agent_id: %s, customer_id: %s", a.ID, a.CustomerID)
 
 	data := map[string]interface{}{
+		"type":  "agent",
 		"agent": a,
 	}
 
