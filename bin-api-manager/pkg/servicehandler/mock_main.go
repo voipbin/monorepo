@@ -716,10 +716,10 @@ func (mr *MockServiceHandlerMockRecorder) AggregatedEventList(ctx, a, activeflow
 }
 
 // AuthBoot mocks base method.
-func (m *MockServiceHandler) AuthBoot(ctx context.Context, directHash string) (map[string]any, error) {
+func (m *MockServiceHandler) AuthBoot(ctx context.Context, directHash string) (*BootResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AuthBoot", ctx, directHash)
-	ret0, _ := ret[0].(map[string]any)
+	ret0, _ := ret[0].(*BootResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

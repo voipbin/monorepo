@@ -37,6 +37,9 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *auth.AuthIdentit
 		case "customer_id":
 			if len(tmps) == 4 {
 				// 4-part: "customer_id:<uuid>:<resource_type>:<resource_id>"
+				// Note: resource_id (tmps[3]) is NOT validated against DirectScope.ResourceID
+				// because they refer to different things. DirectScope.ResourceID is the parent
+				// resource (e.g., AI), while tmps[3] is a child resource (e.g., aicall).
 				if tmpID != a.CustomerID {
 					return false
 				}
@@ -69,7 +72,6 @@ func (h *websockHandler) validateTopics(ctx context.Context, a *auth.AuthIdentit
 
 		case "agent_id":
 			if tmpID != a.AgentID() {
-				//
 				return false
 			}
 
@@ -101,6 +103,9 @@ func (h *websockHandler) validateTopic(ctx context.Context, a *auth.AuthIdentity
 	case "customer_id":
 		if len(tmps) == 4 {
 			// 4-part: "customer_id:<uuid>:<resource_type>:<resource_id>"
+			// Note: resource_id (tmps[3]) is NOT validated against DirectScope.ResourceID
+			// because they refer to different things. DirectScope.ResourceID is the parent
+			// resource (e.g., AI), while tmps[3] is a child resource (e.g., aicall).
 			if tmpID != a.CustomerID {
 				return false
 			}
@@ -133,7 +138,6 @@ func (h *websockHandler) validateTopic(ctx context.Context, a *auth.AuthIdentity
 
 	case "agent_id":
 		if tmpID != a.AgentID() {
-			//
 			return false
 		}
 

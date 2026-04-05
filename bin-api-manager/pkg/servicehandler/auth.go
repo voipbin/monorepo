@@ -43,21 +43,8 @@ func (h *serviceHandler) AuthJWTGenerate(data map[string]interface{}) (string, e
 	log := logrus.WithField("func", "JWTGenerate")
 	log.Debugf("Generating the token. data: %v", data)
 
-	claims := jwt.MapClaims{}
-	for k, v := range data {
-		claims[k] = v
-	}
-
-	// token is valid for 7 days
-	claims["expire"] = h.utilHandler.TimeGetCurTimeAdd(TokenExpiration)
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	res, err := token.SignedString(h.jwtKey)
-	if err != nil {
-		return "", err
-	}
-
-	return res, nil
+	token, _, err := h.authJWTGenerateWithExpiration(data, TokenExpiration)
+	return token, err
 }
 
 func (h *serviceHandler) AuthJWTParse(ctx context.Context, tokenString string) (map[string]interface{}, error) {

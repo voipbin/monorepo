@@ -10,6 +10,7 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
+	"github.com/gofrs/uuid"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
 )
@@ -19,11 +20,21 @@ var directResourceMapping = map[string][]string{
 	"ai": {"aicall"},
 }
 
+// BootResponse is the typed response for POST /auth/boot.
+type BootResponse struct {
+	Token        string    `json:"token"`
+	Type         string    `json:"type"`
+	ResourceType string    `json:"resource_type"`
+	ResourceID   uuid.UUID `json:"resource_id"`
+	CustomerID   uuid.UUID `json:"customer_id"`
+	Expire       string    `json:"expire"`
+}
+
 // AuthBoot resolves a direct hash and returns a resource-scoped JWT.
-func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (map[string]interface{}, error) {
+func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*BootResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "AuthBoot",
-		"direct_hash": directHash,
+		"direct_hash": truncateHash(directHash),
 	})
 
 	// validate hash format
@@ -72,40 +83,48 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (map[s
 		"type":   "direct",
 		"direct": scope,
 	}
-	token, err := h.authJWTGenerateWithExpiration(data, BootExpiration)
+	token, expire, err := h.authJWTGenerateWithExpiration(data, BootExpiration)
 	if err != nil {
 		log.Errorf("Could not generate boot JWT. err: %v", err)
 		return nil, fmt.Errorf("could not generate token")
 	}
 
-	expire := h.utilHandler.TimeGetCurTimeAdd(BootExpiration)
-
-	res := map[string]interface{}{
-		"token":         token,
-		"type":          "direct",
-		"resource_type": d.ResourceType,
-		"resource_id":   d.ResourceID,
-		"customer_id":   d.CustomerID,
-		"expire":        expire,
+	res := &BootResponse{
+		Token:        token,
+		Type:         "direct",
+		ResourceType: d.ResourceType,
+		ResourceID:   d.ResourceID,
+		CustomerID:   d.CustomerID,
+		Expire:       expire,
 	}
 
 	return res, nil
 }
 
 // authJWTGenerateWithExpiration generates a JWT with the specified expiration duration.
-func (h *serviceHandler) authJWTGenerateWithExpiration(data map[string]interface{}, expiration time.Duration) (string, error) {
+// It returns the signed token string and the expiration timestamp.
+func (h *serviceHandler) authJWTGenerateWithExpiration(data map[string]interface{}, expiration time.Duration) (string, string, error) {
+	expire := h.utilHandler.TimeGetCurTimeAdd(expiration)
+
 	claims := jwt.MapClaims{}
 	for k, v := range data {
 		claims[k] = v
 	}
-
-	claims["expire"] = h.utilHandler.TimeGetCurTimeAdd(expiration)
+	claims["expire"] = expire
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	res, err := token.SignedString(h.jwtKey)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return res, nil
+	return res, expire, nil
+}
+
+// truncateHash returns a masked version of the hash for safe logging.
+func truncateHash(hash string) string {
+	if len(hash) <= 12 {
+		return hash
+	}
+	return hash[:12] + "..."
 }

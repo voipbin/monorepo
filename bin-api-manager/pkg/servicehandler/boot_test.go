@@ -24,9 +24,9 @@ func Test_AuthBoot(t *testing.T) {
 
 		directHash string
 
-		responseDirect   *dmdirect.Direct
+		responseDirect    *dmdirect.Direct
 		responseDirectErr error
-		responseCustomer   *cscustomer.Customer
+		responseCustomer    *cscustomer.Customer
 		responseCustomerErr error
 		responseCurTime string
 
@@ -146,8 +146,7 @@ func Test_AuthBoot(t *testing.T) {
 			}
 
 			if !tt.expectErr {
-				// TimeGetCurTimeAdd is called twice: once in authJWTGenerateWithExpiration, once for response expire
-				mockUtil.EXPECT().TimeGetCurTimeAdd(BootExpiration).Return(tt.responseCurTime).Times(2)
+				mockUtil.EXPECT().TimeGetCurTimeAdd(BootExpiration).Return(tt.responseCurTime)
 			}
 
 			res, err := h.AuthBoot(ctx, tt.directHash)
@@ -163,30 +162,28 @@ func Test_AuthBoot(t *testing.T) {
 				return
 			}
 
-			// verify response fields
-			if res["type"] != "direct" {
-				t.Errorf("Expected type 'direct', got: %v", res["type"])
+			if res.Type != "direct" {
+				t.Errorf("Expected type 'direct', got: %v", res.Type)
 			}
 
-			if res["resource_type"] != "ai" {
-				t.Errorf("Expected resource_type 'ai', got: %v", res["resource_type"])
+			if res.ResourceType != "ai" {
+				t.Errorf("Expected resource_type 'ai', got: %v", res.ResourceType)
 			}
 
-			if res["resource_id"] != uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001") {
-				t.Errorf("Expected resource_id 'a1b2c3d4-0000-0000-0000-000000000001', got: %v", res["resource_id"])
+			if res.ResourceID != uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001") {
+				t.Errorf("Expected resource_id 'a1b2c3d4-0000-0000-0000-000000000001', got: %v", res.ResourceID)
 			}
 
-			if res["customer_id"] != uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001") {
-				t.Errorf("Expected customer_id 'c1b2c3d4-0000-0000-0000-000000000001', got: %v", res["customer_id"])
+			if res.CustomerID != uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001") {
+				t.Errorf("Expected customer_id 'c1b2c3d4-0000-0000-0000-000000000001', got: %v", res.CustomerID)
 			}
 
-			token, ok := res["token"].(string)
-			if !ok || token == "" {
-				t.Errorf("Expected non-empty token string, got: %v", res["token"])
+			if res.Token == "" {
+				t.Errorf("Expected non-empty token string, got empty")
 			}
 
-			if res["expire"] != tt.responseCurTime {
-				t.Errorf("Expected expire '%s', got: %v", tt.responseCurTime, res["expire"])
+			if res.Expire != tt.responseCurTime {
+				t.Errorf("Expected expire '%s', got: %v", tt.responseCurTime, res.Expire)
 			}
 		})
 	}

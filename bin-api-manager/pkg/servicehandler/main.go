@@ -147,7 +147,7 @@ type ServiceHandler interface {
 	AuthJWTParse(ctx context.Context, tokenString string) (map[string]interface{}, error)
 	AuthPasswordForgot(ctx context.Context, username string) error
 	AuthPasswordReset(ctx context.Context, token string, password string) error
-	AuthBoot(ctx context.Context, directHash string) (map[string]interface{}, error)
+	AuthBoot(ctx context.Context, directHash string) (*BootResponse, error)
 
 	// available numbers
 	AvailableNumberList(ctx context.Context, a *auth.AuthIdentity, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error)

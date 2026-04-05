@@ -18,7 +18,7 @@ type RequestBodyBootPOST struct {
 func PostBoot(c *gin.Context) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PostBoot",
-		"request_address": c.ClientIP,
+		"request_address": c.ClientIP(),
 	})
 
 	var req RequestBodyBootPOST
