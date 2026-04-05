@@ -462,6 +462,21 @@ func (e AgentManagerAgentStatus) Valid() bool {
 	}
 }
 
+// Defines values for AuthBootResponseType.
+const (
+	Direct AuthBootResponseType = "direct"
+)
+
+// Valid indicates whether the value is a known member of the AuthBootResponseType enum.
+func (e AuthBootResponseType) Valid() bool {
+	switch e {
+	case Direct:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for BillingManagerAccountPaymentMethod.
 const (
 	BillingManagerAccountPaymentMethodCreditCard BillingManagerAccountPaymentMethod = "credit card"
@@ -3429,6 +3444,30 @@ type AgentManagerAgentRingMethod string
 // AgentManagerAgentStatus Current availability status of the agent.
 type AgentManagerAgentStatus string
 
+// AuthBootResponse Result of a successful boot request. Contains a resource-scoped JWT and metadata about the scoped resource.
+type AuthBootResponse struct {
+	// CustomerId The UUID of the customer that owns the resource. Returned from the `POST /auth/signup` response.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Expire Token expiry timestamp in ISO 8601 format.
+	Expire *string `json:"expire,omitempty"`
+
+	// ResourceId The UUID of the resource this token is scoped to. Returned from the resource creation endpoint (e.g., `POST /ais`).
+	ResourceId *openapi_types.UUID `json:"resource_id,omitempty"`
+
+	// ResourceType The type of resource this token is scoped to (e.g., "ai").
+	ResourceType *string `json:"resource_type,omitempty"`
+
+	// Token JWT token string for API authentication. Pass as `Bearer <token>` in the Authorization header.
+	Token *string `json:"token,omitempty"`
+
+	// Type Token type. Always "direct" for boot tokens.
+	Type *AuthBootResponseType `json:"type,omitempty"`
+}
+
+// AuthBootResponseType Token type. Always "direct" for boot tokens.
+type AuthBootResponseType string
+
 // BillingManagerAccount defines model for BillingManagerAccount.
 type BillingManagerAccount struct {
 	// BalanceCredit The credit balance of the account in micros (1 USD = 1,000,000).
@@ -5751,6 +5790,12 @@ type RegistrarManagerTrunk struct {
 
 	// Username The SIP username for authentication.
 	Username *string `json:"username,omitempty"`
+}
+
+// RequestBodyAuthBootPOST Request body for POST /auth/boot (resource-scoped JWT generation from a direct hash).
+type RequestBodyAuthBootPOST struct {
+	// DirectHash The direct hash link (e.g., "direct.a1b2c3d4e5f6"). Obtained from resource direct hash endpoints such as `POST /ais/{id}/direct_hash_regenerate`.
+	DirectHash string `json:"direct_hash"`
 }
 
 // RequestBodyAuthEmailVerifyPOST Request body for POST /auth/email-verify (email verification).
@@ -8302,6 +8347,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
+
+// PostAuthBootJSONRequestBody defines body for PostAuthBoot for application/json ContentType.
+type PostAuthBootJSONRequestBody = RequestBodyAuthBootPOST
 
 // PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
 type PostAuthEmailVerifyJSONRequestBody = RequestBodyAuthEmailVerifyPOST

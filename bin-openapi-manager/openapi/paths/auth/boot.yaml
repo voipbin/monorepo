@@ -1,0 +1,29 @@
+post:
+  summary: Generate a resource-scoped JWT from a direct hash.
+  description: |
+    Resolves a direct hash link and returns a resource-scoped JWT token. The token grants
+    limited access to specific resource types associated with the direct hash (e.g., aicall
+    for an AI direct hash). This endpoint is unauthenticated — the direct hash acts as the
+    credential.
+  tags:
+    - Auth
+  operationId: postAuthBoot
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RequestBodyAuthBootPOST'
+  responses:
+    '200':
+      description: Resource-scoped JWT generated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthBootResponse'
+    '400':
+      description: |
+        Bad request. Possible causes:
+        - `direct_hash` is missing or empty.
+        - The direct hash format is invalid.
+        - The direct hash does not resolve to any resource.

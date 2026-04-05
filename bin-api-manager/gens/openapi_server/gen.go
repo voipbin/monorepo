@@ -169,6 +169,11 @@ const (
 	AgentManagerAgentStatusRinging   AgentManagerAgentStatus = "ringing"
 )
 
+// Defines values for AuthBootResponseType.
+const (
+	Direct AuthBootResponseType = "direct"
+)
+
 // Defines values for BillingManagerAccountPaymentMethod.
 const (
 	BillingManagerAccountPaymentMethodCreditCard BillingManagerAccountPaymentMethod = "credit card"
@@ -1413,6 +1418,30 @@ type AgentManagerAgentRingMethod string
 
 // AgentManagerAgentStatus Current availability status of the agent.
 type AgentManagerAgentStatus string
+
+// AuthBootResponse Result of a successful boot request. Contains a resource-scoped JWT and metadata about the scoped resource.
+type AuthBootResponse struct {
+	// CustomerId The UUID of the customer that owns the resource. Returned from the `POST /auth/signup` response.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Expire Token expiry timestamp in ISO 8601 format.
+	Expire *string `json:"expire,omitempty"`
+
+	// ResourceId The UUID of the resource this token is scoped to. Returned from the resource creation endpoint (e.g., `POST /ais`).
+	ResourceId *openapi_types.UUID `json:"resource_id,omitempty"`
+
+	// ResourceType The type of resource this token is scoped to (e.g., "ai").
+	ResourceType *string `json:"resource_type,omitempty"`
+
+	// Token JWT token string for API authentication. Pass as `Bearer <token>` in the Authorization header.
+	Token *string `json:"token,omitempty"`
+
+	// Type Token type. Always "direct" for boot tokens.
+	Type *AuthBootResponseType `json:"type,omitempty"`
+}
+
+// AuthBootResponseType Token type. Always "direct" for boot tokens.
+type AuthBootResponseType string
 
 // BillingManagerAccount defines model for BillingManagerAccount.
 type BillingManagerAccount struct {
@@ -3736,6 +3765,12 @@ type RegistrarManagerTrunk struct {
 
 	// Username The SIP username for authentication.
 	Username *string `json:"username,omitempty"`
+}
+
+// RequestBodyAuthBootPOST Request body for POST /auth/boot (resource-scoped JWT generation from a direct hash).
+type RequestBodyAuthBootPOST struct {
+	// DirectHash The direct hash link (e.g., "direct.a1b2c3d4e5f6"). Obtained from resource direct hash endpoints such as `POST /ais/{id}/direct_hash_regenerate`.
+	DirectHash string `json:"direct_hash"`
 }
 
 // RequestBodyAuthEmailVerifyPOST Request body for POST /auth/email-verify (email verification).
@@ -6288,6 +6323,9 @@ type PutAisIdJSONRequestBody PutAisIdJSONBody
 // PostAisummariesJSONRequestBody defines body for PostAisummaries for application/json ContentType.
 type PostAisummariesJSONRequestBody PostAisummariesJSONBody
 
+// PostAuthBootJSONRequestBody defines body for PostAuthBoot for application/json ContentType.
+type PostAuthBootJSONRequestBody = RequestBodyAuthBootPOST
+
 // PostAuthEmailVerifyJSONRequestBody defines body for PostAuthEmailVerify for application/json ContentType.
 type PostAuthEmailVerifyJSONRequestBody = RequestBodyAuthEmailVerifyPOST
 
@@ -6725,6 +6763,9 @@ type ServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(c *gin.Context, id string)
+	// Generate a resource-scoped JWT from a direct hash.
+	// (POST /auth/boot)
+	PostAuthBoot(c *gin.Context)
 	// Verify customer email address.
 	// (POST /auth/email-verify)
 	PostAuthEmailVerify(c *gin.Context)
@@ -8587,6 +8628,19 @@ func (siw *ServerInterfaceWrapper) GetAisummariesId(c *gin.Context) {
 	}
 
 	siw.Handler.GetAisummariesId(c, id)
+}
+
+// PostAuthBoot operation middleware
+func (siw *ServerInterfaceWrapper) PostAuthBoot(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAuthBoot(c)
 }
 
 // PostAuthEmailVerify operation middleware
@@ -15608,6 +15662,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
 	router.GET(options.BaseURL+"/aisummaries/:id", wrapper.GetAisummariesId)
+	router.POST(options.BaseURL+"/auth/boot", wrapper.PostAuthBoot)
 	router.POST(options.BaseURL+"/auth/email-verify", wrapper.PostAuthEmailVerify)
 	router.POST(options.BaseURL+"/auth/signup", wrapper.PostAuthSignup)
 	router.DELETE(options.BaseURL+"/auth/unregister", wrapper.DeleteAuthUnregister)
@@ -16695,6 +16750,31 @@ func (response GetAisummariesId200JSONResponse) VisitGetAisummariesIdResponse(w 
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthBootRequestObject struct {
+	Body *PostAuthBootJSONRequestBody
+}
+
+type PostAuthBootResponseObject interface {
+	VisitPostAuthBootResponse(w http.ResponseWriter) error
+}
+
+type PostAuthBoot200JSONResponse AuthBootResponse
+
+func (response PostAuthBoot200JSONResponse) VisitPostAuthBootResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAuthBoot400Response struct {
+}
+
+func (response PostAuthBoot400Response) VisitPostAuthBootResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
 }
 
 type PostAuthEmailVerifyRequestObject struct {
@@ -22337,6 +22417,9 @@ type StrictServerInterface interface {
 	// Get ai summary details.
 	// (GET /aisummaries/{id})
 	GetAisummariesId(ctx context.Context, request GetAisummariesIdRequestObject) (GetAisummariesIdResponseObject, error)
+	// Generate a resource-scoped JWT from a direct hash.
+	// (POST /auth/boot)
+	PostAuthBoot(ctx context.Context, request PostAuthBootRequestObject) (PostAuthBootResponseObject, error)
 	// Verify customer email address.
 	// (POST /auth/email-verify)
 	PostAuthEmailVerify(ctx context.Context, request PostAuthEmailVerifyRequestObject) (PostAuthEmailVerifyResponseObject, error)
@@ -24373,6 +24456,39 @@ func (sh *strictHandler) GetAisummariesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAisummariesIdResponseObject); ok {
 		if err := validResponse.VisitGetAisummariesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAuthBoot operation middleware
+func (sh *strictHandler) PostAuthBoot(ctx *gin.Context) {
+	var request PostAuthBootRequestObject
+
+	var body PostAuthBootJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAuthBoot(ctx, request.(PostAuthBootRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAuthBoot")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAuthBootResponseObject); ok {
+		if err := validResponse.VisitPostAuthBootResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

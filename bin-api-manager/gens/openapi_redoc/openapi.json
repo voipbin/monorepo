@@ -2292,6 +2292,41 @@
         }
       }
     },
+    "/auth/boot": {
+      "post": {
+        "summary": "Generate a resource-scoped JWT from a direct hash.",
+        "description": "Resolves a direct hash link and returns a resource-scoped JWT token. The token grants\nlimited access to specific resource types associated with the direct hash (e.g., aicall\nfor an AI direct hash). This endpoint is unauthenticated — the direct hash acts as the\ncredential.\n",
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "postAuthBoot",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestBodyAuthBootPOST"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resource-scoped JWT generated successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthBootResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Possible causes:\n- `direct_hash` is missing or empty.\n- The direct hash format is invalid.\n- The direct hash does not resolve to any resource.\n"
+          }
+        }
+      }
+    },
     "/auth/signup": {
       "post": {
         "summary": "Create a new customer account (self-service signup).",
@@ -22212,6 +22247,61 @@
             "type": "boolean",
             "description": "If true, skip the 30-day grace period and delete the account immediately. The account is frozen and then permanently deleted (PII anonymized, all resources cascade-deleted) in a single request. Default: false.",
             "example": false
+          }
+        }
+      },
+      "RequestBodyAuthBootPOST": {
+        "type": "object",
+        "required": [
+          "direct_hash"
+        ],
+        "description": "Request body for POST /auth/boot (resource-scoped JWT generation from a direct hash).",
+        "properties": {
+          "direct_hash": {
+            "type": "string",
+            "description": "The direct hash link (e.g., \"direct.a1b2c3d4e5f6\"). Obtained from resource direct hash endpoints such as `POST /ais/{id}/direct_hash_regenerate`.",
+            "example": "direct.a1b2c3d4e5f6"
+          }
+        }
+      },
+      "AuthBootResponse": {
+        "type": "object",
+        "description": "Result of a successful boot request. Contains a resource-scoped JWT and metadata about the scoped resource.",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT token string for API authentication. Pass as `Bearer <token>` in the Authorization header.",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdXN0b21lcl9pZCI6IjU1MGU4NDAwLWUyOWItNDFkNC1hNzE2LTQ0NjY1NTQ0MDAwMCJ9.abc123"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "direct"
+            ],
+            "description": "Token type. Always \"direct\" for boot tokens.",
+            "example": "direct"
+          },
+          "resource_type": {
+            "type": "string",
+            "description": "The type of resource this token is scoped to (e.g., \"ai\").",
+            "example": "ai"
+          },
+          "resource_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The UUID of the resource this token is scoped to. Returned from the resource creation endpoint (e.g., `POST /ais`).",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The UUID of the customer that owns the resource. Returned from the `POST /auth/signup` response.",
+            "example": "660e8400-e29b-41d4-a716-446655440001"
+          },
+          "expire": {
+            "type": "string",
+            "description": "Token expiry timestamp in ISO 8601 format.",
+            "example": "2026-04-07T12:00:00Z"
           }
         }
       }
