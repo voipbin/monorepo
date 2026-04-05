@@ -715,6 +715,21 @@ func (mr *MockServiceHandlerMockRecorder) AggregatedEventList(ctx, a, activeflow
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedEventList", reflect.TypeOf((*MockServiceHandler)(nil).AggregatedEventList), ctx, a, activeflowID, callID, pageSize, pageToken)
 }
 
+// AuthBoot mocks base method.
+func (m *MockServiceHandler) AuthBoot(ctx context.Context, directHash string) (map[string]any, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthBoot", ctx, directHash)
+	ret0, _ := ret[0].(map[string]any)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthBoot indicates an expected call of AuthBoot.
+func (mr *MockServiceHandlerMockRecorder) AuthBoot(ctx, directHash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthBoot", reflect.TypeOf((*MockServiceHandler)(nil).AuthBoot), ctx, directHash)
+}
+
 // AuthJWTGenerate mocks base method.
 func (m *MockServiceHandler) AuthJWTGenerate(data map[string]any) (string, error) {
 	m.ctrl.T.Helper()
