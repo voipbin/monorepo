@@ -29,10 +29,7 @@ func (h *serviceHandler) AImessageCreate(
 	role ammessage.Role,
 	content string,
 ) (*ammessage.WebhookMessage, error) {
-	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
-	}
-
+	// AIcallGet already handles direct token authorization (resource type + scope checks)
 	_, err := h.AIcallGet(ctx, a, aicallID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not get the aicall info. aicall_id: %v", aicallID)
@@ -50,10 +47,6 @@ func (h *serviceHandler) AImessageCreate(
 // AImessageGetsByAIcallID gets the list of ai messages of the given aicall id.
 // It returns list of ai messages if it succeed.
 func (h *serviceHandler) AImessageGetsByAIcallID(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, size uint64, token string) ([]*ammessage.WebhookMessage, error) {
-	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
-	}
-
 	if token == "" {
 		token = h.utilHandler.TimeGetCurTime()
 	}
@@ -118,17 +111,23 @@ func (h *serviceHandler) convertAImessageFilters(filters map[string]string) (map
 // AImessageGet gets the ai message of the given id.
 // It returns ai message if it succeed.
 func (h *serviceHandler) AImessageGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammessage.WebhookMessage, error) {
-	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
-	}
-
 	tmp, err := h.aimessageGet(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not find ai message info. err: %v", err)
 	}
 
-	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("agent has no permission")
+	switch {
+	case a.IsAgent() || a.IsAccesskey():
+		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, fmt.Errorf("user has no permission")
+		}
+	case a.IsDirect():
+		if !a.HasAllowedResourceType("aicall") {
+			return nil, fmt.Errorf("resource type not allowed")
+		}
+		if tmp.CustomerID != a.CustomerID {
+			return nil, fmt.Errorf("resource not in scope")
+		}
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -137,10 +136,7 @@ func (h *serviceHandler) AImessageGet(ctx context.Context, a *auth.AuthIdentity,
 
 // AImessageDelete deletes the aimessage.
 func (h *serviceHandler) AImessageDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammessage.WebhookMessage, error) {
-	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
-	}
-
+	// AImessageGet already handles direct token authorization
 	_, err := h.AImessageGet(ctx, a, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not find aimessage info. err: %v", err)
