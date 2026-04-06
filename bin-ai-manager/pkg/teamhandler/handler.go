@@ -10,6 +10,8 @@ import (
 
 	"monorepo/bin-common-handler/models/identity"
 
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"monorepo/bin-ai-manager/models/team"
 )
 
@@ -36,7 +38,7 @@ func (h *teamHandler) Create(ctx context.Context, customerID uuid.UUID, name str
 	id := h.utilHandler.UUIDCreate()
 
 	// create direct hash via direct-manager
-	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "ai_team", id)
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeAITeam, id)
 	if err != nil {
 		log.Errorf("Could not create direct hash. err: %v", err)
 		return nil, fmt.Errorf("could not create direct hash: %w", err)

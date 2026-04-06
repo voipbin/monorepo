@@ -176,7 +176,7 @@ func Test_DirectHashRegenerate_NoDirect(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseConference, nil)
-			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.responseConference.CustomerID, "conference", tt.id).Return(tt.responseDirect, nil)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.responseConference.CustomerID, dmdirect.ResourceTypeConference, tt.id).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().ConferenceUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, tt.id).Return(tt.responseUpdatedConference, nil)
 

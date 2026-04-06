@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-agent-manager/models/agent"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 )
 
 // DirectHashRegenerate regenerates (or creates) the direct hash for the given agent.
@@ -38,7 +39,7 @@ func (h *agentHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (
 		directID = d.ID
 		directHash = d.Hash
 	} else {
-		d, err := h.reqHandler.DirectV1DirectCreate(ctx, a.CustomerID, "agent", id)
+		d, err := h.reqHandler.DirectV1DirectCreate(ctx, a.CustomerID, dmdirect.ResourceTypeAgent, id)
 		if err != nil {
 			log.Errorf("Could not create direct hash. err: %v", err)
 			return nil, fmt.Errorf("could not create direct hash: %w", err)

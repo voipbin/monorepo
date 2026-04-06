@@ -10,6 +10,16 @@ import (
 // DirectPrefix is the prefix for direct hashes
 const DirectPrefix = "direct."
 
+// Resource type constants for Direct records
+const (
+	ResourceTypeAI         = "ai"
+	ResourceTypeAITeam     = "ai_team"
+	ResourceTypeAgent      = "agent"
+	ResourceTypeQueue      = "queue"
+	ResourceTypeConference = "conference"
+	ResourceTypeExtension  = "extension"
+)
+
 // Direct data model
 type Direct struct {
 	commonidentity.Identity

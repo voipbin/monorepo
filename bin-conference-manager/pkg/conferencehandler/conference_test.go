@@ -141,7 +141,7 @@ func Test_Create(t *testing.T) {
 				confbridgeType = cmconfbridge.TypeConference
 			}
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.customerID, uuid.Nil, cmconfbridge.ReferenceTypeConference, tt.responseUUID, confbridgeType).Return(tt.responseConfbridge, nil)
-			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "conference", tt.responseUUID).Return(tt.responseDirect, nil)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, dmdirect.ResourceTypeConference, tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().ConferenceCreate(ctx, tt.expectConference).Return(nil)
 			mockDB.EXPECT().ConferenceGet(ctx, gomock.Any()).Return(tt.expectRes, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectRes.CustomerID, conference.EventTypeConferenceCreated, gomock.Any())

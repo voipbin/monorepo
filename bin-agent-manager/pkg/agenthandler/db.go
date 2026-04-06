@@ -7,6 +7,7 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"monorepo/bin-agent-manager/pkg/metricshandler"
 
@@ -78,7 +79,7 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 
 	// create direct hash via direct-manager
 	rpcStart := time.Now()
-	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "agent", id)
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeAgent, id)
 	metricshandler.RPCCallDuration.WithLabelValues("direct-manager", "DirectCreate").Observe(float64(time.Since(rpcStart).Milliseconds()))
 	if err != nil {
 		metricshandler.RPCCallTotal.WithLabelValues("direct-manager", "DirectCreate", "failure").Inc()

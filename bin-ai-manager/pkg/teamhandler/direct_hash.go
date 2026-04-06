@@ -36,7 +36,7 @@ func (h *teamHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*
 			return nil, fmt.Errorf("could not regenerate direct hash: %w", err)
 		}
 	} else {
-		d, err = h.reqHandler.DirectV1DirectCreate(ctx, t.CustomerID, "ai_team", id)
+		d, err = h.reqHandler.DirectV1DirectCreate(ctx, t.CustomerID, dmdirect.ResourceTypeAITeam, id)
 		if err != nil {
 			log.Errorf("Could not create direct hash. err: %v", err)
 			return nil, fmt.Errorf("could not create direct hash: %w", err)

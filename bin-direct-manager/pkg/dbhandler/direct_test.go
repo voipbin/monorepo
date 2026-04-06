@@ -364,7 +364,7 @@ func Test_DirectUpdate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("ae1e0150-4c6b-11ec-922d-27336e407864"),
 					CustomerID: uuid.FromStringOrNil("b7442490-7fe1-11ec-a66b-b7a03a06132f"),
 				},
-				ResourceType: "ai",
+				ResourceType: direct.ResourceTypeAI,
 				ResourceID:   uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
 				Hash:         "update00000001",
 			},
