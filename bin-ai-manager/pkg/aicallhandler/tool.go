@@ -309,6 +309,11 @@ func (h *aicallHandler) toolHandleSetVariables(ctx context.Context, c *aicall.AI
 
 	res := newToolResult(tool.ID)
 
+	if c.ActiveflowID == uuid.Nil {
+		fillFailed(res, fmt.Errorf("no activeflow associated with this aicall"))
+		return res
+	}
+
 	req := struct {
 		Variables map[string]string `json:"variables"`
 	}{}
@@ -338,6 +343,11 @@ func (h *aicallHandler) toolHandleGetVariables(ctx context.Context, c *aicall.AI
 	log.Debugf("handling tool get_variables.")
 
 	res := newToolResult(tool.ID)
+
+	if c.ActiveflowID == uuid.Nil {
+		fillFailed(res, fmt.Errorf("no activeflow associated with this aicall"))
+		return res
+	}
 
 	tmp, err := h.reqHandler.FlowV1VariableGet(ctx, c.ActiveflowID)
 	if err != nil {
