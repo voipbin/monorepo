@@ -17,9 +17,9 @@ func (h *serviceHandler) WebsockCreate(ctx context.Context, a *auth.AuthIdentity
 		"display_name": a.DisplayName(),
 	})
 
-	if !a.IsDirect() && (!a.IsAgent() || a.Agent == nil) {
-		log.Info("WebSocket requires agent or direct authentication.")
-		return fmt.Errorf("websocket requires agent or direct authentication")
+	if !a.IsDirect() && !a.IsAccesskey() && (!a.IsAgent() || a.Agent == nil) {
+		log.Info("WebSocket requires agent, accesskey, or direct authentication.")
+		return fmt.Errorf("websocket requires agent, accesskey, or direct authentication")
 	}
 
 	if errRun := h.websockHandler.RunSubscription(ctx, w, r, a); errRun != nil {

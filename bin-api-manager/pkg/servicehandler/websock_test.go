@@ -13,6 +13,8 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
+
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
 	"monorepo/bin-api-manager/pkg/websockhandler"
@@ -41,6 +43,16 @@ func Test_WebsockCreate(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
 				Permission: amagent.PermissionCustomerAdmin,
+			}),
+
+			&mockResponseWriter{},
+			&http.Request{},
+		},
+		{
+			"accesskey",
+			auth.NewAccesskeyIdentity(&csaccesskey.Accesskey{
+				ID:         uuid.FromStringOrNil("b2c3d4e5-f6a7-8901-bcde-f12345678901"),
+				CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 			}),
 
 			&mockResponseWriter{},
