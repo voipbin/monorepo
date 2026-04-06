@@ -692,6 +692,35 @@ func Test_toolHandleSetVariables(t *testing.T) {
 				ResourceID:   "dfd7b384-d2b9-11f0-a6cf-576bb7892c7c",
 			},
 		},
+		{
+			name: "nil activeflow id",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("df982c0a-d2b9-11f0-ae66-3b3a174682e4"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+				ActiveflowID: uuid.Nil,
+			},
+			tool: &message.ToolCall{
+				ID:   "e005d49e-d2b9-11f0-bb53-2f0f52e36b88",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name: message.FunctionCallNameSetVariables,
+					Arguments: `{
+						"variables": {
+							"key1": "value1"
+						}
+					}`,
+				},
+			},
+
+			expectRes: &messageContent{
+				Result:     "failed",
+				Message:    "no activeflow associated with this aicall",
+				ToolCallID: "e005d49e-d2b9-11f0-bb53-2f0f52e36b88",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -718,7 +747,9 @@ func Test_toolHandleSetVariables(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, tt.expectedVariables).Return(nil)
+			if tt.aicall.ActiveflowID != uuid.Nil {
+				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.aicall.ActiveflowID, tt.expectedVariables).Return(nil)
+			}
 
 			res := h.toolHandleSetVariables(ctx, tt.aicall, tt.tool)
 
@@ -774,6 +805,31 @@ func Test_toolHandleGetVariables(t *testing.T) {
 				ResourceID:   "d281281c-d2c0-11f0-b5b7-6744b7d2eeac",
 			},
 		},
+		{
+			name: "nil activeflow id",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d21ceb22-d2c0-11f0-a553-8f1245a47cf1"),
+					CustomerID: uuid.FromStringOrNil("6e74dfac-c23b-11f0-965a-53b4e7e7c614"),
+				},
+				ActiveflowID: uuid.Nil,
+			},
+			tool: &message.ToolCall{
+				ID:   "d2581cba-d2c0-11f0-97f8-efbee72f536d",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name:      message.FunctionCallNameGetVariables,
+					Arguments: `{}`,
+				},
+			},
+
+			expectRes: &messageContent{
+				Result:     "failed",
+				Message:    "no activeflow associated with this aicall",
+				ToolCallID: "d2581cba-d2c0-11f0-97f8-efbee72f536d",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -800,7 +856,9 @@ func Test_toolHandleGetVariables(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.aicall.ActiveflowID).Return(tt.responseVariable, nil)
+			if tt.aicall.ActiveflowID != uuid.Nil {
+				mockReq.EXPECT().FlowV1VariableGet(ctx, tt.aicall.ActiveflowID).Return(tt.responseVariable, nil)
+			}
 
 			res := h.toolHandleGetVariables(ctx, tt.aicall, tt.tool)
 
