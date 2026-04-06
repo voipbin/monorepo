@@ -8,9 +8,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-common-handler/models/identity"
+
+	dmdirect "monorepo/bin-direct-manager/models/direct"
+
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
-	"monorepo/bin-common-handler/models/identity"
 )
 
 // Create creates a new ai record.
@@ -39,7 +42,7 @@ func (h *aiHandler) dbCreate(
 	id := h.utilHandler.UUIDCreate()
 
 	// create direct hash via direct-manager
-	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "ai", id)
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeAI, id)
 	if err != nil {
 		log.Errorf("Could not create direct hash. err: %v", err)
 		return nil, fmt.Errorf("could not create direct hash: %w", err)

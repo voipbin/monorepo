@@ -11,6 +11,8 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amteam "monorepo/bin-ai-manager/models/team"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -33,9 +35,12 @@ func Test_AIcallCreate(t *testing.T) {
 		referenceID    uuid.UUID
 
 		responseAI     *amai.AI
+		responseTeam   *amteam.Team
 		responseAIcall *amaicall.AIcall
 
-		expectRes *amaicall.WebhookMessage
+		// expectAssistanceType is the type passed to AIV1AIcallStart after normalization
+		expectAssistanceType amaicall.AssistanceType
+		expectRes            *amaicall.WebhookMessage
 	}
 
 	tests := []test{
@@ -66,9 +71,44 @@ func Test_AIcallCreate(t *testing.T) {
 				},
 			},
 
+			expectAssistanceType: amaicall.AssistanceTypeAI,
 			expectRes: &amaicall.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("407e793c-efaa-11ef-b0f4-4bdbcd626589"),
+				},
+			},
+		},
+		{
+			name: "ai_team normalized to team",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			}),
+			assistanceType: amaicall.AssistanceType(dmdirect.ResourceTypeAITeam),
+			assistanceID:   uuid.FromStringOrNil("b1c2d3e4-0000-0000-0000-000000000001"),
+			referenceType:  amaicall.ReferenceTypeCall,
+			referenceID:    uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+
+			responseTeam: &amteam.Team{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b1c2d3e4-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			responseAIcall: &amaicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c2d3e4f5-0000-0000-0000-000000000001"),
+				},
+			},
+
+			expectAssistanceType: amaicall.AssistanceTypeTeam,
+			expectRes: &amaicall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c2d3e4f5-0000-0000-0000-000000000001"),
 				},
 			},
 		},
@@ -90,10 +130,17 @@ func Test_AIcallCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().AIV1AIGet(ctx, tt.assistanceID).Return(tt.responseAI, nil)
+			// set up mocks based on the expected normalized type
+			switch tt.expectAssistanceType {
+			case amaicall.AssistanceTypeAI:
+				mockReq.EXPECT().AIV1AIGet(ctx, tt.assistanceID).Return(tt.responseAI, nil)
+			case amaicall.AssistanceTypeTeam:
+				mockReq.EXPECT().AIV1TeamGet(ctx, tt.assistanceID).Return(tt.responseTeam, nil)
+			}
+
 			mockReq.EXPECT().AIV1AIcallStart(
 				ctx,
-				tt.assistanceType,
+				tt.expectAssistanceType,
 				tt.assistanceID,
 				uuid.Nil,
 				tt.referenceType,

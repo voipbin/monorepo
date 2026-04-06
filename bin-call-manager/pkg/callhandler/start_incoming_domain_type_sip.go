@@ -99,9 +99,9 @@ func (h *callHandler) startIncomingDomainTypeSIPDirect(ctx context.Context, cn *
 		return h.startIncomingDomainTypeSIPDirectExtension(ctx, cn, d, source)
 	case "conference":
 		return h.startIncomingDomainTypeSIPDirectConference(ctx, cn, d, source)
-	case "ai":
+	case dmdirect.ResourceTypeAI:
 		return h.startIncomingDomainTypeSIPDirectAI(ctx, cn, d, source)
-	case "ai_team":
+	case dmdirect.ResourceTypeAITeam:
 		return h.startIncomingDomainTypeSIPDirectAITeam(ctx, cn, d, source)
 	case "agent":
 		return h.startIncomingDomainTypeSIPDirectAgent(ctx, cn, d, source)

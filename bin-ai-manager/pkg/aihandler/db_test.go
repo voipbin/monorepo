@@ -63,7 +63,7 @@ func Test_Create(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("8db73654-a70d-11ed-ae15-6726993338d8"),
 				},
-				ResourceType: "ai",
+				ResourceType: dmdirect.ResourceTypeAI,
 				ResourceID:   uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
 				Hash:         "abc123def456",
 			},
@@ -115,7 +115,7 @@ func Test_Create(t *testing.T) {
 			ctx := context.Background()
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "ai", tt.responseUUID).Return(tt.responseDirect, nil)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, dmdirect.ResourceTypeAI, tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().AICreate(ctx, tt.expectAI).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)

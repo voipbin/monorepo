@@ -169,7 +169,7 @@ func Test_DirectHashRegenerate_NoDirect(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
-			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.responseAgent.CustomerID, "agent", tt.id).Return(tt.responseDirect, nil)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.responseAgent.CustomerID, dmdirect.ResourceTypeAgent, tt.id).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().AgentUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseUpdatedAgent, nil)
 

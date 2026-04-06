@@ -6,6 +6,7 @@ import (
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -56,7 +57,7 @@ func (h *queueHandler) Create(
 	log = log.WithField("queue_id", id)
 
 	// create direct hash
-	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "queue", id)
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeQueue, id)
 	if err != nil {
 		log.Errorf("Could not create direct hash. err: %v", err)
 		return nil, fmt.Errorf("could not create direct hash: %w", err)

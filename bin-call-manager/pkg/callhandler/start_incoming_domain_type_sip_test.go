@@ -868,7 +868,7 @@ func Test_startIncomingDomainTypeSIP_directAITeam(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				ResourceType: "ai_team",
+				ResourceType: dmdirect.ResourceTypeAITeam,
 				ResourceID:   uuid.FromStringOrNil("3b9f842e-a45b-47c9-b5db-f202898728e4"),
 			},
 
@@ -984,7 +984,7 @@ func Test_startIncomingDomainTypeSIP_directAITeam_teamGetError(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				ResourceType: "ai_team",
+				ResourceType: dmdirect.ResourceTypeAITeam,
 				ResourceID:   uuid.FromStringOrNil("3b9f842e-a45b-47c9-b5db-f202898728e4"),
 			},
 		},
@@ -1058,7 +1058,7 @@ func Test_startIncomingDomainTypeSIP_directAITeam_flowCreateError(t *testing.T) 
 					ID:         uuid.FromStringOrNil("e1e1e1e1-e1e1-e1e1-e1e1-e1e1e1e1e1e1"),
 					CustomerID: uuid.FromStringOrNil("5e4a0680-804e-11ec-8477-2fea5968d85b"),
 				},
-				ResourceType: "ai_team",
+				ResourceType: dmdirect.ResourceTypeAITeam,
 				ResourceID:   uuid.FromStringOrNil("3b9f842e-a45b-47c9-b5db-f202898728e4"),
 			},
 

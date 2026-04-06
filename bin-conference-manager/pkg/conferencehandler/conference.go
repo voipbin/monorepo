@@ -8,6 +8,7 @@ import (
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -80,7 +81,7 @@ func (h *conferenceHandler) Create(
 	}
 
 	// create direct hash via direct-manager
-	d, errDirect := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "conference", id)
+	d, errDirect := h.reqHandler.DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeConference, id)
 	if errDirect != nil {
 		log.Errorf("Could not create direct hash. err: %v", errDirect)
 		return nil, fmt.Errorf("could not create direct hash: %w", errDirect)

@@ -46,7 +46,7 @@ func TestCreate(t *testing.T) {
 			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				testAI := &ai.AI{Name: "Test AI"}
 				testAI.ID = uuid.Must(uuid.NewV4())
-				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), "ai", gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
+				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
 			},
@@ -99,7 +99,7 @@ func TestCreate(t *testing.T) {
 			ttsType:     ai.TTSTypeNone,
 			sttType:     ai.STTTypeNone,
 			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
-				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), "ai", gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
+				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(errors.New("database error")).Times(1)
 				r.EXPECT().DirectV1DirectDelete(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 			},
@@ -131,7 +131,7 @@ func TestCreate(t *testing.T) {
 			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				testAI := &ai.AI{Name: "Test AI with VAD"}
 				testAI.ID = uuid.Must(uuid.NewV4())
-				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), "ai", gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
+				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
 			},
@@ -148,7 +148,7 @@ func TestCreate(t *testing.T) {
 			setupMock: func(m *dbhandler.MockDBHandler, r *requesthandler.MockRequestHandler) {
 				testAI := &ai.AI{Name: "Test AI with Smart Turn", SmartTurnEnabled: true}
 				testAI.ID = uuid.Must(uuid.NewV4())
-				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), "ai", gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
+				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
 			},

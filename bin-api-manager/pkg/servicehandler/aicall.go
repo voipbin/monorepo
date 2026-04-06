@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -23,6 +24,12 @@ func (h *serviceHandler) AIcallCreate(
 	referenceType amaicall.ReferenceType,
 	referenceID uuid.UUID,
 ) (*amaicall.WebhookMessage, error) {
+
+	// normalize "ai_team" to "team" — the direct resource_type uses "ai_team"
+	// but the ai-manager only knows "team"
+	if assistanceType == amaicall.AssistanceType(dmdirect.ResourceTypeAITeam) {
+		assistanceType = amaicall.AssistanceTypeTeam
+	}
 
 	// resolve customer ID based on assistance type
 	var customerID uuid.UUID

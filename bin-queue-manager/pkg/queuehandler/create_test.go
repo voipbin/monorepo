@@ -110,7 +110,7 @@ func Test_Create(t *testing.T) {
 
 			mockReq.EXPECT().BillingV1AccountIsValidResourceLimitByCustomerID(ctx, tt.customerID, bmaccount.ResourceTypeQueue).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "queue", tt.responseUUID).Return(&dmdirect.Direct{
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, dmdirect.ResourceTypeQueue, tt.responseUUID).Return(&dmdirect.Direct{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
 				},

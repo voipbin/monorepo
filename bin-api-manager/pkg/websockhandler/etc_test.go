@@ -7,6 +7,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -76,7 +77,7 @@ func Test_validateTopics(t *testing.T) {
 
 			agent: auth.NewDirectIdentity(&auth.DirectScope{
 				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
-				ResourceType:         "ai",
+				ResourceType:         dmdirect.ResourceTypeAI,
 				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
 				AllowedResourceTypes: []string{"aicall"},
 			}),
@@ -216,7 +217,7 @@ func Test_validateTopic(t *testing.T) {
 
 			agent: auth.NewDirectIdentity(&auth.DirectScope{
 				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
-				ResourceType:         "ai",
+				ResourceType:         dmdirect.ResourceTypeAI,
 				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
 				AllowedResourceTypes: []string{"aicall"},
 			}),
@@ -229,7 +230,7 @@ func Test_validateTopic(t *testing.T) {
 
 			agent: auth.NewDirectIdentity(&auth.DirectScope{
 				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
-				ResourceType:         "ai",
+				ResourceType:         dmdirect.ResourceTypeAI,
 				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
 				AllowedResourceTypes: []string{"aicall"},
 			}),
@@ -242,7 +243,7 @@ func Test_validateTopic(t *testing.T) {
 
 			agent: auth.NewDirectIdentity(&auth.DirectScope{
 				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
-				ResourceType:         "ai",
+				ResourceType:         dmdirect.ResourceTypeAI,
 				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
 				AllowedResourceTypes: []string{"aicall"},
 			}),
@@ -255,7 +256,7 @@ func Test_validateTopic(t *testing.T) {
 
 			agent: auth.NewDirectIdentity(&auth.DirectScope{
 				CustomerID:           uuid.FromStringOrNil("5f84c116-da29-11ee-b479-a70bca2a0a48"),
-				ResourceType:         "ai",
+				ResourceType:         dmdirect.ResourceTypeAI,
 				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000000"),
 				AllowedResourceTypes: []string{"aicall"},
 			}),

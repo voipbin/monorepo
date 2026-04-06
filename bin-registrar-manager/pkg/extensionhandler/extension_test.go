@@ -157,7 +157,7 @@ func Test_Create(t *testing.T) {
 		mockDBAst.EXPECT().AstAuthCreate(ctx, tt.expectAuth).Return(nil)
 		mockDBAst.EXPECT().AstEndpointCreate(ctx, tt.expectEndpoint).Return(nil)
 		mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDExtensionID)
-		mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "extension", tt.responseUUIDExtensionID).Return(tt.responseDirect, nil)
+		mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, dmdirect.ResourceTypeExtension, tt.responseUUIDExtensionID).Return(tt.responseDirect, nil)
 		mockDBBin.EXPECT().ExtensionCreate(ctx, tt.expectExtension).Return(nil)
 		mockDBBin.EXPECT().ExtensionGet(ctx, tt.expectExtension.ID).Return(tt.responseExtension, nil)
 		mockDBBin.EXPECT().SIPAuthCreate(ctx, tt.expectSIPAuth).Return(nil)

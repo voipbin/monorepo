@@ -52,7 +52,7 @@ func Test_DirectHashRegenerate_ExistingDirect(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("c1c1c1c1-1111-1111-1111-111111111111"),
 				},
-				ResourceType: "ai",
+				ResourceType: dmdirect.ResourceTypeAI,
 				ResourceID:   uuid.FromStringOrNil("a1a1a1a1-1111-1111-1111-111111111111"),
 				Hash:         "newhash456",
 			},
@@ -141,7 +141,7 @@ func Test_DirectHashRegenerate_NoDirect(t *testing.T) {
 					ID:         uuid.FromStringOrNil("d2d2d2d2-2222-2222-2222-222222222222"),
 					CustomerID: uuid.FromStringOrNil("c2c2c2c2-2222-2222-2222-222222222222"),
 				},
-				ResourceType: "ai",
+				ResourceType: dmdirect.ResourceTypeAI,
 				ResourceID:   uuid.FromStringOrNil("b2b2b2b2-2222-2222-2222-222222222222"),
 				Hash:         "createdhash789",
 			},
@@ -181,7 +181,7 @@ func Test_DirectHashRegenerate_NoDirect(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
-			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.responseAI.CustomerID, "ai", tt.id).Return(tt.responseDirect, nil)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.responseAI.CustomerID, dmdirect.ResourceTypeAI, tt.id).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().AIUpdate(ctx, tt.id, tt.expectUpdateFields).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseUpdatedAI, nil)
 

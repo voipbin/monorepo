@@ -173,7 +173,7 @@ func Test_Create(t *testing.T) {
 			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost).Return(tt.responseHash, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
-			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, "agent", tt.responseUUID).Return(tt.responseDirect, nil)
+			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, dmdirect.ResourceTypeAgent, tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().AgentCreate(ctx, tt.expectedAgent).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAgent.CustomerID, agent.EventTypeAgentCreated, tt.responseAgent)

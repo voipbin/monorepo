@@ -94,7 +94,7 @@ func (h *extensionHandler) Create(
 	id := h.utilHandler.UUIDCreate()
 
 	// create direct hash via direct-manager
-	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, "extension", id)
+	d, err := h.reqHandler.DirectV1DirectCreate(ctx, customerID, dmdirect.ResourceTypeExtension, id)
 	if err != nil {
 		log.Errorf("Could not create direct hash. err: %v", err)
 		return nil, fmt.Errorf("could not create direct hash: %w", err)
@@ -333,7 +333,7 @@ func (h *extensionHandler) DirectHashRegenerate(ctx context.Context, id uuid.UUI
 			return nil, fmt.Errorf("could not regenerate direct hash: %w", err)
 		}
 	} else {
-		d, err = h.reqHandler.DirectV1DirectCreate(ctx, ext.CustomerID, "extension", id)
+		d, err = h.reqHandler.DirectV1DirectCreate(ctx, ext.CustomerID, dmdirect.ResourceTypeExtension, id)
 		if err != nil {
 			log.Errorf("Could not create direct hash. err: %v", err)
 			return nil, fmt.Errorf("could not create direct hash: %w", err)
