@@ -25,7 +25,7 @@ const (
 	pongWait = 60 * time.Second
 
 	// pingPeriod sends pings to peer with this period. Must be less than pongWait.
-	pingPeriod = 30 * time.Second
+	pingPeriod = 10 * time.Second
 )
 
 // subscriptionRun creates a new websocket and starts socket message listen.

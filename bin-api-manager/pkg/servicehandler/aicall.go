@@ -6,6 +6,7 @@ import (
 
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // AIcallCreate is a service handler for aicall creation.
@@ -24,6 +26,11 @@ func (h *serviceHandler) AIcallCreate(
 	referenceType amaicall.ReferenceType,
 	referenceID uuid.UUID,
 ) (*amaicall.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "AIcallCreate",
+		"assistance_type": assistanceType,
+		"assistance_id":   assistanceID,
+	})
 
 	// normalize "ai_team" to "team" — the direct resource_type uses "ai_team"
 	// but the ai-manager only knows "team"
@@ -64,15 +71,34 @@ func (h *serviceHandler) AIcallCreate(
 		}
 	}
 
+	// create activeflow for the aicall
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(
+		ctx,
+		uuid.Nil,
+		customerID,
+		uuid.Nil,
+		fmactiveflow.ReferenceTypeAPI,
+		uuid.Nil,
+		uuid.Nil,
+	)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not create activeflow for aicall")
+	}
+	log.WithField("activeflow", af).Debugf("Created activeflow for aicall. activeflow_id: %s", af.ID)
+
 	tmp, err := h.reqHandler.AIV1AIcallStart(
 		ctx,
 		assistanceType,
 		assistanceID,
-		uuid.Nil,
+		af.ID,
 		referenceType,
 		referenceID,
 	)
 	if err != nil {
+		// best-effort cleanup of the orphaned activeflow
+		if _, errDelete := h.reqHandler.FlowV1ActiveflowDelete(ctx, af.ID); errDelete != nil {
+			log.Errorf("Could not delete orphaned activeflow. activeflow_id: %s, err: %v", af.ID, errDelete)
+		}
 		return nil, errors.Wrapf(err, "could not create aicall")
 	}
 

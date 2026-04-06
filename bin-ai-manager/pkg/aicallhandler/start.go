@@ -98,7 +98,7 @@ func (h *aicallHandler) Start(
 		return h.startReferenceTypeConversation(ctx, c, assistanceType, assistanceID, activeflowID, referenceID, teamParameter, currentMemberID)
 
 	case aicall.ReferenceTypeNone:
-		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, teamParameter, currentMemberID)
+		return h.startReferenceTypeNone(ctx, c, assistanceType, assistanceID, activeflowID, teamParameter, currentMemberID)
 
 	default:
 		return nil, fmt.Errorf("unsupported reference type")
@@ -220,16 +220,18 @@ func (h *aicallHandler) startReferenceTypeNone(
 	c *ai.AI,
 	assistanceType aicall.AssistanceType,
 	assistanceID uuid.UUID,
+	activeflowID uuid.UUID,
 	teamParameter map[string]any,
 	currentMemberID uuid.UUID,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func": "startReferenceTypeNone",
-		"ai":   c,
+		"func":          "startReferenceTypeNone",
+		"ai":            c,
+		"activeflow_id": activeflowID,
 	})
 
 	// start ai call
-	tmp, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, uuid.Nil, aicall.ReferenceTypeNone, uuid.Nil, false, teamParameter, currentMemberID)
+	tmp, err := h.startAIcallByMessaging(ctx, c, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeNone, uuid.Nil, false, teamParameter, currentMemberID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create aicall with no reference")
 	}
