@@ -46,6 +46,18 @@ func Test_WebsockCreate(t *testing.T) {
 			&mockResponseWriter{},
 			&http.Request{},
 		},
+		{
+			"direct token",
+			auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				ResourceType:         "ai",
+				ResourceID:           uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+
+			&mockResponseWriter{},
+			&http.Request{},
+		},
 	}
 
 	for _, tt := range tests {
