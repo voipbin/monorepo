@@ -13,6 +13,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amteam "monorepo/bin-ai-manager/models/team"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -34,9 +35,10 @@ func Test_AIcallCreate(t *testing.T) {
 		referenceType  amaicall.ReferenceType
 		referenceID    uuid.UUID
 
-		responseAI     *amai.AI
-		responseTeam   *amteam.Team
-		responseAIcall *amaicall.AIcall
+		responseAI         *amai.AI
+		responseTeam       *amteam.Team
+		responseActiveflow *fmactiveflow.Activeflow
+		responseAIcall     *amaicall.AIcall
 
 		// expectAssistanceType is the type passed to AIV1AIcallStart after normalization
 		expectAssistanceType amaicall.AssistanceType
@@ -63,6 +65,11 @@ func Test_AIcallCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3fc2c1b0-efaa-11ef-84bb-a7e8fba38e46"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000010"),
 				},
 			},
 			responseAIcall: &amaicall.AIcall{
@@ -97,6 +104,11 @@ func Test_AIcallCreate(t *testing.T) {
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("b1c2d3e4-0000-0000-0000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000020"),
 				},
 			},
 			responseAIcall: &amaicall.AIcall{
@@ -138,11 +150,21 @@ func Test_AIcallCreate(t *testing.T) {
 				mockReq.EXPECT().AIV1TeamGet(ctx, tt.assistanceID).Return(tt.responseTeam, nil)
 			}
 
+			mockReq.EXPECT().FlowV1ActiveflowCreate(
+				ctx,
+				uuid.Nil,
+				tt.agent.CustomerID,
+				uuid.Nil,
+				fmactiveflow.ReferenceTypeAPI,
+				uuid.Nil,
+				uuid.Nil,
+			).Return(tt.responseActiveflow, nil)
+
 			mockReq.EXPECT().AIV1AIcallStart(
 				ctx,
 				tt.expectAssistanceType,
 				tt.assistanceID,
-				uuid.Nil,
+				tt.responseActiveflow.ID,
 				tt.referenceType,
 				tt.referenceID,
 			).Return(tt.responseAIcall, nil)

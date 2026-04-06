@@ -324,7 +324,7 @@ func Test_startReferenceTypeNone(t *testing.T) {
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAIcall.CustomerID, aicall.EventTypeStatusProgressing, tt.responseAIcall)
 
-			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, nil, uuid.Nil)
+			res, err := h.startReferenceTypeNone(ctx, tt.ai, tt.assistanceType, tt.assistanceID, uuid.Nil, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

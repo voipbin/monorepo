@@ -221,6 +221,71 @@ func Test_Create(t *testing.T) {
 				variableActiveflowCompleteCount:         "0",
 			},
 		},
+		{
+			name: "nil flow id",
+
+			id:                    uuid.FromStringOrNil("b1c2d3e4-0000-0000-0000-000000000099"),
+			customerID:            uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+			refereceType:          activeflow.ReferenceTypeAPI,
+			referenceID:           uuid.Nil,
+			referenceActiveflowID: uuid.Nil,
+			flowID:                uuid.Nil,
+
+			responseStackMap: map[uuid.UUID]*stack.Stack{
+				stack.IDMain: {
+					ID:      stack.IDMain,
+					Actions: []action.Action{},
+				},
+			},
+			responseActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b1c2d3e4-0000-0000-0000-000000000099"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				ReferenceType: activeflow.ReferenceTypeAPI,
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+				ExecuteCount:    0,
+				ForwardActionID: action.IDEmpty,
+				ExecutedActions: []action.Action{},
+			},
+
+			expectActiveflow: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b1c2d3e4-0000-0000-0000-000000000099"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Status:        activeflow.StatusRunning,
+				ReferenceType: activeflow.ReferenceTypeAPI,
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID:      stack.IDMain,
+						Actions: []action.Action{},
+					},
+				},
+
+				CurrentStackID: stack.IDMain,
+				CurrentAction: action.Action{
+					ID: action.IDStart,
+				},
+
+				ForwardStackID:  stack.IDEmpty,
+				ForwardActionID: action.IDEmpty,
+
+				ExecuteCount:    0,
+				ExecutedActions: []action.Action{},
+			},
+			expectVariables: map[string]string{
+				variableActiveflowID:                    "b1c2d3e4-0000-0000-0000-000000000099",
+				variableActiveflowReferenceType:         "api",
+				variableActiveflowReferenceID:           "00000000-0000-0000-0000-000000000000",
+				variableActiveflowReferenceActiveflowID: "00000000-0000-0000-0000-000000000000",
+				variableActiveflowFlowID:                "00000000-0000-0000-0000-000000000000",
+				variableActiveflowCompleteCount:         "0",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -250,8 +315,12 @@ func Test_Create(t *testing.T) {
 				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 			}
 
-			mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
-			mockStack.EXPECT().Create(tt.responseFlow.Actions).Return(tt.responseStackMap)
+			if tt.flowID != uuid.Nil {
+				mockReq.EXPECT().FlowV1FlowGet(ctx, tt.flowID).Return(tt.responseFlow, nil)
+				mockStack.EXPECT().Create(tt.responseFlow.Actions).Return(tt.responseStackMap)
+			} else {
+				mockStack.EXPECT().Create([]action.Action(nil)).Return(tt.responseStackMap)
+			}
 			mockDB.EXPECT().ActiveflowCreate(ctx, tt.expectActiveflow).Return(nil)
 			mockDB.EXPECT().ActiveflowGet(ctx, tt.expectActiveflow.ID).Return(tt.responseActiveflow, nil)
 

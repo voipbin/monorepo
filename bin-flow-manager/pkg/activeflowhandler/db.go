@@ -41,17 +41,25 @@ func (h *activeflowHandler) Create(
 		log = log.WithField("id", id)
 	}
 
-	f, err := h.reqHandler.FlowV1FlowGet(ctx, flowID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not get flow. flow_id: %s", flowID)
-	}
+	// resolve flow actions and on-complete flow ID
+	var actions []action.Action
+	var onCompleteFlowID uuid.UUID
+	if flowID != uuid.Nil {
+		f, err := h.reqHandler.FlowV1FlowGet(ctx, flowID)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get flow. flow_id: %s", flowID)
+		}
 
-	if f.CustomerID != customerID {
-		return nil, fmt.Errorf("the customer has no permission. customer_id: %s", customerID)
+		if f.CustomerID != customerID {
+			return nil, fmt.Errorf("the customer has no permission. customer_id: %s", customerID)
+		}
+
+		actions = f.Actions
+		onCompleteFlowID = f.OnCompleteFlowID
 	}
 
 	// create stack map
-	stackMap := h.stackmapHandler.Create(f.Actions)
+	stackMap := h.stackmapHandler.Create(actions)
 
 	// create activeflow
 	tmp := &activeflow.Activeflow{
@@ -67,7 +75,7 @@ func (h *activeflowHandler) Create(
 		ReferenceID:           referenceID,
 		ReferenceActiveflowID: referenceActiveflowID,
 
-		OnCompleteFlowID: f.OnCompleteFlowID,
+		OnCompleteFlowID: onCompleteFlowID,
 
 		StackMap: stackMap,
 
@@ -97,8 +105,9 @@ func (h *activeflowHandler) Create(
 	if err != nil {
 		// we could not set the variable. but write the log only.
 		log.Errorf("Could not set the variable. err: %v", err)
+	} else {
+		log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
 	}
-	log.WithField("variable", v).Debugf("Created a new variable. variable_id: %s", v.ID)
 
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, activeflow.EventTypeActiveflowCreated, res)
 
