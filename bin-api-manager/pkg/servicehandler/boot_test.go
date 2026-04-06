@@ -57,6 +57,30 @@ func Test_AuthBoot(t *testing.T) {
 			expectErr: false,
 		},
 		{
+			name: "happy path - ai_team",
+
+			directHash: "direct.team123",
+
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d1b2c3d4-0000-0000-0000-000000000002"),
+					CustomerID: uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				},
+				ResourceType: "ai_team",
+				ResourceID:   uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000002"),
+				Hash:         "direct.team123",
+			},
+			responseDirectErr: nil,
+			responseCustomer: &cscustomer.Customer{
+				ID:     uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001"),
+				Status: cscustomer.StatusActive,
+			},
+			responseCustomerErr: nil,
+			responseCurTime:     "2026-04-06T16:00:00Z",
+
+			expectErr: false,
+		},
+		{
 			name: "invalid hash prefix",
 
 			directHash: "invalid_hash",
@@ -166,16 +190,16 @@ func Test_AuthBoot(t *testing.T) {
 				t.Errorf("Expected type 'direct', got: %v", res.Type)
 			}
 
-			if res.ResourceType != "ai" {
-				t.Errorf("Expected resource_type 'ai', got: %v", res.ResourceType)
+			if res.ResourceType != tt.responseDirect.ResourceType {
+				t.Errorf("Expected resource_type '%s', got: %v", tt.responseDirect.ResourceType, res.ResourceType)
 			}
 
-			if res.ResourceID != uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001") {
-				t.Errorf("Expected resource_id 'a1b2c3d4-0000-0000-0000-000000000001', got: %v", res.ResourceID)
+			if res.ResourceID != tt.responseDirect.ResourceID {
+				t.Errorf("Expected resource_id '%s', got: %v", tt.responseDirect.ResourceID, res.ResourceID)
 			}
 
-			if res.CustomerID != uuid.FromStringOrNil("c1b2c3d4-0000-0000-0000-000000000001") {
-				t.Errorf("Expected customer_id 'c1b2c3d4-0000-0000-0000-000000000001', got: %v", res.CustomerID)
+			if res.CustomerID != tt.responseDirect.CustomerID {
+				t.Errorf("Expected customer_id '%s', got: %v", tt.responseDirect.CustomerID, res.CustomerID)
 			}
 
 			if res.Token == "" {

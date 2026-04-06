@@ -17,7 +17,8 @@ import (
 
 // directResourceMapping maps a direct resource_type to the allowed_resource_types
 var directResourceMapping = map[string][]string{
-	"ai": {"aicall"},
+	"ai":      {"aicall"},
+	"ai_team": {"aicall"},
 }
 
 // BootResponse is the typed response for POST /auth/boot.
