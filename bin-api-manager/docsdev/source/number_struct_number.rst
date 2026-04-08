@@ -12,6 +12,7 @@ Number
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "number": "<string>",
         "type": "<string>",
         "call_flow_id": "<string>",
@@ -24,12 +25,15 @@ Number
         "metadata": {
             "rtp_debug": <boolean>
         },
+        "tm_purchase": "<string>",
+        "tm_renew": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
     }
 
 * ``id`` (UUID): The number's unique identifier. Returned when creating a number via ``POST /numbers`` or listing via ``GET /numbers``.
+* ``customer_id`` (UUID): The customer who owns this number. Obtained from the ``id`` field of ``GET /customers``.
 * ``number`` (String, E.164): The phone number in E.164 format (e.g., ``+15551234567``). Must start with ``+``. Virtual numbers use the ``+899`` prefix (e.g., ``+899100000001``).
 * ``type`` (enum string): The number's type. See :ref:`Type <number-struct-number-type>`.
 * ``call_flow_id`` (UUID): The flow to execute for inbound calls. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no flow is assigned.
@@ -43,6 +47,8 @@ Number
 
   * ``rtp_debug`` (Boolean): When ``true``, RTPEngine captures RTP traffic as PCAP files for calls to this number. This flag is OR'd with the customer-level ``rtp_debug`` -- if either is ``true``, capture is enabled. Default is ``false``.
 
+* ``tm_purchase`` (string, ISO 8601, nullable): Timestamp when the number was purchased from the provider. ``null`` if not yet purchased or if the number is virtual.
+* ``tm_renew`` (string, ISO 8601, nullable): Timestamp when the number was last renewed with the provider. ``null`` if never renewed.
 * ``tm_create`` (string, ISO 8601): Timestamp when the number was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any number property.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the number was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
@@ -58,6 +64,7 @@ Example
 
     {
         "id": "0b266038-844b-11ec-97d8-63ba531361ce",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "number": "+821100000001",
         "type": "normal",
         "call_flow_id": "d157ce07-0360-4cad-9007-c8ab89fccf9c",
@@ -70,6 +77,8 @@ Example
         "metadata": {
             "rtp_debug": false
         },
+        "tm_purchase": "2022-02-01 00:00:00.000000",
+        "tm_renew": "2023-02-01 00:00:00.000000",
         "tm_create": "2022-02-01 00:00:00.000000",
         "tm_update": "2022-03-20 19:37:53.135685",
         "tm_delete": "9999-01-01 00:00:00.000000"

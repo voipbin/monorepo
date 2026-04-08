@@ -11,6 +11,7 @@ Conferencecall
     {
         "id": "<string>",
         "customer_id": "<string>",
+        "activeflow_id": "<string>",
         "conference_id": "<string>",
         "reference_type": "<string>",
         "reference_id": "<string>",
@@ -22,6 +23,7 @@ Conferencecall
 
 * ``id`` (UUID): The conferencecall's unique identifier. Returned when a participant joins a conference or when listing via ``GET /conferencecalls``.
 * ``customer_id`` (UUID): The customer who owns this conferencecall. Obtained from ``GET /customers``.
+* ``activeflow_id`` (UUID): The activeflow ID for this conference call. Obtained from the ``id`` field of ``GET /activeflows``. Set to ``00000000-0000-0000-0000-000000000000`` if no activeflow is associated.
 * ``conference_id`` (UUID): The conference this participant belongs to. Obtained from ``GET /conferences``.
 * ``reference_type`` (enum string): The type of the referenced resource. See :ref:`Reference type <conference-struct-conferencecall-reference_type>`.
 * ``reference_id`` (UUID): The ID of the referenced resource (e.g., a call ID). Obtained from ``GET /calls/{id}`` when ``reference_type`` is ``call``.
@@ -43,6 +45,7 @@ Example
     {
         "id": "b8aa51f6-5cc1-40ba-9737-45ca24dab153",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "activeflow_id": "00000000-0000-0000-0000-000000000000",
         "conference_id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",
         "reference_type": "call",
         "reference_id": "7cb70145-a20a-4070-8b23-9131410d301d",

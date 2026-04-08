@@ -12,6 +12,7 @@ Campaign
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "type": "<string>",
         "name": "<string>",
         "detail": "<string>",
@@ -31,6 +32,7 @@ Campaign
     }
 
 * ``id`` (UUID): The campaign's unique identifier. Returned when creating via ``POST /campaigns`` or listing via ``GET /campaigns``.
+* ``customer_id`` (UUID): The customer who owns this campaign. Obtained from the ``id`` field of ``GET /customers``.
 * ``type`` (enum string): Campaign's type. See :ref:`Type <campaign-struct-campaign-type>`.
 * ``name`` (String): Human-readable name for the campaign.
 * ``detail`` (String): Detailed description of the campaign.
@@ -57,6 +59,7 @@ Example
 
     {
         "id": "183c0d5c-691e-42f3-af2b-9bffc2740f83",
+        "customer_id": "5e4a0680-804e-11ec-98a7-2fea5968d85b",
         "type": "call",
         "name": "test campaign",
         "detail": "test campaign detail",

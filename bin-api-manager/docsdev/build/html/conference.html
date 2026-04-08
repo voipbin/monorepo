@@ -911,16 +911,8 @@ Every 5 seconds, for each participant:
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;pre_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="o">...</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;post_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="o">...</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
+    <span class="s2">&quot;pre_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;post_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;conferencecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
@@ -928,7 +920,12 @@ Every 5 seconds, for each participant:
     <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="o">...</span>
     <span class="p">],</span>
+    <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transcribe_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
     <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_end&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -944,12 +941,15 @@ Every 5 seconds, for each participant:
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the conference.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): Reserved for future use.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> (Integer): Conference auto-termination timeout in seconds. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pre_actions</span></code> (Array of Object): Flow actions executed when a participant joins (e.g., greeting message). Each element follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a> structure.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">post_actions</span></code> (Array of Object): Flow actions executed when a participant leaves. Each element follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a> structure.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pre_flow_id</span></code> (UUID): The flow to execute before the conference starts (e.g., greeting message). Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no pre-conference flow is assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">post_flow_id</span></code> (UUID): The flow to execute after the conference ends. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no post-conference flow is assigned.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">conferencecall_ids</span></code> (Array of UUID): List of participant IDs currently in the conference. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls/{id}</span></code> to retrieve participant details.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">recording_id</span></code> (UUID): The currently active recording’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no recording is active.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> (Array of UUID): List of all recording IDs created during this conference’s lifetime. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> to retrieve the recording.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID): The currently active transcription’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no transcription is active.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_ids</span></code> (Array of UUID): List of all transcription IDs created during this conference’s lifetime. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes/{id}</span></code> to retrieve the transcription.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String): Hash for direct conference access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>. Regenerate via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences/{id}/direct-hash-regenerate</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_end</span></code> (String, ISO 8601, nullable): Timestamp when the conference ended. <code class="docutils literal notranslate"><span class="pre">null</span></code> if the conference is still active.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the conference was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp of the last update to any conference property.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the conference was deleted.</p></li>
@@ -970,32 +970,15 @@ Every 5 seconds, for each participant:
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test conference for example.&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="s2">&quot;pre_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello. Welcome to the test conference.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;post_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;The conference has closed. Thank you. Good bye.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
+    <span class="s2">&quot;pre_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;post_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;conferencecall_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transcribe_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;direct_hash&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_end&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-03 06:08:56.672025&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-08-06 19:11:13.040418&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
@@ -1056,6 +1039,7 @@ Every 5 seconds, for each participant:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1069,6 +1053,7 @@ Every 5 seconds, for each participant:
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The conferencecall’s unique identifier. Returned when a participant joins a conference or when listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this conferencecall. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> (UUID): The activeflow ID for this conference call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no activeflow is associated.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">conference_id</span></code> (UUID): The conference this participant belongs to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of the referenced resource. See <a class="reference internal" href="conference_struct_conferencecall.html#conference-struct-conferencecall-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the referenced resource (e.g., a call ID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> when <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">call</span></code>.</p></li>
@@ -1087,6 +1072,7 @@ Every 5 seconds, for each participant:
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b8aa51f6-5cc1-40ba-9737-45ca24dab153&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;conference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;7cb70145-a20a-4070-8b23-9131410d301d&quot;</span><span class="p">,</span>

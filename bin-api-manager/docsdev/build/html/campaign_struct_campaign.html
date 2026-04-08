@@ -193,6 +193,7 @@
 <span id="id1"></span><h2>Campaign<a class="headerlink" href="#campaign-struct-campaign-campaign" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -214,6 +215,7 @@
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The campaign’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/campaigns</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this campaign. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): Campaign’s type. See <a class="reference internal" href="#campaign-struct-campaign-type"><span class="std std-ref">Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the campaign.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the campaign.</p></li>
@@ -238,6 +240,7 @@
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;183c0d5c-691e-42f3-af2b-9bffc2740f83&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-98a7-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;test campaign&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;test campaign detail&quot;</span><span class="p">,</span>

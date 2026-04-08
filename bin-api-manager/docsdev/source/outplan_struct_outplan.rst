@@ -12,6 +12,7 @@ Outplan
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "name": "<string>",
         "detail": "<string>",
         "source": {
@@ -31,6 +32,7 @@ Outplan
     }
 
 * ``id`` (UUID): The outplan's unique identifier. Returned when creating via ``POST /outplans`` or listing via ``GET /outplans``.
+* ``customer_id`` (UUID): The customer who owns this outplan. Obtained from the ``id`` field of ``GET /customers``.
 * ``name`` (String): Human-readable name for the outplan.
 * ``detail`` (String): Detailed description of the outplan's strategy.
 * ``source`` (Object): Source address (caller ID) used when dialing. See :ref:`Address <common-struct-address-address>`.

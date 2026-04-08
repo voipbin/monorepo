@@ -13,6 +13,7 @@ Message struct
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "type": "sms",
         "source": {
             "type": "tel",
@@ -43,6 +44,7 @@ Message struct
     }
 
 * ``id`` (UUID): The message's unique identifier. Returned when creating via ``POST /messages`` or listing via ``GET /messages``.
+* ``customer_id`` (UUID): The customer's ID. Obtained from the ``id`` field of ``GET /customers``.
 * ``type`` (enum string): The message type. See :ref:`Type <message-struct-message-type>`.
 * ``source`` (Object): Source address info. See :ref:`Address <common-struct-address-address>`.
 * ``targets`` (Array of Object): List of delivery targets with per-destination status. See :ref:`Target <message-struct-message-target>`.

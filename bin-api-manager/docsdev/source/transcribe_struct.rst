@@ -11,22 +11,28 @@ Transcribe
     {
         "id": "<string>",
         "customer_id": "<string>",
+        "activeflow_id": "<string>",
+        "on_end_flow_id": "<string>",
         "reference_type": "<string>",
         "reference_id": "<string>",
         "status": "<string>",
         "language": "<string>",
+        "direction": "<string>",
         "provider": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
-        "tm_delete": "<string>",
+        "tm_delete": "<string>"
     }
 
 * ``id`` (UUID): The transcribe session's unique identifier. Returned when creating a transcription via ``POST /transcribes`` or listing via ``GET /transcribes``.
 * ``customer_id`` (UUID): The customer who owns this transcription. Obtained from ``GET /customers``.
+* ``activeflow_id`` (UUID): The activeflow ID associated with this transcription session. Obtained from the ``id`` field of ``GET /activeflows``. Set to ``00000000-0000-0000-0000-000000000000`` if no activeflow is associated.
+* ``on_end_flow_id`` (UUID): The flow to execute when the transcription session ends. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no on-end flow is assigned.
 * ``reference_type`` (enum string): The type of resource being transcribed. See :ref:`Reference Type <transcribe-struct-transcribe-reference_type>`.
 * ``reference_id`` (UUID): The ID of the resource being transcribed. Depending on ``reference_type``, obtained from ``GET /calls``, ``GET /recordings``, or ``GET /conferences``.
 * ``status`` (enum string): The transcription session's current status. See :ref:`Status <transcribe-struct-transcribe-status>`.
 * ``language`` (String, BCP47): The language code for transcription (e.g., ``en-US``, ``ko-KR``, ``ja-JP``). See :ref:`Supported Languages <transcribe-overview-supported_languages>`.
+* ``direction`` (enum string): The transcription direction. See :ref:`Direction <transcribe-struct-transcribe-direction>`.
 * ``provider`` (enum string, optional): The STT provider used for this transcription. See :ref:`Provider <transcribe-struct-transcribe-provider>`.
 * ``tm_create`` (string, ISO 8601): Timestamp when the transcribe session was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to any transcribe property.
@@ -44,10 +50,13 @@ Example
     {
         "id": "bbf08426-3979-41bc-a544-5fc92c237848",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "activeflow_id": "00000000-0000-0000-0000-000000000000",
+        "on_end_flow_id": "00000000-0000-0000-0000-000000000000",
         "reference_type": "call",
         "reference_id": "12f8f1c9-a6c3-4f81-93db-ae445dcf188f",
         "status": "done",
         "language": "en-US",
+        "direction": "both",
         "provider": "gcp",
         "tm_create": "2024-04-01 07:17:04.091019",
         "tm_update": "2024-04-01 13:25:32.428602",
@@ -84,6 +93,21 @@ aws         Amazon Transcribe
 =========== ============
 
 When creating a transcription, the ``provider`` field is optional. If omitted, VoIPBIN selects the best available provider automatically (default order: GCP, then AWS). If a specific provider is requested but unavailable, the system falls back to the default order.
+
+.. _transcribe-struct-transcribe-direction:
+
+direction
+---------
+
+All possible values for the ``direction`` field on the Transcribe resource:
+
+=========== ============
+Direction   Description
+=========== ============
+both        Transcribe both incoming and outgoing audio directions.
+in          Transcribe only incoming audio (what the remote party says).
+out         Transcribe only outgoing audio (what VoIPBIN sends).
+=========== ============
 
 .. _transcribe-struct-transcribe-status:
 

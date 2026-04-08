@@ -10,4 +10,5 @@ Manage threaded conversations and message history across channels (SMS, voice, c
 .. include:: conversation_overview.rst
 .. include:: conversation_struct_conversation.rst
 .. include:: conversation_struct_message.rst
+.. include:: conversation_struct_account.rst
 .. include:: conversation_tutorial.rst

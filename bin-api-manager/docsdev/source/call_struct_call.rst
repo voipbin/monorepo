@@ -12,7 +12,11 @@ Call
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
+        "owner_type": "<string>",
+        "owner_id": "<string>",
         "flow_id": "<string>",
+        "activeflow_id": "<string>",
         "type": "<string>",
         "master_call_id": "<string>",
         "chained_call_ids": [
@@ -24,6 +28,7 @@ Call
             "<string>",
             ...
         ],
+        "groupcall_id": "<string>",
         "source": {
             ...
         },
@@ -36,35 +41,44 @@ Call
         },
         "metadata": {},
         "direction": "<string>",
+        "mute_direction": "<string>",
         "hangup_by": "<string>",
         "hangup_reason": "<string>",
-        "tm_create": "<string>",
-        "tm_update": "<string>",
         "tm_progressing": "<string>",
         "tm_ringing": "<string>",
-        "tm_hangup": "<string>"
+        "tm_hangup": "<string>",
+        "tm_create": "<string>",
+        "tm_update": "<string>",
+        "tm_delete": "<string>"
     }
 
 * ``id`` (UUID): The call's unique identifier. Returned when creating a call via ``POST /calls`` or when listing calls via ``GET /calls``.
+* ``customer_id`` (UUID): The customer's ID. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/customer``.
+* ``owner_type`` (enum string): The resource owner's type. One of: ``""`` (none), ``agent``.
+* ``owner_id`` (UUID): The resource owner's ID. When ``owner_type`` is ``agent``, this is the agent's ID obtained from ``GET /agents``. Set to ``00000000-0000-0000-0000-000000000000`` if no owner is assigned.
 * ``flow_id`` (UUID): The flow associated with this call. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no flow is assigned.
+* ``activeflow_id`` (UUID): The currently executing activeflow's ID. Obtained from ``GET /activeflows``. Set to ``00000000-0000-0000-0000-000000000000`` if no activeflow is running.
 * ``type`` (enum string): The call's type. See :ref:`Type <call-struct-call-type>`.
 * ``master_call_id`` (UUID): The master call's ID in a call chain. Obtained from another call's ``id`` field. If set, this call follows the master call's hangup. Set to ``00000000-0000-0000-0000-000000000000`` if this call has no master.
 * ``chained_call_ids`` (Array of UUID): List of chained call IDs linked to this call. Each ID is a call ``id`` from ``GET /calls``. When this call hangs up, all chained calls also hang up.
 * ``recording_id`` (UUID): The currently active recording's ID. Obtained from ``GET /recordings``. Set to ``00000000-0000-0000-0000-000000000000`` if no recording is active.
 * ``recording_ids`` (Array of UUID): List of all recording IDs created during this call's lifetime. Each ID can be used with ``GET /recordings/{id}`` to retrieve the recording.
+* ``groupcall_id`` (UUID): The parent group call's ID. Obtained from ``GET /groupcalls``. Set to ``00000000-0000-0000-0000-000000000000`` if this call is not part of a group call.
 * ``source`` (Object): Source address info. See :ref:`Address <common-struct-address-address>`.
 * ``destination`` (Object): Destination address info. See :ref:`Address <common-struct-address-address>`.
 * ``status`` (enum string): The call's current status. See :ref:`Status <call-struct-call-status>`.
 * ``action`` (Object): The call's currently executing flow action. See :ref:`Action <flow-struct-action>`.
 * ``metadata`` (Object, Optional): Internal metadata for the call. Contains key-value pairs set by the system. Currently supported keys: ``rtp_debug`` (boolean) — when true, RTPEngine is capturing RTP traffic for this call.
 * ``direction`` (enum string): The call's direction. See :ref:`Direction <call-struct-call-direction>`.
+* ``mute_direction`` (enum string): Which direction is muted. One of: ``""`` (none), ``in`` (inbound muted), ``out`` (outbound muted), ``both`` (both directions muted).
 * ``hangup_by`` (enum string): Which endpoint initiated the hangup. See :ref:`Hangup by <call-struct-call-hangupby>`.
 * ``hangup_reason`` (enum string): The reason the call ended. See :ref:`Hangup reason <call-struct-call-hangupreason>`.
-* ``tm_create`` (string, ISO 8601): Timestamp when the call was created.
-* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any call property.
 * ``tm_progressing`` (string, ISO 8601): Timestamp when the call was answered.
 * ``tm_ringing`` (string, ISO 8601): Timestamp when the destination started ringing.
 * ``tm_hangup`` (string, ISO 8601): Timestamp when the call ended.
+* ``tm_create`` (string, ISO 8601): Timestamp when the call was created.
+* ``tm_update`` (string, ISO 8601): Timestamp of the last update to any call property.
+* ``tm_delete`` (string, ISO 8601): Timestamp when the call was deleted, if applicable.
 
 .. note:: **AI Implementation Hint**
 
@@ -77,12 +91,17 @@ Example
 
     {
         "id": "d9d32881-12fd-4b19-a6b2-6d5b6b6acf76",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "owner_type": "",
+        "owner_id": "00000000-0000-0000-0000-000000000000",
         "flow_id": "4553c074-c88d-49e5-9d47-5c01598ac099",
+        "activeflow_id": "6f18ae1c-ddf8-413b-9572-ad30574604ef",
         "type": "flow",
         "master_call_id": "00000000-0000-0000-0000-000000000000",
         "chained_call_ids": [],
         "recording_id": "00000000-0000-0000-0000-000000000000",
         "recording_ids": [],
+        "groupcall_id": "00000000-0000-0000-0000-000000000000",
         "source": {
             "type": "tel",
             "target": "+15551234567",
@@ -110,13 +129,15 @@ Example
         },
         "metadata": {},
         "direction": "outgoing",
+        "mute_direction": "",
         "hangup_by": "local",
         "hangup_reason": "normal",
-        "tm_create": "2022-05-01 15:10:23.414798",
-        "tm_update": "2022-05-01 15:10:44.781000",
         "tm_progressing": "2022-05-01 15:10:38.721000",
         "tm_ringing": "2022-05-01 15:10:26.978000",
-        "tm_hangup": "2022-05-01 15:10:44.781000"
+        "tm_hangup": "2022-05-01 15:10:44.781000",
+        "tm_create": "2022-05-01 15:10:23.414798",
+        "tm_update": "2022-05-01 15:10:44.781000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
 .. _call-struct-call-type:

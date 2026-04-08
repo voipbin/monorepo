@@ -1114,7 +1114,11 @@ This process will continue until one of the destinations answers the call, at wh
 <span id="id1"></span><h3>Call<a class="headerlink" href="#call-struct-call-call" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -1126,6 +1130,7 @@ This process will continue until one of the destinations answers the call, at wh
         <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">],</span>
+    <span class="s2">&quot;groupcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">},</span>
@@ -1138,37 +1143,46 @@ This process will continue until one of the destinations answers the call, at wh
     <span class="p">},</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mute_direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The call’s unique identifier. Returned when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or when listing calls via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s ID. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): The resource owner’s type. One of: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> (none), <code class="docutils literal notranslate"><span class="pre">agent</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The resource owner’s ID. When <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is <code class="docutils literal notranslate"><span class="pre">agent</span></code>, this is the agent’s ID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no owner is assigned.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID): The flow associated with this call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no flow is assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> (UUID): The currently executing activeflow’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no activeflow is running.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The call’s type. See <a class="reference internal" href="call_struct_call.html#call-struct-call-type"><span class="std std-ref">Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">master_call_id</span></code> (UUID): The master call’s ID in a call chain. Obtained from another call’s <code class="docutils literal notranslate"><span class="pre">id</span></code> field. If set, this call follows the master call’s hangup. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if this call has no master.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">chained_call_ids</span></code> (Array of UUID): List of chained call IDs linked to this call. Each ID is a call <code class="docutils literal notranslate"><span class="pre">id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>. When this call hangs up, all chained calls also hang up.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">recording_id</span></code> (UUID): The currently active recording’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no recording is active.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> (Array of UUID): List of all recording IDs created during this call’s lifetime. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> to retrieve the recording.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">groupcall_id</span></code> (UUID): The parent group call’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if this call is not part of a group call.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">destination</span></code> (Object): Destination address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The call’s current status. See <a class="reference internal" href="call_struct_call.html#call-struct-call-status"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">action</span></code> (Object): The call’s currently executing flow action. See <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object, Optional): Internal metadata for the call. Contains key-value pairs set by the system. Currently supported keys: <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (boolean) — when true, RTPEngine is capturing RTP traffic for this call.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): The call’s direction. See <a class="reference internal" href="call_struct_call.html#call-struct-call-direction"><span class="std std-ref">Direction</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mute_direction</span></code> (enum string): Which direction is muted. One of: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> (none), <code class="docutils literal notranslate"><span class="pre">in</span></code> (inbound muted), <code class="docutils literal notranslate"><span class="pre">out</span></code> (outbound muted), <code class="docutils literal notranslate"><span class="pre">both</span></code> (both directions muted).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hangup_by</span></code> (enum string): Which endpoint initiated the hangup. See <a class="reference internal" href="call_struct_call.html#call-struct-call-hangupby"><span class="std std-ref">Hangup by</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> (enum string): The reason the call ended. See <a class="reference internal" href="call_struct_call.html#call-struct-call-hangupreason"><span class="std std-ref">Hangup reason</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the call was created.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any call property.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_progressing</span></code> (string, ISO 8601): Timestamp when the call was answered.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_ringing</span></code> (string, ISO 8601): Timestamp when the destination started ringing.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_hangup</span></code> (string, ISO 8601): Timestamp when the call ended.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the call was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any call property.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the call was deleted, if applicable.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1179,12 +1193,17 @@ This process will continue until one of the destinations answers the call, at wh
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d9d32881-12fd-4b19-a6b2-6d5b6b6acf76&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;4553c074-c88d-49e5-9d47-5c01598ac099&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;6f18ae1c-ddf8-413b-9572-ad30574604ef&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
     <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;groupcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
         <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
@@ -1212,13 +1231,15 @@ This process will continue until one of the destinations answers the call, at wh
     <span class="p">},</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mute_direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
     <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:23.414798&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:44.781000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:38.721000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:26.978000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:44.781000&quot;</span>
+    <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:44.781000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:23.414798&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-05-01 15:10:44.781000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1362,6 +1383,10 @@ This process will continue until one of the destinations answers the call, at wh
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">},</span>
@@ -1371,6 +1396,8 @@ This process will continue until one of the destinations answers the call, at wh
         <span class="p">},</span>
         <span class="o">...</span>
     <span class="p">],</span>
+    <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_groupcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;answer_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;answer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1378,6 +1405,14 @@ This process will continue until one of the destinations answers the call, at wh
        <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
        <span class="o">...</span>
     <span class="p">],</span>
+    <span class="s2">&quot;answer_groupcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;groupcall_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+       <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+       <span class="o">...</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;call_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;groupcall_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;dial_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -1387,12 +1422,23 @@ This process will continue until one of the destinations answers the call, at wh
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The groupcall’s unique identifier. Returned when creating a groupcall or when listing groupcalls via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this groupcall. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): The type of owner for this groupcall. Possible values: <code class="docutils literal notranslate"><span class="pre">agent</span></code> (owned by a specific agent), or empty string (no specific owner).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The ID of the owner. When <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is <code class="docutils literal notranslate"><span class="pre">agent</span></code>, this is an agent UUID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no owner.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The groupcall’s current status. See <a class="reference internal" href="call_struct_groupcall.html#call-struct-groupcall-status"><span class="std std-ref">Status</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID): The flow associated with this groupcall. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no flow is assigned.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">destinations</span></code> (Array of Object): List of destination addresses to ring. Each entry follows the <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> structure. A destination can also be another groupcall for nested groupcalls.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">master_call_id</span></code> (UUID): The ID of the master call that initiated this groupcall. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if none.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">master_groupcall_id</span></code> (UUID): The ID of the parent groupcall if this is a nested groupcall. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if this is a top-level groupcall.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ring_method</span></code> (enum string): How destinations are rung. See <a class="reference internal" href="call_struct_groupcall.html#call-struct-groupcall-ring-method"><span class="std std-ref">Ring method</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">answer_method</span></code> (enum string): What happens when a destination answers. See <a class="reference internal" href="call_struct_groupcall.html#call-struct-groupcall-answer-method"><span class="std std-ref">Answer method</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">answer_call_id</span></code> (UUID): The call ID of the destination that answered. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> until a destination answers. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">call_ids</span></code> (Array of UUID): List of call IDs created for each destination. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> to check individual call status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">answer_groupcall_id</span></code> (UUID): The ID of the nested groupcall that answered, if applicable. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> until a nested groupcall answers. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">groupcall_ids</span></code> (Array of UUID): List of nested groupcall IDs created for this groupcall. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls/{id}</span></code> to check status.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_count</span></code> (Integer): The number of remaining calls for the current dial attempt.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">groupcall_count</span></code> (Integer): The number of remaining nested groupcalls for the current dial attempt.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dial_index</span></code> (Integer): The current dial index. Only meaningful when <code class="docutils literal notranslate"><span class="pre">ring_method</span></code> is <code class="docutils literal notranslate"><span class="pre">ring_all</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the groupcall was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any groupcall property.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the groupcall was deleted.</p></li>
@@ -1412,6 +1458,10 @@ This process will continue until one of the destinations answers the call, at wh
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;62005165-7592-4ff7-9076-55bf491023f2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;progressing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
         <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
@@ -1421,26 +1471,33 @@ This process will continue until one of the destinations answers the call, at wh
     <span class="p">},</span>
     <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;test11@test&quot;</span><span class="p">,</span>
             <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;endpoint&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;extension&quot;</span><span class="p">,</span>
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;test12@test&quot;</span><span class="p">,</span>
             <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
         <span class="p">}</span>
     <span class="p">],</span>
-    <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;answer_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;master_groupcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ring_method&quot;</span><span class="p">:</span> <span class="s2">&quot;ring_all&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;answer_method&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup_others&quot;</span><span class="p">,</span>
     <span class="s2">&quot;answer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">&quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;</span>
     <span class="p">],</span>
+    <span class="s2">&quot;answer_groupcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;groupcall_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;call_count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;groupcall_count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;dial_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2023-04-21 15:33:28.569053&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
@@ -1448,6 +1505,28 @@ This process will continue until one of the destinations answers the call, at wh
 </pre></div>
 </div>
 </section>
+</section>
+<section id="call-struct-groupcall-status">
+<span id="id4"></span><h3>Status<a class="headerlink" href="#call-struct-groupcall-status" title="Link to this heading"></a></h3>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">status</span></code> field:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>progressing</p></td>
+<td><p>The groupcall is actively dialing destinations and waiting for answers.</p></td>
+</tr>
+<tr class="row-odd"><td><p>hangingup</p></td>
+<td><p>The groupcall is in the process of hanging up all calls.</p></td>
+</tr>
+<tr class="row-even"><td><p>hangup</p></td>
+<td><p>The groupcall has ended. All calls have been terminated. Final state.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="ring-method">
 <span id="call-struct-groupcall-ring-method"></span><h3>Ring method<a class="headerlink" href="#ring-method" title="Link to this heading"></a></h3>
@@ -4293,7 +4372,7 @@ VoIPBIN             Destination              Voicemail
 </section>
 </section>
 <section id="call-troubleshooting">
-<span id="id4"></span><h2>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading"></a></h2>
+<span id="id5"></span><h2>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading"></a></h2>
 <p>This guide helps you diagnose and resolve common call issues. Each problem includes symptoms, causes, and solutions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -4947,6 +5026,7 @@ Verify agents have status: &quot;available&quot;
 <li><a class="reference internal" href="#id3">Example</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#call-struct-groupcall-status">Status</a></li>
 <li><a class="reference internal" href="#ring-method">Ring method</a></li>
 <li><a class="reference internal" href="#answer-method">Answer method</a></li>
 </ul>
