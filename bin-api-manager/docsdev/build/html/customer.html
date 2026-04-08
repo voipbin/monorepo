@@ -289,13 +289,18 @@
 <tr class="row-even"><td><p>billing_account_id</p></td>
 <td><p>(UUID) Default billing account. From <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>metadata</p></td>
+<tr class="row-odd"><td><p><a href="#id3"><span class="problematic" id="id4">default_outgoing_</span></a>
+source_number_id</p></td>
+<td><p>(UUID) Default source number for outgoing PSTN calls.
+From <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>metadata</p></td>
 <td><p>(Object) Configuration flags. Contains <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (Boolean)</p></td>
 </tr>
-<tr class="row-even"><td><p>email_verified</p></td>
+<tr class="row-odd"><td><p>email_verified</p></td>
 <td><p>(Boolean) Whether the email address has been verified</p></td>
 </tr>
-<tr class="row-odd"><td><p>status</p></td>
+<tr class="row-even"><td><p>status</p></td>
 <td><p>(enum string) Account status: initial, active, frozen,
 deleted, expired</p></td>
 </tr>
@@ -342,6 +347,7 @@ deleted, expired</p></td>
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhooks.acme-corp.com/voipbin&quot;</span><span class="p">,</span>
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;default_outgoing_source_number_id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;</span><span class="p">,</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
     <span class="p">},</span>
@@ -376,6 +382,20 @@ deleted, expired</p></td>
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> flag enables RTP packet capture (PCAP) for all calls made by this customer. This is useful for debugging audio quality issues such as one-way audio, codec mismatches, or jitter. Enabling this increases storage usage — disable it after debugging is complete by setting <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
+</div>
+<p><strong>Update Default Outgoing Source Number</strong></p>
+<p>Set the default source phone number used as the caller ID for outgoing PSTN calls when no explicit source number is specified in the call request.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/customer/default_outgoing_source_number_id?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;
+    }&#39;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> must reference a phone number owned by this customer. Obtain valid number IDs from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. When an outgoing call is made without an explicit source number, the system automatically uses this default. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> to clear the default (calls without an explicit source will fail if no default is set).</p>
 </div>
 </section>
 <section id="account-deletion-lifecycle">
@@ -668,6 +688,7 @@ resource exists</p></td>
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;default_outgoing_source_number_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
     <span class="p">},</span>
@@ -691,6 +712,7 @@ resource exists</p></td>
 <li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum string, Optional): The HTTP method used for webhook notifications. One of: <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String, Optional): The URI where webhook event notifications are sent for this customer.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">billing_account_id</span></code> (UUID, Optional): The default billing account ID for this customer. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/billing_accounts</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> (UUID, Optional): The default source phone number used as the caller ID for outgoing PSTN calls when no explicit source number is specified. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no default is configured. Updatable via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer/default_outgoing_source_number_id</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object): Configuration flags for the customer account. Contains:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (Boolean): When <code class="docutils literal notranslate"><span class="pre">true</span></code>, RTPEngine captures RTP traffic as PCAP files for this customer’s calls. Use this to debug audio quality issues (one-way audio, codec problems, jitter). Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>. Updatable by CustomerAdmin via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer/metadata</span></code>.</p></li>
@@ -737,6 +759,7 @@ resource exists</p></td>
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhooks.acme-corp.com/voipbin&quot;</span><span class="p">,</span>
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;default_outgoing_source_number_id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;</span><span class="p">,</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
     <span class="p">},</span>
@@ -810,6 +833,7 @@ resource exists</p></td>
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;active&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
@@ -845,6 +869,7 @@ resource exists</p></td>
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;initial&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
@@ -875,12 +900,52 @@ resource exists</p></td>
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;deleted&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
     &quot;tm_create&quot;: &quot;2024-03-10T15:57:08Z&quot;,
     &quot;tm_update&quot;: &quot;2024-03-10T15:57:08Z&quot;,
     &quot;tm_delete&quot;: &quot;2024-03-10T15:59:08Z&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="update-default-outgoing-source-number">
+<h3>Update default outgoing source number<a class="headerlink" href="#update-default-outgoing-source-number" title="Link to this heading"></a></h3>
+<p>Set the default source phone number for outgoing PSTN calls. When making a call without specifying an explicit source number, the system uses this default.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> must be a UUID of a phone number owned by the customer. Obtain valid IDs from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Setting this to a nil UUID (<code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>) is not allowed via the API – the endpoint rejects nil UUIDs with a 400 error.</p>
+</div>
+<p>Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer/default_outgoing_source_number_id?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;name&quot;: &quot;Acme Corporation&quot;,
+    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
+    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
+    &quot;phone_number&quot;: &quot;+15551234567&quot;,
+    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
+    &quot;webhook_method&quot;: &quot;POST&quot;,
+    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
+    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: false
+    },
+    &quot;email_verified&quot;: true,
+    &quot;status&quot;: &quot;active&quot;,
+    &quot;tm_deletion_scheduled&quot;: null,
+    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -910,6 +975,7 @@ resource exists</p></td>
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;metadata&quot;: {
         &quot;rtp_debug&quot;: true
     },
@@ -944,6 +1010,7 @@ resource exists</p></td>
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;frozen&quot;,
     &quot;tm_deletion_scheduled&quot;: &quot;2024-07-20T14:22:35Z&quot;,
@@ -977,6 +1044,7 @@ resource exists</p></td>
     &quot;webhook_method&quot;: &quot;&quot;,
     &quot;webhook_uri&quot;: &quot;&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;deleted&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
@@ -1009,6 +1077,7 @@ resource exists</p></td>
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;active&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
@@ -1063,6 +1132,7 @@ resource exists</p></td>
 <li><a class="reference internal" href="#get-detail-of-customer">Get detail of customer</a></li>
 <li><a class="reference internal" href="#create-a-new-customer">Create a new customer</a></li>
 <li><a class="reference internal" href="#delete-customer">Delete customer</a></li>
+<li><a class="reference internal" href="#update-default-outgoing-source-number">Update default outgoing source number</a></li>
 <li><a class="reference internal" href="#update-customer-metadata">Update customer metadata</a></li>
 <li><a class="reference internal" href="#unregister-account-schedule-deletion">Unregister account (schedule deletion)</a></li>
 <li><a class="reference internal" href="#unregister-account-immediately">Unregister account immediately</a></li>

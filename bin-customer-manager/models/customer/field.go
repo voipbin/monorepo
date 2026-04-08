@@ -17,6 +17,8 @@ const (
 
 	FieldBillingAccountID Field = "billing_account_id"
 
+	FieldDefaultOutgoingSourceNumberID Field = "default_outgoing_source_number_id"
+
 	FieldEmailVerified Field = "email_verified"
 
 	FieldStatus                      Field = "status"

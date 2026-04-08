@@ -178,6 +178,21 @@ func (h *callHandler) CreateCallOutgoing(
 	// create channel id
 	channelID := h.utilHandler.UUIDCreate().String()
 
+	// apply customer's default outgoing source number if source is empty for tel destinations
+	if destination.Type == commonaddress.TypeTel && !strings.HasPrefix(source.Target, "+") && cu != nil && cu.DefaultOutgoingSourceNumberID != uuid.Nil {
+		defaultNum, err := h.reqHandler.NumberV1NumberGet(ctx, cu.DefaultOutgoingSourceNumberID)
+		if err != nil {
+			log.Errorf("Could not get default outgoing source number. number_id: %s, err: %v", cu.DefaultOutgoingSourceNumberID, err)
+		} else {
+			log.WithField("number", defaultNum).Debugf("Applying customer's default outgoing source number. number_id: %s, number: %s", defaultNum.ID, defaultNum.Number)
+			source = commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     defaultNum.Number,
+				TargetName: defaultNum.Number,
+			}
+		}
+	}
+
 	// get source address for outgoing
 	s := getSourceForOutgoingCall(&source, &destination)
 

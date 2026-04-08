@@ -509,6 +509,40 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 	return res, nil
 }
 
+// CustomerUpdateDefaultOutgoingSourceNumberID sends a request to customer-manager
+// to update the customer's default outgoing source number id.
+// Requires ProjectSuperAdmin permission.
+func (h *serviceHandler) CustomerUpdateDefaultOutgoingSourceNumberID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, defaultOutgoingSourceNumberID uuid.UUID) (*cscustomer.Customer, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":                              "CustomerUpdateDefaultOutgoingSourceNumberID",
+		"customer_id":                       customerID,
+		"default_outgoing_source_number_id": defaultOutgoingSourceNumberID,
+	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	_, err := h.customerGet(ctx, customerID)
+	if err != nil {
+		log.Errorf("Could not validate the customer info. err: %v", err)
+		return nil, err
+	}
+
+	res, err := h.reqHandler.CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx, customerID, defaultOutgoingSourceNumberID)
+	if err != nil {
+		log.Errorf("Could not update the customer's default outgoing source number id. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // CustomerUpdateMetadata updates the customer's internal metadata.
 // Requires ProjectSuperAdmin permission.
 func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error) {
@@ -574,6 +608,33 @@ func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context,
 	res, err := h.reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, a.CustomerID, billingAccountID)
 	if err != nil {
 		log.Errorf("Could not update the customer's billing account. err: %v", err)
+		return nil, err
+	}
+
+	return res.ConvertWebhookMessage(), nil
+}
+
+// CustomerSelfUpdateDefaultOutgoingSourceNumberID updates the authenticated agent's own customer's default outgoing source number id.
+// Requires CustomerAdmin permission.
+func (h *serviceHandler) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx context.Context, a *auth.AuthIdentity, defaultOutgoingSourceNumberID uuid.UUID) (*cscustomer.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":                              "CustomerSelfUpdateDefaultOutgoingSourceNumberID",
+		"customer_id":                       a.CustomerID,
+		"default_outgoing_source_number_id": defaultOutgoingSourceNumberID,
+	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	res, err := h.reqHandler.CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx, a.CustomerID, defaultOutgoingSourceNumberID)
+	if err != nil {
+		log.Errorf("Could not update the customer's default outgoing source number id. err: %v", err)
 		return nil, err
 	}
 

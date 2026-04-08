@@ -65,6 +65,7 @@ Example
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "email_verified": true,
         "status": "active",
         "tm_deletion_scheduled": null,
@@ -102,6 +103,7 @@ Example
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.test-company.com/voipbin",
         "billing_account_id": "00000000-0000-0000-0000-000000000000",
+        "default_outgoing_source_number_id": "00000000-0000-0000-0000-000000000000",
         "email_verified": false,
         "status": "initial",
         "tm_deletion_scheduled": null,
@@ -133,12 +135,54 @@ Example
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.test-company.com/voipbin",
         "billing_account_id": "00000000-0000-0000-0000-000000000000",
+        "default_outgoing_source_number_id": "00000000-0000-0000-0000-000000000000",
         "email_verified": false,
         "status": "deleted",
         "tm_deletion_scheduled": null,
         "tm_create": "2024-03-10T15:57:08Z",
         "tm_update": "2024-03-10T15:57:08Z",
         "tm_delete": "2024-03-10T15:59:08Z"
+    }
+
+Update default outgoing source number
+--------------------------------------
+
+Set the default source phone number for outgoing PSTN calls. When making a call without specifying an explicit source number, the system uses this default.
+
+.. note:: **AI Implementation Hint**
+
+   The ``default_outgoing_source_number_id`` must be a UUID of a phone number owned by the customer. Obtain valid IDs from ``GET https://api.voipbin.net/v1.0/numbers``. Setting this to a nil UUID (``00000000-0000-0000-0000-000000000000``) is not allowed via the API -- the endpoint rejects nil UUIDs with a 400 error.
+
+Example
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer/default_outgoing_source_number_id?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210"
+        }'
+
+    {
+        "id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "name": "Acme Corporation",
+        "detail": "Enterprise customer account",
+        "email": "admin@acme-corp.com",
+        "phone_number": "+15551234567",
+        "address": "123 Main St, San Francisco, CA 94105",
+        "webhook_method": "POST",
+        "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
+        "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
+        "metadata": {
+            "rtp_debug": false
+        },
+        "email_verified": true,
+        "status": "active",
+        "tm_deletion_scheduled": null,
+        "tm_create": "2024-01-15T10:30:00Z",
+        "tm_update": "2024-06-20T14:22:35Z",
+        "tm_delete": null
     }
 
 Update customer metadata
@@ -170,6 +214,7 @@ Example
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "metadata": {
             "rtp_debug": true
         },
@@ -207,6 +252,7 @@ Example
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "email_verified": true,
         "status": "frozen",
         "tm_deletion_scheduled": "2024-07-20T14:22:35Z",
@@ -243,6 +289,7 @@ Example
         "webhook_method": "",
         "webhook_uri": "",
         "billing_account_id": "00000000-0000-0000-0000-000000000000",
+        "default_outgoing_source_number_id": "00000000-0000-0000-0000-000000000000",
         "email_verified": false,
         "status": "deleted",
         "tm_deletion_scheduled": null,
@@ -277,6 +324,7 @@ Example
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+        "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "email_verified": true,
         "status": "active",
         "tm_deletion_scheduled": null,
