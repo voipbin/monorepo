@@ -3,8 +3,13 @@
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "command": "bash .claude/scripts/check-magic-strings.sh",
-        "description": "Check for hardcoded direct resource type magic strings in .go files"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-magic-strings.sh",
+            "description": "Check for hardcoded direct resource type magic strings in .go files"
+          }
+        ]
       }
     ]
   }
