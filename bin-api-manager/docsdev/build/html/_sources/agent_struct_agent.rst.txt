@@ -12,6 +12,7 @@ Agent
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "username": "<string>",
         "name": "<string>",
         "detail": "<string>",
@@ -31,6 +32,7 @@ Agent
     },
 
 * ``id`` (UUID): The agent's unique identifier. Returned when creating an agent via ``POST /agents`` or when listing agents via ``GET /agents``.
+* ``customer_id`` (UUID): The customer's ID. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/customer``.
 * ``username`` (String): The agent's login username. Must be unique within the customer account.
 * ``name`` (String): The agent's display name.
 * ``detail`` (String): An optional description of the agent.

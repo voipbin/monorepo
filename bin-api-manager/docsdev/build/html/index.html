@@ -966,6 +966,7 @@
 <li class="toctree-l4"><a class="reference internal" href="call.html#id3">Example</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#call-struct-groupcall-status">Status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#ring-method">Ring method</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#answer-method">Answer method</a></li>
 </ul>
@@ -1154,7 +1155,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="recording.html#recording-struct-recording">Recording</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="recording.html#recording-struct-recording-recording">Recording</a></li>
-<li class="toctree-l3"><a class="reference internal" href="recording.html#type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="recording.html#reference-type">Reference Type</a></li>
 <li class="toctree-l3"><a class="reference internal" href="recording.html#status">Status</a></li>
 <li class="toctree-l3"><a class="reference internal" href="recording.html#format">Format</a></li>
 </ul>
@@ -1203,6 +1204,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="transcribe.html#reference-type">reference_type</a></li>
 <li class="toctree-l3"><a class="reference internal" href="transcribe.html#provider">provider</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#direction">direction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="transcribe.html#status">status</a></li>
 </ul>
 </li>
@@ -1211,12 +1213,12 @@
 <li class="toctree-l4"><a class="reference internal" href="transcribe.html#id8">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="transcribe.html#direction">direction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#transcribe-struct-transcription-direction">direction</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="transcribe.html#speech-webhook-message">Speech Webhook Message</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="transcribe.html#id9">Speech Webhook Message</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="transcribe.html#id10">Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="transcribe.html#id10">Speech Webhook Message</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="transcribe.html#id11">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -1433,7 +1435,7 @@
 <li class="toctree-l4"><a class="reference internal" href="conversation.html#example">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="conversation.html#reference-type">Reference type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#type">Type</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="conversation.html#message">Message</a><ul>
@@ -1444,22 +1446,28 @@
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#direction">Direction</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="conversation.html#conversation-account">Conversation Account</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#account">Account</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#conversation-struct-account-type">Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#id6">Example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="conversation.html#tutorial">Tutorial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#setup-the-conversation">Setup the conversation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#get-list-of-conversations">Get list of conversations</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="conversation.html#id5">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="conversation.html#get-detail-of-conversation">Get detail of conversation</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="conversation.html#id6">Example</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="conversation.html#send-a-message-to-the-conversation">Send a message to the conversation</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="conversation.html#id7">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="conversation.html#get-list-of-conversation-messages">Get list of conversation messages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#get-detail-of-conversation">Get detail of conversation</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="conversation.html#id8">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#send-a-message-to-the-conversation">Send a message to the conversation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#id9">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#get-list-of-conversation-messages">Get list of conversation messages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#id10">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -1550,15 +1558,37 @@
 <li class="toctree-l3"><a class="reference internal" href="ai.html#id6">Best Practices</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#aicall">AIcall</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#aicall-struct-aicall-aicall">AIcall</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#assistance-type">Assistance Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#reference-type">Reference Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id8">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#ai-message">AI Message</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#message">Message</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#role">Role</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#direction">Direction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id9">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ai.html#ai-struct-summary">AI Summary</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#summary">Summary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ai-struct-summary-reference-type">Reference Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#ai-struct-summary-status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id13">Example</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="ai.html#tutorial">Tutorial</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#simple-ai-voice-assistant">Simple AI Voice Assistant</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#ai-talk-with-real-time-conversation">AI Talk with Real-Time Conversation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#ai-with-custom-voice-id">AI with Custom Voice ID</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#ai-summary-for-call-transcription">AI Summary for Call Transcription</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#real-time-ai-summary">Real-Time AI Summary</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#id7">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id14">Best Practices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ai.html#regenerate-direct-ai-hash">Regenerate direct AI hash</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ai.html#id8">Troubleshooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai.html#id15">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
@@ -1960,6 +1990,15 @@
 <li class="toctree-l3"><a class="reference internal" href="billing_account.html#billing-ledger-entry">Billing (Ledger Entry)</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account.html#billing">Billing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#billing-struct-billing-billing">Billing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#transaction-type">Transaction Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#status">Status</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#reference-type">Reference Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#cost-type">Cost Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="billing_account.html#example">Example</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a><ul>
@@ -1989,6 +2028,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="storage.html#reference-type">Reference Type</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage.html#file-type">File Type</a></li>
 </ul>
 </li>
 </ul>
@@ -2132,6 +2172,12 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="trunk.html#domain-name">Domain name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk.html#trunk-struct-trunk">Trunk</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="trunk.html#trunk-struct-trunk-trunk">Trunk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="trunk.html#auth-types">Auth Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="trunk.html#example">Example</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

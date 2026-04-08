@@ -194,27 +194,31 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;filesize&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;uri_download&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_download_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-05-27 07:55:16.515315&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The file’s unique identifier. Returned when uploading a file via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this file. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The agent who uploaded or owns this file. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Empty string if no specific owner.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): The type of owner for this file. Possible values: <code class="docutils literal notranslate"><span class="pre">agent</span></code> (owned by a specific agent), or empty string (no specific owner).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The agent who uploaded or owns this file. When <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is <code class="docutils literal notranslate"><span class="pre">agent</span></code>, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no specific owner.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of resource this file is associated with. See <a class="reference internal" href="#storage-struct-file-reference-type"><span class="std std-ref">Reference Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the associated resource. Depending on <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code> or other endpoints. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no reference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The file type. See <a class="reference internal" href="#storage-struct-file-type"><span class="std std-ref">File Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable name for the file. May be empty if not explicitly set.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): A longer description of the file’s purpose or content. May be empty.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (String): The original filename of the uploaded file (e.g., <code class="docutils literal notranslate"><span class="pre">screenshot.png</span></code>, <code class="docutils literal notranslate"><span class="pre">call_recording.wav</span></code>).</p></li>
@@ -235,9 +239,11 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0c0c305c-7a55-4395-85a8-ae4860f01393&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
     <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;62005165-7592-4ff7-9076-55bf491023f2&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;Screenshot from 2024-05-26 21-58-51.png&quot;</span><span class="p">,</span>
@@ -271,6 +277,31 @@
 </tbody>
 </table>
 </section>
+<section id="file-type">
+<span id="storage-struct-file-type"></span><h2>File Type<a class="headerlink" href="#file-type" title="Link to this heading"></a></h2>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">type</span></code> field:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>(empty)</p></td>
+<td><p>No specific type assigned.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rag</p></td>
+<td><p>A file used for RAG (Retrieval-Augmented Generation) knowledge base.</p></td>
+</tr>
+<tr class="row-even"><td><p>talk</p></td>
+<td><p>A file associated with talk/conversation context.</p></td>
+</tr>
+<tr class="row-odd"><td><p>recording</p></td>
+<td><p>A recording file.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 </section>
 
 </main>
@@ -287,6 +318,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#reference-type">Reference Type</a></li>
+<li><a class="reference internal" href="#file-type">File Type</a></li>
 </ul>
 </li>
 </ul>

@@ -17,10 +17,15 @@ Activeflow
         "status": "<string>",
         "reference_type": "<string>",
         "reference_id": "<string>",
+        "reference_activeflow_id": "<string>",
+        "on_complete_flow_id": "<string>",
         "current_action": {
             ...
         },
         "forward_action_id": "<string>",
+        "executed_actions": [
+            ...
+        ],
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -32,8 +37,11 @@ Activeflow
 * ``status`` (enum string): The activeflow's current status. See detail :ref:`here <activeflow-struct-activeflow-status>`.
 * ``reference_type`` (enum string): The resource type that triggered this activeflow. See detail :ref:`here <activeflow-struct-activeflow-reference-type>`.
 * ``reference_id`` (UUID): The ID of the resource that triggered this activeflow (e.g., a call ID if ``reference_type`` is ``call``). Obtained from the corresponding resource endpoint (e.g., ``GET /calls/{id}``).
+* ``reference_activeflow_id`` (UUID): The parent activeflow's ID if this is a sub-flow. Obtained from ``GET /activeflows``. Set to ``00000000-0000-0000-0000-000000000000`` if this is not a sub-flow.
+* ``on_complete_flow_id`` (UUID): Flow to execute when this activeflow completes. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no completion flow is assigned.
 * ``current_action`` (Object): The action currently being executed. See detail :ref:`here <flow-struct-action-action>`.
 * ``forward_action_id`` (UUID): The ID of the next action to execute. Set to ``00000000-0000-0000-0000-000000000000`` if sequential (next in array).
+* ``executed_actions`` (Array of Object): History of actions that have been executed during this activeflow's lifetime. Each element is an action object. See detail :ref:`here <flow-struct-action-action>`.
 * ``tm_create`` (String, ISO 8601): Timestamp when the activeflow was created.
 * ``tm_update`` (String, ISO 8601): Timestamp of the last state change.
 * ``tm_delete`` (String, ISO 8601): Timestamp when the activeflow was deleted. Set to ``9999-01-01 00:00:00.000000`` if not deleted.
@@ -54,6 +62,8 @@ Example
         "status": "ended",
         "reference_type": "call",
         "reference_id": "fd581a20-2606-47fd-a7e8-6bba7c294170",
+        "reference_activeflow_id": "00000000-0000-0000-0000-000000000000",
+        "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
         "current_action": {
             "id": "93ebcadb-ecae-4291-8d49-ca81a926b8b3",
             "next_id": "00000000-0000-0000-0000-000000000000",
@@ -64,6 +74,7 @@ Example
             }
         },
         "forward_action_id": "00000000-0000-0000-0000-000000000000",
+        "executed_actions": [],
         "tm_create": "2023-04-06 14:53:12.569073",
         "tm_update": "2023-04-06 14:54:24.652558",
         "tm_delete": "9999-01-01 00:00:00.000000"

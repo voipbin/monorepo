@@ -194,6 +194,8 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;provider_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -206,6 +208,8 @@
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The route’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/routes</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer this route applies to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>. The special value <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000001</span></code> means this route applies to all customers (system default).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable label for the route. Free-form text for organizational use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): A longer description of the route’s purpose or configuration notes.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provider_id</span></code> (UUID): The provider used for outbound calls on this route. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/providers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">priority</span></code> (Integer): Route priority for failover ordering. Lower values are attempted first (1 = highest priority). Multiple routes with different priorities enable automatic failover.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">target</span></code> (String): Target country code prefix for destination matching (e.g., <code class="docutils literal notranslate"><span class="pre">+82</span></code>, <code class="docutils literal notranslate"><span class="pre">+1</span></code>). Set to <code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code> to match every destination.</p></li>
@@ -223,6 +227,8 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;491b6858-5357-11ed-b753-8fd49cd36340&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Default route&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;System default route for all destinations&quot;</span><span class="p">,</span>
     <span class="s2">&quot;provider_id&quot;</span><span class="p">:</span> <span class="s2">&quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;priority&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
     <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>

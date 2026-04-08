@@ -194,10 +194,13 @@
 <p>Queuecall struct</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;service_agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;duration_waiting&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;duration_service&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_service&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -207,10 +210,13 @@
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The queuecall’s unique identifier. Returned when a call enters a queue or when listing queuecalls via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this queuecall. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of the referenced resource. See <a class="reference internal" href="#queue-struct-queuecall-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the referenced resource (e.g., the call). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> when reference_type is <code class="docutils literal notranslate"><span class="pre">call</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The queuecall’s current status. See <a class="reference internal" href="#queue-struct-queuecall-type"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">service_agent_id</span></code> (UUID): The ID of the agent connected to this queuecall. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no agent is connected yet.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">duration_waiting</span></code> (Integer): Duration in seconds the caller waited in the queue before being connected to an agent or leaving.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">duration_service</span></code> (Integer): Duration in seconds the caller was being serviced by an agent.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the queuecall was created (call entered the queue).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_service</span></code> (string, ISO 8601): Timestamp when the agent was connected and service began. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if service has not started.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to this queuecall.</p></li>
@@ -225,10 +231,13 @@
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c7c1e226-8c86-4b43-9606-2d5bb2059a09&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-98a7-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;1fe1356f-3f7f-4ff9-9d33-08136b38f506&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;done&quot;</span><span class="p">,</span>
     <span class="s2">&quot;service_agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;duration_waiting&quot;</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span>
+    <span class="s2">&quot;duration_service&quot;</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:07:46.111715&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_service&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:08:04.811442&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:08:25.814885&quot;</span><span class="p">,</span>

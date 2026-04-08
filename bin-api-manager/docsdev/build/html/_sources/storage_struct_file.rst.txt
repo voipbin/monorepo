@@ -13,25 +13,29 @@ File
     {
         "id": "<string>",
         "customer_id": "<string>",
+        "owner_type": "<string>",
         "owner_id": "<string>",
         "reference_type": "<string>",
         "reference_id": "<string>",
+        "type": "<string>",
         "name": "<string>",
         "detail": "<string>",
         "filename": "<string>",
         "filesize": <number>,
         "uri_download": "<string>",
         "tm_download_expire": "<string>",
-        "tm_create": "2024-05-27 07:55:16.515315",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_create": "<string>",
+        "tm_update": "<string>",
+        "tm_delete": "<string>"
     }
 
 * ``id`` (UUID): The file's unique identifier. Returned when uploading a file via ``POST /storage_files`` or listing via ``GET /storage_files``.
 * ``customer_id`` (UUID): The customer who owns this file. Obtained from ``GET /customers``.
-* ``owner_id`` (UUID): The agent who uploaded or owns this file. Obtained from ``GET /agents``. Empty string if no specific owner.
+* ``owner_type`` (enum string): The type of owner for this file. Possible values: ``agent`` (owned by a specific agent), or empty string (no specific owner).
+* ``owner_id`` (UUID): The agent who uploaded or owns this file. When ``owner_type`` is ``agent``, obtained from ``GET /agents``. Set to ``00000000-0000-0000-0000-000000000000`` if no specific owner.
 * ``reference_type`` (enum string): The type of resource this file is associated with. See :ref:`Reference Type <storage-struct-file-reference-type>`.
 * ``reference_id`` (UUID): The ID of the associated resource. Depending on ``reference_type``, obtained from ``GET /recordings`` or other endpoints. Set to ``00000000-0000-0000-0000-000000000000`` if no reference.
+* ``type`` (enum string): The file type. See :ref:`File Type <storage-struct-file-type>`.
 * ``name`` (String): A human-readable name for the file. May be empty if not explicitly set.
 * ``detail`` (String): A longer description of the file's purpose or content. May be empty.
 * ``filename`` (String): The original filename of the uploaded file (e.g., ``screenshot.png``, ``call_recording.wav``).
@@ -54,9 +58,11 @@ Example
     {
         "id": "0c0c305c-7a55-4395-85a8-ae4860f01393",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "owner_type": "agent",
         "owner_id": "62005165-7592-4ff7-9076-55bf491023f2",
         "reference_type": "",
         "reference_id": "00000000-0000-0000-0000-000000000000",
+        "type": "",
         "name": "",
         "detail": "",
         "filename": "Screenshot from 2024-05-26 21-58-51.png",
@@ -81,3 +87,19 @@ Reference Type Description
 none           The file has no associated resource. Typically for manually uploaded files. The ``reference_id`` will be ``00000000-0000-0000-0000-000000000000``.
 recording      The file is associated with a recording. The ``reference_id`` is a recording ID from ``GET /recordings``.
 ============== ==============================
+
+.. _storage-struct-file-type:
+
+File Type
+---------
+
+All possible values for the ``type`` field:
+
+========= ==============================
+Type      Description
+========= ==============================
+(empty)   No specific type assigned.
+rag       A file used for RAG (Retrieval-Augmented Generation) knowledge base.
+talk      A file associated with talk/conversation context.
+recording A recording file.
+========= ==============================

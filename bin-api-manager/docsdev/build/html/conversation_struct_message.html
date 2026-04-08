@@ -193,14 +193,12 @@
 <span id="id1"></span><h2>Message<a class="headerlink" href="#conversation-struct-message-message" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;conversation_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="o">...</span>
-    <span class="p">},</span>
     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -211,12 +209,12 @@
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The message’s unique identifier within the conversation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s ID. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">conversation_id</span></code> (UUID): The parent conversation’s ID. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations</span></code> or from the URL path when sending messages.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): Whether the message is incoming or outgoing. See <a class="reference internal" href="#conversation-struct-message-direction"><span class="std std-ref">Direction</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The message’s delivery status (e.g., <code class="docutils literal notranslate"><span class="pre">sent</span></code>, <code class="docutils literal notranslate"><span class="pre">received</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The channel used for this message. See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (String): An identifier associated with the channel (e.g., a Line user ID or phone number).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): The sender’s address for this message. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The channel used for this message. See <span class="xref std std-ref">Reference type</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): An identifier associated with the channel reference.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (String): The message body text content.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">medias</span></code> (Array of Object): List of media attachments (images, videos, etc.) included with the message.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the message was created.</p></li>
@@ -232,18 +230,12 @@
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;cc46341b-f00a-452f-b527-19c85d030eaf&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;conversation_id&quot;</span><span class="p">:</span> <span class="s2">&quot;64558b45-40a8-43db-b814-9c0dbf6d47b5&quot;</span><span class="p">,</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;incoming&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;received&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;line&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;line&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-    <span class="p">},</span>
     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;안녕&quot;</span><span class="p">,</span>
     <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-06-24 04:28:51.558082&quot;</span><span class="p">,</span>

@@ -193,11 +193,13 @@
 <span id="id1"></span><h2>Campaigncall<a class="headerlink" href="#campaign-struct-campaigncall-campaigncall" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;outplan_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;outdial_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;outdial_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -211,18 +213,21 @@
     <span class="p">},</span>
     <span class="s2">&quot;destination_index&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;try_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-29 07:01:45.808944&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-29 07:02:48.304704&quot;</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The campaigncall’s unique identifier. Returned when listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigncalls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this campaigncall. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">campaign_id</span></code> (UUID): The parent campaign. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">outplan_id</span></code> (UUID): The outplan used for this dial attempt. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outplans</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">outdial_id</span></code> (UUID): The outdial containing the target. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">outdial_target_id</span></code> (UUID): The specific outdialtarget being dialed. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/outdials/{id}/targets</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">queue_id</span></code> (UUID): The queue for routing the answered call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID): The flow ID associated with this campaign call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if not assigned.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> (UUID): The activeflow executing the call actions. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of resource this campaigncall is linked to. See <a class="reference internal" href="#campaign-struct-campaigncall-reference-type"><span class="std std-ref">Reference Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the referenced resource (e.g., the call ID when <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">call</span></code>).</p></li>
@@ -234,16 +239,19 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">try_count</span></code> (Integer): The current attempt number for this destination.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the campaigncall was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to the campaigncall.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601, nullable): Timestamp when the campaigncall was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
 </ul>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;56347901-5bb9-422d-add5-5a2ca47fa737&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-98a7-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;183c0d5c-691e-42f3-af2b-9bffc2740f83&quot;</span><span class="p">,</span>
     <span class="s2">&quot;outplan_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;</span><span class="p">,</span>
     <span class="s2">&quot;outdial_id&quot;</span><span class="p">:</span> <span class="s2">&quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;</span><span class="p">,</span>
     <span class="s2">&quot;outdial_target_id&quot;</span><span class="p">:</span> <span class="s2">&quot;f50b169d-ce02-4bc9-a6e7-bb632c71e450&quot;</span><span class="p">,</span>
     <span class="s2">&quot;queue_id&quot;</span><span class="p">:</span> <span class="s2">&quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;02aad54d-270e-43c7-82c5-bf42502c8bc6&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a69189aa-7295-4c3a-b51f-df1dbbded5f6&quot;</span><span class="p">,</span>
@@ -266,7 +274,8 @@
     <span class="s2">&quot;destination_index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
     <span class="s2">&quot;try_count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-29 07:01:45.808944&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-29 07:02:48.304704&quot;</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-04-29 07:02:48.304704&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>

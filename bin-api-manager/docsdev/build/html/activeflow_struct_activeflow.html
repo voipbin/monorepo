@@ -198,10 +198,15 @@
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;on_complete_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;current_action&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">},</span>
     <span class="s2">&quot;forward_action_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;executed_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="o">...</span>
+    <span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -215,8 +220,11 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The activeflow’s current status. See detail <a class="reference internal" href="flow.html#activeflow-struct-activeflow-status"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The resource type that triggered this activeflow. See detail <a class="reference internal" href="flow.html#activeflow-struct-activeflow-reference-type"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the resource that triggered this activeflow (e.g., a call ID if <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">call</span></code>). Obtained from the corresponding resource endpoint (e.g., <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_activeflow_id</span></code> (UUID): The parent activeflow’s ID if this is a sub-flow. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if this is not a sub-flow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">on_complete_flow_id</span></code> (UUID): Flow to execute when this activeflow completes. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no completion flow is assigned.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">current_action</span></code> (Object): The action currently being executed. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">forward_action_id</span></code> (UUID): The ID of the next action to execute. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if sequential (next in array).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">executed_actions</span></code> (Array of Object): History of actions that have been executed during this activeflow’s lifetime. Each element is an action object. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the activeflow was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp of the last state change.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the activeflow was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
@@ -235,6 +243,8 @@
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ended&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;fd581a20-2606-47fd-a7e8-6bba7c294170&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reference_activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;on_complete_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;current_action&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;93ebcadb-ecae-4291-8d49-ca81a926b8b3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
@@ -245,6 +255,7 @@
         <span class="p">}</span>
     <span class="p">},</span>
     <span class="s2">&quot;forward_action_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;executed_actions&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2023-04-06 14:53:12.569073&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2023-04-06 14:54:24.652558&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>

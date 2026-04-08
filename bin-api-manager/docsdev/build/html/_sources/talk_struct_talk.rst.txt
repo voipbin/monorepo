@@ -14,6 +14,9 @@ Talk
         "id": "<string>",
         "customer_id": "<string>",
         "type": "<string>",
+        "name": "<string>",
+        "detail": "<string>",
+        "member_count": "<integer>",
         "tm_create": "<string>",
         "tm_update": "<string>",
         "tm_delete": "<string>"
@@ -22,6 +25,9 @@ Talk
 * ``id`` (UUID): The talk's unique identifier. Returned when creating via ``POST /service_agents/talk_chats`` or listing via ``GET /service_agents/talk_chats``.
 * ``customer_id`` (UUID): The customer's unique identifier. Obtained from ``GET /customers``.
 * ``type`` (enum string): The talk's type. See :ref:`Type <talk-struct-talk-type>`.
+* ``name`` (String): The talk's name or title (e.g., "General", "Project Alpha").
+* ``detail`` (String): Additional description or context for the talk.
+* ``member_count`` (Integer): The number of members currently in the talk.
 * ``tm_create`` (string, ISO 8601): Timestamp when the talk was created.
 * ``tm_update`` (string, ISO 8601): Timestamp when the talk was last updated.
 * ``tm_delete`` (string, ISO 8601): Timestamp when the talk was deleted (soft delete).
@@ -38,7 +44,10 @@ Example
     {
         "id": "e8b2e976-f043-44c8-bb89-e214e225e813",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
-        "type": "normal",
+        "type": "direct",
+        "name": "Project Alpha",
+        "detail": "Discussion channel for Project Alpha",
+        "member_count": 3,
         "tm_create": "2024-01-17 10:30:00.000000",
         "tm_update": "2024-01-17 10:30:00.000000",
         "tm_delete": ""
@@ -48,11 +57,13 @@ Example
 
 Type
 ----
-Talk's type determines whether it's a one-on-one or group conversation.
+Talk's type determines the chat channel style.
 
 =========== ============================================================
 Type        Description
 =========== ============================================================
-normal      1:1 talk between two agents. Private direct conversation.
-group       Group talk with multiple participants. Team discussions.
+direct      1:1 direct message between two users. Private conversation.
+group       Group direct message. Private multi-user chat, invite-only.
+talk        Public open channel. Topic-based and searchable
+            (e.g., #general, #random).
 =========== ============================================================

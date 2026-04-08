@@ -13,6 +13,8 @@ Route
     {
         "id": "<string>",
         "customer_id": "<string>",
+        "name": "<string>",
+        "detail": "<string>",
         "provider_id": "<string>",
         "priority": <integer>,
         "target": "<string>",
@@ -23,6 +25,8 @@ Route
 
 * ``id`` (UUID): The route's unique identifier. Returned when creating via ``POST /routes`` or listing via ``GET /routes``.
 * ``customer_id`` (UUID): The customer this route applies to. Obtained from ``GET /customers``. The special value ``00000000-0000-0000-0000-000000000001`` means this route applies to all customers (system default).
+* ``name`` (String): A human-readable label for the route. Free-form text for organizational use.
+* ``detail`` (String): A longer description of the route's purpose or configuration notes.
 * ``provider_id`` (UUID): The provider used for outbound calls on this route. Obtained from the ``id`` field of ``GET /providers``.
 * ``priority`` (Integer): Route priority for failover ordering. Lower values are attempted first (1 = highest priority). Multiple routes with different priorities enable automatic failover.
 * ``target`` (String): Target country code prefix for destination matching (e.g., ``+82``, ``+1``). Set to ``"all"`` to match every destination.
@@ -42,6 +46,8 @@ Example
     {
         "id": "491b6858-5357-11ed-b753-8fd49cd36340",
         "customer_id": "00000000-0000-0000-0000-000000000001",
+        "name": "Default route",
+        "detail": "System default route for all destinations",
         "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
         "priority": 1,
         "target": "all",

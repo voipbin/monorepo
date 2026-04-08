@@ -194,6 +194,7 @@
 <p>Queue struct</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;routing_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -201,18 +202,14 @@
         <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">&quot;wait_actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="n">action</span><span class="o">...</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
+    <span class="s2">&quot;wait_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;service_timeout&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;wait_queue_call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;wait_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">],</span>
-    <span class="s2">&quot;service_queue_call_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;service_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
         <span class="o">...</span>
     <span class="p">],</span>
@@ -220,31 +217,28 @@
     <span class="s2">&quot;total_incoming_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;total_serviced_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;total_abandoned_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;total_waittime&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;total_service_duration&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The queue’s unique identifier. Returned when creating a queue via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues</span></code> or when listing queues via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this queue. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): Human-readable name for the queue.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Detailed description of the queue’s purpose.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">routing_method</span></code> (enum string): The queue’s call routing method for selecting agents. See <a class="reference internal" href="#queue-struct-queue-routing-method"><span class="std std-ref">Routing Method</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID): List of tag IDs that agents must match to receive calls from this queue. Each ID is obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Agents must have <strong>all</strong> listed tags (AND logic).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">wait_actions</span></code> (Array of Object): List of flow actions executed while callers wait in the queue. Each action follows the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a> structure. These loop until an agent is found or the wait timeout is reached.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_flow_id</span></code> (UUID): The flow to execute while callers wait in the queue. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no wait flow is assigned.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">wait_timeout</span></code> (Integer): Maximum time in milliseconds a caller can wait in the queue before being removed. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout (wait indefinitely).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">service_timeout</span></code> (Integer): Maximum time in milliseconds a caller and agent can talk before the call is ended. Set to <code class="docutils literal notranslate"><span class="pre">0</span></code> for no timeout (talk indefinitely).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">wait_queue_call_ids</span></code> (Array of UUID): List of queuecall IDs currently in the waiting state. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls/{id}</span></code> to retrieve details. Read-only, managed by the system.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">service_queue_call_ids</span></code> (Array of UUID): List of queuecall IDs currently in the service state (connected to an agent). Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls/{id}</span></code>. Read-only, managed by the system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_queuecall_ids</span></code> (Array of UUID): List of queuecall IDs currently in the waiting state. Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls/{id}</span></code> to retrieve details. Read-only, managed by the system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">service_queuecall_ids</span></code> (Array of UUID): List of queuecall IDs currently in the service state (connected to an agent). Each ID can be used with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queuecalls/{id}</span></code>. Read-only, managed by the system.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> (String): Hash for direct queue access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>. Regenerate via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/queues/{id}/direct-hash-regenerate</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">total_incoming_count</span></code> (Integer): Total number of calls that have entered this queue. Read-only.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">total_serviced_count</span></code> (Integer): Total number of calls that were successfully connected to an agent. Read-only.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">total_abandoned_count</span></code> (Integer): Total number of calls that left the queue without being serviced. Read-only.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">total_waittime</span></code> (Integer): Sum of all calls’ waiting time in milliseconds. Read-only.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">total_service_duration</span></code> (Integer): Sum of all calls’ service (agent conversation) time in milliseconds. Read-only.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the queue was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any queue property.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the queue was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>

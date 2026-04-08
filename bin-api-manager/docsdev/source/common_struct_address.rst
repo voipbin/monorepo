@@ -79,9 +79,13 @@ Defines types of address.
 Type        Description
 =========== =====================================================================
 agent       Address for calling an agent. ``target`` must be the agent's UUID, obtained from ``GET /agents``.
+ai          Address for an AI resource. ``target`` must be the AI resource's UUID.
+ai_team     Address for an AI team. ``target`` must be the AI team's UUID.
+conference  Address for a conference. ``target`` must be the conference's UUID, obtained from ``GET /conferences``.
+email       Address for email. ``target`` must be a valid email address (e.g., ``user@example.com``).
 extension   Address for calling an extension number. ``target`` is the extension number string (e.g., ``2001``).
+line        Line type address. Used for LINE messaging integrations. ``target`` is the LINE user or channel ID.
 sip         SIP protocol address. ``target`` is a SIP URI (e.g., ``user@domain.com``).
 tel         Telephone number address. ``target`` must be in E.164 format (e.g., ``+15551234567``).
-line        Line type address. Used for LINE messaging integrations. ``target`` is the LINE user or channel ID.
 =========== =====================================================================
 

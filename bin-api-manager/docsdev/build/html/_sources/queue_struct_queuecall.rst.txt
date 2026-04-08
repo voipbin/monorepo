@@ -13,10 +13,13 @@ Queuecall struct
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "reference_type": "<string>",
         "reference_id": "<string>",
         "status": "<string>",
         "service_agent_id": "<string>",
+        "duration_waiting": <number>,
+        "duration_service": <number>,
         "tm_create": "<string>",
         "tm_service": "<string>",
         "tm_update": "<string>",
@@ -24,10 +27,13 @@ Queuecall struct
     }
 
 * ``id`` (UUID): The queuecall's unique identifier. Returned when a call enters a queue or when listing queuecalls via ``GET /queuecalls``.
+* ``customer_id`` (UUID): The customer who owns this queuecall. Obtained from the ``id`` field of ``GET /customers``.
 * ``reference_type`` (enum string): The type of the referenced resource. See :ref:`Reference type <queue-struct-queuecall-reference_type>`.
 * ``reference_id`` (UUID): The ID of the referenced resource (e.g., the call). Obtained from ``GET /calls`` when reference_type is ``call``.
 * ``status`` (enum string): The queuecall's current status. See :ref:`Status <queue-struct-queuecall-type>`.
 * ``service_agent_id`` (UUID): The ID of the agent connected to this queuecall. Obtained from ``GET /agents``. Set to ``00000000-0000-0000-0000-000000000000`` if no agent is connected yet.
+* ``duration_waiting`` (Integer): Duration in seconds the caller waited in the queue before being connected to an agent or leaving.
+* ``duration_service`` (Integer): Duration in seconds the caller was being serviced by an agent.
 * ``tm_create`` (string, ISO 8601): Timestamp when the queuecall was created (call entered the queue).
 * ``tm_service`` (string, ISO 8601): Timestamp when the agent was connected and service began. Set to ``9999-01-01 00:00:00.000000`` if service has not started.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to this queuecall.
@@ -44,10 +50,13 @@ Example
 
     {
         "id": "c7c1e226-8c86-4b43-9606-2d5bb2059a09",
+        "customer_id": "5e4a0680-804e-11ec-98a7-2fea5968d85b",
         "reference_type": "call",
         "reference_id": "1fe1356f-3f7f-4ff9-9d33-08136b38f506",
         "status": "done",
         "service_agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+        "duration_waiting": 18,
+        "duration_service": 21,
         "tm_create": "2022-03-29 15:07:46.111715",
         "tm_service": "2022-03-29 15:08:04.811442",
         "tm_update": "2022-03-29 15:08:25.814885",

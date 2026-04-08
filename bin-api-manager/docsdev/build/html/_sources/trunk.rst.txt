@@ -10,3 +10,4 @@ Configure SIP trunks for Bring Your Own Carrier (BYOC), connecting your existing
 .. include:: trunk_overview.rst
 .. include:: trunk_overview_trunking.rst
 .. include:: trunk_overview_domain_name.rst
+.. include:: trunk_struct_trunk.rst

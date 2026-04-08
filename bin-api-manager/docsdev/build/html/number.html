@@ -653,6 +653,7 @@ check for flow execution errors</p></td>
 <span id="id2"></span><h3>Number<a class="headerlink" href="#number-struct-number-number" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;call_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -665,6 +666,8 @@ check for flow execution errors</p></td>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
     <span class="p">},</span>
+    <span class="s2">&quot;tm_purchase&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_renew&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -673,6 +676,7 @@ check for flow execution errors</p></td>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The number’s unique identifier. Returned when creating a number via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this number. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">number</span></code> (String, E.164): The phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must start with <code class="docutils literal notranslate"><span class="pre">+</span></code>. Virtual numbers use the <code class="docutils literal notranslate"><span class="pre">+899</span></code> prefix (e.g., <code class="docutils literal notranslate"><span class="pre">+899100000001</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The number’s type. See <a class="reference internal" href="number_struct_number.html#number-struct-number-type"><span class="std std-ref">Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">call_flow_id</span></code> (UUID): The flow to execute for inbound calls. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no flow is assigned.</p></li>
@@ -687,6 +691,8 @@ check for flow execution errors</p></td>
 <li><p><code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (Boolean): When <code class="docutils literal notranslate"><span class="pre">true</span></code>, RTPEngine captures RTP traffic as PCAP files for calls to this number. This flag is OR’d with the customer-level <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> – if either is <code class="docutils literal notranslate"><span class="pre">true</span></code>, capture is enabled. Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
 </ul>
 </li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_purchase</span></code> (string, ISO 8601, nullable): Timestamp when the number was purchased from the provider. <code class="docutils literal notranslate"><span class="pre">null</span></code> if not yet purchased or if the number is virtual.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_renew</span></code> (string, ISO 8601, nullable): Timestamp when the number was last renewed with the provider. <code class="docutils literal notranslate"><span class="pre">null</span></code> if never renewed.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the number was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any number property.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the number was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
@@ -700,6 +706,7 @@ check for flow execution errors</p></td>
 <h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0b266038-844b-11ec-97d8-63ba531361ce&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+821100000001&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
     <span class="s2">&quot;call_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d157ce07-0360-4cad-9007-c8ab89fccf9c&quot;</span><span class="p">,</span>
@@ -712,6 +719,8 @@ check for flow execution errors</p></td>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
     <span class="p">},</span>
+    <span class="s2">&quot;tm_purchase&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-01 00:00:00.000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_renew&quot;</span><span class="p">:</span> <span class="s2">&quot;2023-02-01 00:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-02-01 00:00:00.000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-20 19:37:53.135685&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>

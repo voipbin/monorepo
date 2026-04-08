@@ -673,6 +673,7 @@ character limit to 70</p></td>
 <p>Message struct</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sms&quot;</span><span class="p">,</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
@@ -705,6 +706,7 @@ character limit to 70</p></td>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The message’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/messages</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s ID. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The message type. See <a class="reference internal" href="message_struct_message.html#message-struct-message-type"><span class="std std-ref">Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): Source address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">targets</span></code> (Array of Object): List of delivery targets with per-destination status. See <a class="reference internal" href="message_struct_message.html#message-struct-message-target"><span class="std std-ref">Target</span></a>.</p></li>

@@ -12,6 +12,7 @@ Outdial
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "campaign_id": "<string>",
         "name": "<string>",
         "detail": "<string>",
@@ -22,6 +23,7 @@ Outdial
     }
 
 * ``id`` (UUID): The outdial's unique identifier. Returned when creating via ``POST /outdials`` or listing via ``GET /outdials``.
+* ``customer_id`` (UUID): The customer who owns this outdial. Obtained from the ``id`` field of ``GET /customers``.
 * ``campaign_id`` (UUID): The campaign this outdial is attached to. Obtained from the ``id`` field of ``GET /campaigns``. Set to ``00000000-0000-0000-0000-000000000000`` if not attached to any campaign.
 * ``name`` (String): Human-readable name for the outdial.
 * ``detail`` (String): Detailed description of the outdial's purpose.

@@ -16,6 +16,7 @@ Billing account
         "name": "",
         "detail": "",
         "plan_type": "free",
+        "plan_status": "active",
         "balance_credit": 69772630,
         "balance_token": 650,
         "payment_type": "",
@@ -34,6 +35,7 @@ Billing account
 * ``name`` (String): The billing account's display name. Optional.
 * ``detail`` (String): An optional description of the billing account.
 * ``plan_type`` (enum string): The plan tier of the account. Determines resource creation limits and monthly token allocations. Values: ``free``, ``basic``, ``professional``, ``unlimited``.
+* ``plan_status`` (enum string): The account plan status. Values: ``active`` (plan is active and operational), ``canceling`` (plan cancellation has been requested but is not yet effective).
 * ``balance_credit`` (Integer, int64 micros): Credit balance in micros. 1 USD = 1,000,000 micros. Example: ``69772630`` = $69.77. Used for PSTN calls, number purchases, and token overflow charges.
 * ``balance_token`` (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and TTS (3 tokens/minute). Replenished monthly via automated top-up.
 * ``payment_type`` (String): Payment type. Reserved for future use.

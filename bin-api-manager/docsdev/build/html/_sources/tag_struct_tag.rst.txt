@@ -12,6 +12,7 @@ Tag
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "name": "<string>",
         "detail": "<string>",
         "tm_create": "<string>",
@@ -20,6 +21,7 @@ Tag
     }
 
 * ``id`` (UUID): The tag's unique identifier. Returned when creating via ``POST /tags`` or listing via ``GET /tags``.
+* ``customer_id`` (UUID): The customer who owns this tag. Obtained from the ``id`` field of ``GET /customers``.
 * ``name`` (String): Human-readable name for the tag. Must be unique per customer account. Used for matching agents to queues.
 * ``detail`` (String): Detailed description of what this tag represents.
 * ``tm_create`` (string, ISO 8601): Timestamp when the tag was created.

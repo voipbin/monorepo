@@ -193,16 +193,20 @@
 <span id="id1"></span><h2>Conversation<a class="headerlink" href="#conversation-struct-conversation-conversation" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dialog_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;self&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">},</span>
-    <span class="s2">&quot;participants&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;peer&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
-    <span class="p">],</span>
+    <span class="p">},</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
@@ -211,12 +215,16 @@
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The conversation’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s ID. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): The type of the owner of this conversation (e.g., <code class="docutils literal notranslate"><span class="pre">agent</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The owner’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">account_id</span></code> (UUID): The messaging account ID associated with this conversation.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable name for the conversation (e.g., “Customer Support #1234”).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Additional description or context for the conversation.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The channel type that initiated this conversation. See <a class="reference internal" href="#conversation-struct-conversation-reference-type"><span class="std std-ref">Reference type</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (String): An identifier associated with the reference channel (e.g., a phone number or Line user ID).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): The conversation’s source address. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">participants</span></code> (Array of Object): List of participant addresses in this conversation. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The channel type of this conversation. See <a class="reference internal" href="#conversation-struct-conversation-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dialog_id</span></code> (String): An identifier associated with the channel dialog (e.g., a phone number or Line chatroom ID).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">self</span></code> (Object): The local party’s address in this conversation. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">peer</span></code> (Object): The remote party’s address in this conversation. See <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the conversation was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp of deletion (soft delete).</p></li>
@@ -230,33 +238,28 @@
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;bdc9d9f5-706c-4e2d-9be7-7dc1e5fd45a0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;3a4b5c6d-7e8f-9012-3456-789abcdef012&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation detail&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;+673802&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dialog_id&quot;</span><span class="p">:</span> <span class="s2">&quot;+673802&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;self&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
         <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+14703298699&quot;</span><span class="p">,</span>
         <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
     <span class="p">},</span>
-    <span class="s2">&quot;participants&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+14703298699&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+673802&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
+    <span class="s2">&quot;peer&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+673802&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-06-23 05:05:40.950834&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-06-23 05:05:40.950842&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
@@ -265,12 +268,12 @@
 </div>
 </section>
 </section>
-<section id="reference-type">
-<span id="conversation-struct-conversation-reference-type"></span><h2>Reference type<a class="headerlink" href="#reference-type" title="Link to this heading"></a></h2>
-<p>Conversation’s reference type.</p>
+<section id="type">
+<span id="conversation-struct-conversation-type"></span><h2>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h2>
+<p>Conversation’s type.</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Reference type</p></th>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
 </thead>
@@ -299,7 +302,7 @@
 <li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#reference-type">Reference type</a></li>
+<li><a class="reference internal" href="#type">Type</a></li>
 </ul>
 </li>
 </ul>

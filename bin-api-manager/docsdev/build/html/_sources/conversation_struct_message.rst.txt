@@ -12,14 +12,12 @@ Message
 
     {
         "id": "<string>",
+        "customer_id": "<string>",
         "conversation_id": "<string>",
         "direction": "<string>",
         "status": "<string>",
         "reference_type": "<string>",
         "reference_id": "<string>",
-        "source": {
-            ...
-        },
         "text": "<string>",
         "medias": [],
         "tm_create": "<string>",
@@ -28,12 +26,12 @@ Message
     }
 
 * ``id`` (UUID): The message's unique identifier within the conversation.
+* ``customer_id`` (UUID): The customer's ID. Obtained from the ``id`` field of ``GET /customers``.
 * ``conversation_id`` (UUID): The parent conversation's ID. Obtained from ``GET /conversations`` or from the URL path when sending messages.
 * ``direction`` (enum string): Whether the message is incoming or outgoing. See :ref:`Direction <conversation-struct-message-direction>`.
 * ``status`` (enum string): The message's delivery status (e.g., ``sent``, ``received``, ``failed``).
 * ``reference_type`` (enum string): The channel used for this message. See :ref:`Reference type <conversation-struct-conversation-reference_type>`.
-* ``reference_id`` (String): An identifier associated with the channel (e.g., a Line user ID or phone number).
-* ``source`` (Object): The sender's address for this message. See :ref:`Address <common-struct-address>`.
+* ``reference_id`` (UUID): An identifier associated with the channel reference.
 * ``text`` (String): The message body text content.
 * ``medias`` (Array of Object): List of media attachments (images, videos, etc.) included with the message.
 * ``tm_create`` (string, ISO 8601): Timestamp when the message was created.
@@ -51,18 +49,12 @@ Example
 
     {
         "id": "cc46341b-f00a-452f-b527-19c85d030eaf",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "conversation_id": "64558b45-40a8-43db-b814-9c0dbf6d47b5",
         "direction": "incoming",
         "status": "received",
         "reference_type": "line",
         "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-        "source": {
-            "type": "line",
-            "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
-            "target_name": "",
-            "name": "",
-            "detail": ""
-        },
         "text": "안녕",
         "medias": [],
         "tm_create": "2022-06-24 04:28:51.558082",

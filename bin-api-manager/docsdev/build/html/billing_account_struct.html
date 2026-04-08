@@ -197,6 +197,7 @@
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plan_status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
     <span class="s2">&quot;balance_credit&quot;</span><span class="p">:</span> <span class="mi">69772630</span><span class="p">,</span>
     <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">650</span><span class="p">,</span>
     <span class="s2">&quot;payment_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -217,6 +218,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): The billing account’s display name. Optional.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description of the billing account.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">plan_type</span></code> (enum string): The plan tier of the account. Determines resource creation limits and monthly token allocations. Values: <code class="docutils literal notranslate"><span class="pre">free</span></code>, <code class="docutils literal notranslate"><span class="pre">basic</span></code>, <code class="docutils literal notranslate"><span class="pre">professional</span></code>, <code class="docutils literal notranslate"><span class="pre">unlimited</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plan_status</span></code> (enum string): The account plan status. Values: <code class="docutils literal notranslate"><span class="pre">active</span></code> (plan is active and operational), <code class="docutils literal notranslate"><span class="pre">canceling</span></code> (plan cancellation has been requested but is not yet effective).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> (Integer, int64 micros): Credit balance in micros. 1 USD = 1,000,000 micros. Example: <code class="docutils literal notranslate"><span class="pre">69772630</span></code> = $69.77. Used for PSTN calls, number purchases, and token overflow charges.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">balance_token</span></code> (Integer, int64): Current token balance. Tokens are consumed by VN calls (1 token/minute) and TTS (3 tokens/minute). Replenished monthly via automated top-up.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">payment_type</span></code> (String): Payment type. Reserved for future use.</p></li>

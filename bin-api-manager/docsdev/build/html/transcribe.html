@@ -1352,24 +1352,30 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;on_end_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The transcribe session’s unique identifier. Returned when creating a transcription via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this transcription. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> (UUID): The activeflow ID associated with this transcription session. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no activeflow is associated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">on_end_flow_id</span></code> (UUID): The flow to execute when the transcription session ends. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no on-end flow is assigned.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of resource being transcribed. See <a class="reference internal" href="transcribe_struct.html#transcribe-struct-transcribe-reference-type"><span class="std std-ref">Reference Type</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the resource being transcribed. Depending on <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>, or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The transcription session’s current status. See <a class="reference internal" href="transcribe_struct.html#transcribe-struct-transcribe-status"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">language</span></code> (String, BCP47): The language code for transcription (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code>). See <a class="reference internal" href="transcribe_overview.html#transcribe-overview-supported-languages"><span class="std std-ref">Supported Languages</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): The transcription direction. See <a class="reference internal" href="transcribe_struct.html#transcribe-struct-transcribe-direction"><span class="std std-ref">Direction</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provider</span></code> (enum string, optional): The STT provider used for this transcription. See <a class="reference internal" href="transcribe_struct.html#transcribe-struct-transcribe-provider"><span class="std std-ref">Provider</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the transcribe session was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any transcribe property.</p></li>
@@ -1385,10 +1391,13 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;bbf08426-3979-41bc-a544-5fc92c237848&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;on_end_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;12f8f1c9-a6c3-4f81-93db-ae445dcf188f&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;done&quot;</span><span class="p">,</span>
     <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
     <span class="s2">&quot;provider&quot;</span><span class="p">:</span> <span class="s2">&quot;gcp&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 07:17:04.091019&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-04-01 13:25:32.428602&quot;</span><span class="p">,</span>
@@ -1439,6 +1448,28 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </tbody>
 </table>
 <p>When creating a transcription, the <code class="docutils literal notranslate"><span class="pre">provider</span></code> field is optional. If omitted, VoIPBIN selects the best available provider automatically (default order: GCP, then AWS). If a specific provider is requested but unavailable, the system falls back to the default order.</p>
+</section>
+<section id="direction">
+<span id="transcribe-struct-transcribe-direction"></span><h3>direction<a class="headerlink" href="#direction" title="Link to this heading"></a></h3>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">direction</span></code> field on the Transcribe resource:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Direction</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>both</p></td>
+<td><p>Transcribe both incoming and outgoing audio directions.</p></td>
+</tr>
+<tr class="row-odd"><td><p>in</p></td>
+<td><p>Transcribe only incoming audio (what the remote party says).</p></td>
+</tr>
+<tr class="row-even"><td><p>out</p></td>
+<td><p>Transcribe only outgoing audio (what VoIPBIN sends).</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="status">
 <span id="transcribe-struct-transcribe-status"></span><h3>status<a class="headerlink" href="#status" title="Link to this heading"></a></h3>
@@ -1501,8 +1532,8 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </div>
 </section>
 </section>
-<section id="direction">
-<span id="transcribe-struct-transcription-direction"></span><h3>direction<a class="headerlink" href="#direction" title="Link to this heading"></a></h3>
+<section id="transcribe-struct-transcription-direction">
+<span id="id9"></span><h3>direction<a class="headerlink" href="#transcribe-struct-transcription-direction" title="Link to this heading"></a></h3>
 <p>All possible values for the <code class="docutils literal notranslate"><span class="pre">direction</span></code> field:</p>
 <table class="docutils align-default">
 <thead>
@@ -1523,8 +1554,8 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </section>
 <section id="speech-webhook-message">
 <span id="transcribe-struct-speech-webhook"></span><h2>Speech Webhook Message<a class="headerlink" href="#speech-webhook-message" title="Link to this heading"></a></h2>
-<section id="id9">
-<h3>Speech Webhook Message<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<section id="id10">
+<h3>Speech Webhook Message<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
 <p>The speech webhook message is the payload delivered for <code class="docutils literal notranslate"><span class="pre">transcribe_speech_started</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe_speech_interim</span></code>, and <code class="docutils literal notranslate"><span class="pre">transcribe_speech_ended</span></code> events. These events are generated during a real-time streaming transcription session when voice activity is detected.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1548,8 +1579,8 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_event</span></code> (string, ISO 8601): Timestamp when the speech event occurred.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the speech event record was created.</p></li>
 </ul>
-<section id="id10">
-<h4>Example<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<section id="id11">
+<h4>Example<a class="headerlink" href="#id11" title="Link to this heading"></a></h4>
 <p><strong>transcribe_speech_started:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe_speech_started&quot;</span><span class="p">,</span>
@@ -1652,6 +1683,7 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </li>
 <li><a class="reference internal" href="#reference-type">reference_type</a></li>
 <li><a class="reference internal" href="#provider">provider</a></li>
+<li><a class="reference internal" href="#direction">direction</a></li>
 <li><a class="reference internal" href="#status">status</a></li>
 </ul>
 </li>
@@ -1660,12 +1692,12 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 <li><a class="reference internal" href="#id8">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#direction">direction</a></li>
+<li><a class="reference internal" href="#transcribe-struct-transcription-direction">direction</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#speech-webhook-message">Speech Webhook Message</a><ul>
-<li><a class="reference internal" href="#id9">Speech Webhook Message</a><ul>
-<li><a class="reference internal" href="#id10">Example</a></li>
+<li><a class="reference internal" href="#id10">Speech Webhook Message</a><ul>
+<li><a class="reference internal" href="#id11">Example</a></li>
 </ul>
 </li>
 </ul>
