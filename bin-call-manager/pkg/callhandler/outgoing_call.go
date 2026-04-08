@@ -178,7 +178,12 @@ func (h *callHandler) CreateCallOutgoing(
 	// create channel id
 	channelID := h.utilHandler.UUIDCreate().String()
 
-	// apply customer's default outgoing source number if source is empty for tel destinations
+	// Apply customer's default outgoing source number when the source doesn't start with "+"
+	// (which means it's not a valid E.164 number). Without a valid E.164 source,
+	// getSourceForOutgoingCall would set the caller ID to "anonymous".
+	// Fail-open: if the number lookup fails (e.g., number deleted, service unavailable),
+	// the call proceeds with the original source and will get "anonymous" caller ID.
+	// This is intentional to avoid blocking calls due to transient number-manager failures.
 	if destination.Type == commonaddress.TypeTel && !strings.HasPrefix(source.Target, "+") && cu != nil && cu.DefaultOutgoingSourceNumberID != uuid.Nil {
 		defaultNum, err := h.reqHandler.NumberV1NumberGet(ctx, cu.DefaultOutgoingSourceNumberID)
 		if err != nil {

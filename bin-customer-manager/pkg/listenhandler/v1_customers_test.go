@@ -475,6 +475,70 @@ func Test_processV1CustomersIDBillingAccountIDPut(t *testing.T) {
 	}
 }
 
+func Test_processV1CustomersIDDefaultOutgoingSourceNumberIDPut(t *testing.T) {
+
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		id                            uuid.UUID
+		defaultOutgoingSourceNumberID uuid.UUID
+
+		responseCustomer *customer.Customer
+		expectRes        *sock.Response
+	}{
+		{
+			name: "normal",
+			request: &sock.Request{
+				URI:      "/v1/customers/cc2cedde-0f90-11ee-a04e-1723e1a00731/default_outgoing_source_number_id",
+				Method:   sock.RequestMethodPut,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"default_outgoing_source_number_id":"e1f2a3b4-c5d6-7890-abcd-ef1234567890"}`),
+			},
+
+			id:                            uuid.FromStringOrNil("cc2cedde-0f90-11ee-a04e-1723e1a00731"),
+			defaultOutgoingSourceNumberID: uuid.FromStringOrNil("e1f2a3b4-c5d6-7890-abcd-ef1234567890"),
+
+			responseCustomer: &customer.Customer{
+				ID:                            uuid.FromStringOrNil("cc2cedde-0f90-11ee-a04e-1723e1a00731"),
+				DefaultOutgoingSourceNumberID: uuid.FromStringOrNil("e1f2a3b4-c5d6-7890-abcd-ef1234567890"),
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"cc2cedde-0f90-11ee-a04e-1723e1a00731","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"e1f2a3b4-c5d6-7890-abcd-ef1234567890","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockCustomer := customerhandler.NewMockCustomerHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:     mockSock,
+				reqHandler:      mockReq,
+				customerHandler: mockCustomer,
+			}
+
+			mockCustomer.EXPECT().UpdateDefaultOutgoingSourceNumberID(gomock.Any(), tt.id, tt.defaultOutgoingSourceNumberID).Return(tt.responseCustomer, nil)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_processV1CustomersIDMetadataPut(t *testing.T) {
 
 	tests := []struct {

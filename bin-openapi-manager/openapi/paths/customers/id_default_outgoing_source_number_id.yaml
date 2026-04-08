@@ -25,6 +25,7 @@ put:
             - default_outgoing_source_number_id
   responses:
     '200':
+      description: The updated customer information.
       content:
         application/json:
           schema:

@@ -6536,6 +6536,7 @@
         },
         "responses": {
           "200": {
+            "description": "The updated customer information.",
             "content": {
               "application/json": {
                 "schema": {

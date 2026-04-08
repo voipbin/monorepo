@@ -534,6 +534,17 @@ func (h *serviceHandler) CustomerUpdateDefaultOutgoingSourceNumberID(ctx context
 		return nil, err
 	}
 
+	// validate the number exists and belongs to this customer
+	num, err := h.numberGet(ctx, defaultOutgoingSourceNumberID)
+	if err != nil {
+		log.Errorf("Could not validate the number info. err: %v", err)
+		return nil, err
+	}
+	if num.CustomerID != customerID {
+		log.Infof("The number does not belong to this customer. number_customer_id: %s", num.CustomerID)
+		return nil, fmt.Errorf("the number does not belong to this customer")
+	}
+
 	res, err := h.reqHandler.CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx, customerID, defaultOutgoingSourceNumberID)
 	if err != nil {
 		log.Errorf("Could not update the customer's default outgoing source number id. err: %v", err)
@@ -629,6 +640,17 @@ func (h *serviceHandler) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx con
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	// validate the number exists and belongs to the agent's customer
+	num, err := h.numberGet(ctx, defaultOutgoingSourceNumberID)
+	if err != nil {
+		log.Errorf("Could not validate the number info. err: %v", err)
+		return nil, err
+	}
+	if !h.hasPermission(ctx, a, num.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission for this number.")
 		return nil, fmt.Errorf("agent has no permission")
 	}
 

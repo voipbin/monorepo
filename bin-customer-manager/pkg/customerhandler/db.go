@@ -213,8 +213,8 @@ func (h *customerHandler) UpdateBillingAccountID(ctx context.Context, id uuid.UU
 // UpdateDefaultOutgoingSourceNumberID updates the customer's default outgoing source number id.
 func (h *customerHandler) UpdateDefaultOutgoingSourceNumberID(ctx context.Context, id uuid.UUID, defaultOutgoingSourceNumberID uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "UpdateDefaultOutgoingSourceNumberID",
-		"user_id": id,
+		"func":        "UpdateDefaultOutgoingSourceNumberID",
+		"customer_id": id,
 	})
 	log.Debug("Updating the customer's default outgoing source number id.")
 
