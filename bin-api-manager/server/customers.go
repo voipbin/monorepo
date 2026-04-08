@@ -247,6 +247,52 @@ func (h *server) PutCustomersIdBillingAccountId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
+func (h *server) PutCustomersIdDefaultOutgoingSourceNumberId(c *gin.Context, id string) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PutCustomersIdDefaultOutgoingSourceNumberId",
+		"request_address": c.ClientIP,
+		"customer_id":     id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		c.AbortWithStatus(400)
+		return
+	}
+	log = log.WithField("agent", a)
+
+	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	var req openapi_server.PutCustomersIdDefaultOutgoingSourceNumberIdJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	defaultOutgoingSourceNumberID := uuid.FromStringOrNil(req.DefaultOutgoingSourceNumberId.String())
+	if defaultOutgoingSourceNumberID == uuid.Nil {
+		log.Error("Could not parse the default outgoing source number id.")
+		c.AbortWithStatus(400)
+		return
+	}
+
+	res, err := h.serviceHandler.CustomerUpdateDefaultOutgoingSourceNumberID(c.Request.Context(), a, target, defaultOutgoingSourceNumberID)
+	if err != nil {
+		log.Errorf("Could not update the customer. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) PutCustomersIdMetadata(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PutCustomersIdMetadata",

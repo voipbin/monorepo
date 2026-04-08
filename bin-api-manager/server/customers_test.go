@@ -62,7 +62,7 @@ func Test_customersPOST(t *testing.T) {
 			expectAddress:       "somewhere",
 			expectWebhookMethod: cscustomer.WebhookMethodPost,
 			expectWebhookURI:    "test.com",
-			expectRes:           `{"id":"271353a8-83f3-11ec-9386-8be19d563155","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"271353a8-83f3-11ec-9386-8be19d563155","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -148,7 +148,7 @@ func Test_customersGet(t *testing.T) {
 			expectFilters: map[string]string{
 				"deleted": "false",
 			},
-			expectRes: `{"result":[{"id":"52bac7ec-83f4-11ec-a083-c3cf3f92a2e3","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+			expectRes: `{"result":[{"id":"52bac7ec-83f4-11ec-a083-c3cf3f92a2e3","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
 		},
 	}
 
@@ -217,7 +217,7 @@ func Test_customersIDGet(t *testing.T) {
 			},
 
 			expectCustomerID: uuid.FromStringOrNil("d98ed7ec-83f7-11ec-8b43-e7de0184974f"),
-			expectRes:        `{"id":"d98ed7ec-83f7-11ec-8b43-e7de0184974f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:        `{"id":"d98ed7ec-83f7-11ec-8b43-e7de0184974f","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -302,7 +302,7 @@ func Test_customersIDPut(t *testing.T) {
 			expectAddress:       "somewhere",
 			expectWebhookMethod: cscustomer.WebhookMethodPost,
 			expectWebhookURI:    "test.com",
-			expectRes:           `{"id":"d98ed7ec-83f7-11ec-8b43-e7de0184974f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:           `{"id":"d98ed7ec-83f7-11ec-8b43-e7de0184974f","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -371,7 +371,7 @@ func Test_customersIDDelete(t *testing.T) {
 			},
 
 			expectCustomerID: uuid.FromStringOrNil("d98ed7ec-83f7-11ec-8b43-e7de0184974f"),
-			expectRes:        `{"id":"d98ed7ec-83f7-11ec-8b43-e7de0184974f","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:        `{"id":"d98ed7ec-83f7-11ec-8b43-e7de0184974f","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -444,7 +444,7 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 
 			expectedCustomerID:       uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 			expectedBillingAccountID: uuid.FromStringOrNil("ccc776b6-1773-11ee-bea5-d78345c015af"),
-			expectedRes:              `{"id":"cc876058-1773-11ee-9694-136fe246dd34","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:              `{"id":"cc876058-1773-11ee-9694-136fe246dd34","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -470,6 +470,79 @@ func Test_customersIDBillingAccountIDPut(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().CustomerUpdateBillingAccountID(req.Context(), tt.agent, tt.expectedCustomerID, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusOK {
+				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
+			}
+
+			if w.Body.String() != tt.expectedRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
+			}
+		})
+	}
+}
+
+func Test_customersIDDefaultOutgoingSourceNumberIDPut(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+		reqBody  []byte
+
+		responseCustomer *cscustomer.Customer
+
+		expectedCustomerID                    uuid.UUID
+		expectedDefaultOutgoingSourceNumberID uuid.UUID
+		expectedRes                           string
+	}{
+		{
+			name: "normal",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+				},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			}),
+
+			reqQuery: "/customers/cc876058-1773-11ee-9694-136fe246dd34/default_outgoing_source_number_id",
+			reqBody:  []byte(`{"default_outgoing_source_number_id":"e1f2a3b4-c5d6-7890-abcd-ef1234567890"}`),
+
+			responseCustomer: &cscustomer.Customer{
+				ID:                            uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+				DefaultOutgoingSourceNumberID: uuid.FromStringOrNil("e1f2a3b4-c5d6-7890-abcd-ef1234567890"),
+			},
+
+			expectedCustomerID:                    uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+			expectedDefaultOutgoingSourceNumberID: uuid.FromStringOrNil("e1f2a3b4-c5d6-7890-abcd-ef1234567890"),
+			expectedRes:                           `{"id":"cc876058-1773-11ee-9694-136fe246dd34","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"e1f2a3b4-c5d6-7890-abcd-ef1234567890","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":false},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			mockSvc.EXPECT().CustomerUpdateDefaultOutgoingSourceNumberID(req.Context(), tt.agent, tt.expectedCustomerID, tt.expectedDefaultOutgoingSourceNumberID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -517,7 +590,7 @@ func Test_customersIDMetadataPut(t *testing.T) {
 
 			expectedCustomerID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 			expectedMetadata:   cscustomer.Metadata{RTPDebug: true},
-			expectedRes:        `{"id":"cc876058-1773-11ee-9694-136fe246dd34","billing_account_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":true},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:        `{"id":"cc876058-1773-11ee-9694-136fe246dd34","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","email_verified":false,"status":"","identity_verification_status":"","metadata":{"rtp_debug":true},"tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

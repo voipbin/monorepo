@@ -6256,6 +6256,49 @@
         }
       }
     },
+    "/customer/default_outgoing_source_number_id": {
+      "put": {
+        "summary": "Update a customer's default outgoing source number ID",
+        "description": "Modify the default outgoing source number ID associated with the authenticated customer.",
+        "tags": [
+          "Customer"
+        ],
+        "requestBody": {
+          "description": "Default outgoing source number ID update payload",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "default_outgoing_source_number_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The new default outgoing source number ID for the customer. Obtained from the `id` field of `GET /numbers`.",
+                    "example": "d4e5f6a7-b8c9-0123-4567-89abcdef0123"
+                  }
+                },
+                "required": [
+                  "default_outgoing_source_number_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated customer information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerCustomer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/customer": {
       "get": {
         "summary": "Get customer info",
@@ -6442,6 +6485,58 @@
         },
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerManagerCustomerAdmin"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/{id}/default_outgoing_source_number_id": {
+      "put": {
+        "summary": "Update a customer's default outgoing source number ID.",
+        "description": "Updates the default outgoing source number ID for a specific customer.",
+        "tags": [
+          "Customer"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "default_outgoing_source_number_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The new default outgoing source number ID. Obtained from the `id` field of `GET /numbers`.",
+                    "example": "d4e5f6a7-b8c9-0123-4567-89abcdef0123"
+                  }
+                },
+                "required": [
+                  "default_outgoing_source_number_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated customer information.",
             "content": {
               "application/json": {
                 "schema": {
@@ -18561,6 +18656,13 @@
             "description": "The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.",
             "example": "b8c9d0e1-f2a3-4567-8901-23456789abcd"
           },
+          "default_outgoing_source_number_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the customer's default outgoing source number. Returned from the `GET /numbers/{id}` response. When set, outgoing PSTN calls without a valid source number will use this number as the caller ID.",
+            "example": "d4e5f6a7-b8c9-0123-4567-89abcdef0123"
+          },
           "metadata": {
             "$ref": "#/components/schemas/CustomerManagerMetadata",
             "description": "Customer configuration flags (e.g., RTP debug). Updatable by CustomerAdmin via `PUT /customer/metadata`."
@@ -18611,7 +18713,7 @@
         }
       },
       "CustomerManagerCustomerAdmin": {
-        "description": "Full customer object returned by admin-only endpoints (`/customers`, `/customers/{id}`,\n`/customers/{id}/metadata`, `/customers/{id}/billing_account_id`, `/customers/{id}/freeze`,\n`/customers/{id}/recover`). Extends `CustomerManagerCustomer` with internal fields that are\nnever exposed to regular users via `/customer` (singular) endpoints.\n",
+        "description": "Full customer object returned by admin-only endpoints (`/customers`, `/customers/{id}`,\n`/customers/{id}/metadata`, `/customers/{id}/billing_account_id`,\n`/customers/{id}/default_outgoing_source_number_id`, `/customers/{id}/freeze`,\n`/customers/{id}/recover`). Extends `CustomerManagerCustomer` with internal fields that are\nnever exposed to regular users via `/customer` (singular) endpoints.\n",
         "allOf": [
           {
             "$ref": "#/components/schemas/CustomerManagerCustomer"
