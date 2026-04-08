@@ -389,7 +389,7 @@ deleted, expired</p></td>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> must reference a phone number owned by this customer. Obtain valid number IDs from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. When an outgoing call is made without an explicit source number, the system automatically uses this default. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> to clear the default (calls without an explicit source will fail if no default is set).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> must reference a phone number owned by this customer. Obtain valid number IDs from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. When an outgoing call is made without an explicit source number, the system automatically uses this default. Setting this to a nil UUID (<code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>) is not allowed — the endpoint rejects nil UUIDs with a 400 error.</p>
 </div>
 </section>
 <section id="account-deletion-lifecycle">

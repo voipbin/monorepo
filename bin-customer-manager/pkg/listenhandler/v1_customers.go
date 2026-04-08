@@ -319,6 +319,7 @@ func (h *listenHandler) processV1CustomersIDDefaultOutgoingSourceNumberIDPut(ctx
 		log.Debugf("Could not marshal the result data. data: %v, err: %v", tmp, err)
 		return simpleResponse(500), nil
 	}
+	log.Debugf("Sending result: %v", data)
 
 	res := &sock.Response{
 		StatusCode: 200,

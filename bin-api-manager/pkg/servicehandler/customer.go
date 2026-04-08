@@ -540,6 +540,7 @@ func (h *serviceHandler) CustomerUpdateDefaultOutgoingSourceNumberID(ctx context
 		log.Errorf("Could not validate the number info. err: %v", err)
 		return nil, err
 	}
+	log.WithField("number", num).Debugf("Retrieved number info. number_id: %s", num.ID)
 	if num.CustomerID != customerID {
 		log.Infof("The number does not belong to this customer. number_customer_id: %s", num.CustomerID)
 		return nil, fmt.Errorf("the number does not belong to this customer")
@@ -649,9 +650,10 @@ func (h *serviceHandler) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx con
 		log.Errorf("Could not validate the number info. err: %v", err)
 		return nil, err
 	}
-	if !h.hasPermission(ctx, a, num.CustomerID, amagent.PermissionCustomerAdmin) {
-		log.Info("The agent has no permission for this number.")
-		return nil, fmt.Errorf("agent has no permission")
+	log.WithField("number", num).Debugf("Retrieved number info. number_id: %s", num.ID)
+	if num.CustomerID != a.CustomerID {
+		log.Infof("The number does not belong to this customer. number_customer_id: %s", num.CustomerID)
+		return nil, fmt.Errorf("the number does not belong to this customer")
 	}
 
 	res, err := h.reqHandler.CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx, a.CustomerID, defaultOutgoingSourceNumberID)

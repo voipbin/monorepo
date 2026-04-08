@@ -191,7 +191,7 @@ Set the default source phone number used as the caller ID for outgoing PSTN call
 
 .. note:: **AI Implementation Hint**
 
-   The ``default_outgoing_source_number_id`` must reference a phone number owned by this customer. Obtain valid number IDs from ``GET https://api.voipbin.net/v1.0/numbers``. When an outgoing call is made without an explicit source number, the system automatically uses this default. Set to ``00000000-0000-0000-0000-000000000000`` to clear the default (calls without an explicit source will fail if no default is set).
+   The ``default_outgoing_source_number_id`` must reference a phone number owned by this customer. Obtain valid number IDs from ``GET https://api.voipbin.net/v1.0/numbers``. When an outgoing call is made without an explicit source number, the system automatically uses this default. Setting this to a nil UUID (``00000000-0000-0000-0000-000000000000``) is not allowed — the endpoint rejects nil UUIDs with a 400 error.
 
 
 Account Deletion Lifecycle
