@@ -200,14 +200,63 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Sending emails incurs charges. The <code class="docutils literal notranslate"><span class="pre">source</span></code> address must use a domain that has been verified in VoIPBIN’s system. The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> field uses the <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> format with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">email</span></code>.</p>
+<p>Sending emails incurs charges. The <code class="docutils literal notranslate"><span class="pre">source</span></code> address must use a domain that has been verified in VoIPBIN’s system. The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> field uses the <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> format with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">email</span></code>. Email status follows this lifecycle: <code class="docutils literal notranslate"><span class="pre">initiated</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">processed</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">delivered</span></code>. Additional statuses include <code class="docutils literal notranslate"><span class="pre">open</span></code>, <code class="docutils literal notranslate"><span class="pre">click</span></code>, <code class="docutils literal notranslate"><span class="pre">bounce</span></code>, <code class="docutils literal notranslate"><span class="pre">dropped</span></code>, <code class="docutils literal notranslate"><span class="pre">deferred</span></code>, <code class="docutils literal notranslate"><span class="pre">unsubscribe</span></code>, and <code class="docutils literal notranslate"><span class="pre">spamreport</span></code>.</p>
+</div>
+<section id="send-an-email">
+<h3>Send an email<a class="headerlink" href="#send-an-email" title="Link to this heading"></a></h3>
+</section>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;destinations&quot;: [
+        {
+            &quot;type&quot;: &quot;email&quot;,
+            &quot;target&quot;: &quot;recipient@example.com&quot;
+        }
+    ],
+    &quot;subject&quot;: &quot;Hello from VoIPBIN&quot;,
+    &quot;content&quot;: &quot;This is a test email sent via the VoIPBIN API.&quot;,
+    &quot;attachments&quot;: []
+}&#39;
+
+{
+    &quot;id&quot;: &quot;1f25e6c9-6709-44d1-b93e-a5f1c5f80411&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;email&quot;,
+        &quot;target&quot;: &quot;service@voipbin.net&quot;,
+        &quot;target_name&quot;: &quot;voipbin service&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
+    },
+    &quot;destinations&quot;: [
+        {
+            &quot;type&quot;: &quot;email&quot;,
+            &quot;target&quot;: &quot;recipient@example.com&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        }
+    ],
+    &quot;status&quot;: &quot;initiated&quot;,
+    &quot;subject&quot;: &quot;Hello from VoIPBIN&quot;,
+    &quot;content&quot;: &quot;This is a test email sent via the VoIPBIN API.&quot;,
+    &quot;attachments&quot;: [],
+    &quot;tm_create&quot;: &quot;2025-03-14 19:04:01.160250&quot;,
+    &quot;tm_update&quot;: &quot;2025-03-14 19:04:01.160250&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
 </div>
 <section id="get-list-of-emails">
 <h3>Get list of emails<a class="headerlink" href="#get-list-of-emails" title="Link to this heading"></a></h3>
 </section>
 </section>
-<section id="example">
-<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<section id="id1">
+<h2>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location &#39;https://api.voipbin.net/v1.0/emails?accesskey=your_accesskey&#39;
 
 {
@@ -258,10 +307,14 @@
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#send-an-email">Send an email</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#example">Example</a><ul>
 <li><a class="reference internal" href="#get-list-of-emails">Get list of emails</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#id1">Example</a></li>
 </ul>
 </li>
 </ul>

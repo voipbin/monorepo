@@ -7,13 +7,13 @@ Overview
 
    * **Complexity:** Medium
    * **Cost:** Chargeable (credit deduction per AI session — each member consumes LLM, TTS, and STT credits while active)
-   * **Async:** Yes. Team conversations run asynchronously during calls. Monitor via ``GET /calls/{id}`` or WebSocket events.
+   * **Async:** Yes. Team conversations run asynchronously during calls. Monitor via ``GET https://api.voipbin.net/v1.0/calls/{id}`` or WebSocket events.
 
 A **Team** models a multi-agent conversation as a directed graph. Each node in the graph is a **Member** backed by a reusable :ref:`AI configuration <ai-struct-ai>`. Directed edges between members are **Transitions** — LLM tool-functions that, when invoked by the currently active AI, hand the conversation to the next member.
 
 .. note:: **AI Implementation Hint**
 
-   A Team is a configuration resource, not a runtime entity. You create a Team via ``POST /teams``, then reference it in a flow action (e.g., ``ai_talk`` with ``team_id``) to activate it during a call. The Team itself does not start conversations — it defines the graph that the flow engine traverses.
+   A Team is a configuration resource, not a runtime entity. You create a Team via ``POST https://api.voipbin.net/v1.0/teams``, then reference it in a flow action (e.g., ``ai_talk`` with ``team_id``) to activate it during a call. The Team itself does not start conversations — it defines the graph that the flow engine traverses.
 
 How it works
 ============
@@ -128,6 +128,26 @@ Use Cases
 * **Multi-step onboarding** — A greeting agent collects basic info, then hands off to a verification agent, then to an account setup agent.
 * **Escalation chains** — A first-line support AI attempts resolution, then escalates to a senior agent if needed.
 * **Survey + follow-up** — A survey agent collects responses, then transitions to a follow-up agent for scheduling or issue resolution.
+
+Troubleshooting
+===============
+
+* **Team conversation does not start:**
+    * **Cause:** The ``start_member_id`` does not match any member's ``id`` in the team.
+    * **Fix:** Verify that ``start_member_id`` on the team matches one of the member IDs in the ``members`` array. Use ``GET https://api.voipbin.net/v1.0/teams/{id}`` to inspect the current configuration.
+
+* **LLM never triggers a transition:**
+    * **Cause:** The transition ``description`` is too vague for the LLM to decide when to invoke it.
+    * **Fix:** Write clear, conditional descriptions: ``"Transfer to billing when the caller asks about invoices, payments, or account charges."`` Avoid generic descriptions like ``"Transfer to billing"``.
+
+* **Caller hears silence after a transition:**
+    * **Cause:** The target member's AI configuration has no TTS service configured (``tts_type`` is empty).
+    * **Fix:** Configure a TTS type on the AI configuration referenced by the target member's ``ai_id``. Alternatively, the system will fall back to the previous member's TTS if the new member's TTS is not set.
+
+* **404 when creating a team with an ``ai_id``:**
+    * **Cause:** The AI configuration UUID does not exist or belongs to another customer.
+    * **Fix:** Verify the ``ai_id`` was obtained from a recent ``GET https://api.voipbin.net/v1.0/ais`` list call with your authentication token.
+
 
 Related Documentation
 =====================

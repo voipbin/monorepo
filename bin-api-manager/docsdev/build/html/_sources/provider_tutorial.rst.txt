@@ -98,7 +98,6 @@ Example
 
     $ curl --location --request PUT 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
-        --header 'Cookie: token=<YOUR_AUTH_TOKEN>' \
         --data-raw '{
             "type": "sip",
             "hostname": "sip.telnyx.com",

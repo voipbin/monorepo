@@ -261,7 +261,7 @@
      |
      v
 +--------------------------------------------+
-| GET /contacts/lookup?phone=+15551234567    |
+| GET https://api.voipbin.net/v1.0/contacts/lookup?phone=+15551234567 |
 +--------------------------------------------+
      |
      v
@@ -281,7 +281,7 @@ Route to VIP queue / display caller info
      |
      v
 +--------------------------------------------+
-| GET /contacts/lookup?email=john@acme.com   |
+| GET https://api.voipbin.net/v1.0/contacts/lookup?email=john@acme.com |
 +--------------------------------------------+
      |
      v
@@ -292,7 +292,7 @@ Contact matched → enrich conversation context
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>When using phone number lookup, the <code class="docutils literal notranslate"><span class="pre">+</span></code> character must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/contacts/lookup?phone=%2B15551234567</span></code>. Omitting this encoding will result in the <code class="docutils literal notranslate"><span class="pre">+</span></code> being interpreted as a space and the lookup will fail.</p>
+<p>When using phone number lookup, the <code class="docutils literal notranslate"><span class="pre">+</span></code> character must be URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>. For example: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/contacts/lookup?phone=%2B15551234567</span></code>. Omitting this encoding will result in the <code class="docutils literal notranslate"><span class="pre">+</span></code> being interpreted as a space and the lookup will fail.</p>
 </div>
 </section>
 <section id="source-tracking">
@@ -416,6 +416,43 @@ Lookup contact → check tags
 <li><p>Keep display names consistent (first + last name)</p></li>
 <li><p>Assign email types (work, personal) for proper channel selection</p></li>
 <li><p>Remove outdated phone numbers and emails regularly</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>Phone number lookup returns no results:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The phone number is not in E.164 format, or the <code class="docutils literal notranslate"><span class="pre">+</span></code> is not URL-encoded as <code class="docutils literal notranslate"><span class="pre">%2B</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Ensure the number starts with <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and subscriber number (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). URL-encode the <code class="docutils literal notranslate"><span class="pre">+</span></code> as <code class="docutils literal notranslate"><span class="pre">%2B</span></code> in the query string.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Duplicate contacts created during re-import:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">external_id</span></code> field was not set during the initial import.</p></li>
+<li><p><strong>Fix:</strong> Always set <code class="docutils literal notranslate"><span class="pre">external_id</span></code> when importing contacts from external systems. Use <code class="docutils literal notranslate"><span class="pre">external_id</span></code> to check for existing records before creating new ones.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Contact lookup by email returns wrong contact:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Multiple contacts share the same email address.</p></li>
+<li><p><strong>Fix:</strong> Lookup returns the first matching contact. Ensure email addresses are unique per contact, or use the contact ID directly if you know the specific record.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found when accessing a contact:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The contact UUID does not exist or belongs to another customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/contacts</span></code> list call with your authentication token.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </section>
 <section id="related-documentation">
@@ -883,6 +920,7 @@ Lookup contact → check tags
 <li><a class="reference internal" href="#external-crm-integration">External CRM Integration</a></li>
 <li><a class="reference internal" href="#key-features-and-use-cases">Key Features and Use Cases</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>

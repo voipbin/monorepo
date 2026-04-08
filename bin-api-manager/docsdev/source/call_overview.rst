@@ -19,6 +19,10 @@ With the VoIPBIN API you can:
 - Create conference calls.
 - Send text-to-speech messages in 50 languages with different voices and accents.
 
+.. note:: **AI Implementation Hint**
+
+   To create an outbound call, use ``POST https://api.voipbin.net/v1.0/calls`` with a JSON body containing ``source`` (E.164 number from ``GET /numbers``), ``destinations`` (array of target addresses), and optionally ``flow_id`` (UUID from ``GET /flows``) to execute a flow when the call is answered. The endpoint returns immediately with status ``dialing``. Poll ``GET https://api.voipbin.net/v1.0/calls/{id}`` or subscribe via WebSocket for real-time status updates. Each call deducts credits from the customer's billing account per minute.
+
 
 Protocol
 --------
@@ -703,6 +707,50 @@ VoIPBIN Call Concept
 * Visualizes a call's path, which may involve connecting to an agent and branching to additional destinations.
 
 In summary, while the traditional call concept adheres to a simple point-to-point model, the VoIPBIN call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.
+
+
+Troubleshooting
+---------------
+
+**Call Creation Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Call stuck in "dialing"   | Check destination number is valid E.164 format;|
+|                           | verify route exists for destination             |
++---------------------------+------------------------------------------------+
+| Call immediately hangs up | Check ``hangup_reason`` field: ``failed`` means |
+|                           | network issue; ``busy`` means destination is on |
+|                           | another call                                   |
++---------------------------+------------------------------------------------+
+| No flow executing after   | Verify ``flow_id`` is set on the call or on the|
+| call answers              | number configuration via ``GET /numbers``       |
++---------------------------+------------------------------------------------+
+
+**Media Control Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Hold/mute not working     | Verify call status is ``progressing``; media    |
+|                           | controls only work on answered calls            |
++---------------------------+------------------------------------------------+
+| Recording not starting    | Check call is in ``progressing`` state; verify  |
+|                           | billing account has sufficient balance          |
++---------------------------+------------------------------------------------+
+
+**Call Chaining Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Chained calls not created | Verify master call is in ``dialing``,           |
+|                           | ``ringing``, or ``progressing`` state           |
++---------------------------+------------------------------------------------+
+| All calls ended           | Master call hangup cascades to all chained      |
+| unexpectedly              | calls; check master call ``hangup_reason``      |
++---------------------------+------------------------------------------------+
 
 
 Related Documentation

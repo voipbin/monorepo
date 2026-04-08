@@ -202,7 +202,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Campaigns are created in <code class="docutils literal notranslate"><span class="pre">stop</span></code> status. You must explicitly set the status to <code class="docutils literal notranslate"><span class="pre">running</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/campaigns/{id}</span></code> to start dialing. Running a campaign incurs charges for each outbound call or message made. Always verify your outdial targets and outplan settings before starting.</p>
+<p>Campaigns are created in <code class="docutils literal notranslate"><span class="pre">stop</span></code> status. You must explicitly set the status to <code class="docutils literal notranslate"><span class="pre">run</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/campaigns/{id}/status</span></code> with <code class="docutils literal notranslate"><span class="pre">{&quot;status&quot;:</span> <span class="pre">&quot;run&quot;}</span></code> to start dialing. Valid status values are <code class="docutils literal notranslate"><span class="pre">stop</span></code>, <code class="docutils literal notranslate"><span class="pre">run</span></code>, and <code class="docutils literal notranslate"><span class="pre">stopping</span></code>. Valid campaign types are <code class="docutils literal notranslate"><span class="pre">call</span></code> and <code class="docutils literal notranslate"><span class="pre">flow</span></code>. Running a campaign incurs charges for each outbound call made. Always verify your outdial targets and outplan settings before starting.</p>
 </div>
 <section id="get-list-of-campaigns">
 <h3>Get list of campaigns<a class="headerlink" href="#get-list-of-campaigns" title="Link to this heading"></a></h3>
@@ -216,6 +216,7 @@
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;183c0d5c-691e-42f3-af2b-9bffc2740f83&quot;,
+            &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
             &quot;type&quot;: &quot;call&quot;,
             &quot;name&quot;: &quot;test campaign&quot;,
             &quot;detail&quot;: &quot;test campaign detail&quot;,
@@ -256,6 +257,7 @@
 
 {
     &quot;id&quot;: &quot;183c0d5c-691e-42f3-af2b-9bffc2740f83&quot;,
+    &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
     &quot;type&quot;: &quot;call&quot;,
     &quot;name&quot;: &quot;test campaign&quot;,
     &quot;detail&quot;: &quot;test campaign detail&quot;,
@@ -313,15 +315,26 @@
 
 {
     &quot;id&quot;: &quot;c1d2e3f4-a5b6-7890-cdef-123456789012&quot;,
+    &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
+    &quot;type&quot;: &quot;call&quot;,
     &quot;name&quot;: &quot;test campaign&quot;,
     &quot;detail&quot;: &quot;test campaign detail&quot;,
-    &quot;type&quot;: &quot;call&quot;,
     &quot;status&quot;: &quot;stop&quot;,
     &quot;service_level&quot;: 100,
     &quot;end_handle&quot;: &quot;stop&quot;,
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Hello. This is outbound campaign&#39;s test calling. Please wait until the agent answer the call. Thank you.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        }
+    ],
     &quot;outplan_id&quot;: &quot;d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e&quot;,
     &quot;outdial_id&quot;: &quot;40bea034-1d17-474d-a5de-da00d0861c69&quot;,
     &quot;queue_id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
+    &quot;next_campaign_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
     &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;

@@ -81,23 +81,23 @@ Standard access requires purchasing an inbound number, creating a flow with the 
 Supported Resources
 -------------------
 
-+---------------+----------------+---------------------------------------------------+-------------------------------------------+
-| Resource      | Auto-Created   | Regenerate Endpoint                               | Documentation                             |
-+===============+================+===================================================+===========================================+
-| Extension     | Yes            | ``POST /extensions/{id}/direct-hash-regenerate``  | :ref:`extension-overview-direct`          |
-+---------------+----------------+---------------------------------------------------+-------------------------------------------+
-| Conference    | Yes            | ``POST /conferences/{id}/direct-hash-regenerate`` | :ref:`conference-overview`                |
-+---------------+----------------+---------------------------------------------------+-------------------------------------------+
-| Team          | Yes            | ``POST /teams/{id}/direct-hash-regenerate``       | :ref:`team-overview`                      |
-+---------------+----------------+---------------------------------------------------+-------------------------------------------+
-| Queue         | Yes            | ``POST /queues/{id}/direct-hash-regenerate``      | :ref:`queue-overview`                     |
-+---------------+----------------+---------------------------------------------------+-------------------------------------------+
-| Flow          | Yes            | ``POST /flows/{id}/direct-hash-regenerate``       | :ref:`flow-overview`                      |
-+---------------+----------------+---------------------------------------------------+-------------------------------------------+
-| Agent         | No             | ``POST /agents/{id}/direct-hash-regenerate``      | :ref:`agent_overview`                     |
-+---------------+----------------+---------------------------------------------------+-------------------------------------------+
-| AI            | No             | ``POST /ais/{id}/direct-hash-regenerate``         | :ref:`ai-overview`                        |
-+---------------+----------------+---------------------------------------------------+-------------------------------------------+
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
+| Resource      | Auto-Created   | Regenerate Endpoint                                                                | Documentation                             |
++===============+================+====================================================================================+===========================================+
+| Extension     | Yes            | ``POST https://api.voipbin.net/v1.0/extensions/{id}/direct-hash-regenerate``       | :ref:`extension-overview-direct`          |
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
+| Conference    | Yes            | ``POST https://api.voipbin.net/v1.0/conferences/{id}/direct-hash-regenerate``      | :ref:`conference-overview`                |
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
+| Team          | Yes            | ``POST https://api.voipbin.net/v1.0/teams/{id}/direct-hash-regenerate``            | :ref:`team-overview`                      |
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
+| Queue         | Yes            | ``POST https://api.voipbin.net/v1.0/queues/{id}/direct-hash-regenerate``           | :ref:`queue-overview`                     |
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
+| Flow          | Yes            | ``POST https://api.voipbin.net/v1.0/flows/{id}/direct-hash-regenerate``            | :ref:`flow-overview`                      |
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
+| Agent         | No             | ``POST https://api.voipbin.net/v1.0/agents/{id}/direct-hash-regenerate``           | :ref:`agent_overview`                     |
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
+| AI            | No             | ``POST https://api.voipbin.net/v1.0/ais/{id}/direct-hash-regenerate``              | :ref:`ai-overview`                        |
++---------------+----------------+------------------------------------------------------------------------------------+-------------------------------------------+
 
 **Auto-Created** means the ``direct_hash`` field is populated automatically when the resource is created. For resources marked **No**, call the regenerate endpoint to create the initial hash.
 
@@ -158,11 +158,11 @@ Troubleshooting
 
 * **404 when calling a direct hash SIP URI:**
     * **Cause:** The hash does not exist, was regenerated, or the resource was deleted.
-    * **Fix:** Retrieve the current resource via ``GET /<resources>/{id}`` and verify the ``direct_hash`` field matches the URI you are dialing.
+    * **Fix:** Retrieve the current resource via ``GET https://api.voipbin.net/v1.0/<resources>/{id}`` and verify the ``direct_hash`` field matches the URI you are dialing.
 
 * **Empty ``direct_hash`` field in resource response:**
     * **Cause:** The resource type does not auto-create direct hashes (agent, AI), and the regenerate endpoint has not been called.
-    * **Fix:** Call ``POST /<resources>/{id}/direct-hash-regenerate`` to create the initial hash.
+    * **Fix:** Call ``POST https://api.voipbin.net/v1.0/<resources>/{id}/direct-hash-regenerate`` to create the initial hash.
 
 * **Calls not reaching resource after regeneration:**
     * **Cause:** SIP devices or trunks are still configured with the old hash.
@@ -170,7 +170,7 @@ Troubleshooting
 
 * **404 on the regenerate endpoint itself:**
     * **Cause:** The resource UUID does not exist or belongs to another customer.
-    * **Fix:** Verify the UUID was obtained from a recent ``GET /<resources>`` list call with your authentication token.
+    * **Fix:** Verify the UUID was obtained from a recent ``GET https://api.voipbin.net/v1.0/<resources>`` list call with your authentication token.
 
 
 Related Documentation

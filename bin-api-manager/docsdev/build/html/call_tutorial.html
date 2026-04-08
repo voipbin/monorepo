@@ -291,34 +291,41 @@ When the destination answer the call, it will play the given media file.</p>
 
 [
     {
-        &quot;id&quot;: &quot;a023bfa8-1091-4e94-8eaa-7f01fbecc71a&quot;,   // Save this as call_id (UUID)
-        &quot;user_id&quot;: 1,
-        &quot;flow_id&quot;: &quot;f089791a-ac78-4ea0-be88-8a8e131f9fc5&quot;,   // Auto-generated flow (UUID)
-        &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;flow&quot;,   // enum: flow, conference, sip-service
+        &quot;id&quot;: &quot;a023bfa8-1091-4e94-8eaa-7f01fbecc71a&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+        &quot;flow_id&quot;: &quot;f089791a-ac78-4ea0-be88-8a8e131f9fc5&quot;,
+        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
         &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;chained_call_ids&quot;: [],
         &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;recording_ids&quot;: [],
+        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15551234567&quot;,
-            &quot;name&quot;: &quot;&quot;
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;name&quot;: &quot;&quot;
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
         },
-        &quot;status&quot;: &quot;dialing&quot;,   // enum: dialing, ringing, progressing, terminating, canceling, hangup
-        &quot;direction&quot;: &quot;outgoing&quot;,   // enum: incoming, outgoing
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;mute_direction&quot;: &quot;&quot;,
         &quot;hangup_by&quot;: &quot;&quot;,
         &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_create&quot;: &quot;2021-02-04 04:44:20.904662&quot;,   // ISO 8601 timestamp
-        &quot;tm_update&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: &quot;&quot;,
-        &quot;tm_ringing&quot;: &quot;&quot;,
-        &quot;tm_hangup&quot;: &quot;&quot;
+        &quot;tm_progressing&quot;: null,
+        &quot;tm_ringing&quot;: null,
+        &quot;tm_hangup&quot;: null,
+        &quot;tm_create&quot;: &quot;2021-02-04T04:44:20Z&quot;,
+        &quot;tm_update&quot;: null,
+        &quot;tm_delete&quot;: null
     }
 ]
 </pre></div>
@@ -370,33 +377,40 @@ When the destination answer the call, it will play the given media file.</p>
 [
     {
         &quot;id&quot;: &quot;9f6265bc-6b59-4e80-a906-2679aca11455&quot;,
-        &quot;user_id&quot;: 1,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
         &quot;flow_id&quot;: &quot;d665fbc0-6dd8-44bc-99ea-2ae54bc59428&quot;,
-        &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;type&quot;: &quot;flow&quot;,
         &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;chained_call_ids&quot;: [],
         &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;recording_ids&quot;: [],
+        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;name&quot;: &quot;&quot;
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;name&quot;: &quot;&quot;
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
         },
         &quot;status&quot;: &quot;dialing&quot;,
         &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;mute_direction&quot;: &quot;&quot;,
         &quot;hangup_by&quot;: &quot;&quot;,
         &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_create&quot;: &quot;2021-02-06 09:52:49.941865&quot;,
-        &quot;tm_update&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: &quot;&quot;,
-        &quot;tm_ringing&quot;: &quot;&quot;,
-        &quot;tm_hangup&quot;: &quot;&quot;
+        &quot;tm_progressing&quot;: null,
+        &quot;tm_ringing&quot;: null,
+        &quot;tm_hangup&quot;: null,
+        &quot;tm_create&quot;: &quot;2021-02-06T09:52:49Z&quot;,
+        &quot;tm_update&quot;: null,
+        &quot;tm_delete&quot;: null
     }
 ]
 </pre></div>
@@ -405,75 +419,84 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="simple-outbound-call-with-talk-and-digits-send">
 <h3>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Link to this heading"></a></h3>
 <p>Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This is dtmf send test call. Please wait.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
-            <span class="p">}</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_send&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;dtmfs&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
-                <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">500</span>
-            <span class="p">}</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you. DTMF send test has done.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+15551234567&quot;
+    },
+    &quot;destinations&quot;: [
+        {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;
+        }
+    ],
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;This is dtmf send test call. Please wait.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;dtmf_send&quot;,
+            &quot;option&quot;: {
+                &quot;dtmfs&quot;: &quot;1234567890&quot;,
+                &quot;duration&quot;: 500,
+                &quot;interval&quot;: 500
+            }
+        },
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Thank you. DTMF send test has done.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        }
+    ]
+}&#39;
 
-<span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d7520a58-0b07-4dd7-ab72-a4e2d1979ec0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0f4bd9bc-9df5-4a5b-9465-2189822a3019&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;conf_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-02-08 03:59:33.281711&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-    <span class="p">}</span>
-<span class="p">]</span>
+[
+    {
+        &quot;id&quot;: &quot;d7520a58-0b07-4dd7-ab72-a4e2d1979ec0&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+        &quot;flow_id&quot;: &quot;0f4bd9bc-9df5-4a5b-9465-2189822a3019&quot;,
+        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
+        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;chained_call_ids&quot;: [],
+        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;recording_ids&quot;: [],
+        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;destination&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;mute_direction&quot;: &quot;&quot;,
+        &quot;hangup_by&quot;: &quot;&quot;,
+        &quot;hangup_reason&quot;: &quot;&quot;,
+        &quot;tm_progressing&quot;: null,
+        &quot;tm_ringing&quot;: null,
+        &quot;tm_hangup&quot;: null,
+        &quot;tm_create&quot;: &quot;2021-02-08T03:59:33Z&quot;,
+        &quot;tm_update&quot;: null,
+        &quot;tm_delete&quot;: null
+    }
+]
 </pre></div>
 </div>
 </section>
@@ -616,13 +639,15 @@ When the destination answer the call, it will play the given media file.</p>
 [
     {
         &quot;id&quot;: &quot;77517719-ffb9-4583-ba44-737ba991d685&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
         &quot;flow_id&quot;: &quot;c0827e56-41ef-4fa1-9da0-a8a36fbb76c4&quot;,
-        &quot;confbridge_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;type&quot;: &quot;flow&quot;,
         &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;chained_call_ids&quot;: [],
         &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;recording_ids&quot;: [],
+        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15551234567&quot;,
@@ -643,13 +668,15 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;type&quot;: &quot;&quot;
         },
         &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;mute_direction&quot;: &quot;&quot;,
         &quot;hangup_by&quot;: &quot;&quot;,
         &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_create&quot;: &quot;2022-02-24 02:08:14.469405&quot;,
-        &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_progressing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_ringing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_hangup&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+        &quot;tm_progressing&quot;: null,
+        &quot;tm_ringing&quot;: null,
+        &quot;tm_hangup&quot;: null,
+        &quot;tm_create&quot;: &quot;2022-02-24T02:08:14Z&quot;,
+        &quot;tm_update&quot;: null,
+        &quot;tm_delete&quot;: null
     }
 ]
 </pre></div>
@@ -664,37 +691,44 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;9a7857ca-73ba-4000-8101-c47d3b48f9d1&quot;,
-            &quot;user_id&quot;: 1,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
             &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;type&quot;: &quot;sip-service&quot;,
             &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;chained_call_ids&quot;: [],
             &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;recording_ids&quot;: [],
+            &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;source&quot;: {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;109&quot;,
-                &quot;name&quot;: &quot;109&quot;
+                &quot;target&quot;: &quot;+15551234567&quot;,
+                &quot;target_name&quot;: &quot;&quot;,
+                &quot;name&quot;: &quot;109&quot;,
+                &quot;detail&quot;: &quot;&quot;
             },
             &quot;destination&quot;: {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;972595897084&quot;,
-                &quot;name&quot;: &quot;&quot;
+                &quot;target&quot;: &quot;+972595897084&quot;,
+                &quot;target_name&quot;: &quot;&quot;,
+                &quot;name&quot;: &quot;&quot;,
+                &quot;detail&quot;: &quot;&quot;
             },
             &quot;status&quot;: &quot;hangup&quot;,
             &quot;direction&quot;: &quot;incoming&quot;,
+            &quot;mute_direction&quot;: &quot;&quot;,
             &quot;hangup_by&quot;: &quot;remote&quot;,
             &quot;hangup_reason&quot;: &quot;normal&quot;,
-            &quot;tm_create&quot;: &quot;2021-02-06 09:47:10.018000&quot;,
-            &quot;tm_update&quot;: &quot;2021-02-06 09:48:14.630000&quot;,
-            &quot;tm_progressing&quot;: &quot;2021-02-06 09:47:10.626000&quot;,
-            &quot;tm_ringing&quot;: &quot;&quot;,
-            &quot;tm_hangup&quot;: &quot;2021-02-06 09:48:14.630000&quot;
+            &quot;tm_progressing&quot;: &quot;2021-02-06T09:47:10Z&quot;,
+            &quot;tm_ringing&quot;: null,
+            &quot;tm_hangup&quot;: &quot;2021-02-06T09:48:14Z&quot;,
+            &quot;tm_create&quot;: &quot;2021-02-06T09:47:10Z&quot;,
+            &quot;tm_update&quot;: &quot;2021-02-06T09:48:14Z&quot;,
+            &quot;tm_delete&quot;: null
         },
         ...
     ],
-    &quot;next_page_token&quot;: &quot;2021-02-06 08:54:38.361000&quot;
+    &quot;next_page_token&quot;: &quot;2021-02-06T08:54:38Z&quot;
 }
 </pre></div>
 </div>
@@ -706,9 +740,9 @@ When the destination answer the call, it will play the given media file.</p>
 
 {
     &quot;id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;flow_id&quot;: &quot;246aeabe-fab5-4a1b-8e98-852b50e89dd7&quot;,
-    &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;type&quot;: &quot;flow&quot;,
     &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;chained_call_ids&quot;: [],
@@ -716,25 +750,32 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;recording_ids&quot;: [
         &quot;142e8ef8-392c-4514-abf0-8656da5d2fdf&quot;
     ],
+    &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
         &quot;target&quot;: &quot;+15551234567&quot;,
-        &quot;name&quot;: &quot;&quot;
+        &quot;target_name&quot;: &quot;&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
     },
     &quot;destination&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
         &quot;target&quot;: &quot;+15559876543&quot;,
-        &quot;name&quot;: &quot;&quot;
+        &quot;target_name&quot;: &quot;&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
     },
     &quot;status&quot;: &quot;hangup&quot;,
     &quot;direction&quot;: &quot;outgoing&quot;,
+    &quot;mute_direction&quot;: &quot;&quot;,
     &quot;hangup_by&quot;: &quot;remote&quot;,
     &quot;hangup_reason&quot;: &quot;normal&quot;,
-    &quot;tm_create&quot;: &quot;2021-01-29 03:17:54.349101&quot;,
-    &quot;tm_update&quot;: &quot;2021-01-29 03:18:22.131000&quot;,
-    &quot;tm_progressing&quot;: &quot;2021-01-29 03:18:07.810000&quot;,
-    &quot;tm_ringing&quot;: &quot;2021-01-29 03:17:55.392000&quot;,
-    &quot;tm_hangup&quot;: &quot;2021-01-29 03:18:22.131000&quot;
+    &quot;tm_progressing&quot;: &quot;2021-01-29T03:18:07Z&quot;,
+    &quot;tm_ringing&quot;: &quot;2021-01-29T03:17:55Z&quot;,
+    &quot;tm_hangup&quot;: &quot;2021-01-29T03:18:22Z&quot;,
+    &quot;tm_create&quot;: &quot;2021-01-29T03:17:54Z&quot;,
+    &quot;tm_update&quot;: &quot;2021-01-29T03:18:22Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -742,7 +783,7 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="make-a-groupcall">
 <h3>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Link to this heading"></a></h3>
 <p>Make a groupcall to the multiple destinations.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=eyJhbGcslkj&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;source&quot;: {
@@ -773,6 +814,7 @@ When the destination answer the call, it will play the given media file.</p>
 {
     &quot;id&quot;: &quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;,
     &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
         &quot;target&quot;: &quot;+15551234567&quot;,
@@ -796,6 +838,8 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;detail&quot;: &quot;&quot;
         }
     ],
+    &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;master_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;ring_method&quot;: &quot;&quot;,
     &quot;answer_method&quot;: &quot;&quot;,
     &quot;answer_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
@@ -803,9 +847,11 @@ When the destination answer the call, it will play the given media file.</p>
         &quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;,
         &quot;2bcaff64-e05d-11ed-84a6-133172844032&quot;
     ],
-    &quot;tm_create&quot;: &quot;2023-04-21 15:33:28.569053&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    &quot;answer_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;groupcall_ids&quot;: [],
+    &quot;tm_create&quot;: &quot;2023-04-21T15:33:28Z&quot;,
+    &quot;tm_update&quot;: null,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>

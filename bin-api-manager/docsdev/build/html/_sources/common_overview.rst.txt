@@ -61,7 +61,7 @@ List endpoints support pagination using the ``next_page_token`` parameter. When 
 
 .. code::
 
-    GET /v1.0/calls?page_token=2022-06-17%2006%3A06%3A14.948432
+    GET https://api.voipbin.net/v1.0/calls?page_token=2022-06-17%2006%3A06%3A14.948432
 
 When ``next_page_token`` is empty or not present, you have reached the last page.
 

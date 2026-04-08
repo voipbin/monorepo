@@ -156,17 +156,17 @@ Tags define what skills or groups an agent belongs to. They're used for skill-ba
 
 Update an agent's tags via the API:
 
-::
+.. code::
 
-    PUT /v1/agents/{agent-id}/tag_ids
-
-    {
-        "tag_ids": [
-            "uuid-for-english-tag",
-            "uuid-for-billing-tag",
-            "uuid-for-tier2-tag"
-        ]
-    }
+    $ curl -X PUT 'https://api.voipbin.net/v1.0/agents/<agent-id>/tag_ids?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "tag_ids": [
+                "uuid-for-english-tag",
+                "uuid-for-billing-tag",
+                "uuid-for-tier2-tag"
+            ]
+        }'
 
 
 Contact Addresses
@@ -275,7 +275,7 @@ Understanding the agent lifecycle helps you manage your call center effectively.
     |                         Agent Creation                                   |
     +-----------------------------------------------------------------------------+
 
-    POST /v1/agents
+    POST https://api.voipbin.net/v1.0/agents
     +---------------------------------------+
     | {                                     |
     |   "username": "john@company.com",     |
@@ -303,7 +303,7 @@ Understanding the agent lifecycle helps you manage your call center effectively.
     +-----------------------------------------------------------------------------+
 
     1. Agent calls login API
-       POST /v1/login
+       POST https://api.voipbin.net/v1.0/login
        { "username": "...", "password": "..." }
               |
               v
@@ -327,7 +327,7 @@ Understanding the agent lifecycle helps you manage your call center effectively.
               |
               v
     4. Agent sets status to "available"
-       PUT /v1/agents/{id}/status
+       PUT https://api.voipbin.net/v1.0/agents/{id}/status
        { "status": "available" }
               |
               v

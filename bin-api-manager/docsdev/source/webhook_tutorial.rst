@@ -6,7 +6,7 @@ Tutorial
 Prerequisites
 +++++++++++++
 
-Before creating a webhook, you need:
+Before configuring webhooks, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
 * A publicly accessible HTTPS endpoint URL where VoIPBIN will send event notifications.
@@ -14,107 +14,50 @@ Before creating a webhook, you need:
 
 .. note:: **AI Implementation Hint**
 
-   Your webhook endpoint must be publicly reachable from the internet and respond with HTTP 200 within 5 seconds. For local development, use tools like ngrok to expose a local server. The ``uri`` field must be a valid HTTPS URL for production use.
+   Webhooks are configured at the **customer account level**, not as separate resources. Use ``PUT https://api.voipbin.net/v1.0/customer`` to set the ``webhook_uri`` and ``webhook_method`` fields on your customer profile. There is no ``/webhooks`` CRUD endpoint. Your webhook endpoint must be publicly reachable from the internet and respond with HTTP 200 within 5 seconds. For local development, use tools like ngrok to expose a local server.
 
-Create a Webhook
-----------------
+Configure Webhook Endpoint
+--------------------------
 
-Register a webhook endpoint to receive real-time event notifications from VoIPBIN. Webhooks notify your server when events occur (call status changes, messages received, etc.).
+Set your webhook delivery URL and HTTP method by updating your customer profile. VoIPBIN will send all event notifications to this URL.
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/webhooks?token=<YOUR_AUTH_TOKEN>' \
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "name": "Production Webhook",
-            "detail": "Main webhook for production events",
-            "uri": "https://your-server.com/voipbin/webhook",
-            "method": "POST",
-            "event_types": [
-                "call.status",
-                "message.received",
-                "recording.completed"
-            ]
+            "webhook_uri": "https://your-server.com/voipbin/webhook",
+            "webhook_method": "POST"
         }'
 
-    {
-        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "customer_id": "12345678-1234-1234-1234-123456789012",
-        "name": "Production Webhook",
-        "detail": "Main webhook for production events",
-        "uri": "https://your-server.com/voipbin/webhook",
-        "method": "POST",
-        "event_types": [
-            "call.status",
-            "message.received",
-            "recording.completed"
-        ],
-        "status": "active",
-        "tm_create": "2026-01-20 10:30:00.000000",
-        "tm_update": "2026-01-20 10:30:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
-    }
+.. note:: **AI Implementation Hint**
 
-The webhook is now active and will receive POST requests when specified events occur.
+   The ``webhook_method`` field accepts one of: ``POST``, ``PUT``, ``GET``, ``DELETE``. Most implementations use ``POST``. The ``webhook_uri`` should be a valid HTTPS URL for production use. To verify your current webhook configuration, call ``GET https://api.voipbin.net/v1.0/customer`` and check the ``webhook_uri`` and ``webhook_method`` fields in the response.
 
-Get List of Webhooks
----------------------
+Verify Webhook Configuration
+-----------------------------
 
-Retrieve all registered webhooks for your account.
+Retrieve your current customer profile to confirm the webhook settings.
 
 .. code::
 
-    $ curl --location --request GET 'https://api.voipbin.net/v1.0/webhooks?token=<YOUR_AUTH_TOKEN>'
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/customer?token=<YOUR_AUTH_TOKEN>'
 
-    {
-        "result": [
-            {
-                "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-                "customer_id": "12345678-1234-1234-1234-123456789012",
-                "name": "Production Webhook",
-                "detail": "Main webhook for production events",
-                "uri": "https://your-server.com/voipbin/webhook",
-                "method": "POST",
-                "event_types": [
-                    "call.status",
-                    "message.received"
-                ],
-                "status": "active",
-                "tm_create": "2026-01-20 10:30:00.000000",
-                "tm_update": "2026-01-20 10:30:00.000000",
-                "tm_delete": "9999-01-01 00:00:00.000000"
-            }
-        ]
-    }
+Check the ``webhook_uri`` and ``webhook_method`` fields in the response to verify your configuration.
 
-Update a Webhook
+Disable Webhooks
 ----------------
 
-Modify an existing webhook's configuration, such as changing the URI or event types.
+To stop receiving webhook notifications, set the ``webhook_uri`` to an empty string.
 
 .. code::
 
-    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/webhooks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>' \
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "name": "Production Webhook - Updated",
-            "event_types": [
-                "call.status",
-                "call.completed",
-                "message.received",
-                "recording.completed",
-                "transcribe.completed"
-            ]
+            "webhook_uri": "",
+            "webhook_method": ""
         }'
-
-Delete a Webhook
-----------------
-
-Remove a webhook when it's no longer needed.
-
-.. code::
-
-    $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/webhooks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=<YOUR_AUTH_TOKEN>'
 
 Webhook Event Types
 -------------------
@@ -179,8 +122,6 @@ Your webhook endpoint should accept POST requests and process the JSON payload. 
 .. code::
 
     from flask import Flask, request, jsonify
-    import hmac
-    import hashlib
 
     app = Flask(__name__)
 
@@ -374,9 +315,8 @@ Best Practices
 - Implement retry logic for failed processing
 
 **5. Event Filtering:**
-- Subscribe only to events you need
-- Filter events in your webhook handler
-- Update webhook configuration as requirements change
+- Filter events in your webhook handler based on the ``type`` field
+- Process only events relevant to your application
 
 **6. Monitoring:**
 - Track webhook delivery success/failure rates
@@ -424,7 +364,7 @@ Email recordings to stakeholders when ready:
     if event_type == 'recording_updated':
         recording = payload['data']
 
-        if recording['status'] == 'done':
+        if recording['status'] == 'ended':
             # Send email with recording info
             email.send(
                 to='team@company.com',

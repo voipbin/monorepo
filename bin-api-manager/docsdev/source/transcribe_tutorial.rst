@@ -73,18 +73,20 @@ For existing calls or conferences, start transcription manually by making an API
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/transcribes?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "resource_type": "call",
-            "resource_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "language": "en-US"
+            "reference_type": "call",
+            "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "language": "en-US",
+            "direction": "both"
         }'
 
     {
         "id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
         "customer_id": "12345678-1234-1234-1234-123456789012",
-        "resource_type": "call",
-        "resource_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "reference_type": "call",
+        "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "language": "en-US",
-        "status": "active",
+        "direction": "both",
+        "status": "progressing",
         "tm_create": "2026-01-20 12:00:00.000000",
         "tm_update": "2026-01-20 12:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -97,9 +99,10 @@ For existing calls or conferences, start transcription manually by making an API
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/transcribes?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "resource_type": "conference",
-            "resource_id": "c1d2e3f4-a5b6-7890-cdef-123456789abc",
-            "language": "en-US"
+            "reference_type": "confbridge",
+            "reference_id": "c1d2e3f4-a5b6-7890-cdef-123456789abc",
+            "language": "en-US",
+            "direction": "both"
         }'
 
 **Transcribe a Recording:**
@@ -109,9 +112,10 @@ For existing calls or conferences, start transcription manually by making an API
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/transcribes?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "resource_type": "recording",
-            "resource_id": "r1s2t3u4-v5w6-x789-yz01-234567890def",
-            "language": "en-US"
+            "reference_type": "recording",
+            "reference_id": "r1s2t3u4-v5w6-x789-yz01-234567890def",
+            "language": "en-US",
+            "direction": "both"
         }'
 
 Get Transcription Results
@@ -128,10 +132,11 @@ Retrieve transcription data after the transcription completes or during real-tim
     {
         "id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
         "customer_id": "12345678-1234-1234-1234-123456789012",
-        "resource_type": "call",
-        "resource_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "reference_type": "call",
+        "reference_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "language": "en-US",
-        "status": "completed",
+        "direction": "both",
+        "status": "done",
         "tm_create": "2026-01-20 12:00:00.000000",
         "tm_update": "2026-01-20 12:05:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"
@@ -531,7 +536,7 @@ Transcription Lifecycle
 
 .. code::
 
-    Status: "active"
+    Status: "progressing"
     → Transcripts being generated in real-time
 
 **3. Receive Transcripts:**
@@ -546,7 +551,7 @@ Transcription Lifecycle
 
 .. code::
 
-    Status: "completed"
+    Status: "done"
     → All transcripts available via API
 
 Troubleshooting

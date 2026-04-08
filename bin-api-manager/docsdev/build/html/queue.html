@@ -269,13 +269,13 @@
                                   <span class="o">|</span>
                                   <span class="n">v</span>
                        <span class="o">+------------------+</span>
-       <span class="n">wait_timeout</span><span class="o">---&gt;|</span>     <span class="n">waiting</span>      <span class="o">|</span>
-       <span class="n">exceeded</span>        <span class="o">|</span> <span class="p">(</span><span class="ow">in</span> <span class="n">wait</span> <span class="n">flow</span><span class="p">)</span>   <span class="o">|</span>
-           <span class="o">|</span>           <span class="o">+--------+---------+</span>
-           <span class="o">|</span>                    <span class="o">|</span> <span class="n">agent</span> <span class="n">found</span>
-           <span class="o">|</span>                    <span class="n">v</span>
-           <span class="o">|</span>           <span class="o">+------------------+</span>
-           <span class="o">|</span>           <span class="o">|</span>    <span class="n">connecting</span>    <span class="o">|</span>
+       <span class="n">wait_timeout</span><span class="o">---&gt;|</span>     <span class="n">waiting</span>      <span class="o">|&lt;---+</span>
+       <span class="n">exceeded</span>        <span class="o">|</span> <span class="p">(</span><span class="ow">in</span> <span class="n">wait</span> <span class="n">flow</span><span class="p">)</span>   <span class="o">|</span>    <span class="o">|</span>
+           <span class="o">|</span>           <span class="o">+--------+---------+</span>    <span class="o">|</span>
+           <span class="o">|</span>                    <span class="o">|</span> <span class="n">agent</span> <span class="n">found</span>  <span class="o">|</span> <span class="n">kick</span> <span class="n">requested</span>
+           <span class="o">|</span>                    <span class="n">v</span>              <span class="o">|</span>
+           <span class="o">|</span>           <span class="o">+------------------+</span>    <span class="o">|</span>
+           <span class="o">|</span>           <span class="o">|</span>    <span class="n">connecting</span>    <span class="o">|----+</span>
            <span class="o">|</span>           <span class="o">|</span>  <span class="p">(</span><span class="n">dialing</span> <span class="n">agent</span><span class="p">)</span> <span class="o">|</span>
            <span class="o">|</span>           <span class="o">+--------+---------+</span>
            <span class="o">|</span>                    <span class="o">|</span> <span class="n">agent</span> <span class="n">joins</span>
@@ -285,12 +285,12 @@
            <span class="o">|</span>           <span class="o">|</span> <span class="p">(</span><span class="n">agent</span> <span class="n">on</span> <span class="n">call</span><span class="p">)</span>  <span class="o">|</span>                <span class="o">|</span>
            <span class="o">|</span>           <span class="o">+--------+---------+</span>                <span class="o">|</span>
            <span class="o">|</span>                    <span class="o">|</span>                          <span class="o">|</span>
-           <span class="o">|</span>           <span class="o">+--------+--------+</span>                 <span class="o">|</span>
-           <span class="o">|</span>           <span class="n">v</span>                 <span class="n">v</span>                 <span class="n">v</span>
-           <span class="o">|</span>    <span class="o">+------------+</span>    <span class="o">+-------------+</span>
-           <span class="o">+---&gt;|</span>  <span class="n">abandoned</span> <span class="o">|</span>    <span class="o">|</span>    <span class="n">done</span>     <span class="o">|</span>
-                <span class="o">|</span>  <span class="p">(</span><span class="n">failed</span><span class="p">)</span>  <span class="o">|</span>    <span class="o">|</span> <span class="p">(</span><span class="n">success</span><span class="p">)</span>   <span class="o">|</span>
-                <span class="o">+------------+</span>    <span class="o">+-------------+</span>
+           <span class="o">|</span>    <span class="o">+----------+</span>   <span class="o">+--------+--------+</span>         <span class="o">|</span>
+           <span class="o">|</span>    <span class="o">|</span> <span class="n">kicking</span>  <span class="o">|</span>   <span class="n">v</span>                 <span class="n">v</span>         <span class="n">v</span>
+           <span class="o">+---&gt;|</span>          <span class="o">|</span>  <span class="o">+------------+</span>    <span class="o">+-------------+</span>
+           <span class="o">+---&gt;|</span> <span class="p">(</span><span class="n">kicked</span><span class="p">)</span> <span class="o">|</span>  <span class="o">|</span>  <span class="n">abandoned</span> <span class="o">|</span>    <span class="o">|</span>    <span class="n">done</span>     <span class="o">|</span>
+                <span class="o">+----------+</span>  <span class="o">|</span>  <span class="p">(</span><span class="n">failed</span><span class="p">)</span>  <span class="o">|</span>    <span class="o">|</span> <span class="p">(</span><span class="n">success</span><span class="p">)</span>   <span class="o">|</span>
+                              <span class="o">+------------+</span>    <span class="o">+-------------+</span>
 </pre></div>
 </div>
 <p><strong>State Descriptions</strong></p>
@@ -1034,7 +1034,7 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
 <li><p>At least one tag ID (UUID). Create tags via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/tags</span></code> or obtain existing ones from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. Tags define the skills required for agents to receive calls from this queue.</p></li>
 <li><p>At least one agent configured with matching tags. Create agents via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/agents</span></code> and assign tags via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/agents/{id}</span></code>. Verify agent tags with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents/{id}</span></code>.</p></li>
-<li><p>(Optional) A wait flow with actions for callers to hear while waiting. Common actions include <code class="docutils literal notranslate"><span class="pre">talk</span></code> (text-to-speech announcements) and <code class="docutils literal notranslate"><span class="pre">sleep</span></code> (pause between announcements).</p></li>
+<li><p>(Optional) A wait flow ID (UUID) referencing a flow that defines what callers hear while waiting. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> with actions like <code class="docutils literal notranslate"><span class="pre">talk</span></code> (text-to-speech announcements) and <code class="docutils literal notranslate"><span class="pre">sleep</span></code> (pause between announcements).</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1043,10 +1043,9 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
 </div>
 <section id="create-a-new-queue">
 <h3>Create a new queue<a class="headerlink" href="#create-a-new-queue" title="Link to this heading"></a></h3>
-<p>Create a new queue</p>
+<p>Create a new queue.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/queues?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
---header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --data-raw &#39;{
     &quot;name&quot;: &quot;test queue&quot;,
     &quot;detail&quot;: &quot;test queue detail&quot;,
@@ -1054,31 +1053,38 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
     &quot;tag_ids&quot;: [
         &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
     ],
-    &quot;wait_actions&quot;: [
-        {
-            &quot;type&quot;: &quot;talk&quot;,
-            &quot;option&quot;: {
-                &quot;text&quot;: &quot;All of the agents are busy. Thank you for your waiting.&quot;,
-                &quot;language&quot;: &quot;en-US&quot;
-            }
-        },
-        {
-            &quot;type&quot;: &quot;sleep&quot;,
-            &quot;option&quot;: {
-                &quot;duration&quot;: 10000
-            }
-        }
-
-    ],
-    &quot;timeout_wait&quot;: 100000,
-    &quot;timeout_service&quot;: 10000000
+    &quot;wait_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;wait_timeout&quot;: 100000,
+    &quot;service_timeout&quot;: 10000000
 }&#39;
+
+{
+    &quot;id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
+    &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
+    &quot;name&quot;: &quot;test queue&quot;,
+    &quot;detail&quot;: &quot;test queue detail&quot;,
+    &quot;routing_method&quot;: &quot;random&quot;,
+    &quot;tag_ids&quot;: [
+        &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
+    ],
+    &quot;wait_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;wait_timeout&quot;: 100000,
+    &quot;service_timeout&quot;: 10000000,
+    &quot;wait_queuecall_ids&quot;: [],
+    &quot;service_queuecall_ids&quot;: [],
+    &quot;total_incoming_count&quot;: 0,
+    &quot;total_serviced_count&quot;: 0,
+    &quot;total_abandoned_count&quot;: 0,
+    &quot;tm_create&quot;: &quot;2021-12-24 06:33:10.556226&quot;,
+    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> field must contain valid tag UUIDs obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. The <code class="docutils literal notranslate"><span class="pre">wait_actions</span></code> array defines what callers hear while waiting – use <code class="docutils literal notranslate"><span class="pre">talk</span></code> for announcements and <code class="docutils literal notranslate"><span class="pre">sleep</span></code> for pauses. Timeout values (<code class="docutils literal notranslate"><span class="pre">timeout_wait</span></code>, <code class="docutils literal notranslate"><span class="pre">timeout_service</span></code>) are in <strong>milliseconds</strong>: <code class="docutils literal notranslate"><span class="pre">100000</span></code> = 100 seconds, <code class="docutils literal notranslate"><span class="pre">10000000</span></code> = ~2.8 hours.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> field must contain valid tag UUIDs obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>. The <code class="docutils literal notranslate"><span class="pre">wait_flow_id</span></code> (UUID) references a flow created via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> that defines what callers hear while waiting – use actions like <code class="docutils literal notranslate"><span class="pre">talk</span></code> for announcements and <code class="docutils literal notranslate"><span class="pre">sleep</span></code> for pauses within that flow. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no wait flow is needed. Timeout values (<code class="docutils literal notranslate"><span class="pre">wait_timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">service_timeout</span></code>) are in <strong>milliseconds</strong>: <code class="docutils literal notranslate"><span class="pre">100000</span></code> = 100 seconds, <code class="docutils literal notranslate"><span class="pre">10000000</span></code> = ~2.8 hours.</p>
 </div>
 </section>
 <section id="regenerate-direct-queue-hash">
@@ -1112,26 +1118,18 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;99bf739a-932f-433c-b1bf-103d33d7e9bb&quot;,
+            &quot;customer_id&quot;: &quot;7a1b2c3d-4e5f-6789-abcd-ef0123456789&quot;,
             &quot;name&quot;: &quot;test queue&quot;,
             &quot;detail&quot;: &quot;test queue detail&quot;,
             &quot;routing_method&quot;: &quot;random&quot;,
             &quot;tag_ids&quot;: [
                 &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;
             ],
-            &quot;wait_actions&quot;: [
-                {
-                    &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-                    &quot;next_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-                    &quot;type&quot;: &quot;talk&quot;,
-                    &quot;option&quot;: {
-                        &quot;text&quot;: &quot;Hello. This is test queue. Please wait.&quot;,
-                        &quot;language&quot;: &quot;en-US&quot;
-                    }
-                }
-            ],
+            &quot;direct_hash&quot;: &quot;&quot;,
+            &quot;wait_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;wait_timeout&quot;: 100000,
             &quot;service_timeout&quot;: 10000000,
-            &quot;wait_queue_call_ids&quot;: [
+            &quot;wait_queuecall_ids&quot;: [
                 &quot;2eb40044-2e5e-4dae-b41e-61968e4febf9&quot;,
                 &quot;b0aa4639-fea3-4727-8b86-44667d8f4c27&quot;,
                 &quot;ec590f5b-6de5-477b-905b-1833dde213a0&quot;,
@@ -1139,12 +1137,10 @@ Average Wait Time = Sum of all duration_waiting / total_incoming_count
                 &quot;467fdfc2-fa2b-40f6-82cf-18dcb4c952c3&quot;,
                 &quot;2973648e-5989-4f75-9bda-b356d7a470dc&quot;
             ],
-            &quot;service_queue_call_ids&quot;: [],
+            &quot;service_queuecall_ids&quot;: [],
             &quot;total_incoming_count&quot;: 76,
             &quot;total_serviced_count&quot;: 70,
             &quot;total_abandoned_count&quot;: 21,
-            &quot;total_waittime&quot;: 338789,
-            &quot;total_service_duration&quot;: 4050690,
             &quot;tm_create&quot;: &quot;2021-12-24 06:33:10.556226&quot;,
             &quot;tm_update&quot;: &quot;2022-02-20 05:30:31.067539&quot;,
             &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;

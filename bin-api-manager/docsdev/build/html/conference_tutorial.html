@@ -188,7 +188,7 @@
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
     <section id="tutorial">
-<h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<span id="conference-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <p>Before working with conferences, you need:</p>
@@ -202,42 +202,31 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>Conferences are created with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> and begin in <code class="docutils literal notranslate"><span class="pre">starting</span></code> status, quickly transitioning to <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. Participants do not join via the conference API directly – they join through flow actions (<code class="docutils literal notranslate"><span class="pre">conference_join</span></code>). To remove a participant, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferencecalls/{conferencecall_id}</span></code>. To terminate the entire conference, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferences/{conference_id}</span></code>.</p>
 </div>
-<section id="install-channel-line">
-<h3>Install channel: line<a class="headerlink" href="#install-channel-line" title="Link to this heading"></a></h3>
-</section>
-</section>
-<section id="example">
-<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/setup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;reference_type&quot;: &quot;line&quot;
-    }&#39;
-</pre></div>
-</div>
 <section id="get-list-of-conferences">
 <h3>Get list of conferences<a class="headerlink" href="#get-list-of-conferences" title="Link to this heading"></a></h3>
 </section>
 </section>
-<section id="id1">
-<h2>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;17039950-eab0-421d-a5f5-05acd1ac6801&quot;,
-            &quot;user_id&quot;: 1,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
             &quot;type&quot;: &quot;conference&quot;,
-            &quot;status&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;,
+            &quot;status&quot;: &quot;progressing&quot;,
+            &quot;name&quot;: &quot;team standup&quot;,
+            &quot;detail&quot;: &quot;Daily standup conference&quot;,
             &quot;conferencecall_ids&quot;: [],
-            &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;recording_ids&quot;: null,
+            &quot;recording_ids&quot;: [],
+            &quot;transcribe_ids&quot;: [],
+            &quot;direct_hash&quot;: &quot;&quot;,
+            &quot;tm_end&quot;: null,
             &quot;tm_create&quot;: &quot;2021-02-04 02:55:39.659316&quot;,
             &quot;tm_update&quot;: &quot;2021-02-04 02:56:07.525985&quot;,
-            &quot;tm_delete&quot;: &quot;&quot;
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
         },
         ...
     ],
@@ -249,23 +238,25 @@
 <h3>Get detail of conference<a class="headerlink" href="#get-detail-of-conference" title="Link to this heading"></a></h3>
 </section>
 </section>
-<section id="id2">
-<h2>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="id1">
+<h2>Example<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences/0e7112d7-6ddc-47ea-bba5-223a3a55ff79?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;0e7112d7-6ddc-47ea-bba5-223a3a55ff79&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;type&quot;: &quot;conference&quot;,
-    &quot;status&quot;: &quot;&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;name&quot;: &quot;team standup&quot;,
+    &quot;detail&quot;: &quot;Daily standup conference&quot;,
     &quot;conferencecall_ids&quot;: [],
-    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;recording_ids&quot;: [],
+    &quot;transcribe_ids&quot;: [],
+    &quot;direct_hash&quot;: &quot;&quot;,
+    &quot;tm_end&quot;: null,
     &quot;tm_create&quot;: &quot;2021-02-03 10:44:42.163464&quot;,
     &quot;tm_update&quot;: &quot;2021-02-03 10:52:08.488301&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
@@ -273,9 +264,10 @@
 <h3>Create a new conference<a class="headerlink" href="#create-a-new-conference" title="Link to this heading"></a></h3>
 </section>
 </section>
-<section id="id3">
-<h2>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<section id="id2">
+<h2>Example<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;type&quot;: &quot;conference&quot;,
         &quot;name&quot;: &quot;test conference&quot;,
@@ -284,17 +276,19 @@
 
 {
     &quot;id&quot;: &quot;85252d7b-777b-4580-9420-4df8c6adfc30&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;type&quot;: &quot;conference&quot;,
-    &quot;status&quot;: &quot;&quot;,
+    &quot;status&quot;: &quot;starting&quot;,
     &quot;name&quot;: &quot;test conference&quot;,
     &quot;detail&quot;: &quot;test conference for example&quot;,
     &quot;conferencecall_ids&quot;: [],
-    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;recording_ids&quot;: null,
+    &quot;recording_ids&quot;: [],
+    &quot;transcribe_ids&quot;: [],
+    &quot;direct_hash&quot;: &quot;&quot;,
+    &quot;tm_end&quot;: null,
     &quot;tm_create&quot;: &quot;2021-02-04 03:05:57.710583&quot;,
-    &quot;tm_update&quot;: &quot;&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    &quot;tm_update&quot;: &quot;2021-02-04 03:05:57.710583&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
@@ -307,20 +301,20 @@
 </div>
 </section>
 </section>
-<section id="id4">
-<h2>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<section id="id3">
+<h2>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/conferencecalls/4833755c-f5d0-4bf2-a101-7d3a7e5e586f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,   // Conferencecall ID (UUID)
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,   // Customer UUID
-    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,   // Parent conference UUID
-    &quot;reference_type&quot;: &quot;call&quot;,   // enum: call, line
-    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,   // The call&#39;s UUID
-    &quot;status&quot;: &quot;leaving&quot;,   // enum: joining, joined, leaving, leaved
-    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,   // ISO 8601 timestamp
+    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,
+    &quot;reference_type&quot;: &quot;call&quot;,
+    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,
+    &quot;status&quot;: &quot;leaving&quot;,
+    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,
     &quot;tm_update&quot;: &quot;2022-08-09 03:54:10.035297&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;   // 9999-01-01 means not deleted
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
@@ -336,7 +330,11 @@
     &quot;status&quot;: &quot;progressing&quot;,
     &quot;name&quot;: &quot;test conference&quot;,
     &quot;detail&quot;: &quot;test conference for example.&quot;,
+    &quot;conferencecall_ids&quot;: [],
+    &quot;recording_ids&quot;: [],
+    &quot;transcribe_ids&quot;: [],
     &quot;direct_hash&quot;: &quot;b3c4d5e6f7a8&quot;,
+    &quot;tm_end&quot;: null,
     &quot;tm_create&quot;: &quot;2022-02-03 06:08:56.672025&quot;,
     &quot;tm_update&quot;: &quot;2022-08-06 19:11:13.040418&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
@@ -399,26 +397,22 @@
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
-<li><a class="reference internal" href="#install-channel-line">Install channel: line</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#example">Example</a><ul>
 <li><a class="reference internal" href="#get-list-of-conferences">Get list of conferences</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id1">Example</a><ul>
+<li><a class="reference internal" href="#example">Example</a><ul>
 <li><a class="reference internal" href="#get-detail-of-conference">Get detail of conference</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id2">Example</a><ul>
+<li><a class="reference internal" href="#id1">Example</a><ul>
 <li><a class="reference internal" href="#create-a-new-conference">Create a new conference</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id3">Example</a><ul>
+<li><a class="reference internal" href="#id2">Example</a><ul>
 <li><a class="reference internal" href="#kick-the-conferencecall-from-the-conference">Kick the conferencecall from the conference</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id4">Example</a><ul>
+<li><a class="reference internal" href="#id3">Example</a><ul>
 <li><a class="reference internal" href="#regenerate-direct-conference-hash">Regenerate direct conference hash</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>

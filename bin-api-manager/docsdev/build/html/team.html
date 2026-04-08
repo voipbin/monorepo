@@ -201,14 +201,14 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Medium</p></li>
 <li><p><strong>Cost:</strong> Chargeable (credit deduction per AI session — each member consumes LLM, TTS, and STT credits while active)</p></li>
-<li><p><strong>Async:</strong> Yes. Team conversations run asynchronously during calls. Monitor via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> or WebSocket events.</p></li>
+<li><p><strong>Async:</strong> Yes. Team conversations run asynchronously during calls. Monitor via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> or WebSocket events.</p></li>
 </ul>
 </div>
 <p>A <strong>Team</strong> models a multi-agent conversation as a directed graph. Each node in the graph is a <strong>Member</strong> backed by a reusable <a class="reference internal" href="ai_struct_ai.html#ai-struct-ai"><span class="std std-ref">AI configuration</span></a>. Directed edges between members are <strong>Transitions</strong> — LLM tool-functions that, when invoked by the currently active AI, hand the conversation to the next member.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>A Team is a configuration resource, not a runtime entity. You create a Team via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/teams</span></code>, then reference it in a flow action (e.g., <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> with <code class="docutils literal notranslate"><span class="pre">team_id</span></code>) to activate it during a call. The Team itself does not start conversations — it defines the graph that the flow engine traverses.</p>
+<p>A Team is a configuration resource, not a runtime entity. You create a Team via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/teams</span></code>, then reference it in a flow action (e.g., <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> with <code class="docutils literal notranslate"><span class="pre">team_id</span></code>) to activate it during a call. The Team itself does not start conversations — it defines the graph that the flow engine traverses.</p>
 </div>
 </section>
 <section id="how-it-works">
@@ -317,6 +317,43 @@ Members (nodes)              Transitions (edges)
 <li><p><strong>Multi-step onboarding</strong> — A greeting agent collects basic info, then hands off to a verification agent, then to an account setup agent.</p></li>
 <li><p><strong>Escalation chains</strong> — A first-line support AI attempts resolution, then escalates to a senior agent if needed.</p></li>
 <li><p><strong>Survey + follow-up</strong> — A survey agent collects responses, then transitions to a follow-up agent for scheduling or issue resolution.</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>Team conversation does not start:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> does not match any member’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in the team.</p></li>
+<li><p><strong>Fix:</strong> Verify that <code class="docutils literal notranslate"><span class="pre">start_member_id</span></code> on the team matches one of the member IDs in the <code class="docutils literal notranslate"><span class="pre">members</span></code> array. Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/teams/{id}</span></code> to inspect the current configuration.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>LLM never triggers a transition:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The transition <code class="docutils literal notranslate"><span class="pre">description</span></code> is too vague for the LLM to decide when to invoke it.</p></li>
+<li><p><strong>Fix:</strong> Write clear, conditional descriptions: <code class="docutils literal notranslate"><span class="pre">&quot;Transfer</span> <span class="pre">to</span> <span class="pre">billing</span> <span class="pre">when</span> <span class="pre">the</span> <span class="pre">caller</span> <span class="pre">asks</span> <span class="pre">about</span> <span class="pre">invoices,</span> <span class="pre">payments,</span> <span class="pre">or</span> <span class="pre">account</span> <span class="pre">charges.&quot;</span></code> Avoid generic descriptions like <code class="docutils literal notranslate"><span class="pre">&quot;Transfer</span> <span class="pre">to</span> <span class="pre">billing&quot;</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Caller hears silence after a transition:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The target member’s AI configuration has no TTS service configured (<code class="docutils literal notranslate"><span class="pre">tts_type</span></code> is empty).</p></li>
+<li><p><strong>Fix:</strong> Configure a TTS type on the AI configuration referenced by the target member’s <code class="docutils literal notranslate"><span class="pre">ai_id</span></code>. Alternatively, the system will fall back to the previous member’s TTS if the new member’s TTS is not set.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 when creating a team with an ``ai_id``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The AI configuration UUID does not exist or belongs to another customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the <code class="docutils literal notranslate"><span class="pre">ai_id</span></code> was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/ais</span></code> list call with your authentication token.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </section>
 <section id="related-documentation">
@@ -857,8 +894,8 @@ Members (nodes)              Transitions (edges)
 <p>This endpoint requires no request body. The <code class="docutils literal notranslate"><span class="pre">direct_hash</span></code> in the response is the new hash — the previous hash is permanently invalidated. The direct SIP URI format is <code class="docutils literal notranslate"><span class="pre">sip:direct.&lt;hash&gt;&#64;sip.voipbin.net</span></code>.</p>
 </div>
 </section>
-<section id="troubleshooting">
-<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<section id="id3">
+<h3>Troubleshooting<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
@@ -938,6 +975,7 @@ Members (nodes)              Transitions (edges)
 </li>
 <li><a class="reference internal" href="#runtime-behavior">Runtime Behavior</a></li>
 <li><a class="reference internal" href="#use-cases">Use Cases</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 <li><a class="reference internal" href="#team-struct-team">Team</a><ul>
 <li><a class="reference internal" href="#team-struct-team-team">Team</a><ul>
@@ -957,7 +995,7 @@ Members (nodes)              Transitions (edges)
 <li><a class="reference internal" href="#step-6-delete-a-team">Step 6: Delete a Team</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#regenerate-direct-team-hash">Regenerate direct team hash</a></li>
-<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id3">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

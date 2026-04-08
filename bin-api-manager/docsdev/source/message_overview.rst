@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Chargeable (per message segment sent)
-   * **Async:** Yes. ``POST /messages`` returns immediately with status ``sending``. Poll ``GET /messages/{id}`` or use webhooks to track delivery status changes.
+   * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/messages`` returns immediately with target status ``queued``. Poll ``GET https://api.voipbin.net/v1.0/messages/{id}`` or use webhooks to track delivery status changes.
 
 VoIPBIN's Message API enables you to send and receive SMS (Short Message Service) and MMS (Multimedia Messaging Service) globally. Whether you need to send notifications, alerts, verification codes, or marketing messages, the Message API provides a reliable solution for text-based communication.
 
@@ -62,21 +62,21 @@ Message Lifecycle
 -----------------
 Every message moves through a predictable set of states from sending to delivery.
 
-**Outbound Message States**
+**Outbound Message Target States**
 
 ::
 
-    POST /messages
+    POST https://api.voipbin.net/v1.0/messages
            |
            v
     +------------+
-    |  sending   |
+    |  queued    |
     +-----+------+
           |
           v
-    +------------+     delivery failed     +------------+
-    |   sent     |------------------------>|   failed   |
-    +-----+------+                         +------------+
+    +------------+     gateway timeout     +-------------+
+    |   sent     |------------------------>| gw_timeout  |
+    +-----+------+                         +-------------+
           |
           | carrier accepted
           v
@@ -84,18 +84,41 @@ Every message moves through a predictable set of states from sending to delivery
     | delivered  |------------------------>|   failed   |
     +------------+                         +------------+
 
-**State Descriptions**
+**Inbound Message Target States**
+
+::
+
+    Carrier delivers message
+           |
+           v
+    +------------+
+    | received   |
+    +-----+------+
+          |
+          v
+    +------------+
+    | delivered  |
+    +------------+
+
+**Target Status Descriptions**
 
 +-------------+------------------------------------------------------------------+
-| State       | What's happening                                                 |
+| Status      | What's happening                                                 |
 +=============+==================================================================+
-| sending     | Message is being processed and routed to carrier                 |
+| queued      | Message is queued and submitted to the gateway                   |
 +-------------+------------------------------------------------------------------+
-| sent        | Message has been sent to carrier network                         |
+| sent        | Gateway confirmed the message has been sent downstream           |
 +-------------+------------------------------------------------------------------+
-| delivered   | Carrier confirmed delivery to recipient device                   |
+| delivered   | Message delivered to recipient (outbound) or transmitted to you  |
+|             | (inbound)                                                        |
 +-------------+------------------------------------------------------------------+
-| failed      | Message could not be delivered (invalid number, carrier error)   |
+| gw_timeout  | No delivery receipt received from gateway                        |
++-------------+------------------------------------------------------------------+
+| dlr_timeout | No delivery receipt received from downstream carrier             |
++-------------+------------------------------------------------------------------+
+| failed      | Delivery failure reported by gateway or downstream carrier       |
++-------------+------------------------------------------------------------------+
+| received    | Inbound message received by VoIPBIN messaging services           |
 +-------------+------------------------------------------------------------------+
 
 **Inbound Message Flow**
@@ -132,7 +155,7 @@ Send messages directly using the REST API.
        |                           | Route to carrier          |
        |                           +-------------------------->|
        |  message_id               |                           |
-       |  status: "sending"        |                           |
+       |  target status: "queued"  |                           |
        |<--------------------------+                           |
        |                           |                           |
        | Webhook: status update    |   SMS delivered           |
@@ -141,7 +164,7 @@ Send messages directly using the REST API.
 
 .. note:: **AI Implementation Hint**
 
-   All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. For example, ``+15551234567`` (US) or ``+821012345678`` (Korea). The ``source`` must be a number you own, obtainable via ``GET /numbers``. Unicode characters (emoji, non-Latin scripts) reduce the per-segment character limit from 160 to 70.
+   All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. For example, ``+15551234567`` (US) or ``+821012345678`` (Korea). The ``source`` must be a number you own, obtainable via ``GET https://api.voipbin.net/v1.0/numbers``. Unicode characters (emoji, non-Latin scripts) reduce the per-segment character limit from 160 to 70.
 
 **Send SMS Example:**
 

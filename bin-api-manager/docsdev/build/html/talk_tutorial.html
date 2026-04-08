@@ -196,245 +196,236 @@
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
 <li><p>Agent IDs (UUIDs) for the participants you want to add. Obtain agent IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
-<li><p>(For threading) An existing message ID to reply to. Obtain message IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/service_agents/talk_messages</span></code>.</p></li>
+<li><p>(For threading) An existing message ID to reply to. Obtain message IDs via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/talk_messages</span></code>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Talk API uses the <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_chats</span></code> and <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_messages</span></code> endpoints. The agent making the request must be authenticated and will automatically become a participant. When adding other participants, use their agent <code class="docutils literal notranslate"><span class="pre">id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code> as the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>.</p>
+<p>Talk API uses the <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_chats</span></code> and <code class="docutils literal notranslate"><span class="pre">/service_agents/talk_messages</span></code> endpoints. The agent making the request must be authenticated and will automatically become a participant. When adding other participants, use their agent <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code> as the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>. Chat types are: <code class="docutils literal notranslate"><span class="pre">direct</span></code> (1:1 private), <code class="docutils literal notranslate"><span class="pre">group</span></code> (private multi-user), or <code class="docutils literal notranslate"><span class="pre">talk</span></code> (public channel).</p>
 </div>
 <section id="create-a-talk">
 <h3>Create a Talk<a class="headerlink" href="#create-a-talk" title="Link to this heading"></a></h3>
 <p>Create a new talk conversation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span>
-<span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;type&quot;: &quot;normal&quot;
+}&#39;
+
+{
+    &quot;id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;normal&quot;,
+    &quot;member_count&quot;: 0,
+    &quot;tm_create&quot;: &quot;2024-01-17 10:30:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2024-01-17 10:30:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>
 <section id="add-participants">
 <h3>Add Participants<a class="headerlink" href="#add-participants" title="Link to this heading"></a></h3>
 <p>Add agents to the talk:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span><span class="o">/</span><span class="n">participants</span>
-<span class="p">{</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f7g&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_joined&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:31:00.000000&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813/participants?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;owner_type&quot;: &quot;agent&quot;,
+    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;
+}&#39;
+
+{
+    &quot;id&quot;: &quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;agent&quot;,
+    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
+    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;tm_joined&quot;: &quot;2024-01-17 10:31:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>
 <section id="send-a-message">
 <h3>Send a Message<a class="headerlink" href="#send-a-message" title="Link to this heading"></a></h3>
 <p>Send a message to the talk:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span>
-<span class="p">{</span>
-    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello team! Let&#39;s discuss the new feature.&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello team! Let&#39;s discuss the new feature.&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[]</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;type&quot;: &quot;normal&quot;,
+    &quot;text&quot;: &quot;Hello team! Let&#39;\&#39;&#39;s discuss the new feature.&quot;
+}&#39;
+
+{
+    &quot;id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;agent&quot;,
+    &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;type&quot;: &quot;normal&quot;,
+    &quot;text&quot;: &quot;Hello team! Let&#39;s discuss the new feature.&quot;,
+    &quot;medias&quot;: [],
+    &quot;metadata&quot;: {
+        &quot;reactions&quot;: []
+    },
+    &quot;tm_create&quot;: &quot;2024-01-17 10:32:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2024-01-17 10:32:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>
 <section id="reply-to-a-message-threading">
 <h3>Reply to a Message (Threading)<a class="headerlink" href="#reply-to-a-message-threading" title="Link to this heading"></a></h3>
 <p>Reply to an existing message by specifying the parent_id:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span>
-<span class="p">{</span>
-    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Great idea! I&#39;ll start working on the requirements.&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Great idea! I&#39;ll start working on the requirements.&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[]</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;parent_id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
+    &quot;type&quot;: &quot;normal&quot;,
+    &quot;text&quot;: &quot;Great idea! I&#39;\&#39;&#39;ll start working on the requirements.&quot;
+}&#39;
+
+{
+    &quot;id&quot;: &quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;agent&quot;,
+    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
+    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;parent_id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
+    &quot;type&quot;: &quot;normal&quot;,
+    &quot;text&quot;: &quot;Great idea! I&#39;ll start working on the requirements.&quot;,
+    &quot;medias&quot;: [],
+    &quot;metadata&quot;: {
+        &quot;reactions&quot;: []
+    },
+    &quot;tm_create&quot;: &quot;2024-01-17 10:33:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2024-01-17 10:33:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>
 <section id="add-a-reaction">
 <h3>Add a Reaction<a class="headerlink" href="#add-a-reaction" title="Link to this heading"></a></h3>
 <p>Add an emoji reaction to a message:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_messages</span><span class="o">/</span><span class="n">b2d4f7a1</span><span class="o">-</span><span class="mi">3</span><span class="n">c2e</span><span class="o">-</span><span class="mi">4</span><span class="n">f5a</span><span class="o">-</span><span class="mi">8</span><span class="n">d9c</span><span class="o">-</span><span class="mf">2e3</span><span class="n">f4a5b6c7d</span><span class="o">/</span><span class="n">reactions</span>
-<span class="p">{</span>
-    <span class="s2">&quot;emoji&quot;</span><span class="p">:</span> <span class="s2">&quot;👍&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Great idea! I&#39;ll start working on the requirements.&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
-    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;emoji&quot;</span><span class="p">:</span> <span class="s2">&quot;👍&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:34:00.000000&quot;</span>
-            <span class="p">}</span>
-        <span class="p">]</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:34:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages/b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d/reactions?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;emoji&quot;: &quot;thumbsup&quot;
+}&#39;
+
+{
+    &quot;id&quot;: &quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;agent&quot;,
+    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
+    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;parent_id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
+    &quot;type&quot;: &quot;normal&quot;,
+    &quot;text&quot;: &quot;Great idea! I&#39;ll start working on the requirements.&quot;,
+    &quot;medias&quot;: [],
+    &quot;metadata&quot;: {
+        &quot;reactions&quot;: [
+            {
+                &quot;emoji&quot;: &quot;thumbsup&quot;,
+                &quot;owner_type&quot;: &quot;agent&quot;,
+                &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+                &quot;tm_create&quot;: &quot;2024-01-17 10:34:00.000000&quot;
+            }
+        ]
+    },
+    &quot;tm_create&quot;: &quot;2024-01-17 10:33:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2024-01-17 10:34:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>
 <section id="list-messages">
 <h3>List Messages<a class="headerlink" href="#list-messages" title="Link to this heading"></a></h3>
 <p>Retrieve messages from a talk with pagination:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /service_agents/talk_messages?page_size=50
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello team! Let&#39;s discuss the new feature.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
-            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[]</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:32:00.000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Great idea! I&#39;ll start working on the requirements.&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
-            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;reactions&quot;</span><span class="p">:</span> <span class="p">[</span>
-                    <span class="p">{</span>
-                        <span class="s2">&quot;emoji&quot;</span><span class="p">:</span> <span class="s2">&quot;👍&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:34:00.000000&quot;</span>
-                    <span class="p">}</span>
-                <span class="p">]</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:34:00.000000&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;next_page_token&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:33:00.000000&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/service_agents/talk_messages?page_size=50&amp;token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;owner_type&quot;: &quot;agent&quot;,
+            &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+            &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+            &quot;type&quot;: &quot;normal&quot;,
+            &quot;text&quot;: &quot;Hello team! Let&#39;s discuss the new feature.&quot;,
+            &quot;medias&quot;: [],
+            &quot;metadata&quot;: {
+                &quot;reactions&quot;: []
+            },
+            &quot;tm_create&quot;: &quot;2024-01-17 10:32:00.000000&quot;,
+            &quot;tm_update&quot;: &quot;2024-01-17 10:32:00.000000&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+        },
+        {
+            &quot;id&quot;: &quot;b2d4f7a1-3c2e-4f5a-8d9c-2e3f4a5b6c7d&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;owner_type&quot;: &quot;agent&quot;,
+            &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
+            &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+            &quot;parent_id&quot;: &quot;a3c5e8f2-4d3a-4b5c-9e7f-1a2b3c4d5e6f&quot;,
+            &quot;type&quot;: &quot;normal&quot;,
+            &quot;text&quot;: &quot;Great idea! I&#39;ll start working on the requirements.&quot;,
+            &quot;medias&quot;: [],
+            &quot;metadata&quot;: {
+                &quot;reactions&quot;: [
+                    {
+                        &quot;emoji&quot;: &quot;thumbsup&quot;,
+                        &quot;owner_type&quot;: &quot;agent&quot;,
+                        &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+                        &quot;tm_create&quot;: &quot;2024-01-17 10:34:00.000000&quot;
+                    }
+                ]
+            },
+            &quot;tm_create&quot;: &quot;2024-01-17 10:33:00.000000&quot;,
+            &quot;tm_update&quot;: &quot;2024-01-17 10:34:00.000000&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+        }
+    ],
+    &quot;next_page_token&quot;: &quot;2024-01-17 10:33:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>
 <section id="remove-a-participant">
 <h3>Remove a Participant<a class="headerlink" href="#remove-a-participant" title="Link to this heading"></a></h3>
 <p>Remove a participant from the talk:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span><span class="o">/</span><span class="n">participants</span><span class="o">/</span><span class="n">f4d6e9b3</span><span class="o">-</span><span class="mi">5</span><span class="n">c4a</span><span class="o">-</span><span class="mi">4</span><span class="n">d5e</span><span class="o">-</span><span class="mi">9</span><span class="n">f8a</span><span class="o">-</span><span class="mi">2</span><span class="n">b3c4d5e6f7g</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f7g&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;chat_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_joined&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:31:00.000000&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813/participants/f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;f4d6e9b3-5c4a-4d5e-9f8a-2b3c4d5e6f70&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;agent&quot;,
+    &quot;owner_id&quot;: &quot;47fe0b7c-7333-46cf-8b23-61e14e62490a&quot;,
+    &quot;chat_id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;tm_joined&quot;: &quot;2024-01-17 10:31:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>
 <section id="delete-a-talk">
 <h3>Delete a Talk<a class="headerlink" href="#delete-a-talk" title="Link to this heading"></a></h3>
 <p>Delete a talk (soft delete):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">service_agents</span><span class="o">/</span><span class="n">talk_chats</span><span class="o">/</span><span class="n">e8b2e976</span><span class="o">-</span><span class="n">f043</span><span class="o">-</span><span class="mi">44</span><span class="n">c8</span><span class="o">-</span><span class="n">bb89</span><span class="o">-</span><span class="n">e214e225e813</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:30:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:35:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-17 10:35:00.000000&quot;</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/service_agents/talk_chats/e8b2e976-f043-44c8-bb89-e214e225e813?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;e8b2e976-f043-44c8-bb89-e214e225e813&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;normal&quot;,
+    &quot;member_count&quot;: 0,
+    &quot;tm_create&quot;: &quot;2024-01-17 10:30:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2024-01-17 10:35:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;2024-01-17 10:35:00.000000&quot;
+}
 </pre></div>
 </div>
 </section>

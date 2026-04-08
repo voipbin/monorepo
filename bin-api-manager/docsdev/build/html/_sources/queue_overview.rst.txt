@@ -84,13 +84,13 @@ Every call in a queue moves through a series of states:
                                       |
                                       v
                            +------------------+
-           wait_timeout--->|     waiting      |
-           exceeded        | (in wait flow)   |
-               |           +--------+---------+
-               |                    | agent found
-               |                    v
-               |           +------------------+
-               |           |    connecting    |
+           wait_timeout--->|     waiting      |<---+
+           exceeded        | (in wait flow)   |    |
+               |           +--------+---------+    |
+               |                    | agent found  | kick requested
+               |                    v              |
+               |           +------------------+    |
+               |           |    connecting    |----+
                |           |  (dialing agent) |
                |           +--------+---------+
                |                    | agent joins
@@ -100,12 +100,12 @@ Every call in a queue moves through a series of states:
                |           | (agent on call)  |                |
                |           +--------+---------+                |
                |                    |                          |
-               |           +--------+--------+                 |
-               |           v                 v                 v
-               |    +------------+    +-------------+
-               +--->|  abandoned |    |    done     |
-                    |  (failed)  |    | (success)   |
-                    +------------+    +-------------+
+               |    +----------+   +--------+--------+         |
+               |    | kicking  |   v                 v         v
+               +--->|          |  +------------+    +-------------+
+               +--->| (kicked) |  |  abandoned |    |    done     |
+                    +----------+  |  (failed)  |    | (success)   |
+                                  +------------+    +-------------+
 
 **State Descriptions**
 
@@ -117,6 +117,8 @@ Every call in a queue moves through a series of states:
 | waiting     | Caller is hearing wait flow. System is searching for agents. |
 +-------------+--------------------------------------------------------------+
 | connecting  | Agent found and being called. Caller still in wait flow.    |
++-------------+--------------------------------------------------------------+
+| kicking     | Call is being removed (kicked) from the queue.               |
 +-------------+--------------------------------------------------------------+
 | service     | Agent and caller are connected. Conversation in progress.   |
 +-------------+--------------------------------------------------------------+

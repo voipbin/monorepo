@@ -201,7 +201,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> High. Trunking involves coordinating providers, routes, and extensions together.</p></li>
 <li><p><strong>Cost:</strong> Outbound calls through trunking incur per-call charges based on the provider. Inbound call registration (extensions) is free.</p></li>
-<li><p><strong>Async:</strong> No. Trunk configuration (providers, routes, extensions) is synchronous. The actual call flow is asynchronous and can be tracked via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>.</p></li>
+<li><p><strong>Async:</strong> No. Trunk configuration (providers, routes, extensions) is synchronous. The actual call flow is asynchronous and can be tracked via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code>.</p></li>
 </ul>
 </div>
 <p>VoIPBIN’s Trunk system provides the infrastructure for SIP-based voice communication, supporting both outbound calls (trunking) and inbound calls (registration). Trunks connect VoIPBIN to the PSTN and enable SIP endpoints to communicate with external networks.</p>
@@ -387,7 +387,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Setting up a complete trunk system requires three resources created in this order: (1) a provider via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code>, (2) a route via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code> referencing the provider ID, and (3) extensions via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/extensions</span></code> for inbound registration. The provider and route handle outbound calls; extensions handle inbound calls. These are separate APIs, not a single trunk creation endpoint.</p>
+<p>Setting up a complete trunk system requires three resources created in this order: (1) a provider via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/providers</span></code>, (2) a route via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/routes</span></code> referencing the provider ID, and (3) extensions via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/extensions</span></code> for inbound registration. The provider and route handle outbound calls; extensions handle inbound calls. These are separate APIs, not a single trunk creation endpoint.</p>
 </div>
 </section>
 <section id="trunk-configuration">
@@ -661,14 +661,14 @@ consider QoS configuration</p></td>
 </section>
 </section>
 <section id="trunking">
-<h2>Trunking<a class="headerlink" href="#trunking" title="Link to this heading"></a></h2>
+<span id="trunk-overview-trunking"></span><h2>Trunking<a class="headerlink" href="#trunking" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Medium</p></li>
 <li><p><strong>Cost:</strong> Chargeable. Outbound calls through SIP trunking incur per-call charges based on destination and provider rates.</p></li>
-<li><p><strong>Async:</strong> No. Trunk configuration is synchronous. Calls placed through the trunk are asynchronous and tracked via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>.</p></li>
+<li><p><strong>Async:</strong> No. Trunk configuration is synchronous. Calls placed through the trunk are asynchronous and tracked via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code>.</p></li>
 </ul>
 </div>
 <p>SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.</p>

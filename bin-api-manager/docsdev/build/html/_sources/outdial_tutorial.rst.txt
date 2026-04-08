@@ -29,6 +29,7 @@ Example
         "result": [
             {
                 "id": "40bea034-1d17-474d-a5de-da00d0861c69",
+                "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
                 "campaign_id": "00000000-0000-0000-0000-000000000000",
                 "name": "test outdial",
                 "detail": "outdial for test use.",
@@ -46,10 +47,11 @@ Get a detail of outdial
 
 .. code::
 
-    curl --location --request GET 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69?token=<YOUR_AUTH_TOKEN>'
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "40bea034-1d17-474d-a5de-da00d0861c69",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
         "campaign_id": "00000000-0000-0000-0000-000000000000",
         "name": "test outdial",
         "detail": "outdial for test use.",
@@ -68,12 +70,23 @@ Example
 
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/outdials?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
-        --header 'Cookie: token=<YOUR_AUTH_TOKEN>' \
         --data-raw '{
             "name": "test outdial",
             "detail": "outdial for test use.",
             "data": "test data"
         }'
+
+    {
+        "id": "40bea034-1d17-474d-a5de-da00d0861c69",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+        "campaign_id": "00000000-0000-0000-0000-000000000000",
+        "name": "test outdial",
+        "detail": "outdial for test use.",
+        "data": "test data",
+        "tm_create": "2022-04-28 01:41:40.503790",
+        "tm_update": "9999-01-01 00:00:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
 
 
 Create a new outdialtarget
@@ -85,7 +98,6 @@ Example
 
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/outdials/40bea034-1d17-474d-a5de-da00d0861c69/targets?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
-        --header 'Cookie: token=<YOUR_AUTH_TOKEN>' \
         --data-raw '{
             "name": "test destination 0",
             "detail": "test detatination 0 detail",

@@ -5,6 +5,10 @@ Overview
 
 .. note:: **AI Context**
 
+   * **Complexity:** Low -- This is reference documentation describing VoIPBIN's system architecture. No API calls are specific to this section.
+   * **Cost:** Free. Architecture documentation is informational only; no operations are performed.
+   * **Async:** N/A. This section documents the platform structure, not API endpoints.
+
    This page describes VoIPBIN's high-level system architecture, including the three major layers (API gateway, microservices, real-time communication) and core design principles. Relevant when an AI agent needs to understand the overall platform structure, service categories, or technology stack choices.
 
 VoIPBIN is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.

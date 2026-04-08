@@ -14,7 +14,7 @@ Before sending messages, you need:
 
 .. note:: **AI Implementation Hint**
 
-   Sending messages incurs charges per message segment. All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. The ``source`` and ``destinations`` fields use the :ref:`Address <common-struct-address-address>` format with ``type`` set to ``tel``.
+   Sending messages incurs charges per message segment. All phone numbers must be in E.164 format: start with ``+``, followed by country code and number, no dashes or spaces. The ``source`` and ``destinations`` fields use the :ref:`Address <common-struct-address-address>` format with ``type`` set to ``tel``. Target delivery statuses follow this lifecycle: ``queued`` -> ``sent`` -> ``delivered``. Failures may produce ``gw_timeout``, ``dlr_timeout``, or ``failed``. Inbound messages arrive with status ``received``.
 
 Send a message
 --------------
@@ -48,6 +48,7 @@ Get list of messages
     "result": [
         {
             "id": "a5d2114a-8e84-48cd-8bb2-c406eeb08cd1",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "type": "sms",
             "source": {
                 "type": "tel",
@@ -67,7 +68,7 @@ Get list of messages
                     },
                     "status": "sent",
                     "parts": 1,
-                    "tm_update": "2022-03-13 15:11:06.497184184"
+                    "tm_update": "2022-03-13 15:11:06.497184"
                 }
             ],
             "text": "Hello, this is test message.",

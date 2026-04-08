@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Chargeable (per email sent)
-   * **Async:** Yes. ``POST /emails`` returns immediately with status ``queued``. Poll ``GET /emails/{id}`` or use webhooks to track delivery status changes.
+   * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/emails`` returns immediately with status ``initiated``. Poll ``GET https://api.voipbin.net/v1.0/emails/{id}`` or use webhooks to track delivery status changes.
 
 VoIPBIN's Email API provides a reliable and scalable email delivery service for your applications. Whether you need to send transactional emails, notifications, or marketing communications, the Email API handles delivery while you focus on your content.
 
@@ -57,34 +57,59 @@ Every email moves through states from composition to delivery.
     POST /emails
           |
           v
-    +------------+
-    |  queued    |
-    +-----+------+
-          |
-          v
-    +------------+     delivery issue      +------------+
-    |  sending   |------------------------>|  bounced   |
-    +-----+------+                         +------------+
-          |
-          | accepted by server
-          v
-    +------------+     recipient issue     +------------+
-    | delivered  |------------------------>|  bounced   |
-    +------------+                         +------------+
+    +-------------+
+    | initiated   |
+    +------+------+
+           |
+           v
+    +-------------+     delivery issue     +-------------+
+    | processed   |----------------------->|   bounce    |
+    +------+------+                        +-------------+
+           |
+           | accepted by server            +-------------+
+           v                          +--->|   dropped   |
+    +-------------+     engagement    |    +-------------+
+    | delivered   |---+    events     |
+    +------+------+   |               |    +-------------+
+           |          +-------------->+--->|  deferred   |
+           v                               +-------------+
+    +-------------+
+    |    open     |
+    +------+------+
+           |
+           v
+    +-------------+
+    |   click     |
+    +-------------+
 
 **State Descriptions**
 
-+-------------+------------------------------------------------------------------+
-| State       | What's happening                                                 |
-+=============+==================================================================+
-| queued      | Email is in the delivery queue, waiting to be sent               |
-+-------------+------------------------------------------------------------------+
-| sending     | Email is being transmitted to the recipient's mail server        |
-+-------------+------------------------------------------------------------------+
-| delivered   | Email was accepted by the recipient's mail server                |
-+-------------+------------------------------------------------------------------+
-| bounced     | Email could not be delivered (invalid address, mailbox full)     |
-+-------------+------------------------------------------------------------------+
++---------------+------------------------------------------------------------------+
+| State         | What's happening                                                 |
++===============+==================================================================+
+| (empty)       | Email has no status yet                                          |
++---------------+------------------------------------------------------------------+
+| initiated     | Email has been initiated and submitted for processing             |
++---------------+------------------------------------------------------------------+
+| processed     | Email has been received and is being processed by the provider   |
++---------------+------------------------------------------------------------------+
+| delivered     | Email was accepted by the recipient's mail server                |
++---------------+------------------------------------------------------------------+
+| open          | Recipient opened the email                                       |
++---------------+------------------------------------------------------------------+
+| click         | Recipient clicked a link in the email                            |
++---------------+------------------------------------------------------------------+
+| bounce        | Email bounced (permanent or temporary delivery failure)          |
++---------------+------------------------------------------------------------------+
+| dropped       | Provider dropped the email (invalid recipient, spam report, or   |
+|               | blocked IP)                                                      |
++---------------+------------------------------------------------------------------+
+| deferred      | Provider has temporarily deferred delivery; will retry later     |
++---------------+------------------------------------------------------------------+
+| unsubscribe   | Recipient unsubscribed from the email list                       |
++---------------+------------------------------------------------------------------+
+| spamreport    | Recipient marked the email as spam                               |
++---------------+------------------------------------------------------------------+
 
 
 Sending Emails
@@ -99,10 +124,10 @@ Send emails through the VoIPBIN API with full control over content and formattin
        |                           |                           |
        | POST /emails              |                           |
        +-------------------------->|                           |
-       |                           | Queue and send            |
+       |                           | Process and send          |
        |                           +-------------------------->|
        |  email_id                 |                           |
-       |  status: "queued"         |                           |
+       |  status: "initiated"      |                           |
        |<--------------------------+                           |
        |                           |                           |
        | Webhook: delivered        |   Email in inbox          |

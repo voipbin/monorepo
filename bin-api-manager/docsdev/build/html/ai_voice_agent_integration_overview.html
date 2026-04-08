@@ -195,13 +195,13 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Medium</p></li>
 <li><p><strong>Cost:</strong> Chargeable (STT per minute of audio transcribed + TTS per character synthesized)</p></li>
-<li><p><strong>Async:</strong> Yes. Both <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code> return immediately. Transcripts are delivered asynchronously via webhook (<code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events) or WebSocket subscription.</p></li>
+<li><p><strong>Async:</strong> Yes. Both <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/transcribes</span></code> return immediately. Transcripts are delivered asynchronously via webhook (<code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events) or WebSocket subscription.</p></li>
 </ul>
 </div>
 <p>VoIPBIN enables you to build fully custom AI voice agents by combining two independent APIs:</p>
 <ul class="simple">
-<li><p><strong>Transcribe API</strong> (<code class="docutils literal notranslate"><span class="pre">/transcribes</span></code>): Converts caller speech to text in real-time (STT)</p></li>
-<li><p><strong>Speaking API</strong> (<code class="docutils literal notranslate"><span class="pre">/speakings</span></code>): Converts your AI-generated text to speech and injects it into the call (TTS)</p></li>
+<li><p><strong>Transcribe API</strong> (<code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/transcribes</span></code>): Converts caller speech to text in real-time (STT)</p></li>
+<li><p><strong>Speaking API</strong> (<code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/speakings</span></code>): Converts your AI-generated text to speech and injects it into the call (TTS)</p></li>
 </ul>
 <p>By using these APIs individually, you retain full control over the AI logic — choose any LLM, RAG pipeline, or custom NLP system as your backend. VoIPBIN handles the telecom layer (SIP, RTP, codecs) and the speech processing; your backend handles the intelligence.</p>
 <div class="admonition note">
@@ -238,41 +238,13 @@
 <ol class="arabic simple">
 <li><p>VoIPBIN transcribes the caller’s speech and delivers text to your backend via <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> webhook or WebSocket event</p></li>
 <li><p>Your AI backend processes the text (e.g., sends to an LLM) and generates a response</p></li>
-<li><p>Your backend sends the response text to VoIPBIN via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code>, which synthesizes and plays it to the caller</p></li>
+<li><p>Your backend sends the response text to VoIPBIN via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code>, which synthesizes and plays it to the caller</p></li>
 </ol>
 </section>
 <section id="api-components">
 <h2>API Components<a class="headerlink" href="#api-components" title="Link to this heading"></a></h2>
 <p><strong>Speaking API (Text-to-Speech)</strong></p>
 <p>The Speaking API creates a streaming TTS session on an active call or conference. You send text, and VoIPBIN synthesizes it into speech and injects the audio into the call.</p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Endpoint</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings</span></code></p></td>
-<td><p>Create a new speaking session on a call or conference</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code></p></td>
-<td><p>Send text to be spoken. Can be called multiple times.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/flush</span></code></p></td>
-<td><p>Cancel current speech and clear queued text.
-Session stays open.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/stop</span></code></p></td>
-<td><p>Terminate the speaking session.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings</span></code></p></td>
-<td><p>List speaking sessions.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings/{id}</span></code></p></td>
-<td><p>Get speaking session details.</p></td>
-</tr>
-</tbody>
-</table>
 <p><strong>Speaking Session Lifecycle:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">speakings</span>
      <span class="o">|</span>
@@ -307,38 +279,6 @@ played into the call.</p></td>
 </tbody>
 </table>
 <p><strong>Speaking Parameters:</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Parameter</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>reference_type</p></td>
-<td><p>(Required, String) Type of resource: <code class="docutils literal notranslate"><span class="pre">call</span></code> or
-<code class="docutils literal notranslate"><span class="pre">confbridge</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>reference_id</p></td>
-<td><p>(Required, UUID) ID of the call or conference. Obtained
-from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p>language</p></td>
-<td><p>(Optional, String) BCP47 language code (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>).
-Defaults to provider default.</p></td>
-</tr>
-<tr class="row-odd"><td><p>provider</p></td>
-<td><p>(Optional, String) TTS provider. Defaults to <code class="docutils literal notranslate"><span class="pre">elevenlabs</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p>voice_id</p></td>
-<td><p>(Optional, String) Provider-specific voice ID (e.g.,
-<code class="docutils literal notranslate"><span class="pre">21m00Tcm4TlvDq8ikWAM</span></code> for ElevenLabs).</p></td>
-</tr>
-<tr class="row-odd"><td><p>direction</p></td>
-<td><p>(Optional, String) Audio injection direction: <code class="docutils literal notranslate"><span class="pre">in</span></code>,
-<code class="docutils literal notranslate"><span class="pre">out</span></code>, <code class="docutils literal notranslate"><span class="pre">both</span></code>, or empty. See Direction Values below.</p></td>
-</tr>
-</tbody>
-</table>
 <p><strong>Direction Values:</strong></p>
 <table class="docutils align-default">
 <thead>
@@ -380,21 +320,6 @@ Defaults to provider default.</p></td>
 <p><strong>Transcribe API (Speech-to-Text)</strong></p>
 <p>The Transcribe API captures audio from an active call or conference and converts it to text in real-time. For full details, see <a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a>.</p>
 <p>Key endpoints for this integration:</p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Endpoint</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code></p></td>
-<td><p>Start a transcription session on a call or conference</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes/{id}/stop</span></code></p></td>
-<td><p>Stop a transcription session</p></td>
-</tr>
-</tbody>
-</table>
 <p>Transcripts are delivered via <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> webhook events or WebSocket subscription. Each transcript includes:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code>: <code class="docutils literal notranslate"><span class="pre">in</span></code> (caller’s speech) or <code class="docutils literal notranslate"><span class="pre">out</span></code> (VoIPBIN’s speech toward caller)</p></li>
@@ -406,7 +331,7 @@ Defaults to provider default.</p></td>
 <h2>Receiving Events<a class="headerlink" href="#receiving-events" title="Link to this heading"></a></h2>
 <p>VoIPBIN delivers events to your backend through two methods: <strong>webhooks</strong> (push-based HTTP POST) and <strong>WebSocket</strong> (persistent bidirectional connection). You must configure at least one before starting the agent loop, since transcript and call events drive the conversation cycle.</p>
 <p><strong>Webhook Delivery</strong></p>
-<p>Webhooks push events to an HTTPS endpoint you register via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>. VoIPBIN sends an HTTP POST with the event payload each time a matching event occurs. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds or delivery may be retried.</p>
+<p>Webhooks push events to an HTTPS endpoint you register via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>. VoIPBIN sends an HTTP POST with the event payload each time a matching event occurs. Your endpoint must respond with HTTP <code class="docutils literal notranslate"><span class="pre">200</span></code> within 5 seconds or delivery will be retried.</p>
 <p>Key event types for AI voice agent integration:</p>
 <table class="docutils align-default">
 <thead>
@@ -513,28 +438,28 @@ event loops, interactive dashboards</p></td>
 <p><strong>Step 1: Establish a call</strong></p>
 <p>Create an outbound call or receive an inbound call. The call must reach <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (answered, audio flowing) before starting transcription or speaking.</p>
 <p><strong>Step 2: Start transcription</strong></p>
-<p>Create a transcription session on the active call using <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transcribes</span></code> with <code class="docutils literal notranslate"><span class="pre">reference_type:</span> <span class="pre">&quot;call&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> set to the call UUID.</p>
+<p>Create a transcription session on the active call using <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/transcribes</span></code> with <code class="docutils literal notranslate"><span class="pre">reference_type:</span> <span class="pre">&quot;call&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> set to the call UUID.</p>
 <p><strong>Step 3: Receive transcript events</strong></p>
 <p>VoIPBIN delivers <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events to your webhook URL or WebSocket connection. Each event contains the transcribed text and direction.</p>
 <p><strong>Step 4: Process with your AI backend</strong></p>
 <p>Your backend receives the text, sends it to your LLM or NLP system, and generates a response.</p>
 <p><strong>Step 5: Send AI response as speech</strong></p>
-<p>Send the response text to VoIPBIN via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code>. VoIPBIN synthesizes the text and plays it into the call.</p>
+<p>Send the response text to VoIPBIN via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code>. VoIPBIN synthesizes the text and plays it into the call.</p>
 <p><strong>Step 6: Repeat</strong></p>
 <p>Continue listening for new <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> events and responding. The loop runs until the call ends or you stop the sessions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Create the speaking session (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings</span></code>) early — ideally right after the call reaches <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, alongside the transcribe session. The speaking session must be in <code class="docutils literal notranslate"><span class="pre">active</span></code> status before you can call <code class="docutils literal notranslate"><span class="pre">/say</span></code>. Creating it early avoids latency when your AI generates its first response.</p>
+<p>Create the speaking session (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings</span></code>) early — ideally right after the call reaches <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, alongside the transcribe session. The speaking session must be in <code class="docutils literal notranslate"><span class="pre">active</span></code> status before you can call <code class="docutils literal notranslate"><span class="pre">/say</span></code>. Creating it early avoids latency when your AI generates its first response.</p>
 </div>
 </section>
 <section id="handling-interruptions-barge-in">
 <h2>Handling Interruptions (Barge-in)<a class="headerlink" href="#handling-interruptions-barge-in" title="Link to this heading"></a></h2>
 <p>When the caller speaks while TTS audio is playing, VoIPBIN detects the incoming speech and generates a new <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> event. Your backend should handle this by:</p>
 <ol class="arabic simple">
-<li><p>Calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/flush</span></code> to stop the current TTS playback and clear queued text</p></li>
+<li><p>Calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/flush</span></code> to stop the current TTS playback and clear queued text</p></li>
 <li><p>Processing the new transcript through your AI</p></li>
-<li><p>Sending the new response via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code></p></li>
+<li><p>Sending the new response via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code></p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">AI</span> <span class="n">Backend</span>                <span class="n">VoIPBIN</span>                    <span class="n">Caller</span>
      <span class="o">|</span>                            <span class="o">|</span>                         <span class="o">|</span>
@@ -631,8 +556,8 @@ conversational agents</p></td>
 </ul>
 <p><strong>3. Error Handling</strong></p>
 <ul class="simple">
-<li><p>If <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> returns an error, the speaking session may have been stopped — create a new one</p></li>
-<li><p>If transcript events stop arriving, check that the transcribe session is still in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes/{id}</span></code></p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code> returns an error, the speaking session may have been stopped — create a new one</p></li>
+<li><p>If transcript events stop arriving, check that the transcribe session is still in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/transcribes/{id}</span></code></p></li>
 <li><p>Implement a timeout: if no transcript arrives within 30 seconds, consider prompting the caller</p></li>
 </ul>
 <p><strong>4. Audio Direction</strong></p>
@@ -647,7 +572,7 @@ conversational agents</p></td>
 <li><dl class="simple">
 <dt><strong>Speaking session stuck in ``initiating``:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> The call is not in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, or the TTS provider connection failed.</p></li>
-<li><p><strong>Fix:</strong> Verify the call status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{call-id}</span></code>. The call must be answered and in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Retry creating the speaking session.</p></li>
+<li><p><strong>Fix:</strong> Verify the call status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{call-id}</span></code>. The call must be answered and in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Retry creating the speaking session.</p></li>
 </ul>
 </dd>
 </dl>
@@ -655,7 +580,7 @@ conversational agents</p></td>
 <li><dl class="simple">
 <dt><strong>No transcript events received:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Transcription not started, or webhook URL not configured.</p></li>
-<li><p><strong>Fix:</strong> Verify the transcribe session exists and is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes/{id}</span></code>. Check that your webhook URL is configured in customer settings via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Verify the transcribe session exists and is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/transcribes/{id}</span></code>. Check that your webhook URL is configured in customer settings via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -663,7 +588,7 @@ conversational agents</p></td>
 <li><dl class="simple">
 <dt><strong>TTS audio not playing after ``/say``:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Speaking session is <code class="docutils literal notranslate"><span class="pre">stopped</span></code> or <code class="docutils literal notranslate"><span class="pre">initiating</span></code> (not yet <code class="docutils literal notranslate"><span class="pre">active</span></code>).</p></li>
-<li><p><strong>Fix:</strong> Check speaking session status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings/{id}</span></code>. If <code class="docutils literal notranslate"><span class="pre">stopped</span></code>, create a new session. If <code class="docutils literal notranslate"><span class="pre">initiating</span></code>, wait for <code class="docutils literal notranslate"><span class="pre">speaking_started</span></code> webhook event before calling <code class="docutils literal notranslate"><span class="pre">/say</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Check speaking session status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}</span></code>. If <code class="docutils literal notranslate"><span class="pre">stopped</span></code>, create a new session. If <code class="docutils literal notranslate"><span class="pre">initiating</span></code>, wait for <code class="docutils literal notranslate"><span class="pre">speaking_started</span></code> webhook event before calling <code class="docutils literal notranslate"><span class="pre">/say</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -671,7 +596,7 @@ conversational agents</p></td>
 <li><dl class="simple">
 <dt><strong>Caller hears old and new responses after interruption:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">/flush</span></code> was not called before sending the new response.</p></li>
-<li><p><strong>Fix:</strong> Always call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/flush</span></code> before <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> when handling an interruption.</p></li>
+<li><p><strong>Fix:</strong> Always call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/flush</span></code> before <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code> when handling an interruption.</p></li>
 </ul>
 </dd>
 </dl>

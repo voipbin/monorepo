@@ -521,22 +521,69 @@ v                   v     v                   v
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;billing-uuid-123&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My Account&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plan_status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
     <span class="s2">&quot;balance_credit&quot;</span><span class="p">:</span> <span class="mi">150500000</span><span class="p">,</span>
     <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">70</span><span class="p">,</span>
+    <span class="s2">&quot;payment_type&quot;</span><span class="p">:</span> <span class="s2">&quot;prepaid&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;payment_method&quot;</span><span class="p">:</span> <span class="s2">&quot;credit card&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_last_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_next_topup&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-02-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00Z&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> is in micros (150500000 = $150.50). The <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> is the current token count.</p>
+<p><strong>Account Status Values</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> field indicates the account’s operational state:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">active</span></code>: Account is operational and can use services.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frozen</span></code>: Account is suspended. Services are denied until reactivated.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">deleted</span></code>: Account has been deleted.</p></li>
+</ul>
+<p><strong>Plan Status Values</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">plan_status</span></code> field indicates the subscription plan lifecycle:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">active</span></code>: Plan is active and tokens are replenished on schedule.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">canceling</span></code>: Plan cancellation has been requested but is not yet effective.</p></li>
+</ul>
 <p><strong>View Billing Ledger</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/billings?token=&lt;token&gt;&amp;page_size=10&#39;
 </pre></div>
 </div>
 <p>Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).</p>
+<p><strong>Transaction Types</strong></p>
+<p>Each billing ledger entry has a <code class="docutils literal notranslate"><span class="pre">transaction_type</span></code> indicating the nature of the transaction:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">usage</span></code>: Charges for service consumption (calls, SMS, TTS, recording, numbers).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">top_up</span></code>: Token or credit replenishment (monthly token top-up, credit purchase).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">adjustment</span></code>: Manual balance correction by an administrator.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">refund</span></code>: Credit returned to the account (e.g., Paddle subscription refund).</p></li>
+</ul>
+<p><strong>Reference Types</strong></p>
+<p>Each billing entry has a <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> linking the charge to its source:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">call</span></code>: PSTN or VN call usage.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_extension</span></code>: Extension-to-extension call (free).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sms</span></code>: SMS message sent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">email</span></code>: Email message sent.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span></code>: Phone number purchase.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number_renew</span></code>: Phone number renewal.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">speaking</span></code>: AI speaking/TTS session usage.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">recording</span></code>: Call recording usage.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">monthly_allowance</span></code>: Monthly token top-up.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">credit_free_tier</span></code>: Free tier credit grant.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">credit_adjustment</span></code>: Manual credit adjustment.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">token_adjustment</span></code>: Manual token adjustment.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">paddle_credit_purchase</span></code>: Credit purchase via Paddle payment.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">paddle_subscription</span></code>: Subscription payment via Paddle.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">paddle_refund</span></code>: Refund processed via Paddle.</p></li>
+</ul>
 </section>
 <section id="balance-lifecycle">
 <h2>Balance Lifecycle<a class="headerlink" href="#balance-lifecycle" title="Link to this heading"></a></h2>

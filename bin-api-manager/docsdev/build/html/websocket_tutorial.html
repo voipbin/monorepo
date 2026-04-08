@@ -194,7 +194,7 @@
 <p>Before connecting to WebSocket, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
-<li><p>Your customer ID (UUID). Obtained from your account or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p>Your customer ID (UUID). Obtained from your account or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
 <li><p>(Optional) Agent IDs (UUIDs) for agent-level subscriptions. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>.</p></li>
 <li><p>A WebSocket client library (e.g., <code class="docutils literal notranslate"><span class="pre">websocket-client</span></code> for Python, <code class="docutils literal notranslate"><span class="pre">ws</span></code> for Node.js, or the browser’s native <code class="docutils literal notranslate"><span class="pre">WebSocket</span></code> API).</p></li>
 </ul>

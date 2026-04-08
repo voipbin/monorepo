@@ -38,6 +38,7 @@ Create a new agent.
 
     {
         "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "username": "test2",
         "name": "test tag",
         "detail": "test tag example",
@@ -46,9 +47,10 @@ Create a new agent.
         "permission": 0,
         "tag_ids": ["d7450dda-21e0-4611-b09a-8d771c50a5e6"],
         "addresses": [],
-        "tm_create": "2022-10-22 16:16:16.874761",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "direct_hash": "",
+        "tm_create": "2022-10-22T16:16:16Z",
+        "tm_update": null,
+        "tm_delete": null
     }
 
 
@@ -98,6 +100,7 @@ Regenerate the direct hash for an agent. This invalidates the previous SIP URI a
 
     {
         "id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "username": "test2",
         "name": "test tag",
         "detail": "test tag example",
@@ -107,9 +110,9 @@ Regenerate the direct hash for an agent. This invalidates the previous SIP URI a
         "tag_ids": [],
         "addresses": [],
         "direct_hash": "e9f0a1b2c3d4",
-        "tm_create": "2022-10-22 16:16:16.874761",
-        "tm_update": "2022-10-22 16:20:00.123456",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_create": "2022-10-22T16:16:16Z",
+        "tm_update": "2022-10-22T16:20:00Z",
+        "tm_delete": null
     }
 
 .. note:: **AI Implementation Hint**

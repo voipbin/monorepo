@@ -193,7 +193,7 @@
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <p>Before using the Speaking API, you need:</p>
 <ul class="simple">
-<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/login</span></code> or use your access key via <code class="docutils literal notranslate"><span class="pre">?accesskey=&lt;your-accesskey&gt;</span></code>.</p></li>
+<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use your access key via <code class="docutils literal notranslate"><span class="pre">?accesskey=&lt;your-accesskey&gt;</span></code>.</p></li>
 <li><p>An active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> and poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> until answered. Or an active conference via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code>.</p></li>
 <li><p>A language code in BCP47 format (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code>).</p></li>
 <li><p>(Optional) A provider-specific voice ID. Defaults to the provider’s default voice if omitted.</p></li>

@@ -46,6 +46,21 @@ Accesskeys come with lifecycle timestamps:
 
    When creating an accesskey, the ``expire`` field is specified in seconds (e.g., ``31536000`` for one year). The API returns ``tm_expire`` as an ISO 8601 timestamp calculated from the creation time plus the expiry duration. Always check ``tm_expire`` before using a key to avoid authentication failures with expired tokens.
 
+Troubleshooting
+---------------
+
+* **401 Unauthorized when using an accesskey:**
+    * **Cause:** The accesskey token is expired, deleted, or malformed.
+    * **Fix:** Check ``tm_expire`` via ``GET https://api.voipbin.net/v1.0/accesskeys`` to verify the key is still valid. Create a new key if expired.
+
+* **Accesskey token not returned on GET:**
+    * **Cause:** The full token is only returned once at creation time (``POST https://api.voipbin.net/v1.0/accesskeys``). Subsequent GET requests return only the ``token_prefix`` for identification.
+    * **Fix:** If the token is lost, delete the accesskey and create a new one. Store the token securely immediately after creation.
+
+* **Confusing ``accesskey`` vs ``token`` query parameters:**
+    * **Cause:** Using the wrong authentication parameter in the query string.
+    * **Fix:** Use ``?accesskey=vb_...`` for API key authentication. The ``?token=...`` parameter is for session-based (JWT) authentication. Do not mix the two.
+
 Notes
 -----
 - Always use HTTPS to ensure secure communication.

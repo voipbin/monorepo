@@ -183,15 +183,15 @@ Create outplans via the API.
 +-------------------+------------------------------------------------------------------+
 | try_interval      | Wait between retries in milliseconds (7200000 = 2 hours)         |
 +-------------------+------------------------------------------------------------------+
-| max_try_count_0   | Max retries for result type 0 (machine/voicemail)                |
+| max_try_count_0   | Max retries for destination_0 on the outdialtarget               |
 +-------------------+------------------------------------------------------------------+
-| max_try_count_1   | Max retries for result type 1 (busy)                             |
+| max_try_count_1   | Max retries for destination_1 on the outdialtarget               |
 +-------------------+------------------------------------------------------------------+
-| max_try_count_2   | Max retries for result type 2 (no answer)                        |
+| max_try_count_2   | Max retries for destination_2 on the outdialtarget               |
 +-------------------+------------------------------------------------------------------+
-| max_try_count_3   | Max retries for result type 3 (failed/error)                     |
+| max_try_count_3   | Max retries for destination_3 on the outdialtarget               |
 +-------------------+------------------------------------------------------------------+
-| max_try_count_4   | Max retries for result type 4 (other)                            |
+| max_try_count_4   | Max retries for destination_4 on the outdialtarget               |
 +-------------------+------------------------------------------------------------------+
 
 
@@ -208,13 +208,14 @@ Different campaign types require different dialing strategies.
     +--------------------------------------------+
     | dial_timeout:    45 seconds                |
     | try_interval:    10 minutes                |
-    | max_try_count:   5 (all types)             |
+    | max_try_count_0: 5 (destination_0)         |
+    | max_try_count_1: 5 (destination_1)         |
     +--------------------------------------------+
 
     Timeline:
     |--0m--|--10m--|--20m--|--30m--|--40m--|
        1      2       3       4       5
-    (attempts)
+    (attempts per destination)
 
 **Standard Strategy (Sales)**
 
@@ -225,8 +226,8 @@ Different campaign types require different dialing strategies.
     +--------------------------------------------+
     | dial_timeout:    30 seconds                |
     | try_interval:    2 hours                   |
-    | max_try_count:   3 (no answer/busy)        |
-    |                  1 (machine)               |
+    | max_try_count_0: 3 (destination_0)         |
+    | max_try_count_1: 2 (destination_1)         |
     +--------------------------------------------+
 
     Timeline:
@@ -243,7 +244,8 @@ Different campaign types require different dialing strategies.
     +--------------------------------------------+
     | dial_timeout:    25 seconds                |
     | try_interval:    1 hour                    |
-    | max_try_count:   2 (all types)             |
+    | max_try_count_0: 2 (destination_0)         |
+    | max_try_count_1: 0 (skip destination_1)    |
     +--------------------------------------------+
 
     Timeline:
@@ -252,36 +254,35 @@ Different campaign types require different dialing strategies.
     (minimal disruption)
 
 
-Result-Based Retry Counts
--------------------------
-Configure different retry counts based on the outcome of each attempt.
+Destination-Based Retry Counts
+-------------------------------
+Each outdialtarget supports up to 5 destination addresses (``destination_0`` through ``destination_4``). The ``max_try_count_0`` through ``max_try_count_4`` fields on the outplan control how many times each destination index is attempted before moving to the next destination.
 
-**Result Types**
+**How Destination Fallback Works**
 
-+-------+---------------+----------------------------------------------------------+
-| Type  | Result        | Typical Retry Strategy                                   |
-+=======+===============+==========================================================+
-| 0     | Machine/VM    | Low retries (1-2); person may not check voicemail        |
-+-------+---------------+----------------------------------------------------------+
-| 1     | Busy          | Medium retries (2-3); likely to be free later            |
-+-------+---------------+----------------------------------------------------------+
-| 2     | No answer     | High retries (3-5); try different times                  |
-+-------+---------------+----------------------------------------------------------+
-| 3     | Failed/Error  | Low retries (0-1); may be invalid number                 |
-+-------+---------------+----------------------------------------------------------+
-| 4     | Other         | Configurable based on use case                           |
-+-------+---------------+----------------------------------------------------------+
+::
+
+    destination_0 (+15551234567) -- max_try_count_0 attempts exhausted
+         |
+         v
+    destination_1 (+15559876543) -- max_try_count_1 attempts exhausted
+         |
+         v
+    destination_2 (sip:user@pbx)  -- max_try_count_2 attempts exhausted
+         |
+         v
+    Target marked as done (all destinations exhausted)
 
 **Example Configuration**
 
 .. code::
 
     {
-        "max_try_count_0": 1,  // Machine: try once more
-        "max_try_count_1": 3,  // Busy: retry 3 times
-        "max_try_count_2": 4,  // No answer: retry 4 times
-        "max_try_count_3": 0,  // Failed: don't retry
-        "max_try_count_4": 1   // Other: try once more
+        "max_try_count_0": 3,  // Try destination_0 up to 3 times
+        "max_try_count_1": 2,  // Try destination_1 up to 2 times
+        "max_try_count_2": 1,  // Try destination_2 once
+        "max_try_count_3": 0,  // Skip destination_3
+        "max_try_count_4": 0   // Skip destination_4
     }
 
 
@@ -298,14 +299,14 @@ Reaching business contacts during work hours.
     +--------------------------------------------+
     | dial_timeout:    30 seconds                |
     | try_interval:    4 hours                   |
-    | max_try_count_1: 3 (busy)                  |
-    | max_try_count_2: 4 (no answer)             |
+    | max_try_count_0: 4 (primary number)        |
+    | max_try_count_1: 3 (secondary number)      |
     +--------------------------------------------+
 
     Strategy:
     - Long intervals to try morning, midday, afternoon
-    - More retries for no answer (might be in meetings)
-    - Fewer retries for busy (clearly occupied)
+    - More retries for primary number
+    - Fewer retries for secondary number
 
 **Scenario 2: Appointment Confirmation**
 
@@ -317,8 +318,8 @@ Confirming next-day appointments.
     +--------------------------------------------+
     | dial_timeout:    25 seconds                |
     | try_interval:    2 hours                   |
-    | max_try_count_1: 2 (busy)                  |
-    | max_try_count_2: 2 (no answer)             |
+    | max_try_count_0: 2 (primary number)        |
+    | max_try_count_1: 1 (secondary number)      |
     +--------------------------------------------+
 
     Strategy:
@@ -336,16 +337,16 @@ Emergency notifications requiring high delivery.
     +--------------------------------------------+
     | dial_timeout:    45 seconds                |
     | try_interval:    5 minutes                 |
-    | max_try_count_0: 5 (all types)             |
-    | max_try_count_1: 5                         |
-    | max_try_count_2: 5                         |
-    | max_try_count_3: 3                         |
+    | max_try_count_0: 5 (primary number)        |
+    | max_try_count_1: 5 (secondary number)      |
+    | max_try_count_2: 5 (office phone)          |
+    | max_try_count_3: 3 (alternate)             |
     +--------------------------------------------+
 
     Strategy:
     - Long timeout (maximize answer chance)
     - Frequent retries (urgent delivery)
-    - Retry even failures (might be temporary issue)
+    - Multiple destination fallback for high delivery
 
 
 Best Practices
@@ -368,7 +369,7 @@ Best Practices
 **3. Max Try Counts**
 
 - Balance persistence with respect for recipients
-- Use result-based retry counts for efficiency
+- Use per-destination retry counts for efficiency
 - Higher counts for critical campaigns
 - Lower counts for promotional calls
 
@@ -394,8 +395,8 @@ Troubleshooting
 | Retries happening too     | Increase try_interval; verify millisecond      |
 | fast                      | values are correct                             |
 +---------------------------+------------------------------------------------+
-| Not enough retries        | Increase max_try_count values; check result    |
-|                           | type configuration                             |
+| Not enough retries        | Increase max_try_count values; check           |
+|                           | destination-specific configuration             |
 +---------------------------+------------------------------------------------+
 
 **Configuration Issues**
@@ -406,8 +407,8 @@ Troubleshooting
 | Outplan not applied       | Verify outplan_id in campaign; check outplan   |
 |                           | exists and is active                           |
 +---------------------------+------------------------------------------------+
-| Wrong retry behavior      | Review result-type specific max_try_count      |
-|                           | values; check which result type is being set   |
+| Wrong retry behavior      | Review per-destination max_try_count values;   |
+|                           | check which destination index is being dialed  |
 +---------------------------+------------------------------------------------+
 | Values seem wrong         | Confirm millisecond format; 30 seconds =       |
 |                           | 30000ms, 1 hour = 3600000ms                    |

@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Medium
    * **Cost:** Chargeable (recording duration contributes to call costs; storage charged per GB)
-   * **Async:** Yes. Recordings transition through states: ``starting`` -> ``recording`` -> ``stopping`` -> ``available``. Poll ``GET /recordings/{id}`` to check for ``available`` status before downloading.
+   * **Async:** Yes. Recordings transition through states: ``initiating`` -> ``recording`` -> ``stopping`` -> ``ended``. Poll ``GET https://api.voipbin.net/v1.0/recordings/{id}`` to check for ``ended`` status before downloading.
 
 VoIPBIN's Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.
 
@@ -72,40 +72,40 @@ Every recording moves through a predictable set of states from creation to avail
     POST /recording_start or flow action
            |
            v
-    +------------+                        +------------+
-    |  starting  |------recording-------->|  recording |
-    +------------+                        +-----+------+
-                                                |
+    +-------------+                        +------------+
+    | initiating  |------recording-------->|  recording |
+    +-------------+                        +-----+------+
+                                                 |
                            POST /recording_stop, hangup, or max duration
+                                                 |
+                                                 v
+                                          +------------+
+                                          |  stopping  |
+                                          +-----+------+
                                                 |
-                                                v
-                                         +------------+
-                                         |  stopping  |
-                                         +-----+------+
-                                               |
-                                               v (file processing)
-                                         +------------+
-                                         | available  |
-                                         +------------+
+                                                v (file processing)
+                                          +------------+
+                                          |   ended    |
+                                          +------------+
 
 **State Descriptions**
 
-+------------+------------------------------------------------------------------+
-| State      | What's happening                                                 |
-+============+==================================================================+
-| starting   | Recording initialization. Audio capture is being set up.         |
-+------------+------------------------------------------------------------------+
-| recording  | Actively capturing audio. File is being written to storage.      |
-+------------+------------------------------------------------------------------+
-| stopping   | Recording is ending. Final audio is being flushed to storage.    |
-+------------+------------------------------------------------------------------+
-| available  | Recording is complete. File is ready for download or streaming.  |
-+------------+------------------------------------------------------------------+
++-------------+------------------------------------------------------------------+
+| State       | What's happening                                                 |
++=============+==================================================================+
+| initiating  | Recording initialization. Audio capture is being set up.         |
++-------------+------------------------------------------------------------------+
+| recording   | Actively capturing audio. File is being written to storage.      |
++-------------+------------------------------------------------------------------+
+| stopping    | Recording is ending. Final audio is being flushed to storage.    |
++-------------+------------------------------------------------------------------+
+| ended       | Recording is complete. File is ready for download or streaming.  |
++-------------+------------------------------------------------------------------+
 
 **Key Behaviors**
 
 - States only move forward, never backward
-- A recording in "available" state cannot be modified
+- A recording in ``ended`` state cannot be modified
 - If the call/conference ends, active recordings automatically stop
 - Maximum recording duration is 24 hours
 
@@ -116,7 +116,7 @@ VoIPBIN provides multiple ways to control recordings based on your use case.
 
 .. note:: **AI Implementation Hint**
 
-   A recording can only be started on a call or conference that is in ``progressing`` status (i.e., answered). Attempting to start recording on a call that is still ``dialing`` or ``ringing`` will fail. Always verify the call status via ``GET /calls/{id}`` before issuing a recording start command.
+   A recording can only be started on a call or conference that is in ``progressing`` status (i.e., answered). Attempting to start recording on a call that is still ``dialing`` or ``ringing`` will fail. Always verify the call status via ``GET https://api.voipbin.net/v1.0/calls/{id}`` before issuing a recording start command.
 
 **Method 1: Via Flow Action**
 
@@ -221,16 +221,16 @@ Recordings are stored securely in Google Cloud Storage and accessible via the Vo
 
 ::
 
-    Download:                               Stream:
-    +------+   GET /recordings/{id}/file    +------+   GET (Range header)
-    | Your |------------------------------->| Your |<- - - - - - - - - - ->
-    | App  |<--------full file--------------| App  |       chunks
-    +------+              |                 +------+           |
-                          v                                    v
-                   +-------------+                      +-------------+
-                   |  Recording  |                      |  Recording  |
-                   |    File     |                      |    File     |
-                   +-------------+                      +-------------+
+    Download:
+    +------+   GET /recordingfiles/{id}
+    | Your |------------------------------->
+    | App  |<--------full file--------------
+    +------+              |
+                          v
+                   +-------------+
+                   |  Recording  |
+                   |    File     |
+                   +-------------+
 
 **Accessing Recordings**
 
@@ -250,7 +250,7 @@ Recordings are stored securely in Google Cloud Storage and accessible via the Vo
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/recordings/<recording-id>/file?token=<token>' \
+    $ curl -X GET 'https://api.voipbin.net/v1.0/recordingfiles/<recording-id>?token=<token>' \
         --output recording.wav
 
 **Storage Details**
@@ -266,25 +266,6 @@ Recordings are stored securely in Google Cloud Storage and accessible via the Vo
 +---------------------+----------------------------------------------------------+
 | File Size           | ~1 MB per minute (8 kHz mono WAV)                        |
 +---------------------+----------------------------------------------------------+
-
-**Bulk Export**
-
-For exporting large numbers of recordings, use the asynchronous bulk export API:
-
-.. code::
-
-    $ curl -X POST 'https://api.voipbin.net/v1.0/recordings/export?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "recording_ids": [
-                "recording-id-1",
-                "recording-id-2",
-                "recording-id-3"
-            ]
-        }'
-
-The export runs asynchronously and you'll receive a webhook when complete.
-
 
 Recording and Calls/Conferences
 -------------------------------
@@ -490,7 +471,7 @@ Troubleshooting
 | Symptom                   | Solution                                       |
 +===========================+================================================+
 | 404 Not Found             | Recording may still be processing. Wait for    |
-|                           | "available" status before downloading.         |
+|                           | ``ended`` status before downloading.           |
 +---------------------------+------------------------------------------------+
 | Timeout on large files    | Use streaming download with Range headers      |
 |                           | for large recordings.                          |

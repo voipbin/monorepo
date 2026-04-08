@@ -75,7 +75,7 @@ Find contacts by phone number or email address. This is useful for enriching inc
          |
          v
     +--------------------------------------------+
-    | GET /contacts/lookup?phone=+15551234567    |
+    | GET https://api.voipbin.net/v1.0/contacts/lookup?phone=+15551234567 |
     +--------------------------------------------+
          |
          v
@@ -97,7 +97,7 @@ Find contacts by phone number or email address. This is useful for enriching inc
          |
          v
     +--------------------------------------------+
-    | GET /contacts/lookup?email=john@acme.com   |
+    | GET https://api.voipbin.net/v1.0/contacts/lookup?email=john@acme.com |
     +--------------------------------------------+
          |
          v
@@ -107,7 +107,7 @@ Phone numbers are matched in E.164 format for reliable international matching. E
 
 .. note:: **AI Implementation Hint**
 
-   When using phone number lookup, the ``+`` character must be URL-encoded as ``%2B``. For example: ``GET /contacts/lookup?phone=%2B15551234567``. Omitting this encoding will result in the ``+`` being interpreted as a space and the lookup will fail.
+   When using phone number lookup, the ``+`` character must be URL-encoded as ``%2B``. For example: ``GET https://api.voipbin.net/v1.0/contacts/lookup?phone=%2B15551234567``. Omitting this encoding will result in the ``+`` being interpreted as a space and the lookup will fail.
 
 
 Source Tracking
@@ -237,6 +237,26 @@ Best Practices
 - Keep display names consistent (first + last name)
 - Assign email types (work, personal) for proper channel selection
 - Remove outdated phone numbers and emails regularly
+
+
+Troubleshooting
+---------------
+
+* **Phone number lookup returns no results:**
+    * **Cause:** The phone number is not in E.164 format, or the ``+`` is not URL-encoded as ``%2B``.
+    * **Fix:** Ensure the number starts with ``+`` followed by country code and subscriber number (e.g., ``+15551234567``). URL-encode the ``+`` as ``%2B`` in the query string.
+
+* **Duplicate contacts created during re-import:**
+    * **Cause:** The ``external_id`` field was not set during the initial import.
+    * **Fix:** Always set ``external_id`` when importing contacts from external systems. Use ``external_id`` to check for existing records before creating new ones.
+
+* **Contact lookup by email returns wrong contact:**
+    * **Cause:** Multiple contacts share the same email address.
+    * **Fix:** Lookup returns the first matching contact. Ensure email addresses are unique per contact, or use the contact ID directly if you know the specific record.
+
+* **404 Not Found when accessing a contact:**
+    * **Cause:** The contact UUID does not exist or belongs to another customer.
+    * **Fix:** Verify the UUID was obtained from a recent ``GET https://api.voipbin.net/v1.0/contacts`` list call with your authentication token.
 
 
 Related Documentation

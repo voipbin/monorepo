@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Free. Providers are configuration records. Costs are incurred when calls are routed through the configured provider, not when creating the provider entry.
-   * **Async:** No. ``POST /providers`` returns immediately with the created provider.
+   * **Async:** No. ``POST https://api.voipbin.net/v1.0/providers`` returns immediately with the created provider.
 
 VoIPBIN's Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBIN to the PSTN (Public Switched Telephone Network) and other external networks.
 

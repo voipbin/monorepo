@@ -267,16 +267,38 @@ Check and manage your account balance.
     {
         "id": "billing-uuid-123",
         "customer_id": "customer-uuid-456",
+        "status": "active",
+        "name": "My Account",
+        "detail": "",
         "plan_type": "free",
+        "plan_status": "active",
         "balance_credit": 150500000,
         "balance_token": 70,
+        "payment_type": "prepaid",
+        "payment_method": "credit card",
         "tm_last_topup": "2024-01-01T00:00:00Z",
         "tm_next_topup": "2024-02-01T00:00:00Z",
         "tm_create": "2024-01-01T00:00:00Z",
-        "tm_update": "2024-01-15T10:30:00Z"
+        "tm_update": "2024-01-15T10:30:00Z",
+        "tm_delete": "9999-01-01T00:00:00Z"
     }
 
 The ``balance_credit`` is in micros (150500000 = $150.50). The ``balance_token`` is the current token count.
+
+**Account Status Values**
+
+The ``status`` field indicates the account's operational state:
+
+* ``active``: Account is operational and can use services.
+* ``frozen``: Account is suspended. Services are denied until reactivated.
+* ``deleted``: Account has been deleted.
+
+**Plan Status Values**
+
+The ``plan_status`` field indicates the subscription plan lifecycle:
+
+* ``active``: Plan is active and tokens are replenished on schedule.
+* ``canceling``: Plan cancellation has been requested but is not yet effective.
 
 **View Billing Ledger**
 
@@ -285,6 +307,35 @@ The ``balance_credit`` is in micros (150500000 = $150.50). The ``balance_token``
     $ curl -X GET 'https://api.voipbin.net/v1.0/billings?token=<token>&page_size=10'
 
 Returns a paginated list of billing ledger entries showing all transactions (usage, top-ups, adjustments).
+
+**Transaction Types**
+
+Each billing ledger entry has a ``transaction_type`` indicating the nature of the transaction:
+
+* ``usage``: Charges for service consumption (calls, SMS, TTS, recording, numbers).
+* ``top_up``: Token or credit replenishment (monthly token top-up, credit purchase).
+* ``adjustment``: Manual balance correction by an administrator.
+* ``refund``: Credit returned to the account (e.g., Paddle subscription refund).
+
+**Reference Types**
+
+Each billing entry has a ``reference_type`` linking the charge to its source:
+
+* ``call``: PSTN or VN call usage.
+* ``call_extension``: Extension-to-extension call (free).
+* ``sms``: SMS message sent.
+* ``email``: Email message sent.
+* ``number``: Phone number purchase.
+* ``number_renew``: Phone number renewal.
+* ``speaking``: AI speaking/TTS session usage.
+* ``recording``: Call recording usage.
+* ``monthly_allowance``: Monthly token top-up.
+* ``credit_free_tier``: Free tier credit grant.
+* ``credit_adjustment``: Manual credit adjustment.
+* ``token_adjustment``: Manual token adjustment.
+* ``paddle_credit_purchase``: Credit purchase via Paddle payment.
+* ``paddle_subscription``: Subscription payment via Paddle.
+* ``paddle_refund``: Refund processed via Paddle.
 
 Balance Lifecycle
 -----------------

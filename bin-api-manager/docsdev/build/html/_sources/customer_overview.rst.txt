@@ -98,6 +98,9 @@ Key properties of a customer account.
 | status                 | (enum string) Account status: initial, active, frozen,         |
 |                        | deleted, expired                                               |
 +------------------------+----------------------------------------------------------------+
+| identity_verification_ | (enum string) Identity verification state: none, pending,      |
+| status                 | verified, rejected                                             |
++------------------------+----------------------------------------------------------------+
 
 **Timestamps**
 
@@ -144,6 +147,7 @@ Access and update customer account information.
         },
         "email_verified": true,
         "status": "active",
+        "identity_verification_status": "none",
         "tm_deletion_scheduled": null,
         "tm_create": "2024-01-01T00:00:00Z",
         "tm_update": "2024-01-15T10:30:00Z",

@@ -352,15 +352,15 @@ Agent Tags:                              Queue Requirements:
 </div>
 <p><strong>Managing Agent Tags</strong></p>
 <p>Update an agent’s tags via the API:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span><span class="o">/</span><span class="p">{</span><span class="n">agent</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">tag_ids</span>
-
-<span class="p">{</span>
-    <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;uuid-for-english-tag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;uuid-for-billing-tag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;uuid-for-tier2-tag&quot;</span>
-    <span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/tag_ids?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;tag_ids&quot;: [
+            &quot;uuid-for-english-tag&quot;,
+            &quot;uuid-for-billing-tag&quot;,
+            &quot;uuid-for-tier2-tag&quot;
+        ]
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -464,7 +464,7 @@ Queue finds Agent Smith (available)
 <span class="o">|</span>                         <span class="n">Agent</span> <span class="n">Creation</span>                                   <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------------+</span>
 
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span>
+<span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">agents</span>
 <span class="o">+---------------------------------------+</span>
 <span class="o">|</span> <span class="p">{</span>                                     <span class="o">|</span>
 <span class="o">|</span>   <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;john@company.com&quot;</span><span class="p">,</span>     <span class="o">|</span>
@@ -490,7 +490,7 @@ Queue finds Agent Smith (available)
 +-----------------------------------------------------------------------------+
 
 1. Agent calls login API
-   POST /v1/login
+   POST https://api.voipbin.net/v1.0/login
    { &quot;username&quot;: &quot;...&quot;, &quot;password&quot;: &quot;...&quot; }
           |
           v
@@ -514,7 +514,7 @@ Queue finds Agent Smith (available)
           |
           v
 4. Agent sets status to &quot;available&quot;
-   PUT /v1/agents/{id}/status
+   PUT https://api.voipbin.net/v1.0/agents/{id}/status
    { &quot;status&quot;: &quot;available&quot; }
           |
           v
@@ -976,6 +976,7 @@ tags must match exactly</p></td>
 
 {
     &quot;id&quot;: &quot;f1a2b3c4-d5e6-7890-abcd-ef1234567890&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;username&quot;: &quot;test2&quot;,
     &quot;name&quot;: &quot;test tag&quot;,
     &quot;detail&quot;: &quot;test tag example&quot;,
@@ -984,9 +985,10 @@ tags must match exactly</p></td>
     &quot;permission&quot;: 0,
     &quot;tag_ids&quot;: [&quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;],
     &quot;addresses&quot;: [],
-    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    &quot;direct_hash&quot;: &quot;&quot;,
+    &quot;tm_create&quot;: &quot;2022-10-22T16:16:16Z&quot;,
+    &quot;tm_update&quot;: null,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -1032,6 +1034,7 @@ tags must match exactly</p></td>
 
 {
     &quot;id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;username&quot;: &quot;test2&quot;,
     &quot;name&quot;: &quot;test tag&quot;,
     &quot;detail&quot;: &quot;test tag example&quot;,
@@ -1041,9 +1044,9 @@ tags must match exactly</p></td>
     &quot;tag_ids&quot;: [],
     &quot;addresses&quot;: [],
     &quot;direct_hash&quot;: &quot;e9f0a1b2c3d4&quot;,
-    &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,
-    &quot;tm_update&quot;: &quot;2022-10-22 16:20:00.123456&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    &quot;tm_create&quot;: &quot;2022-10-22T16:16:16Z&quot;,
+    &quot;tm_update&quot;: &quot;2022-10-22T16:20:00Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>

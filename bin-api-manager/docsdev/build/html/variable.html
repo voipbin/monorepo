@@ -294,6 +294,35 @@
 <li><p>Debugging: Use logging or flow monitoring to inspect variable states at different stages.</p></li>
 <li><p>Data persistence: Variables do not persist beyond a single flow execution unless saved externally (e.g., via webhook or external DB).</p></li>
 </ul>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>Variable placeholder appears as literal text in output:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Incorrect variable syntax (e.g., missing <code class="docutils literal notranslate"><span class="pre">$</span></code> prefix or curly braces).</p></li>
+<li><p><strong>Fix:</strong> Use the exact format <code class="docutils literal notranslate"><span class="pre">${voipbin.&lt;category&gt;.&lt;field&gt;}</span></code> for system variables or <code class="docutils literal notranslate"><span class="pre">${&lt;custom_key&gt;}</span></code> for user-defined variables. Verify the variable name is spelled correctly.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Variable resolves to an empty string:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The variable does not exist, has not been set yet, or the referenced field is null.</p></li>
+<li><p><strong>Fix:</strong> Ensure the variable is set before the action that references it. Use a <code class="docutils literal notranslate"><span class="pre">variable_set</span></code> action earlier in the flow, or verify the system variable path is valid. Use branch/conditional logic to handle cases where the variable may be missing.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Custom variable value not persisting across actions:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Variables are scoped to the current activeflow instance. If the flow restarts or a new activeflow is created, previous variables are lost.</p></li>
+<li><p><strong>Fix:</strong> Use a webhook or external storage to persist values that must survive across flow executions.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 <p>In conclusion, VoIPBIN’s Variable system is a core feature that enables dynamic, data-aware flows. By using variables effectively, developers can create tailored communication experiences that respond intelligently to the context of each interaction—whether through voice, messaging, or external integrations.</p>
 </section>
 <section id="variable-variable">
@@ -543,6 +572,7 @@
 </li>
 <li><a class="reference internal" href="#integration-with-applications">Integration with Applications</a></li>
 <li><a class="reference internal" href="#best-practices-and-considerations">Best Practices and Considerations</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li><a class="reference internal" href="#variable-variable">Variable</a><ul>
 <li><a class="reference internal" href="#activeflow">Activeflow</a></li>
 <li><a class="reference internal" href="#call">Call</a><ul>

@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Free -- Webhook delivery does not incur charges. Events are pushed to your configured endpoint at no cost.
-   * **Async:** No. ``POST /webhooks`` creates the webhook configuration synchronously. Event delivery to your endpoint happens asynchronously as events occur.
+   * **Async:** No. Webhook configuration is set on the customer resource via ``PUT https://api.voipbin.net/v1.0/customer`` (fields ``webhook_url`` and ``webhook_method``). Event delivery to your endpoint happens asynchronously as events occur.
 
 Webhooks, a robust feature offered by VoIPBIN, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBIN resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.
 
@@ -64,12 +64,21 @@ Troubleshooting
 
 * **Webhooks not being received:**
     * **Cause:** Your webhook endpoint URL is incorrect, unreachable, or not responding with HTTP 200.
-    * **Fix:** Verify the endpoint URL via ``GET /webhooks``. Ensure your server is publicly accessible and responds with ``200 OK`` within 5 seconds.
+    * **Fix:** Verify the endpoint URL via ``GET https://api.voipbin.net/v1.0/customer`` (check ``webhook_url`` field). Ensure your server is publicly accessible and responds with ``200 OK`` within 5 seconds.
 
 * **Duplicate webhook events:**
     * **Cause:** VoIPBIN retries delivery if your endpoint did not respond in time.
     * **Fix:** Implement idempotent processing. Use the combination of resource ``id`` and ``status`` to deduplicate events.
 
-* **400 Bad Request (creating webhook):**
-    * **Cause:** Invalid URL format or missing required fields.
-    * **Fix:** Ensure the ``url`` field is a valid HTTPS URL. Verify ``event_types`` is a non-empty array.
+* **400 Bad Request (updating webhook configuration):**
+    * **Cause:** Invalid URL format in ``webhook_url``.
+    * **Fix:** Ensure the ``webhook_url`` field is a valid HTTPS URL when updating via ``PUT https://api.voipbin.net/v1.0/customer``.
+
+
+Related Documentation
+---------------------
+
+- :ref:`Customer Overview <customer-overview>` - Configuring webhook URL and method on your customer account
+- :ref:`WebSocket Overview <websocket_overview>` - Alternative real-time event delivery via persistent connection
+- :ref:`Call Overview <call-overview>` - Call events that trigger webhooks
+- :ref:`Message Overview <message-overview>` - Message events that trigger webhooks

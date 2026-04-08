@@ -22,12 +22,13 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/outplans?token=<YOUR_AUTH_TOKEN>'
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/outplans?token=<YOUR_AUTH_TOKEN>'
 
     {
         "result": [
             {
                 "id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
+                "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
                 "name": "test outplan",
                 "detail": "outplan for test use.",
                 "source": {
@@ -59,10 +60,11 @@ Example
 
 .. code::
 
-    $ curl -k --location --request GET 'https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=<YOUR_AUTH_TOKEN>'
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/outplans/d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e?token=<YOUR_AUTH_TOKEN>'
 
     {
         "id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
         "name": "test outplan",
         "detail": "outplan for test use.",
         "source": {
@@ -109,6 +111,30 @@ Example
             "max_try_count_3": 5,
             "max_try_count_4": 5
         }'
+
+    {
+        "id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+        "name": "test outplan",
+        "detail": "outplan for test use.",
+        "source": {
+            "type": "tel",
+            "target": "+15559876543",
+            "target_name": "",
+            "name": "",
+            "detail": ""
+        },
+        "dial_timeout": 30000,
+        "try_interval": 600000,
+        "max_try_count_0": 5,
+        "max_try_count_1": 5,
+        "max_try_count_2": 5,
+        "max_try_count_3": 5,
+        "max_try_count_4": 5,
+        "tm_create": "2022-04-28 01:50:23.414000",
+        "tm_update": "9999-01-01 00:00:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
 
 Update outplan's dial info
 --------------------------
@@ -158,6 +184,7 @@ Example
 
     {
         "id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
         "name": "test outplan",
         "detail": "outplan for test use",
         "source": {

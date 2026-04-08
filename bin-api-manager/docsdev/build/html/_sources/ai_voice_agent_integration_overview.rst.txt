@@ -7,12 +7,12 @@ Overview
 
    * **Complexity:** Medium
    * **Cost:** Chargeable (STT per minute of audio transcribed + TTS per character synthesized)
-   * **Async:** Yes. Both ``POST /speakings`` and ``POST /transcribes`` return immediately. Transcripts are delivered asynchronously via webhook (``transcript_created`` events) or WebSocket subscription.
+   * **Async:** Yes. Both ``POST https://api.voipbin.net/v1.0/speakings`` and ``POST https://api.voipbin.net/v1.0/transcribes`` return immediately. Transcripts are delivered asynchronously via webhook (``transcript_created`` events) or WebSocket subscription.
 
 VoIPBIN enables you to build fully custom AI voice agents by combining two independent APIs:
 
-- **Transcribe API** (``/transcribes``): Converts caller speech to text in real-time (STT)
-- **Speaking API** (``/speakings``): Converts your AI-generated text to speech and injects it into the call (TTS)
+- **Transcribe API** (``https://api.voipbin.net/v1.0/transcribes``): Converts caller speech to text in real-time (STT)
+- **Speaking API** (``https://api.voipbin.net/v1.0/speakings``): Converts your AI-generated text to speech and injects it into the call (TTS)
 
 By using these APIs individually, you retain full control over the AI logic — choose any LLM, RAG pipeline, or custom NLP system as your backend. VoIPBIN handles the telecom layer (SIP, RTP, codecs) and the speech processing; your backend handles the intelligence.
 
@@ -52,7 +52,7 @@ The custom AI voice agent architecture follows a three-step loop:
 
 1. VoIPBIN transcribes the caller's speech and delivers text to your backend via ``transcript_created`` webhook or WebSocket event
 2. Your AI backend processes the text (e.g., sends to an LLM) and generates a response
-3. Your backend sends the response text to VoIPBIN via ``POST /speakings/{id}/say``, which synthesizes and plays it to the caller
+3. Your backend sends the response text to VoIPBIN via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``, which synthesizes and plays it to the caller
 
 
 API Components
@@ -62,22 +62,22 @@ API Components
 
 The Speaking API creates a streaming TTS session on an active call or conference. You send text, and VoIPBIN synthesizes it into speech and injects the audio into the call.
 
-+-------------------------------------------+-----------------------------------------------------------+
-| Endpoint                                  | Description                                               |
-+===========================================+===========================================================+
-| ``POST /speakings``                       | Create a new speaking session on a call or conference     |
-+-------------------------------------------+-----------------------------------------------------------+
-| ``POST /speakings/{id}/say``              | Send text to be spoken. Can be called multiple times.     |
-+-------------------------------------------+-----------------------------------------------------------+
-| ``POST /speakings/{id}/flush``            | Cancel current speech and clear queued text.              |
-|                                           | Session stays open.                                       |
-+-------------------------------------------+-----------------------------------------------------------+
-| ``POST /speakings/{id}/stop``             | Terminate the speaking session.                           |
-+-------------------------------------------+-----------------------------------------------------------+
-| ``GET /speakings``                        | List speaking sessions.                                   |
-+-------------------------------------------+-----------------------------------------------------------+
-| ``GET /speakings/{id}``                   | Get speaking session details.                             |
-+-------------------------------------------+-----------------------------------------------------------+
++-------------------------------------------------------------------+-----------------------------------------------------------+
+| Endpoint                                                          | Description                                               |
++===================================================================+===========================================================+
+| ``POST https://api.voipbin.net/v1.0/speakings``                  | Create a new speaking session on a call or conference     |
++-------------------------------------------------------------------+-----------------------------------------------------------+
+| ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``         | Send text to be spoken. Can be called multiple times.     |
++-------------------------------------------------------------------+-----------------------------------------------------------+
+| ``POST https://api.voipbin.net/v1.0/speakings/{id}/flush``       | Cancel current speech and clear queued text.              |
+|                                                                   | Session stays open.                                       |
++-------------------------------------------------------------------+-----------------------------------------------------------+
+| ``POST https://api.voipbin.net/v1.0/speakings/{id}/stop``        | Terminate the speaking session.                           |
++-------------------------------------------------------------------+-----------------------------------------------------------+
+| ``GET https://api.voipbin.net/v1.0/speakings``                   | List speaking sessions.                                   |
++-------------------------------------------------------------------+-----------------------------------------------------------+
+| ``GET https://api.voipbin.net/v1.0/speakings/{id}``              | Get speaking session details.                             |
++-------------------------------------------------------------------+-----------------------------------------------------------+
 
 **Speaking Session Lifecycle:**
 
@@ -116,7 +116,8 @@ The Speaking API creates a streaming TTS session on an active call or conference
 |                  | ``confbridge``                                               |
 +------------------+--------------------------------------------------------------+
 | reference_id     | (Required, UUID) ID of the call or conference. Obtained      |
-|                  | from ``POST /calls`` or ``GET /calls``.                      |
+|                  | from ``POST https://api.voipbin.net/v1.0/calls`` or         |
+|                  | ``GET https://api.voipbin.net/v1.0/calls``.                  |
 +------------------+--------------------------------------------------------------+
 | language         | (Optional, String) BCP47 language code (e.g., ``en-US``).    |
 |                  | Defaults to provider default.                                |
@@ -160,13 +161,13 @@ The Transcribe API captures audio from an active call or conference and converts
 
 Key endpoints for this integration:
 
-+-------------------------------------------+-----------------------------------------------------------+
-| Endpoint                                  | Description                                               |
-+===========================================+===========================================================+
-| ``POST /transcribes``                     | Start a transcription session on a call or conference     |
-+-------------------------------------------+-----------------------------------------------------------+
-| ``POST /transcribes/{id}/stop``           | Stop a transcription session                              |
-+-------------------------------------------+-----------------------------------------------------------+
++-------------------------------------------------------------------+-----------------------------------------------------------+
+| Endpoint                                                          | Description                                               |
++===================================================================+===========================================================+
+| ``POST https://api.voipbin.net/v1.0/transcribes``                | Start a transcription session on a call or conference     |
++-------------------------------------------------------------------+-----------------------------------------------------------+
+| ``POST https://api.voipbin.net/v1.0/transcribes/{id}/stop``      | Stop a transcription session                              |
++-------------------------------------------------------------------+-----------------------------------------------------------+
 
 Transcripts are delivered via ``transcript_created`` webhook events or WebSocket subscription. Each transcript includes:
 
@@ -182,7 +183,7 @@ VoIPBIN delivers events to your backend through two methods: **webhooks** (push-
 
 **Webhook Delivery**
 
-Webhooks push events to an HTTPS endpoint you register via ``PUT https://api.voipbin.net/v1.0/customer``. VoIPBIN sends an HTTP POST with the event payload each time a matching event occurs. Your endpoint must respond with HTTP ``200`` within 5 seconds or delivery may be retried.
+Webhooks push events to an HTTPS endpoint you register via ``PUT https://api.voipbin.net/v1.0/customer``. VoIPBIN sends an HTTP POST with the event payload each time a matching event occurs. Your endpoint must respond with HTTP ``200`` within 5 seconds or delivery will be retried.
 
 Key event types for AI voice agent integration:
 
@@ -272,7 +273,7 @@ Create an outbound call or receive an inbound call. The call must reach ``progre
 
 **Step 2: Start transcription**
 
-Create a transcription session on the active call using ``POST /transcribes`` with ``reference_type: "call"`` and ``reference_id`` set to the call UUID.
+Create a transcription session on the active call using ``POST https://api.voipbin.net/v1.0/transcribes`` with ``reference_type: "call"`` and ``reference_id`` set to the call UUID.
 
 **Step 3: Receive transcript events**
 
@@ -284,7 +285,7 @@ Your backend receives the text, sends it to your LLM or NLP system, and generate
 
 **Step 5: Send AI response as speech**
 
-Send the response text to VoIPBIN via ``POST /speakings/{id}/say``. VoIPBIN synthesizes the text and plays it into the call.
+Send the response text to VoIPBIN via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``. VoIPBIN synthesizes the text and plays it into the call.
 
 **Step 6: Repeat**
 
@@ -292,16 +293,16 @@ Continue listening for new ``transcript_created`` events and responding. The loo
 
 .. note:: **AI Implementation Hint**
 
-   Create the speaking session (``POST /speakings``) early — ideally right after the call reaches ``progressing`` status, alongside the transcribe session. The speaking session must be in ``active`` status before you can call ``/say``. Creating it early avoids latency when your AI generates its first response.
+   Create the speaking session (``POST https://api.voipbin.net/v1.0/speakings``) early — ideally right after the call reaches ``progressing`` status, alongside the transcribe session. The speaking session must be in ``active`` status before you can call ``/say``. Creating it early avoids latency when your AI generates its first response.
 
 
 Handling Interruptions (Barge-in)
 ---------------------------------
 When the caller speaks while TTS audio is playing, VoIPBIN detects the incoming speech and generates a new ``transcript_created`` event. Your backend should handle this by:
 
-1. Calling ``POST /speakings/{id}/flush`` to stop the current TTS playback and clear queued text
+1. Calling ``POST https://api.voipbin.net/v1.0/speakings/{id}/flush`` to stop the current TTS playback and clear queued text
 2. Processing the new transcript through your AI
-3. Sending the new response via ``POST /speakings/{id}/say``
+3. Sending the new response via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``
 
 ::
 
@@ -377,8 +378,8 @@ Best Practices
 
 **3. Error Handling**
 
-- If ``POST /speakings/{id}/say`` returns an error, the speaking session may have been stopped — create a new one
-- If transcript events stop arriving, check that the transcribe session is still in ``progressing`` status via ``GET /transcribes/{id}``
+- If ``POST https://api.voipbin.net/v1.0/speakings/{id}/say`` returns an error, the speaking session may have been stopped — create a new one
+- If transcript events stop arriving, check that the transcribe session is still in ``progressing`` status via ``GET https://api.voipbin.net/v1.0/transcribes/{id}``
 - Implement a timeout: if no transcript arrives within 30 seconds, consider prompting the caller
 
 **4. Audio Direction**
@@ -392,19 +393,19 @@ Troubleshooting
 
 * **Speaking session stuck in ``initiating``:**
     * **Cause:** The call is not in ``progressing`` status, or the TTS provider connection failed.
-    * **Fix:** Verify the call status via ``GET /calls/{call-id}``. The call must be answered and in ``progressing`` status. Retry creating the speaking session.
+    * **Fix:** Verify the call status via ``GET https://api.voipbin.net/v1.0/calls/{call-id}``. The call must be answered and in ``progressing`` status. Retry creating the speaking session.
 
 * **No transcript events received:**
     * **Cause:** Transcription not started, or webhook URL not configured.
-    * **Fix:** Verify the transcribe session exists and is in ``progressing`` status via ``GET /transcribes/{id}``. Check that your webhook URL is configured in customer settings via ``PUT https://api.voipbin.net/v1.0/customer``.
+    * **Fix:** Verify the transcribe session exists and is in ``progressing`` status via ``GET https://api.voipbin.net/v1.0/transcribes/{id}``. Check that your webhook URL is configured in customer settings via ``PUT https://api.voipbin.net/v1.0/customer``.
 
 * **TTS audio not playing after ``/say``:**
     * **Cause:** Speaking session is ``stopped`` or ``initiating`` (not yet ``active``).
-    * **Fix:** Check speaking session status via ``GET /speakings/{id}``. If ``stopped``, create a new session. If ``initiating``, wait for ``speaking_started`` webhook event before calling ``/say``.
+    * **Fix:** Check speaking session status via ``GET https://api.voipbin.net/v1.0/speakings/{id}``. If ``stopped``, create a new session. If ``initiating``, wait for ``speaking_started`` webhook event before calling ``/say``.
 
 * **Caller hears old and new responses after interruption:**
     * **Cause:** ``/flush`` was not called before sending the new response.
-    * **Fix:** Always call ``POST /speakings/{id}/flush`` before ``POST /speakings/{id}/say`` when handling an interruption.
+    * **Fix:** Always call ``POST https://api.voipbin.net/v1.0/speakings/{id}/flush`` before ``POST https://api.voipbin.net/v1.0/speakings/{id}/say`` when handling an interruption.
 
 * **High latency in conversation:**
     * **Cause:** Webhook delivery overhead or slow AI backend response.

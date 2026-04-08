@@ -195,7 +195,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Low</p></li>
 <li><p><strong>Cost:</strong> Chargeable (per TTS synthesis request)</p></li>
-<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">initiating</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings/{id}</span></code> until status is <code class="docutils literal notranslate"><span class="pre">active</span></code> before calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code>.</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">initiating</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}</span></code> until status is <code class="docutils literal notranslate"><span class="pre">active</span></code> before calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code>.</p></li>
 </ul>
 </div>
 <p>The Speaking API enables you to inject synthesized speech into live calls and conferences in real-time. You can choose from multiple TTS providers, select specific voices, control audio direction (who hears the speech), and queue multiple speech segments for continuous playback.</p>
@@ -223,7 +223,7 @@
 <ul class="simple">
 <li><p><strong>Audio Target:</strong> A live call or conference that will receive the synthesized audio</p></li>
 <li><p><strong>TTS Engine:</strong> The voice synthesis provider (ElevenLabs, Google Cloud, or AWS)</p></li>
-<li><p><strong>Your App:</strong> Sends text via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> to be synthesized and played</p></li>
+<li><p><strong>Your App:</strong> Sends text via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code> to be synthesized and played</p></li>
 </ul>
 </section>
 <section id="speaking-lifecycle">
@@ -256,17 +256,17 @@
 <td><p>TTS session is being set up. Provider connection is being established. Do not call <code class="docutils literal notranslate"><span class="pre">/say</span></code> in this state.</p></td>
 </tr>
 <tr class="row-odd"><td><p>active</p></td>
-<td><p>TTS session is ready. You can send text via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code>. Audio is being injected into the call.</p></td>
+<td><p>TTS session is ready. You can send text via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code>. Audio is being injected into the call.</p></td>
 </tr>
 <tr class="row-even"><td><p>stopped</p></td>
-<td><p>TTS session has ended. Either stopped explicitly via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/stop</span></code> or the call was hung up.</p></td>
+<td><p>TTS session has ended. Either stopped explicitly via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/stop</span></code> or the call was hung up.</p></td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Always poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings/{id}</span></code> until <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">active</span></code> before calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code>. Sending text while status is <code class="docutils literal notranslate"><span class="pre">initiating</span></code> will fail. Typical setup time is 2-3 seconds. Only one active speaking session per call is allowed—create a new session only after the previous one is <code class="docutils literal notranslate"><span class="pre">stopped</span></code>.</p>
+<p>Always poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}</span></code> until <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">active</span></code> before calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code>. Sending text while status is <code class="docutils literal notranslate"><span class="pre">initiating</span></code> will fail. Typical setup time is 2-3 seconds. Only one active speaking session per call is allowed – create a new session only after the previous one is <code class="docutils literal notranslate"><span class="pre">stopped</span></code>.</p>
 </div>
 </section>
 <section id="providers">
@@ -325,10 +325,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>call</p></td>
-<td><p>Attach TTS to a live call. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is a call ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></td>
+<td><p>Attach TTS to a live call. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is a call ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p>confbridge</p></td>
-<td><p>Attach TTS to a live conference. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is a conference ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></td>
+<td><p>Attach TTS to a live conference. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is a conference ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conferences</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -336,10 +336,10 @@
 <section id="best-practices">
 <h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Always wait for <code class="docutils literal notranslate"><span class="pre">active</span></code> status before sending text via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code></p></li>
+<li><p>Always wait for <code class="docutils literal notranslate"><span class="pre">active</span></code> status before sending text via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code></p></li>
 <li><p>Keep individual say requests under 5,000 characters to avoid timeout and latency</p></li>
 <li><p>Use <code class="docutils literal notranslate"><span class="pre">flush</span></code> to interrupt current speech when user speaks (barge-in scenarios)</p></li>
-<li><p>Clean up sessions explicitly with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/stop</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/speakings/{id}</span></code> when finished</p></li>
+<li><p>Clean up sessions explicitly with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/stop</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}</span></code> when finished</p></li>
 <li><p>Choose direction based on use case: <code class="docutils literal notranslate"><span class="pre">both</span></code> for announcements, <code class="docutils literal notranslate"><span class="pre">out</span></code> for agent coaching, <code class="docutils literal notranslate"><span class="pre">in</span></code> for IVR prompts</p></li>
 <li><p>Monitor session status actively—if the underlying call hangs up, the speaking session auto-stops</p></li>
 </ul>
@@ -358,7 +358,7 @@
 <li><dl class="simple">
 <dt><strong>404 Not Found:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> The speaking session ID does not exist or belongs to another customer.</p></li>
-<li><p><strong>Fix:</strong> Verify the UUID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/speakings</span></code> response.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/speakings</span></code> response.</p></li>
 </ul>
 </dd>
 </dl>
@@ -366,7 +366,7 @@
 <li><dl class="simple">
 <dt><strong>409 Conflict:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Another speaking session is already active on this call, or the call is not in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status.</p></li>
-<li><p><strong>Fix:</strong> Stop the existing session via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/stop</span></code> first. Verify the call status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code> via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Stop the existing session via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/stop</span></code> first. Verify the call status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code> via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code>.</p></li>
 </ul>
 </dd>
 </dl>

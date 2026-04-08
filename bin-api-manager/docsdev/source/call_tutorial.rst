@@ -114,34 +114,41 @@ When the destination answer the call, it will play the given media file.
 
     [
         {
-            "id": "a023bfa8-1091-4e94-8eaa-7f01fbecc71a",   // Save this as call_id (UUID)
-            "user_id": 1,
-            "flow_id": "f089791a-ac78-4ea0-be88-8a8e131f9fc5",   // Auto-generated flow (UUID)
-            "conf_id": "00000000-0000-0000-0000-000000000000",
-            "type": "flow",   // enum: flow, conference, sip-service
+            "id": "a023bfa8-1091-4e94-8eaa-7f01fbecc71a",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "flow_id": "f089791a-ac78-4ea0-be88-8a8e131f9fc5",
+            "activeflow_id": "00000000-0000-0000-0000-000000000000",
+            "type": "flow",
             "master_call_id": "00000000-0000-0000-0000-000000000000",
             "chained_call_ids": [],
             "recording_id": "00000000-0000-0000-0000-000000000000",
             "recording_ids": [],
+            "groupcall_id": "00000000-0000-0000-0000-000000000000",
             "source": {
                 "type": "tel",
                 "target": "+15551234567",
-                "name": ""
+                "target_name": "",
+                "name": "",
+                "detail": ""
             },
             "destination": {
                 "type": "tel",
                 "target": "+15559876543",
-                "name": ""
+                "target_name": "",
+                "name": "",
+                "detail": ""
             },
-            "status": "dialing",   // enum: dialing, ringing, progressing, terminating, canceling, hangup
-            "direction": "outgoing",   // enum: incoming, outgoing
+            "status": "dialing",
+            "direction": "outgoing",
+            "mute_direction": "",
             "hangup_by": "",
             "hangup_reason": "",
-            "tm_create": "2021-02-04 04:44:20.904662",   // ISO 8601 timestamp
-            "tm_update": "",
-            "tm_progressing": "",
-            "tm_ringing": "",
-            "tm_hangup": ""
+            "tm_progressing": null,
+            "tm_ringing": null,
+            "tm_hangup": null,
+            "tm_create": "2021-02-04T04:44:20Z",
+            "tm_update": null,
+            "tm_delete": null
         }
     ]
 
@@ -196,33 +203,40 @@ Making an outbound call with TTS(Text-to-Speech) and connect to other destinatio
     [
         {
             "id": "9f6265bc-6b59-4e80-a906-2679aca11455",
-            "user_id": 1,
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "flow_id": "d665fbc0-6dd8-44bc-99ea-2ae54bc59428",
-            "conf_id": "00000000-0000-0000-0000-000000000000",
+            "activeflow_id": "00000000-0000-0000-0000-000000000000",
             "type": "flow",
             "master_call_id": "00000000-0000-0000-0000-000000000000",
             "chained_call_ids": [],
             "recording_id": "00000000-0000-0000-0000-000000000000",
             "recording_ids": [],
+            "groupcall_id": "00000000-0000-0000-0000-000000000000",
             "source": {
                 "type": "tel",
                 "target": "+15559876543",
-                "name": ""
+                "target_name": "",
+                "name": "",
+                "detail": ""
             },
             "destination": {
                 "type": "tel",
                 "target": "+15559876543",
-                "name": ""
+                "target_name": "",
+                "name": "",
+                "detail": ""
             },
             "status": "dialing",
             "direction": "outgoing",
+            "mute_direction": "",
             "hangup_by": "",
             "hangup_reason": "",
-            "tm_create": "2021-02-06 09:52:49.941865",
-            "tm_update": "",
-            "tm_progressing": "",
-            "tm_ringing": "",
-            "tm_hangup": ""
+            "tm_progressing": null,
+            "tm_ringing": null,
+            "tm_hangup": null,
+            "tm_create": "2021-02-06T09:52:49Z",
+            "tm_update": null,
+            "tm_delete": null
         }
     ]
 
@@ -232,7 +246,9 @@ Making an outbound call. After answer the call, it will play the TTS and then se
 
 .. code::
 
-    {
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>' \
+    --header 'Content-Type: application/json' \
+    --data-raw '{
         "source": {
             "type": "tel",
             "target": "+15551234567"
@@ -267,38 +283,45 @@ Making an outbound call. After answer the call, it will play the TTS and then se
                 }
             }
         ]
-    }
+    }'
 
     [
         {
             "id": "d7520a58-0b07-4dd7-ab72-a4e2d1979ec0",
-            "user_id": 1,
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "flow_id": "0f4bd9bc-9df5-4a5b-9465-2189822a3019",
-            "conf_id": "00000000-0000-0000-0000-000000000000",
+            "activeflow_id": "00000000-0000-0000-0000-000000000000",
             "type": "flow",
             "master_call_id": "00000000-0000-0000-0000-000000000000",
             "chained_call_ids": [],
             "recording_id": "00000000-0000-0000-0000-000000000000",
             "recording_ids": [],
+            "groupcall_id": "00000000-0000-0000-0000-000000000000",
             "source": {
                 "type": "tel",
                 "target": "+15551234567",
-                "name": ""
+                "target_name": "",
+                "name": "",
+                "detail": ""
             },
             "destination": {
                 "type": "tel",
                 "target": "+15559876543",
-                "name": ""
+                "target_name": "",
+                "name": "",
+                "detail": ""
             },
             "status": "dialing",
             "direction": "outgoing",
+            "mute_direction": "",
             "hangup_by": "",
             "hangup_reason": "",
-            "tm_create": "2021-02-08 03:59:33.281711",
-            "tm_update": "",
-            "tm_progressing": "",
-            "tm_ringing": "",
-            "tm_hangup": ""
+            "tm_progressing": null,
+            "tm_ringing": null,
+            "tm_hangup": null,
+            "tm_create": "2021-02-08T03:59:33Z",
+            "tm_update": null,
+            "tm_delete": null
         }
     ]
 
@@ -448,13 +471,15 @@ Making an outbound call with branch. It will get the digits from the call and wi
     [
         {
             "id": "77517719-ffb9-4583-ba44-737ba991d685",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "flow_id": "c0827e56-41ef-4fa1-9da0-a8a36fbb76c4",
-            "confbridge_id": "00000000-0000-0000-0000-000000000000",
+            "activeflow_id": "00000000-0000-0000-0000-000000000000",
             "type": "flow",
             "master_call_id": "00000000-0000-0000-0000-000000000000",
             "chained_call_ids": [],
             "recording_id": "00000000-0000-0000-0000-000000000000",
             "recording_ids": [],
+            "groupcall_id": "00000000-0000-0000-0000-000000000000",
             "source": {
                 "type": "tel",
                 "target": "+15551234567",
@@ -475,13 +500,15 @@ Making an outbound call with branch. It will get the digits from the call and wi
                 "type": ""
             },
             "direction": "outgoing",
+            "mute_direction": "",
             "hangup_by": "",
             "hangup_reason": "",
-            "tm_create": "2022-02-24 02:08:14.469405",
-            "tm_update": "9999-01-01 00:00:00.000000",
-            "tm_progressing": "9999-01-01 00:00:00.000000",
-            "tm_ringing": "9999-01-01 00:00:00.000000",
-            "tm_hangup": "9999-01-01 00:00:00.000000"
+            "tm_progressing": null,
+            "tm_ringing": null,
+            "tm_hangup": null,
+            "tm_create": "2022-02-24T02:08:14Z",
+            "tm_update": null,
+            "tm_delete": null
         }
     ]
 
@@ -498,37 +525,44 @@ Getting a list of calls.
         "result": [
             {
                 "id": "9a7857ca-73ba-4000-8101-c47d3b48f9d1",
-                "user_id": 1,
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
                 "flow_id": "00000000-0000-0000-0000-000000000000",
-                "conf_id": "00000000-0000-0000-0000-000000000000",
+                "activeflow_id": "00000000-0000-0000-0000-000000000000",
                 "type": "sip-service",
                 "master_call_id": "00000000-0000-0000-0000-000000000000",
                 "chained_call_ids": [],
                 "recording_id": "00000000-0000-0000-0000-000000000000",
                 "recording_ids": [],
+                "groupcall_id": "00000000-0000-0000-0000-000000000000",
                 "source": {
                     "type": "tel",
-                    "target": "109",
-                    "name": "109"
+                    "target": "+15551234567",
+                    "target_name": "",
+                    "name": "109",
+                    "detail": ""
                 },
                 "destination": {
                     "type": "tel",
-                    "target": "972595897084",
-                    "name": ""
+                    "target": "+972595897084",
+                    "target_name": "",
+                    "name": "",
+                    "detail": ""
                 },
                 "status": "hangup",
                 "direction": "incoming",
+                "mute_direction": "",
                 "hangup_by": "remote",
                 "hangup_reason": "normal",
-                "tm_create": "2021-02-06 09:47:10.018000",
-                "tm_update": "2021-02-06 09:48:14.630000",
-                "tm_progressing": "2021-02-06 09:47:10.626000",
-                "tm_ringing": "",
-                "tm_hangup": "2021-02-06 09:48:14.630000"
+                "tm_progressing": "2021-02-06T09:47:10Z",
+                "tm_ringing": null,
+                "tm_hangup": "2021-02-06T09:48:14Z",
+                "tm_create": "2021-02-06T09:47:10Z",
+                "tm_update": "2021-02-06T09:48:14Z",
+                "tm_delete": null
             },
             ...
         ],
-        "next_page_token": "2021-02-06 08:54:38.361000"
+        "next_page_token": "2021-02-06T08:54:38Z"
     }
 
 
@@ -543,9 +577,9 @@ Getting a given call uuid's call info.
 
     {
         "id": "f457951b-9918-44af-a834-2216b1cc31bc",
-        "user_id": 1,
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "flow_id": "246aeabe-fab5-4a1b-8e98-852b50e89dd7",
-        "conf_id": "00000000-0000-0000-0000-000000000000",
+        "activeflow_id": "00000000-0000-0000-0000-000000000000",
         "type": "flow",
         "master_call_id": "00000000-0000-0000-0000-000000000000",
         "chained_call_ids": [],
@@ -553,25 +587,32 @@ Getting a given call uuid's call info.
         "recording_ids": [
             "142e8ef8-392c-4514-abf0-8656da5d2fdf"
         ],
+        "groupcall_id": "00000000-0000-0000-0000-000000000000",
         "source": {
             "type": "tel",
             "target": "+15551234567",
-            "name": ""
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
         "destination": {
             "type": "tel",
             "target": "+15559876543",
-            "name": ""
+            "target_name": "",
+            "name": "",
+            "detail": ""
         },
         "status": "hangup",
         "direction": "outgoing",
+        "mute_direction": "",
         "hangup_by": "remote",
         "hangup_reason": "normal",
-        "tm_create": "2021-01-29 03:17:54.349101",
-        "tm_update": "2021-01-29 03:18:22.131000",
-        "tm_progressing": "2021-01-29 03:18:07.810000",
-        "tm_ringing": "2021-01-29 03:17:55.392000",
-        "tm_hangup": "2021-01-29 03:18:22.131000"
+        "tm_progressing": "2021-01-29T03:18:07Z",
+        "tm_ringing": "2021-01-29T03:17:55Z",
+        "tm_hangup": "2021-01-29T03:18:22Z",
+        "tm_create": "2021-01-29T03:17:54Z",
+        "tm_update": "2021-01-29T03:18:22Z",
+        "tm_delete": null
     }
 
 Make a groupcall
@@ -581,7 +622,7 @@ Make a groupcall to the multiple destinations.
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/groupcalls?token=eyJhbGcslkj' \
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/groupcalls?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
             "source": {
@@ -612,6 +653,7 @@ Make a groupcall to the multiple destinations.
     {
         "id": "d8596b14-4d8e-4a86-afde-642b46d59ac7",
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "flow_id": "00000000-0000-0000-0000-000000000000",
         "source": {
             "type": "tel",
             "target": "+15551234567",
@@ -635,6 +677,8 @@ Make a groupcall to the multiple destinations.
                 "detail": ""
             }
         ],
+        "master_call_id": "00000000-0000-0000-0000-000000000000",
+        "master_groupcall_id": "00000000-0000-0000-0000-000000000000",
         "ring_method": "",
         "answer_method": "",
         "answer_call_id": "00000000-0000-0000-0000-000000000000",
@@ -642,9 +686,11 @@ Make a groupcall to the multiple destinations.
             "3c77eb43-2098-4890-bb6c-5af0707ba4a6",
             "2bcaff64-e05d-11ed-84a6-133172844032"
         ],
-        "tm_create": "2023-04-21 15:33:28.569053",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "answer_groupcall_id": "00000000-0000-0000-0000-000000000000",
+        "groupcall_ids": [],
+        "tm_create": "2023-04-21T15:33:28Z",
+        "tm_update": null,
+        "tm_delete": null
     }
 
 Troubleshooting

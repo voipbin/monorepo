@@ -201,7 +201,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Medium-High</p></li>
 <li><p><strong>Cost:</strong> Chargeable (credit deduction per conference minute per participant)</p></li>
-<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">starting</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code> or subscribe via WebSocket to track conference status changes.</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/conferences</span></code> returns immediately with status <code class="docutils literal notranslate"><span class="pre">starting</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conferences/{id}</span></code> or subscribe via WebSocket to track conference status changes.</p></li>
 </ul>
 </div>
 <p>The Conference API is a powerful low-level API that empowers developers to create conference rooms capable of accommodating various forms of communication, including voice, video, and chat. At its core, the API revolves around the concept of conferences, which act as containers for communications exchanged between two or more users. These communications may represent single interactions or a complete history of all interactions between the participants.</p>
@@ -256,7 +256,7 @@ Application Layer                         Infrastructure Layer
 <span class="o">|</span>                     <span class="n">Conference</span> <span class="n">State</span> <span class="n">Machine</span>                            <span class="o">|</span>
 <span class="o">+-------------------------------------------------------------------------+</span>
 
-                <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span>
+                <span class="n">POST</span> <span class="o">/</span><span class="n">conferences</span>
                        <span class="o">|</span>
                        <span class="n">v</span>
                 <span class="o">+------------+</span>
@@ -436,7 +436,7 @@ Flow                    Conference-Manager              Call-Manager
 </pre></div>
 </div>
 <p><strong>Forced Removal (API)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferencecalls</span><span class="o">/</span><span class="p">{</span><span class="n">participant</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">conferencecalls</span><span class="o">/</span><span class="p">{</span><span class="n">participant</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
                  <span class="o">|</span>
                  <span class="n">v</span>
 <span class="o">+----------------------------------------+</span>
@@ -518,7 +518,7 @@ When one participant leaves:
 <h3>Recording<a class="headerlink" href="#recording" title="Link to this heading"></a></h3>
 <p>Conferences support recording all participant audio into a single file.</p>
 <p><strong>Starting a Recording</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_start</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_start</span>
 
 <span class="o">+-------------------------------------------------------------------------+</span>
 <span class="o">|</span>                     <span class="n">Recording</span> <span class="n">Active</span>                                    <span class="o">|</span>
@@ -548,7 +548,7 @@ When one participant leaves:
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Recording and transcription can only start when the conference status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. If you attempt <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences/{id}/recording_start</span></code> on a conference in <code class="docutils literal notranslate"><span class="pre">starting</span></code> or <code class="docutils literal notranslate"><span class="pre">terminating</span></code> status, the request will fail. Always poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code> and verify <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">progressing</span></code> before starting recording or transcription.</p>
+<p>Recording and transcription can only start when the conference status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. If you attempt <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/conferences/{id}/recording_start</span></code> on a conference in <code class="docutils literal notranslate"><span class="pre">starting</span></code> or <code class="docutils literal notranslate"><span class="pre">terminating</span></code> status, the request will fail. Always poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conferences/{id}</span></code> and verify <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">progressing</span></code> before starting recording or transcription.</p>
 </div>
 <p><strong>Recording Rules</strong></p>
 <ul class="simple">
@@ -559,7 +559,7 @@ When one participant leaves:
 <li><p>Recording history is preserved in <code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> array</p></li>
 </ul>
 <p><strong>Stopping a Recording</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST /v1/conferences/{id}/recording_stop
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>POST https://api.voipbin.net/v1.0/conferences/{id}/recording_stop
 
 • Stops active recording
 • Clears recording_id field
@@ -571,7 +571,7 @@ When one participant leaves:
 <h3>Transcription<a class="headerlink" href="#transcription" title="Link to this heading"></a></h3>
 <p>Real-time transcription converts conference audio to text.</p>
 <p><strong>Starting Transcription</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transcribe_start</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transcribe_start</span>
 
 <span class="o">+-------------------------------------------------------------------------+</span>
 <span class="o">|</span>                    <span class="n">Transcription</span> <span class="n">Active</span>                                 <span class="o">|</span>
@@ -628,13 +628,13 @@ When one participant leaves:
 </div>
 <p><strong>Sequence</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create conference
-   POST /v1.0/conferences
+   POST https://api.voipbin.net/v1.0/conferences
 
 2. Start recording
-   POST /v1.0/conferences/{id}/recording_start
+   POST https://api.voipbin.net/v1.0/conferences/{id}/recording_start
 
 3. Start transcription
-   POST /v1.0/conferences/{id}/transcribe_start
+   POST https://api.voipbin.net/v1.0/conferences/{id}/transcribe_start
    { &quot;language&quot;: &quot;en-US&quot; }
 
 4. Participants join and talk
@@ -642,10 +642,10 @@ When one participant leaves:
    → Transcripts stream to webhook
 
 5. Stop transcription
-   POST /v1.0/conferences/{id}/transcribe_stop
+   POST https://api.voipbin.net/v1.0/conferences/{id}/transcribe_stop
 
 6. Stop recording
-   POST /v1.0/conferences/{id}/recording_stop
+   POST https://api.voipbin.net/v1.0/conferences/{id}/recording_stop
 
 7. Result: Audio file + searchable text transcripts
 </pre></div>
@@ -752,7 +752,7 @@ Every 5 seconds, for each participant:
 <h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
 <p><strong>Scenario 1: Simple Conference Call</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create conference
-   POST /v1/conferences
+   POST https://api.voipbin.net/v1.0/conferences
    → Conference in &quot;progressing&quot; status
 
 2. Participants join through flow
@@ -766,22 +766,22 @@ Every 5 seconds, for each participant:
 4. Users hang up one by one
 
 5. Delete conference when done
-   DELETE /v1/conferences/{id}
+   DELETE https://api.voipbin.net/v1.0/conferences/{id}
 </pre></div>
 </div>
 <p><strong>Scenario 2: Recorded Meeting</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Create</span> <span class="n">conference</span>
 <span class="mf">2.</span> <span class="n">Start</span> <span class="n">recording</span>
-   <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_start</span>
+   <span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_start</span>
 <span class="mf">3.</span> <span class="n">Participants</span> <span class="n">join</span> <span class="ow">and</span> <span class="n">talk</span>
 <span class="mf">4.</span> <span class="n">Stop</span> <span class="n">recording</span>
-   <span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_stop</span>
+   <span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">conferences</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recording_stop</span>
 <span class="mf">5.</span> <span class="n">Recording</span> <span class="n">file</span> <span class="n">available</span> <span class="k">for</span> <span class="n">download</span>
 </pre></div>
 </div>
 <p><strong>Scenario 3: Customer-Agent Connect</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Create connect-type conference
-   POST /v1/conferences
+   POST https://api.voipbin.net/v1.0/conferences
    { &quot;type&quot;: &quot;connect&quot; }
 
 2. Customer call joins
@@ -1128,7 +1128,7 @@ Every 5 seconds, for each participant:
 </section>
 </section>
 <section id="tutorial">
-<h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<span id="conference-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
 <p>Before working with conferences, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
@@ -1140,40 +1140,29 @@ Every 5 seconds, for each participant:
 <p><strong>AI Implementation Hint</strong></p>
 <p>Conferences are created with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conferences</span></code> and begin in <code class="docutils literal notranslate"><span class="pre">starting</span></code> status, quickly transitioning to <code class="docutils literal notranslate"><span class="pre">progressing</span></code>. Participants do not join via the conference API directly – they join through flow actions (<code class="docutils literal notranslate"><span class="pre">conference_join</span></code>). To remove a participant, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferencecalls/{conferencecall_id}</span></code>. To terminate the entire conference, use <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conferences/{conference_id}</span></code>.</p>
 </div>
-<section id="install-channel-line">
-<h3>Install channel: line<a class="headerlink" href="#install-channel-line" title="Link to this heading"></a></h3>
-<section id="id6">
-<h4>Example<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/setup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;reference_type&quot;: &quot;line&quot;
-    }&#39;
-</pre></div>
-</div>
-</section>
-</section>
 <section id="get-list-of-conferences">
 <h3>Get list of conferences<a class="headerlink" href="#get-list-of-conferences" title="Link to this heading"></a></h3>
-<section id="id7">
-<h4>Example<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
+<section id="id6">
+<h4>Example<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;17039950-eab0-421d-a5f5-05acd1ac6801&quot;,
-            &quot;user_id&quot;: 1,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
             &quot;type&quot;: &quot;conference&quot;,
-            &quot;status&quot;: &quot;&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;,
+            &quot;status&quot;: &quot;progressing&quot;,
+            &quot;name&quot;: &quot;team standup&quot;,
+            &quot;detail&quot;: &quot;Daily standup conference&quot;,
             &quot;conferencecall_ids&quot;: [],
-            &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;recording_ids&quot;: null,
+            &quot;recording_ids&quot;: [],
+            &quot;transcribe_ids&quot;: [],
+            &quot;direct_hash&quot;: &quot;&quot;,
+            &quot;tm_end&quot;: null,
             &quot;tm_create&quot;: &quot;2021-02-04 02:55:39.659316&quot;,
             &quot;tm_update&quot;: &quot;2021-02-04 02:56:07.525985&quot;,
-            &quot;tm_delete&quot;: &quot;&quot;
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
         },
         ...
     ],
@@ -1185,23 +1174,25 @@ Every 5 seconds, for each participant:
 </section>
 <section id="get-detail-of-conference">
 <h3>Get detail of conference<a class="headerlink" href="#get-detail-of-conference" title="Link to this heading"></a></h3>
-<section id="id8">
-<h4>Example<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
+<section id="id7">
+<h4>Example<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conferences/0e7112d7-6ddc-47ea-bba5-223a3a55ff79?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;0e7112d7-6ddc-47ea-bba5-223a3a55ff79&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;type&quot;: &quot;conference&quot;,
-    &quot;status&quot;: &quot;&quot;,
-    &quot;name&quot;: &quot;&quot;,
-    &quot;detail&quot;: &quot;&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;name&quot;: &quot;team standup&quot;,
+    &quot;detail&quot;: &quot;Daily standup conference&quot;,
     &quot;conferencecall_ids&quot;: [],
-    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;recording_ids&quot;: [],
+    &quot;transcribe_ids&quot;: [],
+    &quot;direct_hash&quot;: &quot;&quot;,
+    &quot;tm_end&quot;: null,
     &quot;tm_create&quot;: &quot;2021-02-03 10:44:42.163464&quot;,
     &quot;tm_update&quot;: &quot;2021-02-03 10:52:08.488301&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
@@ -1209,9 +1200,10 @@ Every 5 seconds, for each participant:
 </section>
 <section id="create-a-new-conference">
 <h3>Create a new conference<a class="headerlink" href="#create-a-new-conference" title="Link to this heading"></a></h3>
-<section id="id9">
-<h4>Example<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<section id="id8">
+<h4>Example<a class="headerlink" href="#id8" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/conferences?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;type&quot;: &quot;conference&quot;,
         &quot;name&quot;: &quot;test conference&quot;,
@@ -1220,17 +1212,19 @@ Every 5 seconds, for each participant:
 
 {
     &quot;id&quot;: &quot;85252d7b-777b-4580-9420-4df8c6adfc30&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;type&quot;: &quot;conference&quot;,
-    &quot;status&quot;: &quot;&quot;,
+    &quot;status&quot;: &quot;starting&quot;,
     &quot;name&quot;: &quot;test conference&quot;,
     &quot;detail&quot;: &quot;test conference for example&quot;,
     &quot;conferencecall_ids&quot;: [],
-    &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;recording_ids&quot;: null,
+    &quot;recording_ids&quot;: [],
+    &quot;transcribe_ids&quot;: [],
+    &quot;direct_hash&quot;: &quot;&quot;,
+    &quot;tm_end&quot;: null,
     &quot;tm_create&quot;: &quot;2021-02-04 03:05:57.710583&quot;,
-    &quot;tm_update&quot;: &quot;&quot;,
-    &quot;tm_delete&quot;: &quot;&quot;
+    &quot;tm_update&quot;: &quot;2021-02-04 03:05:57.710583&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
@@ -1243,20 +1237,20 @@ Every 5 seconds, for each participant:
 <p><strong>AI Implementation Hint</strong></p>
 <p>You can only kick participants whose status is <code class="docutils literal notranslate"><span class="pre">joining</span></code> or <code class="docutils literal notranslate"><span class="pre">joined</span></code>. Attempting to delete a conferencecall in <code class="docutils literal notranslate"><span class="pre">leaving</span></code> or <code class="docutils literal notranslate"><span class="pre">leaved</span></code> status will fail. Obtain the conferencecall ID from the conference’s <code class="docutils literal notranslate"><span class="pre">conferencecall_ids</span></code> array (via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences/{id}</span></code>) or from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferencecalls</span></code>.</p>
 </div>
-<section id="id10">
-<h4>Example<a class="headerlink" href="#id10" title="Link to this heading"></a></h4>
+<section id="id9">
+<h4>Example<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/conferencecalls/4833755c-f5d0-4bf2-a101-7d3a7e5e586f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
-    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,   // Conferencecall ID (UUID)
-    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,   // Customer UUID
-    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,   // Parent conference UUID
-    &quot;reference_type&quot;: &quot;call&quot;,   // enum: call, line
-    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,   // The call&#39;s UUID
-    &quot;status&quot;: &quot;leaving&quot;,   // enum: joining, joined, leaving, leaved
-    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,   // ISO 8601 timestamp
+    &quot;id&quot;: &quot;4833755c-f5d0-4bf2-a101-7d3a7e5e586f&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;conference_id&quot;: &quot;99accfb7-c0dd-4a54-997d-dd18af7bc280&quot;,
+    &quot;reference_type&quot;: &quot;call&quot;,
+    &quot;reference_id&quot;: &quot;153c2866-ade0-4a55-a5a7-027e463d9207&quot;,
+    &quot;status&quot;: &quot;leaving&quot;,
+    &quot;tm_create&quot;: &quot;2022-08-09 03:53:49.142446&quot;,
     &quot;tm_update&quot;: &quot;2022-08-09 03:54:10.035297&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;   // 9999-01-01 means not deleted
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
 }
 </pre></div>
 </div>
@@ -1274,7 +1268,11 @@ Every 5 seconds, for each participant:
     &quot;status&quot;: &quot;progressing&quot;,
     &quot;name&quot;: &quot;test conference&quot;,
     &quot;detail&quot;: &quot;test conference for example.&quot;,
+    &quot;conferencecall_ids&quot;: [],
+    &quot;recording_ids&quot;: [],
+    &quot;transcribe_ids&quot;: [],
     &quot;direct_hash&quot;: &quot;b3c4d5e6f7a8&quot;,
+    &quot;tm_end&quot;: null,
     &quot;tm_create&quot;: &quot;2022-02-03 06:08:56.672025&quot;,
     &quot;tm_update&quot;: &quot;2022-08-06 19:11:13.040418&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
@@ -1380,24 +1378,20 @@ Every 5 seconds, for each participant:
 </ul>
 </li>
 <li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
-<li><a class="reference internal" href="#install-channel-line">Install channel: line</a><ul>
+<li><a class="reference internal" href="#get-list-of-conferences">Get list of conferences</a><ul>
 <li><a class="reference internal" href="#id6">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#get-list-of-conferences">Get list of conferences</a><ul>
+<li><a class="reference internal" href="#get-detail-of-conference">Get detail of conference</a><ul>
 <li><a class="reference internal" href="#id7">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#get-detail-of-conference">Get detail of conference</a><ul>
+<li><a class="reference internal" href="#create-a-new-conference">Create a new conference</a><ul>
 <li><a class="reference internal" href="#id8">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#create-a-new-conference">Create a new conference</a><ul>
-<li><a class="reference internal" href="#id9">Example</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#kick-the-conferencecall-from-the-conference">Kick the conferencecall from the conference</a><ul>
-<li><a class="reference internal" href="#id10">Example</a></li>
+<li><a class="reference internal" href="#id9">Example</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#regenerate-direct-conference-hash">Regenerate direct conference hash</a></li>

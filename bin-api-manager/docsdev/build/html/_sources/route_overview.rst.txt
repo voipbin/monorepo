@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Free. Routes are configuration rules with no per-unit charges.
-   * **Async:** No. ``POST /routes`` returns immediately with the created route.
+   * **Async:** No. ``POST https://api.voipbin.net/v1.0/routes`` returns immediately with the created route.
 
 VoIPBIN's Route API provides intelligent SIP routing with automatic failover capabilities. Routes determine which provider handles outbound calls and define fallback strategies when primary routes fail.
 

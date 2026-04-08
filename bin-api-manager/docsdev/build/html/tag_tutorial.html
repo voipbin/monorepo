@@ -204,7 +204,6 @@
 <h3>Create a new tag<a class="headerlink" href="#create-a-new-tag" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/tags?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
-    --header &#39;Cookie: token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --data-raw &#39;{
         &quot;name&quot;: &quot;test tag&quot;,
         &quot;detail&quot;: &quot;test tag example&quot;
@@ -212,6 +211,7 @@
 
 {
     &quot;id&quot;: &quot;d7450dda-21e0-4611-b09a-8d771c50a5e6&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;test tag&quot;,
     &quot;detail&quot;: &quot;test tag example&quot;,
     &quot;tm_create&quot;: &quot;2022-10-22 16:16:16.874761&quot;,

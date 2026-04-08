@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Chargeable (per TTS synthesis request)
-   * **Async:** Yes. ``POST /speakings`` returns immediately with status ``initiating``. Poll ``GET /speakings/{id}`` until status is ``active`` before calling ``POST /speakings/{id}/say``.
+   * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/speakings`` returns immediately with status ``initiating``. Poll ``GET https://api.voipbin.net/v1.0/speakings/{id}`` until status is ``active`` before calling ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``.
 
 The Speaking API enables you to inject synthesized speech into live calls and conferences in real-time. You can choose from multiple TTS providers, select specific voices, control audio direction (who hears the speech), and queue multiple speech segments for continuous playback.
 
@@ -39,7 +39,7 @@ The Speaking API synthesizes text-to-speech in real-time and delivers it to the 
 
 - **Audio Target:** A live call or conference that will receive the synthesized audio
 - **TTS Engine:** The voice synthesis provider (ElevenLabs, Google Cloud, or AWS)
-- **Your App:** Sends text via ``POST /speakings/{id}/say`` to be synthesized and played
+- **Your App:** Sends text via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say`` to be synthesized and played
 
 
 Speaking Lifecycle
@@ -69,13 +69,13 @@ Each speaking session progresses through a series of states from creation throug
 Status      Description
 =========== ============
 initiating  TTS session is being set up. Provider connection is being established. Do not call ``/say`` in this state.
-active      TTS session is ready. You can send text via ``POST /speakings/{id}/say``. Audio is being injected into the call.
-stopped     TTS session has ended. Either stopped explicitly via ``POST /speakings/{id}/stop`` or the call was hung up.
+active      TTS session is ready. You can send text via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``. Audio is being injected into the call.
+stopped     TTS session has ended. Either stopped explicitly via ``POST https://api.voipbin.net/v1.0/speakings/{id}/stop`` or the call was hung up.
 =========== ============
 
 .. note:: **AI Implementation Hint**
 
-   Always poll ``GET /speakings/{id}`` until ``status`` is ``active`` before calling ``POST /speakings/{id}/say``. Sending text while status is ``initiating`` will fail. Typical setup time is 2-3 seconds. Only one active speaking session per call is allowed—create a new session only after the previous one is ``stopped``.
+   Always poll ``GET https://api.voipbin.net/v1.0/speakings/{id}`` until ``status`` is ``active`` before calling ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``. Sending text while status is ``initiating`` will fail. Typical setup time is 2-3 seconds. Only one active speaking session per call is allowed -- create a new session only after the previous one is ``stopped``.
 
 
 Providers
@@ -116,18 +116,18 @@ Attach the speaking session to either a call or a conference.
 =========== ============
 Type        Description
 =========== ============
-call        Attach TTS to a live call. The ``reference_id`` is a call ID from ``GET /calls``.
-confbridge  Attach TTS to a live conference. The ``reference_id`` is a conference ID from ``GET /conferences``.
+call        Attach TTS to a live call. The ``reference_id`` is a call ID from ``GET https://api.voipbin.net/v1.0/calls``.
+confbridge  Attach TTS to a live conference. The ``reference_id`` is a conference ID from ``GET https://api.voipbin.net/v1.0/conferences``.
 =========== ============
 
 
 Best Practices
 --------------
 
-- Always wait for ``active`` status before sending text via ``POST /speakings/{id}/say``
+- Always wait for ``active`` status before sending text via ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``
 - Keep individual say requests under 5,000 characters to avoid timeout and latency
 - Use ``flush`` to interrupt current speech when user speaks (barge-in scenarios)
-- Clean up sessions explicitly with ``POST /speakings/{id}/stop`` and ``DELETE /speakings/{id}`` when finished
+- Clean up sessions explicitly with ``POST https://api.voipbin.net/v1.0/speakings/{id}/stop`` and ``DELETE https://api.voipbin.net/v1.0/speakings/{id}`` when finished
 - Choose direction based on use case: ``both`` for announcements, ``out`` for agent coaching, ``in`` for IVR prompts
 - Monitor session status actively—if the underlying call hangs up, the speaking session auto-stops
 
@@ -141,11 +141,11 @@ Troubleshooting
 
 * **404 Not Found:**
     * **Cause:** The speaking session ID does not exist or belongs to another customer.
-    * **Fix:** Verify the UUID was obtained from a recent ``POST /speakings`` or ``GET /speakings`` response.
+    * **Fix:** Verify the UUID was obtained from a recent ``POST https://api.voipbin.net/v1.0/speakings`` or ``GET https://api.voipbin.net/v1.0/speakings`` response.
 
 * **409 Conflict:**
     * **Cause:** Another speaking session is already active on this call, or the call is not in ``progressing`` status.
-    * **Fix:** Stop the existing session via ``POST /speakings/{id}/stop`` first. Verify the call status is ``progressing`` via ``GET /calls/{id}``.
+    * **Fix:** Stop the existing session via ``POST https://api.voipbin.net/v1.0/speakings/{id}/stop`` first. Verify the call status is ``progressing`` via ``GET https://api.voipbin.net/v1.0/calls/{id}``.
 
 
 Related Documentation

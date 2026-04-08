@@ -216,6 +216,7 @@
     &quot;name&quot;: &quot;Primary Account&quot;,
     &quot;detail&quot;: &quot;Main billing account&quot;,
     &quot;plan_type&quot;: &quot;free&quot;,
+    &quot;plan_status&quot;: &quot;active&quot;,
     &quot;balance_credit&quot;: 69772630,
     &quot;balance_token&quot;: 70,
     &quot;payment_type&quot;: &quot;&quot;,
@@ -223,11 +224,12 @@
     &quot;tm_last_topup&quot;: &quot;2024-01-01T00:00:00Z&quot;,
     &quot;tm_next_topup&quot;: &quot;2024-02-01T00:00:00Z&quot;,
     &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-    &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;
+    &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01T00:00:00Z&quot;
 }
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> field is in micros (69772630 = $69.77). The <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> field is the current token count.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">balance_credit</span></code> field is in micros (69772630 = $69.77). The <code class="docutils literal notranslate"><span class="pre">balance_token</span></code> field is the current token count. The <code class="docutils literal notranslate"><span class="pre">plan_status</span></code> field indicates whether the subscription is <code class="docutils literal notranslate"><span class="pre">active</span></code> or <code class="docutils literal notranslate"><span class="pre">canceling</span></code>.</p>
 <p><strong>List All Billing Accounts (Project Admin Only):</strong></p>
 <p>This endpoint uses the admin-only <code class="docutils literal notranslate"><span class="pre">/billing_accounts</span></code> (plural) path and requires project super admin permissions.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/billing_accounts?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
@@ -240,6 +242,7 @@
             &quot;name&quot;: &quot;Primary Account&quot;,
             &quot;detail&quot;: &quot;Main billing account&quot;,
             &quot;plan_type&quot;: &quot;free&quot;,
+            &quot;plan_status&quot;: &quot;active&quot;,
             &quot;balance_credit&quot;: 69772630,
             &quot;balance_token&quot;: 70,
             &quot;payment_type&quot;: &quot;&quot;,
@@ -247,7 +250,8 @@
             &quot;tm_last_topup&quot;: &quot;2024-01-01T00:00:00Z&quot;,
             &quot;tm_next_topup&quot;: &quot;2024-02-01T00:00:00Z&quot;,
             &quot;tm_create&quot;: &quot;2024-01-01T00:00:00Z&quot;,
-            &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;
+            &quot;tm_update&quot;: &quot;2024-01-15T10:30:00Z&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01T00:00:00Z&quot;
         }
     ]
 }
@@ -426,6 +430,7 @@ checkBalanceAndCall(10, &#39;vn&#39;);
         <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Primary Account&quot;</span><span class="p">,</span>
         <span class="s2">&quot;plan_type&quot;</span><span class="p">:</span> <span class="s2">&quot;free&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;plan_status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
         <span class="s2">&quot;balance_credit&quot;</span><span class="p">:</span> <span class="mi">15500000</span><span class="p">,</span>
         <span class="s2">&quot;balance_token&quot;</span><span class="p">:</span> <span class="mi">20</span>
     <span class="p">}</span>
