@@ -76,7 +76,7 @@ func gcpWarmUpConnection(ctx context.Context, client *texttospeech.Client) {
 	defer cancel()
 
 	start := time.Now()
-	_, err := client.ListVoices(warmupCtx, &texttospeechpb.ListVoicesRequest{LanguageCode: "en-US"})
+	_, err := client.ListVoices(warmupCtx, &texttospeechpb.ListVoicesRequest{})
 	if err != nil {
 		log.Warnf("GCP connection warm-up failed (non-fatal). duration: %s, err: %v", time.Since(start), err)
 		return
