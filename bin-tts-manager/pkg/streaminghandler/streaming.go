@@ -164,10 +164,11 @@ func (h *streamingHandler) WaitFinish(ctx context.Context, id uuid.UUID) error {
 	st.VendorLock.Lock()
 	vc := st.VendorConfig
 	vendorName := st.VendorName
+	connAstDone := st.ConnAstDone
 	st.VendorLock.Unlock()
 
 	if vc == nil {
-		return nil // No vendor initialized, nothing to wait for
+		return fmt.Errorf("vendor config not initialized for streaming %s", id)
 	}
 
 	switch vendorName {
@@ -186,11 +187,11 @@ func (h *streamingHandler) WaitFinish(ctx context.Context, id uuid.UUID) error {
 		}
 	default:
 		// For non-GCP vendors, wait on ConnAstDone as fallback
-		if st.ConnAstDone == nil {
-			return nil
+		if connAstDone == nil {
+			return fmt.Errorf("no completion channel for streaming %s", id)
 		}
 		select {
-		case <-st.ConnAstDone:
+		case <-connAstDone:
 			return nil
 		case <-ctx.Done():
 			return ctx.Err()

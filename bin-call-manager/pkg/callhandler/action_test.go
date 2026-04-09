@@ -384,14 +384,18 @@ func Test_ActionExecute_actionExecuteTalk(t *testing.T) {
 
 			ctx := context.Background()
 
-			// StreamingTalk path: Get call, Answer (if needed), then fail at streaming create
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.call, nil).AnyTimes()
 			if tt.call.Status != call.StatusProgressing {
 				mockChannel.EXPECT().Answer(ctx, tt.call.ChannelID).Return(nil).AnyTimes()
 			}
-			mockReq.EXPECT().TTSV1StreamingCreateWithProvider(ctx, gomock.Any(), gomock.Any(), tt.call.ID, tt.expectLanguage, gomock.Any(), tt.expectVoiceID, gomock.Any()).Return(nil, fmt.Errorf("streaming not available"))
 
-			// Batch Talk fallback path
+			if !tt.expectAsync {
+				// Non-async: StreamingTalk is tried first, fails, falls back to batch
+				mockReq.EXPECT().TTSV1StreamingCreateWithProvider(ctx, gomock.Any(), gomock.Any(), tt.call.ID, tt.expectLanguage, gomock.Any(), tt.expectVoiceID, gomock.Any()).Return(nil, fmt.Errorf("streaming not available"))
+			}
+			// Async skips streaming entirely and goes straight to batch
+
+			// Batch Talk path
 			mockReq.EXPECT().TTSV1SpeecheCreate(ctx, tt.call.ID, tt.expectSSML, tt.expectLanguage, tmtts.Provider(tt.expectProvider), tt.expectVoiceID, 10000).Return(tt.responseTTS, nil)
 			mockChannel.EXPECT().Play(ctx, tt.call.ChannelID, tt.expectPlaybackID, tt.expectURI, "", 0, 0).Return(nil)
 

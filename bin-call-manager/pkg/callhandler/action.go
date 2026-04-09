@@ -506,16 +506,20 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 		}
 	}
 
-	// Try streaming first for low-latency audio delivery
-	errStreaming := h.StreamingTalk(ctx, c.ID, option.Text, option.Language, option.Provider, option.VoiceID)
-	if errStreaming == nil {
-		// Streaming succeeded — audio fully delivered, advance to next action
-		log.Infof("Streaming talk succeeded, advancing to next action.")
-		return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
+	// Async talks use batch path directly — streaming blocks synchronously
+	// which contradicts async semantics (start audio, advance immediately).
+	if !option.Async {
+		// Try streaming first for low-latency audio delivery
+		errStreaming := h.StreamingTalk(ctx, c.ID, option.Text, option.Language, option.Provider, option.VoiceID)
+		if errStreaming == nil {
+			// Streaming succeeded — audio fully delivered, advance to next action
+			log.Infof("Streaming talk succeeded, advancing to next action.")
+			return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
+		}
+		// Streaming failed — fall back to batch TTS
+		log.Infof("Streaming talk failed, falling back to batch. err: %v", errStreaming)
 	}
 
-	// Streaming failed — fall back to batch TTS
-	log.Infof("Streaming talk failed, falling back to batch. err: %v", errStreaming)
 	if errBatch := h.Talk(ctx, c.ID, true, option.Text, option.Language, option.Provider, option.VoiceID); errBatch != nil {
 		log.Errorf("Could not talk correctly. err: %v", errBatch)
 		return errors.Wrap(errBatch, "could not talk correctly")
