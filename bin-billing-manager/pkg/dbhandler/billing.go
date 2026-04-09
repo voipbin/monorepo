@@ -555,6 +555,7 @@ func (h *handler) AccountTopUpTokens(ctx context.Context, accountID uuid.UUID, c
 	// Insert ledger entry for the top-up
 	topupBilling := &billing.Billing{}
 	topupBilling.ID = h.utilHandler.UUIDCreate()
+	topupBilling.IdempotencyKey = topupBilling.ID
 	topupBilling.CustomerID = customerID
 	topupBilling.AccountID = accountID
 	topupBilling.TransactionType = billing.TransactionTypeTopUp

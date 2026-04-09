@@ -46,6 +46,7 @@ func (h *billingHandler) Create(
 		Status:            billing.StatusProgressing,
 		ReferenceType:     referenceType,
 		ReferenceID:       referenceID,
+		IdempotencyKey:    id,
 		CostType:          costType,
 		RateTokenPerUnit:  costInfo.TokenPerUnit,
 		RateCreditPerUnit: costInfo.CreditPerUnit,
