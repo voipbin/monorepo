@@ -70,6 +70,7 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 		"call_id": callID,
 	})
 	log.WithField("text", text).Debugf("Creating a new audio. lang: %s, voice_id: %s, filepath: %s", lang, voiceID, filepath)
+	gcpStart := time.Now()
 
 	voiceName := voiceID
 	if voiceName == "" {
@@ -102,27 +103,30 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 			SampleRateHertz: defaultSampleRate,
 		},
 	}
+	log.Debugf("Request built. build_duration: %s", time.Since(gcpStart))
 
 	synthCtx, synthCancel := context.WithTimeout(ctx, gcpSynthesizeTimeout)
 	defer synthCancel()
 
-	log.Debugf("Sending speech request. language_code: %s, name: %s", req.Voice.LanguageCode, voiceName)
+	log.Debugf("Sending speech request. language_code: %s, name: %s, text_len: %d", req.Voice.LanguageCode, voiceName, len(text))
 	apiStart := time.Now()
 	resp, err := h.gcpClient.SynthesizeSpeech(synthCtx, &req)
-	promGCPSynthesizeDuration.WithLabelValues().Observe(time.Since(apiStart).Seconds())
+	apiDuration := time.Since(apiStart)
+	promGCPSynthesizeDuration.WithLabelValues().Observe(apiDuration.Seconds())
 	if err != nil {
-		log.Errorf("Could not get a correct response. text: %s, lang: %s, voice_name: %s, text_len: %d, err: %v", text, lang, voiceName, len(text), err)
+		log.Errorf("Could not get a correct response. text: %s, lang: %s, voice_name: %s, text_len: %d, api_duration: %s, err: %v", text, lang, voiceName, len(text), apiDuration, err)
 		return err
 	}
-	log.Debugf("GCP API call completed in %s", time.Since(apiStart))
+	log.Debugf("GCP API call completed. api_duration: %s, response_size: %d", apiDuration, len(resp.AudioContent))
 
 	// create audio
-	log.Debugf("Writing audio content to file. filepath: %s", filepath)
+	writeStart := time.Now()
+	log.Debugf("Writing audio content to file. filepath: %s, size: %d", filepath, len(resp.AudioContent))
 	if errWrite := os.WriteFile(filepath, resp.AudioContent, defaultFileMode); errWrite != nil {
 		log.Errorf("Could not create a result audio file. err: %v", errWrite)
 		return errWrite
 	}
-	log.Debugf("Created a new audio. filename: %s", filepath)
+	log.Debugf("Created a new audio. filename: %s, write_duration: %s, total_gcp_duration: %s", filepath, time.Since(writeStart), time.Since(gcpStart))
 
 	return nil
 }

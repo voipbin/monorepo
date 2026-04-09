@@ -57,15 +57,17 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 		"voice_id": voiceID,
 	})
 	log.Debugf("Creating TTS. lang: %s, provider: %s, voice_id: %s, text: %s", lang, provider, voiceID, text)
+	createStart := time.Now()
 
 	// normalize text once before the attempt loop
+	normalizeStart := time.Now()
 	normalizedText, err := h.normalizeText(ctx, text)
 	if err != nil {
 		log.Errorf("Could not normalize the text.")
 		promSpeechRequestTotal.WithLabelValues("error").Inc()
 		return nil, errors.Wrap(err, "could not normalize the text")
 	}
-	log.WithField("normalized_text", normalizedText).Debugf("The text has normalized.")
+	log.WithField("normalized_text", normalizedText).Debugf("The text has normalized. normalize_duration: %s", time.Since(normalizeStart))
 
 	attempts := buildAttempts(provider, voiceID)
 	var errs []string
@@ -91,12 +93,14 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 		}
 
 		// cache hit — return immediately
+		cacheCheckStart := time.Now()
 		if h.bucketHandler.OSFileExist(ctx, osFilepath) {
-			attemptLog.Infof("Cache hit for provider %s. target: %s", attempt.provider, osFilepath)
+			attemptLog.Infof("Cache hit for provider %s. target: %s, cache_check_duration: %s, total_duration: %s", attempt.provider, osFilepath, time.Since(cacheCheckStart), time.Since(createStart))
 			promSpeechRequestTotal.WithLabelValues("cache_hit").Inc()
 			promSpeechLanguageTotal.WithLabelValues(lang, string(attempt.provider)).Inc()
 			return res, nil
 		}
+		attemptLog.Debugf("Cache miss for provider %s. cache_check_duration: %s", attempt.provider, time.Since(cacheCheckStart))
 
 		// create audio
 		start := time.Now()
@@ -114,7 +118,7 @@ func (h *ttsHandler) Create(ctx context.Context, callID uuid.UUID, text string, 
 		promSpeechCreateDurationSeconds.WithLabelValues().Observe(time.Since(start).Seconds())
 		promSpeechRequestTotal.WithLabelValues("created").Inc()
 		promSpeechLanguageTotal.WithLabelValues(lang, string(attempt.provider)).Inc()
-		attemptLog.Debugf("Created tts wav file to the bucket correctly. target: %s", osFilepath)
+		attemptLog.Debugf("Created tts wav file to the bucket correctly. target: %s, audio_create_duration: %s, total_duration: %s", osFilepath, time.Since(start), time.Since(createStart))
 
 		return res, nil
 	}
