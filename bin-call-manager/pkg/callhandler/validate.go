@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"monorepo/bin-billing-manager/models/billing"
@@ -108,6 +109,48 @@ func (h *callHandler) ValidateCustomerIdentityVerified(ctx context.Context, cu *
 	}
 
 	return true
+}
+
+// validateOutgoingCallPermission checks whether the given customer is eligible to make
+// an outgoing call. It validates:
+// 1. Customer is not nil (caller must fetch the customer before calling this function).
+// 2. Customer account status is active.
+// 3. For PSTN (TypeTel) destinations, customer identity must be verified.
+//    Internal system customer IDs bypass the identity verification check.
+func (h *callHandler) validateOutgoingCallPermission(ctx context.Context, cu *cucustomer.Customer, destination commonaddress.Address) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "validateOutgoingCallPermission",
+	})
+
+	if cu == nil {
+		return fmt.Errorf("customer not available")
+	}
+	log = log.WithField("customer_id", cu.ID)
+
+	// check customer account status
+	if cu.Status != cucustomer.StatusActive {
+		log.Infof("Customer account is not active. Rejecting outgoing call. status: %s", cu.Status)
+		return fmt.Errorf("customer account is not active")
+	}
+
+	// check identity verification for outgoing PSTN calls only
+	if destination.Type == commonaddress.TypeTel {
+		// bypass for known internal/system customer IDs
+		if cu.ID == cucustomer.IDCallManager ||
+			cu.ID == cucustomer.IDAIManager ||
+			cu.ID == cucustomer.IDSystem ||
+			cu.ID == cucustomer.IDBasicRoute {
+			log.Debugf("Internal customer ID, bypassing identity verification. customer_id: %s", cu.ID)
+			return nil
+		}
+
+		if cu.IdentityVerificationStatus != cucustomer.IdentityVerificationStatusVerified {
+			log.Infof("Customer identity not verified. Rejecting outgoing PSTN call. status: %s", cu.IdentityVerificationStatus)
+			return fmt.Errorf("customer identity verification required for PSTN calls")
+		}
+	}
+
+	return nil
 }
 
 // ValidateCustomerBalance returns true if the given customer has enough balance

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -267,6 +268,169 @@ func Test_ValidateCustomerStatusIncoming(t *testing.T) {
 				} else if cu.ID != tt.expectCustomer.ID {
 					t.Errorf("ValidateCustomerStatusIncoming() customer.ID = %v, want %v", cu.ID, tt.expectCustomer.ID)
 				}
+			}
+		})
+	}
+}
+
+func Test_validateOutgoingCallPermission(t *testing.T) {
+	tests := []struct {
+		name string
+
+		customer    *cucustomer.Customer
+		destination commonaddress.Address
+
+		expectErr bool
+	}{
+		{
+			name:     "nil customer - rejected",
+			customer: nil,
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15551234567",
+			},
+			expectErr: true,
+		},
+		{
+			name: "active verified customer with PSTN destination - allowed",
+			customer: &cucustomer.Customer{
+				ID:                         uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001"),
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15551234567",
+			},
+			expectErr: false,
+		},
+		{
+			name: "active verified customer with SIP destination - allowed",
+			customer: &cucustomer.Customer{
+				ID:                         uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000002"),
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "sip:user@example.com",
+			},
+			expectErr: false,
+		},
+		{
+			name: "inactive customer - rejected",
+			customer: &cucustomer.Customer{
+				ID:                         uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000003"),
+				Status:                     cucustomer.StatusFrozen,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15551234567",
+			},
+			expectErr: true,
+		},
+		{
+			name: "active unverified customer with PSTN destination - rejected",
+			customer: &cucustomer.Customer{
+				ID:                         uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000004"),
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusNone,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15551234567",
+			},
+			expectErr: true,
+		},
+		{
+			name: "active unverified customer with SIP destination - allowed",
+			customer: &cucustomer.Customer{
+				ID:                         uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000005"),
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusNone,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "sip:user@example.com",
+			},
+			expectErr: false,
+		},
+		{
+			name: "internal customer ID CallManager with unverified PSTN - allowed",
+			customer: &cucustomer.Customer{
+				ID:                         cucustomer.IDCallManager,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusNone,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15551234567",
+			},
+			expectErr: false,
+		},
+		{
+			name: "internal customer ID AIManager with unverified PSTN - allowed",
+			customer: &cucustomer.Customer{
+				ID:                         cucustomer.IDAIManager,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusNone,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15551234567",
+			},
+			expectErr: false,
+		},
+		{
+			name: "internal customer ID System with unverified PSTN - allowed",
+			customer: &cucustomer.Customer{
+				ID:                         cucustomer.IDSystem,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusNone,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15551234567",
+			},
+			expectErr: false,
+		},
+		{
+			name: "internal customer ID BasicRoute with unverified PSTN - allowed",
+			customer: &cucustomer.Customer{
+				ID:                         cucustomer.IDBasicRoute,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusNone,
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15551234567",
+			},
+			expectErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &callHandler{
+				reqHandler:  mockReq,
+				utilHandler: mockUtil,
+			}
+
+			ctx := context.Background()
+
+			err := h.validateOutgoingCallPermission(ctx, tt.customer, tt.destination)
+			if tt.expectErr && err == nil {
+				t.Errorf("validateOutgoingCallPermission() expected error, got nil")
+			}
+			if !tt.expectErr && err != nil {
+				t.Errorf("validateOutgoingCallPermission() expected nil, got %v", err)
 			}
 		})
 	}
