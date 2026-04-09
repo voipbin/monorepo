@@ -1,77 +1,9 @@
 #!/usr/bin/env bash
-# pre-commit hook: No Magic Strings for Direct Resource Types
+# pre-commit hook placeholder
 #
-# Flags hardcoded resource type strings in staged .go files that should
-# use constants from bin-direct-manager/models/direct/direct.go instead.
-#
-# Override: add "// nolint:magicstring" on the same line to suppress.
+# Checks previously here have been moved to Claude Code PostToolUse hooks
+# in .claude/settings.json for earlier feedback during the work session.
 #
 # Install: git config core.hooksPath .githooks
-
-set -euo pipefail
-
-# The canonical constants live in bin-direct-manager/models/direct/direct.go:
-#   ResourceTypeAI         = "ai"
-#   ResourceTypeAITeam     = "ai_team"
-#   ResourceTypeAgent      = "agent"
-#   ResourceTypeQueue      = "queue"
-#   ResourceTypeConference = "conference"
-#   ResourceTypeExtension  = "extension"
-#
-# Any Go code assigning these strings to resource-type-related fields
-# should use dmdirect.ResourceType* constants instead.
-
-# Patterns that look like resource-type assignments with hardcoded strings.
-# We check for common field/variable names where resource types appear.
-RESOURCE_PATTERNS=(
-    'ResourceType:\s*"(ai|ai_team|agent|queue|conference|extension)"'
-    'ResourceType\s*=\s*"(ai|ai_team|agent|queue|conference|extension)"'
-    'resource_type.*"(ai_team)"'
-)
-
-VIOLATIONS=0
-
-# Get staged .go files (excluding vendor, generated, and the constants definition itself)
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM -- '*.go' | \
-    grep -v '^vendor/' | \
-    grep -v '_mock' | \
-    grep -v 'mock_' | \
-    grep -v '/gens/' | \
-    grep -v 'bin-direct-manager/models/direct/direct.go' || true)
-
-if [ -z "$STAGED_FILES" ]; then
-    exit 0
-fi
-
-for pattern in "${RESOURCE_PATTERNS[@]}"; do
-    while IFS=: read -r file line content; do
-        # Skip lines with nolint:magicstring override
-        if echo "$content" | grep -q 'nolint:magicstring'; then
-            continue
-        fi
-        echo "WARNING: Possible magic string in $file:$line"
-        echo "  $content"
-        echo "  -> Use dmdirect.ResourceType* constants from bin-direct-manager/models/direct/direct.go"
-        echo ""
-        VIOLATIONS=$((VIOLATIONS + 1))
-    done < <(echo "$STAGED_FILES" | xargs grep -nE "$pattern" 2>/dev/null || true)
-done
-
-if [ "$VIOLATIONS" -gt 0 ]; then
-    echo "========================================="
-    echo "Found $VIOLATIONS magic string violation(s)."
-    echo ""
-    echo "Use constants from bin-direct-manager/models/direct/direct.go:"
-    echo "  dmdirect.ResourceTypeAI         (\"ai\")"
-    echo "  dmdirect.ResourceTypeAITeam     (\"ai_team\")"
-    echo "  dmdirect.ResourceTypeAgent      (\"agent\")"
-    echo "  dmdirect.ResourceTypeQueue      (\"queue\")"
-    echo "  dmdirect.ResourceTypeConference (\"conference\")"
-    echo "  dmdirect.ResourceTypeExtension  (\"extension\")"
-    echo ""
-    echo "To suppress a false positive, add: // nolint:magicstring"
-    echo "========================================="
-    exit 1
-fi
 
 exit 0

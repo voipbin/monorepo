@@ -84,20 +84,31 @@ Call Never Connects
     Fix:
     "+15551234567" (E.164 format, digits only after +)
 
-**Cause 2: Number Not Provisioned**
+**Cause 2: Number Not Provisioned or Invalid Type**
 
 .. code::
 
     Problem:
-    Source number not in your account.
+    Source number not in your account, or is a virtual number.
 
     Diagnostic:
     GET /v1/numbers
-    Verify the source number appears in the response.
+    Verify the source number appears in the response with:
+    - type: "normal" (not "virtual")
+    - status: "active"
 
     Fix:
-    Purchase a number via POST /v1/numbers or use a number
-    you already own.
+    Purchase a number via POST /v1/numbers or use a normal,
+    active number you already own. Virtual numbers cannot be
+    used as the source for outgoing PSTN calls.
+
+    If the source fails validation, VoIPBIN falls back to:
+    1. Customer's default outgoing source number (if configured)
+    2. Anonymous caller ID (if no default is configured)
+
+    To configure a default outgoing source number:
+    PUT /v1/customer
+    { "default_outgoing_source_number_id": "<number-uuid>" }
 
 **Cause 3: Insufficient Balance**
 
@@ -127,6 +138,93 @@ Call Never Connects
     Fix:
     Contact support with the call-id for investigation.
     Try alternate routes if available.
+
+Source Number / Caller ID Issues
+---------------------------------
+
+**Symptom:** Outgoing PSTN call shows "Anonymous" caller ID, or shows a different number than the one provided in ``source.target``.
+
+**Diagnostic API call:**
+
+.. code::
+
+    GET /v1/calls/{call-id}
+
+    Check the source field in the response:
+    {
+      "source": {
+        "type": "tel",
+        "target": "anonymous",
+        "target_name": "Anonymous"
+      }
+    }
+
+    If target is "anonymous", source validation failed and
+    no default outgoing source number was configured.
+
+**Cause 1: Source Number Not in E.164 Format**
+
+.. code::
+
+    Problem:
+    Source does not start with "+" (e.g., "15551234567").
+
+    Fix:
+    Always use E.164 format: "+15551234567".
+
+**Cause 2: Source is a Virtual Number**
+
+.. code::
+
+    Problem:
+    Source number exists in your account but has type "virtual".
+    Only "normal" type numbers can be used as source for PSTN calls.
+
+    Diagnostic:
+    GET /v1/numbers
+    Find the number and check its "type" field.
+
+    Fix:
+    Use a number with type: "normal" and status: "active".
+
+**Cause 3: Source Number Not Owned by Customer**
+
+.. code::
+
+    Problem:
+    The E.164 number is not in the customer's account or
+    has been deleted.
+
+    Diagnostic:
+    GET /v1/numbers
+    Verify the source number appears with status: "active".
+
+    Fix:
+    Purchase the number via POST /v1/numbers or use one
+    you already own.
+
+**Cause 4: Default Number Fallback**
+
+.. code::
+
+    If the source fails validation, VoIPBIN checks for a
+    customer default outgoing source number.
+
+    If configured: The call uses that number as caller ID.
+    If not configured: The call uses "Anonymous" caller ID.
+
+    To configure a default:
+    PUT /v1/customer
+    {
+      "default_outgoing_source_number_id": "<number-uuid>"
+    }
+
+    The number-uuid must be from GET /v1/numbers (an active
+    normal number you own).
+
+.. note:: **AI Implementation Hint**
+
+   When a user reports unexpected caller ID behavior, check three things: (1) the source number format (must be E.164 with ``+``), (2) the number type via ``GET https://api.voipbin.net/v1.0/numbers`` (must be ``normal``, not ``virtual``), and (3) whether a default outgoing source number is configured on the customer profile via ``GET https://api.voipbin.net/v1.0/customer``. Non-PSTN calls (SIP, extension) skip source validation entirely and always use the provided source.
 
 Call Rings But No Answer
 ------------------------

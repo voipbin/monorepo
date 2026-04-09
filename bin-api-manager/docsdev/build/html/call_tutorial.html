@@ -194,7 +194,7 @@
 <p>Before creating a call, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
-<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). This must be a number you own. Obtain your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
+<li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). This must be a <strong>normal</strong> (non-virtual) number you own with <strong>active</strong> status. Obtain your numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code> and use one where <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">normal</span></code> and <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">active</span></code>. Virtual numbers cannot be used as the source for outgoing PSTN calls.</p></li>
 <li><p>A destination phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>) or a SIP endpoint address.</p></li>
 <li><p>(Optional) A flow ID (UUID). Create one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code> or obtain from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>.</p></li>
 </ul>
@@ -870,7 +870,23 @@ When the destination answer the call, it will play the given media file.</p>
 <li><dl class="simple">
 <dt><strong>400 Bad Request (source number):</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> The <code class="docutils literal notranslate"><span class="pre">source.target</span></code> phone number is not owned by your VoIPBIN account.</p></li>
-<li><p><strong>Fix:</strong> Use a number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. Only numbers you own can be used as the source.</p></li>
+<li><p><strong>Fix:</strong> Use a number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Only <strong>normal</strong> (non-virtual) numbers with <strong>active</strong> status that you own can be used as the source for outgoing PSTN calls.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Caller ID shows “Anonymous”:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The source number failed validation (not E.164, not owned, virtual type, or not active) and no default outgoing source number is configured on the customer profile.</p></li>
+<li><p><strong>Fix:</strong> Either use a valid normal number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code> as the source, or configure a default outgoing source number on your customer profile via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Caller ID shows a different number than requested:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The requested source number failed validation, but the customer has a default outgoing source number configured. The system used the default number as the caller ID instead.</p></li>
+<li><p><strong>Fix:</strong> If you want to use a specific source number, ensure it is a normal (non-virtual) number with active status owned by your account. Check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>.</p></li>
 </ul>
 </dd>
 </dl>

@@ -8,6 +8,11 @@
             "type": "command",
             "command": "bash .claude/scripts/check-magic-strings.sh",
             "description": "Check for hardcoded direct resource type magic strings in .go files"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-rst-build.sh",
+            "description": "Remind to rebuild RST HTML docs when source .rst files are edited"
           }
         ]
       }
