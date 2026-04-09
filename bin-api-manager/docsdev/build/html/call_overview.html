@@ -765,6 +765,46 @@ When an incoming call is received, the VoIPBIN system processes the call request
 <h2>Outgoing call<a class="headerlink" href="#outgoing-call" title="Link to this heading"></a></h2>
 <p>The VoIPBIN system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
 To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBIN system, which then processes the request and attempts to establish a connection with the specified destination.</p>
+<section id="outgoing-call-permission-requirements">
+<h3>Outgoing Call Permission Requirements<a class="headerlink" href="#outgoing-call-permission-requirements" title="Link to this heading"></a></h3>
+<p>Before placing an outgoing call, VoIPBIN validates the customer’s account eligibility. Both checks must pass before the call proceeds to balance validation, source number resolution, and routing.</p>
+<p><strong>1. Customer Account Status</strong></p>
+<p>The customer account must have <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">&quot;active&quot;</span></code>. Accounts in any other state (<code class="docutils literal notranslate"><span class="pre">initial</span></code>, <code class="docutils literal notranslate"><span class="pre">frozen</span></code>, <code class="docutils literal notranslate"><span class="pre">expired</span></code>, <code class="docutils literal notranslate"><span class="pre">deleted</span></code>) are rejected.</p>
+<ul class="simple">
+<li><p>Check your account status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> and inspect the <code class="docutils literal notranslate"><span class="pre">status</span></code> field.</p></li>
+<li><p>If your account is not active, contact support or complete the onboarding process.</p></li>
+</ul>
+<p><strong>2. Identity Verification (PSTN Destinations Only)</strong></p>
+<p>For outgoing calls to PSTN phone numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>), the customer must have <code class="docutils literal notranslate"><span class="pre">identity_verification_status:</span> <span class="pre">&quot;verified&quot;</span></code>. This requirement does not apply to SIP destinations (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;sip&quot;</span></code>).</p>
+<ul class="simple">
+<li><p>Check your verification status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> and inspect the <code class="docutils literal notranslate"><span class="pre">identity_verification_status</span></code> field.</p></li>
+<li><p>Possible values: <code class="docutils literal notranslate"><span class="pre">none</span></code> (not started), <code class="docutils literal notranslate"><span class="pre">pending</span></code> (in progress), <code class="docutils literal notranslate"><span class="pre">verified</span></code> (approved), <code class="docutils literal notranslate"><span class="pre">rejected</span></code> (failed).</p></li>
+<li><p>Contact support to initiate or complete identity verification.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Outgoing Call Permission Check
+──────────────────────────────
+
+Is the customer account active?
+    │
+    ├── NO → Reject: &quot;customer account is not active&quot;
+    │
+    └── YES → Is the destination PSTN (type: &quot;tel&quot;)?
+                │
+                ├── NO (SIP) → Permission granted ✓
+                │
+                └── YES → Is identity_verification_status &quot;verified&quot;?
+                            │
+                            ├── YES → Permission granted ✓
+                            │
+                            └── NO → Reject: &quot;customer identity verification required for PSTN calls&quot;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Before creating an outgoing PSTN call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code>, verify the customer’s eligibility by calling <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>. Check that <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;active&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">identity_verification_status</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;verified&quot;</span></code>. If either check fails, do not attempt the call — display the appropriate error to the user. SIP calls (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;sip&quot;</span></code>) only require an active account status.</p>
+</div>
+</section>
 <section id="source-number-validation-outgoing-pstn-calls">
 <h3>Source Number Validation (Outgoing PSTN Calls)<a class="headerlink" href="#source-number-validation-outgoing-pstn-calls" title="Link to this heading"></a></h3>
 <p>For outgoing calls to PSTN phone numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>), VoIPBIN validates the source number before placing the call. The system uses a cascading fallback to determine the caller ID shown to the destination:</p>
@@ -961,6 +1001,7 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 <li><a class="reference internal" href="#incoming-call">Incoming call</a></li>
 <li><a class="reference internal" href="#execution-of-call-flow-for-incoming-call">Execution of Call Flow for incoming call</a></li>
 <li><a class="reference internal" href="#outgoing-call">Outgoing call</a><ul>
+<li><a class="reference internal" href="#outgoing-call-permission-requirements">Outgoing Call Permission Requirements</a></li>
 <li><a class="reference internal" href="#source-number-validation-outgoing-pstn-calls">Source Number Validation (Outgoing PSTN Calls)</a></li>
 </ul>
 </li>

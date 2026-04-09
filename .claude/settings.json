@@ -13,6 +13,11 @@
             "type": "command",
             "command": "bash .claude/scripts/check-rst-build.sh",
             "description": "Remind to rebuild RST HTML docs when source .rst files are edited"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-error-log-return.sh",
+            "description": "Warn about log-then-return anti-pattern in .go files"
           }
         ]
       }

@@ -133,17 +133,16 @@ func (h *callHandler) CreateCallOutgoing(
 		return nil, fmt.Errorf("the destination type must be sip or tel")
 	}
 
-	// validate customer status (also fetches customer for subsequent checks)
-	cu, validStatus := h.ValidateCustomerStatusOutgoing(ctx, customerID)
-	if !validStatus {
-		log.Infof("Customer account is not active. Rejecting outgoing call. customer_id: %s", customerID)
-		return nil, fmt.Errorf("customer account is not active")
+	// fetch customer info
+	cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get customer info")
 	}
+	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 
-	// validate customer identity verification for outgoing PSTN calls
-	if !h.ValidateCustomerIdentityVerified(ctx, cu, customerID, call.DirectionOutgoing, destination) {
-		log.Infof("Customer identity not verified. Rejecting outgoing PSTN call. customer_id: %s", customerID)
-		return nil, fmt.Errorf("customer identity verification required for PSTN calls")
+	// validate outgoing call permission (customer status + identity verification)
+	if err := h.validateOutgoingCallPermission(ctx, cu, destination); err != nil {
+		return nil, err
 	}
 
 	// validate customer's account balance

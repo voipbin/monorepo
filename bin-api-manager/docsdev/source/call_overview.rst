@@ -617,6 +617,48 @@ Outgoing call
 The VoIPBIN system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
 To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBIN system, which then processes the request and attempts to establish a connection with the specified destination.
 
+Outgoing Call Permission Requirements
+++++++++++++++++++++++++++++++++++++++
+Before placing an outgoing call, VoIPBIN validates the customer's account eligibility. Both checks must pass before the call proceeds to balance validation, source number resolution, and routing.
+
+**1. Customer Account Status**
+
+The customer account must have ``status: "active"``. Accounts in any other state (``initial``, ``frozen``, ``expired``, ``deleted``) are rejected.
+
+- Check your account status via ``GET https://api.voipbin.net/v1.0/customer`` and inspect the ``status`` field.
+- If your account is not active, contact support or complete the onboarding process.
+
+**2. Identity Verification (PSTN Destinations Only)**
+
+For outgoing calls to PSTN phone numbers (``type: "tel"``), the customer must have ``identity_verification_status: "verified"``. This requirement does not apply to SIP destinations (``type: "sip"``).
+
+- Check your verification status via ``GET https://api.voipbin.net/v1.0/customer`` and inspect the ``identity_verification_status`` field.
+- Possible values: ``none`` (not started), ``pending`` (in progress), ``verified`` (approved), ``rejected`` (failed).
+- Contact support to initiate or complete identity verification.
+
+::
+
+    Outgoing Call Permission Check
+    ──────────────────────────────
+
+    Is the customer account active?
+        │
+        ├── NO → Reject: "customer account is not active"
+        │
+        └── YES → Is the destination PSTN (type: "tel")?
+                    │
+                    ├── NO (SIP) → Permission granted ✓
+                    │
+                    └── YES → Is identity_verification_status "verified"?
+                                │
+                                ├── YES → Permission granted ✓
+                                │
+                                └── NO → Reject: "customer identity verification required for PSTN calls"
+
+.. note:: **AI Implementation Hint**
+
+   Before creating an outgoing PSTN call via ``POST https://api.voipbin.net/v1.0/calls``, verify the customer's eligibility by calling ``GET https://api.voipbin.net/v1.0/customer``. Check that ``status`` is ``"active"`` and ``identity_verification_status`` is ``"verified"``. If either check fails, do not attempt the call — display the appropriate error to the user. SIP calls (``type: "sip"``) only require an active account status.
+
 Source Number Validation (Outgoing PSTN Calls)
 +++++++++++++++++++++++++++++++++++++++++++++++
 For outgoing calls to PSTN phone numbers (``type: "tel"``), VoIPBIN validates the source number before placing the call. The system uses a cascading fallback to determine the caller ID shown to the destination:
