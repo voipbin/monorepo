@@ -6099,6 +6099,21 @@ func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingCreate(ctx, customerID, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingCreate", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingCreate), ctx, customerID, activeflowID, referenceType, referenceID, language, gender, direction)
 }
 
+// TTSV1StreamingCreateWithProvider mocks base method.
+func (m *MockRequestHandler) TTSV1StreamingCreateWithProvider(ctx context.Context, customerID uuid.UUID, referenceType streaming.ReferenceType, referenceID uuid.UUID, language, provider, voiceID string, direction streaming.Direction) (*streaming.Streaming, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1StreamingCreateWithProvider", ctx, customerID, referenceType, referenceID, language, provider, voiceID, direction)
+	ret0, _ := ret[0].(*streaming.Streaming)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TTSV1StreamingCreateWithProvider indicates an expected call of TTSV1StreamingCreateWithProvider.
+func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingCreateWithProvider(ctx, customerID, referenceType, referenceID, language, provider, voiceID, direction any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingCreateWithProvider", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingCreateWithProvider), ctx, customerID, referenceType, referenceID, language, provider, voiceID, direction)
+}
+
 // TTSV1StreamingDelete mocks base method.
 func (m *MockRequestHandler) TTSV1StreamingDelete(ctx context.Context, streamingID uuid.UUID) (*streaming.Streaming, error) {
 	m.ctrl.T.Helper()
@@ -6170,6 +6185,20 @@ func (m *MockRequestHandler) TTSV1StreamingSayStop(ctx context.Context, podID st
 func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingSayStop(ctx, podID, streamingID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingSayStop", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingSayStop), ctx, podID, streamingID)
+}
+
+// TTSV1StreamingWaitFinish mocks base method.
+func (m *MockRequestHandler) TTSV1StreamingWaitFinish(ctx context.Context, podID string, streamingID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TTSV1StreamingWaitFinish", ctx, podID, streamingID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// TTSV1StreamingWaitFinish indicates an expected call of TTSV1StreamingWaitFinish.
+func (mr *MockRequestHandlerMockRecorder) TTSV1StreamingWaitFinish(ctx, podID, streamingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TTSV1StreamingWaitFinish", reflect.TypeOf((*MockRequestHandler)(nil).TTSV1StreamingWaitFinish), ctx, podID, streamingID)
 }
 
 // TagV1TagCreate mocks base method.

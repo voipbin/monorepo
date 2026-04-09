@@ -54,7 +54,8 @@ var (
 	resV1StreamingsIDSayAdd    = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_add$")
 	resV1StreamingsIDSayInit   = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_init$")
 	resV1StreamingsIDSayStop   = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_stop$")
-	resV1StreamingsIDSayFinish = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_finish$")
+	resV1StreamingsIDSayFinish   = regexp.MustCompile("/v1/streamings/" + regUUID + "/say_finish$")
+	resV1StreamingsIDWaitFinish  = regexp.MustCompile("/v1/streamings/" + regUUID + "/wait_finish$")
 )
 
 var (
@@ -209,6 +210,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case resV1StreamingsIDSayFinish.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/streamings/<streaming-id>/say_finish"
 		response, err = h.v1StreamingsIDSayFinishPost(ctx, m)
+
+	// /streamings/<id>/wait_finish
+	case resV1StreamingsIDWaitFinish.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/streamings/<streaming-id>/wait_finish"
+		response, err = h.v1StreamingsIDWaitFinishPost(ctx, m)
 
 	default:
 		log.Errorf("Could not find corresponded message handler. data: %s", m.Data)

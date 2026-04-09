@@ -53,6 +53,46 @@ func (r *requestHandler) TTSV1StreamingCreate(
 	return &res, nil
 }
 
+// TTSV1StreamingCreateWithProvider creates a streaming TTS session with explicit provider and voiceID.
+func (r *requestHandler) TTSV1StreamingCreateWithProvider(
+	ctx context.Context,
+	customerID uuid.UUID,
+	referenceType tmstreaming.ReferenceType,
+	referenceID uuid.UUID,
+	language string,
+	provider string,
+	voiceID string,
+	direction tmstreaming.Direction,
+) (*tmstreaming.Streaming, error) {
+
+	uri := "/v1/streamings"
+
+	m, err := json.Marshal(request.V1DataStreamingsPost{
+		CustomerID:    customerID,
+		ReferenceType: referenceType,
+		ReferenceID:   referenceID,
+		Language:      language,
+		Direction:     direction,
+		Provider:      provider,
+		VoiceID:       voiceID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestTTS(ctx, uri, sock.RequestMethodPost, "tts/streamings", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res tmstreaming.Streaming
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // TTSV1StreamingDelete deletes a streaming tts by its ID.
 func (r *requestHandler) TTSV1StreamingDelete(ctx context.Context, streamingID uuid.UUID) (*tmstreaming.Streaming, error) {
 	uri := fmt.Sprintf("/v1/streamings/%s", streamingID)
@@ -166,4 +206,25 @@ func (r *requestHandler) TTSV1StreamingSayFinish(ctx context.Context, podID stri
 	}
 
 	return &res, nil
+}
+
+// TTSV1StreamingWaitFinish waits until all streaming audio has been delivered to Asterisk.
+// This is a synchronous blocking RPC — it blocks until the streaming processDone channel closes.
+// Uses pod-specific routing since the streaming session lives on a specific pod.
+func (r *requestHandler) TTSV1StreamingWaitFinish(ctx context.Context, podID string, streamingID uuid.UUID) error {
+	uri := fmt.Sprintf("/v1/streamings/%s/wait_finish", streamingID)
+
+	queueName := fmt.Sprintf("bin-manager.tts-manager.request.%s", podID)
+
+	// 60s timeout — must be longer than max audio duration
+	tmp, err := r.sendRequest(ctx, commonoutline.QueueName(queueName), uri, sock.RequestMethodPost, "tts/streamings/<streaming-id>/wait_finish", 60000, 0, ContentTypeNone, nil)
+	if err != nil {
+		return err
+	}
+
+	if errParse := parseResponse(tmp, nil); errParse != nil {
+		return errParse
+	}
+
+	return nil
 }

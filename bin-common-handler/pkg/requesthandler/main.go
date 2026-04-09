@@ -1288,6 +1288,8 @@ type RequestHandler interface {
 	TTSV1StreamingSayAdd(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID, text string) error
 	TTSV1StreamingSayFinish(ctx context.Context, podID string, streamingID uuid.UUID, messageID uuid.UUID) (*tmstreaming.Streaming, error)
 	TTSV1StreamingSayStop(ctx context.Context, podID string, streamingID uuid.UUID) error
+	TTSV1StreamingCreateWithProvider(ctx context.Context, customerID uuid.UUID, referenceType tmstreaming.ReferenceType, referenceID uuid.UUID, language string, provider string, voiceID string, direction tmstreaming.Direction) (*tmstreaming.Streaming, error)
+	TTSV1StreamingWaitFinish(ctx context.Context, podID string, streamingID uuid.UUID) error
 
 	// tts-manager speakings
 	TTSV1SpeakingCreate(ctx context.Context, customerID uuid.UUID, referenceType tmstreaming.ReferenceType, referenceID uuid.UUID, language string, provider string, voiceID string, direction tmstreaming.Direction) (*tmspeaking.Speaking, error)

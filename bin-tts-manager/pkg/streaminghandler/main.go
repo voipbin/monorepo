@@ -50,6 +50,8 @@ type StreamingHandler interface {
 	SayFlush(ctx context.Context, id uuid.UUID) error
 	SayStop(ctx context.Context, id uuid.UUID) error
 	SayFinish(ctx context.Context, id uuid.UUID, messageID uuid.UUID) (*streaming.Streaming, error)
+
+	WaitFinish(ctx context.Context, id uuid.UUID) error
 }
 
 // list of default external media channel options.

@@ -152,3 +152,48 @@ func (h *streamingHandler) SetVendorInfo(st *streaming.Streaming, venderName str
 	st.VendorName = venderName
 	st.VendorConfig = vendorConfig
 }
+
+// WaitFinish blocks until all streaming audio has been delivered to Asterisk.
+// It waits on the vendor-specific processDone channel (GCP) or ConnAstDone as fallback.
+func (h *streamingHandler) WaitFinish(ctx context.Context, id uuid.UUID) error {
+	st, err := h.Get(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	st.VendorLock.Lock()
+	vc := st.VendorConfig
+	vendorName := st.VendorName
+	st.VendorLock.Unlock()
+
+	if vc == nil {
+		return nil // No vendor initialized, nothing to wait for
+	}
+
+	switch vendorName {
+	case streaming.VendorNameGCP:
+		cf, ok := vc.(*GCPConfig)
+		if !ok {
+			return fmt.Errorf("invalid vendor config type for GCP")
+		}
+		select {
+		case <-cf.processDone:
+			return nil
+		case <-cf.Ctx.Done():
+			return nil // Session cancelled
+		case <-ctx.Done():
+			return ctx.Err() // Caller timeout
+		}
+	default:
+		// For non-GCP vendors, wait on ConnAstDone as fallback
+		if st.ConnAstDone == nil {
+			return nil
+		}
+		select {
+		case <-st.ConnAstDone:
+			return nil
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+}

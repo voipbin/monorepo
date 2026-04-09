@@ -488,7 +488,8 @@ func (h *callHandler) actionExecuteHangup(ctx context.Context, c *call.Call) err
 	return nil
 }
 
-// actionExecuteTalk executes the action type talk
+// actionExecuteTalk executes the action type talk.
+// It tries streaming TTS first for low-latency audio (~200ms), falling back to batch TTS on failure.
 func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "actionExecuteTalk",
@@ -505,11 +506,22 @@ func (h *callHandler) actionExecuteTalk(ctx context.Context, c *call.Call) error
 		}
 	}
 
-	if errTalk := h.Talk(ctx, c.ID, true, option.Text, option.Language, option.Provider, option.VoiceID); errTalk != nil {
-		log.Errorf("Could not talk correctly. err: %v", errTalk)
-		return errors.Wrap(errTalk, "could not talk correctly")
+	// Try streaming first for low-latency audio delivery
+	errStreaming := h.StreamingTalk(ctx, c.ID, option.Text, option.Language, option.Provider, option.VoiceID)
+	if errStreaming == nil {
+		// Streaming succeeded — audio fully delivered, advance to next action
+		log.Infof("Streaming talk succeeded, advancing to next action.")
+		return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)
 	}
 
+	// Streaming failed — fall back to batch TTS
+	log.Infof("Streaming talk failed, falling back to batch. err: %v", errStreaming)
+	if errBatch := h.Talk(ctx, c.ID, true, option.Text, option.Language, option.Provider, option.VoiceID); errBatch != nil {
+		log.Errorf("Could not talk correctly. err: %v", errBatch)
+		return errors.Wrap(errBatch, "could not talk correctly")
+	}
+
+	// Batch path: async triggers next action immediately, sync waits for PlaybackFinished ARI event
 	if option.Async {
 		log.Debugf("Talk is async. Moving to the next action. call_id: %s, async: %v", c.ID, option.Async)
 		return h.reqHandler.CallV1CallActionNext(ctx, c.ID, false)

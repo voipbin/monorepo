@@ -17,6 +17,8 @@ type V1DataStreamingsPost struct {
 	Language      string                  `json:"language,omitempty"`
 	Gender        streaming.Gender        `json:"gender,omitempty"`
 	Direction     streaming.Direction     `json:"direction,omitempty"` // Direction of the streaming
+	Provider      string                  `json:"provider,omitempty"`  // TTS provider (e.g., "gcp", "aws", "elevenlabs")
+	VoiceID       string                  `json:"voice_id,omitempty"` // Provider-specific voice ID
 }
 
 // V1DataStreamingsIDSayAddPost is
@@ -40,3 +42,8 @@ type V1DataStreamingsIDSayInitPost struct {
 type V1DataStreamingsIDSayFinishPost struct {
 	MessageID uuid.UUID `json:"message_id,omitempty"`
 }
+
+// V1DataStreamingsIDWaitFinishPost is
+// v1 data type request struct for
+// /v1/streamings/<id>/wait_finish POST
+type V1DataStreamingsIDWaitFinishPost struct{}

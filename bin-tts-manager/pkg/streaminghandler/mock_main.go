@@ -173,6 +173,20 @@ func (mr *MockStreamingHandlerMockRecorder) Stop(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockStreamingHandler)(nil).Stop), ctx, id)
 }
 
+// WaitFinish mocks base method.
+func (m *MockStreamingHandler) WaitFinish(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WaitFinish", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// WaitFinish indicates an expected call of WaitFinish.
+func (mr *MockStreamingHandlerMockRecorder) WaitFinish(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WaitFinish", reflect.TypeOf((*MockStreamingHandler)(nil).WaitFinish), ctx, id)
+}
+
 // Mockstreamer is a mock of streamer interface.
 type Mockstreamer struct {
 	ctrl     *gomock.Controller

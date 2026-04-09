@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-tts-manager/models/streaming"
 	"monorepo/bin-tts-manager/pkg/listenhandler/models/request"
 	"net/url"
 	"strings"
@@ -26,7 +27,13 @@ func (h *listenHandler) v1StreamingsPost(ctx context.Context, m *sock.Request) (
 	}
 	log.WithField("request", req).Debugf("Processing v1StreamingsPost.")
 
-	tmp, err := h.streamingHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Language, req.Gender, req.Direction)
+	var tmp *streaming.Streaming
+	var err error
+	if req.Provider != "" {
+		tmp, err = h.streamingHandler.StartWithID(ctx, uuid.Must(uuid.NewV4()), req.CustomerID, req.ReferenceType, req.ReferenceID, req.Language, req.Provider, req.VoiceID, req.Direction)
+	} else {
+		tmp, err = h.streamingHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Language, req.Gender, req.Direction)
+	}
 	if err != nil {
 		log.Errorf("Could not create a streaming. err: %v", err)
 		return nil, err
@@ -225,6 +232,36 @@ func (h *listenHandler) v1StreamingsIDSayFinishPost(ctx context.Context, m *sock
 		StatusCode: 200,
 		DataType:   "application/json",
 		Data:       data,
+	}
+
+	return res, nil
+}
+
+// v1StreamingsIDWaitFinishPost handles /v1/streamings/<id>/wait_finish POST request
+// It blocks until all streaming audio has been delivered to Asterisk.
+func (h *listenHandler) v1StreamingsIDWaitFinishPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "v1StreamingsIDWaitFinishPost",
+	})
+
+	u, err := url.Parse(m.URI)
+	if err != nil {
+		return nil, err
+	}
+
+	// "/v1/streamings/a6f4eae8-8a74-11ea-af75-3f1e61b9a236/wait_finish"
+	tmpVals := strings.Split(u.Path, "/")
+	streamingID := uuid.FromStringOrNil(tmpVals[3])
+
+	log.Debugf("Processing v1StreamingsIDWaitFinishPost. streaming_id: %s", streamingID)
+
+	if errWait := h.streamingHandler.WaitFinish(ctx, streamingID); errWait != nil {
+		log.Errorf("Could not wait for streaming finish. err: %v", errWait)
+		return nil, errWait
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
 	}
 
 	return res, nil
