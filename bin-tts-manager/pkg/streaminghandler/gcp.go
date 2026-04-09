@@ -57,6 +57,11 @@ const (
 	// gcpKeepaliveInterval is the interval between keepalive pings to prevent
 	// GCP's 5-second inactivity timeout on StreamingSynthesize.
 	gcpKeepaliveInterval = 4 * time.Second
+
+	// asteriskBufferPadding is a conservative padding added after the calculated
+	// remaining playback time to account for Asterisk's internal audio buffer
+	// and network jitter between tts-manager and Asterisk.
+	asteriskBufferPadding = 500 * time.Millisecond
 )
 
 var gcpVoiceIDMap = map[string]string{
@@ -302,7 +307,33 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 	msg := cf.Message
 	h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayStarted, msg)
 
+	// Track audio bytes and wall-clock time to calculate remaining playback time.
+	// websocketWrite paces frames at ~20ms each (real-time), but per-chunk ticker
+	// creation skips the first wait, causing a cumulative undershoot of ~20ms per
+	// GCP chunk. Additionally, Asterisk buffers audio internally. We wait for the
+	// remaining playback time + padding before signaling processDone so that
+	// callers (WaitFinish → ActionNext) don't advance before the audio finishes.
+	var totalAudioBytes int
+	var firstWriteTime time.Time
+	audioWritten := false
+
 	defer func() {
+		if audioWritten && totalAudioBytes > 0 {
+			// Calculate audio duration from bytes: ulaw at 8000 Hz = 8000 bytes/sec
+			audioDuration := time.Duration(totalAudioBytes) * time.Second / time.Duration(defaultGCPStreamingSampleRate)
+			elapsed := time.Since(firstWriteTime)
+			remaining := audioDuration - elapsed + asteriskBufferPadding
+
+			if remaining > 0 {
+				log.Debugf("Waiting for remaining playback. audio_duration: %v, elapsed: %v, remaining_wait: %v",
+					audioDuration, elapsed, remaining)
+				select {
+				case <-time.After(remaining):
+				case <-cf.Ctx.Done():
+				}
+			}
+		}
+
 		streamCancel()
 		h.notifyHandler.PublishEvent(cf.Ctx, message.EventTypePlayFinished, msg)
 		close(doneCh)
@@ -348,10 +379,16 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			continue
 		}
 
+		if !audioWritten {
+			firstWriteTime = time.Now()
+			audioWritten = true
+		}
+
 		if errWrite := websocketWrite(streamCtx, cf.ConnAst, audioData, frameSizeUlaw); errWrite != nil {
 			log.Errorf("Could not write audio to asterisk: %v", errWrite)
 			return
 		}
+		totalAudioBytes += len(audioData)
 	}
 }
 
