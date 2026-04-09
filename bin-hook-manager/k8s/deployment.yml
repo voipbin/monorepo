@@ -85,8 +85,8 @@ spec:
               scheme: HTTPS
           resources:
             requests:
-              cpu: "1m"
-              memory: "3M"
-            limits:
               cpu: "10m"
-              memory: "30M"
+              memory: "10M"
+            limits:
+              cpu: "100m"
+              memory: "64M"

@@ -72,8 +72,8 @@ spec:
               containerPort: 2112
           resources:
             requests:
-              cpu: "6m"
-              memory: "3M"
+              cpu: "10m"
+              memory: "10M"
             limits:
-              cpu: "60m"
-              memory: "30M"
+              cpu: "100m"
+              memory: "64M"
