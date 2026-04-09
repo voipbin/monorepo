@@ -755,7 +755,7 @@ Transfer call with context passed to the receiving agent:
     Response:
     {
         "id": "transfer-uuid",
-        "transfer_type": "attended",
+        "type": "attended",
         "transferer_call_id": "call-uuid-of-agent-a",
         "transferee_call_id": "consult-call-uuid",
         "transferee_addresses": [
