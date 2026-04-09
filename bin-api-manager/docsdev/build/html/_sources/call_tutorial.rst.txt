@@ -9,7 +9,7 @@ Prerequisites
 Before creating a call, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* A source phone number in E.164 format (e.g., ``+15551234567``). This must be a number you own. Obtain your numbers via ``GET /numbers``.
+* A source phone number in E.164 format (e.g., ``+15551234567``). This must be a **normal** (non-virtual) number you own with **active** status. Obtain your numbers via ``GET https://api.voipbin.net/v1.0/numbers`` and use one where ``type`` is ``normal`` and ``status`` is ``active``. Virtual numbers cannot be used as the source for outgoing PSTN calls.
 * A destination phone number in E.164 format (e.g., ``+15559876543``) or a SIP endpoint address.
 * (Optional) A flow ID (UUID). Create one via ``POST /flows`` or obtain from ``GET /flows``.
 
@@ -702,7 +702,15 @@ Troubleshooting
 
 * **400 Bad Request (source number):**
     * **Cause:** The ``source.target`` phone number is not owned by your VoIPBIN account.
-    * **Fix:** Use a number from ``GET /numbers``. Only numbers you own can be used as the source.
+    * **Fix:** Use a number from ``GET https://api.voipbin.net/v1.0/numbers``. Only **normal** (non-virtual) numbers with **active** status that you own can be used as the source for outgoing PSTN calls.
+
+* **Caller ID shows "Anonymous":**
+    * **Cause:** The source number failed validation (not E.164, not owned, virtual type, or not active) and no default outgoing source number is configured on the customer profile.
+    * **Fix:** Either use a valid normal number from ``GET https://api.voipbin.net/v1.0/numbers`` as the source, or configure a default outgoing source number on your customer profile via ``PUT https://api.voipbin.net/v1.0/customer``.
+
+* **Caller ID shows a different number than requested:**
+    * **Cause:** The requested source number failed validation, but the customer has a default outgoing source number configured. The system used the default number as the caller ID instead.
+    * **Fix:** If you want to use a specific source number, ensure it is a normal (non-virtual) number with active status owned by your account. Check ``GET https://api.voipbin.net/v1.0/numbers``.
 
 * **402 Payment Required:**
     * **Cause:** Insufficient account balance to make a call.

@@ -1,14 +1,39 @@
 #!/usr/bin/env bash
-# pre-commit hook: No Magic Strings for Direct Resource Types
+# pre-commit hook: Multi-check
 #
-# Flags hardcoded resource type strings in staged .go files that should
-# use constants from bin-direct-manager/models/direct/direct.go instead.
+# Check 1: No Magic Strings for Direct Resource Types
+#   Flags hardcoded resource type strings in staged .go files that should
+#   use constants from bin-direct-manager/models/direct/direct.go instead.
+#   Override: add "// nolint:magicstring" on the same line to suppress.
 #
-# Override: add "// nolint:magicstring" on the same line to suppress.
+# Check 2: RST docs must include rebuilt HTML
+#   If RST source files under bin-api-manager/docsdev/source/ are staged,
+#   the built HTML under bin-api-manager/docsdev/build/ must also be staged.
 #
 # Install: git config core.hooksPath .githooks
 
 set -euo pipefail
+
+# ─── Check 2: RST docs must include rebuilt HTML ───────────────────────────
+STAGED_RST=$(git diff --cached --name-only --diff-filter=ACM -- 'bin-api-manager/docsdev/source/*.rst' || true)
+if [ -n "$STAGED_RST" ]; then
+    STAGED_BUILD=$(git diff --cached --name-only -- 'bin-api-manager/docsdev/build/' || true)
+    if [ -z "$STAGED_BUILD" ]; then
+        echo "========================================="
+        echo "WARNING: RST source files are staged but built HTML is not."
+        echo ""
+        echo "Staged RST files:"
+        echo "$STAGED_RST"
+        echo ""
+        echo "You must rebuild the HTML and stage the build output:"
+        echo "  cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build"
+        echo "  git add -f bin-api-manager/docsdev/build/"
+        echo "========================================="
+        exit 1
+    fi
+fi
+
+# ─── Check 1: No Magic Strings for Direct Resource Types ──────────────────
 
 # The canonical constants live in bin-direct-manager/models/direct/direct.go:
 #   ResourceTypeAI         = "ai"

@@ -617,6 +617,45 @@ Outgoing call
 The VoIPBIN system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
 To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBIN system, which then processes the request and attempts to establish a connection with the specified destination.
 
+Source Number Validation (Outgoing PSTN Calls)
++++++++++++++++++++++++++++++++++++++++++++++++
+For outgoing calls to PSTN phone numbers (``type: "tel"``), VoIPBIN validates the source number before placing the call. The system uses a cascading fallback to determine the caller ID shown to the destination:
+
+::
+
+    Source Number Resolution Flow
+    ─────────────────────────────
+
+    Is the source in E.164 format (+<digits>)?
+        │
+        ├── YES → Is the source an active, normal (non-virtual) number
+        │         owned by the customer?
+        │             │
+        │             ├── YES → Use the source number as caller ID ✓
+        │             │
+        │             └── NO → Fall through to default ↓
+        │
+        └── NO → Fall through to default ↓
+
+    Does the customer have a default outgoing source number configured?
+        │
+        ├── YES → Use the default outgoing source number as caller ID ✓
+        │
+        └── NO → Set caller ID to "Anonymous" ✓
+
+**Key rules:**
+
+- The source number must be in E.164 format (starting with ``+``, e.g., ``+15551234567``).
+- The source number must be a **normal** number (not virtual) with **active** status, owned by the customer. Obtain your numbers via ``GET https://api.voipbin.net/v1.0/numbers``.
+- Virtual numbers cannot be used as the source for outgoing PSTN calls.
+- If the source number fails validation, the system falls back to the customer's **default outgoing source number** (configured on the customer profile via ``PUT https://api.voipbin.net/v1.0/customer``).
+- If no default outgoing source number is configured, the caller ID is set to **Anonymous**.
+- Non-PSTN destinations (SIP endpoints, extensions) skip source number validation entirely.
+
+.. note:: **AI Implementation Hint**
+
+   When creating an outgoing PSTN call via ``POST https://api.voipbin.net/v1.0/calls``, always use a number from ``GET https://api.voipbin.net/v1.0/numbers`` that has ``type: "normal"`` and ``status: "active"`` as the ``source.target``. Virtual numbers (``type: "virtual"``) will be rejected as a source. If the source fails validation and no default outgoing source number is configured, the call proceeds with anonymous caller ID -- the destination may reject anonymous calls depending on their carrier settings.
+
 Execution of Call Flow for outgoing call
 ----------------------------------------
 Once the outgoing call request is initiated, the VoIPBIN system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.
