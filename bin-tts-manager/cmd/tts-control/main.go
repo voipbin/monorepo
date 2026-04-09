@@ -40,6 +40,7 @@ func initHandler() (ttshandler.TTSHandler, error) {
 	handler := ttshandler.NewTTSHandler(
 		config.Get().AWSAccessKey,
 		config.Get().AWSSecretKey,
+		config.Get().GCPTTSEndpoint,
 		"/tmp/tts-media", // Default media bucket directory for CLI
 		"localhost",      // Default local address for CLI
 		reqHandler,

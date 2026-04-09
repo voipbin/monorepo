@@ -9,6 +9,7 @@ import (
 	texttospeechpb "cloud.google.com/go/texttospeech/apiv1/texttospeechpb"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
@@ -16,13 +17,32 @@ import (
 )
 
 const (
-	defaultGCPEndpoint = "eu-texttospeech.googleapis.com:443"
+	defaultGCPEndpoint     = "texttospeech.googleapis.com:443"
+	gcpSynthesizeTimeout   = 5 * time.Second
 )
+
+var promGCPSynthesizeDuration = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Namespace: "tts_manager",
+		Name:      "gcp_synthesize_duration_seconds",
+		Help:      "Duration of GCP SynthesizeSpeech API call in seconds.",
+		Buckets:   []float64{0.05, 0.1, 0.2, 0.5, 1, 2, 5},
+	},
+	[]string{},
+)
+
+func init() {
+	prometheus.MustRegister(promGCPSynthesizeDuration)
+}
 
 // gcpGetClient creates a Google Cloud Text-to-Speech client using Application Default Credentials (ADC).
 // Callers must ensure the environment is configured for ADC (for example via
 // GOOGLE_APPLICATION_CREDENTIALS, workload identity, or in-cluster metadata).
-func gcpGetClient(ctx context.Context) (*texttospeech.Client, error) {
+func gcpGetClient(ctx context.Context, endpoint string) (*texttospeech.Client, error) {
+	if endpoint == "" {
+		endpoint = defaultGCPEndpoint
+	}
+
 	keepAliveParams := keepalive.ClientParameters{
 		Time:                30 * time.Second, // Ping every 30 seconds
 		Timeout:             10 * time.Second, // Wait 10 seconds for response
@@ -35,7 +55,7 @@ func gcpGetClient(ctx context.Context) (*texttospeech.Client, error) {
 	res, err := texttospeech.NewClient(
 		ctx,
 		option.WithGRPCDialOption(grpc.WithKeepaliveParams(keepAliveParams)),
-		option.WithEndpoint(defaultGCPEndpoint),
+		option.WithEndpoint(endpoint),
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create a new client")
@@ -83,14 +103,18 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 		},
 	}
 
-	start := time.Now()
+	synthCtx, synthCancel := context.WithTimeout(ctx, gcpSynthesizeTimeout)
+	defer synthCancel()
 
 	log.Debugf("Sending speech request. language_code: %s, name: %s", req.Voice.LanguageCode, voiceName)
-	resp, err := h.gcpClient.SynthesizeSpeech(ctx, &req)
+	apiStart := time.Now()
+	resp, err := h.gcpClient.SynthesizeSpeech(synthCtx, &req)
+	promGCPSynthesizeDuration.WithLabelValues().Observe(time.Since(apiStart).Seconds())
 	if err != nil {
-		log.Errorf("Could not get a correct response. text: %s, lang: %s, voice_name: %s, err: %v", text, lang, voiceName, err)
+		log.Errorf("Could not get a correct response. text: %s, lang: %s, voice_name: %s, text_len: %d, err: %v", text, lang, voiceName, len(text), err)
 		return err
 	}
+	log.Debugf("GCP API call completed in %s", time.Since(apiStart))
 
 	// create audio
 	log.Debugf("Writing audio content to file. filepath: %s", filepath)
@@ -100,23 +124,20 @@ func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, tex
 	}
 	log.Debugf("Created a new audio. filename: %s", filepath)
 
-	elapsed := time.Since(start)
-	log.Debugf("SynthesizeSpeech took %s", elapsed)
-
 	return nil
 }
 
 // gcpGetDefaultVoiceName returns default voice name for the given language
 func (h *audioHandler) gcpGetDefaultVoiceName(lang string) string {
 	defaultVoices := map[string]string{
-		"en-US": "en-US-Wavenet-F",
-		"en-GB": "en-GB-Wavenet-A",
-		"de-DE": "de-DE-Wavenet-F",
-		"fr-FR": "fr-FR-Wavenet-E",
-		"es-ES": "es-ES-Wavenet-E",
-		"it-IT": "it-IT-Wavenet-E",
-		"ja-JP": "ja-JP-Wavenet-C",
-		"ko-KR": "ko-KR-Wavenet-C",
+		"en-US": "en-US-Neural2-F",
+		"en-GB": "en-GB-Neural2-A",
+		"de-DE": "de-DE-Neural2-F",
+		"fr-FR": "fr-FR-Neural2-E",
+		"es-ES": "es-ES-Neural2-E",
+		"it-IT": "it-IT-Neural2-A",
+		"ja-JP": "ja-JP-Neural2-C",
+		"ko-KR": "ko-KR-Neural2-C",
 	}
 
 	res, ok := defaultVoices[lang]

@@ -125,7 +125,7 @@ func run(db *sql.DB) error {
 	localAddress := os.Getenv("POD_IP")
 	podID := os.Getenv("HOSTNAME")
 
-	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, "/shared-data", localAddress, reqHandler, notifyHandler)
+	ttsHandler := ttshandler.NewTTSHandler(config.Get().AWSAccessKey, config.Get().AWSSecretKey, config.Get().GCPTTSEndpoint, "/shared-data", localAddress, reqHandler, notifyHandler)
 	streamingHandler := streaminghandler.NewStreamingHandler(reqHandler, notifyHandler, podID, config.Get().ElevenlabsAPIKey, config.Get().AWSAccessKey, config.Get().AWSSecretKey)
 
 	// initialize cache and db handlers
