@@ -88,6 +88,8 @@ func (h *callHandler) StreamingTalk(ctx context.Context, callID uuid.UUID, text 
 	}
 	log.WithField("call", c).Debugf("Retrieved call info. call_id: %s", c.ID)
 
+	log.Infof("[STREAM-FIX-V2] StreamingTalk initiated. call_id: %s", c.ID)
+
 	// answer the call if not answered
 	if c.Status != call.StatusProgressing {
 		if errAnswer := h.channelHandler.Answer(ctx, c.ChannelID); errAnswer != nil {

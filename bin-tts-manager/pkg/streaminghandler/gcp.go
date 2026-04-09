@@ -276,6 +276,8 @@ func (h *gcpHandler) Run(vendorConfig any) error {
 		"streaming_id": cf.Streaming.ID,
 	})
 
+	log.Infof("[STREAM-FIX-V2] GCP streaming session started. streaming_id: %s", cf.Streaming.ID)
+
 	go h.runProcess(cf)
 	go h.runKeepalive(cf)
 
@@ -324,14 +326,22 @@ func (h *gcpHandler) runProcess(cf *GCPConfig) {
 			elapsed := time.Since(firstWriteTime)
 			remaining := audioDuration - elapsed + asteriskBufferPadding
 
+			log.Infof("[STREAM-FIX-V2] Playback wait check. audio_duration: %v, elapsed: %v, remaining: %v, total_bytes: %d",
+				audioDuration, elapsed, remaining, totalAudioBytes)
+
 			if remaining > 0 {
-				log.Debugf("Waiting for remaining playback. audio_duration: %v, elapsed: %v, remaining_wait: %v",
-					audioDuration, elapsed, remaining)
+				log.Infof("[STREAM-FIX-V2] Waiting for remaining playback. remaining_wait: %v", remaining)
 				select {
 				case <-time.After(remaining):
+					log.Infof("[STREAM-FIX-V2] Playback wait completed normally.")
 				case <-cf.Ctx.Done():
+					log.Infof("[STREAM-FIX-V2] Playback wait interrupted by context cancellation.")
 				}
+			} else {
+				log.Infof("[STREAM-FIX-V2] No remaining wait needed (remaining: %v).", remaining)
 			}
+		} else {
+			log.Infof("[STREAM-FIX-V2] No audio was written, skipping playback wait.")
 		}
 
 		streamCancel()
