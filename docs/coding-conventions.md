@@ -366,23 +366,50 @@ if errors.Is(err, dbhandler.ErrNotFound) {
 }
 ```
 
-### 4.4 Log-Then-Return Pattern
+### 4.4 Error Propagation Pattern
 
-Always log the error before returning, especially at handler boundaries:
+Wrap and propagate errors up the call stack. Log at a reasonable level where you have meaningful context — not at every layer.
+
+**Inner/mid-level functions** — wrap and return, do NOT log:
 
 ```go
-// CORRECT — log then return
-af, err := h.Get(ctx, activeflowID)
+// CORRECT — wrap and propagate
+cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
 if err != nil {
-    log.Errorf("Could not get activeflow info: %v", err)
-    return errors.Wrapf(err, "could not get activeflow info")
+    return nil, errors.Wrapf(err, "could not get customer info")
 }
 
-// WRONG — returning without logging
-af, err := h.Get(ctx, activeflowID)
+// WRONG — log then return at every layer (produces duplicate log lines)
+cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
 if err != nil {
-    return errors.Wrapf(err, "could not get activeflow info")  // No log = invisible in production
+    log.Errorf("Could not get customer info: %v", err)  // Duplicate log
+    return nil, errors.Wrapf(err, "could not get customer info")
 }
+```
+
+**Reasonable-level functions** — log where you have meaningful context to act on the error:
+
+```go
+// CORRECT — log at a reasonable level where the error is handled
+func (h *listenHandler) processV1CallCreate(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+    res, err := h.callHandler.CreateCallOutgoing(ctx, ...)
+    if err != nil {
+        log.Errorf("Could not create outgoing call: %v", err)
+        return simpleResponse(400), nil
+    }
+    return res, nil
+}
+```
+
+**Always log data retrieval and significant state changes** (per §5.3):
+
+```go
+// CORRECT — log important data retrieval regardless of level
+cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
+if err != nil {
+    return nil, errors.Wrapf(err, "could not get customer info")
+}
+log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 ```
 
 ---
