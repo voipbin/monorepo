@@ -82,11 +82,11 @@ spec:
                   key: CLICKHOUSE_ADDRESS
           resources:
             requests:
-              cpu: "10m"
-              memory: "10M"
+              cpu: "6m"
+              memory: "8M"
             limits:
-              cpu: "100m"
-              memory: "64M"
+              cpu: "60m"
+              memory: "80M"
           ports:
             - name: metrics
               protocol: "TCP"
