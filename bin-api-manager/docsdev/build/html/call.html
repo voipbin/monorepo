@@ -4877,22 +4877,22 @@ Events you&#39;ll receive:
 <h3>Queue Problems<a class="headerlink" href="#queue-problems" title="Link to this heading"></a></h3>
 <p><strong>Symptom:</strong> Calls not distributed to agents, long wait times, or agents not receiving calls.</p>
 <p><strong>Diagnostic API calls:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Check queue status:
-GET /v1/queues/{queue-id}
-{
-  &quot;available_agents&quot;: 0,
-  &quot;waiting_calls&quot;: 5
-}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Check</span> <span class="n">queue</span> <span class="n">status</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="p">{</span>
+  <span class="s2">&quot;wait_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;uuid-1&quot;</span><span class="p">,</span> <span class="s2">&quot;uuid-2&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;service_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
 
-Check agent status:
-GET /v1/agents?queue_id={queue-id}
-Verify agents have status: &quot;available&quot;
+<span class="n">Check</span> <span class="n">agent</span> <span class="n">status</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span>
+<span class="n">Verify</span> <span class="n">agents</span> <span class="n">have</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: No Available Agents</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">available_agents</span> <span class="ow">is</span> <span class="mi">0</span>
-<span class="o">-</span> <span class="n">waiting_calls</span> <span class="ow">is</span> <span class="n">increasing</span>
+<span class="o">-</span> <span class="n">service_queuecall_ids</span> <span class="ow">is</span> <span class="n">empty</span>
+<span class="o">-</span> <span class="n">wait_queuecall_ids</span> <span class="ow">is</span> <span class="n">growing</span>
 
 <span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">All</span> <span class="n">agents</span> <span class="ow">in</span> <span class="s2">&quot;busy&quot;</span> <span class="ow">or</span> <span class="s2">&quot;offline&quot;</span> <span class="n">status</span>
@@ -4911,23 +4911,23 @@ Verify agents have status: &quot;available&quot;
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
-  <span class="s2">&quot;timeout_action&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+  <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
+  <span class="s2">&quot;service_timeout&quot;</span><span class="p">:</span> <span class="mi">60000</span>
 <span class="p">}</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Increase</span> <span class="n">timeout</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">a</span> <span class="n">fallback</span> <span class="n">action</span><span class="p">:</span>
+<span class="n">Increase</span> <span class="n">wait_timeout</span> <span class="n">to</span> <span class="n">give</span> <span class="n">agents</span> <span class="n">more</span> <span class="n">time</span> <span class="n">to</span> <span class="n">answer</span><span class="p">:</span>
 <span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
-  <span class="s2">&quot;timeout_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;voicemail-flow-uuid&quot;</span>
+  <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
+  <span class="s2">&quot;wait_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;voicemail-flow-uuid&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">queue-id</span></code> is a UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/queues</span></code>. The <code class="docutils literal notranslate"><span class="pre">timeout_flow_id</span></code> must reference a valid flow (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/flows</span></code>) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/agents/{agent-id}</span></code> with the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Common agent statuses are <code class="docutils literal notranslate"><span class="pre">available</span></code>, <code class="docutils literal notranslate"><span class="pre">busy</span></code>, <code class="docutils literal notranslate"><span class="pre">away</span></code>, and <code class="docutils literal notranslate"><span class="pre">offline</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">queue-id</span></code> is a UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/queues</span></code>. The <code class="docutils literal notranslate"><span class="pre">wait_flow_id</span></code> must reference a valid flow (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/flows</span></code>) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/agents/{agent-id}</span></code> with the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Common agent statuses are <code class="docutils literal notranslate"><span class="pre">available</span></code>, <code class="docutils literal notranslate"><span class="pre">busy</span></code>, <code class="docutils literal notranslate"><span class="pre">away</span></code>, and <code class="docutils literal notranslate"><span class="pre">offline</span></code>.</p>
 </div>
 </section>
 <section id="error-reference">

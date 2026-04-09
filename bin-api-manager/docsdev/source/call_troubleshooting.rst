@@ -531,12 +531,12 @@ Queue Problems
     Check queue status:
     GET /v1/queues/{queue-id}
     {
-      "available_agents": 0,
-      "waiting_calls": 5
+      "wait_queuecall_ids": ["uuid-1", "uuid-2"],
+      "service_queuecall_ids": []
     }
 
     Check agent status:
-    GET /v1/agents?queue_id={queue-id}
+    GET /v1/agents
     Verify agents have status: "available"
 
 **Cause 1: No Available Agents**
@@ -544,8 +544,8 @@ Queue Problems
 .. code::
 
     Symptoms:
-    - available_agents is 0
-    - waiting_calls is increasing
+    - service_queuecall_ids is empty
+    - wait_queuecall_ids is growing
 
     Possible reasons:
     - All agents in "busy" or "offline" status
@@ -566,21 +566,21 @@ Queue Problems
     Diagnostic:
     GET /v1/queues/{queue-id}
     {
-      "timeout": 30000,
-      "timeout_action": "hangup"
+      "wait_timeout": 30000,
+      "service_timeout": 60000
     }
 
     Fix:
-    Increase timeout and add a fallback action:
+    Increase wait_timeout to give agents more time to answer:
     PUT /v1/queues/{queue-id}
     {
-      "timeout": 300000,
-      "timeout_flow_id": "voicemail-flow-uuid"
+      "wait_timeout": 300000,
+      "wait_flow_id": "voicemail-flow-uuid"
     }
 
 .. note:: **AI Implementation Hint**
 
-   The ``queue-id`` is a UUID obtained from ``GET /v1/queues``. The ``timeout_flow_id`` must reference a valid flow (obtained from ``GET /v1/flows``) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via ``PUT /v1/agents/{agent-id}`` with the ``status`` field. Common agent statuses are ``available``, ``busy``, ``away``, and ``offline``.
+   The ``queue-id`` is a UUID obtained from ``GET /v1/queues``. The ``wait_flow_id`` must reference a valid flow (obtained from ``GET /v1/flows``) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via ``PUT /v1/agents/{agent-id}`` with the ``status`` field. Common agent statuses are ``available``, ``busy``, ``away``, and ``offline``.
 
 Error Reference
 ---------------

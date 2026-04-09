@@ -349,7 +349,7 @@ Queue Join Not Working
     |    Look at: agent count, online agents                           |
     +------------------------------------------------------------------+
     | 2. Check agent status                                            |
-    |    GET /v1/agents?queue_id={queue-id}                            |
+    |    GET /v1/agents                                                |
     |    Are agents online and available?                              |
     +------------------------------------------------------------------+
     | 3. Check queue configuration                                     |

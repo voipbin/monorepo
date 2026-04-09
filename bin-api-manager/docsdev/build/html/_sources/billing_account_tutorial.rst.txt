@@ -432,8 +432,8 @@ Balance Management Workflow
     GET /v1.0/billing_account
 
     # Set up webhook for balance monitoring
-    POST /v1.0/webhooks
-    -> Configure account_updated events
+    PUT /v1.0/customer
+    -> Set webhook_method and webhook_uri to receive events
 
 **2. Before Operations:**
 

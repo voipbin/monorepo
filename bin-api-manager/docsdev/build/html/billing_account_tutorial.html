@@ -581,8 +581,8 @@ checkBalanceAndCall(10, &#39;vn&#39;);
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">billing_account</span>
 
 <span class="c1"># Set up webhook for balance monitoring</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">webhooks</span>
-<span class="o">-&gt;</span> <span class="n">Configure</span> <span class="n">account_updated</span> <span class="n">events</span>
+<span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">customer</span>
+<span class="o">-&gt;</span> <span class="n">Set</span> <span class="n">webhook_method</span> <span class="ow">and</span> <span class="n">webhook_uri</span> <span class="n">to</span> <span class="n">receive</span> <span class="n">events</span>
 </pre></div>
 </div>
 <p><strong>2. Before Operations:</strong></p>
