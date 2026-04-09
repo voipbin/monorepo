@@ -199,7 +199,6 @@ Response (HTTP 201 Created):
         "voice_id": "",
         "direction": "out",
         "status": "initiating",
-        "pod_id": "",
         "tm_create": "2026-02-21T10:06:00.000000Z",
         "tm_update": "",
         "tm_delete": ""

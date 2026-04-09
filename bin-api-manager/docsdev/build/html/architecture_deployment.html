@@ -329,6 +329,11 @@
 <span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>VoIPBIN services run on GKE with a minimum of 2 replicas each for high availability. The API endpoint <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code> is served through a Cloud Load Balancer with TLS termination. SIP traffic uses a separate L4 load balancer on <code class="docutils literal notranslate"><span class="pre">sip.voipbin.net</span></code> (ports 5060/5061). All infrastructure runs within a single GCP VPC with network segmentation.</p>
+</div>
 </section>
 <section id="service-scaling">
 <h2>Service Scaling<a class="headerlink" href="#service-scaling" title="Link to this heading"></a></h2>

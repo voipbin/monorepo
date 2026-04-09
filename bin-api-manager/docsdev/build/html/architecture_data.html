@@ -424,6 +424,11 @@
    -&gt; Reuse connections
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All database schema changes must go through Alembic migrations in <code class="docutils literal notranslate"><span class="pre">bin-dbscheme-manager</span></code>. Never modify the database schema directly. All records use UUID primary keys and soft deletes (<code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span></code> for active records). When querying via the API, deleted records are automatically excluded from results.</p>
+</div>
 </section>
 <section id="database-migrations">
 <h2>Database Migrations<a class="headerlink" href="#database-migrations" title="Link to this heading"></a></h2>

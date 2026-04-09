@@ -257,6 +257,10 @@ VoIPBIN optimizes queries for performance:
        +---------------------------------+
        -> Reuse connections
 
+.. note:: **AI Implementation Hint**
+
+   All database schema changes must go through Alembic migrations in ``bin-dbscheme-manager``. Never modify the database schema directly. All records use UUID primary keys and soft deletes (``tm_delete`` set to ``9999-01-01`` for active records). When querying via the API, deleted records are automatically excluded from results.
+
 Database Migrations
 -------------------
 

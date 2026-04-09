@@ -310,8 +310,8 @@ Client Application
 |     → Status: &quot;initiating&quot;                      |
 |                                                 |
 |  d) Initiate SIP call                           |
-|     → Send to bin-rtc-manager                   |
 |     → Request Asterisk channel creation         |
+|     → via Kamailio SIP routing                  |
 |                                                 |
 |  e) Update call status                          |
 |     → UPDATE calls SET status=&#39;ringing&#39; WHERE...|
@@ -379,11 +379,16 @@ Content-Type: application/json
 <span class="n">RabbitMQ</span> <span class="n">routing</span>        <span class="mi">2</span><span class="n">ms</span>       <span class="mi">7</span><span class="n">ms</span>
 <span class="n">Call</span> <span class="n">Manager</span> <span class="n">logic</span>      <span class="mi">30</span><span class="n">ms</span>      <span class="mi">37</span><span class="n">ms</span>
 <span class="n">Database</span> <span class="n">insert</span>         <span class="mi">8</span><span class="n">ms</span>       <span class="mi">45</span><span class="n">ms</span>
-<span class="n">RTC</span> <span class="n">Manager</span> <span class="n">SIP</span> <span class="n">setup</span>   <span class="mi">50</span><span class="n">ms</span>      <span class="mi">95</span><span class="n">ms</span>
+<span class="n">Asterisk</span> <span class="n">SIP</span> <span class="n">setup</span>      <span class="mi">50</span><span class="n">ms</span>      <span class="mi">95</span><span class="n">ms</span>
 <span class="n">Response</span> <span class="n">routing</span>        <span class="mi">5</span><span class="n">ms</span>       <span class="mi">100</span><span class="n">ms</span>
 <span class="o">---------------------------------------------</span>
 <span class="n">Total</span>                   <span class="mi">100</span><span class="n">ms</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code>, the response returns immediately with an initial status (e.g., <code class="docutils literal notranslate"><span class="pre">ringing</span></code>). The call status changes asynchronously. To track call progress, either subscribe to WebSocket events or configure a webhook on your customer profile via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p>
 </div>
 </section>
 <section id="flow-2-get-call-with-caching">
@@ -568,7 +573,7 @@ Services Involved:
 • Flow Manager (orchestration)
 • Conference Manager (conference state)
 • Call Manager (call handling)
-• RTC Manager (not shown, handles SIP/media)
+• Asterisk / Kamailio (not shown, handles SIP/media)
 
 Total Time: ~200ms
 • Gateway: 5ms

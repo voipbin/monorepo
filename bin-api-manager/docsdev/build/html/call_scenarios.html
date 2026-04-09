@@ -759,7 +759,7 @@ VoIPBIN             Destination              Voicemail
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">conference_id</span></code> in <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> must be obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/conferences</span></code> response or from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>. The <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The <code class="docutils literal notranslate"><span class="pre">role</span></code> field controls permissions: <code class="docutils literal notranslate"><span class="pre">moderator</span></code> can mute/unmute others, while <code class="docutils literal notranslate"><span class="pre">participant</span></code> can only control their own audio.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">conference_id</span></code> in <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> must be obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/conferences</span></code> response or from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/conferences</span></code>. The <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The <code class="docutils literal notranslate"><span class="pre">role</span></code> field controls permissions: <code class="docutils literal notranslate"><span class="pre">moderator</span></code> can mute/unmute others, while <code class="docutils literal notranslate"><span class="pre">participant</span></code> can only control their own audio.</p>
 </div>
 </section>
 <section id="call-screening-with-whisper">
@@ -900,51 +900,39 @@ VoIPBIN             Destination              Voicemail
 </div>
 <p><strong>API for Attended Transfer:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">A</span> <span class="n">initiates</span> <span class="n">transfer</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transfer</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;attended&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15553333333&quot;</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cust-123&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;issue&quot;</span><span class="p">:</span> <span class="s2">&quot;billing dispute&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer called about incorrect charge on invoice #456&quot;</span>
-    <span class="p">}</span>
+    <span class="s2">&quot;transfer_type&quot;</span><span class="p">:</span> <span class="s2">&quot;attended&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-uuid-of-agent-a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferee_addresses&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15553333333&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 
 <span class="n">Response</span><span class="p">:</span>
 <span class="p">{</span>
-    <span class="s2">&quot;transfer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-uuid&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;consult_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;consult-call-uuid&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;consulting&quot;</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-uuid&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transfer_type&quot;</span><span class="p">:</span> <span class="s2">&quot;attended&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-uuid-of-agent-a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferee_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;consult-call-uuid&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferee_addresses&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15553333333&quot;</span><span class="p">}</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 
 <span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">A</span> <span class="n">talks</span> <span class="n">to</span> <span class="n">Agent</span> <span class="n">B</span><span class="p">,</span> <span class="n">then</span> <span class="n">completes</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">complete</span>
+<span class="n">the</span> <span class="n">transfer</span> <span class="n">by</span> <span class="n">hanging</span> <span class="n">up</span> <span class="n">their</span> <span class="n">call</span><span class="o">.</span>
 
-<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">B</span> <span class="n">receives</span> <span class="n">context</span> <span class="n">via</span> <span class="n">webhook</span> <span class="ow">or</span> <span class="n">screen</span> <span class="n">pop</span>
-<span class="n">Webhook</span><span class="p">:</span> <span class="n">transfer_completed</span>
-<span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer_completed&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;transfer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;from_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-a-uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;to_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-b-uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cust-123&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;issue&quot;</span><span class="p">:</span> <span class="s2">&quot;billing dispute&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer called about incorrect charge on invoice #456&quot;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">The</span> <span class="n">caller</span> <span class="ow">and</span> <span class="n">Agent</span> <span class="n">B</span> <span class="n">are</span> <span class="n">now</span> <span class="n">connected</span><span class="o">.</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/transfer</span></code> must be an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. The <code class="docutils literal notranslate"><span class="pre">transfer_id</span></code> returned in the response is used for subsequent operations: <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/complete</span></code> to finish the transfer, or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/cancel</span></code> to abort it. The <code class="docutils literal notranslate"><span class="pre">context</span></code> object is passed through to the <code class="docutils literal notranslate"><span class="pre">transfer_completed</span></code> webhook, allowing Agent B’s application to display caller information. The consult call to Agent B is a separate billable call.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">transferer_call_id</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers</span></code> must be the UUID of an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code>. The <code class="docutils literal notranslate"><span class="pre">transfer_type</span></code> is an enum: <code class="docutils literal notranslate"><span class="pre">attended</span></code> or <code class="docutils literal notranslate"><span class="pre">blind</span></code>. The <code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> array must contain at least one address (E.164 phone number or extension). The response includes a <code class="docutils literal notranslate"><span class="pre">transferee_call_id</span></code> (UUID) for the new outbound call to the transfer destination. The consult call to Agent B is a separate billable call.</p>
 </div>
 </section>
 <section id="call-with-real-time-transcription">

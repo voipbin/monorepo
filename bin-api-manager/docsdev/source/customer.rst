@@ -1,4 +1,4 @@
-.. _cusotomer-main:
+.. _customer-main:
 
 ************
 Customer

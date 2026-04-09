@@ -131,8 +131,8 @@ This flow shows how a basic call creation request flows through the system.
     |     → Status: "initiating"                      |
     |                                                 |
     |  d) Initiate SIP call                           |
-    |     → Send to bin-rtc-manager                   |
     |     → Request Asterisk channel creation         |
+    |     → via Kamailio SIP routing                  |
     |                                                 |
     |  e) Update call status                          |
     |     → UPDATE calls SET status='ringing' WHERE...|
@@ -202,10 +202,14 @@ This flow shows how a basic call creation request flows through the system.
     RabbitMQ routing        2ms       7ms
     Call Manager logic      30ms      37ms
     Database insert         8ms       45ms
-    RTC Manager SIP setup   50ms      95ms
+    Asterisk SIP setup      50ms      95ms
     Response routing        5ms       100ms
     ---------------------------------------------
     Total                   100ms
+
+.. note:: **AI Implementation Hint**
+
+   When creating a call via ``POST https://api.voipbin.net/v1.0/calls``, the response returns immediately with an initial status (e.g., ``ringing``). The call status changes asynchronously. To track call progress, either subscribe to WebSocket events or configure a webhook on your customer profile via ``PUT https://api.voipbin.net/v1.0/customer``.
 
 Flow 2: Get Call with Caching
 ------------------------------
@@ -397,7 +401,7 @@ This flow demonstrates a complex operation involving multiple services.
     • Flow Manager (orchestration)
     • Conference Manager (conference state)
     • Call Manager (call handling)
-    • RTC Manager (not shown, handles SIP/media)
+    • Asterisk / Kamailio (not shown, handles SIP/media)
 
     Total Time: ~200ms
     • Gateway: 5ms

@@ -885,31 +885,31 @@ Debug Tips:
 
 <span class="c1"># List recent activeflows</span>
 <span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
-  <span class="s2">&quot;https://api.voipbin.net/v1/activeflows?limit=10&quot;</span>
+  <span class="s2">&quot;https://api.voipbin.net/v1.0/activeflows?limit=10&quot;</span>
 
 <span class="c1"># Get specific activeflow</span>
 <span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
-  <span class="s2">&quot;https://api.voipbin.net/v1/activeflows/</span><span class="si">{id}</span><span class="s2">&quot;</span>
+  <span class="s2">&quot;https://api.voipbin.net/v1.0/activeflows/</span><span class="si">{id}</span><span class="s2">&quot;</span>
 
 <span class="c1"># Get activeflow variables</span>
 <span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
-  <span class="s2">&quot;https://api.voipbin.net/v1/activeflows/</span><span class="si">{id}</span><span class="s2">/variables&quot;</span>
+  <span class="s2">&quot;https://api.voipbin.net/v1.0/activeflows/</span><span class="si">{id}</span><span class="s2">/variables&quot;</span>
 
 <span class="c1"># Find activeflow by call</span>
 <span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
-  <span class="s2">&quot;https://api.voipbin.net/v1/activeflows?reference_id={call-id}&quot;</span>
+  <span class="s2">&quot;https://api.voipbin.net/v1.0/activeflows?reference_id={call-id}&quot;</span>
 
 <span class="c1"># Get flow definition</span>
 <span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
-  <span class="s2">&quot;https://api.voipbin.net/v1/flows/{flow-id}&quot;</span>
+  <span class="s2">&quot;https://api.voipbin.net/v1.0/flows/{flow-id}&quot;</span>
 
 <span class="c1"># Get call details</span>
 <span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
-  <span class="s2">&quot;https://api.voipbin.net/v1/calls/{call-id}&quot;</span>
+  <span class="s2">&quot;https://api.voipbin.net/v1.0/calls/{call-id}&quot;</span>
 
 <span class="c1"># List calls for a flow</span>
 <span class="n">curl</span> <span class="o">-</span><span class="n">H</span> <span class="s2">&quot;Authorization: Bearer $TOKEN&quot;</span> \
-  <span class="s2">&quot;https://api.voipbin.net/v1/calls?flow_id={flow-id}&quot;</span>
+  <span class="s2">&quot;https://api.voipbin.net/v1.0/calls?flow_id={flow-id}&quot;</span>
 </pre></div>
 </div>
 </section>

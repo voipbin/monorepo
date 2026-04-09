@@ -21,21 +21,18 @@ Before troubleshooting, understand the tools available:
     Get call details:
     GET /v1/calls/{call-id}
 
-    Get call events (webhooks sent):
-    GET /v1/calls/{call-id}/events
-
     Get activeflow status:
     GET /v1/activeflows/{activeflow-id}
 
-    Get recordings:
-    GET /v1/calls/{call-id}/recordings
+    Get recordings (use recording_ids from the call object):
+    GET /v1/recordings/{recording-id}
 
-    Get transcripts:
-    GET /v1/calls/{call-id}/transcripts
+    List all recordings:
+    GET /v1/recordings
 
 .. note:: **AI Implementation Hint**
 
-   The ``call-id`` is a UUID returned when creating a call via ``POST /calls`` or from webhook events. The ``activeflow-id`` is obtained from the call's associated flow execution. All debugging endpoints require a valid authentication token (JWT or access key).
+   The ``call-id`` is a UUID returned when creating a call via ``POST /v1/calls`` or from webhook events. The ``activeflow-id`` is obtained from the call's ``activeflow_id`` field. The ``recording-id`` is obtained from the call's ``recording_ids`` array. All debugging endpoints require a valid authentication token (JWT or access key).
 
 **WebSocket for Real-time Monitoring:**
 
@@ -197,7 +194,6 @@ Call Answers But No Audio
 
     Check these fields:
     - status: should be "progressing"
-    - hold: should be false
     - mute_direction: should be "" (empty = unmuted)
 
 **Cause 1: NAT/Firewall Issues (WebRTC)**
@@ -237,13 +233,14 @@ Call Answers But No Audio
     Diagnostic:
     GET /v1/calls/{call-id}
     {
-      "mute_direction": "both",
-      "hold": true
+      "mute_direction": "both"
     }
 
-    Fix:
-    POST /v1/calls/{call-id}/resume
-    POST /v1/calls/{call-id}/unmute
+    Fix (unhold the call):
+    DELETE /v1/calls/{call-id}/hold
+
+    Fix (unmute the call):
+    DELETE /v1/calls/{call-id}/mute
 
 .. note:: **AI Implementation Hint**
 
@@ -319,40 +316,28 @@ Flow Actions Not Executing
 
 .. note:: **AI Implementation Hint**
 
-   If flow actions are not executing at all, verify that the call has a ``flow_id`` set (not ``00000000-0000-0000-0000-000000000000``). For outbound calls, you must either provide ``actions`` inline in ``POST /calls`` or reference an existing flow via ``flow_id``. For inbound calls, the flow is determined by the phone number configuration -- check ``GET /numbers/{number-id}`` for the ``flow_id`` assignment.
+   If flow actions are not executing at all, verify that the call has a ``flow_id`` set (not ``00000000-0000-0000-0000-000000000000``). For outbound calls, you must either provide ``actions`` inline in ``POST /v1/calls`` or reference an existing flow via ``flow_id``. For inbound calls, the flow is determined by the phone number configuration -- check ``GET /v1/numbers/{number-id}`` for the ``flow_id`` assignment.
 
 Webhooks Not Received
 ---------------------
 
 **Symptom:** No webhooks arrive at your endpoint, or only some webhooks arrive.
 
-**Diagnostic API calls:**
+**Diagnostic steps:**
 
 .. code::
 
-    1. Verify webhook configuration:
-    GET /v1/webhooks
+    1. Verify webhook configuration on your customer profile:
+    GET /v1/customer
+
+    Check the webhook_method and webhook_uri fields:
     {
-      "url": "https://your-server.com/webhook",
-      "events": ["call_hungup", "call_answered"],
-      "status": "active"
+      "webhook_method": "post",
+      "webhook_uri": "https://your-server.com/webhook"
     }
 
-    2. Check webhook delivery history:
-    GET /v1/webhooks/{webhook-id}/deliveries
-    {
-      "deliveries": [
-        {
-          "id": "delivery-uuid",
-          "event_type": "call_hungup",
-          "status": "failed",
-          "http_code": 500,
-          "attempts": 3,
-          "last_attempt": "2026-01-20T12:00:00Z",
-          "error": "Connection timeout"
-        }
-      ]
-    }
+    If webhook_uri is empty, webhooks are not configured.
+    Update via PUT /v1/customer with webhook_method and webhook_uri.
 
 **Cause 1: Endpoint not accessible**
 
@@ -380,21 +365,28 @@ Webhooks Not Received
     - Process the webhook payload asynchronously
     - Use a message queue (e.g., SQS, RabbitMQ) for processing
 
-**Cause 3: Wrong event subscription**
+**Cause 3: Webhook not configured on customer profile**
 
 .. code::
 
     Symptoms:
-    - Subscribed to "call_created" but expecting "call_hungup"
+    - No webhooks received at all
+
+    Diagnostic:
+    GET /v1/customer
+    Check that webhook_method is "post" and webhook_uri
+    is set to your endpoint URL.
 
     Fix:
-    Update webhook events:
-    PUT /v1/webhooks/{webhook-id}
-    {"events": ["call_hungup", "call_answered", "call_created"]}
+    PUT /v1/customer
+    {
+      "webhook_method": "post",
+      "webhook_uri": "https://your-server.com/webhook"
+    }
 
 .. note:: **AI Implementation Hint**
 
-   Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Check ``GET /v1/webhooks/{webhook-id}/deliveries`` to see delivery attempts and failure reasons. If you are not receiving any webhooks, verify your webhook ``status`` is ``active`` and the ``events`` array includes the event types you need.
+   Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Webhook configuration is managed via the customer profile: use ``GET /v1/customer`` to check ``webhook_method`` and ``webhook_uri``, and ``PUT /v1/customer`` to update them. VoIPBIN sends all event types to your configured endpoint -- there is no per-event subscription.
 
 Recording Issues
 ----------------
@@ -467,18 +459,15 @@ Transfer Problems
 
 **Symptom:** Transfer fails, caller dropped during transfer, or consult call does not connect.
 
-**Diagnostic API call:**
+**Diagnostic steps:**
 
 .. code::
 
-    GET /v1/transfers/{transfer-id}
-    {
-      "status": "consulting",
-      "consult_call": {
-        "status": "hangup",
-        "hangup_reason": "noanswer"
-      }
-    }
+    Use the transfer_id from the POST /transfers response
+    to look up the transfer object and inspect its state.
+
+    List transfers:
+    GET /v1/transfers
 
 **Cause 1: Blind Transfer Fails**
 
@@ -503,11 +492,12 @@ Transfer Problems
     - Agent A cannot reach Agent B
 
     Diagnostic:
-    GET /v1/transfers/{transfer-id}
+    Check the transfer via GET /v1/transfers to find
+    the transfer and its associated call IDs.
 
     Fix:
-    Cancel transfer and try a different agent:
-    POST /v1/transfers/{transfer-id}/cancel
+    Verify the transferee address is correct and reachable.
+    Create a new transfer with a different destination.
 
 **Cause 3: Caller Hears Dead Air During Transfer**
 
@@ -521,16 +511,13 @@ Transfer Problems
     - Mute applied instead of hold
 
     Fix:
-    Ensure transfer uses proper hold:
-    POST /v1/calls/{call-id}/transfer
-    {
-      "hold_caller": true,
-      "play_moh": true
-    }
+    Put the caller on hold before initiating the transfer:
+    POST /v1/calls/{call-id}/hold
+    POST /v1/calls/{call-id}/moh
 
 .. note:: **AI Implementation Hint**
 
-   The ``transfer-id`` is returned in the response to ``POST /v1/calls/{call-id}/transfer``. Use it to check transfer status (``GET /v1/transfers/{transfer-id}``), complete the transfer (``POST /v1/transfers/{transfer-id}/complete``), or cancel it (``POST /v1/transfers/{transfer-id}/cancel``). If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.
+   Transfers are initiated via ``POST /v1/transfers`` with ``transferer_call_id`` (UUID, obtained from ``GET /v1/calls``) and ``transferee_addresses`` in the request body. The ``transfer_type`` field specifies ``attended`` or ``blind``. The response includes a ``transfer_id`` (UUID) and associated call/groupcall IDs. If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.
 
 Queue Problems
 --------------
@@ -593,7 +580,7 @@ Queue Problems
 
 .. note:: **AI Implementation Hint**
 
-   The ``queue-id`` is a UUID obtained from ``GET /queues``. The ``timeout_flow_id`` must reference a valid flow (obtained from ``GET /flows``) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via ``PUT /v1/agents/{agent-id}`` with the ``status`` field. Common agent statuses are ``available``, ``busy``, ``away``, and ``offline``.
+   The ``queue-id`` is a UUID obtained from ``GET /v1/queues``. The ``timeout_flow_id`` must reference a valid flow (obtained from ``GET /v1/flows``) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via ``PUT /v1/agents/{agent-id}`` with the ``status`` field. Common agent statuses are ``available``, ``busy``, ``away``, and ``offline``.
 
 Error Reference
 ---------------
@@ -650,7 +637,7 @@ Error Reference
 
 .. note:: **AI Implementation Hint**
 
-   For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., ``GET /calls`` to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the ``x-request-id`` response header when contacting support.
+   For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., ``GET /v1/calls`` to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the ``x-request-id`` response header when contacting support.
 
 Getting Help
 ------------

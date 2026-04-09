@@ -289,6 +289,11 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">ChannelEnteredBridge</span></code> - Participant joined bridge (conference)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ChannelLeftBridge</span></code> - Participant left bridge</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Inbound calls are routed by looking up the dialed number’s associated flow ID. To handle inbound calls, first purchase a number via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>, then create a flow via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/flows</span></code>, and finally assign the flow to the number. The flow-manager then executes actions (answer, play, gather, ai_talk, etc.) when calls arrive.</p>
+</div>
 </section>
 <section id="outbound-campaign-flow">
 <h2>Outbound Campaign Flow<a class="headerlink" href="#outbound-campaign-flow" title="Link to this heading"></a></h2>

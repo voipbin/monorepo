@@ -238,6 +238,11 @@
 <li><p><strong>Call Control</strong>: Asterisk manages call state and conference bridges</p></li>
 </ol>
 <p>This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>VoIPBIN uses ulaw (G.711) as the exclusive internal codec. All external codecs (G.722, Opus, etc.) are transcoded at the edge by RTPEngine. When integrating SIP endpoints, any standard codec is accepted, but for lowest latency configure your SIP client to prefer G.711 ulaw to avoid transcoding overhead.</p>
+</div>
 </section>
 <section id="kamailio-sip-edge-router">
 <h2>Kamailio - SIP Edge Router<a class="headerlink" href="#kamailio-sip-edge-router" title="Link to this heading"></a></h2>

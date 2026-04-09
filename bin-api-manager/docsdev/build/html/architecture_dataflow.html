@@ -350,6 +350,11 @@
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Events follow the pattern: database write first, cache invalidation second, event publish third. If you are integrating with VoIPBIN webhooks, your endpoint must handle <strong>at-least-once delivery</strong> – the same event may be delivered more than once. Use the <code class="docutils literal notranslate"><span class="pre">event_id</span></code> field for deduplication.</p>
+</div>
 <p><strong>Subscriber Processing:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Processing</span> <span class="n">by</span> <span class="n">Service</span><span class="p">:</span>
 

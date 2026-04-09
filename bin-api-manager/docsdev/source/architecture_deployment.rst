@@ -152,6 +152,10 @@ All services follow the same deployment pattern:
     | Port 2112  - Prometheus metrics          |
     +------------------------------------------+
 
+.. note:: **AI Implementation Hint**
+
+   VoIPBIN services run on GKE with a minimum of 2 replicas each for high availability. The API endpoint ``https://api.voipbin.net/v1.0/`` is served through a Cloud Load Balancer with TLS termination. SIP traffic uses a separate L4 load balancer on ``sip.voipbin.net`` (ports 5060/5061). All infrastructure runs within a single GCP VPC with network segmentation.
+
 Service Scaling
 ---------------
 

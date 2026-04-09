@@ -31,6 +31,12 @@ Agent
 -----
 A call center agent or representative who handles calls on behalf of the company. Agents have multiple addresses (phone numbers, SIP URIs) and can be assigned to queues based on tags. Agent status (available, unavailable, busy) determines their ability to receive calls.
 
+.. _glossary-ai-voice-agent:
+
+AI Voice Agent
+--------------
+An AI-powered conversational agent that can interact with callers using natural language via speech recognition (STT) and text-to-speech (TTS). Configured through VoIPBIN's AI resource and invoked in flows via the ``ai_talk`` action. See :ref:`AI Voice Agent Integration <ai-voice-agent-integration-overview>`.
+
 .. _glossary-branch:
 
 Branch
@@ -66,6 +72,12 @@ A phone number that routes directly to a specific destination. In VoIPBIN, DIDs 
 DTMF (Dual-Tone Multi-Frequency)
 --------------------------------
 Touch-tone signals generated when pressing phone keypad buttons. Used in IVR systems to capture user input. Also referred to as "digits" in VoIPBIN documentation.
+
+.. _glossary-email:
+
+Email
+-----
+An email message sent or received via the VoIPBIN platform. Emails can be triggered from flows using the ``email_send`` action for automated notifications, confirmations, or follow-ups.
 
 .. _glossary-e164:
 
@@ -109,6 +121,12 @@ PSTN (Public Switched Telephone Network)
 ----------------------------------------
 Traditional telephone network for landlines and mobile phones. VoIPBIN connects to PSTN through gateways to enable calls to/from regular phone numbers.
 
+.. _glossary-rag:
+
+RAG (Retrieval-Augmented Generation)
+-------------------------------------
+A technique that enhances AI responses by first retrieving relevant documents or knowledge base content, then using that context to generate more accurate answers. In VoIPBIN, RAG resources store and index documents that AI agents can reference during conversations.
+
 .. _glossary-queue:
 
 Queue
@@ -120,6 +138,12 @@ A call holding system that places callers on hold until an available agent is fo
 RTP (Real-time Transport Protocol)
 ----------------------------------
 Network protocol for transmitting audio and video streams. VoIPBIN uses RTP for media transmission between endpoints.
+
+.. _glossary-route:
+
+Route
+-----
+A routing rule that maps incoming calls or messages to specific flows based on conditions such as the destination number, caller ID, or time of day.
 
 .. _glossary-sip:
 
@@ -133,6 +157,18 @@ SIP Trunk
 ---------
 A custom DNS hostname that accepts SIP traffic for your VoIPBIN account. Enables integration with external SIP systems and PBXes.
 
+.. _glossary-speaking:
+
+Speaking
+--------
+A real-time voice interaction session between a caller and an AI voice agent. The speaking resource tracks the state, transcripts, and media of an AI-powered conversation happening within a call.
+
+.. _glossary-storage:
+
+Storage
+-------
+VoIPBIN's file storage service for managing media files such as call recordings, voicemail messages, and uploaded audio files. Files can be accessed via the Storage API.
+
 .. _glossary-stt:
 
 STT (Speech-to-Text)
@@ -144,6 +180,24 @@ Technology that converts spoken words into text. Used in VoIPBIN for transcripti
 TTS (Text-to-Speech)
 --------------------
 Technology that converts text into spoken audio. VoIPBIN's ``talk`` action uses TTS to generate voice prompts in multiple languages and voices.
+
+.. _glossary-talk:
+
+Talk
+----
+A messaging conversation session within VoIPBIN's Talk feature. Supports real-time communication between agents and customers through text-based messaging interfaces.
+
+.. _glossary-team:
+
+Team
+----
+A group of agents organized together for collaborative call handling. Teams can share queues, have common skills, and coordinate on customer interactions.
+
+.. _glossary-transcribe:
+
+Transcribe
+----------
+The process of converting live call audio into text in real-time. VoIPBIN supports real-time transcription via the ``transcribe_start`` flow action, with results delivered via webhooks for monitoring, analytics, or AI processing.
 
 .. _glossary-variable:
 

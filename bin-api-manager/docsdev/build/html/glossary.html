@@ -209,6 +209,10 @@
 <span id="glossary-agent"></span><h3>Agent<a class="headerlink" href="#agent" title="Link to this heading"></a></h3>
 <p>A call center agent or representative who handles calls on behalf of the company. Agents have multiple addresses (phone numbers, SIP URIs) and can be assigned to queues based on tags. Agent status (available, unavailable, busy) determines their ability to receive calls.</p>
 </section>
+<section id="ai-voice-agent">
+<span id="glossary-ai-voice-agent"></span><h3>AI Voice Agent<a class="headerlink" href="#ai-voice-agent" title="Link to this heading"></a></h3>
+<p>An AI-powered conversational agent that can interact with callers using natural language via speech recognition (STT) and text-to-speech (TTS). Configured through VoIPBIN’s AI resource and invoked in flows via the <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> action. See <a class="reference internal" href="ai_voice_agent_integration_overview.html#ai-voice-agent-integration-overview"><span class="std std-ref">AI Voice Agent Integration</span></a>.</p>
+</section>
 <section id="branch">
 <span id="glossary-branch"></span><h3>Branch<a class="headerlink" href="#branch" title="Link to this heading"></a></h3>
 <p>A flow action that enables conditional logic by evaluating variables and directing execution to different action IDs based on the result. Branches enable non-linear flow execution and decision trees.</p>
@@ -232,6 +236,10 @@
 <section id="dtmf-dual-tone-multi-frequency">
 <span id="glossary-dtmf"></span><h3>DTMF (Dual-Tone Multi-Frequency)<a class="headerlink" href="#dtmf-dual-tone-multi-frequency" title="Link to this heading"></a></h3>
 <p>Touch-tone signals generated when pressing phone keypad buttons. Used in IVR systems to capture user input. Also referred to as “digits” in VoIPBIN documentation.</p>
+</section>
+<section id="email">
+<span id="glossary-email"></span><h3>Email<a class="headerlink" href="#email" title="Link to this heading"></a></h3>
+<p>An email message sent or received via the VoIPBIN platform. Emails can be triggered from flows using the <code class="docutils literal notranslate"><span class="pre">email_send</span></code> action for automated notifications, confirmations, or follow-ups.</p>
 </section>
 <section id="e-164">
 <span id="glossary-e164"></span><h3>E.164<a class="headerlink" href="#e-164" title="Link to this heading"></a></h3>
@@ -261,6 +269,10 @@
 <span id="glossary-pstn"></span><h3>PSTN (Public Switched Telephone Network)<a class="headerlink" href="#pstn-public-switched-telephone-network" title="Link to this heading"></a></h3>
 <p>Traditional telephone network for landlines and mobile phones. VoIPBIN connects to PSTN through gateways to enable calls to/from regular phone numbers.</p>
 </section>
+<section id="rag-retrieval-augmented-generation">
+<span id="glossary-rag"></span><h3>RAG (Retrieval-Augmented Generation)<a class="headerlink" href="#rag-retrieval-augmented-generation" title="Link to this heading"></a></h3>
+<p>A technique that enhances AI responses by first retrieving relevant documents or knowledge base content, then using that context to generate more accurate answers. In VoIPBIN, RAG resources store and index documents that AI agents can reference during conversations.</p>
+</section>
 <section id="queue">
 <span id="glossary-queue"></span><h3>Queue<a class="headerlink" href="#queue" title="Link to this heading"></a></h3>
 <p>A call holding system that places callers on hold until an available agent is found. Queues execute waiting actions (music, announcements) and search for agents based on matching tags.</p>
@@ -268,6 +280,10 @@
 <section id="rtp-real-time-transport-protocol">
 <span id="glossary-rtp"></span><h3>RTP (Real-time Transport Protocol)<a class="headerlink" href="#rtp-real-time-transport-protocol" title="Link to this heading"></a></h3>
 <p>Network protocol for transmitting audio and video streams. VoIPBIN uses RTP for media transmission between endpoints.</p>
+</section>
+<section id="route">
+<span id="glossary-route"></span><h3>Route<a class="headerlink" href="#route" title="Link to this heading"></a></h3>
+<p>A routing rule that maps incoming calls or messages to specific flows based on conditions such as the destination number, caller ID, or time of day.</p>
 </section>
 <section id="sip-session-initiation-protocol">
 <span id="glossary-sip"></span><h3>SIP (Session Initiation Protocol)<a class="headerlink" href="#sip-session-initiation-protocol" title="Link to this heading"></a></h3>
@@ -277,6 +293,14 @@
 <span id="glossary-sip-trunk"></span><h3>SIP Trunk<a class="headerlink" href="#sip-trunk" title="Link to this heading"></a></h3>
 <p>A custom DNS hostname that accepts SIP traffic for your VoIPBIN account. Enables integration with external SIP systems and PBXes.</p>
 </section>
+<section id="speaking">
+<span id="glossary-speaking"></span><h3>Speaking<a class="headerlink" href="#speaking" title="Link to this heading"></a></h3>
+<p>A real-time voice interaction session between a caller and an AI voice agent. The speaking resource tracks the state, transcripts, and media of an AI-powered conversation happening within a call.</p>
+</section>
+<section id="storage">
+<span id="glossary-storage"></span><h3>Storage<a class="headerlink" href="#storage" title="Link to this heading"></a></h3>
+<p>VoIPBIN’s file storage service for managing media files such as call recordings, voicemail messages, and uploaded audio files. Files can be accessed via the Storage API.</p>
+</section>
 <section id="stt-speech-to-text">
 <span id="glossary-stt"></span><h3>STT (Speech-to-Text)<a class="headerlink" href="#stt-speech-to-text" title="Link to this heading"></a></h3>
 <p>Technology that converts spoken words into text. Used in VoIPBIN for transcription and AI voice assistant features.</p>
@@ -284,6 +308,18 @@
 <section id="tts-text-to-speech">
 <span id="glossary-tts"></span><h3>TTS (Text-to-Speech)<a class="headerlink" href="#tts-text-to-speech" title="Link to this heading"></a></h3>
 <p>Technology that converts text into spoken audio. VoIPBIN’s <code class="docutils literal notranslate"><span class="pre">talk</span></code> action uses TTS to generate voice prompts in multiple languages and voices.</p>
+</section>
+<section id="talk">
+<span id="glossary-talk"></span><h3>Talk<a class="headerlink" href="#talk" title="Link to this heading"></a></h3>
+<p>A messaging conversation session within VoIPBIN’s Talk feature. Supports real-time communication between agents and customers through text-based messaging interfaces.</p>
+</section>
+<section id="team">
+<span id="glossary-team"></span><h3>Team<a class="headerlink" href="#team" title="Link to this heading"></a></h3>
+<p>A group of agents organized together for collaborative call handling. Teams can share queues, have common skills, and coordinate on customer interactions.</p>
+</section>
+<section id="transcribe">
+<span id="glossary-transcribe"></span><h3>Transcribe<a class="headerlink" href="#transcribe" title="Link to this heading"></a></h3>
+<p>The process of converting live call audio into text in real-time. VoIPBIN supports real-time transcription via the <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> flow action, with results delivered via webhooks for monitoring, analytics, or AI processing.</p>
 </section>
 <section id="variable">
 <span id="glossary-variable"></span><h3>Variable<a class="headerlink" href="#variable" title="Link to this heading"></a></h3>
@@ -374,12 +410,14 @@ specification.</p>
 <li><a class="reference internal" href="#action">Action</a></li>
 <li><a class="reference internal" href="#activeflow">Activeflow</a></li>
 <li><a class="reference internal" href="#agent">Agent</a></li>
+<li><a class="reference internal" href="#ai-voice-agent">AI Voice Agent</a></li>
 <li><a class="reference internal" href="#branch">Branch</a></li>
 <li><a class="reference internal" href="#call-leg">Call Leg</a></li>
 <li><a class="reference internal" href="#campaign">Campaign</a></li>
 <li><a class="reference internal" href="#conference">Conference</a></li>
 <li><a class="reference internal" href="#did-direct-inward-dialing">DID (Direct Inward Dialing)</a></li>
 <li><a class="reference internal" href="#dtmf-dual-tone-multi-frequency">DTMF (Dual-Tone Multi-Frequency)</a></li>
+<li><a class="reference internal" href="#email">Email</a></li>
 <li><a class="reference internal" href="#e-164">E.164</a></li>
 <li><a class="reference internal" href="#flow">Flow</a></li>
 <li><a class="reference internal" href="#flow-fork">Flow Fork</a></li>
@@ -387,12 +425,19 @@ specification.</p>
 <li><a class="reference internal" href="#ivr-interactive-voice-response">IVR (Interactive Voice Response)</a></li>
 <li><a class="reference internal" href="#media-server">Media Server</a></li>
 <li><a class="reference internal" href="#pstn-public-switched-telephone-network">PSTN (Public Switched Telephone Network)</a></li>
+<li><a class="reference internal" href="#rag-retrieval-augmented-generation">RAG (Retrieval-Augmented Generation)</a></li>
 <li><a class="reference internal" href="#queue">Queue</a></li>
 <li><a class="reference internal" href="#rtp-real-time-transport-protocol">RTP (Real-time Transport Protocol)</a></li>
+<li><a class="reference internal" href="#route">Route</a></li>
 <li><a class="reference internal" href="#sip-session-initiation-protocol">SIP (Session Initiation Protocol)</a></li>
 <li><a class="reference internal" href="#sip-trunk">SIP Trunk</a></li>
+<li><a class="reference internal" href="#speaking">Speaking</a></li>
+<li><a class="reference internal" href="#storage">Storage</a></li>
 <li><a class="reference internal" href="#stt-speech-to-text">STT (Speech-to-Text)</a></li>
 <li><a class="reference internal" href="#tts-text-to-speech">TTS (Text-to-Speech)</a></li>
+<li><a class="reference internal" href="#talk">Talk</a></li>
+<li><a class="reference internal" href="#team">Team</a></li>
+<li><a class="reference internal" href="#transcribe">Transcribe</a></li>
 <li><a class="reference internal" href="#variable">Variable</a></li>
 <li><a class="reference internal" href="#webhook">Webhook</a></li>
 <li><a class="reference internal" href="#webrtc-web-real-time-communication">WebRTC (Web Real-Time Communication)</a></li>

@@ -15,6 +15,10 @@ Activeflow
 * ``voipbin.activeflow.reference_activeflow_id`` (UUID): The parent activeflow's ID when this flow was triggered from another flow.
 * ``voipbin.activeflow.flow_id`` (UUID): The flow template ID used for this execution. Obtained from ``GET /flows``.
 
+Flow
+----
+* ``voipbin.flow.reference_data`` (String): Data passed as a reference when the flow was triggered. Contains contextual information from the triggering resource.
+
 Call
 ----
 

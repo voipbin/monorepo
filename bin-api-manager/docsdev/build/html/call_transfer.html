@@ -197,7 +197,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> used in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls/{call-id}/transfer</span></code> must be an active call (status <code class="docutils literal notranslate"><span class="pre">progressing</span></code>). Obtain the <code class="docutils literal notranslate"><span class="pre">call-id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event such as <code class="docutils literal notranslate"><span class="pre">call_answered</span></code>.</p>
+<p>Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. Initiate a transfer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers</span></code> with the <code class="docutils literal notranslate"><span class="pre">transferer_call_id</span></code> (UUID, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code>) of an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, along with <code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> (array of addresses) and <code class="docutils literal notranslate"><span class="pre">transfer_type</span></code> (enum: <code class="docutils literal notranslate"><span class="pre">attended</span></code> or <code class="docutils literal notranslate"><span class="pre">blind</span></code>).</p>
 </div>
 <section id="blind-transfer">
 <span id="call-transfer-blind-transfer"></span><h2>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Link to this heading"></a></h2>
@@ -298,7 +298,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transfers/{transfer-id}/cancel</span></code> and resume the original call with the caller.</p>
+<p>During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer and resume the original call with the caller.</p>
 </div>
 </section>
 </section>

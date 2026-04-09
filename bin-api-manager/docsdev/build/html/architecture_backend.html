@@ -519,6 +519,11 @@ Client                    API Gateway              Backend Service
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All API requests go through the single gateway at <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code>. The routing table above shows which backend service handles each endpoint path. Authentication (JWT or Access Key) and authorization (customer_id ownership check) happen exclusively in bin-api-manager. Backend services trust the gateway and perform no auth checks themselves.</p>
+</div>
 </section>
 <section id="special-service-architectures">
 <h2>Special Service Architectures<a class="headerlink" href="#special-service-architectures" title="Link to this heading"></a></h2>
@@ -808,7 +813,7 @@ Client                    API Gateway              Backend Service
      <span class="o">|</span>       <span class="n">o</span> <span class="n">Port</span> <span class="n">number</span>
      <span class="o">|</span>       <span class="n">o</span> <span class="n">Log</span> <span class="n">level</span>
      <span class="o">|</span>
-     <span class="o">+-------&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">config</span><span class="o">-</span><span class="n">manager</span>
+     <span class="o">+-------&gt;</span> <span class="n">Database</span> <span class="o">/</span> <span class="n">Service</span> <span class="n">Config</span>
      <span class="o">|</span>       <span class="n">o</span> <span class="n">Feature</span> <span class="n">flags</span>
      <span class="o">|</span>       <span class="n">o</span> <span class="n">Business</span> <span class="n">logic</span> <span class="n">config</span>
      <span class="o">|</span>
