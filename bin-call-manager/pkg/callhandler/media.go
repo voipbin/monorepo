@@ -101,6 +101,13 @@ func (h *callHandler) StreamingTalk(ctx context.Context, callID uuid.UUID, text 
 		provider = "gcp"
 	}
 
+	// Only GCP streaming is production-ready. Non-GCP vendors (ElevenLabs, AWS)
+	// use ConnAstDone for WaitFinish which won't close until Stop() is called,
+	// causing a 60s RPC timeout. Return error to trigger batch fallback.
+	if provider != "gcp" {
+		return fmt.Errorf("streaming talk only supports gcp provider, got: %s", provider)
+	}
+
 	// Step 1: Create streaming session with provider/voiceID
 	st, err := h.reqHandler.TTSV1StreamingCreateWithProvider(ctx,
 		c.CustomerID,

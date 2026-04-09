@@ -191,7 +191,12 @@ func (h *streamingHandler) WaitFinish(ctx context.Context, id uuid.UUID) error {
 			return ctx.Err() // Caller timeout
 		}
 	default:
-		// For non-GCP vendors, wait on ConnAstDone as fallback
+		// For non-GCP vendors, wait on ConnAstDone as fallback.
+		// NOTE: ConnAstDone is only closed when Stop() is called, not when audio
+		// finishes playing. This means non-GCP WaitFinish will block until the
+		// caller's RPC timeout (~60s). This path is not production-ready;
+		// callers should gate streaming to GCP-only until vendor-specific
+		// completion signaling is implemented.
 		if connAstDone == nil {
 			return fmt.Errorf("no completion channel for streaming %s", id)
 		}
