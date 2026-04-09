@@ -177,11 +177,16 @@ func (h *streamingHandler) WaitFinish(ctx context.Context, id uuid.UUID) error {
 		if !ok {
 			return fmt.Errorf("invalid vendor config type for GCP")
 		}
+		// Snapshot processDone under muStream to avoid data race with
+		// waitAndReconnectLocked which may replace cf.processDone.
+		cf.muStream.Lock()
+		doneCh := cf.processDone
+		cf.muStream.Unlock()
 		select {
-		case <-cf.processDone:
+		case <-doneCh:
 			return nil
 		case <-cf.Ctx.Done():
-			return nil // Session cancelled
+			return fmt.Errorf("streaming session cancelled before audio completed for %s", id)
 		case <-ctx.Done():
 			return ctx.Err() // Caller timeout
 		}

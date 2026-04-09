@@ -92,7 +92,7 @@ func (h *callHandler) StreamingTalk(ctx context.Context, callID uuid.UUID, text 
 	if c.Status != call.StatusProgressing {
 		if errAnswer := h.channelHandler.Answer(ctx, c.ChannelID); errAnswer != nil {
 			log.Errorf("Could not answer the call. err: %v", errAnswer)
-			return fmt.Errorf("could not answer the call. err: %v", errAnswer)
+			return errors.Wrap(errAnswer, "could not answer the call")
 		}
 	}
 
