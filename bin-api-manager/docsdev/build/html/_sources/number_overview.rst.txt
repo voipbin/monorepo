@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low-Medium
    * **Cost:** Chargeable for normal numbers (provider purchase fee). Virtual numbers (+899 prefix) are free but subject to tier-based limits.
-   * **Async:** No. ``POST /numbers`` for virtual numbers returns immediately with status ``active``. Normal number provisioning may return ``purchase-pending`` until provider confirms.
+   * **Async:** No. ``POST https://api.voipbin.net/v1.0/numbers`` for virtual numbers returns immediately with status ``active``. Normal number provisioning may return ``purchase-pending`` until provider confirms.
 
 VoIPBIN's Number API enables you to provision, manage, and configure phone numbers for your communication applications. Numbers serve as the entry points for inbound calls and messages, and can be configured with custom flows for automated handling.
 
@@ -81,26 +81,18 @@ Numbers progress through predictable states from provisioning to release.
     Search available numbers
            |
            v
+    GET /available_numbers
+           |
+           | POST /numbers (provision)
+           v
     +------------+
-    | available  | (in VoIPBIN inventory)
-    +-----+------+
-          |
-          | POST /numbers (provision)
-          v
-    +------------+
-    |   active   |<-----------------+
-    +-----+------+                  |
-          |                         |
-          | suspend                 | reactivate
-          v                         |
-    +------------+                  |
-    | suspended  |------------------+
+    |   active   |
     +-----+------+
           |
           | DELETE /numbers/{id}
           v
     +------------+
-    |  released  |
+    |  deleted   |
     +------------+
 
 **State Descriptions**
@@ -108,13 +100,9 @@ Numbers progress through predictable states from provisioning to release.
 +-------------+------------------------------------------------------------------+
 | State       | What's happening                                                 |
 +=============+==================================================================+
-| available   | Number is in inventory, ready to be provisioned                  |
-+-------------+------------------------------------------------------------------+
 | active      | Number is provisioned and ready to receive calls/messages        |
 +-------------+------------------------------------------------------------------+
-| suspended   | Number is temporarily disabled                                   |
-+-------------+------------------------------------------------------------------+
-| released    | Number returned to inventory or carrier                          |
+| deleted     | Number has been released and is no longer active                 |
 +-------------+------------------------------------------------------------------+
 
 
@@ -124,13 +112,13 @@ Provision numbers through a two-step process: search, then provision.
 
 .. note:: **AI Implementation Hint**
 
-   Normal number provisioning requires a real provider purchase and costs money. For development and testing, use virtual numbers (``type=virtual``) which are free and instantly available. Search with ``GET /available_numbers?type=virtual`` and provision with ``POST /numbers`` using a ``+899`` prefixed number.
+   Normal number provisioning requires a real provider purchase and costs money. For development and testing, use virtual numbers (``type=virtual``) which are free and instantly available. Search with ``GET https://api.voipbin.net/v1.0/available_numbers?type=virtual`` and provision with ``POST https://api.voipbin.net/v1.0/numbers`` using a ``+899`` prefixed number.
 
 **Step 1: Search Available Numbers**
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/number_availables?token=<token>&country=US&type=local'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/available_numbers?token=<token>&country=US&type=local'
 
 **Response:**
 
@@ -205,7 +193,7 @@ VoIPBIN's Number resource allows you to associate multiple flows with a single n
 
 .. note:: **AI Implementation Hint**
 
-   A ``call_flow_id`` or ``message_flow_id`` set to ``00000000-0000-0000-0000-000000000000`` means no flow is assigned. Inbound calls or messages to a number without an assigned flow will not be handled. Always create a flow via ``POST /flows`` first, then assign it to the number via ``PUT /numbers/{id}``.
+   A ``call_flow_id`` or ``message_flow_id`` set to ``00000000-0000-0000-0000-000000000000`` means no flow is assigned. Inbound calls or messages to a number without an assigned flow will not be handled. Always create a flow via ``POST https://api.voipbin.net/v1.0/flows`` first, then assign it to the number via ``PUT https://api.voipbin.net/v1.0/numbers/{id}``.
 
 **Configure Flows**
 
@@ -322,7 +310,7 @@ Set up a number for inbound customer calls.
 ::
 
     1. Search for toll-free number
-       GET /number_availables?country=US&type=toll_free
+       GET /available_numbers?country=US&type=toll_free
 
     2. Provision the number
        POST /numbers { "number": "+18005551234" }
@@ -373,7 +361,7 @@ Create a virtual number for development and testing without purchasing from a pr
 ::
 
     1. Search for available virtual numbers
-       GET /available_numbers?type=virtual&page_size=5
+       GET https://api.voipbin.net/v1.0/available_numbers?type=virtual&page_size=5
 
     2. Provision the virtual number
        POST /numbers { "number": "+899100000001" }

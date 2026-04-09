@@ -412,23 +412,26 @@
     }&#39;
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c7d8e9f0-a1b2-3c4d-5e6f-7a8b9c0d1e2f&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+899100000001&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
-        <span class="o">...</span>
-    <span class="p">}</span>
-<span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;calls&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c7d8e9f0-a1b2-3c4d-5e6f-7a8b9c0d1e2f&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-source-number&gt;&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+899100000001&quot;</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
+            <span class="o">...</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;groupcalls&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <p>The call dials the virtual number, which triggers the transcription flow: answer, start transcription, speak the greeting, and pause for 30 seconds.</p>
@@ -473,20 +476,16 @@
 </section>
 <section id="receive-events-via-webhook-alternative">
 <h3>Receive events via webhook (alternative)<a class="headerlink" href="#receive-events-via-webhook-alternative" title="Link to this heading"></a></h3>
-<p>Instead of WebSocket, you can receive transcription events via HTTP webhook. Create a webhook that listens for <code class="docutils literal notranslate"><span class="pre">transcript.created</span></code> events:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;your-token&gt;&#39; \
+<p>Instead of WebSocket, you can receive transcription events via your customer webhook. Configure a webhook URI on your customer account — VoIPBIN sends HTTP POST requests for <strong>all</strong> events associated with your account, including transcription events:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;name&quot;: &quot;Transcription events&quot;,
-        &quot;uri&quot;: &quot;https://your-server.com/webhook&quot;,
-        &quot;method&quot;: &quot;POST&quot;,
-        &quot;event_types&quot;: [
-            &quot;transcript.created&quot;
-        ]
+        &quot;webhook_method&quot;: &quot;POST&quot;,
+        &quot;webhook_uri&quot;: &quot;https://your-server.com/webhook&quot;
     }&#39;
 </pre></div>
 </div>
-<p>Note: the <code class="docutils literal notranslate"><span class="pre">event_types</span></code> registration uses dot notation (<code class="docutils literal notranslate"><span class="pre">transcript.created</span></code>), while the delivered payload’s <code class="docutils literal notranslate"><span class="pre">event_type</span></code> field uses underscore notation (<code class="docutils literal notranslate"><span class="pre">transcript_created</span></code>).</p>
+<p>Once configured, transcription events (along with all other account events) are delivered to your <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> as HTTP POST requests. There is no per-event-type filtering — your endpoint receives all events and must filter by <code class="docutils literal notranslate"><span class="pre">event_type</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code>).</p>
 <p>VoIPBIN sends a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to your endpoint each time a transcript segment is generated:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">your</span><span class="o">-</span><span class="n">server</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">webhook</span>
 

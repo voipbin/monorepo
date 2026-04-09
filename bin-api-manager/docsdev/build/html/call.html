@@ -213,6 +213,11 @@
 <li><p>Create conference calls.</p></li>
 <li><p>Send text-to-speech messages in 50 languages with different voices and accents.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>To create an outbound call, use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code> with a JSON body containing <code class="docutils literal notranslate"><span class="pre">source</span></code> (E.164 number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>), <code class="docutils literal notranslate"><span class="pre">destinations</span></code> (array of target addresses), and optionally <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>) to execute a flow when the call is answered. The endpoint returns immediately with status <code class="docutils literal notranslate"><span class="pre">dialing</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> or subscribe via WebSocket for real-time status updates. Each call deducts credits from the customer’s billing account per minute.</p>
+</div>
 <section id="protocol">
 <h3>Protocol<a class="headerlink" href="#protocol" title="Link to this heading"></a></h3>
 <p>VoIPBIN offers support for various call/video protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.</p>
@@ -835,6 +840,12 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 <p>In summary, while the traditional call concept adheres to a simple point-to-point model, the VoIPBIN call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.</p>
 </section>
 </section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<p><strong>Call Creation Issues</strong></p>
+<p><strong>Media Control Issues</strong></p>
+<p><strong>Call Chaining Issues</strong></p>
+</section>
 <section id="related-documentation">
 <h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
 <p>Calls integrate with many VoIPBIN features. Use these links for detailed information:</p>
@@ -904,7 +915,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> used in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls/{call-id}/transfer</span></code> must be an active call (status <code class="docutils literal notranslate"><span class="pre">progressing</span></code>). Obtain the <code class="docutils literal notranslate"><span class="pre">call-id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event such as <code class="docutils literal notranslate"><span class="pre">call_answered</span></code>.</p>
+<p>Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. Initiate a transfer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers</span></code> with the <code class="docutils literal notranslate"><span class="pre">transferer_call_id</span></code> (UUID, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code>) of an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, along with <code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> (array of addresses) and <code class="docutils literal notranslate"><span class="pre">transfer_type</span></code> (enum: <code class="docutils literal notranslate"><span class="pre">attended</span></code> or <code class="docutils literal notranslate"><span class="pre">blind</span></code>).</p>
 </div>
 <section id="blind-transfer">
 <span id="call-transfer-blind-transfer"></span><h3>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Link to this heading"></a></h3>
@@ -1005,7 +1016,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/transfers/{transfer-id}/cancel</span></code> and resume the original call with the caller.</p>
+<p>During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer and resume the original call with the caller.</p>
 </div>
 </section>
 </section>
@@ -1666,34 +1677,41 @@ When the destination answer the call, it will play the given media file.</p>
 
 [
     {
-        &quot;id&quot;: &quot;a023bfa8-1091-4e94-8eaa-7f01fbecc71a&quot;,   // Save this as call_id (UUID)
-        &quot;user_id&quot;: 1,
-        &quot;flow_id&quot;: &quot;f089791a-ac78-4ea0-be88-8a8e131f9fc5&quot;,   // Auto-generated flow (UUID)
-        &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-        &quot;type&quot;: &quot;flow&quot;,   // enum: flow, conference, sip-service
+        &quot;id&quot;: &quot;a023bfa8-1091-4e94-8eaa-7f01fbecc71a&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+        &quot;flow_id&quot;: &quot;f089791a-ac78-4ea0-be88-8a8e131f9fc5&quot;,
+        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
         &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;chained_call_ids&quot;: [],
         &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;recording_ids&quot;: [],
+        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15551234567&quot;,
-            &quot;name&quot;: &quot;&quot;
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;name&quot;: &quot;&quot;
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
         },
-        &quot;status&quot;: &quot;dialing&quot;,   // enum: dialing, ringing, progressing, terminating, canceling, hangup
-        &quot;direction&quot;: &quot;outgoing&quot;,   // enum: incoming, outgoing
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;mute_direction&quot;: &quot;&quot;,
         &quot;hangup_by&quot;: &quot;&quot;,
         &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_create&quot;: &quot;2021-02-04 04:44:20.904662&quot;,   // ISO 8601 timestamp
-        &quot;tm_update&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: &quot;&quot;,
-        &quot;tm_ringing&quot;: &quot;&quot;,
-        &quot;tm_hangup&quot;: &quot;&quot;
+        &quot;tm_progressing&quot;: null,
+        &quot;tm_ringing&quot;: null,
+        &quot;tm_hangup&quot;: null,
+        &quot;tm_create&quot;: &quot;2021-02-04T04:44:20Z&quot;,
+        &quot;tm_update&quot;: null,
+        &quot;tm_delete&quot;: null
     }
 ]
 </pre></div>
@@ -1745,33 +1763,40 @@ When the destination answer the call, it will play the given media file.</p>
 [
     {
         &quot;id&quot;: &quot;9f6265bc-6b59-4e80-a906-2679aca11455&quot;,
-        &quot;user_id&quot;: 1,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
         &quot;flow_id&quot;: &quot;d665fbc0-6dd8-44bc-99ea-2ae54bc59428&quot;,
-        &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;type&quot;: &quot;flow&quot;,
         &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;chained_call_ids&quot;: [],
         &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;recording_ids&quot;: [],
+        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;name&quot;: &quot;&quot;
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
         },
         &quot;destination&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15559876543&quot;,
-            &quot;name&quot;: &quot;&quot;
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
         },
         &quot;status&quot;: &quot;dialing&quot;,
         &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;mute_direction&quot;: &quot;&quot;,
         &quot;hangup_by&quot;: &quot;&quot;,
         &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_create&quot;: &quot;2021-02-06 09:52:49.941865&quot;,
-        &quot;tm_update&quot;: &quot;&quot;,
-        &quot;tm_progressing&quot;: &quot;&quot;,
-        &quot;tm_ringing&quot;: &quot;&quot;,
-        &quot;tm_hangup&quot;: &quot;&quot;
+        &quot;tm_progressing&quot;: null,
+        &quot;tm_ringing&quot;: null,
+        &quot;tm_hangup&quot;: null,
+        &quot;tm_create&quot;: &quot;2021-02-06T09:52:49Z&quot;,
+        &quot;tm_update&quot;: null,
+        &quot;tm_delete&quot;: null
     }
 ]
 </pre></div>
@@ -1780,75 +1805,84 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="simple-outbound-call-with-talk-and-digits-send">
 <h3>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Link to this heading"></a></h3>
 <p>Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;This is dtmf send test call. Please wait.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
-            <span class="p">}</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;dtmf_send&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;dtmfs&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
-                <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">500</span>
-            <span class="p">}</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;talk&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thank you. DTMF send test has done.&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+--header &#39;Content-Type: application/json&#39; \
+--data-raw &#39;{
+    &quot;source&quot;: {
+        &quot;type&quot;: &quot;tel&quot;,
+        &quot;target&quot;: &quot;+15551234567&quot;
+    },
+    &quot;destinations&quot;: [
+        {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;
+        }
+    ],
+    &quot;actions&quot;: [
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;This is dtmf send test call. Please wait.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        },
+        {
+            &quot;type&quot;: &quot;dtmf_send&quot;,
+            &quot;option&quot;: {
+                &quot;dtmfs&quot;: &quot;1234567890&quot;,
+                &quot;duration&quot;: 500,
+                &quot;interval&quot;: 500
+            }
+        },
+        {
+            &quot;type&quot;: &quot;talk&quot;,
+            &quot;option&quot;: {
+                &quot;text&quot;: &quot;Thank you. DTMF send test has done.&quot;,
+                &quot;language&quot;: &quot;en-US&quot;
+            }
+        }
+    ]
+}&#39;
 
-<span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d7520a58-0b07-4dd7-ab72-a4e2d1979ec0&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;0f4bd9bc-9df5-4a5b-9465-2189822a3019&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;conf_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;flow&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;master_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;chained_call_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">&quot;recording_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;recording_ids&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;dialing&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;outgoing&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hangup_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-02-08 03:59:33.281711&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_progressing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_ringing&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_hangup&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
-    <span class="p">}</span>
-<span class="p">]</span>
+[
+    {
+        &quot;id&quot;: &quot;d7520a58-0b07-4dd7-ab72-a4e2d1979ec0&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+        &quot;flow_id&quot;: &quot;0f4bd9bc-9df5-4a5b-9465-2189822a3019&quot;,
+        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;type&quot;: &quot;flow&quot;,
+        &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;chained_call_ids&quot;: [],
+        &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;recording_ids&quot;: [],
+        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;destination&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15559876543&quot;,
+            &quot;target_name&quot;: &quot;&quot;,
+            &quot;name&quot;: &quot;&quot;,
+            &quot;detail&quot;: &quot;&quot;
+        },
+        &quot;status&quot;: &quot;dialing&quot;,
+        &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;mute_direction&quot;: &quot;&quot;,
+        &quot;hangup_by&quot;: &quot;&quot;,
+        &quot;hangup_reason&quot;: &quot;&quot;,
+        &quot;tm_progressing&quot;: null,
+        &quot;tm_ringing&quot;: null,
+        &quot;tm_hangup&quot;: null,
+        &quot;tm_create&quot;: &quot;2021-02-08T03:59:33Z&quot;,
+        &quot;tm_update&quot;: null,
+        &quot;tm_delete&quot;: null
+    }
+]
 </pre></div>
 </div>
 </section>
@@ -1991,13 +2025,15 @@ When the destination answer the call, it will play the given media file.</p>
 [
     {
         &quot;id&quot;: &quot;77517719-ffb9-4583-ba44-737ba991d685&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
         &quot;flow_id&quot;: &quot;c0827e56-41ef-4fa1-9da0-a8a36fbb76c4&quot;,
-        &quot;confbridge_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+        &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;type&quot;: &quot;flow&quot;,
         &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;chained_call_ids&quot;: [],
         &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;recording_ids&quot;: [],
+        &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
             &quot;target&quot;: &quot;+15551234567&quot;,
@@ -2018,13 +2054,15 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;type&quot;: &quot;&quot;
         },
         &quot;direction&quot;: &quot;outgoing&quot;,
+        &quot;mute_direction&quot;: &quot;&quot;,
         &quot;hangup_by&quot;: &quot;&quot;,
         &quot;hangup_reason&quot;: &quot;&quot;,
-        &quot;tm_create&quot;: &quot;2022-02-24 02:08:14.469405&quot;,
-        &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_progressing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_ringing&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-        &quot;tm_hangup&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+        &quot;tm_progressing&quot;: null,
+        &quot;tm_ringing&quot;: null,
+        &quot;tm_hangup&quot;: null,
+        &quot;tm_create&quot;: &quot;2022-02-24T02:08:14Z&quot;,
+        &quot;tm_update&quot;: null,
+        &quot;tm_delete&quot;: null
     }
 ]
 </pre></div>
@@ -2039,37 +2077,44 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;9a7857ca-73ba-4000-8101-c47d3b48f9d1&quot;,
-            &quot;user_id&quot;: 1,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
             &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-            &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;type&quot;: &quot;sip-service&quot;,
             &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;chained_call_ids&quot;: [],
             &quot;recording_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;recording_ids&quot;: [],
+            &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;source&quot;: {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;109&quot;,
-                &quot;name&quot;: &quot;109&quot;
+                &quot;target&quot;: &quot;+15551234567&quot;,
+                &quot;target_name&quot;: &quot;&quot;,
+                &quot;name&quot;: &quot;109&quot;,
+                &quot;detail&quot;: &quot;&quot;
             },
             &quot;destination&quot;: {
                 &quot;type&quot;: &quot;tel&quot;,
-                &quot;target&quot;: &quot;972595897084&quot;,
-                &quot;name&quot;: &quot;&quot;
+                &quot;target&quot;: &quot;+972595897084&quot;,
+                &quot;target_name&quot;: &quot;&quot;,
+                &quot;name&quot;: &quot;&quot;,
+                &quot;detail&quot;: &quot;&quot;
             },
             &quot;status&quot;: &quot;hangup&quot;,
             &quot;direction&quot;: &quot;incoming&quot;,
+            &quot;mute_direction&quot;: &quot;&quot;,
             &quot;hangup_by&quot;: &quot;remote&quot;,
             &quot;hangup_reason&quot;: &quot;normal&quot;,
-            &quot;tm_create&quot;: &quot;2021-02-06 09:47:10.018000&quot;,
-            &quot;tm_update&quot;: &quot;2021-02-06 09:48:14.630000&quot;,
-            &quot;tm_progressing&quot;: &quot;2021-02-06 09:47:10.626000&quot;,
-            &quot;tm_ringing&quot;: &quot;&quot;,
-            &quot;tm_hangup&quot;: &quot;2021-02-06 09:48:14.630000&quot;
+            &quot;tm_progressing&quot;: &quot;2021-02-06T09:47:10Z&quot;,
+            &quot;tm_ringing&quot;: null,
+            &quot;tm_hangup&quot;: &quot;2021-02-06T09:48:14Z&quot;,
+            &quot;tm_create&quot;: &quot;2021-02-06T09:47:10Z&quot;,
+            &quot;tm_update&quot;: &quot;2021-02-06T09:48:14Z&quot;,
+            &quot;tm_delete&quot;: null
         },
         ...
     ],
-    &quot;next_page_token&quot;: &quot;2021-02-06 08:54:38.361000&quot;
+    &quot;next_page_token&quot;: &quot;2021-02-06T08:54:38Z&quot;
 }
 </pre></div>
 </div>
@@ -2081,9 +2126,9 @@ When the destination answer the call, it will play the given media file.</p>
 
 {
     &quot;id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;flow_id&quot;: &quot;246aeabe-fab5-4a1b-8e98-852b50e89dd7&quot;,
-    &quot;conf_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;type&quot;: &quot;flow&quot;,
     &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;chained_call_ids&quot;: [],
@@ -2091,25 +2136,32 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;recording_ids&quot;: [
         &quot;142e8ef8-392c-4514-abf0-8656da5d2fdf&quot;
     ],
+    &quot;groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
         &quot;target&quot;: &quot;+15551234567&quot;,
-        &quot;name&quot;: &quot;&quot;
+        &quot;target_name&quot;: &quot;&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
     },
     &quot;destination&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
         &quot;target&quot;: &quot;+15559876543&quot;,
-        &quot;name&quot;: &quot;&quot;
+        &quot;target_name&quot;: &quot;&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
     },
     &quot;status&quot;: &quot;hangup&quot;,
     &quot;direction&quot;: &quot;outgoing&quot;,
+    &quot;mute_direction&quot;: &quot;&quot;,
     &quot;hangup_by&quot;: &quot;remote&quot;,
     &quot;hangup_reason&quot;: &quot;normal&quot;,
-    &quot;tm_create&quot;: &quot;2021-01-29 03:17:54.349101&quot;,
-    &quot;tm_update&quot;: &quot;2021-01-29 03:18:22.131000&quot;,
-    &quot;tm_progressing&quot;: &quot;2021-01-29 03:18:07.810000&quot;,
-    &quot;tm_ringing&quot;: &quot;2021-01-29 03:17:55.392000&quot;,
-    &quot;tm_hangup&quot;: &quot;2021-01-29 03:18:22.131000&quot;
+    &quot;tm_progressing&quot;: &quot;2021-01-29T03:18:07Z&quot;,
+    &quot;tm_ringing&quot;: &quot;2021-01-29T03:17:55Z&quot;,
+    &quot;tm_hangup&quot;: &quot;2021-01-29T03:18:22Z&quot;,
+    &quot;tm_create&quot;: &quot;2021-01-29T03:17:54Z&quot;,
+    &quot;tm_update&quot;: &quot;2021-01-29T03:18:22Z&quot;,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -2117,7 +2169,7 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="make-a-groupcall">
 <h3>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Link to this heading"></a></h3>
 <p>Make a groupcall to the multiple destinations.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=eyJhbGcslkj&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;source&quot;: {
@@ -2148,6 +2200,7 @@ When the destination answer the call, it will play the given media file.</p>
 {
     &quot;id&quot;: &quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;,
     &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
         &quot;target&quot;: &quot;+15551234567&quot;,
@@ -2171,6 +2224,8 @@ When the destination answer the call, it will play the given media file.</p>
             &quot;detail&quot;: &quot;&quot;
         }
     ],
+    &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;master_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;ring_method&quot;: &quot;&quot;,
     &quot;answer_method&quot;: &quot;&quot;,
     &quot;answer_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
@@ -2178,15 +2233,17 @@ When the destination answer the call, it will play the given media file.</p>
         &quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;,
         &quot;2bcaff64-e05d-11ed-84a6-133172844032&quot;
     ],
-    &quot;tm_create&quot;: &quot;2023-04-21 15:33:28.569053&quot;,
-    &quot;tm_update&quot;: &quot;9999-01-01 00:00:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+    &quot;answer_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;groupcall_ids&quot;: [],
+    &quot;tm_create&quot;: &quot;2023-04-21T15:33:28Z&quot;,
+    &quot;tm_update&quot;: null,
+    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
 </section>
-<section id="troubleshooting">
-<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<section id="id5">
+<h3>Troubleshooting<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
@@ -3483,7 +3540,7 @@ VoIPBIN             Destination              Voicemail
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">conference_id</span></code> in <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> must be obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/conferences</span></code> response or from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>. The <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The <code class="docutils literal notranslate"><span class="pre">role</span></code> field controls permissions: <code class="docutils literal notranslate"><span class="pre">moderator</span></code> can mute/unmute others, while <code class="docutils literal notranslate"><span class="pre">participant</span></code> can only control their own audio.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">conference_id</span></code> in <code class="docutils literal notranslate"><span class="pre">conference_join</span></code> must be obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/conferences</span></code> response or from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/conferences</span></code>. The <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The <code class="docutils literal notranslate"><span class="pre">role</span></code> field controls permissions: <code class="docutils literal notranslate"><span class="pre">moderator</span></code> can mute/unmute others, while <code class="docutils literal notranslate"><span class="pre">participant</span></code> can only control their own audio.</p>
 </div>
 </section>
 <section id="call-screening-with-whisper">
@@ -3624,51 +3681,39 @@ VoIPBIN             Destination              Voicemail
 </div>
 <p><strong>API for Attended Transfer:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Step</span> <span class="mi">1</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">A</span> <span class="n">initiates</span> <span class="n">transfer</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transfer</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;attended&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15553333333&quot;</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cust-123&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;issue&quot;</span><span class="p">:</span> <span class="s2">&quot;billing dispute&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer called about incorrect charge on invoice #456&quot;</span>
-    <span class="p">}</span>
+    <span class="s2">&quot;transfer_type&quot;</span><span class="p">:</span> <span class="s2">&quot;attended&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-uuid-of-agent-a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferee_addresses&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15553333333&quot;</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 
 <span class="n">Response</span><span class="p">:</span>
 <span class="p">{</span>
-    <span class="s2">&quot;transfer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-uuid&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;consult_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;consult-call-uuid&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;consulting&quot;</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-uuid&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;attended&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-uuid-of-agent-a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferee_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;consult-call-uuid&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferee_addresses&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15553333333&quot;</span><span class="p">}</span>
+    <span class="p">]</span>
 <span class="p">}</span>
 
 <span class="n">Step</span> <span class="mi">2</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">A</span> <span class="n">talks</span> <span class="n">to</span> <span class="n">Agent</span> <span class="n">B</span><span class="p">,</span> <span class="n">then</span> <span class="n">completes</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">complete</span>
+<span class="n">the</span> <span class="n">transfer</span> <span class="n">by</span> <span class="n">hanging</span> <span class="n">up</span> <span class="n">their</span> <span class="n">call</span><span class="o">.</span>
 
-<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">Agent</span> <span class="n">B</span> <span class="n">receives</span> <span class="n">context</span> <span class="n">via</span> <span class="n">webhook</span> <span class="ow">or</span> <span class="n">screen</span> <span class="n">pop</span>
-<span class="n">Webhook</span><span class="p">:</span> <span class="n">transfer_completed</span>
-<span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer_completed&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;transfer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;transfer-uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;from_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-a-uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;to_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;agent-b-uuid&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cust-123&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;issue&quot;</span><span class="p">:</span> <span class="s2">&quot;billing dispute&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;Customer called about incorrect charge on invoice #456&quot;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
+<span class="n">Step</span> <span class="mi">3</span><span class="p">:</span> <span class="n">The</span> <span class="n">caller</span> <span class="ow">and</span> <span class="n">Agent</span> <span class="n">B</span> <span class="n">are</span> <span class="n">now</span> <span class="n">connected</span><span class="o">.</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/transfer</span></code> must be an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. The <code class="docutils literal notranslate"><span class="pre">transfer_id</span></code> returned in the response is used for subsequent operations: <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/complete</span></code> to finish the transfer, or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/cancel</span></code> to abort it. The <code class="docutils literal notranslate"><span class="pre">context</span></code> object is passed through to the <code class="docutils literal notranslate"><span class="pre">transfer_completed</span></code> webhook, allowing Agent B’s application to display caller information. The consult call to Agent B is a separate billable call.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">transferer_call_id</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers</span></code> must be the UUID of an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code>. The <code class="docutils literal notranslate"><span class="pre">transfer_type</span></code> is an enum: <code class="docutils literal notranslate"><span class="pre">attended</span></code> or <code class="docutils literal notranslate"><span class="pre">blind</span></code>. The <code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> array must contain at least one address (E.164 phone number or extension). The response includes a <code class="docutils literal notranslate"><span class="pre">transferee_call_id</span></code> (UUID) for the new outbound call to the transfer destination. The consult call to Agent B is a separate billable call.</p>
 </div>
 </section>
 <section id="call-with-real-time-transcription">
@@ -4038,16 +4083,17 @@ VoIPBIN             Destination              Voicemail
 <span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>
-<p><strong>DTMF in API:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sending</span> <span class="n">DTMF</span><span class="p">:</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">dtmf</span>
+<p><strong>DTMF in Flow Actions:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sending</span> <span class="n">DTMF</span> <span class="p">(</span><span class="n">flow</span> <span class="n">action</span><span class="p">):</span>
 <span class="p">{</span>
-    <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;1234#&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span>      <span class="o">//</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">digit</span>
-    <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">100</span>       <span class="o">//</span> <span class="n">ms</span> <span class="n">between</span> <span class="n">digits</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;1234#&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">250</span>       <span class="o">//</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">digit</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="n">Receiving</span> <span class="n">DTMF</span> <span class="p">(</span><span class="ow">in</span> <span class="n">flow</span><span class="p">):</span>
+<span class="n">Receiving</span> <span class="n">DTMF</span> <span class="p">(</span><span class="n">flow</span> <span class="n">action</span><span class="p">):</span>
 <span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -4061,7 +4107,7 @@ VoIPBIN             Destination              Voicemail
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/dtmf</span></code> must be an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain it from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event. The <code class="docutils literal notranslate"><span class="pre">digits</span></code> field accepts <code class="docutils literal notranslate"><span class="pre">0-9</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code>, and <code class="docutils literal notranslate"><span class="pre">#</span></code>. The <code class="docutils literal notranslate"><span class="pre">duration</span></code> controls how long each tone plays (in milliseconds) and <code class="docutils literal notranslate"><span class="pre">interval</span></code> controls the pause between tones.</p>
+<p>DTMF is handled via flow actions (<code class="docutils literal notranslate"><span class="pre">digits_send</span></code> and <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code>), not via a direct API endpoint. Include these actions in the <code class="docutils literal notranslate"><span class="pre">actions</span></code> array when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or in a flow via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>. The <code class="docutils literal notranslate"><span class="pre">digits</span></code> field accepts <code class="docutils literal notranslate"><span class="pre">0-9</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code>, and <code class="docutils literal notranslate"><span class="pre">#</span></code>. The <code class="docutils literal notranslate"><span class="pre">duration</span></code> controls how long each tone plays (in milliseconds). Use <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code> to collect caller input for IVR menus.</p>
 </div>
 </section>
 <section id="recording-formats">
@@ -4372,7 +4418,7 @@ VoIPBIN             Destination              Voicemail
 </section>
 </section>
 <section id="call-troubleshooting">
-<span id="id5"></span><h2>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading"></a></h2>
+<span id="id6"></span><h2>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading"></a></h2>
 <p>This guide helps you diagnose and resolve common call issues. Each problem includes symptoms, causes, and solutions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -4386,23 +4432,20 @@ VoIPBIN             Destination              Voicemail
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Get</span> <span class="n">call</span> <span class="n">details</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-<span class="n">Get</span> <span class="n">call</span> <span class="n">events</span> <span class="p">(</span><span class="n">webhooks</span> <span class="n">sent</span><span class="p">):</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">events</span>
-
 <span class="n">Get</span> <span class="n">activeflow</span> <span class="n">status</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="n">activeflow</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-<span class="n">Get</span> <span class="n">recordings</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recordings</span>
+<span class="n">Get</span> <span class="n">recordings</span> <span class="p">(</span><span class="n">use</span> <span class="n">recording_ids</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">call</span> <span class="nb">object</span><span class="p">):</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">recordings</span><span class="o">/</span><span class="p">{</span><span class="n">recording</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-<span class="n">Get</span> <span class="n">transcripts</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transcripts</span>
+<span class="n">List</span> <span class="nb">all</span> <span class="n">recordings</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">recordings</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> is a UUID returned when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or from webhook events. The <code class="docutils literal notranslate"><span class="pre">activeflow-id</span></code> is obtained from the call’s associated flow execution. All debugging endpoints require a valid authentication token (JWT or access key).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> is a UUID returned when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls</span></code> or from webhook events. The <code class="docutils literal notranslate"><span class="pre">activeflow-id</span></code> is obtained from the call’s <code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> field. The <code class="docutils literal notranslate"><span class="pre">recording-id</span></code> is obtained from the call’s <code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> array. All debugging endpoints require a valid authentication token (JWT or access key).</p>
 </div>
 <p><strong>WebSocket for Real-time Monitoring:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Connect:
@@ -4540,7 +4583,6 @@ Events you&#39;ll receive:
 
 <span class="n">Check</span> <span class="n">these</span> <span class="n">fields</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">status</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;progressing&quot;</span>
-<span class="o">-</span> <span class="n">hold</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="n">false</span>
 <span class="o">-</span> <span class="n">mute_direction</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;&quot;</span> <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="n">unmuted</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -4574,13 +4616,14 @@ Events you&#39;ll receive:
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">&quot;mute_direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;hold&quot;</span><span class="p">:</span> <span class="n">true</span>
+  <span class="s2">&quot;mute_direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
 <span class="p">}</span>
 
-<span class="n">Fix</span><span class="p">:</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">resume</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">unmute</span>
+<span class="n">Fix</span> <span class="p">(</span><span class="n">unhold</span> <span class="n">the</span> <span class="n">call</span><span class="p">):</span>
+<span class="n">DELETE</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">hold</span>
+
+<span class="n">Fix</span> <span class="p">(</span><span class="n">unmute</span> <span class="n">the</span> <span class="n">call</span><span class="p">):</span>
+<span class="n">DELETE</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">mute</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -4650,36 +4693,24 @@ Events you&#39;ll receive:
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>If flow actions are not executing at all, verify that the call has a <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> set (not <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>). For outbound calls, you must either provide <code class="docutils literal notranslate"><span class="pre">actions</span></code> inline in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or reference an existing flow via <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>. For inbound calls, the flow is determined by the phone number configuration – check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers/{number-id}</span></code> for the <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> assignment.</p>
+<p>If flow actions are not executing at all, verify that the call has a <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> set (not <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>). For outbound calls, you must either provide <code class="docutils literal notranslate"><span class="pre">actions</span></code> inline in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls</span></code> or reference an existing flow via <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>. For inbound calls, the flow is determined by the phone number configuration – check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/numbers/{number-id}</span></code> for the <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> assignment.</p>
 </div>
 </section>
 <section id="webhooks-not-received">
 <h3>Webhooks Not Received<a class="headerlink" href="#webhooks-not-received" title="Link to this heading"></a></h3>
 <p><strong>Symptom:</strong> No webhooks arrive at your endpoint, or only some webhooks arrive.</p>
-<p><strong>Diagnostic API calls:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Verify</span> <span class="n">webhook</span> <span class="n">configuration</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span>
+<p><strong>Diagnostic steps:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Verify</span> <span class="n">webhook</span> <span class="n">configuration</span> <span class="n">on</span> <span class="n">your</span> <span class="n">customer</span> <span class="n">profile</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">customer</span>
+
+<span class="n">Check</span> <span class="n">the</span> <span class="n">webhook_method</span> <span class="ow">and</span> <span class="n">webhook_uri</span> <span class="n">fields</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">],</span>
-  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span>
+  <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span>
 <span class="p">}</span>
 
-<span class="mf">2.</span> <span class="n">Check</span> <span class="n">webhook</span> <span class="n">delivery</span> <span class="n">history</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span><span class="o">/</span><span class="p">{</span><span class="n">webhook</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">deliveries</span>
-<span class="p">{</span>
-  <span class="s2">&quot;deliveries&quot;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;delivery-uuid&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;http_code&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
-      <span class="s2">&quot;attempts&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-      <span class="s2">&quot;last_attempt&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00Z&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Connection timeout&quot;</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
+<span class="n">If</span> <span class="n">webhook_uri</span> <span class="ow">is</span> <span class="n">empty</span><span class="p">,</span> <span class="n">webhooks</span> <span class="n">are</span> <span class="ow">not</span> <span class="n">configured</span><span class="o">.</span>
+<span class="n">Update</span> <span class="n">via</span> <span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">customer</span> <span class="k">with</span> <span class="n">webhook_method</span> <span class="ow">and</span> <span class="n">webhook_uri</span><span class="o">.</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: Endpoint not accessible</strong></p>
@@ -4704,20 +4735,27 @@ Events you&#39;ll receive:
 <span class="o">-</span> <span class="n">Use</span> <span class="n">a</span> <span class="n">message</span> <span class="n">queue</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">SQS</span><span class="p">,</span> <span class="n">RabbitMQ</span><span class="p">)</span> <span class="k">for</span> <span class="n">processing</span>
 </pre></div>
 </div>
-<p><strong>Cause 3: Wrong event subscription</strong></p>
+<p><strong>Cause 3: Webhook not configured on customer profile</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">Subscribed</span> <span class="n">to</span> <span class="s2">&quot;call_created&quot;</span> <span class="n">but</span> <span class="n">expecting</span> <span class="s2">&quot;call_hungup&quot;</span>
+<span class="o">-</span> <span class="n">No</span> <span class="n">webhooks</span> <span class="n">received</span> <span class="n">at</span> <span class="nb">all</span>
+
+<span class="n">Diagnostic</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">customer</span>
+<span class="n">Check</span> <span class="n">that</span> <span class="n">webhook_method</span> <span class="ow">is</span> <span class="s2">&quot;post&quot;</span> <span class="ow">and</span> <span class="n">webhook_uri</span>
+<span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="n">your</span> <span class="n">endpoint</span> <span class="n">URL</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Update</span> <span class="n">webhook</span> <span class="n">events</span><span class="p">:</span>
-<span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span><span class="o">/</span><span class="p">{</span><span class="n">webhook</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
-<span class="p">{</span><span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">,</span> <span class="s2">&quot;call_created&quot;</span><span class="p">]}</span>
+<span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">customer</span>
+<span class="p">{</span>
+  <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/webhooks/{webhook-id}/deliveries</span></code> to see delivery attempts and failure reasons. If you are not receiving any webhooks, verify your webhook <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">active</span></code> and the <code class="docutils literal notranslate"><span class="pre">events</span></code> array includes the event types you need.</p>
+<p>Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Webhook configuration is managed via the customer profile: use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/customer</span></code> to check <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code>, and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/customer</span></code> to update them. VoIPBIN sends all event types to your configured endpoint – there is no per-event subscription.</p>
 </div>
 </section>
 <section id="recording-issues">
@@ -4781,15 +4819,12 @@ Events you&#39;ll receive:
 <section id="transfer-problems">
 <h3>Transfer Problems<a class="headerlink" href="#transfer-problems" title="Link to this heading"></a></h3>
 <p><strong>Symptom:</strong> Transfer fails, caller dropped during transfer, or consult call does not connect.</p>
-<p><strong>Diagnostic API call:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
-<span class="p">{</span>
-  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;consulting&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;consult_call&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;noanswer&quot;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<p><strong>Diagnostic steps:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Use</span> <span class="n">the</span> <span class="n">transfer_id</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">POST</span> <span class="o">/</span><span class="n">transfers</span> <span class="n">response</span>
+<span class="n">to</span> <span class="n">look</span> <span class="n">up</span> <span class="n">the</span> <span class="n">transfer</span> <span class="nb">object</span> <span class="ow">and</span> <span class="n">inspect</span> <span class="n">its</span> <span class="n">state</span><span class="o">.</span>
+
+<span class="n">List</span> <span class="n">transfers</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: Blind Transfer Fails</strong></p>
@@ -4810,11 +4845,12 @@ Events you&#39;ll receive:
 <span class="o">-</span> <span class="n">Agent</span> <span class="n">A</span> <span class="n">cannot</span> <span class="n">reach</span> <span class="n">Agent</span> <span class="n">B</span>
 
 <span class="n">Diagnostic</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="n">Check</span> <span class="n">the</span> <span class="n">transfer</span> <span class="n">via</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span> <span class="n">to</span> <span class="n">find</span>
+<span class="n">the</span> <span class="n">transfer</span> <span class="ow">and</span> <span class="n">its</span> <span class="n">associated</span> <span class="n">call</span> <span class="n">IDs</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Cancel</span> <span class="n">transfer</span> <span class="ow">and</span> <span class="k">try</span> <span class="n">a</span> <span class="n">different</span> <span class="n">agent</span><span class="p">:</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">cancel</span>
+<span class="n">Verify</span> <span class="n">the</span> <span class="n">transferee</span> <span class="n">address</span> <span class="ow">is</span> <span class="n">correct</span> <span class="ow">and</span> <span class="n">reachable</span><span class="o">.</span>
+<span class="n">Create</span> <span class="n">a</span> <span class="n">new</span> <span class="n">transfer</span> <span class="k">with</span> <span class="n">a</span> <span class="n">different</span> <span class="n">destination</span><span class="o">.</span>
 </pre></div>
 </div>
 <p><strong>Cause 3: Caller Hears Dead Air During Transfer</strong></p>
@@ -4826,40 +4862,37 @@ Events you&#39;ll receive:
 <span class="o">-</span> <span class="n">Mute</span> <span class="n">applied</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">hold</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Ensure</span> <span class="n">transfer</span> <span class="n">uses</span> <span class="n">proper</span> <span class="n">hold</span><span class="p">:</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transfer</span>
-<span class="p">{</span>
-  <span class="s2">&quot;hold_caller&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-  <span class="s2">&quot;play_moh&quot;</span><span class="p">:</span> <span class="n">true</span>
-<span class="p">}</span>
+<span class="n">Put</span> <span class="n">the</span> <span class="n">caller</span> <span class="n">on</span> <span class="n">hold</span> <span class="n">before</span> <span class="n">initiating</span> <span class="n">the</span> <span class="n">transfer</span><span class="p">:</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">hold</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">moh</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">transfer-id</span></code> is returned in the response to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/transfer</span></code>. Use it to check transfer status (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/transfers/{transfer-id}</span></code>), complete the transfer (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/complete</span></code>), or cancel it (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/cancel</span></code>). If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.</p>
+<p>Transfers are initiated via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers</span></code> with <code class="docutils literal notranslate"><span class="pre">transferer_call_id</span></code> (UUID, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code>) and <code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> in the request body. The <code class="docutils literal notranslate"><span class="pre">transfer_type</span></code> field specifies <code class="docutils literal notranslate"><span class="pre">attended</span></code> or <code class="docutils literal notranslate"><span class="pre">blind</span></code>. The response includes a <code class="docutils literal notranslate"><span class="pre">transfer_id</span></code> (UUID) and associated call/groupcall IDs. If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.</p>
 </div>
 </section>
 <section id="queue-problems">
 <h3>Queue Problems<a class="headerlink" href="#queue-problems" title="Link to this heading"></a></h3>
 <p><strong>Symptom:</strong> Calls not distributed to agents, long wait times, or agents not receiving calls.</p>
 <p><strong>Diagnostic API calls:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Check queue status:
-GET /v1/queues/{queue-id}
-{
-  &quot;available_agents&quot;: 0,
-  &quot;waiting_calls&quot;: 5
-}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Check</span> <span class="n">queue</span> <span class="n">status</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="p">{</span>
+  <span class="s2">&quot;wait_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;uuid-1&quot;</span><span class="p">,</span> <span class="s2">&quot;uuid-2&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;service_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
 
-Check agent status:
-GET /v1/agents?queue_id={queue-id}
-Verify agents have status: &quot;available&quot;
+<span class="n">Check</span> <span class="n">agent</span> <span class="n">status</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span>
+<span class="n">Verify</span> <span class="n">agents</span> <span class="n">have</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: No Available Agents</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">available_agents</span> <span class="ow">is</span> <span class="mi">0</span>
-<span class="o">-</span> <span class="n">waiting_calls</span> <span class="ow">is</span> <span class="n">increasing</span>
+<span class="o">-</span> <span class="n">service_queuecall_ids</span> <span class="ow">is</span> <span class="n">empty</span>
+<span class="o">-</span> <span class="n">wait_queuecall_ids</span> <span class="ow">is</span> <span class="n">growing</span>
 
 <span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">All</span> <span class="n">agents</span> <span class="ow">in</span> <span class="s2">&quot;busy&quot;</span> <span class="ow">or</span> <span class="s2">&quot;offline&quot;</span> <span class="n">status</span>
@@ -4878,23 +4911,23 @@ Verify agents have status: &quot;available&quot;
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
-  <span class="s2">&quot;timeout_action&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+  <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
+  <span class="s2">&quot;service_timeout&quot;</span><span class="p">:</span> <span class="mi">60000</span>
 <span class="p">}</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Increase</span> <span class="n">timeout</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">a</span> <span class="n">fallback</span> <span class="n">action</span><span class="p">:</span>
+<span class="n">Increase</span> <span class="n">wait_timeout</span> <span class="n">to</span> <span class="n">give</span> <span class="n">agents</span> <span class="n">more</span> <span class="n">time</span> <span class="n">to</span> <span class="n">answer</span><span class="p">:</span>
 <span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
-  <span class="s2">&quot;timeout_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;voicemail-flow-uuid&quot;</span>
+  <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
+  <span class="s2">&quot;wait_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;voicemail-flow-uuid&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">queue-id</span></code> is a UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>. The <code class="docutils literal notranslate"><span class="pre">timeout_flow_id</span></code> must reference a valid flow (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/agents/{agent-id}</span></code> with the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Common agent statuses are <code class="docutils literal notranslate"><span class="pre">available</span></code>, <code class="docutils literal notranslate"><span class="pre">busy</span></code>, <code class="docutils literal notranslate"><span class="pre">away</span></code>, and <code class="docutils literal notranslate"><span class="pre">offline</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">queue-id</span></code> is a UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/queues</span></code>. The <code class="docutils literal notranslate"><span class="pre">wait_flow_id</span></code> must reference a valid flow (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/flows</span></code>) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/agents/{agent-id}</span></code> with the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Common agent statuses are <code class="docutils literal notranslate"><span class="pre">available</span></code>, <code class="docutils literal notranslate"><span class="pre">busy</span></code>, <code class="docutils literal notranslate"><span class="pre">away</span></code>, and <code class="docutils literal notranslate"><span class="pre">offline</span></code>.</p>
 </div>
 </section>
 <section id="error-reference">
@@ -4949,7 +4982,7 @@ Verify agents have status: &quot;available&quot;
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the <code class="docutils literal notranslate"><span class="pre">x-request-id</span></code> response header when contacting support.</p>
+<p>For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code> to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the <code class="docutils literal notranslate"><span class="pre">x-request-id</span></code> response header when contacting support.</p>
 </div>
 </section>
 <section id="getting-help">
@@ -4995,6 +5028,7 @@ Verify agents have status: &quot;available&quot;
 <li><a class="reference internal" href="#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs VoIPBIN Call Concept</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
@@ -5041,7 +5075,7 @@ Verify agents have status: &quot;available&quot;
 <li><a class="reference internal" href="#get-call-list">Get call list</a></li>
 <li><a class="reference internal" href="#get-specific-call">Get specific call</a></li>
 <li><a class="reference internal" href="#make-a-groupcall">Make a groupcall</a></li>
-<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id5">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#internal-call-sequences">Internal Call Sequences</a><ul>

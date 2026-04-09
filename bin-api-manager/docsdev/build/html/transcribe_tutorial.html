@@ -250,18 +250,20 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;resource_type&quot;: &quot;call&quot;,
-        &quot;resource_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-        &quot;language&quot;: &quot;en-US&quot;
+        &quot;reference_type&quot;: &quot;call&quot;,
+        &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
     }&#39;
 
 {
     &quot;id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
     &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
-    &quot;resource_type&quot;: &quot;call&quot;,
-    &quot;resource_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;reference_type&quot;: &quot;call&quot;,
+    &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
     &quot;language&quot;: &quot;en-US&quot;,
-    &quot;status&quot;: &quot;active&quot;,
+    &quot;direction&quot;: &quot;both&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
     &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
     &quot;tm_update&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
@@ -272,9 +274,10 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;resource_type&quot;: &quot;conference&quot;,
-        &quot;resource_id&quot;: &quot;c1d2e3f4-a5b6-7890-cdef-123456789abc&quot;,
-        &quot;language&quot;: &quot;en-US&quot;
+        &quot;reference_type&quot;: &quot;confbridge&quot;,
+        &quot;reference_id&quot;: &quot;c1d2e3f4-a5b6-7890-cdef-123456789abc&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
     }&#39;
 </pre></div>
 </div>
@@ -282,9 +285,10 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;resource_type&quot;: &quot;recording&quot;,
-        &quot;resource_id&quot;: &quot;r1s2t3u4-v5w6-x789-yz01-234567890def&quot;,
-        &quot;language&quot;: &quot;en-US&quot;
+        &quot;reference_type&quot;: &quot;recording&quot;,
+        &quot;reference_id&quot;: &quot;r1s2t3u4-v5w6-x789-yz01-234567890def&quot;,
+        &quot;language&quot;: &quot;en-US&quot;,
+        &quot;direction&quot;: &quot;both&quot;
     }&#39;
 </pre></div>
 </div>
@@ -298,10 +302,11 @@
 {
     &quot;id&quot;: &quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;,
     &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
-    &quot;resource_type&quot;: &quot;call&quot;,
-    &quot;resource_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;reference_type&quot;: &quot;call&quot;,
+    &quot;reference_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
     &quot;language&quot;: &quot;en-US&quot;,
-    &quot;status&quot;: &quot;completed&quot;,
+    &quot;direction&quot;: &quot;both&quot;,
+    &quot;status&quot;: &quot;done&quot;,
     &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
     &quot;tm_update&quot;: &quot;2026-01-20 12:05:00.000000&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
@@ -652,7 +657,7 @@
 </pre></div>
 </div>
 <p><strong>2. Active Transcription:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: &quot;active&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: &quot;progressing&quot;
 → Transcripts being generated in real-time
 </pre></div>
 </div>
@@ -663,7 +668,7 @@ Via API: GET /v1.0/transcripts?transcribe_id=...
 </pre></div>
 </div>
 <p><strong>4. Completion:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: &quot;completed&quot;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Status: &quot;done&quot;
 → All transcripts available via API
 </pre></div>
 </div>

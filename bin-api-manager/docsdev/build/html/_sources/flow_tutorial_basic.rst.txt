@@ -28,6 +28,8 @@ Gets the list of registered flows.
         "result": [
             {
                 "id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "type": "flow",
                 "name": "default flow",
                 "detail": "default flow for voipbin incoming calls",
                 "actions": [
@@ -50,12 +52,15 @@ Gets the list of registered flows.
                         }
                     }
                 ],
-                "tm_create": "2020-10-11 01:00:00.000001",
-                "tm_update": "",
-                "tm_delete": ""
+                "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+                "tm_create": "2020-10-11T01:00:00Z",
+                "tm_update": null,
+                "tm_delete": null
             },
             {
                 "id": "af9dae94-ef07-11ea-a101-8f52e568f39b",
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+                "type": "flow",
                 "name": "test flow",
                 "detail": "manual flow test",
                 "actions": [
@@ -64,12 +69,13 @@ Gets the list of registered flows.
                         "type": "echo"
                     }
                 ],
-                "tm_create": "2020-09-04 23:53:14.496918",
-                "tm_update": "",
-                "tm_delete": ""
+                "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+                "tm_create": "2020-09-04T23:53:14Z",
+                "tm_update": null,
+                "tm_delete": null
             }
         ],
-        "next_page_token": "2020-09-04 23:53:14.496918"
+        "next_page_token": "2020-09-04T23:53:14Z"
     }
 
 
@@ -85,6 +91,8 @@ Gets the detail of registered flows.
 
     {
         "id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "type": "flow",
         "name": "default flow",
         "detail": "default flow for voipbin incoming calls",
         "actions": [
@@ -107,9 +115,10 @@ Gets the detail of registered flows.
                 }
             }
         ],
-        "tm_create": "2020-10-11 01:00:00.000001",
-        "tm_update": "",
-        "tm_delete": ""
+        "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+        "tm_create": "2020-10-11T01:00:00Z",
+        "tm_update": null,
+        "tm_delete": null
     }
 
 Create a flow
@@ -141,6 +150,8 @@ When the call is incoming, this flow will answer the call first, then speak the 
 
     {
         "id": "24013a0e-d15b-4b5e-9a96-04221a8c6a15",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "type": "flow",
         "name": "test flow",
         "detail": "test voipbin flow example",
         "actions": [
@@ -157,9 +168,10 @@ When the call is incoming, this flow will answer the call first, then speak the 
                 }
             }
         ],
-        "tm_create": "2021-02-04 06:47:01.139361",
-        "tm_update": "",
-        "tm_delete": ""
+        "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+        "tm_create": "2021-02-04T06:47:01Z",
+        "tm_update": null,
+        "tm_delete": null
     }
 
 Update the flow
@@ -207,6 +219,8 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
 
     {
         "id": "decc2634-0b2a-11eb-b38d-87a8f1051188",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "type": "flow",
         "name": "test flow update",
         "detail": "test voipbin flow example update",
         "actions": [
@@ -241,9 +255,10 @@ This doesn't affect existing calls. Flow changes will only affect new calls.
                 }
             }
         ],
-        "tm_create": "2020-10-11 01:00:00.000001",
-        "tm_update": "2021-02-05 13:08:56.113036",
-        "tm_delete": ""
+        "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+        "tm_create": "2020-10-11T01:00:00Z",
+        "tm_update": "2021-02-05T13:08:56Z",
+        "tm_delete": null
     }
 
 Delete the flow

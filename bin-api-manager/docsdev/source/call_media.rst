@@ -301,19 +301,20 @@ Dual-Tone Multi-Frequency (DTMF) for IVR input:
     | Less common                              |
     +------------------------------------------+
 
-**DTMF in API:**
+**DTMF in Flow Actions:**
 
 .. code::
 
-    Sending DTMF:
-    POST /v1/calls/{call-id}/dtmf
+    Sending DTMF (flow action):
     {
-        "digits": "1234#",
-        "duration": 250,      // ms per digit
-        "interval": 100       // ms between digits
+        "type": "digits_send",
+        "option": {
+            "digits": "1234#",
+            "duration": 250       // ms per digit
+        }
     }
 
-    Receiving DTMF (in flow):
+    Receiving DTMF (flow action):
     {
         "type": "digits_receive",
         "option": {
@@ -325,7 +326,7 @@ Dual-Tone Multi-Frequency (DTMF) for IVR input:
 
 .. note:: **AI Implementation Hint**
 
-   The ``call-id`` in ``POST /v1/calls/{call-id}/dtmf`` must be an active call in ``progressing`` status. Obtain it from ``GET /calls`` or from a webhook event. The ``digits`` field accepts ``0-9``, ``*``, and ``#``. The ``duration`` controls how long each tone plays (in milliseconds) and ``interval`` controls the pause between tones.
+   DTMF is handled via flow actions (``digits_send`` and ``digits_receive``), not via a direct API endpoint. Include these actions in the ``actions`` array when creating a call via ``POST /calls`` or in a flow via ``POST /flows``. The ``digits`` field accepts ``0-9``, ``*``, and ``#``. The ``duration`` controls how long each tone plays (in milliseconds). Use ``digits_receive`` to collect caller input for IVR menus.
 
 Recording Formats
 -----------------

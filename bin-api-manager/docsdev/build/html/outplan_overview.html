@@ -361,19 +361,19 @@
 <td><p>Wait between retries in milliseconds (7200000 = 2 hours)</p></td>
 </tr>
 <tr class="row-even"><td><p>max_try_count_0</p></td>
-<td><p>Max retries for result type 0 (machine/voicemail)</p></td>
+<td><p>Max retries for destination_0 on the outdialtarget</p></td>
 </tr>
 <tr class="row-odd"><td><p>max_try_count_1</p></td>
-<td><p>Max retries for result type 1 (busy)</p></td>
+<td><p>Max retries for destination_1 on the outdialtarget</p></td>
 </tr>
 <tr class="row-even"><td><p>max_try_count_2</p></td>
-<td><p>Max retries for result type 2 (no answer)</p></td>
+<td><p>Max retries for destination_2 on the outdialtarget</p></td>
 </tr>
 <tr class="row-odd"><td><p>max_try_count_3</p></td>
-<td><p>Max retries for result type 3 (failed/error)</p></td>
+<td><p>Max retries for destination_3 on the outdialtarget</p></td>
 </tr>
 <tr class="row-even"><td><p>max_try_count_4</p></td>
-<td><p>Max retries for result type 4 (other)</p></td>
+<td><p>Max retries for destination_4 on the outdialtarget</p></td>
 </tr>
 </tbody>
 </table>
@@ -387,13 +387,14 @@
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">45</span> <span class="n">seconds</span>                <span class="o">|</span>
 <span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">10</span> <span class="n">minutes</span>                <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count</span><span class="p">:</span>   <span class="mi">5</span> <span class="p">(</span><span class="nb">all</span> <span class="n">types</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_0</span><span class="p">:</span> <span class="mi">5</span> <span class="p">(</span><span class="n">destination_0</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">5</span> <span class="p">(</span><span class="n">destination_1</span><span class="p">)</span>         <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Timeline</span><span class="p">:</span>
 <span class="o">|--</span><span class="mi">0</span><span class="n">m</span><span class="o">--|--</span><span class="mi">10</span><span class="n">m</span><span class="o">--|--</span><span class="mi">20</span><span class="n">m</span><span class="o">--|--</span><span class="mi">30</span><span class="n">m</span><span class="o">--|--</span><span class="mi">40</span><span class="n">m</span><span class="o">--|</span>
    <span class="mi">1</span>      <span class="mi">2</span>       <span class="mi">3</span>       <span class="mi">4</span>       <span class="mi">5</span>
-<span class="p">(</span><span class="n">attempts</span><span class="p">)</span>
+<span class="p">(</span><span class="n">attempts</span> <span class="n">per</span> <span class="n">destination</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Standard Strategy (Sales)</strong></p>
@@ -402,8 +403,8 @@
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">30</span> <span class="n">seconds</span>                <span class="o">|</span>
 <span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">2</span> <span class="n">hours</span>                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count</span><span class="p">:</span>   <span class="mi">3</span> <span class="p">(</span><span class="n">no</span> <span class="n">answer</span><span class="o">/</span><span class="n">busy</span><span class="p">)</span>        <span class="o">|</span>
-<span class="o">|</span>                  <span class="mi">1</span> <span class="p">(</span><span class="n">machine</span><span class="p">)</span>               <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_0</span><span class="p">:</span> <span class="mi">3</span> <span class="p">(</span><span class="n">destination_0</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">destination_1</span><span class="p">)</span>         <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Timeline</span><span class="p">:</span>
@@ -418,7 +419,8 @@
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">25</span> <span class="n">seconds</span>                <span class="o">|</span>
 <span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">1</span> <span class="n">hour</span>                    <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count</span><span class="p">:</span>   <span class="mi">2</span> <span class="p">(</span><span class="nb">all</span> <span class="n">types</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_0</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">destination_0</span><span class="p">)</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">0</span> <span class="p">(</span><span class="n">skip</span> <span class="n">destination_1</span><span class="p">)</span>    <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Timeline</span><span class="p">:</span>
@@ -428,47 +430,29 @@
 </pre></div>
 </div>
 </section>
-<section id="result-based-retry-counts">
-<h2>Result-Based Retry Counts<a class="headerlink" href="#result-based-retry-counts" title="Link to this heading"></a></h2>
-<p>Configure different retry counts based on the outcome of each attempt.</p>
-<p><strong>Result Types</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
-<th class="head"><p>Result</p></th>
-<th class="head"><p>Typical Retry Strategy</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>0</p></td>
-<td><p>Machine/VM</p></td>
-<td><p>Low retries (1-2); person may not check voicemail</p></td>
-</tr>
-<tr class="row-odd"><td><p>1</p></td>
-<td><p>Busy</p></td>
-<td><p>Medium retries (2-3); likely to be free later</p></td>
-</tr>
-<tr class="row-even"><td><p>2</p></td>
-<td><p>No answer</p></td>
-<td><p>High retries (3-5); try different times</p></td>
-</tr>
-<tr class="row-odd"><td><p>3</p></td>
-<td><p>Failed/Error</p></td>
-<td><p>Low retries (0-1); may be invalid number</p></td>
-</tr>
-<tr class="row-even"><td><p>4</p></td>
-<td><p>Other</p></td>
-<td><p>Configurable based on use case</p></td>
-</tr>
-</tbody>
-</table>
+<section id="destination-based-retry-counts">
+<h2>Destination-Based Retry Counts<a class="headerlink" href="#destination-based-retry-counts" title="Link to this heading"></a></h2>
+<p>Each outdialtarget supports up to 5 destination addresses (<code class="docutils literal notranslate"><span class="pre">destination_0</span></code> through <code class="docutils literal notranslate"><span class="pre">destination_4</span></code>). The <code class="docutils literal notranslate"><span class="pre">max_try_count_0</span></code> through <code class="docutils literal notranslate"><span class="pre">max_try_count_4</span></code> fields on the outplan control how many times each destination index is attempted before moving to the next destination.</p>
+<p><strong>How Destination Fallback Works</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">destination_0</span> <span class="p">(</span><span class="o">+</span><span class="mi">15551234567</span><span class="p">)</span> <span class="o">--</span> <span class="n">max_try_count_0</span> <span class="n">attempts</span> <span class="n">exhausted</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">destination_1</span> <span class="p">(</span><span class="o">+</span><span class="mi">15559876543</span><span class="p">)</span> <span class="o">--</span> <span class="n">max_try_count_1</span> <span class="n">attempts</span> <span class="n">exhausted</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">destination_2</span> <span class="p">(</span><span class="n">sip</span><span class="p">:</span><span class="n">user</span><span class="nd">@pbx</span><span class="p">)</span>  <span class="o">--</span> <span class="n">max_try_count_2</span> <span class="n">attempts</span> <span class="n">exhausted</span>
+     <span class="o">|</span>
+     <span class="n">v</span>
+<span class="n">Target</span> <span class="n">marked</span> <span class="k">as</span> <span class="n">done</span> <span class="p">(</span><span class="nb">all</span> <span class="n">destinations</span> <span class="n">exhausted</span><span class="p">)</span>
+</pre></div>
+</div>
 <p><strong>Example Configuration</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;max_try_count_0&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Machine</span><span class="p">:</span> <span class="k">try</span> <span class="n">once</span> <span class="n">more</span>
-    <span class="s2">&quot;max_try_count_1&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Busy</span><span class="p">:</span> <span class="n">retry</span> <span class="mi">3</span> <span class="n">times</span>
-    <span class="s2">&quot;max_try_count_2&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>  <span class="o">//</span> <span class="n">No</span> <span class="n">answer</span><span class="p">:</span> <span class="n">retry</span> <span class="mi">4</span> <span class="n">times</span>
-    <span class="s2">&quot;max_try_count_3&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Failed</span><span class="p">:</span> <span class="n">don</span><span class="s1">&#39;t retry</span>
-    <span class="s2">&quot;max_try_count_4&quot;</span><span class="p">:</span> <span class="mi">1</span>   <span class="o">//</span> <span class="n">Other</span><span class="p">:</span> <span class="k">try</span> <span class="n">once</span> <span class="n">more</span>
+    <span class="s2">&quot;max_try_count_0&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Try</span> <span class="n">destination_0</span> <span class="n">up</span> <span class="n">to</span> <span class="mi">3</span> <span class="n">times</span>
+    <span class="s2">&quot;max_try_count_1&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Try</span> <span class="n">destination_1</span> <span class="n">up</span> <span class="n">to</span> <span class="mi">2</span> <span class="n">times</span>
+    <span class="s2">&quot;max_try_count_2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Try</span> <span class="n">destination_2</span> <span class="n">once</span>
+    <span class="s2">&quot;max_try_count_3&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>  <span class="o">//</span> <span class="n">Skip</span> <span class="n">destination_3</span>
+    <span class="s2">&quot;max_try_count_4&quot;</span><span class="p">:</span> <span class="mi">0</span>   <span class="o">//</span> <span class="n">Skip</span> <span class="n">destination_4</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -481,14 +465,14 @@
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">30</span> <span class="n">seconds</span>                <span class="o">|</span>
 <span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">4</span> <span class="n">hours</span>                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">3</span> <span class="p">(</span><span class="n">busy</span><span class="p">)</span>                  <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count_2</span><span class="p">:</span> <span class="mi">4</span> <span class="p">(</span><span class="n">no</span> <span class="n">answer</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_0</span><span class="p">:</span> <span class="mi">4</span> <span class="p">(</span><span class="n">primary</span> <span class="n">number</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">3</span> <span class="p">(</span><span class="n">secondary</span> <span class="n">number</span><span class="p">)</span>      <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Strategy</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">Long</span> <span class="n">intervals</span> <span class="n">to</span> <span class="k">try</span> <span class="n">morning</span><span class="p">,</span> <span class="n">midday</span><span class="p">,</span> <span class="n">afternoon</span>
-<span class="o">-</span> <span class="n">More</span> <span class="n">retries</span> <span class="k">for</span> <span class="n">no</span> <span class="n">answer</span> <span class="p">(</span><span class="n">might</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">meetings</span><span class="p">)</span>
-<span class="o">-</span> <span class="n">Fewer</span> <span class="n">retries</span> <span class="k">for</span> <span class="n">busy</span> <span class="p">(</span><span class="n">clearly</span> <span class="n">occupied</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">More</span> <span class="n">retries</span> <span class="k">for</span> <span class="n">primary</span> <span class="n">number</span>
+<span class="o">-</span> <span class="n">Fewer</span> <span class="n">retries</span> <span class="k">for</span> <span class="n">secondary</span> <span class="n">number</span>
 </pre></div>
 </div>
 <p><strong>Scenario 2: Appointment Confirmation</strong></p>
@@ -497,8 +481,8 @@
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">25</span> <span class="n">seconds</span>                <span class="o">|</span>
 <span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">2</span> <span class="n">hours</span>                   <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">busy</span><span class="p">)</span>                  <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count_2</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">no</span> <span class="n">answer</span><span class="p">)</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_0</span><span class="p">:</span> <span class="mi">2</span> <span class="p">(</span><span class="n">primary</span> <span class="n">number</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">1</span> <span class="p">(</span><span class="n">secondary</span> <span class="n">number</span><span class="p">)</span>      <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Strategy</span><span class="p">:</span>
@@ -513,16 +497,16 @@
 <span class="o">+--------------------------------------------+</span>
 <span class="o">|</span> <span class="n">dial_timeout</span><span class="p">:</span>    <span class="mi">45</span> <span class="n">seconds</span>                <span class="o">|</span>
 <span class="o">|</span> <span class="n">try_interval</span><span class="p">:</span>    <span class="mi">5</span> <span class="n">minutes</span>                 <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count_0</span><span class="p">:</span> <span class="mi">5</span> <span class="p">(</span><span class="nb">all</span> <span class="n">types</span><span class="p">)</span>             <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">5</span>                         <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count_2</span><span class="p">:</span> <span class="mi">5</span>                         <span class="o">|</span>
-<span class="o">|</span> <span class="n">max_try_count_3</span><span class="p">:</span> <span class="mi">3</span>                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_0</span><span class="p">:</span> <span class="mi">5</span> <span class="p">(</span><span class="n">primary</span> <span class="n">number</span><span class="p">)</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_1</span><span class="p">:</span> <span class="mi">5</span> <span class="p">(</span><span class="n">secondary</span> <span class="n">number</span><span class="p">)</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_2</span><span class="p">:</span> <span class="mi">5</span> <span class="p">(</span><span class="n">office</span> <span class="n">phone</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="n">max_try_count_3</span><span class="p">:</span> <span class="mi">3</span> <span class="p">(</span><span class="n">alternate</span><span class="p">)</span>             <span class="o">|</span>
 <span class="o">+--------------------------------------------+</span>
 
 <span class="n">Strategy</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">Long</span> <span class="n">timeout</span> <span class="p">(</span><span class="n">maximize</span> <span class="n">answer</span> <span class="n">chance</span><span class="p">)</span>
 <span class="o">-</span> <span class="n">Frequent</span> <span class="n">retries</span> <span class="p">(</span><span class="n">urgent</span> <span class="n">delivery</span><span class="p">)</span>
-<span class="o">-</span> <span class="n">Retry</span> <span class="n">even</span> <span class="n">failures</span> <span class="p">(</span><span class="n">might</span> <span class="n">be</span> <span class="n">temporary</span> <span class="n">issue</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">Multiple</span> <span class="n">destination</span> <span class="n">fallback</span> <span class="k">for</span> <span class="n">high</span> <span class="n">delivery</span>
 </pre></div>
 </div>
 </section>
@@ -545,7 +529,7 @@
 <p><strong>3. Max Try Counts</strong></p>
 <ul class="simple">
 <li><p>Balance persistence with respect for recipients</p></li>
-<li><p>Use result-based retry counts for efficiency</p></li>
+<li><p>Use per-destination retry counts for efficiency</p></li>
 <li><p>Higher counts for critical campaigns</p></li>
 <li><p>Lower counts for promotional calls</p></li>
 </ul>
@@ -578,8 +562,8 @@ fast</p></td>
 values are correct</p></td>
 </tr>
 <tr class="row-even"><td><p>Not enough retries</p></td>
-<td><p>Increase max_try_count values; check result
-type configuration</p></td>
+<td><p>Increase max_try_count values; check
+destination-specific configuration</p></td>
 </tr>
 </tbody>
 </table>
@@ -596,8 +580,8 @@ type configuration</p></td>
 exists and is active</p></td>
 </tr>
 <tr class="row-odd"><td><p>Wrong retry behavior</p></td>
-<td><p>Review result-type specific max_try_count
-values; check which result type is being set</p></td>
+<td><p>Review per-destination max_try_count values;
+check which destination index is being dialed</p></td>
 </tr>
 <tr class="row-even"><td><p>Values seem wrong</p></td>
 <td><p>Confirm millisecond format; 30 seconds =
@@ -630,7 +614,7 @@ values; check which result type is being set</p></td>
 <li><a class="reference internal" href="#outplan-configuration">Outplan Configuration</a></li>
 <li><a class="reference internal" href="#creating-an-outplan">Creating an Outplan</a></li>
 <li><a class="reference internal" href="#outplan-strategies">Outplan Strategies</a></li>
-<li><a class="reference internal" href="#result-based-retry-counts">Result-Based Retry Counts</a></li>
+<li><a class="reference internal" href="#destination-based-retry-counts">Destination-Based Retry Counts</a></li>
 <li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>

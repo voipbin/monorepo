@@ -13,7 +13,7 @@ A **RAG** (Retrieval-Augmented Generation) is a knowledge base that lets your AI
 
 .. note:: **AI Implementation Hint**
 
-   A RAG is a configuration resource, not a runtime entity. You create a RAG via ``POST /rags`` with ``storage_file_ids`` and/or ``source_urls`` to provide initial documents. You can add more sources later via ``POST /rags/{id}/sources``. Then reference the RAG's ``id`` in an AI configuration (``rag_id`` field on ``POST /ais`` or ``PUT /ais/{id}``). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.
+   A RAG is a configuration resource, not a runtime entity. You create a RAG via ``POST https://api.voipbin.net/v1.0/rags`` with ``storage_file_ids`` and/or ``source_urls`` to provide initial documents. You can add more sources later via ``POST https://api.voipbin.net/v1.0/rags/{id}/sources``. Then reference the RAG's ``id`` in an AI configuration (``rag_id`` field on ``POST https://api.voipbin.net/v1.0/ais`` or ``PUT https://api.voipbin.net/v1.0/ais/{id}``). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.
 
 How it works
 ============
@@ -118,7 +118,7 @@ Documents progress through a status lifecycle during processing:
 
 .. note:: **AI Implementation Hint**
 
-   After adding sources via ``POST /rags`` or ``POST /rags/{id}/sources``, poll ``GET /rags/{id}`` to check the RAG's ``status`` field. Each entry in the ``sources`` array shows per-document ``status`` and ``status_message``. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with ``status: ready`` contribute to RAG query results.
+   After adding sources via ``POST https://api.voipbin.net/v1.0/rags`` or ``POST https://api.voipbin.net/v1.0/rags/{id}/sources``, poll ``GET https://api.voipbin.net/v1.0/rags/{id}`` to check the RAG's ``status`` field. Each entry in the ``sources`` array shows per-document ``status`` and ``status_message``. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with ``status: ready`` contribute to RAG query results.
 
 Use Cases
 =========
@@ -127,6 +127,30 @@ Use Cases
 * **Product documentation** — Add product manuals, API docs, and feature guides. The AI answers customer questions with accurate, up-to-date product information.
 * **Internal training** — Build knowledge bases from training materials, SOPs, and policy documents for AI-assisted employee onboarding calls.
 * **Sales enablement** — Upload pricing sheets, competitive analysis, and product comparisons. The AI assists sales agents with accurate data during prospect calls.
+
+Troubleshooting
+===============
+
+* **400 Bad Request on ``POST https://api.voipbin.net/v1.0/rags``:**
+    * **Cause:** Missing required ``name`` field in the request body.
+    * **Fix:** Ensure the request body includes at least the ``name`` field. ``storage_file_ids`` and ``source_urls`` are optional.
+
+* **Document stuck in ``processing`` status:**
+    * **Cause:** The document is large or the processing pipeline is under load.
+    * **Fix:** Poll ``GET https://api.voipbin.net/v1.0/rags/{id}`` and check the ``sources`` array. Processing can take seconds to minutes. If ``status`` remains ``processing`` for more than 10 minutes, the pipeline may have failed silently.
+
+* **Document in ``error`` status:**
+    * **Cause:** The source URL is unreachable, the uploaded file format is unsupported, or the file is corrupted.
+    * **Fix:** Check the ``status_message`` field in the source entry for the specific error. Re-upload or provide a corrected URL via ``POST https://api.voipbin.net/v1.0/rags/{id}/sources``.
+
+* **AI does not use RAG knowledge during calls:**
+    * **Cause:** The RAG is not linked to the AI configuration, or all documents are still in ``pending``/``processing`` status.
+    * **Fix:** Verify the AI resource has ``rag_id`` set to your RAG's UUID via ``GET https://api.voipbin.net/v1.0/ais/{ai-id}``. Verify at least one source has ``status: ready`` via ``GET https://api.voipbin.net/v1.0/rags/{id}``.
+
+* **404 Not Found:**
+    * **Cause:** The RAG UUID does not exist or belongs to a different customer.
+    * **Fix:** Verify the UUID was obtained from ``GET https://api.voipbin.net/v1.0/rags`` or ``POST https://api.voipbin.net/v1.0/rags``.
+
 
 Related Documentation
 =====================

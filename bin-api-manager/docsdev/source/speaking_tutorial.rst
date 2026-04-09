@@ -8,7 +8,7 @@ Prerequisites
 
 Before using the Speaking API, you need:
 
-* An authentication token. Obtain one via ``POST /login`` or use your access key via ``?accesskey=<your-accesskey>``.
+* An authentication token. Obtain one via ``POST /auth/login`` or use your access key via ``?accesskey=<your-accesskey>``.
 * An active call in ``progressing`` status. Create one via ``POST /calls`` and poll ``GET /calls/{id}`` until answered. Or an active conference via ``POST /conferences``.
 * A language code in BCP47 format (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
 * (Optional) A provider-specific voice ID. Defaults to the provider's default voice if omitted.

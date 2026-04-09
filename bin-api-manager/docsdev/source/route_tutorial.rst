@@ -30,6 +30,8 @@ Example
             {
                 "id": "491b6858-5357-11ed-b753-8fd49cd36340",
                 "customer_id": "00000000-0000-0000-0000-000000000001",
+                "name": "",
+                "detail": "",
                 "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
                 "priority": 1,
                 "target": "all",
@@ -53,6 +55,8 @@ Example
     {
         "id": "dccfd81b-5f11-4c49-8e3f-70730ef1a4d3",
         "customer_id": "00000000-0000-0000-0000-000000000001",
+        "name": "",
+        "detail": "",
         "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
         "priority": 1,
         "target": "+82",
@@ -80,6 +84,8 @@ Example
     {
         "id": "b972b61c-59d2-4217-8fbb-a32304be5c3b",
         "customer_id": "00000000-0000-0000-0000-000000000001",
+        "name": "",
+        "detail": "",
         "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
         "priority": 1,
         "target": "+82",
@@ -108,6 +114,8 @@ Example
     {
         "id": "b972b61c-59d2-4217-8fbb-a32304be5c3b",
         "customer_id": "00000000-0000-0000-0000-000000000001",
+        "name": "",
+        "detail": "",
         "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
         "priority": 2,
         "target": "+82",
@@ -129,6 +137,8 @@ Example
     {
         "id": "b972b61c-59d2-4217-8fbb-a32304be5c3b",
         "customer_id": "00000000-0000-0000-0000-000000000001",
+        "name": "",
+        "detail": "",
         "provider_id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
         "priority": 1,
         "target": "+82",

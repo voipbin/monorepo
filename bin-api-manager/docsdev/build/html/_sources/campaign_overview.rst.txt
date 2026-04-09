@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** High -- Campaigns coordinate multiple resources (outdials, outplans, queues, flows). Set up all dependencies before creating a campaign.
    * **Cost:** Chargeable. Running a campaign makes outbound calls/messages, each of which incurs per-minute or per-message charges.
-   * **Async:** Yes. ``POST /campaigns`` creates the campaign in ``stop`` status. Set ``status`` to ``running`` via ``PUT /campaigns/{id}`` to start dialing. Poll ``GET /campaigns/{id}`` to monitor campaign state and progress.
+   * **Async:** Yes. ``POST /campaigns`` creates the campaign in ``stop`` status. Set ``status`` to ``run`` via ``PUT /campaigns/{id}/status`` to start dialing. Poll ``GET /campaigns/{id}`` to monitor campaign state and progress.
 
 VoIPBIN's Campaign API provides a comprehensive platform for managing large-scale outbound communication campaigns. Whether you need to make thousands of calls, send bulk SMS, or deliver email notifications, the Campaign API orchestrates the entire process with intelligent dialing strategies and automatic retry handling.
 
@@ -81,16 +81,16 @@ Campaigns progress through predictable states.
     |    stop    |<-----------------+
     +-----+------+                  |
           |                         |
-          | start                   | stop
+          | start (set to "run")    | stopping -> stop
           v                         |
     +------------+                  |
-    |   running  |------------------+
+    |    run     |------------------+
     +-----+------+
           |
-          | all targets completed
+          | stop requested
           v
     +------------+
-    |  finished  |
+    |  stopping  |
     +------------+
 
 **State Descriptions**
@@ -100,9 +100,9 @@ Campaigns progress through predictable states.
 +=============+==================================================================+
 | stop        | Campaign created but not active; no dialing occurring            |
 +-------------+------------------------------------------------------------------+
-| running     | Campaign actively dialing targets based on outplan               |
+| run         | Campaign actively dialing targets based on outplan               |
 +-------------+------------------------------------------------------------------+
-| finished    | All targets attempted; campaign completed                        |
+| stopping    | Campaign is preparing to stop; in-progress calls finishing up    |
 +-------------+------------------------------------------------------------------+
 
 
@@ -200,10 +200,10 @@ Create a campaign by defining its components.
 
 .. code::
 
-    $ curl -X PUT 'https://api.voipbin.net/v1.0/campaigns/<campaign-id>?token=<token>' \
+    $ curl -X PUT 'https://api.voipbin.net/v1.0/campaigns/<campaign-id>/status?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "status": "running"
+            "status": "run"
         }'
 
 
@@ -216,9 +216,7 @@ VoIPBIN supports different campaign types for various communication needs.
 +============+==================================================================+
 | call       | Voice calls to phone numbers, with optional agent connection     |
 +------------+------------------------------------------------------------------+
-| message    | SMS/MMS messages to mobile numbers                               |
-+------------+------------------------------------------------------------------+
-| email      | Email campaigns to addresses                                     |
+| flow       | Execute a flow with the destination (IVR, AI, automations)       |
 +------------+------------------------------------------------------------------+
 
 **Call Campaign Flow**
@@ -349,7 +347,7 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 | Symptom                   | Solution                                       |
 +===========================+================================================+
-| Campaign not dialing      | Check status is "running"; verify outdial has  |
+| Campaign not dialing      | Check status is "run"; verify outdial has      |
 |                           | targets; check outplan timing settings         |
 +---------------------------+------------------------------------------------+
 | Low answer rate           | Review calling times; check source number      |

@@ -200,7 +200,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Sending messages incurs charges per message segment. All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. The <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">destinations</span></code> fields use the <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> format with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">tel</span></code>.</p>
+<p>Sending messages incurs charges per message segment. All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. The <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">destinations</span></code> fields use the <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a> format with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">tel</span></code>. Target delivery statuses follow this lifecycle: <code class="docutils literal notranslate"><span class="pre">queued</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">sent</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">delivered</span></code>. Failures may produce <code class="docutils literal notranslate"><span class="pre">gw_timeout</span></code>, <code class="docutils literal notranslate"><span class="pre">dlr_timeout</span></code>, or <code class="docutils literal notranslate"><span class="pre">failed</span></code>. Inbound messages arrive with status <code class="docutils literal notranslate"><span class="pre">received</span></code>.</p>
 </div>
 <section id="send-a-message">
 <h3>Send a message<a class="headerlink" href="#send-a-message" title="Link to this heading"></a></h3>
@@ -230,6 +230,7 @@
 &quot;result&quot;: [
     {
         &quot;id&quot;: &quot;a5d2114a-8e84-48cd-8bb2-c406eeb08cd1&quot;,
+        &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
         &quot;type&quot;: &quot;sms&quot;,
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
@@ -249,7 +250,7 @@
                 },
                 &quot;status&quot;: &quot;sent&quot;,
                 &quot;parts&quot;: 1,
-                &quot;tm_update&quot;: &quot;2022-03-13 15:11:06.497184184&quot;
+                &quot;tm_update&quot;: &quot;2022-03-13 15:11:06.497184&quot;
             }
         ],
         &quot;text&quot;: &quot;Hello, this is test message.&quot;,

@@ -201,7 +201,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Medium</p></li>
 <li><p><strong>Cost:</strong> Free. Extensions are internal routing endpoints with no per-unit charges.</p></li>
-<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/extensions</span></code> returns immediately with the created extension. SIP device registration is a separate process handled by the SIP device itself.</p></li>
+<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/extensions</span></code> returns immediately with the created extension. SIP device registration is a separate process handled by the SIP device itself.</p></li>
 </ul>
 </div>
 <p>VoIPBIN’s Extension API enables management of SIP endpoints that can register with VoIPBIN to receive inbound calls. Extensions provide the bridge between VoIPBIN’s cloud infrastructure and your SIP devices, softphones, or PBX systems.</p>
@@ -703,7 +703,7 @@ extensions for each device</p></td>
 <p>Before working with extensions, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
-<li><p>A domain ID (UUID) for creating extensions. Obtained from your account’s domain configuration.</p></li>
+<li><p>An extension number (string) and password for the new SIP device.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -712,19 +712,21 @@ extensions for each device</p></td>
 </div>
 <section id="get-list-of-extensions">
 <h3>Get list of extensions<a class="headerlink" href="#get-list-of-extensions" title="Link to this heading"></a></h3>
-<p>Gets the list of registered extensions of the given domain.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;domain_id=cc6a05eb-33a4-444b-bf8a-359de7d95499&#39;
+<p>Gets the list of registered extensions for your account.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;0e7f8158-c770-4930-a98e-f2165b189c1f&quot;,
-            &quot;user_id&quot;: 1,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
             &quot;name&quot;: &quot;test domain&quot;,
             &quot;detail&quot;: &quot;test domain creation&quot;,
-            &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
             &quot;extension&quot;: &quot;test11&quot;,
+            &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+            &quot;username&quot;: &quot;test11&quot;,
             &quot;password&quot;: &quot;bad79bd2-71e6-11eb-9577-c756bf092a88&quot;,
+            &quot;direct_hash&quot;: &quot;&quot;,
             &quot;tm_create&quot;: &quot;2021-02-18 12:42:27.688282&quot;,
             &quot;tm_update&quot;: &quot;&quot;,
             &quot;tm_delete&quot;: &quot;&quot;
@@ -742,12 +744,14 @@ extensions for each device</p></td>
 
 {
     &quot;id&quot;: &quot;0e7f8158-c770-4930-a98e-f2165b189c1f&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;test domain&quot;,
     &quot;detail&quot;: &quot;test domain creation&quot;,
-    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test11&quot;,
+    &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+    &quot;username&quot;: &quot;test11&quot;,
     &quot;password&quot;: &quot;bad79bd2-71e6-11eb-9577-c756bf092a88&quot;,
+    &quot;direct_hash&quot;: &quot;&quot;,
     &quot;tm_create&quot;: &quot;2021-02-18 12:42:27.688282&quot;,
     &quot;tm_update&quot;: &quot;&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
@@ -763,20 +767,20 @@ extensions for each device</p></td>
 --data-raw &#39;{
     &quot;name&quot;: &quot;test domain&quot;,
     &quot;detail&quot;: &quot;test domain creation&quot;,
-    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
-
     &quot;extension&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;27a4d0f2-757c-11eb-bc8f-4f045857b89c&quot;
 }&#39;
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;test domain&quot;,
     &quot;detail&quot;: &quot;test domain creation&quot;,
-    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
+    &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;27a4d0f2-757c-11eb-bc8f-4f045857b89c&quot;,
+    &quot;direct_hash&quot;: &quot;&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
     &quot;tm_update&quot;: &quot;&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
@@ -797,12 +801,14 @@ extensions for each device</p></td>
 
 {
     &quot;id&quot;: &quot;6a7934ff-0e1c-4857-857b-23c9e27d267b&quot;,
-    &quot;user_id&quot;: 1,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
-    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
+    &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
+    &quot;direct_hash&quot;: &quot;&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,
     &quot;tm_update&quot;: &quot;2021-02-23 02:11:03.992067&quot;,
     &quot;tm_delete&quot;: &quot;&quot;
@@ -820,8 +826,9 @@ extensions for each device</p></td>
     &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;name&quot;: &quot;update test extension name&quot;,
     &quot;detail&quot;: &quot;update test extension detail&quot;,
-    &quot;domain_id&quot;: &quot;cc6a05eb-33a4-444b-bf8a-359de7d95499&quot;,
     &quot;extension&quot;: &quot;test12&quot;,
+    &quot;domain_name&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b.registrar.voipbin.net&quot;,
+    &quot;username&quot;: &quot;test12&quot;,
     &quot;password&quot;: &quot;5316382a-757c-11eb-9348-bb32547e99c4&quot;,
     &quot;direct_hash&quot;: &quot;f7e8d9c0b1a2&quot;,
     &quot;tm_create&quot;: &quot;2021-02-23 02:09:39.701458&quot;,

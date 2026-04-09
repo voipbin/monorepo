@@ -16,7 +16,7 @@ Before working with campaigns, you need:
 
 .. note:: **AI Implementation Hint**
 
-   Campaigns are created in ``stop`` status. You must explicitly set the status to ``running`` via ``PUT /campaigns/{id}`` to start dialing. Running a campaign incurs charges for each outbound call or message made. Always verify your outdial targets and outplan settings before starting.
+   Campaigns are created in ``stop`` status. You must explicitly set the status to ``run`` via ``PUT /campaigns/{id}/status`` with ``{"status": "run"}`` to start dialing. Valid status values are ``stop``, ``run``, and ``stopping``. Valid campaign types are ``call`` and ``flow``. Running a campaign incurs charges for each outbound call made. Always verify your outdial targets and outplan settings before starting.
 
 Get list of campaigns
 ---------------------
@@ -32,6 +32,7 @@ Example
         "result": [
             {
                 "id": "183c0d5c-691e-42f3-af2b-9bffc2740f83",
+                "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
                 "type": "call",
                 "name": "test campaign",
                 "detail": "test campaign detail",
@@ -74,6 +75,7 @@ Example
 
     {
         "id": "183c0d5c-691e-42f3-af2b-9bffc2740f83",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
         "type": "call",
         "name": "test campaign",
         "detail": "test campaign detail",
@@ -132,15 +134,26 @@ Example
 
     {
         "id": "c1d2e3f4-a5b6-7890-cdef-123456789012",
+        "customer_id": "7a1b2c3d-4e5f-6789-abcd-ef0123456789",
+        "type": "call",
         "name": "test campaign",
         "detail": "test campaign detail",
-        "type": "call",
         "status": "stop",
         "service_level": 100,
         "end_handle": "stop",
+        "actions": [
+            {
+                "type": "talk",
+                "option": {
+                    "text": "Hello. This is outbound campaign's test calling. Please wait until the agent answer the call. Thank you.",
+                    "language": "en-US"
+                }
+            }
+        ],
         "outplan_id": "d5fb7357-7ddb-4f2d-87b5-8ccbfd6c039e",
         "outdial_id": "40bea034-1d17-474d-a5de-da00d0861c69",
         "queue_id": "99bf739a-932f-433c-b1bf-103d33d7e9bb",
+        "next_campaign_id": "00000000-0000-0000-0000-000000000000",
         "tm_create": "2022-10-22 16:16:16.874761",
         "tm_update": "9999-01-01 00:00:00.000000",
         "tm_delete": "9999-01-01 00:00:00.000000"

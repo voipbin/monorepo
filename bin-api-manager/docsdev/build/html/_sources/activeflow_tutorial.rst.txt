@@ -32,6 +32,8 @@ Getting a list of activeflows.
                 "status": "ended",
                 "reference_type": "call",
                 "reference_id": "fd581a20-2606-47fd-a7e8-6bba7c294170",
+                "reference_activeflow_id": "00000000-0000-0000-0000-000000000000",
+                "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
                 "current_action": {
                     "id": "93ebcadb-ecae-4291-8d49-ca81a926b8b3",
                     "next_id": "00000000-0000-0000-0000-000000000000",
@@ -42,13 +44,14 @@ Getting a list of activeflows.
                     }
                 },
                 "forward_action_id": "00000000-0000-0000-0000-000000000000",
-                "tm_create": "2023-04-06 14:53:12.569073",
-                "tm_update": "2023-04-06 14:54:24.652558",
-                "tm_delete": "9999-01-01 00:00:00.000000"
+                "executed_actions": [],
+                "tm_create": "2023-04-06T14:53:12Z",
+                "tm_update": "2023-04-06T14:54:24Z",
+                "tm_delete": null
             },
             ...
         ],
-        "next_page_token": "2023-04-02 13:43:30.576077"
+        "next_page_token": "2023-04-02T13:43:30Z"
     }
 
 Stop activeflow
@@ -66,6 +69,8 @@ Stop the activeflow.
         "status": "ended",
         "reference_type": "call",
         "reference_id": "cd40b5f5-dafc-43e6-9b70-38edc1155a0f",
+        "reference_activeflow_id": "00000000-0000-0000-0000-000000000000",
+        "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
         "current_action": {
             "id": "f9720d64-a8a8-11ed-8853-3f29a447aac1",
             "next_id": "00000000-0000-0000-0000-000000000000",
@@ -77,9 +82,10 @@ Stop the activeflow.
             }
         },
         "forward_action_id": "00000000-0000-0000-0000-000000000000",
-        "tm_create": "2023-04-07 17:23:33.665475",
-        "tm_update": "2023-04-07 17:23:52.561527",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "executed_actions": [],
+        "tm_create": "2023-04-07T17:23:33Z",
+        "tm_update": "2023-04-07T17:23:52Z",
+        "tm_delete": null
     }
 
 

@@ -190,7 +190,7 @@
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
     <section id="customer">
-<span id="cusotomer-main"></span><h1>Customer<a class="headerlink" href="#customer" title="Link to this heading"></a></h1>
+<span id="customer-main"></span><h1>Customer<a class="headerlink" href="#customer" title="Link to this heading"></a></h1>
 <p>A customer represents an account on the VoIPBIN platform, containing billing details, permissions, and configuration for all owned resources.</p>
 <p><strong>API Reference:</strong> <a class="reference external" href="https://api.voipbin.net/redoc/#tag/Customer">Customer endpoints</a></p>
 <section id="overview">
@@ -304,6 +304,11 @@ From <code class="docutils literal notranslate"><span class="pre">GET</span> <sp
 <td><p>(enum string) Account status: initial, active, frozen,
 deleted, expired</p></td>
 </tr>
+<tr class="row-odd"><td><p><a href="#id5"><span class="problematic" id="id6">identity_verification_</span></a>
+status</p></td>
+<td><p>(enum string) Identity verification state: none, pending,
+verified, rejected</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Timestamps</strong></p>
@@ -353,6 +358,7 @@ deleted, expired</p></td>
     <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;identity_verification_status&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_deletion_scheduled&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span><span class="p">,</span>
@@ -805,8 +811,13 @@ resource exists</p></td>
             &quot;webhook_method&quot;: &quot;POST&quot;,
             &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
             &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
+            &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;metadata&quot;: {
+                &quot;rtp_debug&quot;: false
+            },
             &quot;email_verified&quot;: true,
             &quot;status&quot;: &quot;active&quot;,
+            &quot;identity_verification_status&quot;: &quot;verified&quot;,
             &quot;tm_deletion_scheduled&quot;: null,
             &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
             &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
@@ -834,8 +845,12 @@ resource exists</p></td>
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
     &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: false
+    },
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;active&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
     &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
     &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
@@ -870,8 +885,10 @@ resource exists</p></td>
     &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;metadata&quot;: {},
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;initial&quot;,
+    &quot;identity_verification_status&quot;: &quot;none&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
     &quot;tm_create&quot;: &quot;2024-03-10T15:57:08Z&quot;,
     &quot;tm_update&quot;: &quot;2024-03-10T15:57:08Z&quot;,
@@ -901,8 +918,10 @@ resource exists</p></td>
     &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;metadata&quot;: {},
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;deleted&quot;,
+    &quot;identity_verification_status&quot;: &quot;none&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
     &quot;tm_create&quot;: &quot;2024-03-10T15:57:08Z&quot;,
     &quot;tm_update&quot;: &quot;2024-03-10T15:57:08Z&quot;,
@@ -942,6 +961,7 @@ resource exists</p></td>
     },
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;active&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
     &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
     &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
@@ -981,6 +1001,7 @@ resource exists</p></td>
     },
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;active&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
     &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
     &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
@@ -1011,8 +1032,12 @@ resource exists</p></td>
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
     &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: false
+    },
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;frozen&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
     &quot;tm_deletion_scheduled&quot;: &quot;2024-07-20T14:22:35Z&quot;,
     &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
     &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
@@ -1045,8 +1070,10 @@ resource exists</p></td>
     &quot;webhook_uri&quot;: &quot;&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;metadata&quot;: {},
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;deleted&quot;,
+    &quot;identity_verification_status&quot;: &quot;none&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
     &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
     &quot;tm_update&quot;: &quot;2024-06-20T14:25:00Z&quot;,
@@ -1078,8 +1105,12 @@ resource exists</p></td>
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
     &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
+    &quot;metadata&quot;: {
+        &quot;rtp_debug&quot;: false
+    },
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;active&quot;,
+    &quot;identity_verification_status&quot;: &quot;verified&quot;,
     &quot;tm_deletion_scheduled&quot;: null,
     &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
     &quot;tm_update&quot;: &quot;2024-06-20T14:30:00Z&quot;,

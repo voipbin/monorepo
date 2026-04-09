@@ -305,6 +305,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="accesskey.html#authentication">Authentication</a></li>
 <li class="toctree-l3"><a class="reference internal" href="accesskey.html#lifecycles-and-expiry">Lifecycles and Expiry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="accesskey.html#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l3"><a class="reference internal" href="accesskey.html#notes">Notes</a></li>
 </ul>
 </li>
@@ -697,6 +698,7 @@
 <li class="toctree-l3"><a class="reference internal" href="flow.html#on-complete-flow">On Complete Flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#error-handling">Error Handling</a></li>
 <li class="toctree-l3"><a class="reference internal" href="flow.html#common-use-cases">Common Use Cases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="flow.html#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="flow.html#activeflow-struct-activeflow">Activeflow</a><ul>
@@ -726,8 +728,10 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="variable.html#integration-with-applications">Integration with Applications</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variable.html#best-practices-and-considerations">Best Practices and Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable.html#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="variable.html#variable-variable">Variable</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="variable.html#activeflow">Activeflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="variable.html#flow">Flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="variable.html#call">Call</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="variable.html#source-address">Source address</a></li>
 <li class="toctree-l4"><a class="reference internal" href="variable.html#destination-address">Destination address</a></li>
@@ -774,6 +778,7 @@
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#webhook-event-types">Webhook Event Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#benefits-of-webhooks">Benefits of Webhooks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="webhook.html#webhook-struct-webhook">Webhook</a><ul>
@@ -843,10 +848,9 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="webhook.html#tutorial">Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="webhook.html#create-a-webhook">Create a Webhook</a></li>
-<li class="toctree-l3"><a class="reference internal" href="webhook.html#get-list-of-webhooks">Get List of Webhooks</a></li>
-<li class="toctree-l3"><a class="reference internal" href="webhook.html#update-a-webhook">Update a Webhook</a></li>
-<li class="toctree-l3"><a class="reference internal" href="webhook.html#delete-a-webhook">Delete a Webhook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#configure-webhook-endpoint">Configure Webhook Endpoint</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#verify-webhook-configuration">Verify Webhook Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="webhook.html#disable-webhooks">Disable Webhooks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#id15">Webhook Event Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#receiving-webhook-events">Receiving Webhook Events</a></li>
 <li class="toctree-l3"><a class="reference internal" href="webhook.html#testing-webhooks">Testing Webhooks</a></li>
@@ -935,6 +939,7 @@
 <li class="toctree-l4"><a class="reference internal" href="call.html#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs VoIPBIN Call Concept</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
@@ -981,7 +986,7 @@
 <li class="toctree-l3"><a class="reference internal" href="call.html#get-call-list">Get call list</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#get-specific-call">Get specific call</a></li>
 <li class="toctree-l3"><a class="reference internal" href="call.html#make-a-groupcall">Make a groupcall</a></li>
-<li class="toctree-l3"><a class="reference internal" href="call.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="call.html#id5">Troubleshooting</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="call.html#internal-call-sequences">Internal Call Sequences</a><ul>
@@ -1074,24 +1079,20 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="conference.html#tutorial">Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="conference.html#install-channel-line">Install channel: line</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#get-list-of-conferences">Get list of conferences</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="conference.html#id6">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="conference.html#get-list-of-conferences">Get list of conferences</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#get-detail-of-conference">Get detail of conference</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="conference.html#id7">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="conference.html#get-detail-of-conference">Get detail of conference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="conference.html#create-a-new-conference">Create a new conference</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="conference.html#id8">Example</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="conference.html#create-a-new-conference">Create a new conference</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="conference.html#id9">Example</a></li>
-</ul>
-</li>
 <li class="toctree-l3"><a class="reference internal" href="conference.html#kick-the-conferencecall-from-the-conference">Kick the conferencecall from the conference</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="conference.html#id10">Example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="conference.html#id9">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="conference.html#regenerate-direct-conference-hash">Regenerate direct conference hash</a></li>
@@ -1349,8 +1350,12 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="email.html#tutorial">Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="email.html#get-list-of-emails">Get list of emails</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="email.html#send-an-email">Send an email</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="email.html#id4">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="email.html#get-list-of-emails">Get list of emails</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="email.html#id5">Example</a></li>
 </ul>
 </li>
 </ul>
@@ -1360,9 +1365,9 @@
 <li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="talk.html#overview">Overview</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="talk.html#how-talk-works">How Talk Works</a></li>
-<li class="toctree-l3"><a class="reference internal" href="talk.html#talk-types">Talk Types</a></li>
-<li class="toctree-l3"><a class="reference internal" href="talk.html#talk-lifecycle">Talk Lifecycle</a></li>
-<li class="toctree-l3"><a class="reference internal" href="talk.html#creating-and-managing-talks">Creating and Managing Talks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#chat-types">Chat Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#chat-lifecycle">Chat Lifecycle</a></li>
+<li class="toctree-l3"><a class="reference internal" href="talk.html#creating-and-managing-chats">Creating and Managing Chats</a></li>
 <li class="toctree-l3"><a class="reference internal" href="talk.html#sending-messages">Sending Messages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="talk.html#message-threading">Message Threading</a></li>
 <li class="toctree-l3"><a class="reference internal" href="talk.html#message-reactions">Message Reactions</a></li>
@@ -1419,7 +1424,7 @@
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#channel-types">Channel Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#conversation-lifecycle">Conversation Lifecycle</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#conversation-rooms">Conversation Rooms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="conversation.html#creating-conversations">Creating Conversations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#how-conversations-are-created">How Conversations Are Created</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#sending-messages">Sending Messages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#receiving-messages">Receiving Messages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#cross-channel-continuity">Cross-Channel Continuity</a></li>
@@ -1453,7 +1458,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="conversation.html#tutorial">Tutorial</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="conversation.html#setup-the-conversation">Setup the conversation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#get-list-of-conversations">Get list of conversations</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="conversation.html#id7">Example</a></li>
 </ul>
@@ -1628,6 +1632,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="rag.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag.html#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rag.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="rag.html#rag-struct-rag">RAG</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="rag.html#rag-struct-rag-rag">RAG</a><ul>
@@ -1646,7 +1651,7 @@
 <li class="toctree-l3"><a class="reference internal" href="rag.html#step-6-update-rag">Step 6: Update RAG</a></li>
 <li class="toctree-l3"><a class="reference internal" href="rag.html#step-7-delete-a-rag">Step 7: Delete a RAG</a></li>
 <li class="toctree-l3"><a class="reference internal" href="rag.html#best-practices">Best Practices</a></li>
-<li class="toctree-l3"><a class="reference internal" href="rag.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rag.html#id3">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
@@ -1661,6 +1666,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="team.html#runtime-behavior">Runtime Behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="team.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team.html#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="team.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="team.html#team-struct-team">Team</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="team.html#team-struct-team-team">Team</a><ul>
@@ -1680,7 +1686,7 @@
 <li class="toctree-l3"><a class="reference internal" href="team.html#step-6-delete-a-team">Step 6: Delete a Team</a></li>
 <li class="toctree-l3"><a class="reference internal" href="team.html#best-practices">Best Practices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="team.html#regenerate-direct-team-hash">Regenerate direct team hash</a></li>
-<li class="toctree-l3"><a class="reference internal" href="team.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="team.html#id3">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
@@ -1781,7 +1787,7 @@
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#outplan-configuration">Outplan Configuration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#creating-an-outplan">Creating an Outplan</a></li>
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#outplan-strategies">Outplan Strategies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="outplan.html#result-based-retry-counts">Result-Based Retry Counts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="outplan.html#destination-based-retry-counts">Destination-Based Retry Counts</a></li>
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#common-scenarios">Common Scenarios</a></li>
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#best-practices">Best Practices</a></li>
 <li class="toctree-l3"><a class="reference internal" href="outplan.html#troubleshooting">Troubleshooting</a></li>
@@ -1889,6 +1895,7 @@
 <li class="toctree-l3"><a class="reference internal" href="contact.html#external-crm-integration">External CRM Integration</a></li>
 <li class="toctree-l3"><a class="reference internal" href="contact.html#key-features-and-use-cases">Key Features and Use Cases</a></li>
 <li class="toctree-l3"><a class="reference internal" href="contact.html#best-practices">Best Practices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="contact.html#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l3"><a class="reference internal" href="contact.html#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
@@ -2377,12 +2384,14 @@
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#action">Action</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#activeflow">Activeflow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#agent">Agent</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#ai-voice-agent">AI Voice Agent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#branch">Branch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#call-leg">Call Leg</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#campaign">Campaign</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#conference">Conference</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#did-direct-inward-dialing">DID (Direct Inward Dialing)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#dtmf-dual-tone-multi-frequency">DTMF (Dual-Tone Multi-Frequency)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#email">Email</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#e-164">E.164</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#flow">Flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#flow-fork">Flow Fork</a></li>
@@ -2390,12 +2399,19 @@
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#ivr-interactive-voice-response">IVR (Interactive Voice Response)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#media-server">Media Server</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#pstn-public-switched-telephone-network">PSTN (Public Switched Telephone Network)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#rag-retrieval-augmented-generation">RAG (Retrieval-Augmented Generation)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#queue">Queue</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#rtp-real-time-transport-protocol">RTP (Real-time Transport Protocol)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#route">Route</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#sip-session-initiation-protocol">SIP (Session Initiation Protocol)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#sip-trunk">SIP Trunk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#speaking">Speaking</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#storage">Storage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#stt-speech-to-text">STT (Speech-to-Text)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#tts-text-to-speech">TTS (Text-to-Speech)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#talk">Talk</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#team">Team</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glossary.html#transcribe">Transcribe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#variable">Variable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#webhook">Webhook</a></li>
 <li class="toctree-l3"><a class="reference internal" href="glossary.html#webrtc-web-real-time-communication">WebRTC (Web Real-Time Communication)</a></li>

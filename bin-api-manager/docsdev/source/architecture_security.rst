@@ -131,6 +131,10 @@ VoIPBIN supports two authentication methods: JWT tokens and Access Keys.
       secret
     )
 
+.. note:: **AI Implementation Hint**
+
+   For server-to-server integrations, use Access Keys (``Authorization: AccessKey ak_xxxxx``) instead of JWT tokens. Access Keys do not expire on a short timer like JWT tokens (1 hour) and are better suited for automation. Create Access Keys via ``POST https://api.voipbin.net/v1.0/accesskeys``. For interactive user sessions (web/mobile apps), use JWT tokens obtained from ``POST https://api.voipbin.net/v1.0/auth/login``.
+
 **Access Key Authentication:**
 
 .. code::
@@ -386,7 +390,7 @@ Kubernetes secrets store sensitive data:
     | Keys:                                    |
     |   - deepgram_api_key                     |
     |   - openai_api_key                       |
-    |   - twilio_api_key                       |
+    |   - telnyx_api_key                       |
     +------------------------------------------+
 
     SSL Certificates:

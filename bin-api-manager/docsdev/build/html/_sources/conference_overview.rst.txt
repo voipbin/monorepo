@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Medium-High
    * **Cost:** Chargeable (credit deduction per conference minute per participant)
-   * **Async:** Yes. ``POST /conferences`` returns immediately with status ``starting``. Poll ``GET /conferences/{id}`` or subscribe via WebSocket to track conference status changes.
+   * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/conferences`` returns immediately with status ``starting``. Poll ``GET https://api.voipbin.net/v1.0/conferences/{id}`` or subscribe via WebSocket to track conference status changes.
 
 The Conference API is a powerful low-level API that empowers developers to create conference rooms capable of accommodating various forms of communication, including voice, video, and chat. At its core, the API revolves around the concept of conferences, which act as containers for communications exchanged between two or more users. These communications may represent single interactions or a complete history of all interactions between the participants.
 
@@ -73,7 +73,7 @@ Every conference moves through a predictable set of states.
     |                     Conference State Machine                            |
     +-------------------------------------------------------------------------+
 
-                    POST /v1/conferences
+                    POST /conferences
                            |
                            v
                     +------------+
@@ -247,7 +247,7 @@ Participants can leave naturally (hangup) or be removed via API.
 
 ::
 
-    DELETE /v1/conferencecalls/{participant-id}
+    DELETE https://api.voipbin.net/v1.0/conferencecalls/{participant-id}
                      |
                      v
     +----------------------------------------+
@@ -336,7 +336,7 @@ Conferences support recording all participant audio into a single file.
 
 ::
 
-    POST /v1/conferences/{id}/recording_start
+    POST https://api.voipbin.net/v1.0/conferences/{id}/recording_start
 
     +-------------------------------------------------------------------------+
     |                     Recording Active                                    |
@@ -364,7 +364,7 @@ Conferences support recording all participant audio into a single file.
 
 .. note:: **AI Implementation Hint**
 
-   Recording and transcription can only start when the conference status is ``progressing``. If you attempt ``POST /conferences/{id}/recording_start`` on a conference in ``starting`` or ``terminating`` status, the request will fail. Always poll ``GET /conferences/{id}`` and verify ``status`` is ``progressing`` before starting recording or transcription.
+   Recording and transcription can only start when the conference status is ``progressing``. If you attempt ``POST https://api.voipbin.net/v1.0/conferences/{id}/recording_start`` on a conference in ``starting`` or ``terminating`` status, the request will fail. Always poll ``GET https://api.voipbin.net/v1.0/conferences/{id}`` and verify ``status`` is ``progressing`` before starting recording or transcription.
 
 **Recording Rules**
 
@@ -378,7 +378,7 @@ Conferences support recording all participant audio into a single file.
 
 ::
 
-    POST /v1/conferences/{id}/recording_stop
+    POST https://api.voipbin.net/v1.0/conferences/{id}/recording_stop
 
     • Stops active recording
     • Clears recording_id field
@@ -393,7 +393,7 @@ Real-time transcription converts conference audio to text.
 
 ::
 
-    POST /v1/conferences/{id}/transcribe_start
+    POST https://api.voipbin.net/v1.0/conferences/{id}/transcribe_start
 
     +-------------------------------------------------------------------------+
     |                    Transcription Active                                 |
@@ -455,13 +455,13 @@ For complete conference documentation, you can run recording and transcription s
 ::
 
     1. Create conference
-       POST /v1.0/conferences
+       POST https://api.voipbin.net/v1.0/conferences
 
     2. Start recording
-       POST /v1.0/conferences/{id}/recording_start
+       POST https://api.voipbin.net/v1.0/conferences/{id}/recording_start
 
     3. Start transcription
-       POST /v1.0/conferences/{id}/transcribe_start
+       POST https://api.voipbin.net/v1.0/conferences/{id}/transcribe_start
        { "language": "en-US" }
 
     4. Participants join and talk
@@ -469,10 +469,10 @@ For complete conference documentation, you can run recording and transcription s
        → Transcripts stream to webhook
 
     5. Stop transcription
-       POST /v1.0/conferences/{id}/transcribe_stop
+       POST https://api.voipbin.net/v1.0/conferences/{id}/transcribe_stop
 
     6. Stop recording
-       POST /v1.0/conferences/{id}/recording_stop
+       POST https://api.voipbin.net/v1.0/conferences/{id}/recording_stop
 
     7. Result: Audio file + searchable text transcripts
 
@@ -581,7 +581,7 @@ Common Scenarios
 ::
 
     1. Create conference
-       POST /v1/conferences
+       POST https://api.voipbin.net/v1.0/conferences
        → Conference in "progressing" status
 
     2. Participants join through flow
@@ -595,7 +595,7 @@ Common Scenarios
     4. Users hang up one by one
 
     5. Delete conference when done
-       DELETE /v1/conferences/{id}
+       DELETE https://api.voipbin.net/v1.0/conferences/{id}
 
 **Scenario 2: Recorded Meeting**
 
@@ -603,10 +603,10 @@ Common Scenarios
 
     1. Create conference
     2. Start recording
-       POST /v1/conferences/{id}/recording_start
+       POST https://api.voipbin.net/v1.0/conferences/{id}/recording_start
     3. Participants join and talk
     4. Stop recording
-       POST /v1/conferences/{id}/recording_stop
+       POST https://api.voipbin.net/v1.0/conferences/{id}/recording_stop
     5. Recording file available for download
 
 **Scenario 3: Customer-Agent Connect**
@@ -614,7 +614,7 @@ Common Scenarios
 ::
 
     1. Create connect-type conference
-       POST /v1/conferences
+       POST https://api.voipbin.net/v1.0/conferences
        { "type": "connect" }
 
     2. Customer call joins

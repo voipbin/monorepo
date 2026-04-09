@@ -476,7 +476,7 @@ Connection Lifecycle
 
 .. code::
 
-    GET /v1.0/calls/<call-id>/media_stream?encapsulation=rtp&token=<token>
+    GET https://api.voipbin.net/v1.0/calls/<call-id>/media_stream?encapsulation=rtp&token=<token>
 
 **2. WebSocket Upgrade:**
 

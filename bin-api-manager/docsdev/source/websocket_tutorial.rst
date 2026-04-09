@@ -9,7 +9,7 @@ Prerequisites
 Before connecting to WebSocket, you need:
 
 * An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* Your customer ID (UUID). Obtained from your account or ``GET /customers``.
+* Your customer ID (UUID). Obtained from your account or ``GET https://api.voipbin.net/v1.0/customer``.
 * (Optional) Agent IDs (UUIDs) for agent-level subscriptions. Obtained from ``GET /agents``.
 * A WebSocket client library (e.g., ``websocket-client`` for Python, ``ws`` for Node.js, or the browser's native ``WebSocket`` API).
 

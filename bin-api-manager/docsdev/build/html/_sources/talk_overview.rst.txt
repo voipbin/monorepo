@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Free -- Talk messaging does not incur per-message charges.
-   * **Async:** No. ``POST /talks`` and ``POST /talks/{id}/messages`` return synchronously with the created resource. Real-time delivery to other participants is handled via WebSocket push events.
+   * **Async:** No. ``POST https://api.voipbin.net/v1.0/service_agents/talk_chats`` and ``POST https://api.voipbin.net/v1.0/service_agents/talk_messages`` return synchronously with the created resource. Real-time delivery to other participants is handled via WebSocket push events.
 
 VoIPBIN's Talk API provides a modern messaging platform for real-time communication between agents. With support for threading, reactions, and group conversations, Talk enables efficient team collaboration and internal communication.
 
@@ -52,11 +52,23 @@ Talk provides a real-time messaging system where agents communicate through conv
 - **Thread**: Messages grouped as replies to a parent message
 
 
-Talk Types
+Chat Types
 ----------
-VoIPBIN supports different talk types for various communication needs.
+VoIPBIN supports different chat types for various communication needs.
 
-**One-on-One Talk**
+**Chat Type Values**
+
++------------+------------------------------------------------------------------+
+| Type       | Description                                                      |
++============+==================================================================+
+| direct     | 1:1 Direct Message -- private between two users                  |
++------------+------------------------------------------------------------------+
+| group      | Group Direct Message -- private multi-user chat, invite-only     |
++------------+------------------------------------------------------------------+
+| talk       | Public Open Channel -- topic-based, searchable (e.g., #general)  |
++------------+------------------------------------------------------------------+
+
+**Direct Chat (1:1)**
 
 Private conversation between two agents.
 
@@ -77,7 +89,7 @@ Private conversation between two agents.
     |                         |
     +-------------------------+
 
-**Group Talk**
+**Group Chat**
 
 Multi-participant conversation for team discussions.
 
@@ -103,84 +115,92 @@ Multi-participant conversation for team discussions.
     +---------------------------------------+
 
 
-Talk Lifecycle
+Chat Lifecycle
 --------------
-Talks and participants move through predictable states.
-
-**Talk States**
-
-::
-
-    POST /talks
-          |
-          v
-    +------------+
-    |   active   |<-----------------+
-    +-----+------+                  |
-          |                         |
-          | close or               | reopen
-          | all leave              |
-          v                         |
-    +------------+                  |
-    |   closed   |------------------+
-    +------------+
-
-**Participant States**
-
-::
-
-    POST /talks/{id}/participants
-              |
-              v
-       +------------+
-       |   active   |
-       +-----+------+
-             |
-             | leave or removed
-             v
-       +------------+
-       |    left    |
-       +------------+
-
-
-Creating and Managing Talks
----------------------------
-Create talks and manage participants through the API.
-
-**Create a Talk**
-
-.. code::
-
-    $ curl -X POST 'https://api.voipbin.net/v1.0/talks?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "name": "Project Discussion",
-            "participant_ids": [
-                "agent-id-1",
-                "agent-id-2",
-                "agent-id-3"
-            ]
-        }'
+Chats are created and managed through the Talk API. Participants can be added and removed.
 
 .. note:: **AI Implementation Hint**
 
-   Talk uses the ``/service_agents/talk_chats`` endpoint (not ``/talks``) for agent-facing operations. The participant's ``owner_id`` must be a valid agent UUID obtained from ``GET /agents``. Only agents who are participants of a talk can send or view messages in that talk.
+   The Talk API uses ``/service_agents/talk_chats`` for chat management and ``/service_agents/talk_messages`` for messaging. The ``owner_id`` for participants must be a valid agent UUID obtained from ``GET https://api.voipbin.net/v1.0/agents``. Only agents who are participants of a chat can send or view messages.
+
+**Chat Flow**
+
+::
+
+    POST /service_agents/talk_chats
+              |
+              v
+       +------------+
+       |   Chat     |
+       |  created   |
+       +-----+------+
+             |
+             v
+      Add participants,
+      send messages,
+      manage threads
+
+**Participant Management**
+
+::
+
+    POST /service_agents/talk_chats/{id}/participants
+              |
+              v
+       +------------+
+       | Participant|
+       |   added    |
+       +-----+------+
+             |
+             | DELETE /service_agents/talk_chats/{id}/participants/{pid}
+             v
+       +------------+
+       | Participant|
+       |  removed   |
+       +------------+
+
+
+Creating and Managing Chats
+---------------------------
+Create chats and manage participants through the Talk API.
+
+**Create a Chat**
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats?token=<token>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "type": "group",
+            "name": "Project Discussion",
+            "participants": [
+                {
+                    "owner_type": "agent",
+                    "owner_id": "agent-uuid-1"
+                },
+                {
+                    "owner_type": "agent",
+                    "owner_id": "agent-uuid-2"
+                }
+            ]
+        }'
 
 **Add Participant**
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/talks/<talk-id>/participants?token=<token>' \
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_chats/<chat-id>/participants?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "agent_id": "agent-id-4"
+            "owner_type": "agent",
+            "owner_id": "agent-uuid-3"
         }'
 
 **Remove Participant**
 
 .. code::
 
-    $ curl -X DELETE 'https://api.voipbin.net/v1.0/talks/<talk-id>/participants/<participant-id>?token=<token>'
+    $ curl -X DELETE 'https://api.voipbin.net/v1.0/service_agents/talk_chats/<chat-id>/participants/<participant-id>?token=<token>'
 
 
 Sending Messages
@@ -191,23 +211,25 @@ Send messages within talks with support for threading and media.
 
 ::
 
-    Agent                       VoIPBIN                    Other Participants
-       |                           |                              |
-       | POST /talks/{id}/messages |                              |
-       +-------------------------->|                              |
-       |                           | Broadcast to participants    |
-       |                           +----------------------------->|
-       |  message_id               |                              |
-       |<--------------------------+                              |
-       |                           |                              |
+    Agent                                   VoIPBIN              Other Participants
+       |                                       |                        |
+       | POST /service_agents/talk_messages    |                        |
+       +-------------------------------------->|                        |
+       |                                       | Broadcast via WebSocket|
+       |                                       +----------------------->|
+       |  message_id                           |                        |
+       |<--------------------------------------+                        |
+       |                                       |                        |
 
 **Basic Message Example:**
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/talks/<talk-id>/messages?token=<token>' \
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
+            "chat_id": "<chat-id>",
+            "type": "normal",
             "text": "Hello team, let'\''s discuss the project status."
         }'
 
@@ -215,9 +237,11 @@ Send messages within talks with support for threading and media.
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/talks/<talk-id>/messages?token=<token>' \
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
+            "chat_id": "<chat-id>",
+            "type": "normal",
             "text": "I agree, we should prioritize the API work.",
             "parent_id": "parent-message-id"
         }'
@@ -226,15 +250,16 @@ Send messages within talks with support for threading and media.
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/talks/<talk-id>/messages?token=<token>' \
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
+            "chat_id": "<chat-id>",
+            "type": "normal",
             "text": "Here is the design document.",
             "medias": [
                 {
-                    "type": "application/pdf",
-                    "url": "https://storage.example.com/design-doc.pdf",
-                    "name": "design-document.pdf"
+                    "type": "file",
+                    "file_id": "<file-uuid>"
                 }
             ]
         }'
@@ -281,7 +306,7 @@ Add emoji reactions to messages for quick feedback.
 
 .. code::
 
-    $ curl -X POST 'https://api.voipbin.net/v1.0/messages/<message-id>/reactions?token=<token>' \
+    $ curl -X POST 'https://api.voipbin.net/v1.0/service_agents/talk_messages/<message-id>/reactions?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
             "emoji": "thumbsup"
@@ -402,13 +427,13 @@ Create a group talk for project collaboration.
 
 ::
 
-    1. Create talk with team members
-       POST /talks
-       { "name": "Q1 Project", "participant_ids": [...] }
+    1. Create chat with team members
+       POST /service_agents/talk_chats
+       { "type": "group", "name": "Q1 Project", "participants": [...] }
 
     2. Send updates as messages
-       POST /talks/{id}/messages
-       { "text": "Sprint 1 completed!" }
+       POST /service_agents/talk_messages
+       { "chat_id": "<chat-id>", "type": "normal", "text": "Sprint 1 completed!" }
 
     3. Team reacts and replies in threads
        - Reactions: 🎉 👍

@@ -21,7 +21,6 @@ Create a new tag
 
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/tags?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
-        --header 'Cookie: token=<YOUR_AUTH_TOKEN>' \
         --data-raw '{
             "name": "test tag",
             "detail": "test tag example"
@@ -29,6 +28,7 @@ Create a new tag
 
     {
         "id": "d7450dda-21e0-4611-b09a-8d771c50a5e6",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "name": "test tag",
         "detail": "test tag example",
         "tm_create": "2022-10-22 16:16:16.874761",

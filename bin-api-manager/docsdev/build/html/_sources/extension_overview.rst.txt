@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Medium
    * **Cost:** Free. Extensions are internal routing endpoints with no per-unit charges.
-   * **Async:** No. ``POST /extensions`` returns immediately with the created extension. SIP device registration is a separate process handled by the SIP device itself.
+   * **Async:** No. ``POST https://api.voipbin.net/v1.0/extensions`` returns immediately with the created extension. SIP device registration is a separate process handled by the SIP device itself.
 
 VoIPBIN's Extension API enables management of SIP endpoints that can register with VoIPBIN to receive inbound calls. Extensions provide the bridge between VoIPBIN's cloud infrastructure and your SIP devices, softphones, or PBX systems.
 

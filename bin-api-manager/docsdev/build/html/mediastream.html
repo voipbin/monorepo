@@ -201,7 +201,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> High</p></li>
 <li><p><strong>Cost:</strong> Free (no additional charge beyond the underlying call/conference costs)</p></li>
-<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}/media_stream</span></code> upgrades to a WebSocket connection for real-time bi-directional audio streaming. The connection remains open for the duration of the call. Uni-directional streaming via the <code class="docutils literal notranslate"><span class="pre">external_media_start</span></code> flow action is initiated by VoIPBIN connecting to your server.</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}/media_stream</span></code> upgrades to a WebSocket connection for real-time bi-directional audio streaming. The connection remains open for the duration of the call. Uni-directional streaming via the <code class="docutils literal notranslate"><span class="pre">external_media_start</span></code> flow action is initiated by VoIPBIN connecting to your server.</p></li>
 </ul>
 </div>
 <p>VoIPBIN’s Media Stream API provides direct access to call and conference audio via WebSocket connections. Instead of relying on SIP signaling for media control, you can stream audio bidirectionally with your applications for real-time processing, AI integration, custom IVR, and more.</p>
@@ -272,7 +272,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Media streaming requires the call or conference to be in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (answered). The <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}/media_stream</span></code> endpoint is a WebSocket upgrade, not a regular HTTP GET. Use a WebSocket client library, not a standard HTTP client. Audio must be sent as binary WebSocket frames in consistent 20ms chunks matching the selected encapsulation format.</p>
+<p>Media streaming requires the call or conference to be in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (answered). The <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}/media_stream</span></code> endpoint is a WebSocket upgrade, not a regular HTTP GET. Use a WebSocket client library, not a standard HTTP client. Audio must be sent as binary WebSocket frames in consistent 20ms chunks matching the selected encapsulation format.</p>
 </div>
 <p><strong>Bi-Directional Streaming</strong></p>
 <p>Your application both receives and sends audio through the same WebSocket connection.</p>
@@ -1152,7 +1152,7 @@ ws.on(&#39;close&#39;, function() {
 <section id="id3">
 <h3>Connection Lifecycle<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <p><strong>1. Establish Connection:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET /v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;token&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;token&gt;
 </pre></div>
 </div>
 <p><strong>2. WebSocket Upgrade:</strong></p>

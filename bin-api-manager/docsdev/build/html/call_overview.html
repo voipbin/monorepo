@@ -207,6 +207,11 @@
 <li><p>Create conference calls.</p></li>
 <li><p>Send text-to-speech messages in 50 languages with different voices and accents.</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>To create an outbound call, use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code> with a JSON body containing <code class="docutils literal notranslate"><span class="pre">source</span></code> (E.164 number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>), <code class="docutils literal notranslate"><span class="pre">destinations</span></code> (array of target addresses), and optionally <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>) to execute a flow when the call is answered. The endpoint returns immediately with status <code class="docutils literal notranslate"><span class="pre">dialing</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> or subscribe via WebSocket for real-time status updates. Each call deducts credits from the customer’s billing account per minute.</p>
+</div>
 <section id="protocol">
 <h2>Protocol<a class="headerlink" href="#protocol" title="Link to this heading"></a></h2>
 <p>VoIPBIN offers support for various call/video protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.</p>
@@ -829,6 +834,12 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 <p>In summary, while the traditional call concept adheres to a simple point-to-point model, the VoIPBIN call concept introduces a more flexible and multifaceted approach, accommodating diverse call scenarios and interactions.</p>
 </section>
 </section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Call Creation Issues</strong></p>
+<p><strong>Media Control Issues</strong></p>
+<p><strong>Call Chaining Issues</strong></p>
+</section>
 <section id="related-documentation">
 <h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
 <p>Calls integrate with many VoIPBIN features. Use these links for detailed information:</p>
@@ -917,6 +928,7 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 <li><a class="reference internal" href="#comparison-traditional-call-concept-vs-voipbin-call-concept">Comparison: Traditional Call Concept vs VoIPBIN Call Concept</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>

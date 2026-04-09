@@ -82,15 +82,9 @@ VoIPBIN supports multiple communication channels within a single conversation.
 +------------+------------------------------------------------------------------+
 | Channel    | Description                                                      |
 +============+==================================================================+
-| SMS        | Standard text messages to mobile phones                          |
+| message    | SMS/MMS text messages to mobile phones                           |
 +------------+------------------------------------------------------------------+
-| MMS        | Multimedia messages with images, videos, audio                   |
-+------------+------------------------------------------------------------------+
-| Email      | Email messages with attachments                                  |
-+------------+------------------------------------------------------------------+
-| Chat       | Real-time web/mobile chat                                        |
-+------------+------------------------------------------------------------------+
-| SNS        | Social networking services (WhatsApp, Facebook Messenger, etc.)  |
+| line       | LINE messaging platform                                          |
 +------------+------------------------------------------------------------------+
 
 **Channel Selection**
@@ -99,59 +93,55 @@ VoIPBIN supports multiple communication channels within a single conversation.
 
                       Which channel?
                             |
-          +-----------------+------------------+
-          |                 |                  |
-          v                 v                  v
-    +----------+      +----------+       +----------+
-    |   SMS    |      |  Email   |       |   Chat   |
-    +----+-----+      +----+-----+       +----+-----+
-         |                 |                  |
-         v                 v                  v
-    Short,            Formal,            Real-time,
-    immediate         detailed           interactive
-    (< 160 chars)     with attachments   presence-aware
+              +-------------+-------------+
+              |                           |
+              v                           v
+        +-----------+               +-----------+
+        |  message  |               |   line    |
+        | (SMS/MMS) |               | messaging |
+        +-----+-----+               +-----+-----+
+              |                           |
+              v                           v
+        Short,                      Real-time,
+        immediate                   interactive
+        (< 160 chars)               chat-based
 
 
 Conversation Lifecycle
 ----------------------
-Conversations move through predictable states.
+A conversation is created automatically when VoIPBIN receives an inbound message (SMS/MMS or LINE) or when a message is sent via the API. Conversations persist as long as they are not deleted.
 
-**Conversation States**
+**Conversation Message States**
+
+Messages within a conversation move through predictable states.
 
 ::
 
-    Message received/sent
+    Message sent/received
            |
            v
-    +------------+
-    |   active   |<-----------------+
-    +-----+------+                  |
-          |                         |
-          | no activity             | new message
-          | (timeout)               |
-          v                         |
-    +------------+                  |
-    |   idle     |------------------+
-    +-----+------+
-          |
-          | explicit close
-          | or long timeout
-          v
-    +------------+
-    |   closed   |
-    +------------+
+    +--------------+
+    | progressing  |
+    +------+-------+
+           |
+      +----+----+
+      |         |
+      v         v
+    +------+ +--------+
+    | done | | failed |
+    +------+ +--------+
 
-**State Descriptions**
+**Message Status Descriptions**
 
-+-------------+------------------------------------------------------------------+
-| State       | What's happening                                                 |
-+=============+==================================================================+
-| active      | Conversation has recent activity, participants engaged           |
-+-------------+------------------------------------------------------------------+
-| idle        | No recent messages, but conversation still open                  |
-+-------------+------------------------------------------------------------------+
-| closed      | Conversation ended, new messages create new conversation         |
-+-------------+------------------------------------------------------------------+
++---------------+------------------------------------------------------------------+
+| Status        | What's happening                                                 |
++===============+==================================================================+
+| progressing   | Message is being processed and delivered                          |
++---------------+------------------------------------------------------------------+
+| done          | Message was successfully delivered                                |
++---------------+------------------------------------------------------------------+
+| failed        | Message delivery failed                                          |
++---------------+------------------------------------------------------------------+
 
 
 Conversation Rooms
@@ -191,44 +181,13 @@ VoIPBIN automatically organizes messages into distinct conversation rooms based 
 - Participants can be added or removed dynamically
 
 
-Creating Conversations
-----------------------
-Create conversations explicitly or let VoIPBIN auto-create them.
+How Conversations Are Created
+-----------------------------
+Conversations are created automatically by VoIPBIN when inbound messages arrive or when messages are sent through flows. You can list existing conversations with ``GET https://api.voipbin.net/v1.0/conversations``.
 
 .. note:: **AI Implementation Hint**
 
-   Conversations are automatically matched based on participants and channel. Before creating a new conversation, check if an active conversation already exists between the same participants to avoid duplicates. Sending a message to a closed conversation will create a new one.
-
-**Create a Conversation**
-
-.. code::
-
-    $ curl -X POST 'https://api.voipbin.net/v1.0/conversations?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "name": "Customer Support #1234",
-            "participants": [
-                {
-                    "type": "tel",
-                    "target": "+15551234567"
-                },
-                {
-                    "type": "email",
-                    "target": "support@company.com"
-                }
-            ]
-        }'
-
-**Add Participant**
-
-.. code::
-
-    $ curl -X POST 'https://api.voipbin.net/v1.0/conversations/<conversation-id>/participants?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "type": "tel",
-            "target": "+15559876543"
-        }'
+   There is no ``POST /conversations`` endpoint. Conversations are created automatically based on incoming messages (SMS/MMS or LINE) or outbound message flow actions. To view conversations, use ``GET https://api.voipbin.net/v1.0/conversations``. Each conversation links a ``self`` address (your number) to a ``peer`` address (the external party). The ``type`` field is ``message`` for SMS/MMS or ``line`` for LINE messaging.
 
 
 Sending Messages
@@ -261,13 +220,7 @@ Send messages to a conversation and VoIPBIN routes to appropriate channels.
     $ curl -X POST 'https://api.voipbin.net/v1.0/conversations/<conversation-id>/messages?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "text": "Your order has been shipped!",
-            "medias": [
-                {
-                    "type": "image/png",
-                    "url": "https://example.com/tracking-map.png"
-                }
-            ]
+            "text": "Your order has been shipped!"
         }'
 
 **Channel Selection Priority**
@@ -375,15 +328,13 @@ VoIPBIN sends webhook events for conversation activities.
 +----------------------------------+------------------------------------------------+
 | conversation_updated             | Conversation metadata changed                  |
 +----------------------------------+------------------------------------------------+
-| conversation_closed              | Conversation ended                             |
+| conversation_deleted             | Conversation deleted                           |
 +----------------------------------+------------------------------------------------+
-| conversation_message_received    | Inbound message from participant               |
+| conversation_message_created     | New message created in conversation            |
 +----------------------------------+------------------------------------------------+
-| conversation_message_sent        | Outbound message delivered                     |
+| conversation_message_updated     | Message status or content updated              |
 +----------------------------------+------------------------------------------------+
-| conversation_participant_added   | New participant joined                         |
-+----------------------------------+------------------------------------------------+
-| conversation_participant_removed | Participant left conversation                  |
+| conversation_message_deleted     | Message deleted from conversation              |
 +----------------------------------+------------------------------------------------+
 
 

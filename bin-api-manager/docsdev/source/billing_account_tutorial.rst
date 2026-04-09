@@ -36,6 +36,7 @@ The ``/billing_account`` endpoint (singular, no ID) auto-resolves the billing ac
         "name": "Primary Account",
         "detail": "Main billing account",
         "plan_type": "free",
+        "plan_status": "active",
         "balance_credit": 69772630,
         "balance_token": 70,
         "payment_type": "",
@@ -43,10 +44,11 @@ The ``/billing_account`` endpoint (singular, no ID) auto-resolves the billing ac
         "tm_last_topup": "2024-01-01T00:00:00Z",
         "tm_next_topup": "2024-02-01T00:00:00Z",
         "tm_create": "2024-01-01T00:00:00Z",
-        "tm_update": "2024-01-15T10:30:00Z"
+        "tm_update": "2024-01-15T10:30:00Z",
+        "tm_delete": "9999-01-01T00:00:00Z"
     }
 
-The ``balance_credit`` field is in micros (69772630 = $69.77). The ``balance_token`` field is the current token count.
+The ``balance_credit`` field is in micros (69772630 = $69.77). The ``balance_token`` field is the current token count. The ``plan_status`` field indicates whether the subscription is ``active`` or ``canceling``.
 
 **List All Billing Accounts (Project Admin Only):**
 
@@ -64,6 +66,7 @@ This endpoint uses the admin-only ``/billing_accounts`` (plural) path and requir
                 "name": "Primary Account",
                 "detail": "Main billing account",
                 "plan_type": "free",
+                "plan_status": "active",
                 "balance_credit": 69772630,
                 "balance_token": 70,
                 "payment_type": "",
@@ -71,7 +74,8 @@ This endpoint uses the admin-only ``/billing_accounts`` (plural) path and requir
                 "tm_last_topup": "2024-01-01T00:00:00Z",
                 "tm_next_topup": "2024-02-01T00:00:00Z",
                 "tm_create": "2024-01-01T00:00:00Z",
-                "tm_update": "2024-01-15T10:30:00Z"
+                "tm_update": "2024-01-15T10:30:00Z",
+                "tm_delete": "9999-01-01T00:00:00Z"
             }
         ]
     }
@@ -269,6 +273,7 @@ Set up webhooks to receive notifications when billing account state changes. You
             "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
             "name": "Primary Account",
             "plan_type": "free",
+            "plan_status": "active",
             "balance_credit": 15500000,
             "balance_token": 20
         }
@@ -427,8 +432,8 @@ Balance Management Workflow
     GET /v1.0/billing_account
 
     # Set up webhook for balance monitoring
-    POST /v1.0/webhooks
-    -> Configure account_updated events
+    PUT /v1.0/customer
+    -> Set webhook_method and webhook_uri to receive events
 
 **2. Before Operations:**
 

@@ -452,7 +452,7 @@ Integrate AI for natural language interactions:
           "id": "post-ai-branch",
           "type": "branch",
           "option": {
-            "variable": "voipbin.ai.intent",
+            "variable": "voipbin.aicall.status",
             "default_target_id": "transfer-support",
             "target_ids": {
               "billing": "transfer-billing",

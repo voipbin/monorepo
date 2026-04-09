@@ -310,6 +310,10 @@ HTTP Endpoint                    Backend Service
 /v1.0/transfers                  bin-transfer-manager
 ===============================  ===========================
 
+.. note:: **AI Implementation Hint**
+
+   All API requests go through the single gateway at ``https://api.voipbin.net/v1.0/``. The routing table above shows which backend service handles each endpoint path. Authentication (JWT or Access Key) and authorization (customer_id ownership check) happen exclusively in bin-api-manager. Backend services trust the gateway and perform no auth checks themselves.
+
 Special Service Architectures
 -----------------------------
 
@@ -624,7 +628,7 @@ Services receive configuration through multiple sources:
          |       o Port number
          |       o Log level
          |
-         +-------> bin-config-manager
+         +-------> Database / Service Config
          |       o Feature flags
          |       o Business logic config
          |

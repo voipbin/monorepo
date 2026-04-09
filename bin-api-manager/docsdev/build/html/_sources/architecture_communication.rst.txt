@@ -95,7 +95,7 @@ All RPC queues follow a consistent naming pattern:
     Examples:
     o bin-manager.call.request        -> bin-call-manager
     o bin-manager.conference.request  -> bin-conference-manager
-    o bin-manager.sms.request         -> bin-sms-manager
+    o bin-manager.message.request     -> bin-message-manager
     o bin-manager.flow.request        -> bin-flow-manager
     o bin-manager.billing.request     -> bin-billing-manager
 
@@ -508,6 +508,10 @@ Subscribers can filter events by topic:
     Subscriber C:
     o Subscribe to: ""  (empty = all)
     o Receives: everything
+
+.. note:: **AI Implementation Hint**
+
+   For real-time event notifications, subscribe via WebSocket at ``wss://api.voipbin.net/ws?token=<JWT>``. For reliable event delivery to external systems, configure webhooks via ``PUT https://api.voipbin.net/v1.0/customer``. ZeroMQ events are internal-only and not exposed to API clients.
 
 WebSocket Communication
 -----------------------
@@ -961,7 +965,7 @@ Track requests across services:
        +- Initiate Call     [50ms]
            |
            v
-    3. RTC Manager          [120ms]
+    3. Asterisk (VoIP)       [120ms]
        +- Setup Media       [120ms]
 
     Total: 250ms

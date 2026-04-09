@@ -247,23 +247,26 @@ With the WebSocket connected, make an outbound call to the virtual number. The c
 
 .. code::
 
-    [
-        {
-            "id": "c7d8e9f0-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
-            "flow_id": "b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90",
-            "source": {
-                "type": "tel",
-                "target": "<your-source-number>"
-            },
-            "destination": {
-                "type": "tel",
-                "target": "+899100000001"
-            },
-            "status": "dialing",
-            "direction": "outgoing",
-            ...
-        }
-    ]
+    {
+        "calls": [
+            {
+                "id": "c7d8e9f0-a1b2-3c4d-5e6f-7a8b9c0d1e2f",
+                "flow_id": "b3f7a1d2-9c4e-4f8a-b6d1-2e5f8a3c7d90",
+                "source": {
+                    "type": "tel",
+                    "target": "<your-source-number>"
+                },
+                "destination": {
+                    "type": "tel",
+                    "target": "+899100000001"
+                },
+                "status": "dialing",
+                "direction": "outgoing",
+                ...
+            }
+        ],
+        "groupcalls": []
+    }
 
 The call dials the virtual number, which triggers the transcription flow: answer, start transcription, speak the greeting, and pause for 30 seconds.
 
@@ -310,22 +313,18 @@ If you run the Python WebSocket example from Step 3, you will see output like:
 
 Receive events via webhook (alternative)
 -----------------------------------------
-Instead of WebSocket, you can receive transcription events via HTTP webhook. Create a webhook that listens for ``transcript.created`` events:
+Instead of WebSocket, you can receive transcription events via your customer webhook. Configure a webhook URI on your customer account — VoIPBIN sends HTTP POST requests for **all** events associated with your account, including transcription events:
 
 .. code::
 
-    $ curl --request POST 'https://api.voipbin.net/v1.0/webhooks?token=<your-token>' \
+    $ curl --request PUT 'https://api.voipbin.net/v1.0/customer?token=<your-token>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "name": "Transcription events",
-            "uri": "https://your-server.com/webhook",
-            "method": "POST",
-            "event_types": [
-                "transcript.created"
-            ]
+            "webhook_method": "POST",
+            "webhook_uri": "https://your-server.com/webhook"
         }'
 
-Note: the ``event_types`` registration uses dot notation (``transcript.created``), while the delivered payload's ``event_type`` field uses underscore notation (``transcript_created``).
+Once configured, transcription events (along with all other account events) are delivered to your ``webhook_uri`` as HTTP POST requests. There is no per-event-type filtering — your endpoint receives all events and must filter by ``event_type`` (e.g., ``transcript_created``).
 
 VoIPBIN sends a ``POST`` request to your endpoint each time a transcript segment is generated:
 

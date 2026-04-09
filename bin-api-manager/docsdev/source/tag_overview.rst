@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Free. Creating and managing tags incurs no charges.
-   * **Async:** No. ``POST /tags`` returns immediately with the created tag.
+   * **Async:** No. ``POST https://api.voipbin.net/v1.0/tags`` returns immediately with the created tag.
 
 VoIPBIN's Tag API provides a flexible labeling system for organizing and categorizing resources. Tags are primarily used for skill-based routing in queues, but can also categorize agents by teams, departments, languages, or any custom attribute.
 

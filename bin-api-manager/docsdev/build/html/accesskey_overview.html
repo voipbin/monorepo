@@ -239,6 +239,35 @@
 <p>When creating an accesskey, the <code class="docutils literal notranslate"><span class="pre">expire</span></code> field is specified in seconds (e.g., <code class="docutils literal notranslate"><span class="pre">31536000</span></code> for one year). The API returns <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> as an ISO 8601 timestamp calculated from the creation time plus the expiry duration. Always check <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> before using a key to avoid authentication failures with expired tokens.</p>
 </div>
 </section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>401 Unauthorized when using an accesskey:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The accesskey token is expired, deleted, or malformed.</p></li>
+<li><p><strong>Fix:</strong> Check <code class="docutils literal notranslate"><span class="pre">tm_expire</span></code> via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/accesskeys</span></code> to verify the key is still valid. Create a new key if expired.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Accesskey token not returned on GET:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The full token is only returned once at creation time (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/accesskeys</span></code>). Subsequent GET requests return only the <code class="docutils literal notranslate"><span class="pre">token_prefix</span></code> for identification.</p></li>
+<li><p><strong>Fix:</strong> If the token is lost, delete the accesskey and create a new one. Store the token securely immediately after creation.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Confusing ``accesskey`` vs ``token`` query parameters:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Using the wrong authentication parameter in the query string.</p></li>
+<li><p><strong>Fix:</strong> Use <code class="docutils literal notranslate"><span class="pre">?accesskey=vb_...</span></code> for API key authentication. The <code class="docutils literal notranslate"><span class="pre">?token=...</span></code> parameter is for session-based (JWT) authentication. Do not mix the two.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <ul class="simple">
@@ -265,6 +294,7 @@
 </li>
 <li><a class="reference internal" href="#authentication">Authentication</a></li>
 <li><a class="reference internal" href="#lifecycles-and-expiry">Lifecycles and Expiry</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li><a class="reference internal" href="#notes">Notes</a></li>
 </ul>
 </li>

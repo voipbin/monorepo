@@ -194,59 +194,51 @@
 <p>Before working with conversations, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
-<li><p>A <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> value indicating the channel for the conversation (e.g., <code class="docutils literal notranslate"><span class="pre">message</span></code> for SMS/MMS, <code class="docutils literal notranslate"><span class="pre">line</span></code> for Line). See <span class="xref std std-ref">Reference type</span>.</p></li>
-<li><p>(Optional) Participant addresses in the appropriate format for the channel (E.164 phone numbers for SMS, Line user IDs for Line).</p></li>
+<li><p>A conversation already created by an incoming message (SMS/MMS via <code class="docutils literal notranslate"><span class="pre">message</span></code> type, or LINE via <code class="docutils literal notranslate"><span class="pre">line</span></code> type). Conversations are auto-created when messages arrive – there is no <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations</span></code> endpoint.</p></li>
+<li><p>(Optional) A conversation account configured for the messaging channel (LINE credentials, etc.). Manage accounts via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversation_accounts</span></code>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Conversations are free to create, but messages sent within them incur per-channel delivery costs (SMS, email, etc.). When sending a message to a conversation via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/messages</span></code>, the conversation ID is passed in the URL path, not the request body.</p>
+<p>Conversations are auto-created when an inbound message arrives on a configured channel (SMS/MMS or LINE). There is no <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations</span></code> endpoint to create conversations manually. The <code class="docutils literal notranslate"><span class="pre">type</span></code> field indicates the channel: <code class="docutils literal notranslate"><span class="pre">message</span></code> for SMS/MMS or <code class="docutils literal notranslate"><span class="pre">line</span></code> for LINE. Messages sent within a conversation incur per-channel delivery costs. When sending a message to a conversation, pass the conversation UUID in the URL path: <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/messages</span></code>.</p>
 </div>
-<section id="setup-the-conversation">
-<h3>Setup the conversation<a class="headerlink" href="#setup-the-conversation" title="Link to this heading"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/setup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
---header &#39;Content-Type: application/json&#39; \
---data-raw &#39;{
-    &quot;reference_type&quot;: &quot;line&quot;
-}&#39;
-</pre></div>
-</div>
-</section>
 <section id="get-list-of-conversations">
 <h3>Get list of conversations<a class="headerlink" href="#get-list-of-conversations" title="Link to this heading"></a></h3>
 </section>
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/conversations?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/conversations?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
 {
     &quot;result&quot;: [
         {
-        &quot;id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
-        &quot;name&quot;: &quot;conversation&quot;,
-        &quot;detail&quot;: &quot;conversation detail&quot;,
-        &quot;reference_type&quot;: &quot;line&quot;,
-        &quot;reference_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
-        &quot;participants&quot;: [
-            {
+            &quot;id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;owner_type&quot;: &quot;agent&quot;,
+            &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+            &quot;account_id&quot;: &quot;c5d6e7f8-a9b0-1234-cdef-567890abcdef&quot;,
+            &quot;name&quot;: &quot;conversation&quot;,
+            &quot;detail&quot;: &quot;conversation detail&quot;,
             &quot;type&quot;: &quot;line&quot;,
-            &quot;target&quot;: &quot;&quot;,
-            &quot;target_name&quot;: &quot;me&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
+            &quot;dialog_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
+            &quot;self&quot;: {
+                &quot;type&quot;: &quot;line&quot;,
+                &quot;target&quot;: &quot;&quot;,
+                &quot;target_name&quot;: &quot;me&quot;,
+                &quot;name&quot;: &quot;&quot;,
+                &quot;detail&quot;: &quot;&quot;
             },
-            {
-            &quot;type&quot;: &quot;line&quot;,
-            &quot;target&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
-            &quot;target_name&quot;: &quot;Unknown&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
-            }
-        ],
-        &quot;tm_create&quot;: &quot;2022-06-17 06:06:14.446158&quot;,
-        &quot;tm_update&quot;: &quot;2022-06-17 06:06:14.446167&quot;,
-        &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+            &quot;peer&quot;: {
+                &quot;type&quot;: &quot;line&quot;,
+                &quot;target&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
+                &quot;target_name&quot;: &quot;Unknown&quot;,
+                &quot;name&quot;: &quot;&quot;,
+                &quot;detail&quot;: &quot;&quot;
+            },
+            &quot;tm_create&quot;: &quot;2022-06-17 06:06:14.446158&quot;,
+            &quot;tm_update&quot;: &quot;2022-06-17 06:06:14.446167&quot;,
+            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
         }
     ],
     &quot;next_page_token&quot;: &quot;2022-06-17 06:06:14.446158&quot;
@@ -263,26 +255,28 @@
 
 {
     &quot;id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;agent&quot;,
+    &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+    &quot;account_id&quot;: &quot;c5d6e7f8-a9b0-1234-cdef-567890abcdef&quot;,
     &quot;name&quot;: &quot;conversation&quot;,
     &quot;detail&quot;: &quot;conversation detail&quot;,
-    &quot;reference_type&quot;: &quot;line&quot;,
-    &quot;reference_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
-    &quot;participants&quot;: [
-        {
-            &quot;type&quot;: &quot;line&quot;,
-            &quot;target&quot;: &quot;&quot;,
-            &quot;target_name&quot;: &quot;me&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
-        },
-        {
-            &quot;type&quot;: &quot;line&quot;,
-            &quot;target&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
-            &quot;target_name&quot;: &quot;Unknown&quot;,
-            &quot;name&quot;: &quot;&quot;,
-            &quot;detail&quot;: &quot;&quot;
-        }
-    ],
+    &quot;type&quot;: &quot;line&quot;,
+    &quot;dialog_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
+    &quot;self&quot;: {
+        &quot;type&quot;: &quot;line&quot;,
+        &quot;target&quot;: &quot;&quot;,
+        &quot;target_name&quot;: &quot;me&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
+    },
+    &quot;peer&quot;: {
+        &quot;type&quot;: &quot;line&quot;,
+        &quot;target&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
+        &quot;target_name&quot;: &quot;Unknown&quot;,
+        &quot;name&quot;: &quot;&quot;,
+        &quot;detail&quot;: &quot;&quot;
+    },
     &quot;tm_create&quot;: &quot;2022-06-17 06:06:14.446158&quot;,
     &quot;tm_update&quot;: &quot;2022-06-17 06:06:14.446167&quot;,
     &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
@@ -298,16 +292,18 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;text&quot;: &quot;Hello, this is a test message. Thank you for your time.&quot;
+        &quot;text&quot;: &quot;Hello, this is a test message. Thank you for your time.&quot;,
+        &quot;medias&quot;: []
     }&#39;
 
 {
     &quot;id&quot;: &quot;0c8f23cb-e878-49bf-b69e-03f59252f217&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
     &quot;conversation_id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
-    &quot;status&quot;: &quot;sent&quot;,
+    &quot;direction&quot;: &quot;outgoing&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
     &quot;reference_type&quot;: &quot;line&quot;,
     &quot;reference_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
-    &quot;source_target&quot;: &quot;&quot;,
     &quot;text&quot;: &quot;Hello, this is a test message. Thank you for your time.&quot;,
     &quot;medias&quot;: [],
     &quot;tm_create&quot;: &quot;2022-06-20 03:07:11.372307&quot;,
@@ -328,11 +324,12 @@
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;0c8f23cb-e878-49bf-b69e-03f59252f217&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
             &quot;conversation_id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
-            &quot;status&quot;: &quot;sent&quot;,
+            &quot;direction&quot;: &quot;outgoing&quot;,
+            &quot;status&quot;: &quot;done&quot;,
             &quot;reference_type&quot;: &quot;line&quot;,
             &quot;reference_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
-            &quot;source_target&quot;: &quot;&quot;,
             &quot;text&quot;: &quot;Hello, this is a test message. Thank you for your time.&quot;,
             &quot;medias&quot;: [],
             &quot;tm_create&quot;: &quot;2022-06-20 03:07:11.372307&quot;,
@@ -358,7 +355,6 @@
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
-<li><a class="reference internal" href="#setup-the-conversation">Setup the conversation</a></li>
 <li><a class="reference internal" href="#get-list-of-conversations">Get list of conversations</a></li>
 </ul>
 </li>

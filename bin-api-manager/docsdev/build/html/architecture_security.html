@@ -310,6 +310,11 @@
 <span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For server-to-server integrations, use Access Keys (<code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">AccessKey</span> <span class="pre">ak_xxxxx</span></code>) instead of JWT tokens. Access Keys do not expire on a short timer like JWT tokens (1 hour) and are better suited for automation. Create Access Keys via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/accesskeys</span></code>. For interactive user sessions (web/mobile apps), use JWT tokens obtained from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/auth/login</span></code>.</p>
+</div>
 <p><strong>Access Key Authentication:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Access</span> <span class="n">Key</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -543,7 +548,7 @@ Request Arrives
 <span class="o">|</span> <span class="n">Keys</span><span class="p">:</span>                                    <span class="o">|</span>
 <span class="o">|</span>   <span class="o">-</span> <span class="n">deepgram_api_key</span>                     <span class="o">|</span>
 <span class="o">|</span>   <span class="o">-</span> <span class="n">openai_api_key</span>                       <span class="o">|</span>
-<span class="o">|</span>   <span class="o">-</span> <span class="n">twilio_api_key</span>                       <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">telnyx_api_key</span>                       <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 
 <span class="n">SSL</span> <span class="n">Certificates</span><span class="p">:</span>

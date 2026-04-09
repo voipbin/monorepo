@@ -245,18 +245,13 @@ The activeflow includes essential status information that allows users to monito
     |                    ActiveFlow Control Interface                        |
     +-----------------------------------------------------------------------+
 
-    GET /v1/activeflows/{id}
+    GET https://api.voipbin.net/v1.0/activeflows/{id}
     +-- View current state
     +-- See current_action
     +-- Review executed_actions
     +-- Check variables
 
-    POST /v1/activeflows/{id}/execute
-    +-- Resume a blocked flow
-    +-- Push new actions
-    +-- Continue execution
-
-    POST /v1/activeflows/{id}/stop
+    POST https://api.voipbin.net/v1.0/activeflows/{id}/stop
     +-- Immediately stop execution
     +-- Status changes to "ended"
     +-- Triggers on_complete_flow if set
@@ -294,7 +289,7 @@ The activeflow executes the actions until one of the following conditions is met
 
 * **Main Service Type Completion:** The activeflow continues executing flow actions until the primary service type is completed. For instance, in the case of a call service, actions will be executed until the call is hung up.
 * **Stop Action Execution:** Execution ceases if an action with the type "stop" is encountered in the flow.
-* **User-Initiated Interruption:** Users can actively interrupt their activeflow by sending a POST request to the endpoint: https://api.voipbin.net/v1/activeflows/<activeflow-id>/stop.
+* **User-Initiated Interruption:** Users can actively interrupt their activeflow by sending a POST request to the endpoint: ``POST https://api.voipbin.net/v1.0/activeflows/<activeflow-id>/stop``.
 
 
 Variable Management
@@ -506,7 +501,7 @@ Common Use Cases
 
 ::
 
-    GET /v1/activeflows/{id}
+    GET https://api.voipbin.net/v1.0/activeflows/{id}
 
     Response shows:
     {
@@ -525,3 +520,39 @@ Common Use Cases
     }
 
     -> You can see exactly where the flow is and what has happened
+
+
+Troubleshooting
+---------------
+
+**Execution Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Activeflow stuck in       | Check ``current_action`` via                   |
+| "running" state           | ``GET /activeflows/{id}``; a blocking action   |
+|                           | may be waiting for external input. Use          |
+|                           | ``POST /activeflows/{id}/stop`` to force end.   |
++---------------------------+------------------------------------------------+
+| Flow ended unexpectedly   | Check ``reference_type``: if ``call``, the call |
+|                           | may have hung up. Verify call status via         |
+|                           | ``GET /calls/{reference_id}``.                   |
++---------------------------+------------------------------------------------+
+| Variables not inherited   | Ensure ``on_complete_flow_id`` is set on the    |
+| in chained flow           | parent flow. Chain depth maximum is 5.           |
++---------------------------+------------------------------------------------+
+
+**Control Interface Issues**
+
++---------------------------+------------------------------------------------+
+| Symptom                   | Solution                                       |
++===========================+================================================+
+| Stop request returns 404  | Verify the activeflow ID exists and belongs to  |
+|                           | your customer; activeflows in ``ended`` state   |
+|                           | cannot be stopped again.                        |
++---------------------------+------------------------------------------------+
+| Actions being skipped     | Check ``reference_type``: media actions (talk,  |
+|                           | play, recording) are skipped for ``api`` type   |
+|                           | activeflows since there is no media channel.     |
++---------------------------+------------------------------------------------+

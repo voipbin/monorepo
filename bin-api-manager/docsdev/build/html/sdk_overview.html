@@ -189,6 +189,15 @@
                         <main role="main" id="main">
     <section id="overview">
 <span id="sdk-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low – The SDK wraps the VoIPBIN REST API into language-specific libraries. No separate billing or API calls are specific to the SDK itself.</p></li>
+<li><p><strong>Cost:</strong> Free. Using the SDK incurs no additional charges beyond the underlying API operations.</p></li>
+<li><p><strong>Async:</strong> N/A. The SDK is a client library; async behavior depends on the underlying API endpoints called.</p></li>
+</ul>
+</div>
 <p>The VoIPBIN SDK (Software Development Kit) provides a set of tools and libraries that developers can use to create communication applications using the VoIPBIN platform. The SDK includes client libraries that wrap the VoIPBIN REST API, making it easier to integrate VoIPBIN’s capabilities into your applications without dealing with low-level HTTP requests.</p>
 <p>SDKs simplify the development process by providing:</p>
 <ul class="simple">
@@ -201,13 +210,13 @@
 <section id="accesskey">
 <h2>Accesskey<a class="headerlink" href="#accesskey" title="Link to this heading"></a></h2>
 <p>Most SDK methods require an accesskey (String) to authenticate the user and authorize access to the VoIPBIN platform.
-The accesskey is a long-lived API token obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code> or created via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/accesskeys</span></code>.
+The accesskey is a long-lived API token obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/accesskeys</span></code> or created via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/accesskeys</span></code>.
 You can also generate an accesskey through the <a class="reference external" href="https://admin.voipbin.net">admin console</a>.</p>
 <p>See detail about the accesskey <a class="reference internal" href="accesskey_overview.html#accesskey-overview"><span class="std std-ref">here</span></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>When initializing the SDK, pass the accesskey string directly. Do not wrap it in a Bearer header — the SDK handles authentication internally. Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code> to list existing keys, or create a new one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/accesskeys</span></code> with a custom expiration.</p>
+<p>When initializing the SDK, pass the accesskey string directly. Do not wrap it in a Bearer header — the SDK handles authentication internally. Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/accesskeys</span></code> to list existing keys, or create a new one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/accesskeys</span></code> with a custom expiration.</p>
 </div>
 </section>
 <section id="support-languages">

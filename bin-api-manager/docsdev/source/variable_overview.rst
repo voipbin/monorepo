@@ -126,4 +126,19 @@ Best Practices and Considerations
 * Debugging: Use logging or flow monitoring to inspect variable states at different stages.
 * Data persistence: Variables do not persist beyond a single flow execution unless saved externally (e.g., via webhook or external DB).
 
+Troubleshooting
+===============
+
+* **Variable placeholder appears as literal text in output:**
+    * **Cause:** Incorrect variable syntax (e.g., missing ``$`` prefix or curly braces).
+    * **Fix:** Use the exact format ``${voipbin.<category>.<field>}`` for system variables or ``${<custom_key>}`` for user-defined variables. Verify the variable name is spelled correctly.
+
+* **Variable resolves to an empty string:**
+    * **Cause:** The variable does not exist, has not been set yet, or the referenced field is null.
+    * **Fix:** Ensure the variable is set before the action that references it. Use a ``variable_set`` action earlier in the flow, or verify the system variable path is valid. Use branch/conditional logic to handle cases where the variable may be missing.
+
+* **Custom variable value not persisting across actions:**
+    * **Cause:** Variables are scoped to the current activeflow instance. If the flow restarts or a new activeflow is created, previous variables are lost.
+    * **Fix:** Use a webhook or external storage to persist values that must survive across flow executions.
+
 In conclusion, VoIPBIN's Variable system is a core feature that enables dynamic, data-aware flows. By using variables effectively, developers can create tailored communication experiences that respond intelligently to the context of each interaction—whether through voice, messaging, or external integrations.

@@ -202,23 +202,20 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Get</span> <span class="n">call</span> <span class="n">details</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-<span class="n">Get</span> <span class="n">call</span> <span class="n">events</span> <span class="p">(</span><span class="n">webhooks</span> <span class="n">sent</span><span class="p">):</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">events</span>
-
 <span class="n">Get</span> <span class="n">activeflow</span> <span class="n">status</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="n">activeflow</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-<span class="n">Get</span> <span class="n">recordings</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">recordings</span>
+<span class="n">Get</span> <span class="n">recordings</span> <span class="p">(</span><span class="n">use</span> <span class="n">recording_ids</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">call</span> <span class="nb">object</span><span class="p">):</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">recordings</span><span class="o">/</span><span class="p">{</span><span class="n">recording</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 
-<span class="n">Get</span> <span class="n">transcripts</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transcripts</span>
+<span class="n">List</span> <span class="nb">all</span> <span class="n">recordings</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">recordings</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> is a UUID returned when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or from webhook events. The <code class="docutils literal notranslate"><span class="pre">activeflow-id</span></code> is obtained from the call’s associated flow execution. All debugging endpoints require a valid authentication token (JWT or access key).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> is a UUID returned when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls</span></code> or from webhook events. The <code class="docutils literal notranslate"><span class="pre">activeflow-id</span></code> is obtained from the call’s <code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> field. The <code class="docutils literal notranslate"><span class="pre">recording-id</span></code> is obtained from the call’s <code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> array. All debugging endpoints require a valid authentication token (JWT or access key).</p>
 </div>
 <p><strong>WebSocket for Real-time Monitoring:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Connect:
@@ -356,7 +353,6 @@ Events you&#39;ll receive:
 
 <span class="n">Check</span> <span class="n">these</span> <span class="n">fields</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">status</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;progressing&quot;</span>
-<span class="o">-</span> <span class="n">hold</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="n">false</span>
 <span class="o">-</span> <span class="n">mute_direction</span><span class="p">:</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;&quot;</span> <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="n">unmuted</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -390,13 +386,14 @@ Events you&#39;ll receive:
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">&quot;mute_direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;hold&quot;</span><span class="p">:</span> <span class="n">true</span>
+  <span class="s2">&quot;mute_direction&quot;</span><span class="p">:</span> <span class="s2">&quot;both&quot;</span>
 <span class="p">}</span>
 
-<span class="n">Fix</span><span class="p">:</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">resume</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">unmute</span>
+<span class="n">Fix</span> <span class="p">(</span><span class="n">unhold</span> <span class="n">the</span> <span class="n">call</span><span class="p">):</span>
+<span class="n">DELETE</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">hold</span>
+
+<span class="n">Fix</span> <span class="p">(</span><span class="n">unmute</span> <span class="n">the</span> <span class="n">call</span><span class="p">):</span>
+<span class="n">DELETE</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">mute</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -466,36 +463,24 @@ Events you&#39;ll receive:
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>If flow actions are not executing at all, verify that the call has a <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> set (not <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>). For outbound calls, you must either provide <code class="docutils literal notranslate"><span class="pre">actions</span></code> inline in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or reference an existing flow via <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>. For inbound calls, the flow is determined by the phone number configuration – check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers/{number-id}</span></code> for the <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> assignment.</p>
+<p>If flow actions are not executing at all, verify that the call has a <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> set (not <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>). For outbound calls, you must either provide <code class="docutils literal notranslate"><span class="pre">actions</span></code> inline in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls</span></code> or reference an existing flow via <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>. For inbound calls, the flow is determined by the phone number configuration – check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/numbers/{number-id}</span></code> for the <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> assignment.</p>
 </div>
 </section>
 <section id="webhooks-not-received">
 <h2>Webhooks Not Received<a class="headerlink" href="#webhooks-not-received" title="Link to this heading"></a></h2>
 <p><strong>Symptom:</strong> No webhooks arrive at your endpoint, or only some webhooks arrive.</p>
-<p><strong>Diagnostic API calls:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Verify</span> <span class="n">webhook</span> <span class="n">configuration</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span>
+<p><strong>Diagnostic steps:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Verify</span> <span class="n">webhook</span> <span class="n">configuration</span> <span class="n">on</span> <span class="n">your</span> <span class="n">customer</span> <span class="n">profile</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">customer</span>
+
+<span class="n">Check</span> <span class="n">the</span> <span class="n">webhook_method</span> <span class="ow">and</span> <span class="n">webhook_uri</span> <span class="n">fields</span><span class="p">:</span>
 <span class="p">{</span>
-  <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">],</span>
-  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span>
+  <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span>
 <span class="p">}</span>
 
-<span class="mf">2.</span> <span class="n">Check</span> <span class="n">webhook</span> <span class="n">delivery</span> <span class="n">history</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span><span class="o">/</span><span class="p">{</span><span class="n">webhook</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">deliveries</span>
-<span class="p">{</span>
-  <span class="s2">&quot;deliveries&quot;</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span>
-      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;delivery-uuid&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;failed&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;http_code&quot;</span><span class="p">:</span> <span class="mi">500</span><span class="p">,</span>
-      <span class="s2">&quot;attempts&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-      <span class="s2">&quot;last_attempt&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00Z&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;Connection timeout&quot;</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
+<span class="n">If</span> <span class="n">webhook_uri</span> <span class="ow">is</span> <span class="n">empty</span><span class="p">,</span> <span class="n">webhooks</span> <span class="n">are</span> <span class="ow">not</span> <span class="n">configured</span><span class="o">.</span>
+<span class="n">Update</span> <span class="n">via</span> <span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">customer</span> <span class="k">with</span> <span class="n">webhook_method</span> <span class="ow">and</span> <span class="n">webhook_uri</span><span class="o">.</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: Endpoint not accessible</strong></p>
@@ -520,20 +505,27 @@ Events you&#39;ll receive:
 <span class="o">-</span> <span class="n">Use</span> <span class="n">a</span> <span class="n">message</span> <span class="n">queue</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span><span class="p">,</span> <span class="n">SQS</span><span class="p">,</span> <span class="n">RabbitMQ</span><span class="p">)</span> <span class="k">for</span> <span class="n">processing</span>
 </pre></div>
 </div>
-<p><strong>Cause 3: Wrong event subscription</strong></p>
+<p><strong>Cause 3: Webhook not configured on customer profile</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">Subscribed</span> <span class="n">to</span> <span class="s2">&quot;call_created&quot;</span> <span class="n">but</span> <span class="n">expecting</span> <span class="s2">&quot;call_hungup&quot;</span>
+<span class="o">-</span> <span class="n">No</span> <span class="n">webhooks</span> <span class="n">received</span> <span class="n">at</span> <span class="nb">all</span>
+
+<span class="n">Diagnostic</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">customer</span>
+<span class="n">Check</span> <span class="n">that</span> <span class="n">webhook_method</span> <span class="ow">is</span> <span class="s2">&quot;post&quot;</span> <span class="ow">and</span> <span class="n">webhook_uri</span>
+<span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="n">your</span> <span class="n">endpoint</span> <span class="n">URL</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Update</span> <span class="n">webhook</span> <span class="n">events</span><span class="p">:</span>
-<span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">webhooks</span><span class="o">/</span><span class="p">{</span><span class="n">webhook</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
-<span class="p">{</span><span class="s2">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">,</span> <span class="s2">&quot;call_created&quot;</span><span class="p">]}</span>
+<span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">customer</span>
+<span class="p">{</span>
+  <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://your-server.com/webhook&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/webhooks/{webhook-id}/deliveries</span></code> to see delivery attempts and failure reasons. If you are not receiving any webhooks, verify your webhook <code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">active</span></code> and the <code class="docutils literal notranslate"><span class="pre">events</span></code> array includes the event types you need.</p>
+<p>Webhook delivery is retried up to 3 times with exponential backoff. If all retries fail, the event is dropped. Always return HTTP 200 immediately and process asynchronously. Webhook configuration is managed via the customer profile: use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/customer</span></code> to check <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code>, and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/customer</span></code> to update them. VoIPBIN sends all event types to your configured endpoint – there is no per-event subscription.</p>
 </div>
 </section>
 <section id="recording-issues">
@@ -597,15 +589,12 @@ Events you&#39;ll receive:
 <section id="transfer-problems">
 <h2>Transfer Problems<a class="headerlink" href="#transfer-problems" title="Link to this heading"></a></h2>
 <p><strong>Symptom:</strong> Transfer fails, caller dropped during transfer, or consult call does not connect.</p>
-<p><strong>Diagnostic API call:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
-<span class="p">{</span>
-  <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;consulting&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;consult_call&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;noanswer&quot;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
+<p><strong>Diagnostic steps:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Use</span> <span class="n">the</span> <span class="n">transfer_id</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">POST</span> <span class="o">/</span><span class="n">transfers</span> <span class="n">response</span>
+<span class="n">to</span> <span class="n">look</span> <span class="n">up</span> <span class="n">the</span> <span class="n">transfer</span> <span class="nb">object</span> <span class="ow">and</span> <span class="n">inspect</span> <span class="n">its</span> <span class="n">state</span><span class="o">.</span>
+
+<span class="n">List</span> <span class="n">transfers</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: Blind Transfer Fails</strong></p>
@@ -626,11 +615,12 @@ Events you&#39;ll receive:
 <span class="o">-</span> <span class="n">Agent</span> <span class="n">A</span> <span class="n">cannot</span> <span class="n">reach</span> <span class="n">Agent</span> <span class="n">B</span>
 
 <span class="n">Diagnostic</span><span class="p">:</span>
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="n">Check</span> <span class="n">the</span> <span class="n">transfer</span> <span class="n">via</span> <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span> <span class="n">to</span> <span class="n">find</span>
+<span class="n">the</span> <span class="n">transfer</span> <span class="ow">and</span> <span class="n">its</span> <span class="n">associated</span> <span class="n">call</span> <span class="n">IDs</span><span class="o">.</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Cancel</span> <span class="n">transfer</span> <span class="ow">and</span> <span class="k">try</span> <span class="n">a</span> <span class="n">different</span> <span class="n">agent</span><span class="p">:</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">transfers</span><span class="o">/</span><span class="p">{</span><span class="n">transfer</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">cancel</span>
+<span class="n">Verify</span> <span class="n">the</span> <span class="n">transferee</span> <span class="n">address</span> <span class="ow">is</span> <span class="n">correct</span> <span class="ow">and</span> <span class="n">reachable</span><span class="o">.</span>
+<span class="n">Create</span> <span class="n">a</span> <span class="n">new</span> <span class="n">transfer</span> <span class="k">with</span> <span class="n">a</span> <span class="n">different</span> <span class="n">destination</span><span class="o">.</span>
 </pre></div>
 </div>
 <p><strong>Cause 3: Caller Hears Dead Air During Transfer</strong></p>
@@ -642,40 +632,37 @@ Events you&#39;ll receive:
 <span class="o">-</span> <span class="n">Mute</span> <span class="n">applied</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">hold</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Ensure</span> <span class="n">transfer</span> <span class="n">uses</span> <span class="n">proper</span> <span class="n">hold</span><span class="p">:</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">transfer</span>
-<span class="p">{</span>
-  <span class="s2">&quot;hold_caller&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-  <span class="s2">&quot;play_moh&quot;</span><span class="p">:</span> <span class="n">true</span>
-<span class="p">}</span>
+<span class="n">Put</span> <span class="n">the</span> <span class="n">caller</span> <span class="n">on</span> <span class="n">hold</span> <span class="n">before</span> <span class="n">initiating</span> <span class="n">the</span> <span class="n">transfer</span><span class="p">:</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">hold</span>
+<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">moh</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">transfer-id</span></code> is returned in the response to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/transfer</span></code>. Use it to check transfer status (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/transfers/{transfer-id}</span></code>), complete the transfer (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/complete</span></code>), or cancel it (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers/{transfer-id}/cancel</span></code>). If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.</p>
+<p>Transfers are initiated via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers</span></code> with <code class="docutils literal notranslate"><span class="pre">transferer_call_id</span></code> (UUID, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code>) and <code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> in the request body. The <code class="docutils literal notranslate"><span class="pre">transfer_type</span></code> field specifies <code class="docutils literal notranslate"><span class="pre">attended</span></code> or <code class="docutils literal notranslate"><span class="pre">blind</span></code>. The response includes a <code class="docutils literal notranslate"><span class="pre">transfer_id</span></code> (UUID) and associated call/groupcall IDs. If a blind transfer fails, the caller may be disconnected with no way to recover. For critical calls, always prefer attended transfer.</p>
 </div>
 </section>
 <section id="queue-problems">
 <h2>Queue Problems<a class="headerlink" href="#queue-problems" title="Link to this heading"></a></h2>
 <p><strong>Symptom:</strong> Calls not distributed to agents, long wait times, or agents not receiving calls.</p>
 <p><strong>Diagnostic API calls:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Check queue status:
-GET /v1/queues/{queue-id}
-{
-  &quot;available_agents&quot;: 0,
-  &quot;waiting_calls&quot;: 5
-}
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Check</span> <span class="n">queue</span> <span class="n">status</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
+<span class="p">{</span>
+  <span class="s2">&quot;wait_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;uuid-1&quot;</span><span class="p">,</span> <span class="s2">&quot;uuid-2&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;service_queuecall_ids&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
 
-Check agent status:
-GET /v1/agents?queue_id={queue-id}
-Verify agents have status: &quot;available&quot;
+<span class="n">Check</span> <span class="n">agent</span> <span class="n">status</span><span class="p">:</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span>
+<span class="n">Verify</span> <span class="n">agents</span> <span class="n">have</span> <span class="n">status</span><span class="p">:</span> <span class="s2">&quot;available&quot;</span>
 </pre></div>
 </div>
 <p><strong>Cause 1: No Available Agents</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Symptoms</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">available_agents</span> <span class="ow">is</span> <span class="mi">0</span>
-<span class="o">-</span> <span class="n">waiting_calls</span> <span class="ow">is</span> <span class="n">increasing</span>
+<span class="o">-</span> <span class="n">service_queuecall_ids</span> <span class="ow">is</span> <span class="n">empty</span>
+<span class="o">-</span> <span class="n">wait_queuecall_ids</span> <span class="ow">is</span> <span class="n">growing</span>
 
 <span class="n">Possible</span> <span class="n">reasons</span><span class="p">:</span>
 <span class="o">-</span> <span class="n">All</span> <span class="n">agents</span> <span class="ow">in</span> <span class="s2">&quot;busy&quot;</span> <span class="ow">or</span> <span class="s2">&quot;offline&quot;</span> <span class="n">status</span>
@@ -694,23 +681,23 @@ Verify agents have status: &quot;available&quot;
 <span class="n">Diagnostic</span><span class="p">:</span>
 <span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
-  <span class="s2">&quot;timeout_action&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span>
+  <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="mi">30000</span><span class="p">,</span>
+  <span class="s2">&quot;service_timeout&quot;</span><span class="p">:</span> <span class="mi">60000</span>
 <span class="p">}</span>
 
 <span class="n">Fix</span><span class="p">:</span>
-<span class="n">Increase</span> <span class="n">timeout</span> <span class="ow">and</span> <span class="n">add</span> <span class="n">a</span> <span class="n">fallback</span> <span class="n">action</span><span class="p">:</span>
+<span class="n">Increase</span> <span class="n">wait_timeout</span> <span class="n">to</span> <span class="n">give</span> <span class="n">agents</span> <span class="n">more</span> <span class="n">time</span> <span class="n">to</span> <span class="n">answer</span><span class="p">:</span>
 <span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">queues</span><span class="o">/</span><span class="p">{</span><span class="n">queue</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
 <span class="p">{</span>
-  <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
-  <span class="s2">&quot;timeout_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;voicemail-flow-uuid&quot;</span>
+  <span class="s2">&quot;wait_timeout&quot;</span><span class="p">:</span> <span class="mi">300000</span><span class="p">,</span>
+  <span class="s2">&quot;wait_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;voicemail-flow-uuid&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">queue-id</span></code> is a UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/queues</span></code>. The <code class="docutils literal notranslate"><span class="pre">timeout_flow_id</span></code> must reference a valid flow (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/agents/{agent-id}</span></code> with the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Common agent statuses are <code class="docutils literal notranslate"><span class="pre">available</span></code>, <code class="docutils literal notranslate"><span class="pre">busy</span></code>, <code class="docutils literal notranslate"><span class="pre">away</span></code>, and <code class="docutils literal notranslate"><span class="pre">offline</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">queue-id</span></code> is a UUID obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/queues</span></code>. The <code class="docutils literal notranslate"><span class="pre">wait_flow_id</span></code> must reference a valid flow (obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/flows</span></code>) that handles the fallback (e.g., play a message and take a voicemail). Agent status is managed via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/agents/{agent-id}</span></code> with the <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Common agent statuses are <code class="docutils literal notranslate"><span class="pre">available</span></code>, <code class="docutils literal notranslate"><span class="pre">busy</span></code>, <code class="docutils literal notranslate"><span class="pre">away</span></code>, and <code class="docutils literal notranslate"><span class="pre">offline</span></code>.</p>
 </div>
 </section>
 <section id="error-reference">
@@ -765,7 +752,7 @@ Verify agents have status: &quot;available&quot;
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the <code class="docutils literal notranslate"><span class="pre">x-request-id</span></code> response header when contacting support.</p>
+<p>For HTTP 400 errors, the response body contains a detailed error message describing which field is invalid. For HTTP 404, always verify the resource ID by calling the corresponding list endpoint first (e.g., <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code> to verify a call-id exists before operating on it). For HTTP 429, implement exponential backoff starting at 1 second. For HTTP 500, include the <code class="docutils literal notranslate"><span class="pre">x-request-id</span></code> response header when contacting support.</p>
 </div>
 </section>
 <section id="getting-help">

@@ -30,7 +30,7 @@ Transfer
 * ``transferer_call_id`` (UUID): The call ID of the party initiating the transfer. Obtained from the ``id`` field of ``GET /calls``.
 * ``transferee_addresses`` (array of Address): The destination addresses for the transfer target. Each address follows the :ref:`Address <common-struct-address>` format.
 * ``transferee_call_id`` (UUID): The call ID of the party receiving the transfer (created after transfer execution). Obtained from the ``id`` field of ``GET /calls``.
-* ``groupcall_id`` (UUID): The group call ID created for the transfer operation. Obtained from the ``id`` field of ``GET /calls/{id}/groupcalls``.
+* ``groupcall_id`` (UUID): The group call ID created for the transfer operation. Obtained from the ``id`` field of ``GET /groupcalls``.
 * ``confbridge_id`` (UUID): The conference bridge used during the transfer. Obtained from the ``id`` field of ``GET /conferences``.
 * ``tm_create`` (string, ISO 8601): Timestamp when this transfer was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to this transfer.

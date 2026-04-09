@@ -195,7 +195,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> High – Campaigns coordinate multiple resources (outdials, outplans, queues, flows). Set up all dependencies before creating a campaign.</p></li>
 <li><p><strong>Cost:</strong> Chargeable. Running a campaign makes outbound calls/messages, each of which incurs per-minute or per-message charges.</p></li>
-<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/campaigns</span></code> creates the campaign in <code class="docutils literal notranslate"><span class="pre">stop</span></code> status. Set <code class="docutils literal notranslate"><span class="pre">status</span></code> to <code class="docutils literal notranslate"><span class="pre">running</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/campaigns/{id}</span></code> to start dialing. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns/{id}</span></code> to monitor campaign state and progress.</p></li>
+<li><p><strong>Async:</strong> Yes. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/campaigns</span></code> creates the campaign in <code class="docutils literal notranslate"><span class="pre">stop</span></code> status. Set <code class="docutils literal notranslate"><span class="pre">status</span></code> to <code class="docutils literal notranslate"><span class="pre">run</span></code> via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/campaigns/{id}/status</span></code> to start dialing. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/campaigns/{id}</span></code> to monitor campaign state and progress.</p></li>
 </ul>
 </div>
 <p>VoIPBIN’s Campaign API provides a comprehensive platform for managing large-scale outbound communication campaigns. Whether you need to make thousands of calls, send bulk SMS, or deliver email notifications, the Campaign API orchestrates the entire process with intelligent dialing strategies and automatic retry handling.</p>
@@ -262,16 +262,16 @@
 <span class="o">|</span>    <span class="n">stop</span>    <span class="o">|&lt;-----------------+</span>
 <span class="o">+-----+------+</span>                  <span class="o">|</span>
       <span class="o">|</span>                         <span class="o">|</span>
-      <span class="o">|</span> <span class="n">start</span>                   <span class="o">|</span> <span class="n">stop</span>
+      <span class="o">|</span> <span class="n">start</span> <span class="p">(</span><span class="nb">set</span> <span class="n">to</span> <span class="s2">&quot;run&quot;</span><span class="p">)</span>    <span class="o">|</span> <span class="n">stopping</span> <span class="o">-&gt;</span> <span class="n">stop</span>
       <span class="n">v</span>                         <span class="o">|</span>
 <span class="o">+------------+</span>                  <span class="o">|</span>
-<span class="o">|</span>   <span class="n">running</span>  <span class="o">|------------------+</span>
+<span class="o">|</span>    <span class="n">run</span>     <span class="o">|------------------+</span>
 <span class="o">+-----+------+</span>
       <span class="o">|</span>
-      <span class="o">|</span> <span class="nb">all</span> <span class="n">targets</span> <span class="n">completed</span>
+      <span class="o">|</span> <span class="n">stop</span> <span class="n">requested</span>
       <span class="n">v</span>
 <span class="o">+------------+</span>
-<span class="o">|</span>  <span class="n">finished</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="n">stopping</span>  <span class="o">|</span>
 <span class="o">+------------+</span>
 </pre></div>
 </div>
@@ -286,11 +286,11 @@
 <tr class="row-even"><td><p>stop</p></td>
 <td><p>Campaign created but not active; no dialing occurring</p></td>
 </tr>
-<tr class="row-odd"><td><p>running</p></td>
+<tr class="row-odd"><td><p>run</p></td>
 <td><p>Campaign actively dialing targets based on outplan</p></td>
 </tr>
-<tr class="row-even"><td><p>finished</p></td>
-<td><p>All targets attempted; campaign completed</p></td>
+<tr class="row-even"><td><p>stopping</p></td>
+<td><p>Campaign is preparing to stop; in-progress calls finishing up</p></td>
 </tr>
 </tbody>
 </table>
@@ -378,10 +378,10 @@
 </pre></div>
 </div>
 <p><strong>Start Campaign</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/campaigns/&lt;campaign-id&gt;?token=&lt;token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/campaigns/&lt;campaign-id&gt;/status?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data &#39;{
-        &quot;status&quot;: &quot;running&quot;
+        &quot;status&quot;: &quot;run&quot;
     }&#39;
 </pre></div>
 </div>
@@ -399,11 +399,8 @@
 <tr class="row-even"><td><p>call</p></td>
 <td><p>Voice calls to phone numbers, with optional agent connection</p></td>
 </tr>
-<tr class="row-odd"><td><p>message</p></td>
-<td><p>SMS/MMS messages to mobile numbers</p></td>
-</tr>
-<tr class="row-even"><td><p>email</p></td>
-<td><p>Email campaigns to addresses</p></td>
+<tr class="row-odd"><td><p>flow</p></td>
+<td><p>Execute a flow with the destination (IVR, AI, automations)</p></td>
 </tr>
 </tbody>
 </table>
@@ -525,7 +522,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Campaign not dialing</p></td>
-<td><p>Check status is “running”; verify outdial has
+<td><p>Check status is “run”; verify outdial has
 targets; check outplan timing settings</p></td>
 </tr>
 <tr class="row-odd"><td><p>Low answer rate</p></td>

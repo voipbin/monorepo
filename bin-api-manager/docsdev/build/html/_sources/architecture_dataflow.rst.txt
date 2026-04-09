@@ -173,6 +173,10 @@ When resources change, events propagate through the system:
       }
     }
 
+.. note:: **AI Implementation Hint**
+
+   Events follow the pattern: database write first, cache invalidation second, event publish third. If you are integrating with VoIPBIN webhooks, your endpoint must handle **at-least-once delivery** -- the same event may be delivered more than once. Use the ``event_id`` field for deduplication.
+
 **Subscriber Processing:**
 
 .. code::

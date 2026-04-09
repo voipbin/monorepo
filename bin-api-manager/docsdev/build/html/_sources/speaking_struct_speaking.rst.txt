@@ -20,7 +20,7 @@ Speaking
         "status": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
-        "tm_delete": "<string>",
+        "tm_delete": "<string>"
     }
 
 * ``id`` (UUID): The speaking session's unique identifier. Returned when creating a TTS session via ``POST /speakings`` or listing via ``GET /speakings``.

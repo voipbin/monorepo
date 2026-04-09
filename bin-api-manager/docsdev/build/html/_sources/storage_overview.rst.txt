@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Low
    * **Cost:** Chargeable (per GB stored; default quota is 10 GB per customer)
-   * **Async:** No. File uploads and downloads are synchronous. ``POST /storage_files`` returns immediately with the file metadata. ``GET /storage_files/{id}`` returns file details including a time-limited ``uri_download``.
+   * **Async:** No. File uploads and downloads are synchronous. ``POST https://api.voipbin.net/v1.0/storage_files`` returns immediately with the file metadata. ``GET https://api.voipbin.net/v1.0/storage_files/{id}`` returns file details including a time-limited ``uri_download``.
 
 VoIPBIN's Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.
 
@@ -67,7 +67,7 @@ Core file management operations.
 
 .. note:: **AI Implementation Hint**
 
-   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, use ``GET /storage_files/{id}/file`` which automatically refreshes the URL and redirects to the download. Do not cache or persist download URLs for long-term use.
+   The ``uri_download`` field in file responses contains a time-limited signed URL. Always check ``tm_download_expire`` before using the URL. If the URL has expired, use ``GET https://api.voipbin.net/v1.0/storage_files/{id}/file`` which automatically refreshes the URL and redirects to the download. Do not cache or persist download URLs for long-term use.
 
 **Upload a File**
 
@@ -165,7 +165,7 @@ Monitor and manage your storage usage.
 
 .. code::
 
-    $ curl -X GET 'https://api.voipbin.net/v1.0/storage_accounts?token=<token>'
+    $ curl -X GET 'https://api.voipbin.net/v1.0/storage_account?token=<token>'
 
 **Response:**
 
@@ -311,7 +311,7 @@ Free up space when approaching quota.
 ::
 
     1. Check current usage
-       GET /storage_accounts
+       GET /storage_account
        +--------------------------------------------+
        | Used: 9.2 GB / 10 GB (92%)                |
        | Status: Near quota limit                  |
@@ -329,7 +329,7 @@ Free up space when approaching quota.
        (repeat for multiple files)
 
     4. Verify freed space
-       GET /storage_accounts
+       GET /storage_account
        +--------------------------------------------+
        | Used: 5.8 GB / 10 GB (58%)                |
        | Status: OK                                |
@@ -407,8 +407,8 @@ Troubleshooting
 +---------------------------+---------------------------------------------------+
 | Symptom                   | Solution                                          |
 +===========================+===================================================+
-| Download URL expired      | Use ``GET /storage_files/{id}/file`` for          |
-|                           | automatic refresh and redirect                    |
+| Download URL expired      | Use ``GET https://api.voipbin.net/v1.0/           |
+|                           | storage_files/{id}/file`` for automatic refresh   |
 |                           |                                                   |
 +---------------------------+---------------------------------------------------+
 | 307 redirect not followed | Ensure your HTTP client follows redirects         |

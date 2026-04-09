@@ -191,7 +191,7 @@
 <span id="webhook-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
-<p>Before creating a webhook, you need:</p>
+<p>Before configuring webhooks, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
 <li><p>A publicly accessible HTTPS endpoint URL where VoIPBIN will send event notifications.</p></li>
@@ -200,96 +200,42 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Your webhook endpoint must be publicly reachable from the internet and respond with HTTP 200 within 5 seconds. For local development, use tools like ngrok to expose a local server. The <code class="docutils literal notranslate"><span class="pre">uri</span></code> field must be a valid HTTPS URL for production use.</p>
+<p>Webhooks are configured at the <strong>customer account level</strong>, not as separate resources. Use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> to set the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> fields on your customer profile. There is no <code class="docutils literal notranslate"><span class="pre">/webhooks</span></code> CRUD endpoint. Your webhook endpoint must be publicly reachable from the internet and respond with HTTP 200 within 5 seconds. For local development, use tools like ngrok to expose a local server.</p>
 </div>
-<section id="create-a-webhook">
-<h3>Create a Webhook<a class="headerlink" href="#create-a-webhook" title="Link to this heading"></a></h3>
-<p>Register a webhook endpoint to receive real-time event notifications from VoIPBIN. Webhooks notify your server when events occur (call status changes, messages received, etc.).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+<section id="configure-webhook-endpoint">
+<h3>Configure Webhook Endpoint<a class="headerlink" href="#configure-webhook-endpoint" title="Link to this heading"></a></h3>
+<p>Set your webhook delivery URL and HTTP method by updating your customer profile. VoIPBIN will send all event notifications to this URL.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;name&quot;: &quot;Production Webhook&quot;,
-        &quot;detail&quot;: &quot;Main webhook for production events&quot;,
-        &quot;uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
-        &quot;method&quot;: &quot;POST&quot;,
-        &quot;event_types&quot;: [
-            &quot;call.status&quot;,
-            &quot;message.received&quot;,
-            &quot;recording.completed&quot;
-        ]
-    }&#39;
-
-{
-    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-    &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
-    &quot;name&quot;: &quot;Production Webhook&quot;,
-    &quot;detail&quot;: &quot;Main webhook for production events&quot;,
-    &quot;uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
-    &quot;method&quot;: &quot;POST&quot;,
-    &quot;event_types&quot;: [
-        &quot;call.status&quot;,
-        &quot;message.received&quot;,
-        &quot;recording.completed&quot;
-    ],
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;tm_create&quot;: &quot;2026-01-20 10:30:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;2026-01-20 10:30:00.000000&quot;,
-    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
-}
-</pre></div>
-</div>
-<p>The webhook is now active and will receive POST requests when specified events occur.</p>
-</section>
-<section id="get-list-of-webhooks">
-<h3>Get List of Webhooks<a class="headerlink" href="#get-list-of-webhooks" title="Link to this heading"></a></h3>
-<p>Retrieve all registered webhooks for your account.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/webhooks?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
-
-{
-    &quot;result&quot;: [
-        {
-            &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
-            &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
-            &quot;name&quot;: &quot;Production Webhook&quot;,
-            &quot;detail&quot;: &quot;Main webhook for production events&quot;,
-            &quot;uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
-            &quot;method&quot;: &quot;POST&quot;,
-            &quot;event_types&quot;: [
-                &quot;call.status&quot;,
-                &quot;message.received&quot;
-            ],
-            &quot;status&quot;: &quot;active&quot;,
-            &quot;tm_create&quot;: &quot;2026-01-20 10:30:00.000000&quot;,
-            &quot;tm_update&quot;: &quot;2026-01-20 10:30:00.000000&quot;,
-            &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
-        }
-    ]
-}
-</pre></div>
-</div>
-</section>
-<section id="update-a-webhook">
-<h3>Update a Webhook<a class="headerlink" href="#update-a-webhook" title="Link to this heading"></a></h3>
-<p>Modify an existing webhook’s configuration, such as changing the URI or event types.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/webhooks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;name&quot;: &quot;Production Webhook - Updated&quot;,
-        &quot;event_types&quot;: [
-            &quot;call.status&quot;,
-            &quot;call.completed&quot;,
-            &quot;message.received&quot;,
-            &quot;recording.completed&quot;,
-            &quot;transcribe.completed&quot;
-        ]
+        &quot;webhook_uri&quot;: &quot;https://your-server.com/voipbin/webhook&quot;,
+        &quot;webhook_method&quot;: &quot;POST&quot;
     }&#39;
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> field accepts one of: <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>. Most implementations use <code class="docutils literal notranslate"><span class="pre">POST</span></code>. The <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> should be a valid HTTPS URL for production use. To verify your current webhook configuration, call <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> and check the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> fields in the response.</p>
+</div>
 </section>
-<section id="delete-a-webhook">
-<h3>Delete a Webhook<a class="headerlink" href="#delete-a-webhook" title="Link to this heading"></a></h3>
-<p>Remove a webhook when it’s no longer needed.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/webhooks/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+<section id="verify-webhook-configuration">
+<h3>Verify Webhook Configuration<a class="headerlink" href="#verify-webhook-configuration" title="Link to this heading"></a></h3>
+<p>Retrieve your current customer profile to confirm the webhook settings.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p>Check the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> fields in the response to verify your configuration.</p>
+</section>
+<section id="disable-webhooks">
+<h3>Disable Webhooks<a class="headerlink" href="#disable-webhooks" title="Link to this heading"></a></h3>
+<p>To stop receiving webhook notifications, set the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> to an empty string.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;webhook_uri&quot;: &quot;&quot;,
+        &quot;webhook_method&quot;: &quot;&quot;
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -350,8 +296,6 @@
 <p>Your webhook endpoint should accept POST requests and process the JSON payload. Here’s an example webhook server implementation:</p>
 <p><strong>Python (Flask) Example:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
-<span class="kn">import</span> <span class="nn">hmac</span>
-<span class="kn">import</span> <span class="nn">hashlib</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -532,9 +476,8 @@ $ ngrok http 5000
 - Return appropriate HTTP status codes
 - Implement retry logic for failed processing</p>
 <p><strong>5. Event Filtering:</strong>
-- Subscribe only to events you need
-- Filter events in your webhook handler
-- Update webhook configuration as requirements change</p>
+- Filter events in your webhook handler based on the <code class="docutils literal notranslate"><span class="pre">type</span></code> field
+- Process only events relevant to your application</p>
 <p><strong>6. Monitoring:</strong>
 - Track webhook delivery success/failure rates
 - Set up alerts for high failure rates
@@ -573,7 +516,7 @@ Email recordings to stakeholders when ready:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;recording_updated&#39;</span><span class="p">:</span>
     <span class="n">recording</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;done&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">recording</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ended&#39;</span><span class="p">:</span>
         <span class="c1"># Send email with recording info</span>
         <span class="n">email</span><span class="o">.</span><span class="n">send</span><span class="p">(</span>
             <span class="n">to</span><span class="o">=</span><span class="s1">&#39;team@company.com&#39;</span><span class="p">,</span>
@@ -597,10 +540,9 @@ Email recordings to stakeholders when ready:</p>
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
-<li><a class="reference internal" href="#create-a-webhook">Create a Webhook</a></li>
-<li><a class="reference internal" href="#get-list-of-webhooks">Get List of Webhooks</a></li>
-<li><a class="reference internal" href="#update-a-webhook">Update a Webhook</a></li>
-<li><a class="reference internal" href="#delete-a-webhook">Delete a Webhook</a></li>
+<li><a class="reference internal" href="#configure-webhook-endpoint">Configure Webhook Endpoint</a></li>
+<li><a class="reference internal" href="#verify-webhook-configuration">Verify Webhook Configuration</a></li>
+<li><a class="reference internal" href="#disable-webhooks">Disable Webhooks</a></li>
 <li><a class="reference internal" href="#webhook-event-types">Webhook Event Types</a></li>
 <li><a class="reference internal" href="#receiving-webhook-events">Receiving Webhook Events</a></li>
 <li><a class="reference internal" href="#testing-webhooks">Testing Webhooks</a></li>

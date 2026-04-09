@@ -424,18 +424,13 @@ The executed_actions history is preserved for review.</p></td>
 <span class="o">|</span>                    <span class="n">ActiveFlow</span> <span class="n">Control</span> <span class="n">Interface</span>                        <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
 
-<span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>
+<span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>
 <span class="o">+--</span> <span class="n">View</span> <span class="n">current</span> <span class="n">state</span>
 <span class="o">+--</span> <span class="n">See</span> <span class="n">current_action</span>
 <span class="o">+--</span> <span class="n">Review</span> <span class="n">executed_actions</span>
 <span class="o">+--</span> <span class="n">Check</span> <span class="n">variables</span>
 
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">execute</span>
-<span class="o">+--</span> <span class="n">Resume</span> <span class="n">a</span> <span class="n">blocked</span> <span class="n">flow</span>
-<span class="o">+--</span> <span class="n">Push</span> <span class="n">new</span> <span class="n">actions</span>
-<span class="o">+--</span> <span class="n">Continue</span> <span class="n">execution</span>
-
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">stop</span>
+<span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">stop</span>
 <span class="o">+--</span> <span class="n">Immediately</span> <span class="n">stop</span> <span class="n">execution</span>
 <span class="o">+--</span> <span class="n">Status</span> <span class="n">changes</span> <span class="n">to</span> <span class="s2">&quot;ended&quot;</span>
 <span class="o">+--</span> <span class="n">Triggers</span> <span class="n">on_complete_flow</span> <span class="k">if</span> <span class="nb">set</span>
@@ -473,7 +468,7 @@ The executed_actions history is preserved for review.</p></td>
 <ul class="simple">
 <li><p><strong>Main Service Type Completion:</strong> The activeflow continues executing flow actions until the primary service type is completed. For instance, in the case of a call service, actions will be executed until the call is hung up.</p></li>
 <li><p><strong>Stop Action Execution:</strong> Execution ceases if an action with the type “stop” is encountered in the flow.</p></li>
-<li><p><strong>User-Initiated Interruption:</strong> Users can actively interrupt their activeflow by sending a POST request to the endpoint: <a class="reference external" href="https://api.voipbin.net/v1/activeflows">https://api.voipbin.net/v1/activeflows</a>/&lt;activeflow-id&gt;/stop.</p></li>
+<li><p><strong>User-Initiated Interruption:</strong> Users can actively interrupt their activeflow by sending a POST request to the endpoint: <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/activeflows/&lt;activeflow-id&gt;/stop</span></code>.</p></li>
 </ul>
 </section>
 <section id="variable-management">
@@ -674,7 +669,7 @@ The executed_actions history is preserved for review.</p></td>
 </pre></div>
 </div>
 <p><strong>Use Case 3: Debugging Flow Execution</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>
 
 <span class="n">Response</span> <span class="n">shows</span><span class="p">:</span>
 <span class="p">{</span>
@@ -695,6 +690,11 @@ The executed_actions history is preserved for review.</p></td>
 <span class="o">-&gt;</span> <span class="n">You</span> <span class="n">can</span> <span class="n">see</span> <span class="n">exactly</span> <span class="n">where</span> <span class="n">the</span> <span class="n">flow</span> <span class="ow">is</span> <span class="ow">and</span> <span class="n">what</span> <span class="n">has</span> <span class="n">happened</span>
 </pre></div>
 </div>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Execution Issues</strong></p>
+<p><strong>Control Interface Issues</strong></p>
 </section>
 </section>
 
@@ -720,6 +720,7 @@ The executed_actions history is preserved for review.</p></td>
 <li><a class="reference internal" href="#on-complete-flow">On Complete Flow</a></li>
 <li><a class="reference internal" href="#error-handling">Error Handling</a></li>
 <li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

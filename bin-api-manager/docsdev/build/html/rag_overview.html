@@ -202,7 +202,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>A RAG is a configuration resource, not a runtime entity. You create a RAG via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> with <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> and/or <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> to provide initial documents. You can add more sources later via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>. Then reference the RAG’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in an AI configuration (<code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code>). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.</p>
+<p>A RAG is a configuration resource, not a runtime entity. You create a RAG via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/rags</span></code> with <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> and/or <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> to provide initial documents. You can add more sources later via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/rags/{id}/sources</span></code>. Then reference the RAG’s <code class="docutils literal notranslate"><span class="pre">id</span></code> in an AI configuration (<code class="docutils literal notranslate"><span class="pre">rag_id</span></code> field on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/ais/{id}</span></code>). The RAG itself does not answer questions — it provides the knowledge base that the AI agent queries during conversations.</p>
 </div>
 </section>
 <section id="how-it-works">
@@ -307,7 +307,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>After adding sources via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>, poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags/{id}</span></code> to check the RAG’s <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Each entry in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> array shows per-document <code class="docutils literal notranslate"><span class="pre">status</span></code> and <code class="docutils literal notranslate"><span class="pre">status_message</span></code>. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> contribute to RAG query results.</p>
+<p>After adding sources via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/rags</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/rags/{id}/sources</span></code>, poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rags/{id}</span></code> to check the RAG’s <code class="docutils literal notranslate"><span class="pre">status</span></code> field. Each entry in the <code class="docutils literal notranslate"><span class="pre">sources</span></code> array shows per-document <code class="docutils literal notranslate"><span class="pre">status</span></code> and <code class="docutils literal notranslate"><span class="pre">status_message</span></code>. Do not assume documents are ready for queries immediately — processing can take seconds to minutes depending on document size. Only documents with <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> contribute to RAG query results.</p>
 </div>
 </section>
 </section>
@@ -318,6 +318,51 @@
 <li><p><strong>Product documentation</strong> — Add product manuals, API docs, and feature guides. The AI answers customer questions with accurate, up-to-date product information.</p></li>
 <li><p><strong>Internal training</strong> — Build knowledge bases from training materials, SOPs, and policy documents for AI-assisted employee onboarding calls.</p></li>
 <li><p><strong>Sales enablement</strong> — Upload pricing sheets, competitive analysis, and product comparisons. The AI assists sales agents with accurate data during prospect calls.</p></li>
+</ul>
+</section>
+<section id="troubleshooting">
+<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>400 Bad Request on ``POST https://api.voipbin.net/v1.0/rags``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Missing required <code class="docutils literal notranslate"><span class="pre">name</span></code> field in the request body.</p></li>
+<li><p><strong>Fix:</strong> Ensure the request body includes at least the <code class="docutils literal notranslate"><span class="pre">name</span></code> field. <code class="docutils literal notranslate"><span class="pre">storage_file_ids</span></code> and <code class="docutils literal notranslate"><span class="pre">source_urls</span></code> are optional.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Document stuck in ``processing`` status:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The document is large or the processing pipeline is under load.</p></li>
+<li><p><strong>Fix:</strong> Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rags/{id}</span></code> and check the <code class="docutils literal notranslate"><span class="pre">sources</span></code> array. Processing can take seconds to minutes. If <code class="docutils literal notranslate"><span class="pre">status</span></code> remains <code class="docutils literal notranslate"><span class="pre">processing</span></code> for more than 10 minutes, the pipeline may have failed silently.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Document in ``error`` status:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The source URL is unreachable, the uploaded file format is unsupported, or the file is corrupted.</p></li>
+<li><p><strong>Fix:</strong> Check the <code class="docutils literal notranslate"><span class="pre">status_message</span></code> field in the source entry for the specific error. Re-upload or provide a corrected URL via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/rags/{id}/sources</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>AI does not use RAG knowledge during calls:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The RAG is not linked to the AI configuration, or all documents are still in <code class="docutils literal notranslate"><span class="pre">pending</span></code>/<code class="docutils literal notranslate"><span class="pre">processing</span></code> status.</p></li>
+<li><p><strong>Fix:</strong> Verify the AI resource has <code class="docutils literal notranslate"><span class="pre">rag_id</span></code> set to your RAG’s UUID via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/ais/{ai-id}</span></code>. Verify at least one source has <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">ready</span></code> via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rags/{id}</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>404 Not Found:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The RAG UUID does not exist or belongs to a different customer.</p></li>
+<li><p><strong>Fix:</strong> Verify the UUID was obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/rags</span></code> or <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/rags</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </section>
 <section id="related-documentation">
@@ -345,6 +390,7 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#use-cases">Use Cases</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 

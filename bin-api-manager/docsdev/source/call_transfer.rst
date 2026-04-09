@@ -13,7 +13,7 @@ Call transfer is just one of many features available in CPaaS technology, which 
 
 .. note:: **AI Implementation Hint**
 
-   Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. The ``call-id`` used in ``POST /calls/{call-id}/transfer`` must be an active call (status ``progressing``). Obtain the ``call-id`` from ``GET /calls`` or from a webhook event such as ``call_answered``.
+   Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. Initiate a transfer via ``POST /v1/transfers`` with the ``transferer_call_id`` (UUID, obtained from ``GET /v1/calls``) of an active call in ``progressing`` status, along with ``transferee_addresses`` (array of addresses) and ``transfer_type`` (enum: ``attended`` or ``blind``).
 
 .. _call-transfer-blind_transfer:
 
@@ -119,4 +119,4 @@ This is the basic process of an attended transfer using a CPaaS like VoIPBIN. It
 
 .. note:: **AI Implementation Hint**
 
-   During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer via ``POST /transfers/{transfer-id}/cancel`` and resume the original call with the caller.
+   During an attended transfer, the caller is placed on hold with music. The transferer and transferee can speak privately before completing the transfer. The transfer is only completed when the transferer hangs up. If the transferee does not answer or the consultation fails, the transferer can cancel the transfer and resume the original call with the caller.

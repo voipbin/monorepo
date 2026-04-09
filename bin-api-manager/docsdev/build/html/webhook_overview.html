@@ -195,7 +195,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Low</p></li>
 <li><p><strong>Cost:</strong> Free – Webhook delivery does not incur charges. Events are pushed to your configured endpoint at no cost.</p></li>
-<li><p><strong>Async:</strong> No. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/webhooks</span></code> creates the webhook configuration synchronously. Event delivery to your endpoint happens asynchronously as events occur.</p></li>
+<li><p><strong>Async:</strong> No. Webhook configuration is set on the customer resource via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> (fields <code class="docutils literal notranslate"><span class="pre">webhook_url</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code>). Event delivery to your endpoint happens asynchronously as events occur.</p></li>
 </ul>
 </div>
 <p>Webhooks, a robust feature offered by VoIPBIN, empower users to receive real-time event data for their calls and associated resources directly on their servers. By establishing custom endpoints, users can seamlessly configure their servers to receive timely notifications and updates related to VoIPBIN resources, thereby enhancing control, customization, and real-time visibility within their communication workflows.</p>
@@ -282,7 +282,7 @@
 <li><dl class="simple">
 <dt><strong>Webhooks not being received:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Your webhook endpoint URL is incorrect, unreachable, or not responding with HTTP 200.</p></li>
-<li><p><strong>Fix:</strong> Verify the endpoint URL via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/webhooks</span></code>. Ensure your server is publicly accessible and responds with <code class="docutils literal notranslate"><span class="pre">200</span> <span class="pre">OK</span></code> within 5 seconds.</p></li>
+<li><p><strong>Fix:</strong> Verify the endpoint URL via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> (check <code class="docutils literal notranslate"><span class="pre">webhook_url</span></code> field). Ensure your server is publicly accessible and responds with <code class="docutils literal notranslate"><span class="pre">200</span> <span class="pre">OK</span></code> within 5 seconds.</p></li>
 </ul>
 </dd>
 </dl>
@@ -296,13 +296,22 @@
 </dl>
 </li>
 <li><dl class="simple">
-<dt><strong>400 Bad Request (creating webhook):</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> Invalid URL format or missing required fields.</p></li>
-<li><p><strong>Fix:</strong> Ensure the <code class="docutils literal notranslate"><span class="pre">url</span></code> field is a valid HTTPS URL. Verify <code class="docutils literal notranslate"><span class="pre">event_types</span></code> is a non-empty array.</p></li>
+<dt><strong>400 Bad Request (updating webhook configuration):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Invalid URL format in <code class="docutils literal notranslate"><span class="pre">webhook_url</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Ensure the <code class="docutils literal notranslate"><span class="pre">webhook_url</span></code> field is a valid HTTPS URL when updating via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
+</ul>
+</section>
+<section id="related-documentation">
+<h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="customer_overview.html#customer-overview"><span class="std std-ref">Customer Overview</span></a> - Configuring webhook URL and method on your customer account</p></li>
+<li><p><a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">WebSocket Overview</span></a> - Alternative real-time event delivery via persistent connection</p></li>
+<li><p><a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call Overview</span></a> - Call events that trigger webhooks</p></li>
+<li><p><a class="reference internal" href="message_overview.html#message-overview"><span class="std std-ref">Message Overview</span></a> - Message events that trigger webhooks</p></li>
 </ul>
 </section>
 </section>
@@ -322,6 +331,7 @@
 <li><a class="reference internal" href="#webhook-event-types">Webhook Event Types</a></li>
 <li><a class="reference internal" href="#benefits-of-webhooks">Benefits of Webhooks</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
 </ul>

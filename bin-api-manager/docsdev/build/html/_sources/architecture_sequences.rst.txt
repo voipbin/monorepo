@@ -108,6 +108,10 @@ When an external caller dials a VoIPBIN number, the following sequence occurs:
 * ``ChannelEnteredBridge`` - Participant joined bridge (conference)
 * ``ChannelLeftBridge`` - Participant left bridge
 
+.. note:: **AI Implementation Hint**
+
+   Inbound calls are routed by looking up the dialed number's associated flow ID. To handle inbound calls, first purchase a number via ``POST https://api.voipbin.net/v1.0/numbers``, then create a flow via ``POST https://api.voipbin.net/v1.0/flows``, and finally assign the flow to the number. The flow-manager then executes actions (answer, play, gather, ai_talk, etc.) when calls arrive.
+
 Outbound Campaign Flow
 ----------------------
 

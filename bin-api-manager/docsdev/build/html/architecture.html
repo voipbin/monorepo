@@ -197,11 +197,21 @@
 <p><strong>AI Context</strong></p>
 <p>This section provides comprehensive documentation of VoIPBIN’s system internals. Relevant when an AI agent needs to understand how the platform is built, how services communicate, or how infrastructure is deployed. For API usage, see the individual resource documentation pages.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>VoIPBIN uses RabbitMQ RPC for all inter-service communication, not HTTP. When making API calls, use <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code> as the base URL. The API gateway (bin-api-manager) handles authentication and routes requests internally via RabbitMQ to the appropriate backend service.</p>
+</div>
 <section id="overview">
 <span id="architecture-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Low – This is reference documentation describing VoIPBIN’s system architecture. No API calls are specific to this section.</p></li>
+<li><p><strong>Cost:</strong> Free. Architecture documentation is informational only; no operations are performed.</p></li>
+<li><p><strong>Async:</strong> N/A. This section documents the platform structure, not API endpoints.</p></li>
+</ul>
 <p>This page describes VoIPBIN’s high-level system architecture, including the three major layers (API gateway, microservices, real-time communication) and core design principles. Relevant when an AI agent needs to understand the overall platform structure, service categories, or technology stack choices.</p>
 </div>
 <p>VoIPBIN is a cloud-native Communication Platform as a Service (CPaaS) built on modern microservices architecture. The platform provides comprehensive communication capabilities including PSTN calls, WebRTC, SMS, conferencing, AI-powered features, and workflow orchestration.</p>
@@ -909,6 +919,11 @@ Client                    API Gateway              Backend Service
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All API requests go through the single gateway at <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code>. The routing table above shows which backend service handles each endpoint path. Authentication (JWT or Access Key) and authorization (customer_id ownership check) happen exclusively in bin-api-manager. Backend services trust the gateway and perform no auth checks themselves.</p>
+</div>
 </section>
 <section id="special-service-architectures">
 <h3>Special Service Architectures<a class="headerlink" href="#special-service-architectures" title="Link to this heading"></a></h3>
@@ -1198,7 +1213,7 @@ Client                    API Gateway              Backend Service
      <span class="o">|</span>       <span class="n">o</span> <span class="n">Port</span> <span class="n">number</span>
      <span class="o">|</span>       <span class="n">o</span> <span class="n">Log</span> <span class="n">level</span>
      <span class="o">|</span>
-     <span class="o">+-------&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">config</span><span class="o">-</span><span class="n">manager</span>
+     <span class="o">+-------&gt;</span> <span class="n">Database</span> <span class="o">/</span> <span class="n">Service</span> <span class="n">Config</span>
      <span class="o">|</span>       <span class="n">o</span> <span class="n">Feature</span> <span class="n">flags</span>
      <span class="o">|</span>       <span class="n">o</span> <span class="n">Business</span> <span class="n">logic</span> <span class="n">config</span>
      <span class="o">|</span>
@@ -1547,7 +1562,7 @@ Client                    API Gateway              Backend Service
 <span class="n">Examples</span><span class="p">:</span>
 <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">request</span>        <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>
 <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">conference</span><span class="o">.</span><span class="n">request</span>  <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">conference</span><span class="o">-</span><span class="n">manager</span>
-<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">sms</span><span class="o">.</span><span class="n">request</span>         <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">sms</span><span class="o">-</span><span class="n">manager</span>
+<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">request</span>     <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">message</span><span class="o">-</span><span class="n">manager</span>
 <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">request</span>        <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">flow</span><span class="o">-</span><span class="n">manager</span>
 <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">billing</span><span class="o">.</span><span class="n">request</span>     <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">billing</span><span class="o">-</span><span class="n">manager</span>
 </pre></div>
@@ -1926,6 +1941,11 @@ Client                    API Gateway              Backend Service
 <span class="n">o</span> <span class="n">Subscribe</span> <span class="n">to</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>  <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="nb">all</span><span class="p">)</span>
 <span class="n">o</span> <span class="n">Receives</span><span class="p">:</span> <span class="n">everything</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For real-time event notifications, subscribe via WebSocket at <code class="docutils literal notranslate"><span class="pre">wss://api.voipbin.net/ws?token=&lt;JWT&gt;</span></code>. For reliable event delivery to external systems, configure webhooks via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>. ZeroMQ events are internal-only and not exposed to API clients.</p>
 </div>
 </section>
 <section id="websocket-communication">
@@ -2341,7 +2361,7 @@ Max: 7 attempts, ~1 minute total
    <span class="o">+-</span> <span class="n">Initiate</span> <span class="n">Call</span>     <span class="p">[</span><span class="mi">50</span><span class="n">ms</span><span class="p">]</span>
        <span class="o">|</span>
        <span class="n">v</span>
-<span class="mf">3.</span> <span class="n">RTC</span> <span class="n">Manager</span>          <span class="p">[</span><span class="mi">120</span><span class="n">ms</span><span class="p">]</span>
+<span class="mf">3.</span> <span class="n">Asterisk</span> <span class="p">(</span><span class="n">VoIP</span><span class="p">)</span>       <span class="p">[</span><span class="mi">120</span><span class="n">ms</span><span class="p">]</span>
    <span class="o">+-</span> <span class="n">Setup</span> <span class="n">Media</span>       <span class="p">[</span><span class="mi">120</span><span class="n">ms</span><span class="p">]</span>
 
 <span class="n">Total</span><span class="p">:</span> <span class="mi">250</span><span class="n">ms</span>
@@ -2622,6 +2642,11 @@ Max: 7 attempts, ~1 minute total
    +---------------------------------+
    -&gt; Reuse connections
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>All database schema changes must go through Alembic migrations in <code class="docutils literal notranslate"><span class="pre">bin-dbscheme-manager</span></code>. Never modify the database schema directly. All records use UUID primary keys and soft deletes (<code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span></code> for active records). When querying via the API, deleted records are automatically excluded from results.</p>
 </div>
 </section>
 <section id="database-migrations">
@@ -3336,6 +3361,11 @@ EXPIRE key 300         # Set TTL on existing key
 <span class="p">}</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Events follow the pattern: database write first, cache invalidation second, event publish third. If you are integrating with VoIPBIN webhooks, your endpoint must handle <strong>at-least-once delivery</strong> – the same event may be delivered more than once. Use the <code class="docutils literal notranslate"><span class="pre">event_id</span></code> field for deduplication.</p>
+</div>
 <p><strong>Subscriber Processing:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Processing</span> <span class="n">by</span> <span class="n">Service</span><span class="p">:</span>
 
@@ -3944,6 +3974,11 @@ EXPIRE key 300         # Set TTL on existing key
 <li><p><strong>Call Control</strong>: Asterisk manages call state and conference bridges</p></li>
 </ol>
 <p>This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>VoIPBIN uses ulaw (G.711) as the exclusive internal codec. All external codecs (G.722, Opus, etc.) are transcoded at the edge by RTPEngine. When integrating SIP endpoints, any standard codec is accepted, but for lowest latency configure your SIP client to prefer G.711 ulaw to avoid transcoding overhead.</p>
+</div>
 </section>
 <section id="kamailio-sip-edge-router">
 <h3>Kamailio - SIP Edge Router<a class="headerlink" href="#kamailio-sip-edge-router" title="Link to this heading"></a></h3>
@@ -4450,8 +4485,8 @@ Client Application
 |     → Status: &quot;initiating&quot;                      |
 |                                                 |
 |  d) Initiate SIP call                           |
-|     → Send to bin-rtc-manager                   |
 |     → Request Asterisk channel creation         |
+|     → via Kamailio SIP routing                  |
 |                                                 |
 |  e) Update call status                          |
 |     → UPDATE calls SET status=&#39;ringing&#39; WHERE...|
@@ -4519,11 +4554,16 @@ Content-Type: application/json
 <span class="n">RabbitMQ</span> <span class="n">routing</span>        <span class="mi">2</span><span class="n">ms</span>       <span class="mi">7</span><span class="n">ms</span>
 <span class="n">Call</span> <span class="n">Manager</span> <span class="n">logic</span>      <span class="mi">30</span><span class="n">ms</span>      <span class="mi">37</span><span class="n">ms</span>
 <span class="n">Database</span> <span class="n">insert</span>         <span class="mi">8</span><span class="n">ms</span>       <span class="mi">45</span><span class="n">ms</span>
-<span class="n">RTC</span> <span class="n">Manager</span> <span class="n">SIP</span> <span class="n">setup</span>   <span class="mi">50</span><span class="n">ms</span>      <span class="mi">95</span><span class="n">ms</span>
+<span class="n">Asterisk</span> <span class="n">SIP</span> <span class="n">setup</span>      <span class="mi">50</span><span class="n">ms</span>      <span class="mi">95</span><span class="n">ms</span>
 <span class="n">Response</span> <span class="n">routing</span>        <span class="mi">5</span><span class="n">ms</span>       <span class="mi">100</span><span class="n">ms</span>
 <span class="o">---------------------------------------------</span>
 <span class="n">Total</span>                   <span class="mi">100</span><span class="n">ms</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code>, the response returns immediately with an initial status (e.g., <code class="docutils literal notranslate"><span class="pre">ringing</span></code>). The call status changes asynchronously. To track call progress, either subscribe to WebSocket events or configure a webhook on your customer profile via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p>
 </div>
 </section>
 <section id="flow-2-get-call-with-caching">
@@ -4708,7 +4748,7 @@ Services Involved:
 • Flow Manager (orchestration)
 • Conference Manager (conference state)
 • Call Manager (call handling)
-• RTC Manager (not shown, handles SIP/media)
+• Asterisk / Kamailio (not shown, handles SIP/media)
 
 Total Time: ~200ms
 • Gateway: 5ms
@@ -5087,6 +5127,11 @@ Issue: Slow Response
 <li><p><code class="docutils literal notranslate"><span class="pre">ChannelEnteredBridge</span></code> - Participant joined bridge (conference)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ChannelLeftBridge</span></code> - Participant left bridge</p></li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Inbound calls are routed by looking up the dialed number’s associated flow ID. To handle inbound calls, first purchase a number via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>, then create a flow via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/flows</span></code>, and finally assign the flow to the number. The flow-manager then executes actions (answer, play, gather, ai_talk, etc.) when calls arrive.</p>
+</div>
 </section>
 <section id="outbound-campaign-flow">
 <h3>Outbound Campaign Flow<a class="headerlink" href="#outbound-campaign-flow" title="Link to this heading"></a></h3>
@@ -5692,6 +5737,11 @@ API Request    campaign-mgr    outdial-mgr    call-manager    flow-manager
 <span class="o">|</span> <span class="n">Port</span> <span class="mi">2112</span>  <span class="o">-</span> <span class="n">Prometheus</span> <span class="n">metrics</span>          <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>VoIPBIN services run on GKE with a minimum of 2 replicas each for high availability. The API endpoint <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/</span></code> is served through a Cloud Load Balancer with TLS termination. SIP traffic uses a separate L4 load balancer on <code class="docutils literal notranslate"><span class="pre">sip.voipbin.net</span></code> (ports 5060/5061). All infrastructure runs within a single GCP VPC with network segmentation.</p>
 </div>
 </section>
 <section id="service-scaling">
@@ -6397,6 +6447,11 @@ API Request    campaign-mgr    outdial-mgr    call-manager    flow-manager
 <span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For server-to-server integrations, use Access Keys (<code class="docutils literal notranslate"><span class="pre">Authorization:</span> <span class="pre">AccessKey</span> <span class="pre">ak_xxxxx</span></code>) instead of JWT tokens. Access Keys do not expire on a short timer like JWT tokens (1 hour) and are better suited for automation. Create Access Keys via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/accesskeys</span></code>. For interactive user sessions (web/mobile apps), use JWT tokens obtained from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/auth/login</span></code>.</p>
+</div>
 <p><strong>Access Key Authentication:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Access</span> <span class="n">Key</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -6630,7 +6685,7 @@ Request Arrives
 <span class="o">|</span> <span class="n">Keys</span><span class="p">:</span>                                    <span class="o">|</span>
 <span class="o">|</span>   <span class="o">-</span> <span class="n">deepgram_api_key</span>                     <span class="o">|</span>
 <span class="o">|</span>   <span class="o">-</span> <span class="n">openai_api_key</span>                       <span class="o">|</span>
-<span class="o">|</span>   <span class="o">-</span> <span class="n">twilio_api_key</span>                       <span class="o">|</span>
+<span class="o">|</span>   <span class="o">-</span> <span class="n">telnyx_api_key</span>                       <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 
 <span class="n">SSL</span> <span class="n">Certificates</span><span class="p">:</span>

@@ -349,7 +349,7 @@ Queue Join Not Working
     |    Look at: agent count, online agents                           |
     +------------------------------------------------------------------+
     | 2. Check agent status                                            |
-    |    GET /v1/agents?queue_id={queue-id}                            |
+    |    GET /v1/agents                                                |
     |    Are agents online and available?                              |
     +------------------------------------------------------------------+
     | 3. Check queue configuration                                     |
@@ -745,29 +745,29 @@ Common API calls for troubleshooting:
 
     # List recent activeflows
     curl -H "Authorization: Bearer $TOKEN" \
-      "https://api.voipbin.net/v1/activeflows?limit=10"
+      "https://api.voipbin.net/v1.0/activeflows?limit=10"
 
     # Get specific activeflow
     curl -H "Authorization: Bearer $TOKEN" \
-      "https://api.voipbin.net/v1/activeflows/{id}"
+      "https://api.voipbin.net/v1.0/activeflows/{id}"
 
     # Get activeflow variables
     curl -H "Authorization: Bearer $TOKEN" \
-      "https://api.voipbin.net/v1/activeflows/{id}/variables"
+      "https://api.voipbin.net/v1.0/activeflows/{id}/variables"
 
     # Find activeflow by call
     curl -H "Authorization: Bearer $TOKEN" \
-      "https://api.voipbin.net/v1/activeflows?reference_id={call-id}"
+      "https://api.voipbin.net/v1.0/activeflows?reference_id={call-id}"
 
     # Get flow definition
     curl -H "Authorization: Bearer $TOKEN" \
-      "https://api.voipbin.net/v1/flows/{flow-id}"
+      "https://api.voipbin.net/v1.0/flows/{flow-id}"
 
     # Get call details
     curl -H "Authorization: Bearer $TOKEN" \
-      "https://api.voipbin.net/v1/calls/{call-id}"
+      "https://api.voipbin.net/v1.0/calls/{call-id}"
 
     # List calls for a flow
     curl -H "Authorization: Bearer $TOKEN" \
-      "https://api.voipbin.net/v1/calls?flow_id={flow-id}"
+      "https://api.voipbin.net/v1.0/calls?flow_id={flow-id}"
 

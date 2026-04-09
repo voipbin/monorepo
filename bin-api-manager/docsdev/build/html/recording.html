@@ -201,7 +201,7 @@
 <ul class="simple">
 <li><p><strong>Complexity:</strong> Medium</p></li>
 <li><p><strong>Cost:</strong> Chargeable (recording duration contributes to call costs; storage charged per GB)</p></li>
-<li><p><strong>Async:</strong> Yes. Recordings transition through states: <code class="docutils literal notranslate"><span class="pre">starting</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">recording</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">stopping</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">available</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{id}</span></code> to check for <code class="docutils literal notranslate"><span class="pre">available</span></code> status before downloading.</p></li>
+<li><p><strong>Async:</strong> Yes. Recordings transition through states: <code class="docutils literal notranslate"><span class="pre">initiating</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">recording</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">stopping</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">ended</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/recordings/{id}</span></code> to check for <code class="docutils literal notranslate"><span class="pre">ended</span></code> status before downloading.</p></li>
 </ul>
 </div>
 <p>VoIPBIN’s Recording API enables you to capture, store, and manage audio from calls and conferences. Whether you need recordings for compliance, quality assurance, training, or analytics, the Recording API provides a complete solution for managing call audio throughout its lifecycle.</p>
@@ -264,21 +264,21 @@ Recording</p></td>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">recording_start</span> <span class="ow">or</span> <span class="n">flow</span> <span class="n">action</span>
        <span class="o">|</span>
        <span class="n">v</span>
-<span class="o">+------------+</span>                        <span class="o">+------------+</span>
-<span class="o">|</span>  <span class="n">starting</span>  <span class="o">|------</span><span class="n">recording</span><span class="o">--------&gt;|</span>  <span class="n">recording</span> <span class="o">|</span>
-<span class="o">+------------+</span>                        <span class="o">+-----+------+</span>
-                                            <span class="o">|</span>
+<span class="o">+-------------+</span>                        <span class="o">+------------+</span>
+<span class="o">|</span> <span class="n">initiating</span>  <span class="o">|------</span><span class="n">recording</span><span class="o">--------&gt;|</span>  <span class="n">recording</span> <span class="o">|</span>
+<span class="o">+-------------+</span>                        <span class="o">+-----+------+</span>
+                                             <span class="o">|</span>
                        <span class="n">POST</span> <span class="o">/</span><span class="n">recording_stop</span><span class="p">,</span> <span class="n">hangup</span><span class="p">,</span> <span class="ow">or</span> <span class="nb">max</span> <span class="n">duration</span>
+                                             <span class="o">|</span>
+                                             <span class="n">v</span>
+                                      <span class="o">+------------+</span>
+                                      <span class="o">|</span>  <span class="n">stopping</span>  <span class="o">|</span>
+                                      <span class="o">+-----+------+</span>
                                             <span class="o">|</span>
-                                            <span class="n">v</span>
-                                     <span class="o">+------------+</span>
-                                     <span class="o">|</span>  <span class="n">stopping</span>  <span class="o">|</span>
-                                     <span class="o">+-----+------+</span>
-                                           <span class="o">|</span>
-                                           <span class="n">v</span> <span class="p">(</span><span class="n">file</span> <span class="n">processing</span><span class="p">)</span>
-                                     <span class="o">+------------+</span>
-                                     <span class="o">|</span> <span class="n">available</span>  <span class="o">|</span>
-                                     <span class="o">+------------+</span>
+                                            <span class="n">v</span> <span class="p">(</span><span class="n">file</span> <span class="n">processing</span><span class="p">)</span>
+                                      <span class="o">+------------+</span>
+                                      <span class="o">|</span>   <span class="n">ended</span>    <span class="o">|</span>
+                                      <span class="o">+------------+</span>
 </pre></div>
 </div>
 <p><strong>State Descriptions</strong></p>
@@ -289,7 +289,7 @@ Recording</p></td>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>starting</p></td>
+<tr class="row-even"><td><p>initiating</p></td>
 <td><p>Recording initialization. Audio capture is being set up.</p></td>
 </tr>
 <tr class="row-odd"><td><p>recording</p></td>
@@ -298,7 +298,7 @@ Recording</p></td>
 <tr class="row-even"><td><p>stopping</p></td>
 <td><p>Recording is ending. Final audio is being flushed to storage.</p></td>
 </tr>
-<tr class="row-odd"><td><p>available</p></td>
+<tr class="row-odd"><td><p>ended</p></td>
 <td><p>Recording is complete. File is ready for download or streaming.</p></td>
 </tr>
 </tbody>
@@ -306,7 +306,7 @@ Recording</p></td>
 <p><strong>Key Behaviors</strong></p>
 <ul class="simple">
 <li><p>States only move forward, never backward</p></li>
-<li><p>A recording in “available” state cannot be modified</p></li>
+<li><p>A recording in <code class="docutils literal notranslate"><span class="pre">ended</span></code> state cannot be modified</p></li>
 <li><p>If the call/conference ends, active recordings automatically stop</p></li>
 <li><p>Maximum recording duration is 24 hours</p></li>
 </ul>
@@ -317,7 +317,7 @@ Recording</p></td>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>A recording can only be started on a call or conference that is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (i.e., answered). Attempting to start recording on a call that is still <code class="docutils literal notranslate"><span class="pre">dialing</span></code> or <code class="docutils literal notranslate"><span class="pre">ringing</span></code> will fail. Always verify the call status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> before issuing a recording start command.</p>
+<p>A recording can only be started on a call or conference that is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status (i.e., answered). Attempting to start recording on a call that is still <code class="docutils literal notranslate"><span class="pre">dialing</span></code> or <code class="docutils literal notranslate"><span class="pre">ringing</span></code> will fail. Always verify the call status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> before issuing a recording start command.</p>
 </div>
 <p><strong>Method 1: Via Flow Action</strong></p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">recording_start</span></code> and <code class="docutils literal notranslate"><span class="pre">recording_stop</span></code> actions in your call flow for automatic recording control.</p>
@@ -411,16 +411,16 @@ Recording</p></td>
 <h3>Recording Storage<a class="headerlink" href="#recording-storage" title="Link to this heading"></a></h3>
 <p>Recordings are stored securely in Google Cloud Storage and accessible via the VoIPBIN API.</p>
 <p><strong>Storage Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Download</span><span class="p">:</span>                               <span class="n">Stream</span><span class="p">:</span>
-<span class="o">+------+</span>   <span class="n">GET</span> <span class="o">/</span><span class="n">recordings</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">file</span>    <span class="o">+------+</span>   <span class="n">GET</span> <span class="p">(</span><span class="n">Range</span> <span class="n">header</span><span class="p">)</span>
-<span class="o">|</span> <span class="n">Your</span> <span class="o">|-------------------------------&gt;|</span> <span class="n">Your</span> <span class="o">|&lt;-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-</span> <span class="o">-&gt;</span>
-<span class="o">|</span> <span class="n">App</span>  <span class="o">|&lt;--------</span><span class="n">full</span> <span class="n">file</span><span class="o">--------------|</span> <span class="n">App</span>  <span class="o">|</span>       <span class="n">chunks</span>
-<span class="o">+------+</span>              <span class="o">|</span>                 <span class="o">+------+</span>           <span class="o">|</span>
-                      <span class="n">v</span>                                    <span class="n">v</span>
-               <span class="o">+-------------+</span>                      <span class="o">+-------------+</span>
-               <span class="o">|</span>  <span class="n">Recording</span>  <span class="o">|</span>                      <span class="o">|</span>  <span class="n">Recording</span>  <span class="o">|</span>
-               <span class="o">|</span>    <span class="n">File</span>     <span class="o">|</span>                      <span class="o">|</span>    <span class="n">File</span>     <span class="o">|</span>
-               <span class="o">+-------------+</span>                      <span class="o">+-------------+</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Download</span><span class="p">:</span>
+<span class="o">+------+</span>   <span class="n">GET</span> <span class="o">/</span><span class="n">recordingfiles</span><span class="o">/</span><span class="p">{</span><span class="nb">id</span><span class="p">}</span>
+<span class="o">|</span> <span class="n">Your</span> <span class="o">|-------------------------------&gt;</span>
+<span class="o">|</span> <span class="n">App</span>  <span class="o">|&lt;--------</span><span class="n">full</span> <span class="n">file</span><span class="o">--------------</span>
+<span class="o">+------+</span>              <span class="o">|</span>
+                      <span class="n">v</span>
+               <span class="o">+-------------+</span>
+               <span class="o">|</span>  <span class="n">Recording</span>  <span class="o">|</span>
+               <span class="o">|</span>    <span class="n">File</span>     <span class="o">|</span>
+               <span class="o">+-------------+</span>
 </pre></div>
 </div>
 <p><strong>Accessing Recordings</strong></p>
@@ -433,7 +433,7 @@ Recording</p></td>
 </pre></div>
 </div>
 <p><em>Download recording file:</em></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/recordings/&lt;recording-id&gt;/file?token=&lt;token&gt;&#39; \
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/recordingfiles/&lt;recording-id&gt;?token=&lt;token&gt;&#39; \
     --output recording.wav
 </pre></div>
 </div>
@@ -459,20 +459,6 @@ Recording</p></td>
 </tr>
 </tbody>
 </table>
-<p><strong>Bulk Export</strong></p>
-<p>For exporting large numbers of recordings, use the asynchronous bulk export API:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/recordings/export?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;recording_ids&quot;: [
-            &quot;recording-id-1&quot;,
-            &quot;recording-id-2&quot;,
-            &quot;recording-id-3&quot;
-        ]
-    }&#39;
-</pre></div>
-</div>
-<p>The export runs asynchronously and you’ll receive a webhook when complete.</p>
 </section>
 <section id="recording-and-calls-conferences">
 <h3>Recording and Calls/Conferences<a class="headerlink" href="#recording-and-calls-conferences" title="Link to this heading"></a></h3>
@@ -675,7 +661,7 @@ Muted calls produce silent recordings.</p></td>
 <tbody>
 <tr class="row-even"><td><p>404 Not Found</p></td>
 <td><p>Recording may still be processing. Wait for
-“available” status before downloading.</p></td>
+<code class="docutils literal notranslate"><span class="pre">ended</span></code> status before downloading.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Timeout on large files</p></td>
 <td><p>Use streaming download with Range headers
@@ -826,12 +812,15 @@ your retention settings.</p></td>
     &quot;result&quot;: [
         {
             &quot;id&quot;: &quot;348d988b-2ac9-4702-84f0-ae81301ad349&quot;,
-            &quot;user_id&quot;: 1,
-            &quot;type&quot;: &quot;call&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;owner_type&quot;: &quot;customer&quot;,
+            &quot;owner_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;reference_type&quot;: &quot;call&quot;,
             &quot;reference_id&quot;: &quot;531bc6f4-c695-4c6d-a478-f28b88dfc2ca&quot;,
             &quot;status&quot;: &quot;ended&quot;,
             &quot;format&quot;: &quot;wav&quot;,
-            &quot;filename&quot;: &quot;call_531bc6f4-c695-4c6d-a478-f28b88dfc2ca_2021-01-29T05:31:45Z.wav&quot;,
+            &quot;on_end_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;tm_start&quot;: &quot;2021-01-29 05:31:47.870000&quot;,
             &quot;tm_end&quot;: &quot;2021-01-29 05:31:58.932000&quot;,
             &quot;tm_create&quot;: &quot;2021-01-29 05:31:45.051136&quot;,
@@ -840,12 +829,15 @@ your retention settings.</p></td>
         },
         {
             &quot;id&quot;: &quot;142e8ef8-392c-4514-abf0-8656da5d2fdf&quot;,
-            &quot;user_id&quot;: 1,
-            &quot;type&quot;: &quot;call&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;owner_type&quot;: &quot;customer&quot;,
+            &quot;owner_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;reference_type&quot;: &quot;call&quot;,
             &quot;reference_id&quot;: &quot;f457951b-9918-44af-a834-2216b1cc31bc&quot;,
             &quot;status&quot;: &quot;ended&quot;,
             &quot;format&quot;: &quot;wav&quot;,
-            &quot;filename&quot;: &quot;call_f457951b-9918-44af-a834-2216b1cc31bc_2021-01-29T03:18:07Z.wav&quot;,
+            &quot;on_end_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;tm_start&quot;: &quot;2021-01-29 03:18:10.790000&quot;,
             &quot;tm_end&quot;: &quot;2021-01-29 03:18:22.131000&quot;,
             &quot;tm_create&quot;: &quot;2021-01-29 03:18:07.950164&quot;,
@@ -854,12 +846,15 @@ your retention settings.</p></td>
         },
         {
             &quot;id&quot;: &quot;f27d65bc-2f10-49e1-a49d-a7762965df13&quot;,
-            &quot;user_id&quot;: 1,
-            &quot;type&quot;: &quot;call&quot;,
+            &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;owner_type&quot;: &quot;customer&quot;,
+            &quot;owner_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+            &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+            &quot;reference_type&quot;: &quot;call&quot;,
             &quot;reference_id&quot;: &quot;5f7a0eff-9de9-4c41-a018-08bffd4a19aa&quot;,
             &quot;status&quot;: &quot;ended&quot;,
             &quot;format&quot;: &quot;wav&quot;,
-            &quot;filename&quot;: &quot;call_5f7a0eff-9de9-4c41-a018-08bffd4a19aa_2021-01-28T09:16:58Z.wav&quot;,
+            &quot;on_end_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;tm_start&quot;: &quot;2021-01-28 09:17:00.814000&quot;,
             &quot;tm_end&quot;: &quot;2021-01-28 09:17:11.883000&quot;,
             &quot;tm_create&quot;: &quot;2021-01-28 09:16:58.076735&quot;,
@@ -879,12 +874,15 @@ your retention settings.</p></td>
 
 {
     &quot;id&quot;: &quot;f27d65bc-2f10-49e1-a49d-a7762965df13&quot;,
-    &quot;user_id&quot;: 1,
-    &quot;type&quot;: &quot;call&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;customer&quot;,
+    &quot;owner_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;activeflow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;reference_type&quot;: &quot;call&quot;,
     &quot;reference_id&quot;: &quot;5f7a0eff-9de9-4c41-a018-08bffd4a19aa&quot;,
     &quot;status&quot;: &quot;ended&quot;,
     &quot;format&quot;: &quot;wav&quot;,
-    &quot;filename&quot;: &quot;call_5f7a0eff-9de9-4c41-a018-08bffd4a19aa_2021-01-28T09:16:58Z.wav&quot;,
+    &quot;on_end_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;tm_start&quot;: &quot;2021-01-28 09:17:00.814000&quot;,
     &quot;tm_end&quot;: &quot;2021-01-28 09:17:11.883000&quot;,
     &quot;tm_create&quot;: &quot;2021-01-28 09:16:58.076735&quot;,

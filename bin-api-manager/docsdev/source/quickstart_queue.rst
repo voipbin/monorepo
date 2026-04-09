@@ -13,7 +13,7 @@ Prerequisites
 
 Create a queue
 --------------
-This example creates a queue that routes calls randomly to agents matching a specific tag. While callers wait, they hear a text-to-speech greeting followed by a 1-second pause (looped):
+This example creates a queue that routes calls randomly to agents matching a specific tag. Callers hear a wait flow while waiting for an agent to become available. First, create a wait flow (or use an existing one), then reference its ``id`` (UUID) in ``wait_flow_id``:
 
 .. code::
 
@@ -24,23 +24,9 @@ This example creates a queue that routes calls randomly to agents matching a spe
             "detail": "Customer support queue",
             "routing_method": "random",
             "tag_ids": ["<your-tag-id>"],
-            "wait_actions": [
-                {
-                    "type": "talk",
-                    "option": {
-                        "text": "Thank you for calling. Please wait while we connect you to an agent.",
-                        "language": "en-US"
-                    }
-                },
-                {
-                    "type": "sleep",
-                    "option": {
-                        "duration": 1000
-                    }
-                }
-            ],
-            "timeout_wait": 100000,
-            "timeout_service": 10000000
+            "wait_flow_id": "<your-wait-flow-id>",
+            "wait_timeout": 100000,
+            "service_timeout": 10000000
         }'
 
 The response includes the created queue with its ID and configuration:
@@ -53,20 +39,23 @@ The response includes the created queue with its ID and configuration:
         "detail": "Customer support queue",
         "routing_method": "random",
         "tag_ids": ["<your-tag-id>"],
+        "wait_flow_id": "<your-wait-flow-id>",
+        "wait_timeout": 100000,
+        "service_timeout": 10000000,
         ...
     }
 
 Key parameters:
 
-- ``routing_method`` (enum string): How calls are distributed to agents. One of: ``random`` (random agent selection) or ``round-robin`` (sequential agent selection).
+- ``routing_method`` (enum string): How calls are distributed to agents. One of: ``random`` (random agent selection).
 - ``tag_ids`` (Array of UUID): Tag IDs to match agents. Obtained from the ``id`` field of ``GET /tags``. Only agents with at least one matching tag will receive calls from this queue.
-- ``wait_actions`` (Array of Object): Flow actions executed while the caller waits (e.g., play messages, music). These actions loop until an agent becomes available.
-- ``timeout_wait`` (Integer, milliseconds): Maximum time a caller waits in the queue before timing out. Example: ``100000`` = 100 seconds.
-- ``timeout_service`` (Integer, milliseconds): Maximum time for an active call with an agent before automatic disconnect.
+- ``wait_flow_id`` (UUID): The flow executed while callers wait in queue. Obtained from the ``id`` field of ``POST /flows`` or ``GET /flows``. The flow loops until an agent becomes available.
+- ``wait_timeout`` (Integer, milliseconds): Maximum time a caller waits in the queue before timing out. Example: ``100000`` = 100 seconds.
+- ``service_timeout`` (Integer, milliseconds): Maximum time for an active call with an agent before automatic disconnect.
 
 .. note:: **AI Implementation Hint**
 
-   ``timeout_wait`` and ``timeout_service`` are in milliseconds, not seconds. A common mistake is setting ``timeout_wait: 100`` (0.1 seconds) instead of ``timeout_wait: 100000`` (100 seconds). Always verify the unit when setting timeouts.
+   ``wait_timeout`` and ``service_timeout`` are in milliseconds, not seconds. A common mistake is setting ``wait_timeout: 100`` (0.1 seconds) instead of ``wait_timeout: 100000`` (100 seconds). Always verify the unit when setting timeouts. The ``wait_flow_id`` must reference an existing flow — create one via ``POST /flows`` first if you do not have one.
 
 For more details, see the :ref:`Queue tutorial <queue-tutorial>`.
 
@@ -82,5 +71,5 @@ Troubleshooting
     * **Fix:** Verify agents have matching tags via ``GET /agents``. Check that at least one agent is in ``available`` status.
 
 * **Callers timing out immediately:**
-    * **Cause:** ``timeout_wait`` is set too low. The value is in **milliseconds**, not seconds.
-    * **Fix:** For a 100-second wait, set ``timeout_wait: 100000``. Setting ``100`` means only 0.1 seconds.
+    * **Cause:** ``wait_timeout`` is set too low. The value is in **milliseconds**, not seconds.
+    * **Fix:** For a 100-second wait, set ``wait_timeout: 100000``. Setting ``100`` means only 0.1 seconds.

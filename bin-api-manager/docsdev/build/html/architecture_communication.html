@@ -271,7 +271,7 @@
 <span class="n">Examples</span><span class="p">:</span>
 <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">request</span>        <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">manager</span>
 <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">conference</span><span class="o">.</span><span class="n">request</span>  <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">conference</span><span class="o">-</span><span class="n">manager</span>
-<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">sms</span><span class="o">.</span><span class="n">request</span>         <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">sms</span><span class="o">-</span><span class="n">manager</span>
+<span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">request</span>     <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">message</span><span class="o">-</span><span class="n">manager</span>
 <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">request</span>        <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">flow</span><span class="o">-</span><span class="n">manager</span>
 <span class="n">o</span> <span class="nb">bin</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">billing</span><span class="o">.</span><span class="n">request</span>     <span class="o">-&gt;</span> <span class="nb">bin</span><span class="o">-</span><span class="n">billing</span><span class="o">-</span><span class="n">manager</span>
 </pre></div>
@@ -650,6 +650,11 @@
 <span class="n">o</span> <span class="n">Subscribe</span> <span class="n">to</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>  <span class="p">(</span><span class="n">empty</span> <span class="o">=</span> <span class="nb">all</span><span class="p">)</span>
 <span class="n">o</span> <span class="n">Receives</span><span class="p">:</span> <span class="n">everything</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>For real-time event notifications, subscribe via WebSocket at <code class="docutils literal notranslate"><span class="pre">wss://api.voipbin.net/ws?token=&lt;JWT&gt;</span></code>. For reliable event delivery to external systems, configure webhooks via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>. ZeroMQ events are internal-only and not exposed to API clients.</p>
 </div>
 </section>
 <section id="websocket-communication">
@@ -1065,7 +1070,7 @@ Max: 7 attempts, ~1 minute total
    <span class="o">+-</span> <span class="n">Initiate</span> <span class="n">Call</span>     <span class="p">[</span><span class="mi">50</span><span class="n">ms</span><span class="p">]</span>
        <span class="o">|</span>
        <span class="n">v</span>
-<span class="mf">3.</span> <span class="n">RTC</span> <span class="n">Manager</span>          <span class="p">[</span><span class="mi">120</span><span class="n">ms</span><span class="p">]</span>
+<span class="mf">3.</span> <span class="n">Asterisk</span> <span class="p">(</span><span class="n">VoIP</span><span class="p">)</span>       <span class="p">[</span><span class="mi">120</span><span class="n">ms</span><span class="p">]</span>
    <span class="o">+-</span> <span class="n">Setup</span> <span class="n">Media</span>       <span class="p">[</span><span class="mi">120</span><span class="n">ms</span><span class="p">]</span>
 
 <span class="n">Total</span><span class="p">:</span> <span class="mi">250</span><span class="n">ms</span>

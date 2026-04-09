@@ -7,7 +7,7 @@ Overview
 
    * **Complexity:** Medium
    * **Cost:** Chargeable (per minute of audio transcribed)
-   * **Async:** Yes. ``POST /transcribes`` returns immediately with status ``progressing``. Transcripts are delivered asynchronously via webhook (``transcript_created`` events) or WebSocket subscription. Poll ``GET /transcribes/{id}`` to check for ``done`` status when complete.
+   * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/transcribes`` returns immediately with status ``progressing``. Transcripts are delivered asynchronously via webhook (``transcript_created`` events) or WebSocket subscription. Poll ``GET https://api.voipbin.net/v1.0/transcribes/{id}`` to check for ``done`` status when complete.
 
 VoIPBIN's Transcription API converts spoken audio from calls and conferences into text in real-time. Whether you need transcripts for compliance, searchable call logs, AI analysis, or accessibility, the Transcription API delivers accurate text as conversations happen.
 
@@ -65,30 +65,22 @@ Transcription runs continuously while active, generating transcript segments as 
 
 ::
 
-    POST /transcribes or flow action
+    POST https://api.voipbin.net/v1.0/transcribes or flow action
            |
            v
-    +-------------+                         +-------------+
-    |  starting   |------active------------>| transcribing|
-    +-------------+                         +------+------+
-                                                   |
-                              POST /transcribe_stop, hangup, or timeout
-                                                   |
-                                                   v
-                                            +-------------+
-                                            |   stopped   |
-                                            +-------------+
+    +--------------+                         +--------+
+    | progressing  |--- stop/hangup/timeout ->|  done  |
+    +--------------+                         +--------+
 
 **State Descriptions**
 
 +---------------+------------------------------------------------------------------+
 | State         | What's happening                                                 |
 +===============+==================================================================+
-| starting      | Transcription initialization. STT engine is connecting.          |
+| progressing   | Transcription is active. STT engine is connected and processing  |
+|               | audio. Transcripts are being generated and delivered.            |
 +---------------+------------------------------------------------------------------+
-| transcribing  | Actively processing audio. Transcripts are being generated.      |
-+---------------+------------------------------------------------------------------+
-| stopped       | Transcription has ended. No more transcripts will be generated.  |
+| done          | Transcription has ended. No more transcripts will be generated.  |
 +---------------+------------------------------------------------------------------+
 
 **Transcript Delivery Flow**

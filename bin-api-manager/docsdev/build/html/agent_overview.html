@@ -346,15 +346,15 @@ Agent Tags:                              Queue Requirements:
 </div>
 <p><strong>Managing Agent Tags</strong></p>
 <p>Update an agent’s tags via the API:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span><span class="o">/</span><span class="p">{</span><span class="n">agent</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">tag_ids</span>
-
-<span class="p">{</span>
-    <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;uuid-for-english-tag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;uuid-for-billing-tag&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;uuid-for-tier2-tag&quot;</span>
-    <span class="p">]</span>
-<span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/agents/&lt;agent-id&gt;/tag_ids?token=&lt;token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;tag_ids&quot;: [
+            &quot;uuid-for-english-tag&quot;,
+            &quot;uuid-for-billing-tag&quot;,
+            &quot;uuid-for-tier2-tag&quot;
+        ]
+    }&#39;
 </pre></div>
 </div>
 </section>
@@ -458,7 +458,7 @@ Queue finds Agent Smith (available)
 <span class="o">|</span>                         <span class="n">Agent</span> <span class="n">Creation</span>                                   <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------------+</span>
 
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">agents</span>
+<span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">agents</span>
 <span class="o">+---------------------------------------+</span>
 <span class="o">|</span> <span class="p">{</span>                                     <span class="o">|</span>
 <span class="o">|</span>   <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;john@company.com&quot;</span><span class="p">,</span>     <span class="o">|</span>
@@ -484,7 +484,7 @@ Queue finds Agent Smith (available)
 +-----------------------------------------------------------------------------+
 
 1. Agent calls login API
-   POST /v1/login
+   POST https://api.voipbin.net/v1.0/login
    { &quot;username&quot;: &quot;...&quot;, &quot;password&quot;: &quot;...&quot; }
           |
           v
@@ -508,7 +508,7 @@ Queue finds Agent Smith (available)
           |
           v
 4. Agent sets status to &quot;available&quot;
-   PUT /v1/agents/{id}/status
+   PUT https://api.voipbin.net/v1.0/agents/{id}/status
    { &quot;status&quot;: &quot;available&quot; }
           |
           v

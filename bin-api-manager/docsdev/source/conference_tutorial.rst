@@ -1,4 +1,4 @@
-.. _conference-tutorial: conference-tutorial
+.. _conference-tutorial:
 
 Tutorial
 ========
@@ -16,21 +16,6 @@ Before working with conferences, you need:
 
    Conferences are created with ``POST /conferences`` and begin in ``starting`` status, quickly transitioning to ``progressing``. Participants do not join via the conference API directly -- they join through flow actions (``conference_join``). To remove a participant, use ``DELETE /conferencecalls/{conferencecall_id}``. To terminate the entire conference, use ``DELETE /conferences/{conference_id}``.
 
-Install channel: line
----------------------
-
-Example
-+++++++
-
-.. code::
-
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/conversations/setup?token=<YOUR_AUTH_TOKEN>' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-            "reference_type": "line"
-        }'
-
-
 Get list of conferences
 -----------------------
 
@@ -45,17 +30,19 @@ Example
         "result": [
             {
                 "id": "17039950-eab0-421d-a5f5-05acd1ac6801",
-                "user_id": 1,
+                "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
                 "type": "conference",
-                "status": "",
-                "name": "",
-                "detail": "",
+                "status": "progressing",
+                "name": "team standup",
+                "detail": "Daily standup conference",
                 "conferencecall_ids": [],
-                "recording_id": "00000000-0000-0000-0000-000000000000",
-                "recording_ids": null,
+                "recording_ids": [],
+                "transcribe_ids": [],
+                "direct_hash": "",
+                "tm_end": null,
                 "tm_create": "2021-02-04 02:55:39.659316",
                 "tm_update": "2021-02-04 02:56:07.525985",
-                "tm_delete": ""
+                "tm_delete": "9999-01-01 00:00:00.000000"
             },
             ...
         ],
@@ -75,17 +62,19 @@ Example
 
     {
         "id": "0e7112d7-6ddc-47ea-bba5-223a3a55ff79",
-        "user_id": 1,
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "type": "conference",
-        "status": "",
-        "name": "",
-        "detail": "",
+        "status": "progressing",
+        "name": "team standup",
+        "detail": "Daily standup conference",
         "conferencecall_ids": [],
-        "recording_id": "00000000-0000-0000-0000-000000000000",
         "recording_ids": [],
+        "transcribe_ids": [],
+        "direct_hash": "",
+        "tm_end": null,
         "tm_create": "2021-02-03 10:44:42.163464",
         "tm_update": "2021-02-03 10:52:08.488301",
-        "tm_delete": ""
+        "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
 
@@ -98,6 +87,7 @@ Example
 .. code::
 
     $ curl -k --location --request POST 'https://api.voipbin.net/v1.0/conferences?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
         --data-raw '{
             "type": "conference",
             "name": "test conference",
@@ -106,17 +96,19 @@ Example
 
     {
         "id": "85252d7b-777b-4580-9420-4df8c6adfc30",
-        "user_id": 1,
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "type": "conference",
-        "status": "",
+        "status": "starting",
         "name": "test conference",
         "detail": "test conference for example",
         "conferencecall_ids": [],
-        "recording_id": "00000000-0000-0000-0000-000000000000",
-        "recording_ids": null,
+        "recording_ids": [],
+        "transcribe_ids": [],
+        "direct_hash": "",
+        "tm_end": null,
         "tm_create": "2021-02-04 03:05:57.710583",
-        "tm_update": "",
-        "tm_delete": ""
+        "tm_update": "2021-02-04 03:05:57.710583",
+        "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
 Kick the conferencecall from the conference
@@ -134,15 +126,15 @@ Example
     $ curl --location --request DELETE 'https://api.voipbin.net/v1.0/conferencecalls/4833755c-f5d0-4bf2-a101-7d3a7e5e586f?token=<YOUR_AUTH_TOKEN>'
 
     {
-        "id": "4833755c-f5d0-4bf2-a101-7d3a7e5e586f",   // Conferencecall ID (UUID)
-        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",   // Customer UUID
-        "conference_id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",   // Parent conference UUID
-        "reference_type": "call",   // enum: call, line
-        "reference_id": "153c2866-ade0-4a55-a5a7-027e463d9207",   // The call's UUID
-        "status": "leaving",   // enum: joining, joined, leaving, leaved
-        "tm_create": "2022-08-09 03:53:49.142446",   // ISO 8601 timestamp
+        "id": "4833755c-f5d0-4bf2-a101-7d3a7e5e586f",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "conference_id": "99accfb7-c0dd-4a54-997d-dd18af7bc280",
+        "reference_type": "call",
+        "reference_id": "153c2866-ade0-4a55-a5a7-027e463d9207",
+        "status": "leaving",
+        "tm_create": "2022-08-09 03:53:49.142446",
         "tm_update": "2022-08-09 03:54:10.035297",
-        "tm_delete": "9999-01-01 00:00:00.000000"   // 9999-01-01 means not deleted
+        "tm_delete": "9999-01-01 00:00:00.000000"
     }
 
 Regenerate direct conference hash
@@ -161,7 +153,11 @@ Regenerate the direct hash for a conference. This invalidates the previous SIP U
         "status": "progressing",
         "name": "test conference",
         "detail": "test conference for example.",
+        "conferencecall_ids": [],
+        "recording_ids": [],
+        "transcribe_ids": [],
         "direct_hash": "b3c4d5e6f7a8",
+        "tm_end": null,
         "tm_create": "2022-02-03 06:08:56.672025",
         "tm_update": "2022-08-06 19:11:13.040418",
         "tm_delete": "9999-01-01 00:00:00.000000"

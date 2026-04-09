@@ -62,7 +62,7 @@ Outdials serve as the "who to contact" component of campaigns and outbound flows
 
 .. note:: **AI Implementation Hint**
 
-   Outdialtargets support up to 5 destination addresses (``destination_0`` through ``destination_4``). Each destination has its own independent try count. The campaign dials ``destination_0`` first, and if all retries are exhausted, moves to ``destination_1``, and so on. Do not modify targets while the parent campaign is in ``running`` status.
+   Outdialtargets support up to 5 destination addresses (``destination_0`` through ``destination_4``). Each destination has its own independent try count. The campaign dials ``destination_0`` first, and if all retries are exhausted, moves to ``destination_1``, and so on. Do not modify targets while the parent campaign is in ``run`` status.
 
 
 Target Lifecycle
@@ -77,45 +77,31 @@ Each outdial target progresses through states as dial attempts occur.
            |
            v
     +------------+
-    |   idle     |<-----------------+
-    +-----+------+                  |
-          |                         |
-          | dial attempt            | retry scheduled
-          v                         |
-    +------------+                  |
-    |  dialing   |------------------+
+    |   idle     |
     +-----+------+
           |
-          +---------+---------+
-          |         |         |
-          v         v         v
-    +--------+ +--------+ +--------+
-    |answered| |  busy  | |no answer|
-    +--------+ +--------+ +--------+
-          |         |         |
-          v         v         v
-    +------------+ +-------------------+
-    |  finished  | | retry or failed   |
-    +------------+ +-------------------+
+          | campaign dials target
+          v
+    +-------------+
+    | progressing |------+
+    +------+------+      |
+           |             | retries remain
+           | answered    | (back to idle, re-queued)
+           v             v
+    +------------+  +----------+
+    |    done    |  |   idle   |
+    +------------+  +----------+
 
 **State Descriptions**
 
 +-------------+------------------------------------------------------------------+
 | State       | What's happening                                                 |
 +=============+==================================================================+
-| idle        | Target created, waiting to be dialed                            |
+| idle        | Target created or retried, waiting to be dialed                  |
 +-------------+------------------------------------------------------------------+
-| dialing     | Call in progress to this target                                 |
+| progressing | Dial attempt in progress for this target                         |
 +-------------+------------------------------------------------------------------+
-| answered    | Target answered the call                                        |
-+-------------+------------------------------------------------------------------+
-| busy        | Target was busy, may retry                                      |
-+-------------+------------------------------------------------------------------+
-| no_answer   | No answer within timeout, may retry                             |
-+-------------+------------------------------------------------------------------+
-| finished    | Target successfully contacted, no more attempts needed          |
-+-------------+------------------------------------------------------------------+
-| failed      | All retry attempts exhausted                                     |
+| done        | Target completed (successfully contacted or retries exhausted)   |
 +-------------+------------------------------------------------------------------+
 
 
@@ -134,29 +120,27 @@ Create outdials and add targets via the API.
             "detail": "Sales leads for Q1 campaign"
         }'
 
-**Add Targets to Outdial**
+**Add a Target to Outdial**
 
 .. code::
 
     $ curl -X POST 'https://api.voipbin.net/v1.0/outdials/<outdial-id>/targets?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "targets": [
-                {
-                    "destination": {
-                        "type": "tel",
-                        "target": "+15551234567"
-                    },
-                    "try_count_max": 3
-                },
-                {
-                    "destination": {
-                        "type": "tel",
-                        "target": "+15559876543"
-                    },
-                    "try_count_max": 3
-                }
-            ]
+            "name": "John Smith",
+            "detail": "Sales lead",
+            "data": "",
+            "destination_0": {
+                "type": "tel",
+                "target": "+15551234567"
+            },
+            "destination_1": {
+                "type": "tel",
+                "target": "+15559876543"
+            },
+            "destination_2": null,
+            "destination_3": null,
+            "destination_4": null
         }'
 
 **Get Outdial Targets**
@@ -168,37 +152,38 @@ Create outdials and add targets via the API.
 
 Retry Mechanism
 ---------------
-Outdial targets track retry attempts automatically.
+Outdial targets track retry attempts per destination automatically. Each target has up to 5 destination addresses (``destination_0`` through ``destination_4``), each with its own try count (``try_count_0`` through ``try_count_4``). The maximum retries per destination are controlled by the :ref:`Outplan <outplan-overview>` (``max_try_count_0`` through ``max_try_count_4``).
 
 **Retry Flow**
 
 ::
 
-    Target dialed
+    Target destination_0 dialed
          |
          v
     +-------------------+     Answered     +-------------------+
-    | Dial attempt      |----------------->| Mark as finished  |
+    | Dial attempt      |----------------->| Mark as done      |
     |                   |                  |                   |
     +--------+----------+                  +-------------------+
              |
-             | Not answered (busy, no answer, failed)
+             | Not answered
              v
     +-------------------+
-    | try_count_current |
-    | += 1              |
+    | try_count_0 += 1  |
     +--------+----------+
              |
              v
     +-------------------+     Yes          +-------------------+
-    | try_count_current |----------------->| Schedule retry    |
-    | < try_count_max?  |                  | (per outplan)     |
+    | try_count_0 <     |----------------->| Schedule retry    |
+    | max_try_count_0?  |                  | (per outplan)     |
     +--------+----------+                  +-------------------+
              |
-             | No (max reached)
+             | No (max reached for this destination)
              v
     +-------------------+
-    | Mark as failed    |
+    | Move to           |
+    | destination_1     |
+    | (repeat process)  |
     +-------------------+
 
 **Retry Configuration**
@@ -206,9 +191,9 @@ Outdial targets track retry attempts automatically.
 +---------------------+------------------------------------------------------------------+
 | Field               | Description                                                      |
 +=====================+==================================================================+
-| try_count_max       | Maximum number of dial attempts allowed                          |
+| try_count_0..4      | Current attempt count for each destination (read-only)           |
 +---------------------+------------------------------------------------------------------+
-| try_count_current   | Current number of attempts made (read-only)                      |
+| max_try_count_0..4  | Max attempts per destination (set on the outplan)                |
 +---------------------+------------------------------------------------------------------+
 
 The retry timing and intervals are controlled by the :ref:`Outplan <outplan-overview>`.
@@ -233,11 +218,17 @@ Outdial targets support various destination types.
 .. code::
 
     {
-        "destination": {
+        "name": "Phone target",
+        "detail": "",
+        "data": "",
+        "destination_0": {
             "type": "tel",
             "target": "+15551234567"
         },
-        "try_count_max": 3
+        "destination_1": null,
+        "destination_2": null,
+        "destination_3": null,
+        "destination_4": null
     }
 
 **SIP Target Example**
@@ -245,11 +236,17 @@ Outdial targets support various destination types.
 .. code::
 
     {
-        "destination": {
+        "name": "SIP target",
+        "detail": "",
+        "data": "",
+        "destination_0": {
             "type": "sip",
             "target": "sip:user@pbx.company.com"
         },
-        "try_count_max": 2
+        "destination_1": null,
+        "destination_2": null,
+        "destination_3": null,
+        "destination_4": null
     }
 
 

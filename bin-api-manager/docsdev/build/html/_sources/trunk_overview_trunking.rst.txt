@@ -1,4 +1,4 @@
-.. _trunk-overview-trunking: trunk-overview-trunking
+.. _trunk-overview-trunking:
 
 Trunking
 ========
@@ -7,7 +7,7 @@ Trunking
 
    * **Complexity:** Medium
    * **Cost:** Chargeable. Outbound calls through SIP trunking incur per-call charges based on destination and provider rates.
-   * **Async:** No. Trunk configuration is synchronous. Calls placed through the trunk are asynchronous and tracked via ``GET /calls/{id}``.
+   * **Async:** No. Trunk configuration is synchronous. Calls placed through the trunk are asynchronous and tracked via ``GET https://api.voipbin.net/v1.0/calls/{id}``.
 
 SIP trunking is a technology that enables organizations to make telephone calls over the internet, rather than traditional phone lines. Instead of using physical phone lines to connect to the public switched telephone network (PSTN), SIP trunking uses an internet connection to carry voice and other communications. SIP trunking is cost-effective, scalable and provides a range of features and benefits, such as better call quality, enhanced disaster recovery capabilities, and the ability to easily manage multiple locations or remote workers. Additionally, SIP trunking allows organizations to consolidate their voice and data networks, reducing the complexity and cost of their telecommunications infrastructure.
 

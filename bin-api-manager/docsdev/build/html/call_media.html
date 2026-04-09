@@ -468,16 +468,17 @@
 <span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>
-<p><strong>DTMF in API:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sending</span> <span class="n">DTMF</span><span class="p">:</span>
-<span class="n">POST</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span><span class="o">/</span><span class="n">dtmf</span>
+<p><strong>DTMF in Flow Actions:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sending</span> <span class="n">DTMF</span> <span class="p">(</span><span class="n">flow</span> <span class="n">action</span><span class="p">):</span>
 <span class="p">{</span>
-    <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;1234#&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span>      <span class="o">//</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">digit</span>
-    <span class="s2">&quot;interval&quot;</span><span class="p">:</span> <span class="mi">100</span>       <span class="o">//</span> <span class="n">ms</span> <span class="n">between</span> <span class="n">digits</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_send&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;digits&quot;</span><span class="p">:</span> <span class="s2">&quot;1234#&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">250</span>       <span class="o">//</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">digit</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 
-<span class="n">Receiving</span> <span class="n">DTMF</span> <span class="p">(</span><span class="ow">in</span> <span class="n">flow</span><span class="p">):</span>
+<span class="n">Receiving</span> <span class="n">DTMF</span> <span class="p">(</span><span class="n">flow</span> <span class="n">action</span><span class="p">):</span>
 <span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;digits_receive&quot;</span><span class="p">,</span>
     <span class="s2">&quot;option&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -491,7 +492,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">call-id</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls/{call-id}/dtmf</span></code> must be an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain it from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event. The <code class="docutils literal notranslate"><span class="pre">digits</span></code> field accepts <code class="docutils literal notranslate"><span class="pre">0-9</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code>, and <code class="docutils literal notranslate"><span class="pre">#</span></code>. The <code class="docutils literal notranslate"><span class="pre">duration</span></code> controls how long each tone plays (in milliseconds) and <code class="docutils literal notranslate"><span class="pre">interval</span></code> controls the pause between tones.</p>
+<p>DTMF is handled via flow actions (<code class="docutils literal notranslate"><span class="pre">digits_send</span></code> and <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code>), not via a direct API endpoint. Include these actions in the <code class="docutils literal notranslate"><span class="pre">actions</span></code> array when creating a call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> or in a flow via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/flows</span></code>. The <code class="docutils literal notranslate"><span class="pre">digits</span></code> field accepts <code class="docutils literal notranslate"><span class="pre">0-9</span></code>, <code class="docutils literal notranslate"><span class="pre">*</span></code>, and <code class="docutils literal notranslate"><span class="pre">#</span></code>. The <code class="docutils literal notranslate"><span class="pre">duration</span></code> controls how long each tone plays (in milliseconds). Use <code class="docutils literal notranslate"><span class="pre">digits_receive</span></code> to collect caller input for IVR menus.</p>
 </div>
 </section>
 <section id="recording-formats">

@@ -58,6 +58,10 @@ VoIPBIN's VoIP stack consists of three main components working together:
 
 This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.
 
+.. note:: **AI Implementation Hint**
+
+   VoIPBIN uses ulaw (G.711) as the exclusive internal codec. All external codecs (G.722, Opus, etc.) are transcoded at the edge by RTPEngine. When integrating SIP endpoints, any standard codec is accepted, but for lowest latency configure your SIP client to prefer G.711 ulaw to avoid transcoding overhead.
+
 Kamailio - SIP Edge Router
 ---------------------------
 

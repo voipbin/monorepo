@@ -591,7 +591,7 @@ Create a conference with multiple participants joining at different times:
 
 .. note:: **AI Implementation Hint**
 
-   The ``conference_id`` in ``conference_join`` must be obtained from the ``id`` field in the ``POST /v1/conferences`` response or from ``GET /conferences``. The ``customer_id`` in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The ``role`` field controls permissions: ``moderator`` can mute/unmute others, while ``participant`` can only control their own audio.
+   The ``conference_id`` in ``conference_join`` must be obtained from the ``id`` field in the ``POST /v1/conferences`` response or from ``GET /v1/conferences``. The ``customer_id`` in the conference creation request must match your authenticated customer ID. Each dial-out to a participant creates a separate billable call. The ``role`` field controls permissions: ``moderator`` can mute/unmute others, while ``participant`` can only control their own audio.
 
 Call Screening with Whisper
 ---------------------------
@@ -740,49 +740,37 @@ Transfer call with context passed to the receiving agent:
 .. code::
 
     Step 1: Agent A initiates transfer
-    POST /v1/calls/{call-id}/transfer
+    POST /v1/transfers
     {
-        "type": "attended",
-        "destination": {
-            "type": "tel",
-            "target": "+15553333333"
-        },
-        "context": {
-            "customer_id": "cust-123",
-            "issue": "billing dispute",
-            "notes": "Customer called about incorrect charge on invoice #456"
-        }
+        "transfer_type": "attended",
+        "transferer_call_id": "call-uuid-of-agent-a",
+        "transferee_addresses": [
+            {
+                "type": "tel",
+                "target": "+15553333333"
+            }
+        ]
     }
 
     Response:
     {
-        "transfer_id": "transfer-uuid",
-        "consult_call_id": "consult-call-uuid",
-        "status": "consulting"
+        "id": "transfer-uuid",
+        "type": "attended",
+        "transferer_call_id": "call-uuid-of-agent-a",
+        "transferee_call_id": "consult-call-uuid",
+        "transferee_addresses": [
+            {"type": "tel", "target": "+15553333333"}
+        ]
     }
 
     Step 2: Agent A talks to Agent B, then completes
-    POST /v1/transfers/{transfer-id}/complete
+    the transfer by hanging up their call.
 
-    Step 3: Agent B receives context via webhook or screen pop
-    Webhook: transfer_completed
-    {
-        "type": "transfer_completed",
-        "data": {
-            "transfer_id": "transfer-uuid",
-            "from_agent": "agent-a-uuid",
-            "to_agent": "agent-b-uuid",
-            "context": {
-                "customer_id": "cust-123",
-                "issue": "billing dispute",
-                "notes": "Customer called about incorrect charge on invoice #456"
-            }
-        }
-    }
+    Step 3: The caller and Agent B are now connected.
 
 .. note:: **AI Implementation Hint**
 
-   The ``call-id`` in ``POST /v1/calls/{call-id}/transfer`` must be an active call in ``progressing`` status. The ``transfer_id`` returned in the response is used for subsequent operations: ``POST /v1/transfers/{transfer-id}/complete`` to finish the transfer, or ``POST /v1/transfers/{transfer-id}/cancel`` to abort it. The ``context`` object is passed through to the ``transfer_completed`` webhook, allowing Agent B's application to display caller information. The consult call to Agent B is a separate billable call.
+   The ``transferer_call_id`` in ``POST /v1/transfers`` must be the UUID of an active call in ``progressing`` status, obtained from ``GET /v1/calls``. The ``transfer_type`` is an enum: ``attended`` or ``blind``. The ``transferee_addresses`` array must contain at least one address (E.164 phone number or extension). The response includes a ``transferee_call_id`` (UUID) for the new outbound call to the transfer destination. The consult call to Agent B is a separate billable call.
 
 Call with Real-time Transcription
 ---------------------------------
