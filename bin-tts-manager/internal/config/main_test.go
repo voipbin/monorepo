@@ -28,6 +28,7 @@ func TestGet(t *testing.T) {
 				AWSAccessKey:            "AKIA...",
 				AWSSecretKey:            "secret...",
 				ElevenlabsAPIKey:        "elevenlabs-api-key",
+				GCPTTSEndpoint:          "texttospeech.googleapis.com:443",
 			},
 		},
 	}
@@ -55,6 +56,9 @@ func TestGet(t *testing.T) {
 			}
 			if res.ElevenlabsAPIKey != tt.setupConfig.ElevenlabsAPIKey {
 				t.Errorf("Wrong ElevenlabsAPIKey. expect: %s, got: %s", tt.setupConfig.ElevenlabsAPIKey, res.ElevenlabsAPIKey)
+			}
+			if res.GCPTTSEndpoint != tt.setupConfig.GCPTTSEndpoint {
+				t.Errorf("Wrong GCPTTSEndpoint. expect: %s, got: %s", tt.setupConfig.GCPTTSEndpoint, res.GCPTTSEndpoint)
 			}
 		})
 	}
@@ -109,6 +113,9 @@ func TestBootstrap(t *testing.T) {
 			}
 			if rootCmd.PersistentFlags().Lookup("elevenlabs_api_key") == nil {
 				t.Errorf("Expected elevenlabs_api_key flag to be registered")
+			}
+			if rootCmd.PersistentFlags().Lookup("gcp_tts_endpoint") == nil {
+				t.Errorf("Expected gcp_tts_endpoint flag to be registered")
 			}
 		})
 	}

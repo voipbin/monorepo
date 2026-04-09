@@ -21,42 +21,42 @@ func Test_gcpGetDefaultVoiceName(t *testing.T) {
 		{
 			name:      "en-US",
 			lang:      "en-US",
-			expectRes: "en-US-Wavenet-F",
+			expectRes: "en-US-Neural2-F",
 		},
 		{
 			name:      "en-GB",
 			lang:      "en-GB",
-			expectRes: "en-GB-Wavenet-A",
+			expectRes: "en-GB-Neural2-A",
 		},
 		{
 			name:      "de-DE",
 			lang:      "de-DE",
-			expectRes: "de-DE-Wavenet-F",
+			expectRes: "de-DE-Neural2-F",
 		},
 		{
 			name:      "fr-FR",
 			lang:      "fr-FR",
-			expectRes: "fr-FR-Wavenet-E",
+			expectRes: "fr-FR-Neural2-E",
 		},
 		{
 			name:      "es-ES",
 			lang:      "es-ES",
-			expectRes: "es-ES-Wavenet-E",
+			expectRes: "es-ES-Neural2-E",
 		},
 		{
 			name:      "it-IT",
 			lang:      "it-IT",
-			expectRes: "it-IT-Wavenet-E",
+			expectRes: "it-IT-Neural2-A",
 		},
 		{
 			name:      "ja-JP",
 			lang:      "ja-JP",
-			expectRes: "ja-JP-Wavenet-C",
+			expectRes: "ja-JP-Neural2-C",
 		},
 		{
 			name:      "ko-KR",
 			lang:      "ko-KR",
-			expectRes: "ko-KR-Wavenet-C",
+			expectRes: "ko-KR-Neural2-C",
 		},
 		{
 			name:      "unknown language",

@@ -24,6 +24,7 @@ type Config struct {
 	AWSAccessKey            string // AWSAccessKey is the AWS access key for AWS services.
 	AWSSecretKey            string // AWSSecretKey is the AWS secret key for AWS services.
 	ElevenlabsAPIKey        string // ElevenlabsAPIKey is the API key for ElevenLabs TTS service.
+	GCPTTSEndpoint          string // GCPTTSEndpoint is the GCP Text-to-Speech API endpoint.
 	DatabaseDSN             string // DatabaseDSN is the MySQL database connection string.
 	RedisAddress            string // RedisAddress is the Redis server address.
 	RedisPassword           string // RedisPassword is the Redis server password.
@@ -51,6 +52,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("aws_access_key", "", "AWS access key")
 	f.String("aws_secret_key", "", "AWS secret key")
 	f.String("elevenlabs_api_key", "", "ElevenLabs API key")
+	f.String("gcp_tts_endpoint", "", "GCP TTS endpoint")
 	f.String("database_dsn", "", "MySQL database connection string")
 	f.String("redis_address", "", "Redis server address")
 	f.String("redis_password", "", "Redis server password")
@@ -63,6 +65,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"aws_access_key":            "AWS_ACCESS_KEY",
 		"aws_secret_key":            "AWS_SECRET_KEY",
 		"elevenlabs_api_key":        "ELEVENLABS_API_KEY",
+		"gcp_tts_endpoint":         "GCP_TTS_ENDPOINT",
 		"database_dsn":              "DATABASE_DSN",
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
@@ -98,6 +101,7 @@ func LoadGlobalConfig() {
 			AWSAccessKey:            viper.GetString("aws_access_key"),
 			AWSSecretKey:            viper.GetString("aws_secret_key"),
 			ElevenlabsAPIKey:        viper.GetString("elevenlabs_api_key"),
+			GCPTTSEndpoint:          viper.GetString("gcp_tts_endpoint"),
 			DatabaseDSN:             viper.GetString("database_dsn"),
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisPassword:           viper.GetString("redis_password"),

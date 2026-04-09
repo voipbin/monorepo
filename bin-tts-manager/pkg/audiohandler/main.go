@@ -35,10 +35,10 @@ const (
 )
 
 // NewAudioHandler create AudioHandler
-func NewAudioHandler(ctx context.Context, awsAccessKey string, awsSecretKey string) AudioHandler {
+func NewAudioHandler(ctx context.Context, awsAccessKey string, awsSecretKey string, gcpEndpoint string) AudioHandler {
 	log := logrus.WithField("func", "NewAudioHandler")
 
-	gcpClient, err := gcpGetClient(ctx)
+	gcpClient, err := gcpGetClient(ctx, gcpEndpoint)
 	if err != nil {
 		log.Errorf("Could not create a new gcp client. err: %v", err)
 		return nil
