@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "bash .claude/scripts/check-magic-strings.sh",
-            "description": "Check for hardcoded direct resource type magic strings in .go files"
+            "description": "Block hardcoded magic strings in .go files — use typed constants from the owning package"
           }
         ]
       }
