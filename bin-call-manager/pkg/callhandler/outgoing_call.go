@@ -9,7 +9,11 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
+	cucustomer "monorepo/bin-customer-manager/models/customer"
+
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
+	nmnumber "monorepo/bin-number-manager/models/number"
 
 	rmroute "monorepo/bin-route-manager/models/route"
 
@@ -178,28 +182,8 @@ func (h *callHandler) CreateCallOutgoing(
 	// create channel id
 	channelID := h.utilHandler.UUIDCreate().String()
 
-	// Apply customer's default outgoing source number when the source doesn't start with "+"
-	// (which means it's not a valid E.164 number). Without a valid E.164 source,
-	// getSourceForOutgoingCall would set the caller ID to "anonymous".
-	// Fail-open: if the number lookup fails (e.g., number deleted, service unavailable),
-	// the call proceeds with the original source and will get "anonymous" caller ID.
-	// This is intentional to avoid blocking calls due to transient number-manager failures.
-	if destination.Type == commonaddress.TypeTel && !strings.HasPrefix(source.Target, "+") && cu != nil && cu.DefaultOutgoingSourceNumberID != uuid.Nil {
-		defaultNum, err := h.reqHandler.NumberV1NumberGet(ctx, cu.DefaultOutgoingSourceNumberID)
-		if err != nil {
-			log.Errorf("Could not get default outgoing source number. number_id: %s, err: %v", cu.DefaultOutgoingSourceNumberID, err)
-		} else {
-			log.WithField("number", defaultNum).Debugf("Applying customer's default outgoing source number. number_id: %s, number: %s", defaultNum.ID, defaultNum.Number)
-			source = commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				Target:     defaultNum.Number,
-				TargetName: defaultNum.Number,
-			}
-		}
-	}
-
-	// get source address for outgoing
-	s := getSourceForOutgoingCall(&source, &destination)
+	// validate and resolve the source address for outgoing call
+	s := h.getValidatedSourceForOutgoingCall(ctx, source, destination, cu)
 
 	// create data
 	data := map[call.DataType]string{
@@ -600,22 +584,79 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
 	variables["CALLERID(num)"] = c.Source.Target
 }
 
-// getSourceForOutgoingCall returns a source address for outgoing call
-func getSourceForOutgoingCall(source *commonaddress.Address, destination *commonaddress.Address) *commonaddress.Address {
+// getValidatedSourceForOutgoingCall validates and resolves the source address for an outgoing call.
+// For tel-type destinations, the source number must:
+// 1. Have a valid E.164 format (starts with "+")
+// 2. Belong to the customer as a normal (non-virtual) number
+// If either condition fails, it falls back to the customer's default outgoing source number.
+// If no valid source can be determined, it returns "anonymous".
+// For non-tel destinations, the source is returned as-is.
+func (h *callHandler) getValidatedSourceForOutgoingCall(
+	ctx context.Context,
+	source commonaddress.Address,
+	destination commonaddress.Address,
+	cu *cucustomer.Customer,
+) *commonaddress.Address {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "getValidatedSourceForOutgoingCall",
+		"source":      source,
+		"destination": destination,
+	})
 
+	// non-tel destinations don't need source validation
 	if destination.Type != commonaddress.TypeTel {
-		// the only tel type destination need a source address chage
-		return source
+		return &source
 	}
 
-	// validate source number
+	// if customer info is not available (fail-open from customer-manager),
+	// skip validation and return source as-is
+	if cu == nil {
+		log.Infof("Customer info not available. Skipping source number validation.")
+		return &source
+	}
+	log = log.WithField("customer_id", cu.ID)
+
+	// validate source: must be E.164 format and belong to the customer as a normal number
 	if strings.HasPrefix(source.Target, "+") {
-		return source
+		filters := map[nmnumber.Field]any{
+			nmnumber.FieldCustomerID: cu.ID,
+			nmnumber.FieldNumber:     source.Target,
+			nmnumber.FieldType:       nmnumber.TypeNormal,
+			nmnumber.FieldStatus:     nmnumber.StatusActive,
+			nmnumber.FieldDeleted:    false,
+		}
+		nums, err := h.reqHandler.NumberV1NumberList(ctx, "", 1, filters)
+		if err != nil {
+			log.Errorf("Could not validate source number ownership. source: %s, err: %v", source.Target, err)
+		} else if len(nums) > 0 {
+			log.Debugf("Source number validated. source: %s", source.Target)
+			return &source
+		} else {
+			log.Infof("Source number is not a valid normal number owned by the customer. source: %s", source.Target)
+		}
+	} else {
+		log.Infof("Source number is not in E.164 format. source: %s", source.Target)
 	}
 
-	// invalid source address for the tel type destination. we need to set the caller id to the anonymous
+	// source is not valid, fall back to customer's default outgoing source number
+	if cu.DefaultOutgoingSourceNumberID != uuid.Nil {
+		defaultNum, err := h.reqHandler.NumberV1NumberGet(ctx, cu.DefaultOutgoingSourceNumberID)
+		if err != nil {
+			log.Errorf("Could not get default outgoing source number. number_id: %s, err: %v", cu.DefaultOutgoingSourceNumberID, err)
+		} else {
+			log.WithField("number", defaultNum).Debugf("Applying customer's default outgoing source number. number_id: %s, number: %s", defaultNum.ID, defaultNum.Number)
+			return &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     defaultNum.Number,
+				TargetName: defaultNum.Number,
+			}
+		}
+	}
+
+	// no valid source available, set to anonymous
+	log.Infof("No valid source number available. Setting caller ID to anonymous.")
 	return &commonaddress.Address{
-		Type:       source.Type,
+		Type:       commonaddress.TypeTel,
 		TargetName: "Anonymous",
 		Target:     "anonymous",
 	}

@@ -3,7 +3,9 @@ package callhandler
 import (
 	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
+	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
@@ -15,6 +17,8 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
+	nmnumber "monorepo/bin-number-manager/models/number"
 
 	rmprovider "monorepo/bin-route-manager/models/provider"
 	rmroute "monorepo/bin-route-manager/models/route"
@@ -174,6 +178,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
 				Status:                     cucustomer.StatusActive,
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
@@ -376,10 +381,20 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
 				Status:                     cucustomer.StatusActive,
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+
+			// source number validation: source +99999888 belongs to customer as a normal number
+			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), map[nmnumber.Field]any{
+				nmnumber.FieldCustomerID: tt.customerID,
+				nmnumber.FieldNumber:     tt.source.Target,
+				nmnumber.FieldType:       nmnumber.TypeNormal,
+				nmnumber.FieldStatus:     nmnumber.StatusActive,
+				nmnumber.FieldDeleted:    false,
+			}).Return([]nmnumber.Number{{Number: tt.source.Target}}, nil)
 
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 
@@ -1311,57 +1326,280 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 	}
 }
 
-func Test_getSourceForOutgoingCall(t *testing.T) {
+func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 
 	tests := []struct {
 		name string
 
-		source      *commonaddress.Address
-		destination *commonaddress.Address
+		source      commonaddress.Address
+		destination commonaddress.Address
+		customer    *cucustomer.Customer
+
+		responseNumbers []nmnumber.Number
+		responseNumErr  error
+
+		responseDefaultNum    *nmnumber.Number
+		responseDefaultNumErr error
 
 		expectRes *commonaddress.Address
 	}{
 		{
-			"destination type tel and source target is anonymous",
+			name: "valid source owned by customer",
 
-			&commonaddress.Address{
+			source: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
-			&commonaddress.Address{
+			destination: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			},
 
-			&commonaddress.Address{
+			responseNumbers: []nmnumber.Number{{Number: "+821100000001"}},
+
+			expectRes: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
 		},
 		{
-			"destination type is tel but source has + prefix",
+			name: "source not in E.164 format with default available",
 
-			&commonaddress.Address{
+			source: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "821100000001",
 			},
-			&commonaddress.Address{
+			destination: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000002",
 			},
+			customer: &cucustomer.Customer{
+				ID:                            uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+				DefaultOutgoingSourceNumberID: uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001"),
+			},
 
-			&commonaddress.Address{
+			responseDefaultNum: &nmnumber.Number{Number: "+821100000099"},
+
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+821100000099",
+				TargetName: "+821100000099",
+			},
+		},
+		{
+			name: "source not owned by customer with default available",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID:                            uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+				DefaultOutgoingSourceNumberID: uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001"),
+			},
+
+			responseNumbers:    []nmnumber.Number{},
+			responseDefaultNum: &nmnumber.Number{Number: "+821100000099"},
+
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+821100000099",
+				TargetName: "+821100000099",
+			},
+		},
+		{
+			name: "number lookup error with default available",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID:                            uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+				DefaultOutgoingSourceNumberID: uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001"),
+			},
+
+			responseNumErr:     fmt.Errorf("number service error"),
+			responseDefaultNum: &nmnumber.Number{Number: "+821100000099"},
+
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+821100000099",
+				TargetName: "+821100000099",
+			},
+		},
+		{
+			name: "source not E.164 and no default configured",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			},
+
+			expectRes: &commonaddress.Address{
 				Type:       commonaddress.TypeTel,
 				TargetName: "Anonymous",
 				Target:     "anonymous",
+			},
+		},
+		{
+			name: "source not owned by customer with no default configured",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			},
+
+			responseNumbers: []nmnumber.Number{},
+
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				TargetName: "Anonymous",
+				Target:     "anonymous",
+			},
+		},
+		{
+			name: "number lookup error with no default configured",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			},
+
+			responseNumErr: fmt.Errorf("number service error"),
+
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				TargetName: "Anonymous",
+				Target:     "anonymous",
+			},
+		},
+		{
+			name: "default number fetch error falls back to anonymous",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID:                            uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+				DefaultOutgoingSourceNumberID: uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001"),
+			},
+
+			responseNumbers:       []nmnumber.Number{},
+			responseDefaultNumErr: fmt.Errorf("number get error"),
+
+			expectRes: &commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				TargetName: "Anonymous",
+				Target:     "anonymous",
+			},
+		},
+		{
+			name: "nil customer skips validation",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: nil,
+
+			expectRes: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+		},
+		{
+			name: "non-tel destination skips validation",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "test@example.com",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "dest@example.com",
+			},
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			},
+
+			expectRes: &commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "test@example.com",
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
 
-			res := getSourceForOutgoingCall(tt.source, tt.destination)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+
+			h := &callHandler{
+				reqHandler: mockReq,
+			}
+
+			ctx := context.Background()
+
+			// set up mocks based on test case
+			if tt.customer != nil && tt.destination.Type == commonaddress.TypeTel && strings.HasPrefix(tt.source.Target, "+") {
+				mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), map[nmnumber.Field]any{
+					nmnumber.FieldCustomerID: tt.customer.ID,
+					nmnumber.FieldNumber:     tt.source.Target,
+					nmnumber.FieldType:       nmnumber.TypeNormal,
+					nmnumber.FieldStatus:     nmnumber.StatusActive,
+					nmnumber.FieldDeleted:    false,
+				}).Return(tt.responseNumbers, tt.responseNumErr)
+			}
+
+			if tt.customer != nil && tt.destination.Type == commonaddress.TypeTel && (tt.responseDefaultNum != nil || tt.responseDefaultNumErr != nil) {
+				mockReq.EXPECT().NumberV1NumberGet(ctx, tt.customer.DefaultOutgoingSourceNumberID).Return(tt.responseDefaultNum, tt.responseDefaultNumErr)
+			}
+
+			res := h.getValidatedSourceForOutgoingCall(ctx, tt.source, tt.destination, tt.customer)
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
