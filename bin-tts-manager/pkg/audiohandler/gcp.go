@@ -61,7 +61,27 @@ func gcpGetClient(ctx context.Context, endpoint string) (*texttospeech.Client, e
 		return nil, errors.Wrapf(err, "could not create a new client")
 	}
 
+	// Warm up the gRPC connection by issuing a lightweight ListVoices call.
+	// Without this, the first SynthesizeSpeech call pays the TLS handshake cost (~300-400ms).
+	gcpWarmUpConnection(ctx, res)
+
 	return res, nil
+}
+
+// gcpWarmUpConnection forces the lazy gRPC connection to establish by sending a lightweight ListVoices request.
+func gcpWarmUpConnection(ctx context.Context, client *texttospeech.Client) {
+	log := logrus.WithField("func", "gcpWarmUpConnection")
+
+	warmupCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	start := time.Now()
+	_, err := client.ListVoices(warmupCtx, &texttospeechpb.ListVoicesRequest{LanguageCode: "en-US"})
+	if err != nil {
+		log.Warnf("GCP connection warm-up failed (non-fatal). duration: %s, err: %v", time.Since(start), err)
+		return
+	}
+	log.Infof("GCP connection warm-up completed. duration: %s", time.Since(start))
 }
 
 func (h *audioHandler) gcpAudioCreate(ctx context.Context, callID uuid.UUID, text string, lang string, voiceID string, filepath string) error {
