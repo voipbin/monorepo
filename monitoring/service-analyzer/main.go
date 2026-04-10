@@ -119,6 +119,7 @@ Flags:
   --json            Output in JSON format (graph, impact)
   --root /path      Specify monorepo root directory
   --output /path    Output file path (snapshot)
+  --config /path    Config file for validate (default: .service-analyzer.json)
 
 Examples:
   service-analyzer graph                  # Mermaid graph to stdout
@@ -487,6 +488,17 @@ func runValidate(scanner *analyzer.Scanner) {
 		os.Exit(1)
 	}
 
+	// load config from --config flag or default path
+	configPath := findFlagValue("--config")
+	if configPath == "" {
+		configPath = ".service-analyzer.json"
+	}
+	cfg, err := analyzer.LoadConfig(configPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error loading config: %v\n", err)
+		os.Exit(1)
+	}
+
 	fmt.Println("Architectural Validation")
 	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println()
@@ -494,36 +506,58 @@ func runValidate(scanner *analyzer.Scanner) {
 	issues := 0
 
 	// 1. Check circular dependencies
-	cycles := analyzer.DetectCircularDeps(g)
-	directCycles := 0
-	for _, c := range cycles {
-		if len(c.Services) == 2 {
-			directCycles++
-		}
-	}
-	if directCycles > 0 {
-		fmt.Printf("FAIL  Direct circular RPC deps: %d\n", directCycles)
+	if !cfg.DisableCycleCheck {
+		cycles := analyzer.DetectCircularDeps(g)
+		directCycles := 0
 		for _, c := range cycles {
 			if len(c.Services) == 2 {
-				fmt.Printf("        %s <-> %s\n", c.Services[0], c.Services[1])
+				directCycles++
 			}
 		}
-		issues += directCycles
+		exceeds := directCycles > cfg.MaxCycles
+		if exceeds {
+			fmt.Printf("FAIL  Direct circular RPC deps: %d (max: %d)\n", directCycles, cfg.MaxCycles)
+			for _, c := range cycles {
+				if len(c.Services) == 2 {
+					fmt.Printf("        %s <-> %s\n", c.Services[0], c.Services[1])
+				}
+			}
+			issues += directCycles - cfg.MaxCycles
+		} else if directCycles > 0 {
+			fmt.Printf("PASS  Direct circular RPC deps: %d (within max: %d)\n", directCycles, cfg.MaxCycles)
+		} else {
+			fmt.Println("PASS  No direct circular RPC dependencies")
+		}
 	} else {
-		fmt.Println("PASS  No direct circular RPC dependencies")
+		fmt.Println("SKIP  Circular dependency check (disabled)")
 	}
 
 	// 2. Check layer violations
-	layerMap := reporter.GetLayerMap()
-	violations := analyzer.DetectLayerViolations(g, layerMap)
-	if len(violations) > 0 {
-		fmt.Printf("FAIL  Layer violations: %d\n", len(violations))
-		for _, v := range violations {
-			fmt.Printf("        %s (%s) -> %s (%s)\n", v.From, v.FromLayer, v.To, v.ToLayer)
+	if !cfg.DisableLayerCheck {
+		layerMap := reporter.GetLayerMap()
+		allViolations := analyzer.DetectLayerViolations(g, layerMap)
+		violations := cfg.FilterViolations(allViolations)
+		suppressed := len(allViolations) - len(violations)
+
+		if len(violations) > 0 {
+			fmt.Printf("FAIL  Layer violations: %d", len(violations))
+			if suppressed > 0 {
+				fmt.Printf(" (%d suppressed)", suppressed)
+			}
+			fmt.Println()
+			for _, v := range violations {
+				fmt.Printf("        %s (%s) -> %s (%s)\n", v.From, v.FromLayer, v.To, v.ToLayer)
+			}
+			issues += len(violations)
+		} else {
+			if suppressed > 0 {
+				fmt.Printf("PASS  No new layer violations (%d suppressed)\n", suppressed)
+			} else {
+				fmt.Println("PASS  No architectural layer violations")
+			}
 		}
-		issues += len(violations)
 	} else {
-		fmt.Println("PASS  No architectural layer violations")
+		fmt.Println("SKIP  Layer violation check (disabled)")
 	}
 
 	// 3. Check critical hotspots
@@ -552,12 +586,25 @@ func runValidate(scanner *analyzer.Scanner) {
 			highCount++
 		}
 	}
+	cycles := analyzer.DetectCircularDeps(g)
+	directCycles := 0
+	for _, c := range cycles {
+		if len(c.Services) == 2 {
+			directCycles++
+		}
+	}
 	score := reporter.ComputeHealthScorePublic(len(g.Services), critCount, highCount, len(cycles), directCycles)
 	fmt.Println()
 	fmt.Printf("Health Score: %d/100\n", score)
 
+	if cfg.MinHealthScore > 0 && score < cfg.MinHealthScore {
+		fmt.Printf("FAIL  Health score %d below minimum %d\n", score, cfg.MinHealthScore)
+		issues++
+	}
+
 	if issues > 0 {
 		fmt.Printf("\nValidation FAILED with %d issue(s).\n", issues)
+		fmt.Println("Hint: suppress known violations in .service-analyzer.json")
 		os.Exit(1)
 	}
 	fmt.Println("\nValidation PASSED.")
