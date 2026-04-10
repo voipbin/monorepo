@@ -75,6 +75,8 @@ func main() {
 		runPaths(scanner, srcSvc, dstSvc)
 	case "layers":
 		runLayers(scanner)
+	case "validate":
+		runValidate(scanner)
 	case "snapshot":
 		runSnapshot(scanner)
 	case "diff":
@@ -107,6 +109,7 @@ Commands:
   circular          Detect circular RPC dependency chains
   paths <a> <b>     Find all dependency paths between two services
   layers            Check for architectural layer violations (CI gate)
+  validate          Combined CI gate: checks cycles, layers, hotspots (exit 1 on issues)
   snapshot          Save current dependency state to JSON file
   diff              Compare two snapshots to detect dependency changes
   list              List all discovered services
@@ -475,6 +478,89 @@ func runLayers(scanner *analyzer.Scanner) {
 	fmt.Println("Fix violations by refactoring to use allowed dependency paths.")
 
 	os.Exit(1) // non-zero exit for CI gates
+}
+
+func runValidate(scanner *analyzer.Scanner) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Architectural Validation")
+	fmt.Println(strings.Repeat("=", 60))
+	fmt.Println()
+
+	issues := 0
+
+	// 1. Check circular dependencies
+	cycles := analyzer.DetectCircularDeps(g)
+	directCycles := 0
+	for _, c := range cycles {
+		if len(c.Services) == 2 {
+			directCycles++
+		}
+	}
+	if directCycles > 0 {
+		fmt.Printf("FAIL  Direct circular RPC deps: %d\n", directCycles)
+		for _, c := range cycles {
+			if len(c.Services) == 2 {
+				fmt.Printf("        %s <-> %s\n", c.Services[0], c.Services[1])
+			}
+		}
+		issues += directCycles
+	} else {
+		fmt.Println("PASS  No direct circular RPC dependencies")
+	}
+
+	// 2. Check layer violations
+	layerMap := reporter.GetLayerMap()
+	violations := analyzer.DetectLayerViolations(g, layerMap)
+	if len(violations) > 0 {
+		fmt.Printf("FAIL  Layer violations: %d\n", len(violations))
+		for _, v := range violations {
+			fmt.Printf("        %s (%s) -> %s (%s)\n", v.From, v.FromLayer, v.To, v.ToLayer)
+		}
+		issues += len(violations)
+	} else {
+		fmt.Println("PASS  No architectural layer violations")
+	}
+
+	// 3. Check critical hotspots
+	hotspots := analyzer.DetectHotspots(g)
+	critCount := 0
+	for _, h := range hotspots {
+		if h.RiskLevel == "critical" {
+			critCount++
+		}
+	}
+	if critCount > 0 {
+		fmt.Printf("WARN  Critical coupling hotspots: %d\n", critCount)
+		for _, h := range hotspots {
+			if h.RiskLevel == "critical" {
+				fmt.Printf("        %s (coupling: %d)\n", h.Name, h.Coupling)
+			}
+		}
+	} else {
+		fmt.Println("PASS  No critical coupling hotspots")
+	}
+
+	// 4. Health score
+	highCount := 0
+	for _, h := range hotspots {
+		if h.RiskLevel == "high" {
+			highCount++
+		}
+	}
+	score := reporter.ComputeHealthScorePublic(len(g.Services), critCount, highCount, len(cycles), directCycles)
+	fmt.Println()
+	fmt.Printf("Health Score: %d/100\n", score)
+
+	if issues > 0 {
+		fmt.Printf("\nValidation FAILED with %d issue(s).\n", issues)
+		os.Exit(1)
+	}
+	fmt.Println("\nValidation PASSED.")
 }
 
 func runSnapshot(scanner *analyzer.Scanner) {

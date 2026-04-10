@@ -161,6 +161,11 @@ func GenerateFullReport(g *analyzer.Graph) string {
 	return sb.String()
 }
 
+// ComputeHealthScorePublic exposes the health score computation for use by other packages.
+func ComputeHealthScorePublic(totalServices, criticalCount, highCount, totalCycles, directCycles int) int {
+	return computeHealthScore(totalServices, criticalCount, highCount, totalCycles, directCycles)
+}
+
 // computeHealthScore produces a 0-100 score based on architectural metrics.
 func computeHealthScore(totalServices, criticalCount, highCount, totalCycles, directCycles int) int {
 	score := 100
