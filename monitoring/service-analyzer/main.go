@@ -17,6 +17,7 @@ func main() {
 	}
 
 	command := os.Args[1]
+	jsonOutput := hasFlag("--json")
 
 	// determine monorepo root: use --root flag or auto-detect
 	root := findMonorepoRoot()
@@ -30,16 +31,33 @@ func main() {
 
 	switch command {
 	case "graph":
-		runGraph(scanner)
+		runGraph(scanner, jsonOutput)
 	case "metrics":
 		runMetrics(scanner)
 	case "impact":
-		if len(os.Args) < 3 {
+		svcName := findPositionalArg(2)
+		if svcName == "" {
 			fmt.Fprintf(os.Stderr, "usage: service-analyzer impact <service-name>\n")
 			fmt.Fprintf(os.Stderr, "example: service-analyzer impact call-manager\n")
 			os.Exit(1)
 		}
-		runImpact(scanner, os.Args[2])
+		runImpact(scanner, svcName, jsonOutput)
+	case "callers":
+		svcName := findPositionalArg(2)
+		if svcName == "" {
+			fmt.Fprintf(os.Stderr, "usage: service-analyzer callers <service-name>\n")
+			fmt.Fprintf(os.Stderr, "example: service-analyzer callers call-manager\n")
+			os.Exit(1)
+		}
+		runCallers(scanner, svcName)
+	case "deps":
+		svcName := findPositionalArg(2)
+		if svcName == "" {
+			fmt.Fprintf(os.Stderr, "usage: service-analyzer deps <service-name>\n")
+			fmt.Fprintf(os.Stderr, "example: service-analyzer deps flow-manager\n")
+			os.Exit(1)
+		}
+		runDeps(scanner, svcName)
 	case "list":
 		runList(scanner)
 	case "help", "--help", "-h":
@@ -55,26 +73,29 @@ func printUsage() {
 	fmt.Println(`service-analyzer - VoIPbin monorepo service dependency analyzer
 
 Usage:
-  service-analyzer <command> [args]
+  service-analyzer <command> [args] [--json] [--root /path]
 
 Commands:
-  graph           Generate Mermaid dependency graph
-  metrics         Show fan-in/fan-out metrics for each service
-  impact <svc>    Analyze cascade impact if <svc> goes down
-  list            List all discovered services
-  help            Show this help message
+  graph             Generate Mermaid dependency graph
+  metrics           Show fan-in/fan-out metrics for each service
+  impact <svc>      Analyze cascade impact if <svc> goes down
+  callers <svc>     Show which services call <svc> (reverse lookup)
+  deps <svc>        Show which services <svc> depends on
+  list              List all discovered services
+  help              Show this help message
+
+Flags:
+  --json            Output in JSON format (graph, impact)
+  --root /path      Specify monorepo root directory
 
 Examples:
-  service-analyzer graph              # print Mermaid graph to stdout
-  service-analyzer graph > deps.md    # save to file
-  service-analyzer metrics            # show dependency metrics table
-  service-analyzer impact call-manager  # what breaks if call-manager is down?
-  service-analyzer list               # list all services
-
-Environment:
-  The tool auto-detects the monorepo root by walking up from the current
-  directory looking for bin-common-handler/. Alternatively, set the working
-  directory to the monorepo root before running.`)
+  service-analyzer graph                  # Mermaid graph to stdout
+  service-analyzer graph --json           # JSON graph to stdout
+  service-analyzer metrics                # dependency metrics table
+  service-analyzer impact call-manager    # what breaks if call-manager is down?
+  service-analyzer callers call-manager   # who calls call-manager?
+  service-analyzer deps flow-manager      # what does flow-manager depend on?
+  service-analyzer list                   # list all services`)
 }
 
 func findMonorepoRoot() string {
@@ -108,11 +129,21 @@ func findMonorepoRoot() string {
 	return ""
 }
 
-func runGraph(scanner *analyzer.Scanner) {
+func runGraph(scanner *analyzer.Scanner, jsonOutput bool) {
 	g, err := scanner.BuildGraph()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
 		os.Exit(1)
+	}
+
+	if jsonOutput {
+		data, jsonErr := reporter.GenerateJSON(g)
+		if jsonErr != nil {
+			fmt.Fprintf(os.Stderr, "error generating JSON: %v\n", jsonErr)
+			os.Exit(1)
+		}
+		fmt.Println(string(data))
+		return
 	}
 
 	mermaid := reporter.GenerateMermaid(g)
@@ -139,29 +170,103 @@ func runMetrics(scanner *analyzer.Scanner) {
 	fmt.Print(reporter.FormatMetrics(metrics))
 }
 
-func runImpact(scanner *analyzer.Scanner, serviceName string) {
+func runImpact(scanner *analyzer.Scanner, serviceName string, jsonOutput bool) {
 	g, err := scanner.BuildGraph()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
 		os.Exit(1)
 	}
 
-	// validate service exists
-	found := false
-	for _, svc := range g.Services {
-		if svc.Name == serviceName {
-			found = true
-			break
+	validateServiceExists(g, serviceName)
+
+	result := reporter.AnalyzeImpact(g, serviceName)
+
+	if jsonOutput {
+		data, jsonErr := reporter.GenerateImpactJSON(result)
+		if jsonErr != nil {
+			fmt.Fprintf(os.Stderr, "error generating JSON: %v\n", jsonErr)
+			os.Exit(1)
 		}
+		fmt.Println(string(data))
+		return
 	}
-	if !found {
-		fmt.Fprintf(os.Stderr, "error: service %q not found\n", serviceName)
-		fmt.Fprintf(os.Stderr, "hint: run 'service-analyzer list' to see available services\n")
+
+	fmt.Print(reporter.FormatImpact(result))
+}
+
+func runCallers(scanner *analyzer.Scanner, serviceName string) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
 		os.Exit(1)
 	}
 
-	result := reporter.AnalyzeImpact(g, serviceName)
-	fmt.Print(reporter.FormatImpact(result))
+	validateServiceExists(g, serviceName)
+
+	fmt.Printf("Services that call %s:\n\n", serviceName)
+
+	rpcCount := 0
+	eventCount := 0
+	for _, dep := range g.Dependencies {
+		if dep.To == serviceName && dep.Type == analyzer.DepRPC {
+			fmt.Printf("  [RPC]   %-25s  methods: %s\n", dep.From, strings.Join(dep.Methods, ", "))
+			rpcCount++
+		}
+	}
+	for _, dep := range g.Dependencies {
+		if dep.To == serviceName && dep.Type == analyzer.DepEvent {
+			fmt.Printf("  [EVENT] %-25s  events: %s\n", dep.From, strings.Join(dep.Methods, ", "))
+			eventCount++
+		}
+	}
+
+	if rpcCount == 0 && eventCount == 0 {
+		fmt.Println("  (none)")
+	}
+	fmt.Printf("\nTotal: %d RPC callers, %d event subscribers\n", rpcCount, eventCount)
+}
+
+func runDeps(scanner *analyzer.Scanner, serviceName string) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
+		os.Exit(1)
+	}
+
+	validateServiceExists(g, serviceName)
+
+	fmt.Printf("Dependencies of %s:\n\n", serviceName)
+
+	rpcCount := 0
+	eventCount := 0
+	for _, dep := range g.Dependencies {
+		if dep.From == serviceName && dep.Type == analyzer.DepRPC {
+			fmt.Printf("  [RPC]   %-25s  methods: %s\n", dep.To, strings.Join(dep.Methods, ", "))
+			rpcCount++
+		}
+	}
+	for _, dep := range g.Dependencies {
+		if dep.From == serviceName && dep.Type == analyzer.DepEvent {
+			fmt.Printf("  [EVENT] %-25s  events: %s\n", dep.To, strings.Join(dep.Methods, ", "))
+			eventCount++
+		}
+	}
+
+	if rpcCount == 0 && eventCount == 0 {
+		fmt.Println("  (none)")
+	}
+	fmt.Printf("\nTotal: %d RPC targets, %d event publishers\n", rpcCount, eventCount)
+}
+
+func validateServiceExists(g *analyzer.Graph, serviceName string) {
+	for _, svc := range g.Services {
+		if svc.Name == serviceName {
+			return
+		}
+	}
+	fmt.Fprintf(os.Stderr, "error: service %q not found\n", serviceName)
+	fmt.Fprintf(os.Stderr, "hint: run 'service-analyzer list' to see available services\n")
+	os.Exit(1)
 }
 
 func runList(scanner *analyzer.Scanner) {
@@ -185,4 +290,37 @@ func countByType(deps []analyzer.Dependency, t analyzer.DependencyType) int {
 		}
 	}
 	return count
+}
+
+func hasFlag(flag string) bool {
+	for _, arg := range os.Args {
+		if arg == flag {
+			return true
+		}
+	}
+	return false
+}
+
+// findPositionalArg finds the nth non-flag argument (skipping --key value pairs).
+func findPositionalArg(pos int) string {
+	idx := 0
+	skip := false
+	for _, arg := range os.Args {
+		if skip {
+			skip = false
+			continue
+		}
+		if arg == "--root" {
+			skip = true
+			continue
+		}
+		if strings.HasPrefix(arg, "--") {
+			continue
+		}
+		if idx == pos {
+			return arg
+		}
+		idx++
+	}
+	return ""
 }
