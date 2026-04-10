@@ -64,6 +64,8 @@ func main() {
 		runHotspots(scanner)
 	case "circular":
 		runCircular(scanner)
+	case "layers":
+		runLayers(scanner)
 	case "snapshot":
 		runSnapshot(scanner)
 	case "diff":
@@ -94,6 +96,7 @@ Commands:
   report            Full architectural health report with score
   hotspots          Identify high-coupling architectural risk points
   circular          Detect circular RPC dependency chains
+  layers            Check for architectural layer violations (CI gate)
   snapshot          Save current dependency state to JSON file
   diff              Compare two snapshots to detect dependency changes
   list              List all discovered services
@@ -351,6 +354,45 @@ func runCircular(scanner *analyzer.Scanner) {
 	fmt.Println("  - Converting synchronous RPC to async events")
 	fmt.Println("  - Extracting shared logic into a new service")
 	fmt.Println("  - Using the Saga pattern for distributed workflows")
+}
+
+func runLayers(scanner *analyzer.Scanner) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
+		os.Exit(1)
+	}
+
+	layerMap := reporter.GetLayerMap()
+	violations := analyzer.DetectLayerViolations(g, layerMap)
+
+	if len(violations) == 0 {
+		fmt.Println("No architectural layer violations detected.")
+		fmt.Println("All service dependencies follow the expected layer hierarchy.")
+		return
+	}
+
+	fmt.Printf("Architectural Layer Violations: %d\n", len(violations))
+	fmt.Println(strings.Repeat("=", 65))
+	fmt.Println()
+	fmt.Printf("%-20s %-12s %-3s %-20s %-12s\n", "From", "Layer", "", "To", "Layer")
+	fmt.Println(strings.Repeat("-", 65))
+
+	for _, v := range violations {
+		fmt.Printf("%-20s %-12s --> %-20s %-12s  [%s]\n",
+			v.From, v.FromLayer, v.To, v.ToLayer, v.DepType)
+	}
+
+	fmt.Println()
+	fmt.Println("Layer hierarchy (top depends on bottom):")
+	fmt.Println("  Gateway > Business > Core")
+	fmt.Println("  Business > Telephony > Core")
+	fmt.Println("  * > Integration")
+	fmt.Println("  Proxy -> Core only")
+	fmt.Println()
+	fmt.Println("Fix violations by refactoring to use allowed dependency paths.")
+
+	os.Exit(1) // non-zero exit for CI gates
 }
 
 func runSnapshot(scanner *analyzer.Scanner) {

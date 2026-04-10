@@ -55,6 +55,15 @@ var layerAssignment = map[string]analyzer.Layer{
 	"dbscheme-manager": analyzer.LayerTooling,
 }
 
+// GetLayerMap returns a copy of the service-to-layer mapping for use by other packages.
+func GetLayerMap() map[string]analyzer.Layer {
+	result := make(map[string]analyzer.Layer, len(layerAssignment))
+	for k, v := range layerAssignment {
+		result[k] = v
+	}
+	return result
+}
+
 // GenerateMermaid produces a Mermaid graph definition from the dependency graph.
 func GenerateMermaid(g *analyzer.Graph) string {
 	var sb strings.Builder
