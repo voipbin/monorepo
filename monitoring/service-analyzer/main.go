@@ -58,6 +58,10 @@ func main() {
 			os.Exit(1)
 		}
 		runDeps(scanner, svcName)
+	case "hotspots":
+		runHotspots(scanner)
+	case "circular":
+		runCircular(scanner)
 	case "list":
 		runList(scanner)
 	case "help", "--help", "-h":
@@ -81,6 +85,8 @@ Commands:
   impact <svc>      Analyze cascade impact if <svc> goes down
   callers <svc>     Show which services call <svc> (reverse lookup)
   deps <svc>        Show which services <svc> depends on
+  hotspots          Identify high-coupling architectural risk points
+  circular          Detect circular RPC dependency chains
   list              List all discovered services
   help              Show this help message
 
@@ -256,6 +262,73 @@ func runDeps(scanner *analyzer.Scanner, serviceName string) {
 		fmt.Println("  (none)")
 	}
 	fmt.Printf("\nTotal: %d RPC targets, %d event publishers\n", rpcCount, eventCount)
+}
+
+func runHotspots(scanner *analyzer.Scanner) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
+		os.Exit(1)
+	}
+
+	hotspots := analyzer.DetectHotspots(g)
+
+	fmt.Println("Architectural Hotspots (High Coupling Risk)")
+	fmt.Println(strings.Repeat("=", 75))
+	fmt.Println()
+	fmt.Printf("%-25s %8s %8s %8s %10s\n", "Service", "Fan-In", "Fan-Out", "Total", "Risk")
+	fmt.Println(strings.Repeat("-", 75))
+
+	for _, h := range hotspots {
+		riskLabel := h.RiskLevel
+		switch h.RiskLevel {
+		case "critical":
+			riskLabel = "CRITICAL"
+		case "high":
+			riskLabel = "HIGH"
+		case "medium":
+			riskLabel = "MEDIUM"
+		case "low":
+			riskLabel = "low"
+		}
+		fmt.Printf("%-25s %8d %8d %8d %10s\n", h.Name, h.FanIn, h.FanOut, h.Coupling, riskLabel)
+	}
+
+	fmt.Println()
+	fmt.Println("Risk levels: CRITICAL (>=20), HIGH (>=10), MEDIUM (>=5), low (<5)")
+	fmt.Println("High fan-in + high fan-out = high blast radius for changes")
+}
+
+func runCircular(scanner *analyzer.Scanner) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
+		os.Exit(1)
+	}
+
+	cycles := analyzer.DetectCircularDeps(g)
+
+	if len(cycles) == 0 {
+		fmt.Println("No circular RPC dependencies detected.")
+		return
+	}
+
+	fmt.Printf("Circular RPC Dependencies Detected: %d\n", len(cycles))
+	fmt.Println(strings.Repeat("=", 50))
+	fmt.Println()
+
+	for i, c := range cycles {
+		chain := strings.Join(c.Services, " -> ")
+		chain += " -> " + c.Services[0] // complete the loop
+		fmt.Printf("  Cycle %d: %s\n", i+1, chain)
+	}
+
+	fmt.Println()
+	fmt.Println("Circular dependencies increase coupling and can cause")
+	fmt.Println("cascading failures. Consider breaking cycles by:")
+	fmt.Println("  - Converting synchronous RPC to async events")
+	fmt.Println("  - Extracting shared logic into a new service")
+	fmt.Println("  - Using the Saga pattern for distributed workflows")
 }
 
 func validateServiceExists(g *analyzer.Graph, serviceName string) {
