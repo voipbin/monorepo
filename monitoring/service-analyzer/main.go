@@ -64,6 +64,10 @@ func main() {
 		runHotspots(scanner)
 	case "circular":
 		runCircular(scanner)
+	case "snapshot":
+		runSnapshot(scanner)
+	case "diff":
+		runDiff()
 	case "list":
 		runList(scanner)
 	case "help", "--help", "-h":
@@ -90,12 +94,15 @@ Commands:
   report            Full architectural health report with score
   hotspots          Identify high-coupling architectural risk points
   circular          Detect circular RPC dependency chains
+  snapshot          Save current dependency state to JSON file
+  diff              Compare two snapshots to detect dependency changes
   list              List all discovered services
   help              Show this help message
 
 Flags:
   --json            Output in JSON format (graph, impact)
   --root /path      Specify monorepo root directory
+  --output /path    Output file path (snapshot)
 
 Examples:
   service-analyzer graph                  # Mermaid graph to stdout
@@ -104,6 +111,8 @@ Examples:
   service-analyzer impact call-manager    # what breaks if call-manager is down?
   service-analyzer callers call-manager   # who calls call-manager?
   service-analyzer deps flow-manager      # what does flow-manager depend on?
+  service-analyzer snapshot               # save snapshot to deps-snapshot.json
+  service-analyzer diff old.json new.json # compare two snapshots
   service-analyzer list                   # list all services`)
 }
 
@@ -342,6 +351,69 @@ func runCircular(scanner *analyzer.Scanner) {
 	fmt.Println("  - Converting synchronous RPC to async events")
 	fmt.Println("  - Extracting shared logic into a new service")
 	fmt.Println("  - Using the Saga pattern for distributed workflows")
+}
+
+func runSnapshot(scanner *analyzer.Scanner) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
+		os.Exit(1)
+	}
+
+	snap := reporter.CreateSnapshot(g)
+
+	outputPath := findFlagValue("--output")
+	if outputPath == "" {
+		outputPath = "deps-snapshot.json"
+	}
+
+	if err := reporter.SaveSnapshot(snap, outputPath); err != nil {
+		fmt.Fprintf(os.Stderr, "error saving snapshot: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Snapshot saved to %s\n", outputPath)
+	fmt.Printf("  Services: %d, Dependencies: %d (RPC: %d, Event: %d)\n",
+		snap.Services, snap.Dependencies, snap.RPCCount, snap.EventCount)
+	fmt.Printf("  Health Score: %d/100, Cycles: %d\n", snap.HealthScore, snap.Cycles)
+}
+
+func runDiff() {
+	oldPath := findPositionalArg(2)
+	newPath := findPositionalArg(3)
+
+	if oldPath == "" || newPath == "" {
+		fmt.Fprintf(os.Stderr, "usage: service-analyzer diff <old-snapshot.json> <new-snapshot.json>\n")
+		fmt.Fprintf(os.Stderr, "example: service-analyzer diff deps-v1.json deps-v2.json\n")
+		os.Exit(1)
+	}
+
+	old, err := reporter.LoadSnapshot(oldPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error loading old snapshot: %v\n", err)
+		os.Exit(1)
+	}
+
+	new, err := reporter.LoadSnapshot(newPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error loading new snapshot: %v\n", err)
+		os.Exit(1)
+	}
+
+	diff := reporter.DiffSnapshots(old, new)
+	fmt.Print(reporter.FormatDiff(diff))
+}
+
+func findFlagValue(flag string) string {
+	for i, arg := range os.Args {
+		if arg == flag && i+1 < len(os.Args) {
+			return os.Args[i+1]
+		}
+		if strings.HasPrefix(arg, flag+"=") {
+			return strings.TrimPrefix(arg, flag+"=")
+		}
+	}
+	return ""
 }
 
 func validateServiceExists(g *analyzer.Graph, serviceName string) {

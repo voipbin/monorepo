@@ -229,3 +229,315 @@ func TestSomething(t *testing.T) {
 		t.Error("billing-manager should not be found (only in test file)")
 	}
 }
+
+func TestScanRPCDependencies_NoPkgDir(t *testing.T) {
+	dir := t.TempDir()
+	svcDir := filepath.Join(dir, "bin-empty-svc")
+	os.MkdirAll(svcDir, 0755) // no pkg/ subdirectory
+
+	scanner := NewScanner(dir)
+	services := []Service{{Name: "empty-svc", Directory: svcDir}}
+	deps, err := scanner.ScanRPCDependencies(services)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(deps) != 0 {
+		t.Errorf("expected 0 deps for service without pkg/, got %d", len(deps))
+	}
+}
+
+func TestScanRPCDependencies_SelfCallIgnored(t *testing.T) {
+	dir := t.TempDir()
+	svcDir := filepath.Join(dir, "bin-call-manager")
+	pkgDir := filepath.Join(svcDir, "pkg", "handler")
+	os.MkdirAll(pkgDir, 0755)
+
+	// call-manager calling CallV1* should be ignored (self-reference)
+	content := `package handler
+
+func (h *handler) work(ctx context.Context) {
+	h.reqHandler.CallV1CallGet(ctx, id)
+	h.reqHandler.FlowV1FlowCreate(ctx, data)
+}
+`
+	os.WriteFile(filepath.Join(pkgDir, "handler.go"), []byte(content), 0644)
+
+	scanner := NewScanner(dir)
+	services := []Service{{Name: "call-manager", Directory: svcDir}}
+	deps, err := scanner.ScanRPCDependencies(services)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Should only have flow-manager (self-call to call-manager skipped)
+	if len(deps) != 1 {
+		t.Errorf("expected 1 dep (self-call filtered), got %d: %+v", len(deps), deps)
+		return
+	}
+	if deps[0].To != "flow-manager" {
+		t.Errorf("expected dep to flow-manager, got %q", deps[0].To)
+	}
+}
+
+func TestScanRPCDependencies_MockFileIgnored(t *testing.T) {
+	dir := t.TempDir()
+	svcDir := filepath.Join(dir, "bin-test-svc")
+	pkgDir := filepath.Join(svcDir, "pkg", "handler")
+	os.MkdirAll(pkgDir, 0755)
+
+	mockContent := `package handler
+
+func (m *mockHandler) work(ctx context.Context) {
+	m.reqHandler.BillingV1BillingGet(ctx, id)
+}
+`
+	os.WriteFile(filepath.Join(pkgDir, "mock_handler.go"), []byte(mockContent), 0644)
+
+	scanner := NewScanner(dir)
+	services := []Service{{Name: "test-svc", Directory: svcDir}}
+	deps, err := scanner.ScanRPCDependencies(services)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(deps) != 0 {
+		t.Errorf("expected 0 deps (mock files ignored), got %d", len(deps))
+	}
+}
+
+func TestScanEventDependencies(t *testing.T) {
+	dir := t.TempDir()
+	svcDir := filepath.Join(dir, "bin-flow-manager")
+	subDir := filepath.Join(svcDir, "pkg", "subscribehandler")
+	os.MkdirAll(subDir, 0755)
+
+	content := `package subscribehandler
+
+import (
+	"monorepo/bin-common-handler/pkg/commonoutline"
+)
+
+func (h *handler) processEvent(ctx context.Context, m *commonoutline.Message) {
+	if m.Publisher == string(commonoutline.ServiceNameCallManager) {
+		// handle call manager events
+	}
+	if m.Publisher == string(commonoutline.ServiceNameCustomerManager) {
+		// handle customer manager events
+	}
+}
+`
+	os.WriteFile(filepath.Join(subDir, "handler.go"), []byte(content), 0644)
+
+	scanner := NewScanner(dir)
+	services := []Service{{Name: "flow-manager", Directory: svcDir}}
+	deps, err := scanner.ScanEventDependencies(services)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(deps) < 2 {
+		t.Errorf("expected at least 2 event deps, got %d: %+v", len(deps), deps)
+		return
+	}
+
+	targets := make(map[string]bool)
+	for _, d := range deps {
+		targets[d.To] = true
+		if d.From != "flow-manager" {
+			t.Errorf("dep.From = %q, want 'flow-manager'", d.From)
+		}
+		if d.Type != DepEvent {
+			t.Errorf("dep.Type = %v, want DepEvent", d.Type)
+		}
+	}
+
+	if !targets["call-manager"] {
+		t.Error("expected event dep on call-manager")
+	}
+	if !targets["customer-manager"] {
+		t.Error("expected event dep on customer-manager")
+	}
+}
+
+func TestScanEventDependencies_NoSubscribeDir(t *testing.T) {
+	dir := t.TempDir()
+	svcDir := filepath.Join(dir, "bin-test-svc")
+	os.MkdirAll(filepath.Join(svcDir, "pkg"), 0755) // no subscribehandler/
+
+	scanner := NewScanner(dir)
+	services := []Service{{Name: "test-svc", Directory: svcDir}}
+	deps, err := scanner.ScanEventDependencies(services)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(deps) != 0 {
+		t.Errorf("expected 0 event deps without subscribehandler, got %d", len(deps))
+	}
+}
+
+func TestScanEventDependencies_EventTypePattern(t *testing.T) {
+	dir := t.TempDir()
+	svcDir := filepath.Join(dir, "bin-agent-manager")
+	subDir := filepath.Join(svcDir, "pkg", "subscribehandler")
+	os.MkdirAll(subDir, 0755)
+
+	content := `package subscribehandler
+
+import (
+	cmcall "monorepo/bin-call-manager/pkg/cmcall"
+)
+
+func (h *handler) dispatchEvent(evtType string) {
+	switch evtType {
+	case string(cmcall.EventTypeCallCreated):
+		h.handleCallCreated()
+	case string(cmcall.EventTypeCallDeleted):
+		h.handleCallDeleted()
+	}
+}
+`
+	os.WriteFile(filepath.Join(subDir, "handler.go"), []byte(content), 0644)
+
+	scanner := NewScanner(dir)
+	services := []Service{{Name: "agent-manager", Directory: svcDir}}
+	deps, err := scanner.ScanEventDependencies(services)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	foundCallManager := false
+	for _, d := range deps {
+		if d.To == "call-manager" {
+			foundCallManager = true
+			// Should have detected specific event types
+			if len(d.Methods) == 0 {
+				t.Error("expected event type methods for call-manager dep")
+			}
+		}
+	}
+	if !foundCallManager {
+		t.Error("expected event dep on call-manager from EventType pattern")
+	}
+}
+
+func TestScanEventDependencies_SelfRefIgnored(t *testing.T) {
+	dir := t.TempDir()
+	svcDir := filepath.Join(dir, "bin-call-manager")
+	subDir := filepath.Join(svcDir, "pkg", "subscribehandler")
+	os.MkdirAll(subDir, 0755)
+
+	content := `package subscribehandler
+
+func (h *handler) processEvent(ctx context.Context) {
+	if m.Publisher == string(commonoutline.ServiceNameCallManager) {
+		// self-reference should be ignored
+	}
+}
+`
+	os.WriteFile(filepath.Join(subDir, "handler.go"), []byte(content), 0644)
+
+	scanner := NewScanner(dir)
+	services := []Service{{Name: "call-manager", Directory: svcDir}}
+	deps, err := scanner.ScanEventDependencies(services)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(deps) != 0 {
+		t.Errorf("expected 0 deps (self-ref ignored), got %d: %+v", len(deps), deps)
+	}
+}
+
+func TestBuildGraph(t *testing.T) {
+	dir := t.TempDir()
+
+	// create two services
+	svcADir := filepath.Join(dir, "bin-svc-a")
+	svcBDir := filepath.Join(dir, "bin-svc-b")
+	pkgA := filepath.Join(svcADir, "pkg", "handler")
+	os.MkdirAll(pkgA, 0755)
+	os.MkdirAll(svcBDir, 0755) // svc-b has no pkg/
+
+	content := `package handler
+
+func (h *handler) work(ctx context.Context) {
+	h.reqHandler.CallV1CallGet(ctx, id)
+}
+`
+	os.WriteFile(filepath.Join(pkgA, "handler.go"), []byte(content), 0644)
+
+	scanner := NewScanner(dir)
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(g.Services) != 2 {
+		t.Errorf("expected 2 services, got %d", len(g.Services))
+	}
+	if len(g.Dependencies) == 0 {
+		t.Error("expected at least 1 dependency")
+	}
+}
+
+func TestDiscoverServices_EmptyDir(t *testing.T) {
+	dir := t.TempDir()
+	scanner := NewScanner(dir)
+	services, err := scanner.DiscoverServices()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(services) != 0 {
+		t.Errorf("expected 0 services in empty dir, got %d", len(services))
+	}
+}
+
+func TestDiscoverServices_InvalidDir(t *testing.T) {
+	scanner := NewScanner("/nonexistent/path")
+	_, err := scanner.DiscoverServices()
+	if err == nil {
+		t.Error("expected error for invalid directory")
+	}
+}
+
+func TestScanFileForRPCCalls_AllPatterns(t *testing.T) {
+	dir := t.TempDir()
+	content := `package handler
+
+func (h *handler) work(ctx context.Context) {
+	h.reqHandler.CallV1CallGet(ctx, id)
+	h.requestHandler.FlowV1FlowCreate(ctx, data)
+	res := h.reqHandler.TTSV1TTSCreate(ctx, req)
+	res2 := h.requestHandler.RTPEngineV1Allocate(ctx, req)
+}
+`
+	path := filepath.Join(dir, "handler.go")
+	os.WriteFile(path, []byte(content), 0644)
+
+	methods, err := scanFileForRPCCalls(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(methods) != 4 {
+		t.Errorf("expected 4 methods, got %d: %v", len(methods), methods)
+	}
+}
+
+func TestScanFileForRPCCalls_NonexistentFile(t *testing.T) {
+	_, err := scanFileForRPCCalls("/nonexistent/file.go")
+	if err == nil {
+		t.Error("expected error for nonexistent file")
+	}
+}
+
+func TestResolveMethodTarget_AllPrefixes(t *testing.T) {
+	// verify each entry in methodPrefixToService resolves correctly
+	for prefix, expectedService := range methodPrefixToService {
+		method := prefix + "V1SomeAction"
+		got := resolveMethodTarget(method)
+		if got != expectedService {
+			t.Errorf("resolveMethodTarget(%q) = %q, want %q", method, got, expectedService)
+		}
+	}
+}
