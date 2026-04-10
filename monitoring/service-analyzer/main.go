@@ -58,6 +58,8 @@ func main() {
 			os.Exit(1)
 		}
 		runDeps(scanner, svcName)
+	case "report":
+		runReport(scanner)
 	case "hotspots":
 		runHotspots(scanner)
 	case "circular":
@@ -85,6 +87,7 @@ Commands:
   impact <svc>      Analyze cascade impact if <svc> goes down
   callers <svc>     Show which services call <svc> (reverse lookup)
   deps <svc>        Show which services <svc> depends on
+  report            Full architectural health report with score
   hotspots          Identify high-coupling architectural risk points
   circular          Detect circular RPC dependency chains
   list              List all discovered services
@@ -262,6 +265,16 @@ func runDeps(scanner *analyzer.Scanner, serviceName string) {
 		fmt.Println("  (none)")
 	}
 	fmt.Printf("\nTotal: %d RPC targets, %d event publishers\n", rpcCount, eventCount)
+}
+
+func runReport(scanner *analyzer.Scanner) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Print(reporter.GenerateFullReport(g))
 }
 
 func runHotspots(scanner *analyzer.Scanner) {
