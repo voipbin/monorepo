@@ -64,6 +64,15 @@ func main() {
 		runHotspots(scanner)
 	case "circular":
 		runCircular(scanner)
+	case "paths":
+		srcSvc := findPositionalArg(2)
+		dstSvc := findPositionalArg(3)
+		if srcSvc == "" || dstSvc == "" {
+			fmt.Fprintf(os.Stderr, "usage: service-analyzer paths <from-service> <to-service>\n")
+			fmt.Fprintf(os.Stderr, "example: service-analyzer paths call-manager campaign-manager\n")
+			os.Exit(1)
+		}
+		runPaths(scanner, srcSvc, dstSvc)
 	case "layers":
 		runLayers(scanner)
 	case "snapshot":
@@ -96,6 +105,7 @@ Commands:
   report            Full architectural health report with score
   hotspots          Identify high-coupling architectural risk points
   circular          Detect circular RPC dependency chains
+  paths <a> <b>     Find all dependency paths between two services
   layers            Check for architectural layer violations (CI gate)
   snapshot          Save current dependency state to JSON file
   diff              Compare two snapshots to detect dependency changes
@@ -114,6 +124,7 @@ Examples:
   service-analyzer impact call-manager    # what breaks if call-manager is down?
   service-analyzer callers call-manager   # who calls call-manager?
   service-analyzer deps flow-manager      # what does flow-manager depend on?
+  service-analyzer paths a b              # find all paths from service a to b
   service-analyzer snapshot               # save snapshot to deps-snapshot.json
   service-analyzer diff old.json new.json # compare two snapshots
   service-analyzer list                   # list all services`)
@@ -354,6 +365,77 @@ func runCircular(scanner *analyzer.Scanner) {
 	fmt.Println("  - Converting synchronous RPC to async events")
 	fmt.Println("  - Extracting shared logic into a new service")
 	fmt.Println("  - Using the Saga pattern for distributed workflows")
+}
+
+func runPaths(scanner *analyzer.Scanner, source, target string) {
+	g, err := scanner.BuildGraph()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error building graph: %v\n", err)
+		os.Exit(1)
+	}
+
+	validateServiceExists(g, source)
+	validateServiceExists(g, target)
+
+	shortest := analyzer.FindShortestPath(g, source, target)
+	if shortest == nil {
+		fmt.Printf("No dependency path from %s to %s\n", source, target)
+		return
+	}
+
+	fmt.Printf("Dependency Paths: %s -> %s\n", source, target)
+	fmt.Println(strings.Repeat("=", 60))
+	fmt.Println()
+
+	fmt.Println("Shortest path:")
+	printPath(shortest)
+	fmt.Println()
+
+	allPaths := analyzer.FindAllPaths(g, source, target, 8)
+	if len(allPaths) > 1 {
+		fmt.Printf("All paths (%d total):\n", len(allPaths))
+		limit := 10
+		if len(allPaths) < limit {
+			limit = len(allPaths)
+		}
+		for i := 0; i < limit; i++ {
+			fmt.Printf("  %d. ", i+1)
+			printPathInline(&allPaths[i])
+		}
+		if len(allPaths) > 10 {
+			fmt.Printf("  ... and %d more paths\n", len(allPaths)-10)
+		}
+	}
+}
+
+func printPath(p *analyzer.Path) {
+	for i, svc := range p.Services {
+		if i > 0 {
+			depType := p.Types[i-1]
+			if depType == analyzer.DepRPC {
+				fmt.Printf("  --[RPC]--> %s\n", svc)
+			} else {
+				fmt.Printf("  --[EVENT]--> %s\n", svc)
+			}
+		} else {
+			fmt.Printf("  %s\n", svc)
+		}
+	}
+}
+
+func printPathInline(p *analyzer.Path) {
+	for i, svc := range p.Services {
+		if i > 0 {
+			if p.Types[i-1] == analyzer.DepRPC {
+				fmt.Printf(" -[rpc]-> %s", svc)
+			} else {
+				fmt.Printf(" -[evt]-> %s", svc)
+			}
+		} else {
+			fmt.Print(svc)
+		}
+	}
+	fmt.Println()
 }
 
 func runLayers(scanner *analyzer.Scanner) {
