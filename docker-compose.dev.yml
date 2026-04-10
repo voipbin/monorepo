@@ -1,0 +1,77 @@
+# Local development infrastructure for VoIPBin monorepo.
+#
+# Usage:
+#   make dev-up          Start all services
+#   make dev-down        Stop all services
+#   make dev-reset       Stop and destroy volumes
+#
+# Or directly:
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Connection details:
+#   MySQL:    localhost:3306  user=voipbin  password=voipbin  db=voipbin
+#   Redis:    localhost:6379  password=voipbin
+#   RabbitMQ: localhost:5672  user=guest    password=guest
+#   RabbitMQ: localhost:15672 (management UI)
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: voipbin-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: voipbin
+      MYSQL_USER: voipbin
+      MYSQL_PASSWORD: voipbin
+    ports:
+      - "3306:3306"
+    volumes:
+      - voipbin-mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max-connections=200
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: voipbin-redis
+    command: redis-server --requirepass voipbin --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - voipbin-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "voipbin", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: voipbin-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - voipbin-rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  voipbin-mysql-data:
+  voipbin-redis-data:
+  voipbin-rabbitmq-data:
