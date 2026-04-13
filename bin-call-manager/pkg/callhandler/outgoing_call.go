@@ -197,6 +197,14 @@ func (h *callHandler) CreateCallOutgoing(
 		return nil, fmt.Errorf("no valid source number available for outgoing call")
 	}
 
+	// normalize anonymous flag: only "yes" and "no" are valid; everything else defaults to "auto"
+	switch anonymous {
+	case "yes", "no":
+		// valid, use as-is
+	default:
+		anonymous = "auto"
+	}
+
 	// resolve anonymous flag
 	// TODO: when anonymous == "auto", inherit from incoming channel's SIP Privacy header
 	// (check channel.StasisDataTypeSIPPrivacy). Currently "auto" defaults to not anonymous.
