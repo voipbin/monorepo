@@ -499,7 +499,7 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, gomock.Any()).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "").Return(tt.responseGroupcall, nil)
 
 			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, "")
 			if err != nil {
@@ -575,7 +575,7 @@ func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, gomock.Any()).Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "").Return(tt.responseGroupcall, nil)
 
 			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, "")
 			if err != nil {
@@ -1342,6 +1342,75 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 				"CALLERID(num)":  "+821100000001",
 			},
 		},
+		{
+			"anonymous true with tel destination but empty source falls back to normal",
+
+			&call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000001"),
+				},
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "",
+					TargetName: "Empty Source",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821087654321",
+				},
+			},
+			true,
+
+			map[string]string{
+				"CALLERID(name)": "Empty Source",
+				"CALLERID(num)":  "",
+			},
+		},
+		{
+			"anonymous true with tel destination but non-E164 source falls back to normal",
+
+			&call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000002"),
+				},
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "01012345678",
+					TargetName: "Local Number",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821087654321",
+				},
+			},
+			true,
+
+			map[string]string{
+				"CALLERID(name)": "Local Number",
+				"CALLERID(num)":  "01012345678",
+			},
+		},
+		{
+			"anonymous false with tel destination uses normal caller ID",
+
+			&call.Call{
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000001",
+					TargetName: "Normal Caller",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821087654321",
+				},
+			},
+			false,
+
+			map[string]string{
+				"CALLERID(name)": "Normal Caller",
+				"CALLERID(num)":  "+821100000001",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1960,3 +2029,4 @@ func Test_getDialURISIPDirect(t *testing.T) {
 		})
 	}
 }
+

@@ -212,6 +212,9 @@ func (h *callHandler) CreateCallOutgoing(
 	// resolve anonymous flag
 	// TODO: when anonymousOption == AnonymousOptionAuto, inherit from incoming channel's SIP Privacy header
 	// (check channel.StasisDataTypeSIPPrivacy). Currently "auto" defaults to not anonymous.
+	// IMPORTANT: when implementing auto-inherit, "no" must explicitly opt OUT of anonymous (never anonymize),
+	// while "auto" inherits from the incoming call. Today both resolve the same way (not anonymous),
+	// but they must diverge once auto-inherit is implemented.
 	resolvedAnonymous := anonymousOption == call.AnonymousOptionYes
 	log.Debugf("Resolved anonymous flag. input: %s, normalized: %s, resolved: %v", anonymous, anonymousOption, resolvedAnonymous)
 
@@ -614,18 +617,19 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anon
 		// This should not happen because getValidatedSourceForOutgoingCall ensures a valid source,
 		// but guard against unexpected call paths (e.g., route failover).
 		if c.Source.Target == "" || !strings.HasPrefix(c.Source.Target, "+") {
-			logrus.WithField("call_id", c.ID).Errorf("Anonymous caller ID requested but source target is invalid or empty. source_target: %s", c.Source.Target)
+			logrus.WithField("call_id", c.ID).Errorf("Anonymous caller ID requested but source target is invalid for PAI header. Falling back to normal caller ID. source_target: %s", c.Source.Target)
+			// Fall through to normal (non-anonymous) caller ID below.
+		} else {
+			// RFC 3323: anonymous From header
+			variables["CALLERID(name)"] = "Anonymous"
+			variables["CALLERID(num)"] = "anonymous"
+			variables["CALLERID(pres)"] = "prohib"
+
+			// RFC 3325: PAI carries the real source number so the PSTN carrier can route/bill correctly.
+			variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("<tel:%s>", c.Source.Target)
+			variables["PJSIP_HEADER(add,Privacy)"] = "id"
+			return
 		}
-
-		// RFC 3323: anonymous From header
-		variables["CALLERID(name)"] = "Anonymous"
-		variables["CALLERID(num)"] = "anonymous"
-		variables["CALLERID(pres)"] = "prohib"
-
-		// RFC 3325: PAI carries the real source number so the PSTN carrier can route/bill correctly.
-		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("<tel:%s>", c.Source.Target)
-		variables["PJSIP_HEADER(add,Privacy)"] = "id"
-		return
 	}
 
 	variables["CALLERID(name)"] = c.Source.TargetName

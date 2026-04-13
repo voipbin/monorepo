@@ -385,7 +385,7 @@ func Test_CallCreate(t *testing.T) {
 			}
 			mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(tt.responseFlow, nil)
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.agent.CustomerID, tt.responseFlow.ID, uuid.Nil, tt.source, tt.destinations, false, false, gomock.Any()).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.agent.CustomerID, tt.responseFlow.ID, uuid.Nil, tt.source, tt.destinations, false, false, "").Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			resCalls, resGroupcalls, err := h.CallCreate(ctx, tt.agent, tt.flowID, tt.actions, tt.source, tt.destinations, "")
 			if err != nil {
