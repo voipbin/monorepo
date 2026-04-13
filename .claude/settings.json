@@ -18,6 +18,11 @@
             "type": "command",
             "command": "bash .claude/scripts/check-error-log-return.sh",
             "description": "Warn about log-then-return anti-pattern in .go files"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-migration-table-names.sh",
+            "description": "Verify Alembic migration table names exist in dbhandler code"
           }
         ]
       }

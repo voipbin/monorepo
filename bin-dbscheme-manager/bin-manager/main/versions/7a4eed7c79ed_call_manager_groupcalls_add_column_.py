@@ -1,6 +1,6 @@
-"""call_manager_groupcalls add column anonymous
+"""call_groupcalls add column anonymous
 
-Add anonymous column to call_manager_groupcalls table to persist the anonymous
+Add anonymous column to call_groupcalls table to persist the anonymous
 caller ID option across linear ring retries. Without this column, the anonymous
 flag is lost when dialNextDestination creates chained groupcalls/calls.
 
@@ -24,7 +24,7 @@ depends_on = None
 
 def upgrade():
     op.execute("""
-        ALTER TABLE call_manager_groupcalls
+        ALTER TABLE call_groupcalls
         ADD COLUMN anonymous VARCHAR(10) NOT NULL DEFAULT ''
         AFTER answer_method
     """)
@@ -32,6 +32,6 @@ def upgrade():
 
 def downgrade():
     op.execute("""
-        ALTER TABLE call_manager_groupcalls
+        ALTER TABLE call_groupcalls
         DROP COLUMN anonymous
     """)
