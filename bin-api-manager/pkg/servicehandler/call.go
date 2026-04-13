@@ -108,7 +108,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, f
 		return nil, nil, fmt.Errorf("the flow has wrong customer id")
 	}
 
-	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, a.CustomerID, targetFlowID, uuid.Nil, source, destinations, false, false)
+	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, a.CustomerID, targetFlowID, uuid.Nil, source, destinations, false, false, "")
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, nil, err

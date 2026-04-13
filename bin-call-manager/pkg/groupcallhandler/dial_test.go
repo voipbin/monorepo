@@ -114,7 +114,7 @@ func Test_dialNextDestination_call(t *testing.T) {
 			mockDB.EXPECT().GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectCallIDs, tt.expectCallCount, tt.expectDialIndex).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.responseGroupcall, nil)
 
-			mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.groupcall.CustomerID, tt.groupcall.FlowID, uuid.Nil, tt.groupcall.MasterCallID, tt.groupcall.Source, tt.expectDestination, tt.responseGroupcall.ID, false, false).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.groupcall.CustomerID, tt.groupcall.FlowID, uuid.Nil, tt.groupcall.MasterCallID, tt.groupcall.Source, tt.expectDestination, tt.responseGroupcall.ID, false, false, gomock.Any()).Return(tt.responseCall, nil)
 
 			res, err := h.dialNextDestination(ctx, tt.groupcall)
 			if err != nil {

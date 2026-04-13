@@ -23,6 +23,7 @@ type V1DataCallsPost struct {
 	Destinations   []commonaddress.Address `json:"destinations,omitempty"`
 	EarlyExecution bool                    `json:"early_execution,omitempty"` // if it sets to true, the call's flow exection will not wait for call answer.
 	Connect        bool                    `json:"connect,omitempty"`         // if the call is created for connect, sets this to true,
+	Anonymous      string                  `json:"anonymous,omitempty"`       // Tri-state: "yes", "no", "auto". Controls anonymous caller ID.
 }
 
 // V1DataCallsIDPost is
@@ -38,6 +39,7 @@ type V1DataCallsIDPost struct {
 	GroupcallID    uuid.UUID             `json:"groupcall_id,omitempty"`
 	EarlyExecution bool                  `json:"early_execution,omitempty"` // if it sets to true, the call's flow exection will not wait for call answer.
 	Connect        bool                  `json:"connect,omitempty"`         // if the call is created for connect, sets this to true,
+	Anonymous      string                `json:"anonymous,omitempty"`       // Tri-state: "yes", "no", "auto". Controls anonymous caller ID.
 }
 
 // V1DataCallsIDHealthPost is

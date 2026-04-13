@@ -48,6 +48,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	destinations []commonaddress.Address,
 	earlyExecution bool,
 	connect bool,
+	anonymous string,
 ) ([]*call.Call, []*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CreateCallsOutgoing",
@@ -58,6 +59,7 @@ func (h *callHandler) CreateCallsOutgoing(
 		"destinations":    destinations,
 		"early_execution": earlyExecution,
 		"connect":         connect,
+		"anonymous":       anonymous,
 	})
 
 	resCalls := []*call.Call{}
@@ -65,7 +67,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	for _, destination := range destinations {
 		switch {
 		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect)
+			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect, anonymous)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -105,6 +107,7 @@ func (h *callHandler) CreateCallOutgoing(
 	destination commonaddress.Address,
 	earlyExecution bool,
 	executeNextMasterOnHangup bool,
+	anonymous string,
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":                         "CreateCallOutgoing",
@@ -118,6 +121,7 @@ func (h *callHandler) CreateCallOutgoing(
 		"destination":                   destination,
 		"early_execution":               earlyExecution,
 		"execute_next_master_on_hangup": executeNextMasterOnHangup,
+		"anonymous":                     anonymous,
 	})
 	log.Debug("Creating a call for outgoing.")
 
@@ -193,10 +197,14 @@ func (h *callHandler) CreateCallOutgoing(
 		return nil, fmt.Errorf("no valid source number available for outgoing call")
 	}
 
+	// resolve anonymous flag
+	resolvedAnonymous := anonymous == "yes"
+
 	// create data
 	data := map[call.DataType]string{
 		call.DataTypeEarlyExecution:            strconv.FormatBool(earlyExecution),
 		call.DataTypeExecuteNextMasterOnHangup: strconv.FormatBool(executeNextMasterOnHangup),
+		call.DataTypeAnonymous:                 strconv.FormatBool(resolvedAnonymous),
 	}
 
 	// get address owner info
@@ -471,8 +479,9 @@ func (h *callHandler) createChannelOutgoing(ctx context.Context, c *call.Call) e
 	channelVariables := map[string]string{}
 	transport := getDestinationTransport(dialURI)
 	setChannelVariableTransport(channelVariables, transport)
-	setChannelVariablesCallerID(channelVariables, c)
-	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v", dialURI, channelVariables)
+	anonymous := c.Data[call.DataTypeAnonymous] == "true"
+	setChannelVariablesCallerID(channelVariables, c, anonymous)
+	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v, anonymous: %v", dialURI, channelVariables, anonymous)
 
 	// set app args
 	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
@@ -577,18 +586,20 @@ func setChannelVariableTransport(variables map[string]string, transport channel.
 }
 
 // setChannelVariablesCallerID sets the outgoing call's caller ID variables.
-func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
+// When anonymous is true, the From header is set to anonymous (RFC 3323) and
+// the P-Asserted-Identity carries the real source number for carrier routing (RFC 3325).
+func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anonymous bool) {
 
-	if c.Destination.Type == commonaddress.TypeTel && c.Source.Target == "anonymous" {
+	if anonymous && c.Destination.Type == commonaddress.TypeTel {
 		// RFC 3323: anonymous From header
 		variables["CALLERID(name)"] = "Anonymous"
 		variables["CALLERID(num)"] = "anonymous"
 		variables["CALLERID(pres)"] = "prohib"
 
-		// RFC 3325: anonymous PAI with tel: URI for PSTN calls (real source PAI
-		// will be added in Phase 2 when the anonymous flag carries the real source separately)
-		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = "\"Anonymous\" <tel:anonymous>"
+		// RFC 3325: PAI carries the real source number so the PSTN carrier can route/bill correctly.
+		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("<tel:%s>", c.Source.Target)
 		variables["PJSIP_HEADER(add,Privacy)"] = "id"
+		variables["PJSIP_HEADER(add,From)"] = "\"Anonymous\" <sip:anonymous@anonymous.invalid>"
 		return
 	}
 

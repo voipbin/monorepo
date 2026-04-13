@@ -261,6 +261,7 @@ func (h *campaignHandler) executeCall(
 		uuid.Nil,
 		false,
 		false,
+		"",
 	)
 	if err != nil {
 		// update camapaign call to fail

@@ -470,6 +470,7 @@ type RequestHandler interface {
 		destinations []commonaddress.Address,
 		ealryExecution bool,
 		connect bool,
+		anonymous string,
 	) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error)
 	CallV1CallCreateWithID(
 		ctx context.Context,
@@ -483,6 +484,7 @@ type RequestHandler interface {
 		groupcallID uuid.UUID,
 		ealryExecution bool,
 		connect bool,
+		anonymous string,
 	) (*cmcall.Call, error)
 	CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)

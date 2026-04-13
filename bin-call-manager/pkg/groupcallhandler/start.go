@@ -145,7 +145,7 @@ func (h *groupcallHandler) startRingall(
 	for chainedCallID, destination := range mapCalls {
 		go func(callID uuid.UUID, destination *commonaddress.Address) {
 			// we don't allow to add the connect option for groupcall
-			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, id, false, false)
+			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, id, false, false, "")
 			if err != nil {
 				log.WithField("dial_destination", destination).Errorf("Could not create a chained call. err: %v", err)
 				_, _ = h.HangupGroupcall(ctx, id)
@@ -220,7 +220,7 @@ func (h *groupcallHandler) startLinear(
 			log.WithField("chained_groupcall", tmp).Debugf("Created chained groupcall info. chained_groupcall_id: %s", tmp.ID)
 		} else {
 			// we don't allow to add the connect option for groupcall
-			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, tmpID, customerID, flowID, uuid.Nil, masterCallID, source, &destination, res.ID, false, false)
+			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, tmpID, customerID, flowID, uuid.Nil, masterCallID, source, &destination, res.ID, false, false, "")
 			if err != nil {
 				log.Errorf("Could not create the chained call info. err: %v", err)
 				_, _ = h.HangupGroupcall(ctx, id)
@@ -343,7 +343,7 @@ func (h *groupcallHandler) startWithDestination(
 			log.Debugf("Creating chained call. chained_groupcall_id: %v", targetCallID)
 
 			// we don't allow to add the connect option for groupcall
-			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, targetCallID, customerID, flowID, uuid.Nil, masterCallID, source, targetDestination, id, false, false)
+			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, targetCallID, customerID, flowID, uuid.Nil, masterCallID, source, targetDestination, id, false, false, "")
 			if err != nil {
 				log.WithField("dial_destination", targetDestination).Errorf("Could not create a chained call. err: %v", err)
 				_, _ = h.HangupCall(ctx, id)

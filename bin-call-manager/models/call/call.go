@@ -118,6 +118,10 @@ const (
 	// but if the call was failed and the call could not execute the action(which is confbridge join), the master call will wait in the
 	// confbridge forever. So, we need to trigger the master call's next action manually if the call was failed.
 	DataTypeExecuteNextMasterOnHangup DataType = "execute_next_master_on_hangup"
+
+	// if it sets to true, the outgoing call's From header will be anonymous and Privacy: id will be set.
+	// The PAI will carry the real source number for carrier routing.
+	DataTypeAnonymous DataType = "anonymous"
 )
 
 // Direction type

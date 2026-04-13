@@ -116,6 +116,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeAgent(
 				},
 				EarlyMedia:  false,
 				RelayReason: false,
+				Anonymous:   "auto",
 			}),
 		},
 	}
@@ -236,6 +237,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeTel(
 				},
 				EarlyMedia:  true,
 				RelayReason: true,
+				Anonymous:   "auto",
 			}),
 		},
 	}
@@ -298,6 +300,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 				},
 				EarlyMedia:  false,
 				RelayReason: false,
+				Anonymous:   "auto",
 			}),
 		},
 	}

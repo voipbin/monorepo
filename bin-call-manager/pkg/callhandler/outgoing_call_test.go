@@ -130,6 +130,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				Data: map[call.DataType]string{
 					call.DataTypeEarlyExecution:            "true",
 					call.DataTypeExecuteNextMasterOnHangup: "true",
+					call.DataTypeAnonymous:                 "false",
 				},
 				Action: fmaction.Action{
 					ID: fmaction.IDStart,
@@ -207,7 +208,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -313,6 +314,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				Data: map[call.DataType]string{
 					call.DataTypeEarlyExecution:            "true",
 					call.DataTypeExecuteNextMasterOnHangup: "true",
+					call.DataTypeAnonymous:                 "false",
 				},
 				Direction:   call.DirectionOutgoing,
 				GroupcallID: uuid.Nil,
@@ -423,7 +425,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -1271,12 +1273,13 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		call *call.Call
+		call      *call.Call
+		anonymous bool
 
 		expectRes map[string]string
 	}{
 		{
-			"destination type tel and source target is anonymous",
+			"destination type tel and anonymous true",
 
 			&call.Call{
 				Source: commonaddress.Address{
@@ -1286,13 +1289,15 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 					Type: commonaddress.TypeTel,
 				},
 			},
+			true,
 
 			map[string]string{
 				"CALLERID(name)":                        "Anonymous",
 				"CALLERID(num)":                         "anonymous",
 				"CALLERID(pres)":                        "prohib",
-				"PJSIP_HEADER(add,P-Asserted-Identity)": "\"Anonymous\" <tel:anonymous>",
+				"PJSIP_HEADER(add,P-Asserted-Identity)": "<tel:anonymous>",
 				"PJSIP_HEADER(add,Privacy)":             "id",
+				"PJSIP_HEADER(add,From)":                "\"Anonymous\" <sip:anonymous@anonymous.invalid>",
 			},
 		},
 		{
@@ -1308,6 +1313,7 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 					Target: "sip:test@test.trunk.voipbin.net",
 				},
 			},
+			false,
 
 			map[string]string{
 				"CALLERID(name)": "",
@@ -1320,7 +1326,7 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := map[string]string{}
-			setChannelVariablesCallerID(res, tt.call)
+			setChannelVariablesCallerID(res, tt.call, tt.anonymous)
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
