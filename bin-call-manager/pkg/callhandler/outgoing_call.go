@@ -198,6 +198,8 @@ func (h *callHandler) CreateCallOutgoing(
 	}
 
 	// resolve anonymous flag
+	// TODO: when anonymous == "auto", inherit from incoming channel's SIP Privacy header
+	// (check channel.StasisDataTypeSIPPrivacy). Currently "auto" defaults to not anonymous.
 	resolvedAnonymous := anonymous == "yes"
 
 	// create data

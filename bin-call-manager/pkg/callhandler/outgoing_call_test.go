@@ -1283,7 +1283,9 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 
 			&call.Call{
 				Source: commonaddress.Address{
-					Target: "anonymous",
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000001",
+					TargetName: "Test User",
 				},
 				Destination: commonaddress.Address{
 					Type: commonaddress.TypeTel,
@@ -1295,9 +1297,30 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 				"CALLERID(name)":                        "Anonymous",
 				"CALLERID(num)":                         "anonymous",
 				"CALLERID(pres)":                        "prohib",
-				"PJSIP_HEADER(add,P-Asserted-Identity)": "<tel:anonymous>",
+				"PJSIP_HEADER(add,P-Asserted-Identity)": "<tel:+821100000001>",
 				"PJSIP_HEADER(add,Privacy)":             "id",
 				"PJSIP_HEADER(add,From)":                "\"Anonymous\" <sip:anonymous@anonymous.invalid>",
+			},
+		},
+		{
+			"destination type sip and anonymous true falls through to normal",
+
+			&call.Call{
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821100000001",
+					TargetName: "Test User",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeSIP,
+					Target: "sip:test@test.trunk.voipbin.net",
+				},
+			},
+			true,
+
+			map[string]string{
+				"CALLERID(name)": "Test User",
+				"CALLERID(num)":  "+821100000001",
 			},
 		},
 		{
