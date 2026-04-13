@@ -84,7 +84,7 @@ func (h *groupcallHandler) dialNextDestinationGroupcall(ctx context.Context, gc 
 
 	// create a chained groupcall
 	go func() {
-		tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, id, res.CustomerID, res.FlowID, *res.Source, dialDestinations, res.MasterCallID, res.ID, ringMethod, res.AnswerMethod)
+		tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, id, res.CustomerID, res.FlowID, *res.Source, dialDestinations, res.MasterCallID, res.ID, ringMethod, res.AnswerMethod, "")
 		if err != nil {
 			log.Errorf("Could not create a chained groupcall info. err: %v", err)
 			_, _ = h.HangupGroupcall(ctx, gc.ID)

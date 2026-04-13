@@ -591,6 +591,7 @@ type RequestHandler interface {
 		masterGroupcallID uuid.UUID,
 		ringMethod cmgroupcall.RingMethod,
 		answerMethod cmgroupcall.AnswerMethod,
+		anonymous string,
 	) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmgroupcall.Field]any) ([]cmgroupcall.Groupcall, error)
 	CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)

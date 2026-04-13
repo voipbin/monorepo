@@ -2285,18 +2285,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaStop(ctx, externalM
 }
 
 // CallV1GroupcallCreate mocks base method.
-func (m *MockRequestHandler) CallV1GroupcallCreate(ctx context.Context, id, customerID, flowID uuid.UUID, source address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod) (*groupcall.Groupcall, error) {
+func (m *MockRequestHandler) CallV1GroupcallCreate(ctx context.Context, id, customerID, flowID uuid.UUID, source address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod, anonymous string) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1GroupcallCreate", ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod)
+	ret := m.ctrl.Call(m, "CallV1GroupcallCreate", ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous)
 	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1GroupcallCreate indicates an expected call of CallV1GroupcallCreate.
-func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallCreate(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallCreate(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallCreate), ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallCreate), ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous)
 }
 
 // CallV1GroupcallDelete mocks base method.

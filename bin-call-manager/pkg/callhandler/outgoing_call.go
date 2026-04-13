@@ -77,7 +77,7 @@ func (h *callHandler) CreateCallsOutgoing(
 			resCalls = append(resCalls, c)
 
 		case h.groupcallHandler.IsGroupcallTypeAddress(&destination):
-			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, &source, &destination)
+			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, &source, &destination, anonymous)
 			if err != nil {
 				log.Errorf("Could not create outgoing groupcall. err: %v", err)
 				continue
@@ -417,6 +417,7 @@ func (h *callHandler) createCallsOutgoingGroupcall(
 	masterCallID uuid.UUID,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
+	anonymous string,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "createCallsOutgoingGroupcall",
@@ -425,10 +426,11 @@ func (h *callHandler) createCallsOutgoingGroupcall(
 		"master_call_id": masterCallID,
 		"source":         source,
 		"destination":    destination,
+		"anonymous":      anonymous,
 	})
 
 	// start groupcall
-	res, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, source, []commonaddress.Address{*destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers)
+	res, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, source, []commonaddress.Address{*destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, anonymous)
 	if err != nil {
 		log.Errorf("Could not start the groupcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not start the groupcall.")

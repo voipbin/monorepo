@@ -111,6 +111,7 @@ func (h *transferHandler) blindExecute(ctx context.Context, transfererCall *cmca
 		uuid.Nil,
 		cmgroupcall.RingMethodRingAll,
 		cmgroupcall.AnswerMethodHangupOthers,
+		"",
 	)
 	if err != nil {
 		log.Errorf("Could not create groupcall. err: %v", err)

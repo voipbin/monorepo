@@ -101,6 +101,7 @@ func (h *listenHandler) processV1GroupcallsPost(ctx context.Context, m *sock.Req
 		req.MasterGroupcallID,
 		req.RingMethod,
 		req.AnswerMethod,
+		req.Anonymous,
 	)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)

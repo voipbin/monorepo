@@ -40,6 +40,7 @@ type GroupcallHandler interface {
 		masterGroupcallID uuid.UUID,
 		ringMethod groupcall.RingMethod,
 		answerMethod groupcall.AnswerMethod,
+		anonymous string,
 	) (*groupcall.Groupcall, error)
 	AnswerCall(ctx context.Context, groupcallID uuid.UUID, answerCallID uuid.UUID) error
 	AnswerGroupcall(ctx context.Context, id uuid.UUID, answerGroupcallID uuid.UUID) (*groupcall.Groupcall, error)
