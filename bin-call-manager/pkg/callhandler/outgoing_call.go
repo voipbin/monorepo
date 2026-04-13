@@ -183,6 +183,15 @@ func (h *callHandler) CreateCallOutgoing(
 
 	// validate and resolve the source address for outgoing call
 	s := h.getValidatedSourceForOutgoingCall(ctx, source, destination, cu)
+	if s == nil {
+		log.Errorf("No valid source number available for outgoing call.")
+		if af.ID != uuid.Nil {
+			if _, errStop := h.reqHandler.FlowV1ActiveflowStop(ctx, af.ID); errStop != nil {
+				log.Errorf("Could not stop orphaned activeflow. activeflow_id: %s, err: %v", af.ID, errStop)
+			}
+		}
+		return nil, fmt.Errorf("no valid source number available for outgoing call")
+	}
 
 	// create data
 	data := map[call.DataType]string{
@@ -567,15 +576,19 @@ func setChannelVariableTransport(variables map[string]string, transport channel.
 	}
 }
 
-// setChannelVariablesCallerID sets the outgoit call's caller
+// setChannelVariablesCallerID sets the outgoing call's caller ID variables.
 func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
 
 	if c.Destination.Type == commonaddress.TypeTel && c.Source.Target == "anonymous" {
-		// we can't verify the caller's id. setting the default anonymous caller id
+		// RFC 3323: anonymous From header
+		variables["CALLERID(name)"] = "Anonymous"
+		variables["CALLERID(num)"] = "anonymous"
 		variables["CALLERID(pres)"] = "prohib"
-		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("\"Anonymous\" <sip:+821100000001@%s>", common.DomainPSTN)
-		variables["PJSIP_HEADER(add,Privacy)"] = "id"
 
+		// RFC 3325: anonymous PAI with tel: URI for PSTN calls (real source PAI
+		// will be added in Phase 2 when the anonymous flag carries the real source separately)
+		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = "\"Anonymous\" <tel:anonymous>"
+		variables["PJSIP_HEADER(add,Privacy)"] = "id"
 		return
 	}
 
@@ -588,7 +601,7 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
 // 1. Have a valid E.164 format (starts with "+")
 // 2. Belong to the customer as a normal (non-virtual) number
 // If either condition fails, it falls back to the customer's default outgoing source number.
-// If no valid source can be determined, it returns "anonymous".
+// If no valid source can be determined, it returns nil.
 // For non-tel destinations, the source is returned as-is.
 func (h *callHandler) getValidatedSourceForOutgoingCall(
 	ctx context.Context,
@@ -652,11 +665,7 @@ func (h *callHandler) getValidatedSourceForOutgoingCall(
 		}
 	}
 
-	// no valid source available, set to anonymous
-	log.Infof("No valid source number available. Setting caller ID to anonymous.")
-	return &commonaddress.Address{
-		Type:       commonaddress.TypeTel,
-		TargetName: "Anonymous",
-		Target:     "anonymous",
-	}
+	// no valid source available, reject the call
+	log.Infof("No valid source number available. Rejecting call.")
+	return nil
 }

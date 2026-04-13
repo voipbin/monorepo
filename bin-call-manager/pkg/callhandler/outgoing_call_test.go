@@ -1288,8 +1288,10 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 			},
 
 			map[string]string{
+				"CALLERID(name)":                        "Anonymous",
+				"CALLERID(num)":                         "anonymous",
 				"CALLERID(pres)":                        "prohib",
-				"PJSIP_HEADER(add,P-Asserted-Identity)": "\"Anonymous\" <sip:+821100000001@pstn.voipbin.net>",
+				"PJSIP_HEADER(add,P-Asserted-Identity)": "\"Anonymous\" <tel:anonymous>",
 				"PJSIP_HEADER(add,Privacy)":             "id",
 			},
 		},
@@ -1454,11 +1456,7 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
 			},
 
-			expectRes: &commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				TargetName: "Anonymous",
-				Target:     "anonymous",
-			},
+			expectRes: nil,
 		},
 		{
 			name: "source not owned by customer with no default configured",
@@ -1477,11 +1475,7 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 
 			responseNumbers: []nmnumber.Number{},
 
-			expectRes: &commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				TargetName: "Anonymous",
-				Target:     "anonymous",
-			},
+			expectRes: nil,
 		},
 		{
 			name: "number lookup error with no default configured",
@@ -1500,14 +1494,10 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 
 			responseNumErr: fmt.Errorf("number service error"),
 
-			expectRes: &commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				TargetName: "Anonymous",
-				Target:     "anonymous",
-			},
+			expectRes: nil,
 		},
 		{
-			name: "default number fetch error falls back to anonymous",
+			name: "default number fetch error returns nil",
 
 			source: commonaddress.Address{
 				Type:   commonaddress.TypeTel,
@@ -1525,11 +1515,7 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 			responseNumbers:       []nmnumber.Number{},
 			responseDefaultNumErr: fmt.Errorf("number get error"),
 
-			expectRes: &commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				TargetName: "Anonymous",
-				Target:     "anonymous",
-			},
+			expectRes: nil,
 		},
 		{
 			name: "nil customer skips validation",
