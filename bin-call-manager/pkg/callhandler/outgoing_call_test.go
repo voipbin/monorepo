@@ -1299,7 +1299,6 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 				"CALLERID(pres)":                        "prohib",
 				"PJSIP_HEADER(add,P-Asserted-Identity)": "<tel:+821100000001>",
 				"PJSIP_HEADER(add,Privacy)":             "id",
-				"PJSIP_HEADER(add,From)":                "\"Anonymous\" <sip:anonymous@anonymous.invalid>",
 			},
 		},
 		{

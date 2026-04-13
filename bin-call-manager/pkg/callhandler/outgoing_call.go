@@ -599,8 +599,10 @@ func setChannelVariableTransport(variables map[string]string, transport channel.
 }
 
 // setChannelVariablesCallerID sets the outgoing call's caller ID variables.
-// When anonymous is true, the From header is set to anonymous (RFC 3323) and
-// the P-Asserted-Identity carries the real source number for carrier routing (RFC 3325).
+// When anonymous is true, the caller ID is set to anonymous via CALLERID(pres)=prohib (RFC 3323),
+// and the P-Asserted-Identity carries the real source number for carrier routing (RFC 3325).
+// Note: Do NOT add PJSIP_HEADER(add,From) — Asterisk generates the From header from CALLERID fields,
+// and adding a second From header violates RFC 3261 §8.1.1.3 (causes Kamailio sanity check to drop the INVITE).
 func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anonymous bool) {
 
 	if anonymous && c.Destination.Type == commonaddress.TypeTel {
@@ -612,7 +614,6 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anon
 		// RFC 3325: PAI carries the real source number so the PSTN carrier can route/bill correctly.
 		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("<tel:%s>", c.Source.Target)
 		variables["PJSIP_HEADER(add,Privacy)"] = "id"
-		variables["PJSIP_HEADER(add,From)"] = "\"Anonymous\" <sip:anonymous@anonymous.invalid>"
 		return
 	}
 
