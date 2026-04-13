@@ -203,6 +203,9 @@ func (h *callHandler) CreateCallOutgoing(
 	case call.AnonymousOptionYes, call.AnonymousOptionNo:
 		// valid, use as-is
 	default:
+		if anonymous != "" && anonymous != string(call.AnonymousOptionAuto) {
+			log.Infof("Invalid anonymous option provided, defaulting to auto. anonymous: %s", anonymous)
+		}
 		anonymousOption = call.AnonymousOptionAuto
 	}
 
@@ -210,6 +213,7 @@ func (h *callHandler) CreateCallOutgoing(
 	// TODO: when anonymousOption == AnonymousOptionAuto, inherit from incoming channel's SIP Privacy header
 	// (check channel.StasisDataTypeSIPPrivacy). Currently "auto" defaults to not anonymous.
 	resolvedAnonymous := anonymousOption == call.AnonymousOptionYes
+	log.Debugf("Resolved anonymous flag. input: %s, normalized: %s, resolved: %v", anonymous, anonymousOption, resolvedAnonymous)
 
 	// create data
 	data := map[call.DataType]string{
@@ -606,6 +610,13 @@ func setChannelVariableTransport(variables map[string]string, transport channel.
 func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anonymous bool) {
 
 	if anonymous && c.Destination.Type == commonaddress.TypeTel {
+		// Defensive check: Source.Target must be a valid E.164 number for PAI header.
+		// This should not happen because getValidatedSourceForOutgoingCall ensures a valid source,
+		// but guard against unexpected call paths (e.g., route failover).
+		if c.Source.Target == "" || !strings.HasPrefix(c.Source.Target, "+") {
+			logrus.WithField("call_id", c.ID).Errorf("Anonymous caller ID requested but source target is invalid or empty. source_target: %s", c.Source.Target)
+		}
+
 		// RFC 3323: anonymous From header
 		variables["CALLERID(name)"] = "Anonymous"
 		variables["CALLERID(num)"] = "anonymous"

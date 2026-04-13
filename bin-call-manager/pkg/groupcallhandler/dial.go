@@ -84,6 +84,9 @@ func (h *groupcallHandler) dialNextDestinationGroupcall(ctx context.Context, gc 
 
 	// create a chained groupcall
 	go func() {
+		// TODO: anonymous flag is lost here — chained groupcalls in linear ring always use "" (default/auto).
+		// To propagate anonymous caller ID across retries, store the anonymous option in the Groupcall model
+		// and pass it through here instead of hardcoding "".
 		tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, id, res.CustomerID, res.FlowID, *res.Source, dialDestinations, res.MasterCallID, res.ID, ringMethod, res.AnswerMethod, "")
 		if err != nil {
 			log.Errorf("Could not create a chained groupcall info. err: %v", err)
@@ -116,6 +119,9 @@ func (h *groupcallHandler) dialNextDestinationCall(ctx context.Context, gc *grou
 	// create chained call
 	go func() {
 		// about the connect option. and because the groupcall is making the multiple outgoing calls, it is not possible to add the connect option.
+		// TODO: anonymous flag is lost here — chained calls in linear ring always use "" (default/auto).
+		// To propagate anonymous caller ID across retries, store the anonymous option in the Groupcall model
+		// and pass it through here instead of hardcoding "".
 		tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, id, gc.CustomerID, gc.FlowID, uuid.Nil, gc.MasterCallID, gc.Source, destination, res.ID, false, false, "")
 		if err != nil {
 			// could not create a call, but we don't stop the call creating.
