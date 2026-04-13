@@ -61,7 +61,12 @@ func (h *server) PostCalls(c *gin.Context) {
 		}
 	}
 
-	tmpCalls, tmpGroupcalls, err := h.serviceHandler.CallCreate(c.Request.Context(), a, flowID, actions, &source, destinations)
+	anonymous := ""
+	if req.Anonymous != nil {
+		anonymous = string(*req.Anonymous)
+	}
+
+	tmpCalls, tmpGroupcalls, err := h.serviceHandler.CallCreate(c.Request.Context(), a, flowID, actions, &source, destinations, anonymous)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		c.AbortWithStatus(400)

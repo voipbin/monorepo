@@ -387,7 +387,7 @@ func Test_CallCreate(t *testing.T) {
 
 			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.agent.CustomerID, tt.responseFlow.ID, uuid.Nil, tt.source, tt.destinations, false, false, gomock.Any()).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
-			resCalls, resGroupcalls, err := h.CallCreate(ctx, tt.agent, tt.flowID, tt.actions, tt.source, tt.destinations)
+			resCalls, resGroupcalls, err := h.CallCreate(ctx, tt.agent, tt.flowID, tt.actions, tt.source, tt.destinations, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

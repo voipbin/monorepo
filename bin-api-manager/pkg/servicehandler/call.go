@@ -42,7 +42,7 @@ func (h *serviceHandler) callGet(ctx context.Context, callID uuid.UUID) (*cmcall
 // CallCreate sends a request to call-manager
 // to creating a call.
 // it returns created calls and groupcalls info if it succeed.
-func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error) {
+func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address, anonymous string) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "CallCreate",
 		"customer_id": a.CustomerID,
@@ -108,7 +108,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, f
 		return nil, nil, fmt.Errorf("the flow has wrong customer id")
 	}
 
-	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, a.CustomerID, targetFlowID, uuid.Nil, source, destinations, false, false, "")
+	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, a.CustomerID, targetFlowID, uuid.Nil, source, destinations, false, false, anonymous)
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, nil, err

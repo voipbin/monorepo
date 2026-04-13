@@ -999,9 +999,9 @@ func (mr *MockServiceHandlerMockRecorder) BillingList(ctx, a, size, token any) *
 }
 
 // CallCreate mocks base method.
-func (m *MockServiceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address) ([]*call.WebhookMessage, []*groupcall.WebhookMessage, error) {
+func (m *MockServiceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address, anonymous string) ([]*call.WebhookMessage, []*groupcall.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallCreate", ctx, a, flowID, actions, source, destinations)
+	ret := m.ctrl.Call(m, "CallCreate", ctx, a, flowID, actions, source, destinations, anonymous)
 	ret0, _ := ret[0].([]*call.WebhookMessage)
 	ret1, _ := ret[1].([]*groupcall.WebhookMessage)
 	ret2, _ := ret[2].(error)
@@ -1009,9 +1009,9 @@ func (m *MockServiceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentit
 }
 
 // CallCreate indicates an expected call of CallCreate.
-func (mr *MockServiceHandlerMockRecorder) CallCreate(ctx, a, flowID, actions, source, destinations any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) CallCreate(ctx, a, flowID, actions, source, destinations, anonymous any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockServiceHandler)(nil).CallCreate), ctx, a, flowID, actions, source, destinations)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallCreate", reflect.TypeOf((*MockServiceHandler)(nil).CallCreate), ctx, a, flowID, actions, source, destinations, anonymous)
 }
 
 // CallDelete mocks base method.

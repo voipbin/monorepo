@@ -2622,6 +2622,27 @@ func (e TtsManagerSpeakingStatus) Valid() bool {
 	}
 }
 
+// Defines values for PostCallsJSONBodyAnonymous.
+const (
+	Auto PostCallsJSONBodyAnonymous = "auto"
+	No   PostCallsJSONBodyAnonymous = "no"
+	Yes  PostCallsJSONBodyAnonymous = "yes"
+)
+
+// Valid indicates whether the value is a known member of the PostCallsJSONBodyAnonymous enum.
+func (e PostCallsJSONBodyAnonymous) Valid() bool {
+	switch e {
+	case Auto:
+		return true
+	case No:
+		return true
+	case Yes:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostCallsIdRecordingStartJSONBodyFormat.
 const (
 	PostCallsIdRecordingStartJSONBodyFormatWav PostCallsIdRecordingStartJSONBodyFormat = "wav"
@@ -6743,13 +6764,19 @@ type GetCallsParams struct {
 
 // PostCallsJSONBody defines parameters for PostCalls.
 type PostCallsJSONBody struct {
-	Actions      *[]FlowManagerAction `json:"actions,omitempty"`
-	Destinations *[]CommonAddress     `json:"destinations,omitempty"`
-	FlowId       *string              `json:"flow_id,omitempty"`
+	Actions *[]FlowManagerAction `json:"actions,omitempty"`
+
+	// Anonymous Controls anonymous caller ID for outbound PSTN calls. "yes" — always send anonymous caller ID (RFC 3323 Privacy header). "no" — never anonymize, always show real caller ID. "auto" — inherit from incoming call's Privacy header (default).
+	Anonymous    *PostCallsJSONBodyAnonymous `json:"anonymous,omitempty"`
+	Destinations *[]CommonAddress            `json:"destinations,omitempty"`
+	FlowId       *string                     `json:"flow_id,omitempty"`
 
 	// Source Contains source or destination detail info.
 	Source *CommonAddress `json:"source,omitempty"`
 }
+
+// PostCallsJSONBodyAnonymous defines parameters for PostCalls.
+type PostCallsJSONBodyAnonymous string
 
 // GetCallsIdMediaStreamParams defines parameters for GetCallsIdMediaStream.
 type GetCallsIdMediaStreamParams struct {
