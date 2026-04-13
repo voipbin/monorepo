@@ -187,6 +187,122 @@ You can also use ``"anonymous": "auto"`` in the ``connect`` action. In that case
 
    The ``anonymous`` option is available on both the ``connect`` and ``call`` flow actions. Use ``connect`` when bridging the current call to another destination (1:1 call forwarding). Use ``call`` when creating an independent outbound call from within a flow. Both support the same ``"yes"``/``"no"``/``"auto"`` values.
 
+
+Anonymous outbound call within a flow (call action)
+----------------------------------------------------
+
+The ``call`` action creates an **independent** outbound call from within a flow. Unlike ``connect`` (which bridges the current call to another party), ``call`` spawns a separate call that runs its own flow or actions independently.
+
+Use this when you want to trigger an anonymous notification call to a third party without bridging it to the current call.
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/flows?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "name": "Notify third party anonymously",
+            "actions": [
+                {
+                    "type": "answer"
+                },
+                {
+                    "type": "talk",
+                    "option": {
+                        "text": "Incoming customer request detected. Triggering anonymous notification.",
+                        "language": "en-US"
+                    }
+                },
+                {
+                    "type": "call",
+                    "option": {
+                        "anonymous": "yes",
+                        "source": {
+                            "type": "tel",
+                            "target": "+15551234567"
+                        },
+                        "destinations": [
+                            {
+                                "type": "tel",
+                                "target": "+15557778888"
+                            }
+                        ],
+                        "actions": [
+                            {
+                                "type": "talk",
+                                "option": {
+                                    "text": "This is an automated notification. A customer request has been received.",
+                                    "language": "en-US"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "talk",
+                    "option": {
+                        "text": "Notification sent. Thank you.",
+                        "language": "en-US"
+                    }
+                }
+            ]
+        }'
+
+In this example:
+
+1. The flow answers an incoming call and speaks a greeting to the caller.
+2. The ``call`` action spawns an **independent** outbound call to ``+15557778888`` with anonymous caller ID.
+3. ``+15557778888`` sees "Anonymous" and hears the automated notification message.
+4. Meanwhile, the original call continues to the next action (the "Notification sent" message) — it does **not** wait for the ``call`` action's outbound call to finish.
+
+Key differences from the ``connect`` action:
+
+- ``connect`` bridges two calls together (the caller hears the destination and vice versa). ``call`` creates a separate, independent call.
+- With ``connect``, the flow pauses until the connected call ends. With ``call``, the flow continues immediately to the next action.
+- Use ``connect`` for call forwarding scenarios. Use ``call`` for fire-and-forget notifications or spawning parallel calls.
+
+
+Anonymous outbound call from a registered endpoint (SIP phone)
+--------------------------------------------------------------
+
+When a SIP phone registered with VoIPBIN dials an external PSTN number, the system automatically handles anonymous caller ID based on the phone's SIP ``Privacy`` header. There is no API parameter to set — the behavior is determined entirely by the SIP phone's own settings.
+
+**How it works:**
+
+::
+
+    SIP Phone                    VoIPBIN                     PSTN Destination
+       |                           |                              |
+       |  INVITE +15559876543      |                              |
+       |  Privacy: id              |                              |
+       +-------------------------->|                              |
+       |                           |  INVITE (anonymous From)     |
+       |                           |  P-Asserted-Identity: ...    |
+       |                           |  Privacy: id                 |
+       |                           +----------------------------->|
+       |                           |                              |
+       |                           |  180 Ringing                 |
+       |                           |<-----------------------------+
+       |  180 Ringing              |                              |
+       |<--------------------------+                              |
+       |                           |                              |
+       |  (Destination sees "Anonymous" on their phone)           |
+
+- If the SIP phone includes ``Privacy: id`` in the outgoing INVITE, VoIPBIN forwards the call as anonymous — the PSTN destination sees "Anonymous" or "Private number".
+- If the SIP phone does **not** include a Privacy header, VoIPBIN uses the real caller ID — the PSTN destination sees the actual source number.
+
+**Setting up anonymous calls on your SIP phone:**
+
+Most SIP phones and softphones have a "Hide Caller ID", "Anonymous Call", or "CLIR" (Calling Line Identification Restriction) setting. Enable this to send the ``Privacy: id`` header automatically. The exact steps vary by phone manufacturer:
+
+- **Softphones** (Ooh La La, Ooh, LinPhone, etc.): Look for "Privacy" or "Anonymous" settings in the SIP account configuration.
+- **Desk phones** (Yealink, Polycom, Grandstream, etc.): Typically under Account > Advanced > Anonymous Call or Send Anonymous.
+- **Mobile SIP apps**: Usually in Settings > Account > Caller ID / Privacy.
+
+.. note:: **AI Implementation Hint**
+
+   Registered endpoint outbound calls always use ``anonymous: "auto"`` internally. The user cannot set ``"yes"`` or ``"no"`` from the SIP phone — the system inherits the phone's own Privacy header setting. If a user asks "how do I make anonymous calls from my SIP phone", instruct them to enable the "Anonymous Call" or "Hide Caller ID" setting on their SIP phone/softphone. There is no API call needed.
+
+
 Simple outbound call with media file play
 -----------------------------------------
 

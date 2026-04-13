@@ -700,7 +700,27 @@ For outgoing calls to PSTN phone numbers (``type: "tel"``), VoIPBIN validates th
 
 Anonymous Caller ID (Outgoing PSTN Calls)
 +++++++++++++++++++++++++++++++++++++++++
-You can explicitly control whether the caller ID is shown or hidden on outgoing PSTN calls using the ``anonymous`` parameter in the ``POST https://api.voipbin.net/v1.0/calls`` request body.
+You can control whether the caller ID is shown or hidden on outgoing PSTN calls. The ``anonymous`` parameter is available in several places depending on how the outbound call is created.
+
+**Where anonymous caller ID can be set:**
+
++-------------------------------------------+----------------------------------------------+-------------------------------+
+| Outbound call path                        | Where to set ``anonymous``                   | Default                       |
++===========================================+==============================================+===============================+
+| API-initiated call                        | ``anonymous`` field in ``POST               | ``"auto"``                    |
+|                                           | https://api.voipbin.net/v1.0/calls``        |                               |
+|                                           | request body                                |                               |
++-------------------------------------------+----------------------------------------------+-------------------------------+
+| Flow ``connect`` action                   | ``anonymous`` field in the ``connect``       | ``"auto"``                    |
+|                                           | action's ``option`` object                   |                               |
++-------------------------------------------+----------------------------------------------+-------------------------------+
+| Flow ``call`` action                      | ``anonymous`` field in the ``call``          | ``"auto"``                    |
+|                                           | action's ``option`` object                   |                               |
++-------------------------------------------+----------------------------------------------+-------------------------------+
+| Registered endpoint outbound call         | Automatic — inherited from the incoming      | ``"auto"`` (always)           |
+| (SIP phone dialing out via VoIPBIN)       | SIP ``Privacy`` header. Cannot be            |                               |
+|                                           | overridden by the user.                      |                               |
++-------------------------------------------+----------------------------------------------+-------------------------------+
 
 **Allowed values:**
 
@@ -722,9 +742,21 @@ When ``anonymous`` is ``"yes"`` and the destination is a PSTN number (``type: "t
 
 When the destination is not a PSTN number (``type: "sip"``, ``type: "extension"``), the ``anonymous`` parameter has no effect — the caller ID is always shown.
 
+**Registered endpoint behavior:**
+
+When a SIP phone registered with VoIPBIN dials an external PSTN number, the system always uses ``"auto"`` for the anonymous setting. This means:
+
+- If the SIP phone sends a ``Privacy: id`` header in the INVITE, the outbound PSTN call will be anonymous.
+- If the SIP phone does not send a Privacy header, the outbound call uses the real caller ID.
+- The user cannot override this from the SIP phone — it is controlled entirely by the phone's privacy setting.
+
+Most SIP phones have a "Hide Caller ID" or "Anonymous Call" setting that adds the ``Privacy: id`` header. Consult your SIP phone's documentation.
+
 .. note:: **AI Implementation Hint**
 
-   The ``anonymous`` parameter only affects outgoing calls to PSTN numbers (``type: "tel"``). It has no effect on SIP or extension destinations. When set to ``"yes"``, the destination's phone displays "Anonymous" or "Private number" instead of the caller's real number. Some carriers or destinations may reject anonymous calls — if the call fails with hangup_reason ``"failed"`` or ``"noanswer"``, try again with ``"no"`` or omit the parameter.
+   The ``anonymous`` parameter only affects outgoing calls to PSTN numbers (``type: "tel"``). It has no effect on SIP or extension destinations. When set to ``"yes"``, the destination's phone displays "Anonymous" or "Private number" instead of the caller's real number. Some carriers or destinations may reject anonymous calls — if the call fails with hangup_reason ``"failed"`` or ``"noanswer"``, try again with ``"no"`` or omit the parameter. For registered endpoint (SIP phone) outbound calls, the anonymous behavior is automatic — set it from the phone's privacy settings.
+
+For step-by-step examples of each path, see the :ref:`Call tutorial <call-tutorial>` anonymous sections.
 
 Execution of Call Flow for outgoing call
 ----------------------------------------

@@ -846,7 +846,8 @@ Does the customer have a default outgoing source number configured?
 </section>
 <section id="anonymous-caller-id-outgoing-pstn-calls">
 <h3>Anonymous Caller ID (Outgoing PSTN Calls)<a class="headerlink" href="#anonymous-caller-id-outgoing-pstn-calls" title="Link to this heading"></a></h3>
-<p>You can explicitly control whether the caller ID is shown or hidden on outgoing PSTN calls using the <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code> request body.</p>
+<p>You can control whether the caller ID is shown or hidden on outgoing PSTN calls. The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter is available in several places depending on how the outbound call is created.</p>
+<p><strong>Where anonymous caller ID can be set:</strong></p>
 <p><strong>Allowed values:</strong></p>
 <table class="docutils align-default">
 <thead>
@@ -874,11 +875,20 @@ Does the customer have a default outgoing source number configured?
 <li><p>A <code class="docutils literal notranslate"><span class="pre">P-Asserted-Identity</span></code> header carries the real source number for carrier routing (RFC 3325)</p></li>
 </ul>
 <p>When the destination is not a PSTN number (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;sip&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;extension&quot;</span></code>), the <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter has no effect — the caller ID is always shown.</p>
+<p><strong>Registered endpoint behavior:</strong></p>
+<p>When a SIP phone registered with VoIPBIN dials an external PSTN number, the system always uses <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> for the anonymous setting. This means:</p>
+<ul class="simple">
+<li><p>If the SIP phone sends a <code class="docutils literal notranslate"><span class="pre">Privacy:</span> <span class="pre">id</span></code> header in the INVITE, the outbound PSTN call will be anonymous.</p></li>
+<li><p>If the SIP phone does not send a Privacy header, the outbound call uses the real caller ID.</p></li>
+<li><p>The user cannot override this from the SIP phone — it is controlled entirely by the phone’s privacy setting.</p></li>
+</ul>
+<p>Most SIP phones have a “Hide Caller ID” or “Anonymous Call” setting that adds the <code class="docutils literal notranslate"><span class="pre">Privacy:</span> <span class="pre">id</span></code> header. Consult your SIP phone’s documentation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter only affects outgoing calls to PSTN numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>). It has no effect on SIP or extension destinations. When set to <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code>, the destination’s phone displays “Anonymous” or “Private number” instead of the caller’s real number. Some carriers or destinations may reject anonymous calls — if the call fails with hangup_reason <code class="docutils literal notranslate"><span class="pre">&quot;failed&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;noanswer&quot;</span></code>, try again with <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code> or omit the parameter.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter only affects outgoing calls to PSTN numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>). It has no effect on SIP or extension destinations. When set to <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code>, the destination’s phone displays “Anonymous” or “Private number” instead of the caller’s real number. Some carriers or destinations may reject anonymous calls — if the call fails with hangup_reason <code class="docutils literal notranslate"><span class="pre">&quot;failed&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;noanswer&quot;</span></code>, try again with <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code> or omit the parameter. For registered endpoint (SIP phone) outbound calls, the anonymous behavior is automatic — set it from the phone’s privacy settings.</p>
 </div>
+<p>For step-by-step examples of each path, see the <a class="reference internal" href="call_tutorial.html#call-tutorial"><span class="std std-ref">Call tutorial</span></a> anonymous sections.</p>
 </section>
 </section>
 <section id="execution-of-call-flow-for-outgoing-call">
