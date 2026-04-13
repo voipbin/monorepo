@@ -34,14 +34,18 @@ func (h *actionHandler) ValidateActions(actions []action.Action) error {
 		switch a.Type {
 		case action.TypeCall:
 			var opt action.OptionCall
-			if err := action.ParseOption(a.Option, &opt); err == nil && opt.Anonymous != "" {
+			if err := action.ParseOption(a.Option, &opt); err != nil {
+				logrus.WithField("action", a).Warnf("Could not parse call action option for anonymous validation. err: %v", err)
+			} else if opt.Anonymous != "" {
 				if !action.ValidateAnonymous(opt.Anonymous) {
 					return fmt.Errorf("invalid anonymous value for call action. anonymous: %s", opt.Anonymous)
 				}
 			}
 		case action.TypeConnect:
 			var opt action.OptionConnect
-			if err := action.ParseOption(a.Option, &opt); err == nil && opt.Anonymous != "" {
+			if err := action.ParseOption(a.Option, &opt); err != nil {
+				logrus.WithField("action", a).Warnf("Could not parse connect action option for anonymous validation. err: %v", err)
+			} else if opt.Anonymous != "" {
 				if !action.ValidateAnonymous(opt.Anonymous) {
 					return fmt.Errorf("invalid anonymous value for connect action. anonymous: %s", opt.Anonymous)
 				}

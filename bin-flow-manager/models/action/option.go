@@ -37,8 +37,8 @@ func ParseOption(opt map[string]any, target any) error {
 	return json.Unmarshal(tmp, target)
 }
 
-// ValidAnonymousValues defines the set of valid values for the Anonymous option field.
-var ValidAnonymousValues = map[string]bool{
+// validAnonymousValues defines the set of valid values for the Anonymous option field.
+var validAnonymousValues = map[string]bool{
 	"":     true, // empty is valid (defaults to auto)
 	"yes":  true,
 	"no":   true,
@@ -47,7 +47,7 @@ var ValidAnonymousValues = map[string]bool{
 
 // ValidateAnonymous checks if the given anonymous value is valid.
 func ValidateAnonymous(anonymous string) bool {
-	return ValidAnonymousValues[anonymous]
+	return validAnonymousValues[anonymous]
 }
 
 // OptionAgentCall defines action agent_call's option.

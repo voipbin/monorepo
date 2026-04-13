@@ -1508,3 +1508,31 @@ func Test_GetAssistanceTypeAndID_AITask(t *testing.T) {
 		})
 	}
 }
+
+func Test_ValidateAnonymous(t *testing.T) {
+	tests := []struct {
+		name      string
+		anonymous string
+		expect    bool
+	}{
+		{"empty string is valid", "", true},
+		{"yes is valid", "yes", true},
+		{"no is valid", "no", true},
+		{"auto is valid", "auto", true},
+		{"uppercase YES is invalid", "YES", false},
+		{"mixed case Yes is invalid", "Yes", false},
+		{"true is invalid", "true", false},
+		{"false is invalid", "false", false},
+		{"arbitrary string is invalid", "maybe", false},
+		{"numeric string is invalid", "1", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ValidateAnonymous(tt.anonymous)
+			if got != tt.expect {
+				t.Errorf("ValidateAnonymous(%q) = %v, want %v", tt.anonymous, got, tt.expect)
+			}
+		})
+	}
+}
