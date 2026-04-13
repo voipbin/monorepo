@@ -139,7 +139,7 @@ func Test_blindExecute(t *testing.T) {
 				uuid.Nil,
 				cmgroupcall.RingMethodRingAll,
 				cmgroupcall.AnswerMethodHangupOthers,
-				gomock.Any(),
+				"",
 			).Return(tt.responseGroupcall, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTransfer)
 			mockDB.EXPECT().TransferCreate(ctx, tt.expectTransfer).Return(nil)

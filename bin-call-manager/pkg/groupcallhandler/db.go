@@ -29,6 +29,7 @@ func (h *groupcallHandler) Create(
 	masterGroupcallID uuid.UUID,
 	ringMethod groupcall.RingMethod,
 	answerMethod groupcall.AnswerMethod,
+	anonymous string,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "Create",
@@ -43,6 +44,7 @@ func (h *groupcallHandler) Create(
 		"master_call_id": masterCallID,
 		"ring_method":    ringMethod,
 		"answer_method":  answerMethod,
+		"anonymous":      anonymous,
 	})
 
 	// create groupcall
@@ -67,6 +69,7 @@ func (h *groupcallHandler) Create(
 
 		RingMethod:   ringMethod,
 		AnswerMethod: answerMethod,
+		Anonymous:    anonymous,
 
 		AnswerCallID: uuid.Nil,
 		CallIDs:      callIDs,

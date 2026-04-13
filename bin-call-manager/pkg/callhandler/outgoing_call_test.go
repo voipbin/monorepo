@@ -1277,6 +1277,7 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 		anonymous bool
 
 		expectRes map[string]string
+		expectErr bool
 	}{
 		{
 			"destination type tel and anonymous true",
@@ -1300,6 +1301,7 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 				"PJSIP_HEADER(add,P-Asserted-Identity)": "<tel:+821100000001>",
 				"PJSIP_HEADER(add,Privacy)":             "id",
 			},
+			false,
 		},
 		{
 			"destination type sip and anonymous true falls through to normal",
@@ -1321,6 +1323,7 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 				"CALLERID(name)": "Test User",
 				"CALLERID(num)":  "+821100000001",
 			},
+			false,
 		},
 		{
 			"destination type is sip",
@@ -1341,9 +1344,10 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 				"CALLERID(name)": "",
 				"CALLERID(num)":  "+821100000001",
 			},
+			false,
 		},
 		{
-			"anonymous true with tel destination but empty source falls back to normal",
+			"anonymous true with tel destination but empty source returns error",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -1361,13 +1365,11 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 			},
 			true,
 
-			map[string]string{
-				"CALLERID(name)": "Empty Source",
-				"CALLERID(num)":  "",
-			},
+			map[string]string{},
+			true,
 		},
 		{
-			"anonymous true with tel destination but non-E164 source falls back to normal",
+			"anonymous true with tel destination but non-E164 source returns error",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -1385,10 +1387,8 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 			},
 			true,
 
-			map[string]string{
-				"CALLERID(name)": "Local Number",
-				"CALLERID(num)":  "01012345678",
-			},
+			map[string]string{},
+			true,
 		},
 		{
 			"anonymous false with tel destination uses normal caller ID",
@@ -1410,6 +1410,7 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 				"CALLERID(name)": "Normal Caller",
 				"CALLERID(num)":  "+821100000001",
 			},
+			false,
 		},
 	}
 
@@ -1417,7 +1418,17 @@ func Test_setChannelVariablesCallerID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			res := map[string]string{}
-			setChannelVariablesCallerID(res, tt.call, tt.anonymous)
+			err := setChannelVariablesCallerID(res, tt.call, tt.anonymous)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Expected error but got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

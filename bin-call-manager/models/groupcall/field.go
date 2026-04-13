@@ -20,6 +20,7 @@ const (
 
 	FieldRingMethod   Field = "ring_method"   // ring_method
 	FieldAnswerMethod Field = "answer_method" // answer_method
+	FieldAnonymous    Field = "anonymous"     // anonymous
 
 	FieldAnswerCallID Field = "answer_call_id" // answer_call_id
 	FieldCallIDs      Field = "call_ids"       // call_ids

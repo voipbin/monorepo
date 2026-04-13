@@ -63,6 +63,7 @@ func Test_actionHandleConnect(t *testing.T) {
 		expectCallDestinations          []commonaddress.Address
 		expectEarlyExecution            bool
 		expectExecuteNextMasterOnHangup bool
+		expectAnonymous                 string
 		expectPushActions               []action.Action
 		expectUpdateFields              map[activeflow.Field]any
 	}{
@@ -773,6 +774,173 @@ func Test_actionHandleConnect(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "anonymous yes",
+
+			af: &activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					CustomerID: uuid.FromStringOrNil("8220d086-7f48-11ec-a1fd-a35a08ad282c"),
+				},
+				ReferenceID: uuid.FromStringOrNil("e1a258ca-0a98-11eb-8e3b-e7d2a18277fa"),
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+						},
+						"anonymous": "yes",
+					},
+				},
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+									},
+									"anonymous": "yes",
+								},
+							},
+						},
+					},
+				},
+			},
+
+			responseConfbridge: &cmconfbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("363b4ae8-0a9b-11eb-9d08-436d6934a451"),
+				},
+			},
+			responseFlow: &flow.Flow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("fa26f0ce-0a9b-11eb-8850-afda1bb6bc03"),
+				},
+			},
+			responseCalls: []*cmcall.Call{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("1273f20c-b586-11ed-ab1c-03ffc97ffcfb"),
+					},
+				},
+			},
+			responseGroupcalls: []*cmgroupcall.Groupcall{},
+
+			responseUUIDConfbridgeJoin: uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
+			responsePushStack: &stack.Stack{
+				ID: uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
+				Actions: []action.Action{
+					{
+						ID:   uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+						Type: action.TypeConfbridgeJoin,
+						Option: map[string]any{
+							"confbridge_id": "363b4ae8-0a9b-11eb-9d08-436d6934a451",
+						},
+					},
+				},
+			},
+
+			expectFlowCreateActions: []action.Action{
+				{
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "363b4ae8-0a9b-11eb-9d08-436d6934a451",
+					},
+				},
+				{
+					Type: action.TypeHangup,
+				},
+			},
+			expectCallSource: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+123456789",
+			},
+			expectCallDestinations: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+987654321",
+				},
+			},
+			expectEarlyExecution:            false,
+			expectExecuteNextMasterOnHangup: true,
+			expectAnonymous:                 "yes",
+			expectPushActions: []action.Action{
+				{
+					ID:   uuid.FromStringOrNil("b7181286-a256-11ed-bcab-8bfb6884800b"),
+					Type: action.TypeConfbridgeJoin,
+					Option: map[string]any{
+						"confbridge_id": "363b4ae8-0a9b-11eb-9d08-436d6934a451",
+					},
+				},
+			},
+			expectUpdateFields: map[activeflow.Field]any{
+				activeflow.FieldCurrentStackID: uuid.Nil,
+				activeflow.FieldCurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+					Type: action.TypeConnect,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+123456789",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+987654321",
+							},
+						},
+						"anonymous": "yes",
+					},
+				},
+
+				activeflow.FieldForwardStackID:  uuid.FromStringOrNil("6ba8ba2c-d4bf-11ec-bb34-1f6a8e0bf102"),
+				activeflow.FieldForwardActionID: uuid.FromStringOrNil("7b764a6e-d4bf-11ec-8f93-279c9970f53e"),
+
+				activeflow.FieldExecuteCount: uint64(0),
+				activeflow.FieldStackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("f4a4a87e-0a98-11eb-8f96-cba83b8b3f76"),
+								Type: action.TypeConnect,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+123456789",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+987654321",
+										},
+									},
+									"anonymous": "yes",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -799,7 +967,7 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, tt.af.ID, cmconfbridge.ReferenceTypeCall, tt.af.ReferenceID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, uuid.Nil, false).Return(tt.responseFlow, nil)
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup, "").Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup, tt.expectAnonymous).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDConfbridgeJoin)
 			if tt.responseUUIDHangup != uuid.Nil {
@@ -3667,7 +3835,8 @@ func Test_actionHandleCall(t *testing.T) {
 		flowID         uuid.UUID
 		actions        []action.Action
 		masterCallID   uuid.UUID
-		earlyExecution bool
+		earlyExecution  bool
+		expectAnonymous string
 
 		responseFlow      *flow.Flow
 		responseCall      []*cmcall.Call
@@ -3739,6 +3908,7 @@ func Test_actionHandleCall(t *testing.T) {
 			[]action.Action{},
 			uuid.Nil,
 			true,
+			"",
 
 			&flow.Flow{},
 			[]*cmcall.Call{
@@ -3823,6 +3993,7 @@ func Test_actionHandleCall(t *testing.T) {
 			[]action.Action{},
 			uuid.Nil,
 			false,
+			"",
 
 			&flow.Flow{},
 			[]*cmcall.Call{
@@ -3934,6 +4105,7 @@ func Test_actionHandleCall(t *testing.T) {
 			},
 			uuid.Nil,
 			false,
+			"",
 
 			&flow.Flow{
 				Identity: commonidentity.Identity{
@@ -4044,6 +4216,7 @@ func Test_actionHandleCall(t *testing.T) {
 			},
 			uuid.Nil,
 			false,
+			"",
 
 			&flow.Flow{
 				Identity: commonidentity.Identity{
@@ -4133,6 +4306,7 @@ func Test_actionHandleCall(t *testing.T) {
 			[]action.Action{},
 			uuid.FromStringOrNil("3f0cd396-a994-11ec-95db-e73c30df842c"),
 			false,
+			"",
 
 			&flow.Flow{},
 			[]*cmcall.Call{
@@ -4213,12 +4387,92 @@ func Test_actionHandleCall(t *testing.T) {
 			[]action.Action{},
 			uuid.Nil,
 			false,
+			"",
 
 			&flow.Flow{},
 			[]*cmcall.Call{
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("8873be9e-a996-11ec-993b-438622bb78da"),
+					},
+				},
+			},
+			[]*cmgroupcall.Groupcall{},
+		},
+		{
+			"anonymous yes",
+			&activeflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c1a2b3d4-e5f6-11ec-a1b2-c3d4e5f6a7b8"),
+					CustomerID: uuid.FromStringOrNil("c2b3d4e5-f6a7-11ec-b1c2-d3e4f5a6b7c8"),
+				},
+				CurrentAction: action.Action{
+					ID:   uuid.FromStringOrNil("c3d4e5f6-a7b8-11ec-c1d2-e3f4a5b6c7d8"),
+					Type: action.TypeCall,
+					Option: map[string]any{
+						"source": map[string]any{
+							"type":   "tel",
+							"target": "+821100000001",
+						},
+						"destinations": []map[string]any{
+							{
+								"type":   "tel",
+								"target": "+821100000002",
+							},
+						},
+						"flow_id":   "c4e5f6a7-b8c9-11ec-d1e2-f3a4b5c6d7e8",
+						"anonymous": "yes",
+					},
+				},
+
+				StackMap: map[uuid.UUID]*stack.Stack{
+					stack.IDMain: {
+						ID: stack.IDMain,
+						Actions: []action.Action{
+							{
+								ID:   uuid.FromStringOrNil("c3d4e5f6-a7b8-11ec-c1d2-e3f4a5b6c7d8"),
+								Type: action.TypeCall,
+								Option: map[string]any{
+									"source": map[string]any{
+										"type":   "tel",
+										"target": "+821100000001",
+									},
+									"destinations": []map[string]any{
+										{
+											"type":   "tel",
+											"target": "+821100000002",
+										},
+									},
+									"flow_id":   "c4e5f6a7-b8c9-11ec-d1e2-f3a4b5c6d7e8",
+									"anonymous": "yes",
+								},
+							},
+						},
+					},
+				},
+			},
+
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			[]commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000002",
+				},
+			},
+			uuid.FromStringOrNil("c4e5f6a7-b8c9-11ec-d1e2-f3a4b5c6d7e8"),
+			[]action.Action{},
+			uuid.Nil,
+			false,
+			"yes",
+
+			&flow.Flow{},
+			[]*cmcall.Call{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("c5f6a7b8-c9d0-11ec-e1f2-a3b4c5d6e7f8"),
 					},
 				},
 			},
@@ -4252,7 +4506,7 @@ func Test_actionHandleCall(t *testing.T) {
 				flowID = tt.responseFlow.ID
 			}
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false, "").Return(tt.responseCall, tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false, tt.expectAnonymous).Return(tt.responseCall, tt.responseGroupcall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)

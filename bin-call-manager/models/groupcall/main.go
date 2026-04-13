@@ -25,6 +25,7 @@ type Groupcall struct {
 
 	RingMethod   RingMethod   `json:"ring_method,omitempty" db:"ring_method"`
 	AnswerMethod AnswerMethod `json:"answer_method,omitempty" db:"answer_method"`
+	Anonymous    string      `json:"anonymous,omitempty" db:"anonymous"` // Tri-state: "yes", "no", "auto". Persisted to propagate across linear ring retries.
 
 	AnswerCallID uuid.UUID   `json:"answer_call_id,omitempty" db:"answer_call_id,uuid"` // represents answered call id.
 	CallIDs      []uuid.UUID `json:"call_ids,omitempty" db:"call_ids,json"`
