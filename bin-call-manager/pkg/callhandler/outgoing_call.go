@@ -198,17 +198,18 @@ func (h *callHandler) CreateCallOutgoing(
 	}
 
 	// normalize anonymous flag: only "yes" and "no" are valid; everything else defaults to "auto"
-	switch anonymous {
-	case "yes", "no":
+	anonymousOption := call.AnonymousOption(anonymous)
+	switch anonymousOption {
+	case call.AnonymousOptionYes, call.AnonymousOptionNo:
 		// valid, use as-is
 	default:
-		anonymous = "auto"
+		anonymousOption = call.AnonymousOptionAuto
 	}
 
 	// resolve anonymous flag
-	// TODO: when anonymous == "auto", inherit from incoming channel's SIP Privacy header
+	// TODO: when anonymousOption == AnonymousOptionAuto, inherit from incoming channel's SIP Privacy header
 	// (check channel.StasisDataTypeSIPPrivacy). Currently "auto" defaults to not anonymous.
-	resolvedAnonymous := anonymous == "yes"
+	resolvedAnonymous := anonymousOption == call.AnonymousOptionYes
 
 	// create data
 	data := map[call.DataType]string{

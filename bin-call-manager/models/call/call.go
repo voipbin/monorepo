@@ -124,6 +124,16 @@ const (
 	DataTypeAnonymous DataType = "anonymous"
 )
 
+// AnonymousOption defines the tri-state anonymous caller ID option.
+// "yes" = always anonymous, "no" = never anonymous, "auto" = inherit from incoming Privacy header.
+type AnonymousOption string
+
+const (
+	AnonymousOptionYes  AnonymousOption = "yes"
+	AnonymousOptionNo   AnonymousOption = "no"
+	AnonymousOptionAuto AnonymousOption = "auto"
+)
+
 // Direction type
 type Direction string
 

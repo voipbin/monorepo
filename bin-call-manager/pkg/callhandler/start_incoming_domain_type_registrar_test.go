@@ -25,6 +25,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
@@ -100,7 +101,7 @@ func Test_startIncomingDomainTypeRegistrar_DestinationTypeAgent(t *testing.T) {
 								"target": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
 							},
 						},
-						"anonymous": "auto",
+						"anonymous": string(call.AnonymousOptionAuto),
 					},
 				},
 			},
@@ -543,7 +544,7 @@ func Test_startIncomingDomainTypeRegistrarDestinationTypeExtension(t *testing.T)
 								"target_name": "test-destination",
 							},
 						},
-						"anonymous": "auto",
+						"anonymous": string(call.AnonymousOptionAuto),
 					},
 				},
 			},
