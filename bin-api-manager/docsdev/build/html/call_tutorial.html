@@ -260,9 +260,9 @@ When the destination answers the call, it will speak the given text message.</p>
 </div>
 <p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
 </section>
-<section id="anonymous-outbound-call">
-<h3>Anonymous outbound call<a class="headerlink" href="#anonymous-outbound-call" title="Link to this heading"></a></h3>
-<p>Making an outbound call with anonymous caller ID. The destination sees “Anonymous” or “Private number” instead of your real phone number.</p>
+<section id="anonymous-outbound-call-api-initiated">
+<h3>Anonymous outbound call (API-initiated)<a class="headerlink" href="#anonymous-outbound-call-api-initiated" title="Link to this heading"></a></h3>
+<p>You can hide your caller ID on outgoing PSTN calls by setting <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;yes&quot;</span></code> in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request. The destination sees “Anonymous” or “Private number” instead of your real phone number.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -289,10 +289,77 @@ When the destination answers the call, it will speak the given text message.</p>
     }&#39;
 </pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter accepts three values:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code> — Always hide caller ID. The destination sees “Anonymous”.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code> — Always show real caller ID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> — (Default) Inherit from incoming call’s Privacy header. If there is no incoming call, behaves like <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code>.</p></li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter accepts three values: <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code> (always hide caller ID), <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code> (always show), and <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (inherit from incoming call, default). It only affects PSTN destinations (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>). When <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code>, the SIP Privacy header hides the caller’s number while the P-Asserted-Identity header still carries it for carrier routing. Some carriers or countries may reject anonymous calls.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter only affects PSTN destinations (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>). It has no effect on SIP or extension destinations. Some carriers or countries may reject anonymous calls — if the call fails, retry with <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code> or omit the parameter.</p>
+</div>
+</section>
+<section id="anonymous-outbound-call-within-a-flow-connect-action">
+<h3>Anonymous outbound call within a flow (connect action)<a class="headerlink" href="#anonymous-outbound-call-within-a-flow-connect-action" title="Link to this heading"></a></h3>
+<p>A common scenario is receiving an incoming call on a registered extension and then connecting it to an external PSTN number with anonymous caller ID. For example, a customer calls your VoIPBIN number, your flow answers and plays a greeting, then connects to a mobile phone — but you want the mobile phone to see “Anonymous” instead of your VoIPBIN number.</p>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">connect</span></code> action with <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;yes&quot;</span></code> in the flow:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+15551234567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+15559876543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Please wait while we connect your call.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            },
+            {
+                &quot;type&quot;: &quot;connect&quot;,
+                &quot;option&quot;: {
+                    &quot;anonymous&quot;: &quot;yes&quot;,
+                    &quot;source&quot;: {
+                        &quot;type&quot;: &quot;tel&quot;,
+                        &quot;target&quot;: &quot;+15551234567&quot;
+                    },
+                    &quot;destinations&quot;: [
+                        {
+                            &quot;type&quot;: &quot;tel&quot;,
+                            &quot;target&quot;: &quot;+15557778888&quot;
+                        }
+                    ]
+                }
+            }
+        ]
+    }&#39;
+</pre></div>
+</div>
+<p>In this example:</p>
+<ol class="arabic simple">
+<li><p>An outbound call is made to <code class="docutils literal notranslate"><span class="pre">+15559876543</span></code>.</p></li>
+<li><p>When answered, VoIPBIN plays a greeting message.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">connect</span></code> action creates a second outbound leg to <code class="docutils literal notranslate"><span class="pre">+15557778888</span></code> with anonymous caller ID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">+15557778888</span></code> sees “Anonymous” instead of <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>.</p></li>
+<li><p>Once <code class="docutils literal notranslate"><span class="pre">+15557778888</span></code> answers, both parties are bridged together.</p></li>
+</ol>
+<p>The same pattern works for incoming calls. If you assign this flow to a VoIPBIN number, incoming callers hear the greeting and are connected anonymously to the PSTN destination.</p>
+<p>You can also use <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;auto&quot;</span></code> in the <code class="docutils literal notranslate"><span class="pre">connect</span></code> action. In that case, if the <em>incoming</em> call already had a Privacy header (i.e., the original caller was anonymous), the outbound leg preserves that anonymity. Otherwise, the real caller ID is shown.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> option is available on both the <code class="docutils literal notranslate"><span class="pre">connect</span></code> and <code class="docutils literal notranslate"><span class="pre">call</span></code> flow actions. Use <code class="docutils literal notranslate"><span class="pre">connect</span></code> when bridging the current call to another destination (1:1 call forwarding). Use <code class="docutils literal notranslate"><span class="pre">call</span></code> when creating an independent outbound call from within a flow. Both support the same <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code>/<code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code>/<code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> values.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-media-file-play">
@@ -967,7 +1034,8 @@ When the destination answer the call, it will play the given media file.</p>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-an-existing-flow">Simple outbound call with an existing flow</a></li>
-<li><a class="reference internal" href="#anonymous-outbound-call">Anonymous outbound call</a></li>
+<li><a class="reference internal" href="#anonymous-outbound-call-api-initiated">Anonymous outbound call (API-initiated)</a></li>
+<li><a class="reference internal" href="#anonymous-outbound-call-within-a-flow-connect-action">Anonymous outbound call within a flow (connect action)</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-media-file-play">Simple outbound call with media file play</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-tts-and-connect">Simple outbound call with TTS and connect</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-talk-and-digits-send">Simple outbound call with talk and digits_send</a></li>

@@ -530,7 +530,8 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
             <span class="p">}</span>
         <span class="p">],</span>
         <span class="s2">&quot;chained&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;early_execution&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+        <span class="s2">&quot;early_execution&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -542,6 +543,7 @@ It gets the variable from the activeflow and move the activeflow cursor to the s
 <li><p><code class="docutils literal notranslate"><span class="pre">actions</span></code> (Array of Object): Inline array of actions for the new call’s flow. Used only if <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> is not set.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">chained</span></code> (Boolean): If <code class="docutils literal notranslate"><span class="pre">true</span></code>, the new call will be hung up when the master call hangs up. Default: <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">early_execution</span></code> (Boolean): If <code class="docutils literal notranslate"><span class="pre">true</span></code>, VoIPBIN will execute the flow when the call starts ringing (before answer). Default: <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">anonymous</span></code> (String, Optional): Controls anonymous caller ID for the outbound PSTN call. One of: <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code> (always hide caller ID), <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code> (always show), <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (inherit from incoming call’s Privacy header). Default: <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>. Only affects PSTN destinations (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="id11">
@@ -830,7 +832,8 @@ It checks the call’s status and if it matched with condition then move to the 
             <span class="o">...</span>
         <span class="p">],</span>
         <span class="s2">&quot;early_media&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
-        <span class="s2">&quot;relay_reason&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+        <span class="s2">&quot;relay_reason&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -840,6 +843,7 @@ It checks the call’s status and if it matched with condition then move to the 
 <li><p><code class="docutils literal notranslate"><span class="pre">destinations</span></code> (Array of Object): Array of destination addresses to ring. If multiple destinations are provided, all ring simultaneously (ring-all). See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">early_media</span></code> (Boolean): If <code class="docutils literal notranslate"><span class="pre">true</span></code>, allows early media (audio before answer, e.g., ringback tone). Default: <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">relay_reason</span></code> (Boolean): If <code class="docutils literal notranslate"><span class="pre">true</span></code>, relays the hangup reason from the connected call back to the master call. Default: <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">anonymous</span></code> (String, Optional): Controls anonymous caller ID for the outbound PSTN leg. One of: <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code> (always hide caller ID), <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code> (always show), <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (inherit from incoming call’s Privacy header). Default: <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>. Only affects PSTN destinations (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>).</p></li>
 </ul>
 </section>
 <section id="id25">
