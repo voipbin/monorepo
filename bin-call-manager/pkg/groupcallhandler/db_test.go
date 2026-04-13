@@ -36,6 +36,7 @@ func Test_Create(t *testing.T) {
 		masterGroupcallID uuid.UUID
 		ringMethod        groupcall.RingMethod
 		answerMethod      groupcall.AnswerMethod
+		anonymous         string
 
 		expectGroupcall *groupcall.Groupcall
 	}{
@@ -142,7 +143,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().GroupcallGet(ctx, tt.expectGroupcall.ID).Return(tt.expectGroupcall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.expectGroupcall)
 
-			res, err := h.Create(ctx, tt.id, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.source, tt.destinations, tt.callIDs, tt.groupcallIDs, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod)
+			res, err := h.Create(ctx, tt.id, tt.customerID, tt.ownerType, tt.ownerID, tt.flowID, tt.source, tt.destinations, tt.callIDs, tt.groupcallIDs, tt.masterCallID, tt.masterGroupcallID, tt.ringMethod, tt.answerMethod, tt.anonymous)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

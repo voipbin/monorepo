@@ -91,6 +91,10 @@ func (h *callHandler) CreateCallsOutgoing(
 		}
 	}
 
+	if len(resCalls) == 0 && len(resGroupcalls) == 0 {
+		return nil, nil, fmt.Errorf("all destinations failed to create outgoing calls")
+	}
+
 	return resCalls, resGroupcalls, nil
 }
 
@@ -500,7 +504,10 @@ func (h *callHandler) createChannelOutgoing(ctx context.Context, c *call.Call) e
 	transport := getDestinationTransport(dialURI)
 	setChannelVariableTransport(channelVariables, transport)
 	anonymous := c.Data[call.DataTypeAnonymous] == "true"
-	setChannelVariablesCallerID(channelVariables, c, anonymous)
+	if err := setChannelVariablesCallerID(channelVariables, c, anonymous); err != nil {
+		log.Errorf("Could not set caller ID variables. err: %v", err)
+		return err
+	}
 	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v, anonymous: %v", dialURI, channelVariables, anonymous)
 
 	// set app args
@@ -608,32 +615,34 @@ func setChannelVariableTransport(variables map[string]string, transport channel.
 // setChannelVariablesCallerID sets the outgoing call's caller ID variables.
 // When anonymous is true, the caller ID is set to anonymous via CALLERID(pres)=prohib (RFC 3323),
 // and the P-Asserted-Identity carries the real source number for carrier routing (RFC 3325).
+// Returns an error if anonymous is requested but the source is invalid for the PAI header,
+// because silently falling back to normal caller ID would be a privacy violation.
 // Note: Do NOT add PJSIP_HEADER(add,From) — Asterisk generates the From header from CALLERID fields,
 // and adding a second From header violates RFC 3261 §8.1.1.3 (causes Kamailio sanity check to drop the INVITE).
-func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anonymous bool) {
+func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anonymous bool) error {
 
 	if anonymous && c.Destination.Type == commonaddress.TypeTel {
-		// Defensive check: Source.Target must be a valid E.164 number for PAI header.
-		// This should not happen because getValidatedSourceForOutgoingCall ensures a valid source,
-		// but guard against unexpected call paths (e.g., route failover).
+		// Source.Target must be a valid E.164 number for PAI header.
+		// getValidatedSourceForOutgoingCall ensures a valid source, but guard against
+		// unexpected call paths (e.g., route failover).
 		if c.Source.Target == "" || !strings.HasPrefix(c.Source.Target, "+") {
-			logrus.WithField("call_id", c.ID).Errorf("Anonymous caller ID requested but source target is invalid for PAI header. Falling back to normal caller ID. source_target: %s", c.Source.Target)
-			// Fall through to normal (non-anonymous) caller ID below.
-		} else {
-			// RFC 3323: anonymous From header
-			variables["CALLERID(name)"] = "Anonymous"
-			variables["CALLERID(num)"] = "anonymous"
-			variables["CALLERID(pres)"] = "prohib"
-
-			// RFC 3325: PAI carries the real source number so the PSTN carrier can route/bill correctly.
-			variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("<tel:%s>", c.Source.Target)
-			variables["PJSIP_HEADER(add,Privacy)"] = "id"
-			return
+			return fmt.Errorf("anonymous caller ID requested but source target is invalid for PAI header. source_target: %s", c.Source.Target)
 		}
+
+		// RFC 3323: anonymous From header
+		variables["CALLERID(name)"] = "Anonymous"
+		variables["CALLERID(num)"] = "anonymous"
+		variables["CALLERID(pres)"] = "prohib"
+
+		// RFC 3325: PAI carries the real source number so the PSTN carrier can route/bill correctly.
+		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("<tel:%s>", c.Source.Target)
+		variables["PJSIP_HEADER(add,Privacy)"] = "id"
+		return nil
 	}
 
 	variables["CALLERID(name)"] = c.Source.TargetName
 	variables["CALLERID(num)"] = c.Source.Target
+	return nil
 }
 
 // getValidatedSourceForOutgoingCall validates and resolves the source address for an outgoing call.

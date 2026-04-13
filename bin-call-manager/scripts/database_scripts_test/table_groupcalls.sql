@@ -16,6 +16,7 @@ create table call_groupcalls(
 
   ring_method   varchar(255),
   answer_method varchar(255),
+  anonymous     varchar(10) not null default '',
 
   answer_call_id    binary(16),
   call_ids          json,
