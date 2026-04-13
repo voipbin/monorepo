@@ -3953,6 +3953,19 @@ components:
           type: boolean
           description: If true, the created call executes the flow before call answer.
           example: false
+        anonymous:
+          type: string
+          enum:
+            - "yes"
+            - "no"
+            - "auto"
+          example: "auto"
+          description: >
+            Controls anonymous caller ID for outbound PSTN calls.
+            "yes" — always send anonymous caller ID (RFC 3323 Privacy header).
+            "no" — never anonymize, always show real caller ID.
+            "auto" — inherit from incoming call's Privacy header (default).
+            Only affects PSTN destinations (type "tel").
 
     FlowManagerActionOptionConfbridgeJoin:
       type: object
@@ -3997,6 +4010,19 @@ components:
             If true, the master call will try to hang up with the same reason as the first destination call.
             Valid only if the first destination call hangs up earlier than the master call.
           example: true
+        anonymous:
+          type: string
+          enum:
+            - "yes"
+            - "no"
+            - "auto"
+          example: "auto"
+          description: >
+            Controls anonymous caller ID for the outbound PSTN leg.
+            "yes" — always send anonymous caller ID (RFC 3323 Privacy header).
+            "no" — never anonymize, always show real caller ID.
+            "auto" — inherit from incoming call's Privacy header (default).
+            Only affects PSTN destinations (type "tel").
 
     FlowManagerActionOptionConversationSend:
       type: object

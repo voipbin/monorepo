@@ -1752,6 +1752,48 @@ func (e FlowManagerActionOptionAMDMachineHandle) Valid() bool {
 	}
 }
 
+// Defines values for FlowManagerActionOptionCallAnonymous.
+const (
+	FlowManagerActionOptionCallAnonymousAuto FlowManagerActionOptionCallAnonymous = "auto"
+	FlowManagerActionOptionCallAnonymousNo   FlowManagerActionOptionCallAnonymous = "no"
+	FlowManagerActionOptionCallAnonymousYes  FlowManagerActionOptionCallAnonymous = "yes"
+)
+
+// Valid indicates whether the value is a known member of the FlowManagerActionOptionCallAnonymous enum.
+func (e FlowManagerActionOptionCallAnonymous) Valid() bool {
+	switch e {
+	case FlowManagerActionOptionCallAnonymousAuto:
+		return true
+	case FlowManagerActionOptionCallAnonymousNo:
+		return true
+	case FlowManagerActionOptionCallAnonymousYes:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for FlowManagerActionOptionConnectAnonymous.
+const (
+	FlowManagerActionOptionConnectAnonymousAuto FlowManagerActionOptionConnectAnonymous = "auto"
+	FlowManagerActionOptionConnectAnonymousNo   FlowManagerActionOptionConnectAnonymous = "no"
+	FlowManagerActionOptionConnectAnonymousYes  FlowManagerActionOptionConnectAnonymous = "yes"
+)
+
+// Valid indicates whether the value is a known member of the FlowManagerActionOptionConnectAnonymous enum.
+func (e FlowManagerActionOptionConnectAnonymous) Valid() bool {
+	switch e {
+	case FlowManagerActionOptionConnectAnonymousAuto:
+		return true
+	case FlowManagerActionOptionConnectAnonymousNo:
+		return true
+	case FlowManagerActionOptionConnectAnonymousYes:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for FlowManagerActionOptionTalkDigitsHandle.
 const (
 	FlowManagerActionOptionTalkDigitsHandleNext FlowManagerActionOptionTalkDigitsHandle = "next"
@@ -4942,6 +4984,9 @@ type FlowManagerActionOptionCall struct {
 	// Actions Inline actions to execute on the created call.
 	Actions *[]FlowManagerAction `json:"actions,omitempty"`
 
+	// Anonymous Controls anonymous caller ID for outbound PSTN calls. "yes" — always send anonymous caller ID (RFC 3323 Privacy header). "no" — never anonymize, always show real caller ID. "auto" — inherit from incoming call's Privacy header (default). Only affects PSTN destinations (type "tel").
+	Anonymous *FlowManagerActionOptionCallAnonymous `json:"anonymous,omitempty"`
+
 	// Chained If true, created calls will hang up when the master call hangs up.
 	Chained *bool `json:"chained,omitempty"`
 
@@ -4958,6 +5003,9 @@ type FlowManagerActionOptionCall struct {
 	Source *CommonAddress `json:"source,omitempty"`
 }
 
+// FlowManagerActionOptionCallAnonymous Controls anonymous caller ID for outbound PSTN calls. "yes" — always send anonymous caller ID (RFC 3323 Privacy header). "no" — never anonymize, always show real caller ID. "auto" — inherit from incoming call's Privacy header (default). Only affects PSTN destinations (type "tel").
+type FlowManagerActionOptionCallAnonymous string
+
 // FlowManagerActionOptionConfbridgeJoin defines model for FlowManagerActionOptionConfbridgeJoin.
 type FlowManagerActionOptionConfbridgeJoin struct {
 	// ConfbridgeId The unique identifier of the conference bridge to join. Returned from the `POST /conferences` or `GET /conferences` response.
@@ -4972,6 +5020,9 @@ type FlowManagerActionOptionConferenceJoin struct {
 
 // FlowManagerActionOptionConnect defines model for FlowManagerActionOptionConnect.
 type FlowManagerActionOptionConnect struct {
+	// Anonymous Controls anonymous caller ID for the outbound PSTN leg. "yes" — always send anonymous caller ID (RFC 3323 Privacy header). "no" — never anonymize, always show real caller ID. "auto" — inherit from incoming call's Privacy header (default). Only affects PSTN destinations (type "tel").
+	Anonymous *FlowManagerActionOptionConnectAnonymous `json:"anonymous,omitempty"`
+
 	// Destinations List of destination addresses. Must contain at least one destination.
 	Destinations *[]CommonAddress `json:"destinations,omitempty"`
 
@@ -4985,6 +5036,9 @@ type FlowManagerActionOptionConnect struct {
 	// Source Contains source or destination detail info.
 	Source *CommonAddress `json:"source,omitempty"`
 }
+
+// FlowManagerActionOptionConnectAnonymous Controls anonymous caller ID for the outbound PSTN leg. "yes" — always send anonymous caller ID (RFC 3323 Privacy header). "no" — never anonymize, always show real caller ID. "auto" — inherit from incoming call's Privacy header (default). Only affects PSTN destinations (type "tel").
+type FlowManagerActionOptionConnectAnonymous string
 
 // FlowManagerActionOptionConversationSend defines model for FlowManagerActionOptionConversationSend.
 type FlowManagerActionOptionConversationSend struct {
