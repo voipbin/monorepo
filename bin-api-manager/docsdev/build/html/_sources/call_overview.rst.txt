@@ -698,6 +698,34 @@ For outgoing calls to PSTN phone numbers (``type: "tel"``), VoIPBIN validates th
 
    When creating an outgoing PSTN call via ``POST https://api.voipbin.net/v1.0/calls``, always use a number from ``GET https://api.voipbin.net/v1.0/numbers`` that has ``type: "normal"`` and ``status: "active"`` as the ``source.target``. Virtual numbers (``type: "virtual"``) will be rejected as a source. If the source fails validation and no default outgoing source number is configured, the call proceeds with anonymous caller ID -- the destination may reject anonymous calls depending on their carrier settings.
 
+Anonymous Caller ID (Outgoing PSTN Calls)
++++++++++++++++++++++++++++++++++++++++++
+You can explicitly control whether the caller ID is shown or hidden on outgoing PSTN calls using the ``anonymous`` parameter in the ``POST https://api.voipbin.net/v1.0/calls`` request body.
+
+**Allowed values:**
+
+============ ================================================================
+Value        Behavior
+============ ================================================================
+``"yes"``    Always hide caller ID. The destination sees "Anonymous" or "Private number" depending on their carrier. The real source number is sent via P-Asserted-Identity (RFC 3325) so the PSTN carrier can route and bill the call, but it is not shown to the called party.
+``"no"``     Never hide caller ID. The destination always sees the real source number.
+``"auto"``   (Default) Inherit the Privacy setting from the incoming call that triggered this outbound call. If there is no incoming call (e.g., an API-initiated outbound call), this behaves the same as ``"no"``.
+============ ================================================================
+
+**How it works (SIP level):**
+
+When ``anonymous`` is ``"yes"`` and the destination is a PSTN number (``type: "tel"``):
+
+- The SIP ``From`` header uses ``Anonymous <sip:anonymous@anonymous.invalid>``
+- A ``Privacy: id`` header is added (RFC 3323)
+- A ``P-Asserted-Identity`` header carries the real source number for carrier routing (RFC 3325)
+
+When the destination is not a PSTN number (``type: "sip"``, ``type: "extension"``), the ``anonymous`` parameter has no effect — the caller ID is always shown.
+
+.. note:: **AI Implementation Hint**
+
+   The ``anonymous`` parameter only affects outgoing calls to PSTN numbers (``type: "tel"``). It has no effect on SIP or extension destinations. When set to ``"yes"``, the destination's phone displays "Anonymous" or "Private number" instead of the caller's real number. Some carriers or destinations may reject anonymous calls — if the call fails with hangup_reason ``"failed"`` or ``"noanswer"``, try again with ``"no"`` or omit the parameter.
+
 Execution of Call Flow for outgoing call
 ----------------------------------------
 Once the outgoing call request is initiated, the VoIPBIN system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.

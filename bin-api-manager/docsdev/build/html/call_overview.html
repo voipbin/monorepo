@@ -844,6 +844,42 @@ Does the customer have a default outgoing source number configured?
 <p>When creating an outgoing PSTN call via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code>, always use a number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code> that has <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;normal&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">&quot;active&quot;</span></code> as the <code class="docutils literal notranslate"><span class="pre">source.target</span></code>. Virtual numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;virtual&quot;</span></code>) will be rejected as a source. If the source fails validation and no default outgoing source number is configured, the call proceeds with anonymous caller ID – the destination may reject anonymous calls depending on their carrier settings.</p>
 </div>
 </section>
+<section id="anonymous-caller-id-outgoing-pstn-calls">
+<h3>Anonymous Caller ID (Outgoing PSTN Calls)<a class="headerlink" href="#anonymous-caller-id-outgoing-pstn-calls" title="Link to this heading"></a></h3>
+<p>You can explicitly control whether the caller ID is shown or hidden on outgoing PSTN calls using the <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code> request body.</p>
+<p><strong>Allowed values:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>Behavior</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code></p></td>
+<td><p>Always hide caller ID. The destination sees “Anonymous” or “Private number” depending on their carrier. The real source number is sent via P-Asserted-Identity (RFC 3325) so the PSTN carrier can route and bill the call, but it is not shown to the called party.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code></p></td>
+<td><p>Never hide caller ID. The destination always sees the real source number.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code></p></td>
+<td><p>(Default) Inherit the Privacy setting from the incoming call that triggered this outbound call. If there is no incoming call (e.g., an API-initiated outbound call), this behaves the same as <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>How it works (SIP level):</strong></p>
+<p>When <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code> and the destination is a PSTN number (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>):</p>
+<ul class="simple">
+<li><p>The SIP <code class="docutils literal notranslate"><span class="pre">From</span></code> header uses <code class="docutils literal notranslate"><span class="pre">Anonymous</span> <span class="pre">&lt;sip:anonymous&#64;anonymous.invalid&gt;</span></code></p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">Privacy:</span> <span class="pre">id</span></code> header is added (RFC 3323)</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">P-Asserted-Identity</span></code> header carries the real source number for carrier routing (RFC 3325)</p></li>
+</ul>
+<p>When the destination is not a PSTN number (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;sip&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;extension&quot;</span></code>), the <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter has no effect — the caller ID is always shown.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter only affects outgoing calls to PSTN numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>). It has no effect on SIP or extension destinations. When set to <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code>, the destination’s phone displays “Anonymous” or “Private number” instead of the caller’s real number. Some carriers or destinations may reject anonymous calls — if the call fails with hangup_reason <code class="docutils literal notranslate"><span class="pre">&quot;failed&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;noanswer&quot;</span></code>, try again with <code class="docutils literal notranslate"><span class="pre">&quot;no&quot;</span></code> or omit the parameter.</p>
+</div>
+</section>
 </section>
 <section id="execution-of-call-flow-for-outgoing-call">
 <h2>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Link to this heading"></a></h2>
@@ -1003,6 +1039,7 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 <li><a class="reference internal" href="#outgoing-call">Outgoing call</a><ul>
 <li><a class="reference internal" href="#outgoing-call-permission-requirements">Outgoing Call Permission Requirements</a></li>
 <li><a class="reference internal" href="#source-number-validation-outgoing-pstn-calls">Source Number Validation (Outgoing PSTN Calls)</a></li>
+<li><a class="reference internal" href="#anonymous-caller-id-outgoing-pstn-calls">Anonymous Caller ID (Outgoing PSTN Calls)</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#execution-of-call-flow-for-outgoing-call">Execution of Call Flow for outgoing call</a></li>

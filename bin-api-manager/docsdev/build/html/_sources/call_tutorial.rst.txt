@@ -79,6 +79,42 @@ If you have already created a flow, you can reference it by ``flow_id`` instead 
 
 For more details on flows, see the :ref:`Flow tutorial <flow-main>`.
 
+Anonymous outbound call
+-----------------------
+
+Making an outbound call with anonymous caller ID. The destination sees "Anonymous" or "Private number" instead of your real phone number.
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "anonymous": "yes",
+            "source": {
+                "type": "tel",
+                "target": "+15551234567"
+            },
+            "destinations": [
+                {
+                    "type": "tel",
+                    "target": "+15559876543"
+                }
+            ],
+            "actions": [
+                {
+                    "type": "talk",
+                    "option": {
+                        "text": "Hello. This is an anonymous call from voipbin.",
+                        "language": "en-US"
+                    }
+                }
+            ]
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   The ``anonymous`` parameter accepts three values: ``"yes"`` (always hide caller ID), ``"no"`` (always show), and ``"auto"`` (inherit from incoming call, default). It only affects PSTN destinations (``type: "tel"``). When ``"yes"``, the SIP Privacy header hides the caller's number while the P-Asserted-Identity header still carries it for carrier routing. Some carriers or countries may reject anonymous calls.
+
 Simple outbound call with media file play
 -----------------------------------------
 
