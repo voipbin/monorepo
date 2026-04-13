@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"monorepo/bin-call-manager/models/call"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
@@ -116,6 +117,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeAgent(
 				},
 				EarlyMedia:  false,
 				RelayReason: false,
+				Anonymous:   string(call.AnonymousOptionAuto),
 			}),
 		},
 	}
@@ -236,6 +238,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeTel(
 				},
 				EarlyMedia:  true,
 				RelayReason: true,
+				Anonymous:   string(call.AnonymousOptionAuto),
 			}),
 		},
 	}
@@ -298,6 +301,7 @@ func (h *callHandler) startIncomingDomainTypeRegistrarDestinationTypeExtension(
 				},
 				EarlyMedia:  false,
 				RelayReason: false,
+				Anonymous:   string(call.AnonymousOptionAuto),
 			}),
 		},
 	}

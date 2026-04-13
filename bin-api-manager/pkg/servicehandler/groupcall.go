@@ -162,7 +162,9 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *auth.AuthIdenti
 		targetFlowID = f.ID
 	}
 
-	tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, uuid.Nil, a.CustomerID, targetFlowID, source, destinations, uuid.Nil, uuid.Nil, ringMethod, answerMethod)
+	// TODO: anonymous caller ID is not yet supported for groupcall API — always uses default (auto).
+	// To add support, parse the anonymous field from the request body and pass it here.
+	tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, uuid.Nil, a.CustomerID, targetFlowID, source, destinations, uuid.Nil, uuid.Nil, ringMethod, answerMethod, "")
 	if err != nil {
 		log.Errorf("Could not create a call. err: %v", err)
 		return nil, err

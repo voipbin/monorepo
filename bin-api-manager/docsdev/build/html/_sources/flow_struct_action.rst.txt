@@ -272,7 +272,8 @@ Parameters
                 }
             ],
             "chained": <boolean>,
-            "early_execution": <boolean>
+            "early_execution": <boolean>,
+            "anonymous": "<string>"
         }
     }
 
@@ -282,6 +283,7 @@ Parameters
 * ``actions`` (Array of Object): Inline array of actions for the new call's flow. Used only if ``flow_id`` is not set.
 * ``chained`` (Boolean): If ``true``, the new call will be hung up when the master call hangs up. Default: ``false``.
 * ``early_execution`` (Boolean): If ``true``, VoIPBIN will execute the flow when the call starts ringing (before answer). Default: ``false``.
+* ``anonymous`` (String, Optional): Controls anonymous caller ID for the outbound PSTN call. One of: ``"yes"`` (always hide caller ID), ``"no"`` (always show), ``"auto"`` (inherit from incoming call's Privacy header). Default: ``"auto"``. Only affects PSTN destinations (``type: "tel"``).
 
 Example
 +++++++
@@ -582,7 +584,8 @@ Parameters
                 ...
             ],
             "early_media": <boolean>,
-            "relay_reason": <boolean>
+            "relay_reason": <boolean>,
+            "anonymous": "<string>"
         }
     }
 
@@ -590,6 +593,7 @@ Parameters
 * ``destinations`` (Array of Object): Array of destination addresses to ring. If multiple destinations are provided, all ring simultaneously (ring-all). See :ref:`Address <common-struct-address-address>`.
 * ``early_media`` (Boolean): If ``true``, allows early media (audio before answer, e.g., ringback tone). Default: ``false``.
 * ``relay_reason`` (Boolean): If ``true``, relays the hangup reason from the connected call back to the master call. Default: ``false``.
+* ``anonymous`` (String, Optional): Controls anonymous caller ID for the outbound PSTN leg. One of: ``"yes"`` (always hide caller ID), ``"no"`` (always show), ``"auto"`` (inherit from incoming call's Privacy header). Default: ``"auto"``. Only affects PSTN destinations (``type: "tel"``).
 
 Example
 +++++++

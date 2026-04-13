@@ -67,6 +67,7 @@ type CallHandler interface {
 		destinations []commonaddress.Address,
 		earlyExecution bool,
 		connect bool,
+		anonymous string,
 	) ([]*call.Call, []*groupcall.Groupcall, error)
 	CreateCallOutgoing(
 		ctx context.Context,
@@ -80,6 +81,7 @@ type CallHandler interface {
 		destination commonaddress.Address,
 		earlyExecution bool,
 		connect bool,
+		anonymous string,
 	) (*call.Call, error)
 	Start(ctx context.Context, cn *channel.Channel) error
 	Hangup(ctx context.Context, cn *channel.Channel) (*call.Call, error)

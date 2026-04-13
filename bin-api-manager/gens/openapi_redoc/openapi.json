@@ -3626,6 +3626,16 @@
                     "items": {
                       "$ref": "#/components/schemas/CommonAddress"
                     }
+                  },
+                  "anonymous": {
+                    "type": "string",
+                    "enum": [
+                      "yes",
+                      "no",
+                      "auto"
+                    ],
+                    "example": "auto",
+                    "description": "Controls anonymous caller ID for outbound PSTN calls. \"yes\" — always send anonymous caller ID (RFC 3323 Privacy header). \"no\" — never anonymize, always show real caller ID. \"auto\" — inherit from incoming call's Privacy header (default).\n"
                   }
                 }
               }

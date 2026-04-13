@@ -48,6 +48,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	destinations []commonaddress.Address,
 	earlyExecution bool,
 	connect bool,
+	anonymous string,
 ) ([]*call.Call, []*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CreateCallsOutgoing",
@@ -58,6 +59,7 @@ func (h *callHandler) CreateCallsOutgoing(
 		"destinations":    destinations,
 		"early_execution": earlyExecution,
 		"connect":         connect,
+		"anonymous":       anonymous,
 	})
 
 	resCalls := []*call.Call{}
@@ -65,7 +67,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	for _, destination := range destinations {
 		switch {
 		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect)
+			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect, anonymous)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -75,7 +77,7 @@ func (h *callHandler) CreateCallsOutgoing(
 			resCalls = append(resCalls, c)
 
 		case h.groupcallHandler.IsGroupcallTypeAddress(&destination):
-			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, &source, &destination)
+			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, &source, &destination, anonymous)
 			if err != nil {
 				log.Errorf("Could not create outgoing groupcall. err: %v", err)
 				continue
@@ -105,6 +107,7 @@ func (h *callHandler) CreateCallOutgoing(
 	destination commonaddress.Address,
 	earlyExecution bool,
 	executeNextMasterOnHangup bool,
+	anonymous string,
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":                         "CreateCallOutgoing",
@@ -118,6 +121,7 @@ func (h *callHandler) CreateCallOutgoing(
 		"destination":                   destination,
 		"early_execution":               earlyExecution,
 		"execute_next_master_on_hangup": executeNextMasterOnHangup,
+		"anonymous":                     anonymous,
 	})
 	log.Debug("Creating a call for outgoing.")
 
@@ -183,11 +187,42 @@ func (h *callHandler) CreateCallOutgoing(
 
 	// validate and resolve the source address for outgoing call
 	s := h.getValidatedSourceForOutgoingCall(ctx, source, destination, cu)
+	if s == nil {
+		log.Errorf("No valid source number available for outgoing call.")
+		if af.ID != uuid.Nil {
+			if _, errStop := h.reqHandler.FlowV1ActiveflowStop(ctx, af.ID); errStop != nil {
+				log.Errorf("Could not stop orphaned activeflow. activeflow_id: %s, err: %v", af.ID, errStop)
+			}
+		}
+		return nil, fmt.Errorf("no valid source number available for outgoing call")
+	}
+
+	// normalize anonymous flag: only "yes" and "no" are valid; everything else defaults to "auto"
+	anonymousOption := call.AnonymousOption(anonymous)
+	switch anonymousOption {
+	case call.AnonymousOptionYes, call.AnonymousOptionNo:
+		// valid, use as-is
+	default:
+		if anonymous != "" && anonymous != string(call.AnonymousOptionAuto) {
+			log.Infof("Invalid anonymous option provided, defaulting to auto. anonymous: %s", anonymous)
+		}
+		anonymousOption = call.AnonymousOptionAuto
+	}
+
+	// resolve anonymous flag
+	// TODO: when anonymousOption == AnonymousOptionAuto, inherit from incoming channel's SIP Privacy header
+	// (check channel.StasisDataTypeSIPPrivacy). Currently "auto" defaults to not anonymous.
+	// IMPORTANT: when implementing auto-inherit, "no" must explicitly opt OUT of anonymous (never anonymize),
+	// while "auto" inherits from the incoming call. Today both resolve the same way (not anonymous),
+	// but they must diverge once auto-inherit is implemented.
+	resolvedAnonymous := anonymousOption == call.AnonymousOptionYes
+	log.Debugf("Resolved anonymous flag. input: %s, normalized: %s, resolved: %v", anonymous, anonymousOption, resolvedAnonymous)
 
 	// create data
 	data := map[call.DataType]string{
 		call.DataTypeEarlyExecution:            strconv.FormatBool(earlyExecution),
 		call.DataTypeExecuteNextMasterOnHangup: strconv.FormatBool(executeNextMasterOnHangup),
+		call.DataTypeAnonymous:                 strconv.FormatBool(resolvedAnonymous),
 	}
 
 	// get address owner info
@@ -389,6 +424,7 @@ func (h *callHandler) createCallsOutgoingGroupcall(
 	masterCallID uuid.UUID,
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
+	anonymous string,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "createCallsOutgoingGroupcall",
@@ -397,10 +433,11 @@ func (h *callHandler) createCallsOutgoingGroupcall(
 		"master_call_id": masterCallID,
 		"source":         source,
 		"destination":    destination,
+		"anonymous":      anonymous,
 	})
 
 	// start groupcall
-	res, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, source, []commonaddress.Address{*destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers)
+	res, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, source, []commonaddress.Address{*destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, anonymous)
 	if err != nil {
 		log.Errorf("Could not start the groupcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not start the groupcall.")
@@ -462,8 +499,9 @@ func (h *callHandler) createChannelOutgoing(ctx context.Context, c *call.Call) e
 	channelVariables := map[string]string{}
 	transport := getDestinationTransport(dialURI)
 	setChannelVariableTransport(channelVariables, transport)
-	setChannelVariablesCallerID(channelVariables, c)
-	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v", dialURI, channelVariables)
+	anonymous := c.Data[call.DataTypeAnonymous] == "true"
+	setChannelVariablesCallerID(channelVariables, c, anonymous)
+	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v, anonymous: %v", dialURI, channelVariables, anonymous)
 
 	// set app args
 	appArgs := fmt.Sprintf("%s=%s,%s=%s,%s=%s,%s=%s,%s=%s",
@@ -567,16 +605,31 @@ func setChannelVariableTransport(variables map[string]string, transport channel.
 	}
 }
 
-// setChannelVariablesCallerID sets the outgoit call's caller
-func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
+// setChannelVariablesCallerID sets the outgoing call's caller ID variables.
+// When anonymous is true, the caller ID is set to anonymous via CALLERID(pres)=prohib (RFC 3323),
+// and the P-Asserted-Identity carries the real source number for carrier routing (RFC 3325).
+// Note: Do NOT add PJSIP_HEADER(add,From) — Asterisk generates the From header from CALLERID fields,
+// and adding a second From header violates RFC 3261 §8.1.1.3 (causes Kamailio sanity check to drop the INVITE).
+func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anonymous bool) {
 
-	if c.Destination.Type == commonaddress.TypeTel && c.Source.Target == "anonymous" {
-		// we can't verify the caller's id. setting the default anonymous caller id
-		variables["CALLERID(pres)"] = "prohib"
-		variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("\"Anonymous\" <sip:+821100000001@%s>", common.DomainPSTN)
-		variables["PJSIP_HEADER(add,Privacy)"] = "id"
+	if anonymous && c.Destination.Type == commonaddress.TypeTel {
+		// Defensive check: Source.Target must be a valid E.164 number for PAI header.
+		// This should not happen because getValidatedSourceForOutgoingCall ensures a valid source,
+		// but guard against unexpected call paths (e.g., route failover).
+		if c.Source.Target == "" || !strings.HasPrefix(c.Source.Target, "+") {
+			logrus.WithField("call_id", c.ID).Errorf("Anonymous caller ID requested but source target is invalid for PAI header. Falling back to normal caller ID. source_target: %s", c.Source.Target)
+			// Fall through to normal (non-anonymous) caller ID below.
+		} else {
+			// RFC 3323: anonymous From header
+			variables["CALLERID(name)"] = "Anonymous"
+			variables["CALLERID(num)"] = "anonymous"
+			variables["CALLERID(pres)"] = "prohib"
 
-		return
+			// RFC 3325: PAI carries the real source number so the PSTN carrier can route/bill correctly.
+			variables["PJSIP_HEADER(add,P-Asserted-Identity)"] = fmt.Sprintf("<tel:%s>", c.Source.Target)
+			variables["PJSIP_HEADER(add,Privacy)"] = "id"
+			return
+		}
 	}
 
 	variables["CALLERID(name)"] = c.Source.TargetName
@@ -588,7 +641,7 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call) {
 // 1. Have a valid E.164 format (starts with "+")
 // 2. Belong to the customer as a normal (non-virtual) number
 // If either condition fails, it falls back to the customer's default outgoing source number.
-// If no valid source can be determined, it returns "anonymous".
+// If no valid source can be determined, it returns nil.
 // For non-tel destinations, the source is returned as-is.
 func (h *callHandler) getValidatedSourceForOutgoingCall(
 	ctx context.Context,
@@ -652,11 +705,7 @@ func (h *callHandler) getValidatedSourceForOutgoingCall(
 		}
 	}
 
-	// no valid source available, set to anonymous
-	log.Infof("No valid source number available. Setting caller ID to anonymous.")
-	return &commonaddress.Address{
-		Type:       commonaddress.TypeTel,
-		TargetName: "Anonymous",
-		Target:     "anonymous",
-	}
+	// no valid source available, reject the call
+	log.Infof("No valid source number available. Rejecting call.")
+	return nil
 }

@@ -119,6 +119,7 @@ type OptionCall struct {
 	Actions        []Action                `json:"actions,omitempty"`
 	Chained        bool                    `json:"chained,omitempty"`         // If it sets to true, the created calls will be hungup when the master call is hangup. Default false.
 	EarlyExecution bool                    `json:"early_execution,omitempty"` // if it sets to true, the created call executes the flow(activeflow) before call answer.
+	Anonymous      string                  `json:"anonymous,omitempty"`       // Tri-state: "yes", "no", "auto". Controls anonymous caller ID on outbound PSTN calls.
 }
 
 // OptionConfbridgeJoin defines action confbridge_join's option.
@@ -186,6 +187,10 @@ type OptionConnect struct {
 	// if it sets to true, the master call will try to the hangup the call with the same reason of the first of the destination calls.
 	// this is valid only the first destination call hungup earlier than the master call.
 	RelayReason bool `json:"relay_reason,omitempty"`
+
+	// Tri-state: "yes", "no", "auto". Controls anonymous caller ID on outbound PSTN calls.
+	// "yes" = always anonymous, "no" = never anonymous, "auto" = inherit from incoming Privacy header.
+	Anonymous string `json:"anonymous,omitempty"`
 }
 
 // OptionConversationSend defines action conversation_send's optoin.

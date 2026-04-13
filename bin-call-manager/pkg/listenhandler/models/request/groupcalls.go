@@ -21,6 +21,7 @@ type V1DataGroupcallsPost struct {
 	MasterGroupcallID uuid.UUID               `json:"master_groupcall_id,omitempty"`
 	RingMethod        groupcall.RingMethod    `json:"ring_method,omitempty"`
 	AnswerMethod      groupcall.AnswerMethod  `json:"answer_method,omitempty"`
+	Anonymous         string                  `json:"anonymous,omitempty"`
 }
 
 // V1DataGroupcallsIDAnswerGroupcallIDPost is

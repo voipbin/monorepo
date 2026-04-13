@@ -470,6 +470,7 @@ type RequestHandler interface {
 		destinations []commonaddress.Address,
 		ealryExecution bool,
 		connect bool,
+		anonymous string,
 	) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error)
 	CallV1CallCreateWithID(
 		ctx context.Context,
@@ -483,6 +484,7 @@ type RequestHandler interface {
 		groupcallID uuid.UUID,
 		ealryExecution bool,
 		connect bool,
+		anonymous string,
 	) (*cmcall.Call, error)
 	CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
@@ -589,6 +591,7 @@ type RequestHandler interface {
 		masterGroupcallID uuid.UUID,
 		ringMethod cmgroupcall.RingMethod,
 		answerMethod cmgroupcall.AnswerMethod,
+		anonymous string,
 	) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmgroupcall.Field]any) ([]cmgroupcall.Groupcall, error)
 	CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)

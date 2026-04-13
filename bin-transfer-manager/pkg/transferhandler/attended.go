@@ -140,6 +140,7 @@ func (h *transferHandler) attendedExecute(ctx context.Context, transfererCall *c
 		uuid.Nil,
 		cmgroupcall.RingMethodRingAll,
 		cmgroupcall.AnswerMethodHangupOthers,
+		"",
 	)
 	if err != nil {
 		log.Errorf("Could not create groupcall. err: %v", err)

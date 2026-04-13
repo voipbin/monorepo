@@ -698,6 +698,66 @@ For outgoing calls to PSTN phone numbers (``type: "tel"``), VoIPBIN validates th
 
    When creating an outgoing PSTN call via ``POST https://api.voipbin.net/v1.0/calls``, always use a number from ``GET https://api.voipbin.net/v1.0/numbers`` that has ``type: "normal"`` and ``status: "active"`` as the ``source.target``. Virtual numbers (``type: "virtual"``) will be rejected as a source. If the source fails validation and no default outgoing source number is configured, the call proceeds with anonymous caller ID -- the destination may reject anonymous calls depending on their carrier settings.
 
+Anonymous Caller ID (Outgoing PSTN Calls)
++++++++++++++++++++++++++++++++++++++++++
+You can control whether the caller ID is shown or hidden on outgoing PSTN calls. The ``anonymous`` parameter is available in several places depending on how the outbound call is created.
+
+**Where anonymous caller ID can be set:**
+
++-------------------------------------------+----------------------------------------------+-------------------------------+
+| Outbound call path                        | Where to set ``anonymous``                   | Default                       |
++===========================================+==============================================+===============================+
+| API-initiated call                        | ``anonymous`` field in ``POST               | ``"auto"``                    |
+|                                           | https://api.voipbin.net/v1.0/calls``        |                               |
+|                                           | request body                                |                               |
++-------------------------------------------+----------------------------------------------+-------------------------------+
+| Flow ``connect`` action                   | ``anonymous`` field in the ``connect``       | ``"auto"``                    |
+|                                           | action's ``option`` object                   |                               |
++-------------------------------------------+----------------------------------------------+-------------------------------+
+| Flow ``call`` action                      | ``anonymous`` field in the ``call``          | ``"auto"``                    |
+|                                           | action's ``option`` object                   |                               |
++-------------------------------------------+----------------------------------------------+-------------------------------+
+| Registered endpoint outbound call         | Automatic — inherited from the incoming      | ``"auto"`` (always)           |
+| (SIP phone dialing out via VoIPBIN)       | SIP ``Privacy`` header. Cannot be            |                               |
+|                                           | overridden by the user.                      |                               |
++-------------------------------------------+----------------------------------------------+-------------------------------+
+
+**Allowed values:**
+
+============ ================================================================
+Value        Behavior
+============ ================================================================
+``"yes"``    Always hide caller ID. The destination sees "Anonymous" or "Private number" depending on their carrier. The real source number is sent via P-Asserted-Identity (RFC 3325) so the PSTN carrier can route and bill the call, but it is not shown to the called party.
+``"no"``     Never hide caller ID. The destination always sees the real source number.
+``"auto"``   (Default) Inherit the Privacy setting from the incoming call that triggered this outbound call. If there is no incoming call (e.g., an API-initiated outbound call), this behaves the same as ``"no"``.
+============ ================================================================
+
+**How it works (SIP level):**
+
+When ``anonymous`` is ``"yes"`` and the destination is a PSTN number (``type: "tel"``):
+
+- The SIP ``From`` header uses ``Anonymous <sip:anonymous@anonymous.invalid>``
+- A ``Privacy: id`` header is added (RFC 3323)
+- A ``P-Asserted-Identity`` header carries the real source number for carrier routing (RFC 3325)
+
+When the destination is not a PSTN number (``type: "sip"``, ``type: "extension"``), the ``anonymous`` parameter has no effect — the caller ID is always shown.
+
+**Registered endpoint behavior:**
+
+When a SIP phone registered with VoIPBIN dials an external PSTN number, the system always uses ``"auto"`` for the anonymous setting. This means:
+
+- If the SIP phone sends a ``Privacy: id`` header in the INVITE, the outbound PSTN call will be anonymous.
+- If the SIP phone does not send a Privacy header, the outbound call uses the real caller ID.
+- The user cannot override this from the SIP phone — it is controlled entirely by the phone's privacy setting.
+
+Most SIP phones have a "Hide Caller ID" or "Anonymous Call" setting that adds the ``Privacy: id`` header. Consult your SIP phone's documentation.
+
+.. note:: **AI Implementation Hint**
+
+   The ``anonymous`` parameter only affects outgoing calls to PSTN numbers (``type: "tel"``). It has no effect on SIP or extension destinations. When set to ``"yes"``, the destination's phone displays "Anonymous" or "Private number" instead of the caller's real number. Some carriers or destinations may reject anonymous calls — if the call fails with hangup_reason ``"failed"`` or ``"noanswer"``, try again with ``"no"`` or omit the parameter. For registered endpoint (SIP phone) outbound calls, the anonymous behavior is automatic — set it from the phone's privacy settings.
+
+For step-by-step examples of each path, see the :ref:`Call tutorial <call-tutorial>` anonymous sections.
+
 Execution of Call Flow for outgoing call
 ----------------------------------------
 Once the outgoing call request is initiated, the VoIPBIN system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.
