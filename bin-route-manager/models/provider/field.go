@@ -16,6 +16,9 @@ const (
 	FieldName   Field = "name"   // name
 	FieldDetail Field = "detail" // detail
 
+	FieldHealthStatus    Field = "health_status"    // health_status
+	FieldHealthCheckedAt Field = "health_checked_at" // health_checked_at
+
 	FieldTMCreate Field = "tm_create" // tm_create
 	FieldTMUpdate Field = "tm_update" // tm_update
 	FieldTMDelete Field = "tm_delete" // tm_delete

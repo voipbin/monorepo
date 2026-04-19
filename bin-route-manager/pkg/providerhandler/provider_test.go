@@ -284,13 +284,15 @@ func Test_Update(t *testing.T) {
 			ctx := context.Background()
 
 			fields := map[provider.Field]any{
-				provider.FieldType:        tt.providerType,
-				provider.FieldHostname:    tt.hostname,
-				provider.FieldTechPrefix:  tt.techPrefix,
-				provider.FieldTechPostfix: tt.techPostfix,
-				provider.FieldTechHeaders: tt.techHeaders,
-				provider.FieldName:        tt.updateName,
-				provider.FieldDetail:      tt.detail,
+				provider.FieldType:           tt.providerType,
+				provider.FieldHostname:       tt.hostname,
+				provider.FieldTechPrefix:     tt.techPrefix,
+				provider.FieldTechPostfix:    tt.techPostfix,
+				provider.FieldTechHeaders:    tt.techHeaders,
+				provider.FieldName:           tt.updateName,
+				provider.FieldDetail:         tt.detail,
+				provider.FieldHealthStatus:    provider.HealthStatusUnknown,
+				provider.FieldHealthCheckedAt: nil,
 			}
 			mockDB.EXPECT().ProviderUpdate(ctx, tt.id, fields).Return(nil)
 			mockDB.EXPECT().ProviderGet(ctx, tt.id).Return(tt.responseProvider, nil)

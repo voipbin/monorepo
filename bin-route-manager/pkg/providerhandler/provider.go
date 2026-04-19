@@ -41,14 +41,15 @@ func (h *providerHandler) Create(
 
 	id := uuid.Must(uuid.NewV4())
 	p := &provider.Provider{
-		ID:          id,
-		Type:        providerType,
-		Hostname:    hostname,
-		TechPrefix:  techPrefix,
-		TechPostfix: techPostfix,
-		TechHeaders: techHeaders,
-		Name:        name,
-		Detail:      detail,
+		ID:           id,
+		Type:         providerType,
+		Hostname:     hostname,
+		TechPrefix:   techPrefix,
+		TechPostfix:  techPostfix,
+		TechHeaders:  techHeaders,
+		Name:         name,
+		Detail:       detail,
+		HealthStatus: provider.HealthStatusUnknown,
 	}
 	log.WithField("provider", p).Debugf("Creating a new provider. id: %s", id)
 
@@ -145,13 +146,15 @@ func (h *providerHandler) Update(
 	).Debug("Updating the provider.")
 
 	fields := map[provider.Field]any{
-		provider.FieldType:        providerType,
-		provider.FieldHostname:    hostname,
-		provider.FieldTechPrefix:  techPrefix,
-		provider.FieldTechPostfix: techPostfix,
-		provider.FieldTechHeaders: techHeaders,
-		provider.FieldName:        name,
-		provider.FieldDetail:      detail,
+		provider.FieldType:           providerType,
+		provider.FieldHostname:       hostname,
+		provider.FieldTechPrefix:     techPrefix,
+		provider.FieldTechPostfix:    techPostfix,
+		provider.FieldTechHeaders:    techHeaders,
+		provider.FieldName:           name,
+		provider.FieldDetail:         detail,
+		provider.FieldHealthStatus:    provider.HealthStatusUnknown,
+		provider.FieldHealthCheckedAt: nil,
 	}
 
 	if errUpdate := h.db.ProviderUpdate(ctx, id, fields); errUpdate != nil {

@@ -14,6 +14,7 @@ import (
 	provider "monorepo/bin-route-manager/models/provider"
 	route "monorepo/bin-route-manager/models/route"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -113,6 +114,20 @@ func (m *MockDBHandler) ProviderUpdate(ctx context.Context, id uuid.UUID, fields
 func (mr *MockDBHandlerMockRecorder) ProviderUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderUpdate", reflect.TypeOf((*MockDBHandler)(nil).ProviderUpdate), ctx, id, fields)
+}
+
+// ProviderUpdateHealthStatus mocks base method.
+func (m *MockDBHandler) ProviderUpdateHealthStatus(ctx context.Context, id uuid.UUID, status string, checkedAt *time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderUpdateHealthStatus", ctx, id, status, checkedAt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ProviderUpdateHealthStatus indicates an expected call of ProviderUpdateHealthStatus.
+func (mr *MockDBHandlerMockRecorder) ProviderUpdateHealthStatus(ctx, id, status, checkedAt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderUpdateHealthStatus", reflect.TypeOf((*MockDBHandler)(nil).ProviderUpdateHealthStatus), ctx, id, status, checkedAt)
 }
 
 // RouteCreate mocks base method.

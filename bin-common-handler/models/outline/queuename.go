@@ -20,6 +20,9 @@ const (
 	// asterisk
 	QueueNameAsteriskEventAll QueueName = "asterisk.all.event"
 
+	// kamailio
+	QueueNameKamailioRequest QueueName = "kamailio.request"
+
 	// agent-manager
 	QueueNameAgentEvent     QueueName = "bin-manager.agent-manager.event"
 	QueueNameAgentRequest   QueueName = "bin-manager.agent-manager.request"

@@ -4309,6 +4309,21 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1VariableSubstitute(ctx, variable
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1VariableSubstitute", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1VariableSubstitute), ctx, variableID, dataString)
 }
 
+// KamailioV1ProviderHealthCheck mocks base method.
+func (m *MockRequestHandler) KamailioV1ProviderHealthCheck(ctx context.Context, hostname string) (*KamailioProviderHealthResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KamailioV1ProviderHealthCheck", ctx, hostname)
+	ret0, _ := ret[0].(*KamailioProviderHealthResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// KamailioV1ProviderHealthCheck indicates an expected call of KamailioV1ProviderHealthCheck.
+func (mr *MockRequestHandlerMockRecorder) KamailioV1ProviderHealthCheck(ctx, hostname any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KamailioV1ProviderHealthCheck", reflect.TypeOf((*MockRequestHandler)(nil).KamailioV1ProviderHealthCheck), ctx, hostname)
+}
+
 // MessageV1Hook mocks base method.
 func (m *MockRequestHandler) MessageV1Hook(ctx context.Context, hm *hook.Hook) error {
 	m.ctrl.T.Helper()
