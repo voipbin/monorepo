@@ -799,6 +799,13 @@ const (
 	RegistrarManagerAuthTypeIP    RegistrarManagerAuthType = "ip"
 )
 
+// Defines values for RouteManagerProviderHealthStatus.
+const (
+	RouteManagerProviderHealthStatusHealthy   RouteManagerProviderHealthStatus = "healthy"
+	RouteManagerProviderHealthStatusUnhealthy RouteManagerProviderHealthStatus = "unhealthy"
+	RouteManagerProviderHealthStatusUnknown   RouteManagerProviderHealthStatus = "unknown"
+)
+
 // Defines values for RouteManagerProviderType.
 const (
 	RouteManagerProviderTypeSIP RouteManagerProviderType = "sip"
@@ -3863,6 +3870,12 @@ type RouteManagerProvider struct {
 	// Detail The details about the provider.
 	Detail *string `json:"detail,omitempty"`
 
+	// HealthCheckedAt The timestamp of the last successful health check probe.
+	HealthCheckedAt *string `json:"health_checked_at,omitempty"`
+
+	// HealthStatus The health status of the provider as determined by periodic SIP OPTIONS probes.
+	HealthStatus *RouteManagerProviderHealthStatus `json:"health_status,omitempty"`
+
 	// Hostname The destination hostname for the provider.
 	Hostname *string `json:"hostname,omitempty"`
 
@@ -3893,6 +3906,9 @@ type RouteManagerProvider struct {
 	// Type Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
 	Type *RouteManagerProviderType `json:"type,omitempty"`
 }
+
+// RouteManagerProviderHealthStatus The health status of the provider as determined by periodic SIP OPTIONS probes.
+type RouteManagerProviderHealthStatus string
 
 // RouteManagerProviderType Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
 type RouteManagerProviderType string
