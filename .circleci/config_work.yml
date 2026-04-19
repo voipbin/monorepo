@@ -166,6 +166,10 @@ parameters:
     type: boolean
     default: false
 
+  run-voip-kamailio-proxy:
+    type: boolean
+    default: false
+
 
 #########################################################################################################################################################################
 # workflows
@@ -760,6 +764,20 @@ workflows:
           <<: *context_production
           requires:
             - voip-rtpengine-proxy-test
+
+  voip-kamailio-proxy:
+    when:
+      or: [<< pipeline.parameters.run-voip-kamailio-proxy >>]
+    jobs:
+      - build-approval:
+          type: approval
+      - voip-kamailio-proxy-test:
+          requires:
+            - build-approval
+      - voip-kamailio-proxy-build:
+          <<: *context_production
+          requires:
+            - voip-kamailio-proxy-test
 
 
 #########################################################################################################################################################################
@@ -1684,6 +1702,23 @@ jobs:
           project-id: voipbin
           project-repository: voip-rtpengine-proxy
           source-directory: voip-rtpengine-proxy
+
+  # voip-kamailio-proxy
+  voip-kamailio-proxy-test:
+    docker: *go_image
+    resource_class: small
+    steps:
+      - go-test:
+          source-directory: voip-kamailio-proxy
+
+  voip-kamailio-proxy-build:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - docker-build:
+          project-id: voipbin
+          project-repository: voip-kamailio-proxy
+          source-directory: voip-kamailio-proxy
 
 
 #########################################################################################################################################################################

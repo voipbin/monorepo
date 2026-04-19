@@ -50,4 +50,5 @@ workflows:
             bin-webhook-manager/.*      run-bin-webhook-manager true
 
             voip-asterisk-proxy/.*      run-voip-asterisk-proxy true
+            voip-kamailio-proxy/.*      run-voip-kamailio-proxy true
             voip-rtpengine-proxy/.*     run-voip-rtpengine-proxy true
