@@ -17,6 +17,10 @@ type HealthCheckResult struct {
 	ResponseCode string // SIP response code e.g. "200", "404", or "timeout"
 }
 
+// SIPChecker is a function type for sending SIP OPTIONS health checks.
+// Using a function type allows injection of test stubs without a full interface.
+type SIPChecker func(ctx context.Context, hostname string, timeout time.Duration) (*HealthCheckResult, error)
+
 // SendOptionsCheck sends SIP OPTIONS to hostname:5060 via UDP.
 // Returns healthy=true for any SIP response; healthy=false on timeout/error.
 // The error return is always nil — errors are converted to unhealthy results.
@@ -59,12 +63,14 @@ func SendOptionsCheck(ctx context.Context, hostname string, timeout time.Duratio
 			"Call-ID: %s@%s\r\n"+
 			"CSeq: 1 OPTIONS\r\n"+
 			"Max-Forwards: 70\r\n"+
+			"Contact: <sip:healthcheck@%s:%d>\r\n"+
 			"Content-Length: 0\r\n\r\n",
 		hostname,
 		localIP, localPort, branch,
 		localIP, tag,
 		hostname,
 		callID, localIP,
+		localIP, localPort,
 	)
 
 	if err := conn.SetDeadline(time.Now().Add(timeout)); err != nil {

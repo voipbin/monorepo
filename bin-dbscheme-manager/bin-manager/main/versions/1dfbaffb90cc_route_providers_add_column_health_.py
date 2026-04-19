@@ -19,10 +19,7 @@ depends_on = None
 def upgrade():
     op.execute("""
         ALTER TABLE route_providers
-        ADD COLUMN health_status VARCHAR(64) NOT NULL DEFAULT 'unknown'
-    """)
-    op.execute("""
-        ALTER TABLE route_providers
+        ADD COLUMN health_status VARCHAR(64) NOT NULL DEFAULT 'unknown',
         ADD COLUMN health_checked_at DATETIME(6)
     """)
 
@@ -30,9 +27,6 @@ def upgrade():
 def downgrade():
     op.execute("""
         ALTER TABLE route_providers
-        DROP COLUMN health_status
-    """)
-    op.execute("""
-        ALTER TABLE route_providers
+        DROP COLUMN health_status,
         DROP COLUMN health_checked_at
     """)

@@ -8,6 +8,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/voip-kamailio-proxy/pkg/siphandler"
 
 	"github.com/sirupsen/logrus"
 )
@@ -21,6 +22,7 @@ type listenHandler struct {
 	sockHandler       sockhandler.SockHandler
 	rabbitQueueListen string
 	sipTimeout        time.Duration
+	sipChecker        siphandler.SIPChecker
 }
 
 var (
@@ -39,21 +41,28 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	rabbitQueueListen string,
 	sipTimeout time.Duration,
+	sipChecker siphandler.SIPChecker,
 ) ListenHandler {
 	return &listenHandler{
 		sockHandler:       sockHandler,
 		rabbitQueueListen: rabbitQueueListen,
 		sipTimeout:        sipTimeout,
+		sipChecker:        sipChecker,
 	}
 }
 
-// Run starts the listen handler in a background goroutine.
+// Run starts the listen handler in a background goroutine with automatic restart on failure.
 func (h *listenHandler) Run() error {
 	log := logrus.WithField("func", "Run")
 
 	go func() {
-		if err := h.listenRun(); err != nil {
-			log.Errorf("Could not execute the listen handler: %v", err)
+		for {
+			if err := h.listenRun(); err != nil {
+				log.Errorf("Listen handler exited with error, restarting in 5s: %v", err)
+			} else {
+				log.Warn("Listen handler exited cleanly, restarting in 1s.")
+			}
+			time.Sleep(5 * time.Second)
 		}
 	}()
 

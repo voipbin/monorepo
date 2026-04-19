@@ -13,3 +13,5 @@ FROM public.ecr.aws/docker/library/alpine:latest
 
 WORKDIR /app/bin/
 COPY --from=build /app/bin /app/bin
+
+ENTRYPOINT ["/app/bin/kamailio-proxy"]

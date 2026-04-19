@@ -6,7 +6,6 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/voip-kamailio-proxy/pkg/listenhandler/request"
-	"monorepo/voip-kamailio-proxy/pkg/siphandler"
 
 	"github.com/sirupsen/logrus"
 )
@@ -30,7 +29,7 @@ func (h *listenHandler) processV1ProvidersHealthPost(ctx context.Context, m *soc
 		return simpleResponse(400), nil
 	}
 
-	result, err := siphandler.SendOptionsCheck(ctx, req.Hostname, h.sipTimeout)
+	result, err := h.sipChecker(ctx, req.Hostname, h.sipTimeout)
 	if err != nil {
 		log.Errorf("Could not send SIP OPTIONS. hostname: %s, err: %v", req.Hostname, err)
 		return simpleResponse(500), nil

@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 	"time"
@@ -10,16 +11,25 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/voip-kamailio-proxy/pkg/listenhandler/request"
+	"monorepo/voip-kamailio-proxy/pkg/siphandler"
 )
+
+// stubHealthyChecker returns a SIPChecker stub that always reports healthy.
+func stubHealthyChecker(_ context.Context, _ string, _ time.Duration) (*siphandler.HealthCheckResult, error) {
+	return &siphandler.HealthCheckResult{Healthy: true, ResponseCode: "200"}, nil
+}
 
 func Test_processV1ProvidersHealthPost(t *testing.T) {
 	tests := []struct {
 		name             string
+		sipChecker       siphandler.SIPChecker
 		request          *sock.Request
 		expectStatusCode int
+		expectStatus     string
 	}{
 		{
-			name: "invalid json body",
+			name:       "invalid json body",
+			sipChecker: nil, // not called
 			request: &sock.Request{
 				URI:    "/v1/providers/health",
 				Method: sock.RequestMethodPost,
@@ -28,13 +38,25 @@ func Test_processV1ProvidersHealthPost(t *testing.T) {
 			expectStatusCode: 400,
 		},
 		{
-			name: "empty hostname",
+			name:       "empty hostname",
+			sipChecker: nil, // not called
 			request: &sock.Request{
 				URI:    "/v1/providers/health",
 				Method: sock.RequestMethodPost,
 				Data:   []byte(`{"hostname": ""}`),
 			},
 			expectStatusCode: 400,
+		},
+		{
+			name:       "healthy provider returns 200 with healthy status",
+			sipChecker: stubHealthyChecker,
+			request: &sock.Request{
+				URI:    "/v1/providers/health",
+				Method: sock.RequestMethodPost,
+				Data:   []byte(`{"hostname": "sip.telnyx.com"}`),
+			},
+			expectStatusCode: 200,
+			expectStatus:     "healthy",
 		},
 	}
 
@@ -48,6 +70,7 @@ func Test_processV1ProvidersHealthPost(t *testing.T) {
 				sockHandler:       mockSock,
 				rabbitQueueListen: "kamailio.request",
 				sipTimeout:        5 * time.Second,
+				sipChecker:        tt.sipChecker,
 			}
 
 			res, err := h.processRequest(tt.request)
@@ -56,6 +79,15 @@ func Test_processV1ProvidersHealthPost(t *testing.T) {
 			}
 			if res.StatusCode != tt.expectStatusCode {
 				t.Errorf("Expected status %d, got %d", tt.expectStatusCode, res.StatusCode)
+			}
+			if tt.expectStatus != "" {
+				var body request.V1ResponseProvidersHealthPost
+				if err := json.Unmarshal(res.Data, &body); err != nil {
+					t.Fatalf("Could not unmarshal response body: %v", err)
+				}
+				if body.Status != tt.expectStatus {
+					t.Errorf("Expected body.status=%q, got %q", tt.expectStatus, body.Status)
+				}
 			}
 		})
 	}
@@ -87,6 +119,7 @@ func Test_processRequest_routing(t *testing.T) {
 				sockHandler:       mockSock,
 				rabbitQueueListen: "kamailio.request",
 				sipTimeout:        5 * time.Second,
+				sipChecker:        nil, // not called for unknown routes
 			}
 
 			res, err := h.processRequest(tt.request)

@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/voip-kamailio-proxy/pkg/listenhandler"
+	"monorepo/voip-kamailio-proxy/pkg/siphandler"
 
 	"github.com/sirupsen/logrus"
 )
@@ -34,6 +35,7 @@ func main() {
 		sockHandler,
 		rabbitMQQueueListen,
 		sipTimeout,
+		siphandler.SIPChecker(siphandler.SendOptionsCheck),
 	)
 
 	if err := listenHandler.Run(); err != nil {
