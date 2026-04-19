@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"monorepo/bin-route-manager/internal/config"
 	"monorepo/bin-route-manager/pkg/cachehandler"
 	"monorepo/bin-route-manager/pkg/dbhandler"
+	"monorepo/bin-route-manager/pkg/healthcheckhandler"
 	"monorepo/bin-route-manager/pkg/listenhandler"
 	"monorepo/bin-route-manager/pkg/providerhandler"
 	"monorepo/bin-route-manager/pkg/routehandler"
@@ -125,6 +127,10 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	routeHandler := routehandler.NewRouteHandler(db, reqHandler, notifyHandler)
 	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler)
+
+	// start background provider health check loop
+	healthChecker := healthcheckhandler.NewHealthCheckHandler(db, reqHandler)
+	go healthChecker.Run(context.Background(), cfg.HealthCheckInterval)
 
 	// run request listener
 	if err := runRequestListen(sockHandler, providerHandler, routeHandler); err != nil {
