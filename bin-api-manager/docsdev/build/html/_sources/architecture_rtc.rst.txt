@@ -31,28 +31,33 @@ VoIPBIN's VoIP stack consists of three main components working together:
     +--------+---------+
              | Distributes to Kamailio Farm
              v
-    +-------------------------------------+
-    |         Kamailio Farm               |
-    |  (Kamailio 1 / Kamailio 2 / ...)   |
-    |                                     |
-    |  o Dispatcher module for            |
-    |    inter-Kamailio balancing         |
-    |  o Single slot -> Asterisk LB       |
-    |    (no per-Asterisk entries)        |
-    +----+--------------------------------+
-         |                       ^
-         | INVITE (new dialog)   | 200 OK / 200 OK(RE-INVITE)
-         v                       |
-    +------------------+   +-----+------------+
-    |  Internal        |   |  Internal        |
-    |  Asterisk LB     |   |  Kamailio LB     |
-    +--------+---------+   +------------------+
-             |                       ^
-             v                       |
-    +------------------+             |
-    |  Asterisk Farm   +-------------+
-    |  (Call PBX)      |  Responses sent to
-    +------------------+  Internal Kamailio LB
+    +--------------------------------------------+
+    |            Kamailio Farm                   |
+    |  (Kamailio 1 / Kamailio 2 / ...)          |
+    |                                            |
+    |  o Dispatcher module for                  |
+    |    inter-Kamailio balancing               |
+    |  o Single slot -> Internal Asterisk LB    |
+    |    (no per-Asterisk entries)              |
+    +------+--------+----------------------------+
+           |        |                    ^
+           |INVITE  |RE-INVITE           | 200 OK / 200 OK(RE-INVITE)
+           |(new    |(in-dialog,         |
+           |dialog) |Route header,       |
+           |        |bypasses LB,        |
+           |        |direct to           |
+           |        |Asterisk(X))        |
+           v        |         +----------+----------+
+    +----------+    |         |  Internal           |
+    | Internal |    |         |  Kamailio LB        |
+    | Asterisk |    |         +---------------------+
+    |    LB    |    |                    ^
+    +-----+----+    |                    |
+          |         v                    |
+          |   +------------------+       |
+          +-->|  Asterisk Farm   +-------+
+              |  (Call PBX)      | Responses sent to
+              +------------------+ Internal Kamailio LB
 
 .. image:: _static/images/architecture_rtc_voip.png
     :alt: Architecture VoIP
@@ -72,9 +77,10 @@ VoIPBIN's VoIP stack consists of three main components working together:
 
 1. **Inbound Signaling**: External Load Balancer distributes incoming SIP traffic to the Kamailio Farm
 2. **New Call Routing**: Kamailio forwards new INVITEs to the Internal Asterisk LB (single dispatcher slot), which distributes to the Asterisk Farm
-3. **Response Path**: Asterisk sends responses (200 OK) to the Internal Kamailio LB, which distributes to any Kamailio instance
-4. **Media Setup**: RTPEngine handles RTP media streams and codec transcoding
-5. **Call Control**: Asterisk manages call state and conference bridges
+3. **RE-INVITE Routing**: Kamailio routes in-dialog RE-INVITEs directly to the specific Asterisk instance using the Route header established during dialog setup, bypassing the Internal Asterisk LB entirely
+4. **Response Path**: Asterisk sends responses (200 OK) to the Internal Kamailio LB, which distributes to any Kamailio instance
+5. **Media Setup**: RTPEngine handles RTP media streams and codec transcoding
+6. **Call Control**: Asterisk manages call state and conference bridges
 
 This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.
 
@@ -618,14 +624,14 @@ through it. Its sole responsibility is provider health monitoring.
 
     Position in Architecture:
 
-    +------------------+     +--------------------+
-    |  Kamailio        |     |  Kamailio Proxy    |
-    |  (SIP signaling) |     |  (management only) |
-    |                  |     |                    |
-    |  Handles INVITE, |     |  o SIP OPTIONS     |
-    |  RE-INVITE, etc. |     |    probes to PSTN  |
-    |                  |     |    providers       |
-    +------------------+     +--------------------+
+    +------------------+     +--------------------+     +--------------------+
+    |  Kamailio        |     |  Kamailio Proxy    |     |  PSTN Provider     |
+    |  (SIP signaling) |     |  (management only) |     |  (Trunk / Carrier) |
+    |                  |     |                    |---->|                    |
+    |  Handles INVITE, |     |  o Sends SIP       |     |  Responds to SIP   |
+    |  RE-INVITE, etc. |     |    OPTIONS to PSTN |<----|  OPTIONS probes    |
+    |                  |     |    providers       |     |  (or times out)    |
+    +------------------+     +--------------------+     +--------------------+
                                        |
                                        | Health status
                                        v
@@ -649,7 +655,7 @@ through it. Its sole responsibility is provider health monitoring.
 
 * **Sidecar deployment**: One Kamailio Proxy per Kamailio instance
 * **No SIP traffic**: Does not proxy or route any call signaling
-* **Passive health checks**: Only sends SIP OPTIONS probes on request
+* **On-demand active probes**: Sends SIP OPTIONS to each provider when triggered by bin-route-manager
 * **Tight coupling with route-manager**: Designed specifically for ``bin-route-manager`` integration
 
 This sidecar design keeps provider health monitoring fully decoupled from SIP call signaling,

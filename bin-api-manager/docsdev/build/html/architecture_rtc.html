@@ -9,7 +9,6 @@
         <title>Real-Time Communication (RTC) &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -214,28 +213,33 @@
 <span class="o">+--------+---------+</span>
          <span class="o">|</span> <span class="n">Distributes</span> <span class="n">to</span> <span class="n">Kamailio</span> <span class="n">Farm</span>
          <span class="n">v</span>
-<span class="o">+-------------------------------------+</span>
-<span class="o">|</span>         <span class="n">Kamailio</span> <span class="n">Farm</span>               <span class="o">|</span>
-<span class="o">|</span>  <span class="p">(</span><span class="n">Kamailio</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">Kamailio</span> <span class="mi">2</span> <span class="o">/</span> <span class="o">...</span><span class="p">)</span>   <span class="o">|</span>
-<span class="o">|</span>                                     <span class="o">|</span>
-<span class="o">|</span>  <span class="n">o</span> <span class="n">Dispatcher</span> <span class="n">module</span> <span class="k">for</span>            <span class="o">|</span>
-<span class="o">|</span>    <span class="n">inter</span><span class="o">-</span><span class="n">Kamailio</span> <span class="n">balancing</span>         <span class="o">|</span>
-<span class="o">|</span>  <span class="n">o</span> <span class="n">Single</span> <span class="n">slot</span> <span class="o">-&gt;</span> <span class="n">Asterisk</span> <span class="n">LB</span>       <span class="o">|</span>
-<span class="o">|</span>    <span class="p">(</span><span class="n">no</span> <span class="n">per</span><span class="o">-</span><span class="n">Asterisk</span> <span class="n">entries</span><span class="p">)</span>        <span class="o">|</span>
-<span class="o">+----+--------------------------------+</span>
-     <span class="o">|</span>                       <span class="o">^</span>
-     <span class="o">|</span> <span class="n">INVITE</span> <span class="p">(</span><span class="n">new</span> <span class="n">dialog</span><span class="p">)</span>   <span class="o">|</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">/</span> <span class="mi">200</span> <span class="n">OK</span><span class="p">(</span><span class="n">RE</span><span class="o">-</span><span class="n">INVITE</span><span class="p">)</span>
-     <span class="n">v</span>                       <span class="o">|</span>
-<span class="o">+------------------+</span>   <span class="o">+-----+------------+</span>
-<span class="o">|</span>  <span class="n">Internal</span>        <span class="o">|</span>   <span class="o">|</span>  <span class="n">Internal</span>        <span class="o">|</span>
-<span class="o">|</span>  <span class="n">Asterisk</span> <span class="n">LB</span>     <span class="o">|</span>   <span class="o">|</span>  <span class="n">Kamailio</span> <span class="n">LB</span>     <span class="o">|</span>
-<span class="o">+--------+---------+</span>   <span class="o">+------------------+</span>
-         <span class="o">|</span>                       <span class="o">^</span>
-         <span class="n">v</span>                       <span class="o">|</span>
-<span class="o">+------------------+</span>             <span class="o">|</span>
-<span class="o">|</span>  <span class="n">Asterisk</span> <span class="n">Farm</span>   <span class="o">+-------------+</span>
-<span class="o">|</span>  <span class="p">(</span><span class="n">Call</span> <span class="n">PBX</span><span class="p">)</span>      <span class="o">|</span>  <span class="n">Responses</span> <span class="n">sent</span> <span class="n">to</span>
-<span class="o">+------------------+</span>  <span class="n">Internal</span> <span class="n">Kamailio</span> <span class="n">LB</span>
+<span class="o">+--------------------------------------------+</span>
+<span class="o">|</span>            <span class="n">Kamailio</span> <span class="n">Farm</span>                   <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">Kamailio</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">Kamailio</span> <span class="mi">2</span> <span class="o">/</span> <span class="o">...</span><span class="p">)</span>          <span class="o">|</span>
+<span class="o">|</span>                                            <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Dispatcher</span> <span class="n">module</span> <span class="k">for</span>                  <span class="o">|</span>
+<span class="o">|</span>    <span class="n">inter</span><span class="o">-</span><span class="n">Kamailio</span> <span class="n">balancing</span>               <span class="o">|</span>
+<span class="o">|</span>  <span class="n">o</span> <span class="n">Single</span> <span class="n">slot</span> <span class="o">-&gt;</span> <span class="n">Internal</span> <span class="n">Asterisk</span> <span class="n">LB</span>    <span class="o">|</span>
+<span class="o">|</span>    <span class="p">(</span><span class="n">no</span> <span class="n">per</span><span class="o">-</span><span class="n">Asterisk</span> <span class="n">entries</span><span class="p">)</span>              <span class="o">|</span>
+<span class="o">+------+--------+----------------------------+</span>
+       <span class="o">|</span>        <span class="o">|</span>                    <span class="o">^</span>
+       <span class="o">|</span><span class="n">INVITE</span>  <span class="o">|</span><span class="n">RE</span><span class="o">-</span><span class="n">INVITE</span>           <span class="o">|</span> <span class="mi">200</span> <span class="n">OK</span> <span class="o">/</span> <span class="mi">200</span> <span class="n">OK</span><span class="p">(</span><span class="n">RE</span><span class="o">-</span><span class="n">INVITE</span><span class="p">)</span>
+       <span class="o">|</span><span class="p">(</span><span class="n">new</span>    <span class="o">|</span><span class="p">(</span><span class="ow">in</span><span class="o">-</span><span class="n">dialog</span><span class="p">,</span>         <span class="o">|</span>
+       <span class="o">|</span><span class="n">dialog</span><span class="p">)</span> <span class="o">|</span><span class="n">Route</span> <span class="n">header</span><span class="p">,</span>       <span class="o">|</span>
+       <span class="o">|</span>        <span class="o">|</span><span class="n">bypasses</span> <span class="n">LB</span><span class="p">,</span>        <span class="o">|</span>
+       <span class="o">|</span>        <span class="o">|</span><span class="n">direct</span> <span class="n">to</span>           <span class="o">|</span>
+       <span class="o">|</span>        <span class="o">|</span><span class="n">Asterisk</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>        <span class="o">|</span>
+       <span class="n">v</span>        <span class="o">|</span>         <span class="o">+----------+----------+</span>
+<span class="o">+----------+</span>    <span class="o">|</span>         <span class="o">|</span>  <span class="n">Internal</span>           <span class="o">|</span>
+<span class="o">|</span> <span class="n">Internal</span> <span class="o">|</span>    <span class="o">|</span>         <span class="o">|</span>  <span class="n">Kamailio</span> <span class="n">LB</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Asterisk</span> <span class="o">|</span>    <span class="o">|</span>         <span class="o">+---------------------+</span>
+<span class="o">|</span>    <span class="n">LB</span>    <span class="o">|</span>    <span class="o">|</span>                    <span class="o">^</span>
+<span class="o">+-----+----+</span>    <span class="o">|</span>                    <span class="o">|</span>
+      <span class="o">|</span>         <span class="n">v</span>                    <span class="o">|</span>
+      <span class="o">|</span>   <span class="o">+------------------+</span>       <span class="o">|</span>
+      <span class="o">+--&gt;|</span>  <span class="n">Asterisk</span> <span class="n">Farm</span>   <span class="o">+-------+</span>
+          <span class="o">|</span>  <span class="p">(</span><span class="n">Call</span> <span class="n">PBX</span><span class="p">)</span>      <span class="o">|</span> <span class="n">Responses</span> <span class="n">sent</span> <span class="n">to</span>
+          <span class="o">+------------------+</span> <span class="n">Internal</span> <span class="n">Kamailio</span> <span class="n">LB</span>
 </pre></div>
 </div>
 <img alt="Architecture VoIP" src="_images/architecture_rtc_voip.png" />
@@ -254,6 +258,7 @@
 <ol class="arabic simple">
 <li><p><strong>Inbound Signaling</strong>: External Load Balancer distributes incoming SIP traffic to the Kamailio Farm</p></li>
 <li><p><strong>New Call Routing</strong>: Kamailio forwards new INVITEs to the Internal Asterisk LB (single dispatcher slot), which distributes to the Asterisk Farm</p></li>
+<li><p><strong>RE-INVITE Routing</strong>: Kamailio routes in-dialog RE-INVITEs directly to the specific Asterisk instance using the Route header established during dialog setup, bypassing the Internal Asterisk LB entirely</p></li>
 <li><p><strong>Response Path</strong>: Asterisk sends responses (200 OK) to the Internal Kamailio LB, which distributes to any Kamailio instance</p></li>
 <li><p><strong>Media Setup</strong>: RTPEngine handles RTP media streams and codec transcoding</p></li>
 <li><p><strong>Call Control</strong>: Asterisk manages call state and conference bridges</p></li>
@@ -614,7 +619,7 @@ wrong Asterisk instance.</p>
 <h2>SIP Session Recovery<a class="headerlink" href="#sip-session-recovery" title="Link to this heading"></a></h2>
 <p>VoIPBIN provides <strong>SIP session recovery</strong> to maintain active SIP sessions even when an Asterisk instance crashes unexpectedly. This feature prevents call drops, conference exits, and media failures by making the client perceive the session as uninterrupted.</p>
 <div class="video_wrapper" style="">
-<iframe allowfullscreen="true" referrerpolicy="strict-origin-when-cross-origin" src="https://www.youtube.com/embed/GMd-pOwyrtA" style="border: 0; height: 345px; width: 560px">
+<iframe allowfullscreen="true" src="https://www.youtube.com/embed/GMd-pOwyrtA" style="border: 0; height: 345px; width: 560px">
 </iframe></div><section id="how-it-works">
 <h3>How It Works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h3>
 <p>When an Asterisk instance crashes, all SIP sessions managed by that instance disappear immediately. Without a BYE message, clients experience unexpected termination. VoIPBIN recovers sessions through an automated process:</p>
@@ -700,7 +705,7 @@ wrong Asterisk instance.</p>
 <img alt="SIP Session Recovery Diagram" src="_images/architecture_rtc_sip_session_recovery_diagram.png" />
 <p><strong>Patch Implementation:</strong></p>
 <p>This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Extract</span> <span class="n">recovery</span> <span class="n">variables</span> <span class="kn">from</span><span class="w"> </span><span class="nn">channel</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Extract</span> <span class="n">recovery</span> <span class="n">variables</span> <span class="kn">from</span> <span class="nn">channel</span>
 <span class="n">val_from_display_c_str</span> <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_DISPLAY&quot;</span><span class="p">);</span>
 <span class="n">val_from_uri_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_URI&quot;</span><span class="p">);</span>
 <span class="n">val_from_tag_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_TAG&quot;</span><span class="p">);</span>
@@ -734,14 +739,14 @@ Kamailio instance. It is <strong>not</strong> in the SIP signaling path – no c
 through it. Its sole responsibility is provider health monitoring.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Position</span> <span class="ow">in</span> <span class="n">Architecture</span><span class="p">:</span>
 
-<span class="o">+------------------+</span>     <span class="o">+--------------------+</span>
-<span class="o">|</span>  <span class="n">Kamailio</span>        <span class="o">|</span>     <span class="o">|</span>  <span class="n">Kamailio</span> <span class="n">Proxy</span>    <span class="o">|</span>
-<span class="o">|</span>  <span class="p">(</span><span class="n">SIP</span> <span class="n">signaling</span><span class="p">)</span> <span class="o">|</span>     <span class="o">|</span>  <span class="p">(</span><span class="n">management</span> <span class="n">only</span><span class="p">)</span> <span class="o">|</span>
-<span class="o">|</span>                  <span class="o">|</span>     <span class="o">|</span>                    <span class="o">|</span>
-<span class="o">|</span>  <span class="n">Handles</span> <span class="n">INVITE</span><span class="p">,</span> <span class="o">|</span>     <span class="o">|</span>  <span class="n">o</span> <span class="n">SIP</span> <span class="n">OPTIONS</span>     <span class="o">|</span>
-<span class="o">|</span>  <span class="n">RE</span><span class="o">-</span><span class="n">INVITE</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span> <span class="o">|</span>     <span class="o">|</span>    <span class="n">probes</span> <span class="n">to</span> <span class="n">PSTN</span>  <span class="o">|</span>
-<span class="o">|</span>                  <span class="o">|</span>     <span class="o">|</span>    <span class="n">providers</span>       <span class="o">|</span>
-<span class="o">+------------------+</span>     <span class="o">+--------------------+</span>
+<span class="o">+------------------+</span>     <span class="o">+--------------------+</span>     <span class="o">+--------------------+</span>
+<span class="o">|</span>  <span class="n">Kamailio</span>        <span class="o">|</span>     <span class="o">|</span>  <span class="n">Kamailio</span> <span class="n">Proxy</span>    <span class="o">|</span>     <span class="o">|</span>  <span class="n">PSTN</span> <span class="n">Provider</span>     <span class="o">|</span>
+<span class="o">|</span>  <span class="p">(</span><span class="n">SIP</span> <span class="n">signaling</span><span class="p">)</span> <span class="o">|</span>     <span class="o">|</span>  <span class="p">(</span><span class="n">management</span> <span class="n">only</span><span class="p">)</span> <span class="o">|</span>     <span class="o">|</span>  <span class="p">(</span><span class="n">Trunk</span> <span class="o">/</span> <span class="n">Carrier</span><span class="p">)</span> <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>     <span class="o">|</span>                    <span class="o">|----&gt;|</span>                    <span class="o">|</span>
+<span class="o">|</span>  <span class="n">Handles</span> <span class="n">INVITE</span><span class="p">,</span> <span class="o">|</span>     <span class="o">|</span>  <span class="n">o</span> <span class="n">Sends</span> <span class="n">SIP</span>       <span class="o">|</span>     <span class="o">|</span>  <span class="n">Responds</span> <span class="n">to</span> <span class="n">SIP</span>   <span class="o">|</span>
+<span class="o">|</span>  <span class="n">RE</span><span class="o">-</span><span class="n">INVITE</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span> <span class="o">|</span>     <span class="o">|</span>    <span class="n">OPTIONS</span> <span class="n">to</span> <span class="n">PSTN</span> <span class="o">|&lt;----|</span>  <span class="n">OPTIONS</span> <span class="n">probes</span>    <span class="o">|</span>
+<span class="o">|</span>                  <span class="o">|</span>     <span class="o">|</span>    <span class="n">providers</span>       <span class="o">|</span>     <span class="o">|</span>  <span class="p">(</span><span class="ow">or</span> <span class="n">times</span> <span class="n">out</span><span class="p">)</span>    <span class="o">|</span>
+<span class="o">+------------------+</span>     <span class="o">+--------------------+</span>     <span class="o">+--------------------+</span>
                                    <span class="o">|</span>
                                    <span class="o">|</span> <span class="n">Health</span> <span class="n">status</span>
                                    <span class="n">v</span>
@@ -766,7 +771,7 @@ through it. Its sole responsibility is provider health monitoring.</p>
 <ul class="simple">
 <li><p><strong>Sidecar deployment</strong>: One Kamailio Proxy per Kamailio instance</p></li>
 <li><p><strong>No SIP traffic</strong>: Does not proxy or route any call signaling</p></li>
-<li><p><strong>Passive health checks</strong>: Only sends SIP OPTIONS probes on request</p></li>
+<li><p><strong>On-demand active probes</strong>: Sends SIP OPTIONS to each provider when triggered by bin-route-manager</p></li>
 <li><p><strong>Tight coupling with route-manager</strong>: Designed specifically for <code class="docutils literal notranslate"><span class="pre">bin-route-manager</span></code> integration</p></li>
 </ul>
 <p>This sidecar design keeps provider health monitoring fully decoupled from SIP call signaling,
@@ -844,7 +849,7 @@ ensuring that health probe traffic never affects call quality or latency.</p>
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -852,11 +857,11 @@ ensuring that health probe traffic never affects call quality or latency.</p>
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>
