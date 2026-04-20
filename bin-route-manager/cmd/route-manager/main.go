@@ -95,11 +95,15 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := runService(sqlDB, cache); err != nil {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	if err := runService(ctx, sqlDB, cache); err != nil {
+		cancel()
 		log.Errorf("Run func has finished. err: %v", err)
 		return err
 	}
 	<-chDone
+	cancel()
 	return nil
 }
 
@@ -111,7 +115,7 @@ func signalHandler() {
 }
 
 // runService runs the route-manager
-func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+func runService(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	cfg := config.Get()
 
 	// dbhandler
@@ -130,7 +134,7 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	// start background provider health check loop
 	healthChecker := healthcheckhandler.NewHealthCheckHandler(db, reqHandler)
-	go healthChecker.Run(context.Background(), cfg.HealthCheckInterval)
+	go healthChecker.Run(ctx, cfg.HealthCheckInterval)
 
 	// run request listener
 	if err := runRequestListen(sockHandler, providerHandler, routeHandler); err != nil {

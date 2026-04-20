@@ -3,6 +3,7 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -17,6 +18,11 @@ import (
 // stubHealthyChecker returns a SIPChecker stub that always reports healthy.
 func stubHealthyChecker(_ context.Context, _ string, _ time.Duration) (*siphandler.HealthCheckResult, error) {
 	return &siphandler.HealthCheckResult{Healthy: true, ResponseCode: "200"}, nil
+}
+
+// stubErrorChecker returns a SIPChecker stub that always returns an error.
+func stubErrorChecker(_ context.Context, _ string, _ time.Duration) (*siphandler.HealthCheckResult, error) {
+	return nil, fmt.Errorf("sip dial error")
 }
 
 func Test_processV1ProvidersHealthPost(t *testing.T) {
@@ -57,6 +63,16 @@ func Test_processV1ProvidersHealthPost(t *testing.T) {
 			},
 			expectStatusCode: 200,
 			expectStatus:     "healthy",
+		},
+		{
+			name:       "sip checker error returns 500",
+			sipChecker: stubErrorChecker,
+			request: &sock.Request{
+				URI:    "/v1/providers/health",
+				Method: sock.RequestMethodPost,
+				Data:   []byte(`{"hostname": "sip.telnyx.com"}`),
+			},
+			expectStatusCode: 500,
 		},
 	}
 
