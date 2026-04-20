@@ -17,6 +17,8 @@ const (
 	defaultRabbitMQAddress     = "amqp://guest:guest@localhost:5672"
 	defaultRabbitMQQueueListen = "voip.kamailio.request"
 
+	defaultInterfaceName = "eth0"
+
 	defaultPrometheusEndpoint      = "/metrics"
 	defaultPrometheusListenAddress = ":2112"
 
@@ -37,6 +39,7 @@ func initVariable() {
 
 	pflag.String("rabbitmq_address", defaultRabbitMQAddress, "Address of the RabbitMQ server")
 	pflag.String("rabbitmq_queue_listen", defaultRabbitMQQueueListen, "Queue name for listening to health check requests")
+	pflag.String("interface_name", defaultInterfaceName, "Network interface name used to derive the kamailio instance ID")
 	pflag.String("prometheus_endpoint", defaultPrometheusEndpoint, "URL for the Prometheus metrics endpoint")
 	pflag.String("prometheus_listen_address", defaultPrometheusListenAddress, "Address for Prometheus to listen on")
 	pflag.String("sip_timeout", defaultSIPTimeout, "Timeout for SIP OPTIONS health check (e.g. 5s, 3s)")
@@ -62,6 +65,16 @@ func initVariable() {
 		panic(errEnv)
 	}
 	rabbitMQQueueListen = viper.GetString("rabbitmq_queue_listen")
+
+	if errFlag := viper.BindPFlag("interface_name", pflag.Lookup("interface_name")); errFlag != nil { //nolint
+		logrus.Errorf("Error binding flag: %v", errFlag)
+		panic(errFlag)
+	}
+	if errEnv := viper.BindEnv("interface_name", "INTERFACE_NAME"); errEnv != nil { //nolint
+		logrus.Errorf("Error binding env: %v", errEnv)
+		panic(errEnv)
+	}
+	interfaceName = viper.GetString("interface_name")
 
 	if errFlag := viper.BindPFlag("prometheus_endpoint", pflag.Lookup("prometheus_endpoint")); errFlag != nil { //nolint
 		logrus.Errorf("Error binding flag: %v", errFlag)

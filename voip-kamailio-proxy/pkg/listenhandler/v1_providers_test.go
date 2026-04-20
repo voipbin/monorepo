@@ -84,7 +84,7 @@ func Test_processV1ProvidersHealthPost(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			h := &listenHandler{
 				sockHandler:       mockSock,
-				rabbitQueueListen: "voip.kamailio.request",
+				rabbitQueueListenPermanent: "voip.kamailio.request",
 				sipTimeout:        5 * time.Second,
 				sipChecker:        tt.sipChecker,
 			}
@@ -133,7 +133,7 @@ func Test_processRequest_routing(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			h := &listenHandler{
 				sockHandler:       mockSock,
-				rabbitQueueListen: "voip.kamailio.request",
+				rabbitQueueListenPermanent: "voip.kamailio.request",
 				sipTimeout:        5 * time.Second,
 				sipChecker:        nil, // not called for unknown routes
 			}
