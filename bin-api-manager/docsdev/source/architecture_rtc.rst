@@ -606,3 +606,48 @@ The complete implementation is available on GitHub:
 * **State Preservation**: All call state and variables restored
 * **Media Continuity**: Audio/video streams resume without gaps
 * **Flow Continuity**: Call flow resumes at exact point before crash
+
+Kamailio Proxy - Provider Health Monitor
+-----------------------------------------
+
+The **Kamailio Proxy** is a lightweight Go sidecar service that runs alongside each
+Kamailio instance. It is **not** in the SIP signaling path -- no call traffic passes
+through it. Its sole responsibility is provider health monitoring.
+
+.. code::
+
+    Position in Architecture:
+
+    +------------------+     +--------------------+
+    |  Kamailio        |     |  Kamailio Proxy    |
+    |  (SIP signaling) |     |  (management only) |
+    |                  |     |                    |
+    |  Handles INVITE, |     |  o SIP OPTIONS     |
+    |  RE-INVITE, etc. |     |    probes to PSTN  |
+    |                  |     |    providers       |
+    +------------------+     +--------------------+
+                                       |
+                                       | Health status
+                                       v
+                              +--------------------+
+                              | bin-route-manager  |
+                              | (skips unhealthy   |
+                              |  providers when    |
+                              |  routing calls)    |
+                              +--------------------+
+
+**How it works:**
+
+1. ``bin-route-manager`` periodically requests a health check for each configured provider
+2. Kamailio Proxy sends a SIP ``OPTIONS`` request to the provider
+3. The provider responds (or times out)
+4. Kamailio Proxy reports the health result back to ``bin-route-manager``
+5. Route manager marks the provider healthy or unhealthy accordingly
+6. Outbound calls avoid unhealthy providers until they recover
+
+**Key characteristics:**
+
+* **Sidecar deployment**: One Kamailio Proxy per Kamailio instance
+* **No SIP traffic**: Does not proxy or route any call signaling
+* **Passive health checks**: Only sends SIP OPTIONS probes on request
+* **Tight coupling with route-manager**: Designed specifically for ``bin-route-manager`` integration
