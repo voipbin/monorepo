@@ -21,7 +21,7 @@ const (
 	QueueNameAsteriskEventAll QueueName = "asterisk.all.event"
 
 	// kamailio
-	QueueNameKamailioRequest QueueName = "kamailio.request"
+	QueueNameKamailioRequest QueueName = "voip.kamailio.request"
 
 	// agent-manager
 	QueueNameAgentEvent     QueueName = "bin-manager.agent-manager.event"

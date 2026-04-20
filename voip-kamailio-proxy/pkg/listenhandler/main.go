@@ -19,10 +19,11 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	sockHandler       sockhandler.SockHandler
-	rabbitQueueListen string
-	sipTimeout        time.Duration
-	sipChecker        siphandler.SIPChecker
+	sockHandler                   sockhandler.SockHandler
+	rabbitQueueListenPermanent    string
+	rabbitQueueListenVolatile     string
+	sipTimeout                    time.Duration
+	sipChecker                    siphandler.SIPChecker
 }
 
 var (
@@ -39,54 +40,62 @@ func simpleResponse(code int) *sock.Response {
 // NewListenHandler returns a ListenHandler.
 func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
-	rabbitQueueListen string,
+	rabbitQueueListenPermanent string,
+	rabbitQueueListenVolatile string,
 	sipTimeout time.Duration,
 	sipChecker siphandler.SIPChecker,
 ) ListenHandler {
 	return &listenHandler{
-		sockHandler:       sockHandler,
-		rabbitQueueListen: rabbitQueueListen,
-		sipTimeout:        sipTimeout,
-		sipChecker:        sipChecker,
+		sockHandler:                sockHandler,
+		rabbitQueueListenPermanent: rabbitQueueListenPermanent,
+		rabbitQueueListenVolatile:  rabbitQueueListenVolatile,
+		sipTimeout:                 sipTimeout,
+		sipChecker:                 sipChecker,
 	}
 }
 
-// Run starts the listen handler in a background goroutine with automatic restart on failure.
+// Run starts the listen handler in a background goroutine.
 func (h *listenHandler) Run() error {
 	log := logrus.WithField("func", "Run")
 
 	go func() {
-		for {
-			if err := h.listenRun(); err != nil {
-				log.Errorf("Listen handler exited with error, restarting in 5s: %v", err)
-			} else {
-				log.Warn("Listen handler exited cleanly, restarting in 1s.")
-			}
-			time.Sleep(5 * time.Second)
+		if err := h.listenRun(); err != nil {
+			log.Errorf("Could not execute the listen handler: %v", err)
 		}
 	}()
 
 	return nil
 }
 
-// listenRun creates the queue and starts consuming RPC messages.
+// listenRun creates both queues and starts consuming RPC messages from each.
 func (h *listenHandler) listenRun() error {
 	log := logrus.WithField("func", "listenRun")
 
-	if err := h.sockHandler.QueueCreate(h.rabbitQueueListen, "normal"); err != nil {
-		return fmt.Errorf("could not declare the queue for listenHandler. err: %v", err)
+	// create permanent (durable) queue
+	if err := h.sockHandler.QueueCreate(h.rabbitQueueListenPermanent, "normal"); err != nil {
+		return fmt.Errorf("could not declare permanent queue for listenHandler. err: %v", err)
 	}
 
-	log.Infof("Running the request listener. queue: %s", h.rabbitQueueListen)
-	if err := h.sockHandler.ConsumeRPC(
-		context.Background(),
-		h.rabbitQueueListen,
-		"kamailio-proxy",
-		false, false, false,
-		10,
-		h.processRequest,
-	); err != nil {
-		return fmt.Errorf("could not consume RPC: %v", err)
+	// create volatile (auto-delete) queue
+	if err := h.sockHandler.QueueCreate(h.rabbitQueueListenVolatile, "volatile"); err != nil {
+		return fmt.Errorf("could not declare volatile queue for listenHandler. err: %v", err)
+	}
+
+	listenQueues := []string{h.rabbitQueueListenPermanent, h.rabbitQueueListenVolatile}
+	for _, queue := range listenQueues {
+		log.Infof("Running the request listener. queue: %s", queue)
+		go func(q string) {
+			if err := h.sockHandler.ConsumeRPC(
+				context.Background(),
+				q,
+				"kamailio-proxy",
+				false, false, false,
+				10,
+				h.processRequest,
+			); err != nil {
+				log.Errorf("Could not consume RPC from queue %s: %v", q, err)
+			}
+		}(queue)
 	}
 
 	return nil

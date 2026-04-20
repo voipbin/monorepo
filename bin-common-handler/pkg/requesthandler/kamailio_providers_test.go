@@ -27,7 +27,7 @@ func Test_KamailioV1ProviderHealthCheck(t *testing.T) {
 			name:     "healthy provider",
 			hostname: "sip.example.com",
 
-			expectTarget: "kamailio.request",
+			expectTarget: "voip.kamailio.request",
 			expectRequest: &sock.Request{
 				URI:      "/v1/providers/health",
 				Method:   sock.RequestMethodPost,
@@ -50,7 +50,7 @@ func Test_KamailioV1ProviderHealthCheck(t *testing.T) {
 			name:     "unhealthy provider - timeout",
 			hostname: "sip.unreachable.com",
 
-			expectTarget: "kamailio.request",
+			expectTarget: "voip.kamailio.request",
 			expectRequest: &sock.Request{
 				URI:      "/v1/providers/health",
 				Method:   sock.RequestMethodPost,
