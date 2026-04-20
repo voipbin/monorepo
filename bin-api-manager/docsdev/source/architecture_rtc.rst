@@ -16,27 +16,43 @@ VoIPBIN's VoIP stack consists of three main components working together:
 
 .. code::
 
-    SIP Traffic Flow:
+    Full SIP Signaling Topology:
 
-    External Client                                      Internal Services
-         |                                                      |
-         | SIP (INVITE, etc.)                                   |
-         v                                                      v
-    +----------+         +----------+         +------------------+
-    |   Load   |  SIP    | Kamailio |  SIP    |    Asterisk      |
-    | Balancer |<------->|   Farm   |<------->|     (Call)       |
-    +----------+         +-----+----+         +--------+---------+
-                               |                       |
-                               | RTP Control           | RTP Control
-                               v                       |
-                         +----------+                  |
-                         | RTPEngine|                  |
-                         |   Farm   |<-----------------+
-                         +-----+----+  Media
-                               |
-                               | RTP (Audio/Video)
-                               v
-                         External Client
+    +------------------+
+    |  SIP/WebRTC      |
+    |  Client          |
+    +--------+---------+
+             | INVITE / RE-INVITE / 200 OK
+             v
+    +------------------+
+    |  External        |
+    |  Load Balancer   |  <-- Internet-facing edge
+    |  (Signal GW)     |
+    +--------+---------+
+             | Distributes to Kamailio Farm
+             v
+    +-------------------------------------+
+    |         Kamailio Farm               |
+    |  (Kamailio 1 / Kamailio 2 / ...)   |
+    |                                     |
+    |  o Dispatcher module for            |
+    |    inter-Kamailio balancing         |
+    |  o Single slot -> Asterisk LB       |
+    |    (no per-Asterisk entries)        |
+    +----+--------------------------------+
+         |                       ^
+         | INVITE (new dialog)   | 200 OK / 200 OK(RE-INVITE)
+         v                       |
+    +------------------+   +-----+------------+
+    |  Internal        |   |  Internal        |
+    |  Asterisk LB     |   |  Kamailio LB     |
+    +--------+---------+   +------------------+
+             |                       ^
+             v                       |
+    +------------------+             |
+    |  Asterisk Farm   +-------------+
+    |  (Call PBX)      |  Responses sent to
+    +------------------+  Internal Kamailio LB
 
 .. image:: _static/images/architecture_rtc_voip.png
     :alt: Architecture VoIP
@@ -48,13 +64,17 @@ VoIPBIN's VoIP stack consists of three main components working together:
 * **Separated Concerns**: Signaling (Kamailio) and media (RTPEngine, Asterisk) are independent
 * **Zero-Downtime**: Load balancer redirects traffic when instances fail
 * **Horizontal Scaling**: Add more instances of any component to handle increased load
+* **Dispatcher-Based Kamailio Distribution**: Kamailio instances use the built-in dispatcher module to balance traffic across the farm
+* **Single-Slot Asterisk Routing**: Kamailio routes to Asterisk via a single dispatcher slot pointing to the Internal Asterisk LB -- not individual Asterisk addresses
+* **Bidirectional Decoupling**: Asterisk sends responses to the Internal Kamailio LB, not to individual Kamailios. Neither side knows the other's instance list, enabling independent scaling of both farms at any time
 
 **Traffic Flow:**
 
-1. **SIP Signaling**: Load balancer distributes SIP traffic to Kamailio instances
-2. **Call Routing**: Kamailio routes signaling to appropriate Asterisk instance
-3. **Media Setup**: RTPEngine handles RTP media streams and transcoding
-4. **Call Control**: Asterisk manages call state and conference bridges
+1. **Inbound Signaling**: External Load Balancer distributes incoming SIP traffic to the Kamailio Farm
+2. **New Call Routing**: Kamailio forwards new INVITEs to the Internal Asterisk LB (single dispatcher slot), which distributes to the Asterisk Farm
+3. **Response Path**: Asterisk sends responses (200 OK) to the Internal Kamailio LB, which distributes to any Kamailio instance
+4. **Media Setup**: RTPEngine handles RTP media streams and codec transcoding
+5. **Call Control**: Asterisk manages call state and conference bridges
 
 This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.
 
