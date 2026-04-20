@@ -178,6 +178,54 @@ a **bidirectionally decoupled architecture**:
 * Add or remove Kamailio instances -- no Asterisk config change required
 * Both farms can be scaled independently at any time without coordination
 
+RE-INVITE and Within-Dialog Routing
+-------------------------------------
+
+For requests within an established SIP dialog (such as RE-INVITE for media renegotiation
+or hold/resume), VoIPBIN uses a **direct routing** strategy that bypasses the Internal
+Asterisk LB entirely.
+
+**Why direct routing matters:**
+
+When an INVITE creates a new dialog, Asterisk records its own address in the SIP
+``Record-Route`` header returned to the client. All subsequent in-dialog requests
+(RE-INVITE, BYE, etc.) carry a ``Route`` header derived from this value, pointing
+directly to the specific Asterisk instance that owns the dialog.
+
+Kamailio reads this ``Route`` header and forwards the request straight to that
+Asterisk instance -- skipping the Internal Asterisk LB completely.
+
+.. code::
+
+    New INVITE (dialog setup):
+
+    Client -> External LB -> Kamailio(any)
+           -> Internal Asterisk LB -> Asterisk(X)
+                                          |
+                                Records own address
+                                in Record-Route header
+
+    RE-INVITE (within dialog):
+
+    Client -> External LB -> Kamailio(any)
+           -> Asterisk(X) directly   <-- Route header bypasses LB
+             (correct instance, guaranteed)
+
+**Benefits:**
+
+* **Dialog integrity**: RE-INVITE always reaches the Asterisk that owns the session
+* **No stateful proxy needed**: Kamailio remains fully stateless -- it just reads the Route header
+* **No coordination**: Neither the LB nor Kamailio needs to track which Asterisk owns which dialog
+* **Independent scaling**: Adding or removing Asterisk pods during live calls does not affect existing dialogs
+
+.. note:: **AI Implementation Hint**
+
+   When integrating SIP endpoints, ensure your SIP stack correctly handles the
+   ``Record-Route`` and ``Route`` headers returned by VoIPBIN. Most standard SIP
+   libraries (PJSIP, Sofia-SIP, etc.) handle this automatically. Do not strip or
+   modify these headers, as doing so will cause RE-INVITEs to be routed to the
+   wrong Asterisk instance.
+
 Asterisk - Media and Call Processing
 -------------------------------------
 
