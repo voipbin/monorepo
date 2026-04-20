@@ -54,18 +54,13 @@ func NewListenHandler(
 	}
 }
 
-// Run starts the listen handler in a background goroutine with automatic restart on failure.
+// Run starts the listen handler in a background goroutine.
 func (h *listenHandler) Run() error {
 	log := logrus.WithField("func", "Run")
 
 	go func() {
-		for {
-			if err := h.listenRun(); err != nil {
-				log.Errorf("Listen handler exited with error, restarting in 5s: %v", err)
-			} else {
-				log.Warn("Listen handler exited cleanly, restarting in 1s.")
-			}
-			time.Sleep(5 * time.Second)
+		if err := h.listenRun(); err != nil {
+			log.Errorf("Could not execute the listen handler: %v", err)
 		}
 	}()
 
