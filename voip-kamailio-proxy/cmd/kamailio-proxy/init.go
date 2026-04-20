@@ -15,7 +15,7 @@ import (
 
 const (
 	defaultRabbitMQAddress     = "amqp://guest:guest@localhost:5672"
-	defaultRabbitMQQueueListen = "kamailio.request"
+	defaultRabbitMQQueueListen = "voip.kamailio.request"
 
 	defaultPrometheusEndpoint      = "/metrics"
 	defaultPrometheusListenAddress = ":2112"
