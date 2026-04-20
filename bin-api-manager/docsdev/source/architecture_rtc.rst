@@ -100,45 +100,83 @@ Kamailio acts as the stateless SIP proxy and edge router, responsible for:
 
 .. code::
 
-    Stateless Operation:
+    Dispatcher Module -- Kamailio Load Balancing:
 
-    Client          Kamailio-1        Kamailio-2        Asterisk
-      |                 |                 |                 |
-      | INVITE          |                 |                 |
-      +---------------->|                 |                 |
-      |                 | Forward         |                 |
-      |                 +---------------------------------->|
-      |                 |                 |                 |
-      |                 |                 |                 |
-      | 200 OK          |                 |                 |
-      |<----------------+-----------------------------------+
-      |                 |                 |                 |
-      | ACK             |                 |                 |
-      +---------------------------------->|                 |
-      |                 |                 | Forward         |
-      |                 |                 +---------------->|
-      |                 |                 |                 |
+    External LB
+         |
+         | Distributes SIP traffic
+         v
+    +-----------+   +-----------+   +-----------+
+    | Kamailio 1|   | Kamailio 2|   | Kamailio 3|  ...
+    +-----------+   +-----------+   +-----------+
+         |               |               |
+         +---------------+---------------+
+                         |
+         Dispatcher module: single slot
+                         |
+                         v
+                +------------------+
+                | Internal         |
+                | Asterisk LB      |
+                +------------------+
+                         |
+                         v
+                +------------------+
+                | Asterisk Farm    |
+                +------------------+
 
     Note: Different Kamailio instances handle different messages
-          in the same call (stateless operation)
+          in the same dialog (stateless operation).
+          No Kamailio config change needed when Asterisk pods scale.
 
 .. image:: _static/images/architecture_rtc_kamailio.png
     :alt: Architecture Kamailio
 
 **Key Features:**
 
+* **Dispatcher Module**: Uses Kamailio's built-in dispatcher for load balancing. Routes new calls to the Internal Asterisk LB via a single slot -- no per-Asterisk entries needed
 * **Load Balancing**: Distributes incoming SIP traffic across multiple instances
 * **Stateless Operation**: No state maintained, enabling dynamic scaling and failover
 * **High Availability**: Instances can be added or removed without affecting ongoing calls
 * **Fast Performance**: C-based implementation with minimal overhead
 
-**Stateless Benefits:**
+Decoupling and Independent Scaling
+++++++++++++++++++++++++++++++++++++
 
-In the diagram above, Kamailio receives initial SIP traffic from the client and forwards it to Asterisk. However, subsequent SIP messages in the same call may go to different Kamailio instances. This stateless design allows for:
+The combination of the dispatcher module and the single-slot Asterisk routing creates
+a **bidirectionally decoupled architecture**:
 
-* Instant failover without session loss
-* Dynamic scaling without coordination
-* Simplified operations and deployment
+.. code::
+
+    Kamailio -> Asterisk:
+    +---------------------+         +------------------+
+    | Kamailio Farm       |         | Internal         |
+    | (dispatcher module) +-------->| Asterisk LB      |
+    |                     |  one    +--------+---------+
+    | No per-Asterisk     |  slot            |
+    | entries needed      |                  v
+    +---------------------+         +------------------+
+                                    | Asterisk Farm    |
+                                    | (scale freely)   |
+                                    +------------------+
+
+    Asterisk -> Kamailio:
+    +------------------+         +------------------+
+    | Asterisk Farm    +-------->| Internal         |
+    |                  |  sends  | Kamailio LB      |
+    | No per-Kamailio  |  here   +--------+---------+
+    | entries needed   |                  |
+    +------------------+                  v
+                                 +------------------+
+                                 | Kamailio Farm    |
+                                 | (scale freely)   |
+                                 +------------------+
+
+**Result:**
+
+* Add or remove Asterisk pods -- no Kamailio dispatcher config change required
+* Add or remove Kamailio instances -- no Asterisk config change required
+* Both farms can be scaled independently at any time without coordination
 
 Asterisk - Media and Call Processing
 -------------------------------------
