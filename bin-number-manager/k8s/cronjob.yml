@@ -4,20 +4,32 @@ metadata:
   name: number-renew
 spec:
   schedule: "0 1 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
       template:
         spec:
           imagePullSecrets:
           - name: gitlab-auth
+          restartPolicy: OnFailure
           containers:
           - name: request-sender
             image: registry.gitlab.com/voipbin/bin-manager/request-sender:latest
             imagePullPolicy: IfNotPresent
+            env:
+            - name: RABBITMQ_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: RABBITMQ_ADDRESS
             command:
             - /app/request-sender
             - -rabbit_addr
-            - 'amqp://guest:guest@rabbitmq.voipbin.net:5672'
+            - $(RABBITMQ_ADDRESS)
             - -queue
             - 'bin-manager.number-manager.request'
             - -uri
@@ -32,4 +44,3 @@ spec:
             - '3000'
             - -delay
             - '0'
-          restartPolicy: OnFailure
