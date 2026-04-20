@@ -26,7 +26,7 @@ func (h *serviceHandler) providerGet(ctx context.Context, id uuid.UUID) (*rmprov
 		log.Errorf("Could not get the provider info. err: %v", err)
 		return nil, err
 	}
-	log.WithField("queue", res).Debug("Received result.")
+	log.WithField("provider", res).Debug("Received result.")
 
 	// create result
 	return res, nil
@@ -34,7 +34,7 @@ func (h *serviceHandler) providerGet(ctx context.Context, id uuid.UUID) (*rmprov
 
 // ProviderGet sends a request to route-manager
 // to getting the provider.
-func (h *serviceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*rmprovider.Provider, error) {
+func (h *serviceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderGet",
 		"customer_id": a.CustomerID,
@@ -57,15 +57,15 @@ func (h *serviceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, 
 		return nil, fmt.Errorf("agent has no permission")
 	}
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
-// ProviderGets sends a request to route-manager
+// ProviderList sends a request to route-manager
 // to getting a list of providers.
 // it returns providers info if it succeed.
-func (h *serviceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmprovider.Provider, error) {
+func (h *serviceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ProviderGets",
+		"func":        "ProviderList",
 		"customer_id": a.CustomerID,
 		"username":    a.DisplayName(),
 		"size":        size,
@@ -89,13 +89,13 @@ func (h *serviceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity,
 
 	tmps, err := h.reqHandler.RouteV1ProviderList(ctx, token, size)
 	if err != nil {
-		log.Errorf("Could not get queues from the route-manager. err: %v", err)
+		log.Errorf("Could not get providers from the route-manager. err: %v", err)
 		return nil, err
 	}
 
-	res := make([]*rmprovider.Provider, len(tmps))
+	res := make([]*rmprovider.WebhookMessage, len(tmps))
 	for i := range tmps {
-		res[i] = &tmps[i]
+		res[i] = tmps[i].ConvertWebhookMessage()
 	}
 
 	return res, nil
@@ -112,7 +112,7 @@ func (h *serviceHandler) ProviderCreate(
 	techHeaders map[string]string,
 	name string,
 	detail string,
-) (*rmprovider.Provider, error) {
+) (*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderCreate",
 		"customer_id": a.CustomerID,
@@ -141,15 +141,15 @@ func (h *serviceHandler) ProviderCreate(
 		detail,
 	)
 	if err != nil {
-		log.Errorf("Could not create a new flow. err: %v", err)
+		log.Errorf("Could not create a new provider. err: %v", err)
 		return nil, err
 	}
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
 // ProviderDelete deletes the provider.
-func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovider.Provider, error) {
+func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderDelete",
 		"customer_id": a.CustomerID,
@@ -160,7 +160,7 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentit
 		return nil, fmt.Errorf("direct access not supported")
 	}
 
-	log.Debug("Deleting a outplan.")
+	log.Debug("Deleting a provider.")
 
 	// permission check
 	// only project admin allowed
@@ -182,11 +182,11 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentit
 		return nil, err
 	}
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }
 
 // ProviderUpdate sends a request to route-manager
-// to updating the route.
+// to updating the provider.
 // it returns error if it failed.
 func (h *serviceHandler) ProviderUpdate(
 	ctx context.Context,
@@ -199,7 +199,7 @@ func (h *serviceHandler) ProviderUpdate(
 	techHeaders map[string]string,
 	name string,
 	detail string,
-) (*rmprovider.Provider, error) {
+) (*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderUpdate",
 		"customer_id": a.CustomerID,
@@ -233,10 +233,10 @@ func (h *serviceHandler) ProviderUpdate(
 		detail,
 	)
 	if err != nil {
-		log.Errorf("Could not update the queue. err: %v", err)
+		log.Errorf("Could not update the provider. err: %v", err)
 		return nil, err
 	}
-	log.WithField("queue", tmp).Debugf("Updated queue. queue_id: %s", tmp.ID)
+	log.WithField("provider", tmp).Debugf("Updated provider. provider_id: %s", tmp.ID)
 
-	return tmp, nil
+	return tmp.ConvertWebhookMessage(), nil
 }

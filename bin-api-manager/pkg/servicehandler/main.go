@@ -658,10 +658,10 @@ type ServiceHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
-	) (*rmprovider.Provider, error)
-	ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovider.Provider, error)
-	ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*rmprovider.Provider, error)
-	ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmprovider.Provider, error)
+	) (*rmprovider.WebhookMessage, error)
+	ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovider.WebhookMessage, error)
+	ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*rmprovider.WebhookMessage, error)
+	ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmprovider.WebhookMessage, error)
 	ProviderUpdate(
 		ctx context.Context,
 		a *auth.AuthIdentity,
@@ -673,7 +673,7 @@ type ServiceHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
-	) (*rmprovider.Provider, error)
+	) (*rmprovider.WebhookMessage, error)
 
 	// queue handlers
 	QueueGet(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)
