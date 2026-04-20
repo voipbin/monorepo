@@ -16,27 +16,43 @@ VoIPBIN's VoIP stack consists of three main components working together:
 
 .. code::
 
-    SIP Traffic Flow:
+    Full SIP Signaling Topology:
 
-    External Client                                      Internal Services
-         |                                                      |
-         | SIP (INVITE, etc.)                                   |
-         v                                                      v
-    +----------+         +----------+         +------------------+
-    |   Load   |  SIP    | Kamailio |  SIP    |    Asterisk      |
-    | Balancer |<------->|   Farm   |<------->|     (Call)       |
-    +----------+         +-----+----+         +--------+---------+
-                               |                       |
-                               | RTP Control           | RTP Control
-                               v                       |
-                         +----------+                  |
-                         | RTPEngine|                  |
-                         |   Farm   |<-----------------+
-                         +-----+----+  Media
-                               |
-                               | RTP (Audio/Video)
-                               v
-                         External Client
+    +------------------+
+    |  SIP/WebRTC      |
+    |  Client          |
+    +--------+---------+
+             | INVITE / RE-INVITE / 200 OK
+             v
+    +------------------+
+    |  External        |
+    |  Load Balancer   |  <-- Internet-facing edge
+    |  (Signal GW)     |
+    +--------+---------+
+             | Distributes to Kamailio Farm
+             v
+    +-------------------------------------+
+    |         Kamailio Farm               |
+    |  (Kamailio 1 / Kamailio 2 / ...)   |
+    |                                     |
+    |  o Dispatcher module for            |
+    |    inter-Kamailio balancing         |
+    |  o Single slot -> Asterisk LB       |
+    |    (no per-Asterisk entries)        |
+    +----+--------------------------------+
+         |                       ^
+         | INVITE (new dialog)   | 200 OK / 200 OK(RE-INVITE)
+         v                       |
+    +------------------+   +-----+------------+
+    |  Internal        |   |  Internal        |
+    |  Asterisk LB     |   |  Kamailio LB     |
+    +--------+---------+   +------------------+
+             |                       ^
+             v                       |
+    +------------------+             |
+    |  Asterisk Farm   +-------------+
+    |  (Call PBX)      |  Responses sent to
+    +------------------+  Internal Kamailio LB
 
 .. image:: _static/images/architecture_rtc_voip.png
     :alt: Architecture VoIP
@@ -48,13 +64,17 @@ VoIPBIN's VoIP stack consists of three main components working together:
 * **Separated Concerns**: Signaling (Kamailio) and media (RTPEngine, Asterisk) are independent
 * **Zero-Downtime**: Load balancer redirects traffic when instances fail
 * **Horizontal Scaling**: Add more instances of any component to handle increased load
+* **Dispatcher-Based Kamailio Distribution**: Kamailio instances use the built-in dispatcher module to balance traffic across the farm
+* **Single-Slot Asterisk Routing**: Kamailio routes to Asterisk via a single dispatcher slot pointing to the Internal Asterisk LB -- not individual Asterisk addresses
+* **Bidirectional Decoupling**: Asterisk sends responses to the Internal Kamailio LB, not to individual Kamailios. Neither side knows the other's instance list, enabling independent scaling of both farms at any time
 
 **Traffic Flow:**
 
-1. **SIP Signaling**: Load balancer distributes SIP traffic to Kamailio instances
-2. **Call Routing**: Kamailio routes signaling to appropriate Asterisk instance
-3. **Media Setup**: RTPEngine handles RTP media streams and transcoding
-4. **Call Control**: Asterisk manages call state and conference bridges
+1. **Inbound Signaling**: External Load Balancer distributes incoming SIP traffic to the Kamailio Farm
+2. **New Call Routing**: Kamailio forwards new INVITEs to the Internal Asterisk LB (single dispatcher slot), which distributes to the Asterisk Farm
+3. **Response Path**: Asterisk sends responses (200 OK) to the Internal Kamailio LB, which distributes to any Kamailio instance
+4. **Media Setup**: RTPEngine handles RTP media streams and codec transcoding
+5. **Call Control**: Asterisk manages call state and conference bridges
 
 This modular design ensures VoIPBIN can provide reliable, scalable VoIP services while accommodating high traffic loads.
 
@@ -80,45 +100,131 @@ Kamailio acts as the stateless SIP proxy and edge router, responsible for:
 
 .. code::
 
-    Stateless Operation:
+    Dispatcher Module -- Kamailio Load Balancing:
 
-    Client          Kamailio-1        Kamailio-2        Asterisk
-      |                 |                 |                 |
-      | INVITE          |                 |                 |
-      +---------------->|                 |                 |
-      |                 | Forward         |                 |
-      |                 +---------------------------------->|
-      |                 |                 |                 |
-      |                 |                 |                 |
-      | 200 OK          |                 |                 |
-      |<----------------+-----------------------------------+
-      |                 |                 |                 |
-      | ACK             |                 |                 |
-      +---------------------------------->|                 |
-      |                 |                 | Forward         |
-      |                 |                 +---------------->|
-      |                 |                 |                 |
+    External LB
+         |
+         | Distributes SIP traffic
+         v
+    +-----------+   +-----------+   +-----------+
+    | Kamailio 1|   | Kamailio 2|   | Kamailio 3|  ...
+    +-----------+   +-----------+   +-----------+
+         |               |               |
+         +---------------+---------------+
+                         |
+         Dispatcher module: single slot
+                         |
+                         v
+                +------------------+
+                | Internal         |
+                | Asterisk LB      |
+                +------------------+
+                         |
+                         v
+                +------------------+
+                | Asterisk Farm    |
+                +------------------+
 
     Note: Different Kamailio instances handle different messages
-          in the same call (stateless operation)
+          in the same dialog (stateless operation).
+          No Kamailio config change needed when Asterisk pods scale.
 
 .. image:: _static/images/architecture_rtc_kamailio.png
     :alt: Architecture Kamailio
 
 **Key Features:**
 
+* **Dispatcher Module**: Uses Kamailio's built-in dispatcher for load balancing. Routes new calls to the Internal Asterisk LB via a single slot -- no per-Asterisk entries needed
 * **Load Balancing**: Distributes incoming SIP traffic across multiple instances
 * **Stateless Operation**: No state maintained, enabling dynamic scaling and failover
 * **High Availability**: Instances can be added or removed without affecting ongoing calls
 * **Fast Performance**: C-based implementation with minimal overhead
 
-**Stateless Benefits:**
+Decoupling and Independent Scaling
+++++++++++++++++++++++++++++++++++++
 
-In the diagram above, Kamailio receives initial SIP traffic from the client and forwards it to Asterisk. However, subsequent SIP messages in the same call may go to different Kamailio instances. This stateless design allows for:
+The combination of the dispatcher module and the single-slot Asterisk routing creates
+a **bidirectionally decoupled architecture**:
 
-* Instant failover without session loss
-* Dynamic scaling without coordination
-* Simplified operations and deployment
+.. code::
+
+    Kamailio -> Asterisk:
+    +---------------------+         +------------------+
+    | Kamailio Farm       |         | Internal         |
+    | (dispatcher module) +-------->| Asterisk LB      |
+    |                     |  one    +--------+---------+
+    | No per-Asterisk     |  slot            |
+    | entries needed      |                  v
+    +---------------------+         +------------------+
+                                    | Asterisk Farm    |
+                                    | (scale freely)   |
+                                    +------------------+
+
+    Asterisk -> Kamailio:
+    +------------------+         +------------------+
+    | Asterisk Farm    +-------->| Internal         |
+    |                  |  sends  | Kamailio LB      |
+    | No per-Kamailio  |  here   +--------+---------+
+    | entries needed   |                  |
+    +------------------+                  v
+                                 +------------------+
+                                 | Kamailio Farm    |
+                                 | (scale freely)   |
+                                 +------------------+
+
+**Result:**
+
+* Add or remove Asterisk pods -- no Kamailio dispatcher config change required
+* Add or remove Kamailio instances -- no Asterisk config change required
+* Both farms can be scaled independently at any time without coordination
+
+RE-INVITE and Within-Dialog Routing
+-------------------------------------
+
+For requests within an established SIP dialog (such as RE-INVITE for media renegotiation
+or hold/resume), VoIPBIN uses a **direct routing** strategy that bypasses the Internal
+Asterisk LB entirely.
+
+**Why direct routing matters:**
+
+When an INVITE creates a new dialog, Asterisk records its own address in the SIP
+``Record-Route`` header returned to the client. All subsequent in-dialog requests
+(RE-INVITE, BYE, etc.) carry a ``Route`` header derived from this value, pointing
+directly to the specific Asterisk instance that owns the dialog.
+
+Kamailio reads this ``Route`` header and forwards the request straight to that
+Asterisk instance -- skipping the Internal Asterisk LB completely.
+
+.. code::
+
+    New INVITE (dialog setup):
+
+    Client -> External LB -> Kamailio(any)
+           -> Internal Asterisk LB -> Asterisk(X)
+                                          |
+                                Records own address
+                                in Record-Route header
+
+    RE-INVITE (within dialog):
+
+    Client -> External LB -> Kamailio(any)
+           -> Asterisk(X) directly   <-- Route header bypasses LB
+             (correct instance, guaranteed)
+
+**Benefits:**
+
+* **Dialog integrity**: RE-INVITE always reaches the Asterisk that owns the session
+* **No stateful proxy needed**: Kamailio remains fully stateless -- it just reads the Route header
+* **No coordination**: Neither the LB nor Kamailio needs to track which Asterisk owns which dialog
+* **Independent scaling**: Adding or removing Asterisk pods during live calls does not affect existing dialogs
+
+.. note:: **AI Implementation Hint**
+
+   When integrating SIP endpoints, ensure your SIP stack correctly handles the
+   ``Record-Route`` and ``Route`` headers returned by VoIPBIN. Most standard SIP
+   libraries (PJSIP, Sofia-SIP, etc.) handle this automatically. Do not strip or
+   modify these headers, as doing so will cause RE-INVITEs to be routed to the
+   wrong Asterisk instance.
 
 Asterisk - Media and Call Processing
 -------------------------------------
@@ -500,3 +606,48 @@ The complete implementation is available on GitHub:
 * **State Preservation**: All call state and variables restored
 * **Media Continuity**: Audio/video streams resume without gaps
 * **Flow Continuity**: Call flow resumes at exact point before crash
+
+Kamailio Proxy - Provider Health Monitor
+-----------------------------------------
+
+The **Kamailio Proxy** is a lightweight Go sidecar service that runs alongside each
+Kamailio instance. It is **not** in the SIP signaling path -- no call traffic passes
+through it. Its sole responsibility is provider health monitoring.
+
+.. code::
+
+    Position in Architecture:
+
+    +------------------+     +--------------------+
+    |  Kamailio        |     |  Kamailio Proxy    |
+    |  (SIP signaling) |     |  (management only) |
+    |                  |     |                    |
+    |  Handles INVITE, |     |  o SIP OPTIONS     |
+    |  RE-INVITE, etc. |     |    probes to PSTN  |
+    |                  |     |    providers       |
+    +------------------+     +--------------------+
+                                       |
+                                       | Health status
+                                       v
+                              +--------------------+
+                              | bin-route-manager  |
+                              | (skips unhealthy   |
+                              |  providers when    |
+                              |  routing calls)    |
+                              +--------------------+
+
+**How it works:**
+
+1. ``bin-route-manager`` periodically requests a health check for each configured provider
+2. Kamailio Proxy sends a SIP ``OPTIONS`` request to the provider
+3. The provider responds (or times out)
+4. Kamailio Proxy reports the health result back to ``bin-route-manager``
+5. Route manager marks the provider healthy or unhealthy accordingly
+6. Outbound calls avoid unhealthy providers until they recover
+
+**Key characteristics:**
+
+* **Sidecar deployment**: One Kamailio Proxy per Kamailio instance
+* **No SIP traffic**: Does not proxy or route any call signaling
+* **Passive health checks**: Only sends SIP OPTIONS probes on request
+* **Tight coupling with route-manager**: Designed specifically for ``bin-route-manager`` integration
