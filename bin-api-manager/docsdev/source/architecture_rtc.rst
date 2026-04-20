@@ -651,3 +651,6 @@ through it. Its sole responsibility is provider health monitoring.
 * **No SIP traffic**: Does not proxy or route any call signaling
 * **Passive health checks**: Only sends SIP OPTIONS probes on request
 * **Tight coupling with route-manager**: Designed specifically for ``bin-route-manager`` integration
+
+This sidecar design keeps provider health monitoring fully decoupled from SIP call signaling,
+ensuring that health probe traffic never affects call quality or latency.

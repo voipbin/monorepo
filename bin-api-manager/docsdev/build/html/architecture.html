@@ -4505,6 +4505,8 @@ through it. Its sole responsibility is provider health monitoring.</p>
 <li><p><strong>Passive health checks</strong>: Only sends SIP OPTIONS probes on request</p></li>
 <li><p><strong>Tight coupling with route-manager</strong>: Designed specifically for <code class="docutils literal notranslate"><span class="pre">bin-route-manager</span></code> integration</p></li>
 </ul>
+<p>This sidecar design keeps provider health monitoring fully decoupled from SIP call signaling,
+ensuring that health probe traffic never affects call quality or latency.</p>
 </section>
 </section>
 <section id="system-request-flows">
