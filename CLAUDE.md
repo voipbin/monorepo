@@ -245,6 +245,17 @@ git push -u origin NOJIRA-descriptive-change-summary
 
 **NEVER merge any branch to `main` without explicit user permission.**
 
+**CRITICAL: ALL PR merges MUST use squash merge — no exceptions.**
+
+When the user authorizes a merge:
+- ✅ **ALWAYS** use squash merge: `gh pr merge <pr-number> --squash --delete-branch`
+- ❌ **NEVER** use regular merge commits or rebase merge
+- The squashed commit title MUST match the PR title (which matches the branch name)
+- The squashed commit body MUST match the PR body
+- Do NOT include AI attribution in the squashed commit
+
+**Why:** Keeps `main` history linear, one logical change = one commit, easy to `git revert` if a PR causes issues. Intermediate WIP/review-fix commits stay on the feature branch, not `main`.
+
 **CRITICAL: Before creating a PR or merging, ALWAYS pull the latest `main` and check for conflicts.**
 
 This is mandatory — no exceptions. Run these steps **from the worktree directory** (where your feature branch lives):
