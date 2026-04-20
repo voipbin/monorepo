@@ -12,13 +12,16 @@ func Test_getKamailioID(t *testing.T) {
 		wantErr   bool
 	}
 
-	// Find a real interface with a MAC address for the happy path.
+	// Find real interfaces for happy and no-MAC test cases.
 	validIface := ""
+	noMACIface := ""
 	ifaces, _ := net.Interfaces()
 	for _, iface := range ifaces {
-		if len(iface.HardwareAddr) > 0 {
+		if len(iface.HardwareAddr) > 0 && validIface == "" {
 			validIface = iface.Name
-			break
+		}
+		if len(iface.HardwareAddr) == 0 && noMACIface == "" {
+			noMACIface = iface.Name
 		}
 	}
 
@@ -35,6 +38,14 @@ func Test_getKamailioID(t *testing.T) {
 			name:      "valid interface with MAC",
 			ifaceName: validIface,
 			wantErr:   false,
+		})
+	}
+
+	if noMACIface != "" {
+		tests = append(tests, test{
+			name:      "interface found but has no MAC address",
+			ifaceName: noMACIface,
+			wantErr:   true,
 		})
 	}
 
