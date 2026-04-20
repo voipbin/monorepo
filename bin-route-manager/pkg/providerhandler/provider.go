@@ -41,14 +41,15 @@ func (h *providerHandler) Create(
 
 	id := uuid.Must(uuid.NewV4())
 	p := &provider.Provider{
-		ID:          id,
-		Type:        providerType,
-		Hostname:    hostname,
-		TechPrefix:  techPrefix,
-		TechPostfix: techPostfix,
-		TechHeaders: techHeaders,
-		Name:        name,
-		Detail:      detail,
+		ID:           id,
+		Type:         providerType,
+		Hostname:     hostname,
+		TechPrefix:   techPrefix,
+		TechPostfix:  techPostfix,
+		TechHeaders:  techHeaders,
+		Name:         name,
+		Detail:       detail,
+		HealthStatus: provider.HealthStatusUnknown,
 	}
 	log.WithField("provider", p).Debugf("Creating a new provider. id: %s", id)
 
@@ -144,14 +145,27 @@ func (h *providerHandler) Update(
 		},
 	).Debug("Updating the provider.")
 
+	// Fetch current provider to determine if hostname is changing.
+	current, err := h.Get(ctx, id)
+	if err != nil {
+		log.Errorf("Could not get current provider. err: %v", err)
+		return nil, errors.Wrap(err, "could not get current provider")
+	}
+
 	fields := map[provider.Field]any{
-		provider.FieldType:        providerType,
-		provider.FieldHostname:    hostname,
-		provider.FieldTechPrefix:  techPrefix,
+		provider.FieldType:       providerType,
+		provider.FieldHostname:   hostname,
+		provider.FieldTechPrefix: techPrefix,
 		provider.FieldTechPostfix: techPostfix,
 		provider.FieldTechHeaders: techHeaders,
-		provider.FieldName:        name,
-		provider.FieldDetail:      detail,
+		provider.FieldName:       name,
+		provider.FieldDetail:     detail,
+	}
+
+	// Reset health status only when hostname actually changes.
+	if current.Hostname != hostname {
+		fields[provider.FieldHealthStatus] = provider.HealthStatusUnknown
+		fields[provider.FieldHealthCheckedAt] = nil
 	}
 
 	if errUpdate := h.db.ProviderUpdate(ctx, id, fields); errUpdate != nil {

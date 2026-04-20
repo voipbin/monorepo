@@ -284,16 +284,19 @@ func Test_Update(t *testing.T) {
 			ctx := context.Background()
 
 			fields := map[provider.Field]any{
-				provider.FieldType:        tt.providerType,
-				provider.FieldHostname:    tt.hostname,
-				provider.FieldTechPrefix:  tt.techPrefix,
-				provider.FieldTechPostfix: tt.techPostfix,
-				provider.FieldTechHeaders: tt.techHeaders,
-				provider.FieldName:        tt.updateName,
-				provider.FieldDetail:      tt.detail,
+				provider.FieldType:           tt.providerType,
+				provider.FieldHostname:       tt.hostname,
+				provider.FieldTechPrefix:     tt.techPrefix,
+				provider.FieldTechPostfix:    tt.techPostfix,
+				provider.FieldTechHeaders:    tt.techHeaders,
+				provider.FieldName:           tt.updateName,
+				provider.FieldDetail:         tt.detail,
+				provider.FieldHealthStatus:    provider.HealthStatusUnknown,
+				provider.FieldHealthCheckedAt: nil,
 			}
+			// Pre-fetch to check hostname, then update, then final get.
+			mockDB.EXPECT().ProviderGet(ctx, tt.id).Return(tt.responseProvider, nil).Times(2)
 			mockDB.EXPECT().ProviderUpdate(ctx, tt.id, fields).Return(nil)
-			mockDB.EXPECT().ProviderGet(ctx, tt.id).Return(tt.responseProvider, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, provider.EventTypeProviderUpdated, tt.responseProvider)
 
 			res, err := h.Update(ctx, tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.updateName, tt.detail)
@@ -421,6 +424,8 @@ func Test_Update_Error(t *testing.T) {
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("eab70c18-4618-11ed-857f-234c1cd0b634")
 
+	// Pre-fetch returns an empty provider (hostname ""), so health reset will be included.
+	mockDB.EXPECT().ProviderGet(ctx, id).Return(&provider.Provider{ID: id}, nil)
 	mockDB.EXPECT().ProviderUpdate(ctx, id, gomock.Any()).Return(fmt.Errorf("database error"))
 
 	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
@@ -497,8 +502,12 @@ func Test_Update_GetError(t *testing.T) {
 	ctx := context.Background()
 	id := uuid.FromStringOrNil("eab70c18-4618-11ed-857f-234c1cd0b634")
 
-	mockDB.EXPECT().ProviderUpdate(ctx, id, gomock.Any()).Return(nil)
-	mockDB.EXPECT().ProviderGet(ctx, id).Return(nil, fmt.Errorf("get error"))
+	// Pre-fetch succeeds, update succeeds, final get fails.
+	gomock.InOrder(
+		mockDB.EXPECT().ProviderGet(ctx, id).Return(&provider.Provider{ID: id}, nil),
+		mockDB.EXPECT().ProviderUpdate(ctx, id, gomock.Any()).Return(nil),
+		mockDB.EXPECT().ProviderGet(ctx, id).Return(nil, fmt.Errorf("get error")),
+	)
 
 	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
 	if err == nil {

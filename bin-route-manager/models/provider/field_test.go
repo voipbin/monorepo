@@ -18,6 +18,8 @@ func TestFieldConstants(t *testing.T) {
 		{"field_tech_headers", FieldTechHeaders, "tech_headers"},
 		{"field_name", FieldName, "name"},
 		{"field_detail", FieldDetail, "detail"},
+		{"field_health_status", FieldHealthStatus, "health_status"},
+		{"field_health_checked_at", FieldHealthCheckedAt, "health_checked_at"},
 		{"field_tm_create", FieldTMCreate, "tm_create"},
 		{"field_tm_update", FieldTMUpdate, "tm_update"},
 		{"field_tm_delete", FieldTMDelete, "tm_delete"},

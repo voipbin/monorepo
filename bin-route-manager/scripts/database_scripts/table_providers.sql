@@ -12,6 +12,10 @@ create table route_providers(
   name      varchar(255),
   detail    text,
 
+  -- health check
+  health_status     varchar(64) default 'unknown',
+  health_checked_at datetime(6),
+
   -- timestamps
   tm_create datetime(6),  -- create
   tm_update datetime(6),  -- update

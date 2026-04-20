@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"monorepo/bin-route-manager/internal/config"
 	"monorepo/bin-route-manager/pkg/cachehandler"
 	"monorepo/bin-route-manager/pkg/dbhandler"
+	"monorepo/bin-route-manager/pkg/healthcheckhandler"
 	"monorepo/bin-route-manager/pkg/listenhandler"
 	"monorepo/bin-route-manager/pkg/providerhandler"
 	"monorepo/bin-route-manager/pkg/routehandler"
@@ -93,11 +95,15 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if err := runService(sqlDB, cache); err != nil {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	if err := runService(ctx, sqlDB, cache); err != nil {
+		cancel()
 		log.Errorf("Run func has finished. err: %v", err)
 		return err
 	}
 	<-chDone
+	cancel()
 	return nil
 }
 
@@ -109,7 +115,7 @@ func signalHandler() {
 }
 
 // runService runs the route-manager
-func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
+func runService(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	cfg := config.Get()
 
 	// dbhandler
@@ -125,6 +131,10 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 
 	routeHandler := routehandler.NewRouteHandler(db, reqHandler, notifyHandler)
 	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler)
+
+	// start background provider health check loop
+	healthChecker := healthcheckhandler.NewHealthCheckHandler(db, reqHandler)
+	go healthChecker.Run(ctx, cfg.HealthCheckInterval)
 
 	// run request listener
 	if err := runRequestListen(sockHandler, providerHandler, routeHandler); err != nil {

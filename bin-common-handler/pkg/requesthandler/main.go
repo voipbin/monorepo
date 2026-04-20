@@ -126,8 +126,9 @@ var (
 	AsteriskIDConference = "conference" // asterisk-conference
 )
 
-const requestTimeoutDefault int = 3000  // default request timeout(3 sec)
-const requestTimeoutLong int = 30000    // long request timeout(30 sec) for operations involving external fetches (e.g., GCS + merge)
+const requestTimeoutDefault int = 3000   // default request timeout(3 sec)
+const requestTimeoutLong int = 30000     // long request timeout(30 sec) for operations involving external fetches (e.g., GCS + merge)
+const requestTimeoutKamailio int = 10000 // kamailio RPC timeout(10 sec) — exceeds 5s SIP UDP read deadline
 
 // delay units
 const (
@@ -383,6 +384,9 @@ type RequestHandler interface {
 
 	// RTPEngine
 	RTPEngineV1CommandsSend(ctx context.Context, rtpengineID string, command map[string]interface{}) (map[string]interface{}, error)
+
+	// kamailio-proxy
+	KamailioV1ProviderHealthCheck(ctx context.Context, hostname string) (*KamailioProviderHealthResult, error)
 
 	// agent-manager agent
 	AgentV1AgentCreate(

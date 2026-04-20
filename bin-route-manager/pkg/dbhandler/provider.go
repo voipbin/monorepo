@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -275,4 +276,14 @@ func (h *handler) ProviderUpdate(ctx context.Context, id uuid.UUID, fields map[p
 
 	_ = h.providerUpdateToCache(ctx, id)
 	return nil
+}
+
+// ProviderUpdateHealthStatus updates the health_status and health_checked_at fields for a provider.
+// Called by the background health check goroutine (Phase 5).
+func (h *handler) ProviderUpdateHealthStatus(ctx context.Context, id uuid.UUID, status string, checkedAt *time.Time) error {
+	fields := map[provider.Field]any{
+		provider.FieldHealthStatus:    status,
+		provider.FieldHealthCheckedAt: checkedAt,
+	}
+	return h.ProviderUpdate(ctx, id, fields)
 }

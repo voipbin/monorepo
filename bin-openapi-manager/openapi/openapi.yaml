@@ -5646,6 +5646,24 @@ components:
           type: string
           description: "The details about the provider."
           example: "Primary outbound SIP provider"
+        health_status:
+          type: string
+          enum:
+            - unknown
+            - healthy
+            - unhealthy
+          x-enum-varnames:
+            - RouteManagerProviderHealthStatusUnknown
+            - RouteManagerProviderHealthStatusHealthy
+            - RouteManagerProviderHealthStatusUnhealthy
+          description: "The health status of the provider as determined by periodic SIP OPTIONS probes."
+          example: "healthy"
+        health_checked_at:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "The timestamp of the last successful health check probe."
+          example: "2026-04-20T10:00:00.000000Z"
         tm_create:
           type: string
           format: date-time

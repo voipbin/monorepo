@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -24,6 +25,7 @@ type DBHandler interface {
 	ProviderList(ctx context.Context, token string, limit uint64, filters map[provider.Field]any) ([]*provider.Provider, error)
 	ProviderDelete(ctx context.Context, id uuid.UUID) error
 	ProviderUpdate(ctx context.Context, id uuid.UUID, fields map[provider.Field]any) error
+	ProviderUpdateHealthStatus(ctx context.Context, id uuid.UUID, status string, checkedAt *time.Time) error
 
 	// route
 	RouteCreate(ctx context.Context, r *route.Route) error

@@ -21,6 +21,10 @@ type Provider struct {
 	Name   string `json:"name" db:"name"`
 	Detail string `json:"detail" db:"detail"`
 
+	// health check
+	HealthStatus    string     `json:"health_status"     db:"health_status"`
+	HealthCheckedAt *time.Time `json:"health_checked_at" db:"health_checked_at"`
+
 	// timestamp
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
@@ -33,4 +37,11 @@ type Type string
 // list of types
 const (
 	TypeSIP = "sip" // VoIP/SIP provider
+)
+
+// Health status values
+const (
+	HealthStatusUnknown   = "unknown"
+	HealthStatusHealthy   = "healthy"
+	HealthStatusUnhealthy = "unhealthy"
 )

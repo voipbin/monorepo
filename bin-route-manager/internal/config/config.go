@@ -2,6 +2,7 @@ package config
 
 import (
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -22,6 +23,7 @@ type Config struct {
 	RedisAddress            string
 	RedisDatabase           int
 	RedisPassword           string
+	HealthCheckInterval     time.Duration
 }
 
 // Get returns the current configuration
@@ -41,6 +43,7 @@ func Bootstrap(cmd *cobra.Command) error {
 	f.String("redis_address", "127.0.0.1:6379", "Redis server address")
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 1, "Redis database index")
+	f.Duration("health_check_interval", 30*time.Second, "Provider health check interval")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -50,6 +53,7 @@ func Bootstrap(cmd *cobra.Command) error {
 		"redis_address":             "REDIS_ADDRESS",
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
+		"health_check_interval":     "HEALTH_CHECK_INTERVAL",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -77,6 +81,7 @@ func LoadGlobalConfig() {
 			RedisAddress:            viper.GetString("redis_address"),
 			RedisDatabase:           viper.GetInt("redis_database"),
 			RedisPassword:           viper.GetString("redis_password"),
+			HealthCheckInterval:     viper.GetDuration("health_check_interval"),
 		}
 	})
 }

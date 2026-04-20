@@ -25,11 +25,13 @@ func TestConvertWebhookMessage(t *testing.T) {
 				TechHeaders: map[string]string{
 					"X-Custom": "value",
 				},
-				Name:     "Test Provider",
-				Detail:   "Test provider detail",
-				TMCreate: timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
-				TMUpdate: timePtr(time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)),
-				TMDelete: nil,
+				Name:            "Test Provider",
+				Detail:          "Test provider detail",
+				HealthStatus:    HealthStatusHealthy,
+				HealthCheckedAt: timePtr(time.Date(2023, 1, 3, 12, 0, 0, 0, time.UTC)),
+				TMCreate:        timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
+				TMUpdate:        timePtr(time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)),
+				TMDelete:        nil,
 			},
 			want: &WebhookMessage{
 				ID:          uuid.FromStringOrNil("12345678-1234-1234-1234-123456789abc"),
@@ -40,11 +42,13 @@ func TestConvertWebhookMessage(t *testing.T) {
 				TechHeaders: map[string]string{
 					"X-Custom": "value",
 				},
-				Name:     "Test Provider",
-				Detail:   "Test provider detail",
-				TMCreate: timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
-				TMUpdate: timePtr(time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)),
-				TMDelete: nil,
+				Name:            "Test Provider",
+				Detail:          "Test provider detail",
+				HealthStatus:    HealthStatusHealthy,
+				HealthCheckedAt: timePtr(time.Date(2023, 1, 3, 12, 0, 0, 0, time.UTC)),
+				TMCreate:        timePtr(time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)),
+				TMUpdate:        timePtr(time.Date(2023, 1, 2, 0, 0, 0, 0, time.UTC)),
+				TMDelete:        nil,
 			},
 		},
 		{
@@ -58,6 +62,23 @@ func TestConvertWebhookMessage(t *testing.T) {
 				ID:       uuid.FromStringOrNil("87654321-4321-4321-4321-cba987654321"),
 				Type:     TypeSIP,
 				Hostname: "sip.minimal.com",
+			},
+		},
+		{
+			name: "initial state - unknown health",
+			provider: &Provider{
+				ID:           uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+				Type:         TypeSIP,
+				Hostname:     "sip.new.com",
+				HealthStatus: HealthStatusUnknown,
+				// HealthCheckedAt: nil (zero value)
+			},
+			want: &WebhookMessage{
+				ID:           uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+				Type:         TypeSIP,
+				Hostname:     "sip.new.com",
+				HealthStatus: HealthStatusUnknown,
+				// HealthCheckedAt: nil
 			},
 		},
 	}
@@ -85,6 +106,14 @@ func TestConvertWebhookMessage(t *testing.T) {
 			}
 			if got.Detail != tt.want.Detail {
 				t.Errorf("Detail = %v, want %v", got.Detail, tt.want.Detail)
+			}
+			if got.HealthStatus != tt.want.HealthStatus {
+				t.Errorf("HealthStatus = %v, want %v", got.HealthStatus, tt.want.HealthStatus)
+			}
+			if (got.HealthCheckedAt == nil) != (tt.want.HealthCheckedAt == nil) {
+				t.Errorf("HealthCheckedAt nil-ness = %v, want %v", got.HealthCheckedAt == nil, tt.want.HealthCheckedAt == nil)
+			} else if got.HealthCheckedAt != nil && !got.HealthCheckedAt.Equal(*tt.want.HealthCheckedAt) {
+				t.Errorf("HealthCheckedAt = %v, want %v", got.HealthCheckedAt, tt.want.HealthCheckedAt)
 			}
 		})
 	}

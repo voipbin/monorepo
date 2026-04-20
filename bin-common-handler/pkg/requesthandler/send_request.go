@@ -330,3 +330,10 @@ func (r *requestHandler) sendRequestRTPEngine(ctx context.Context, rtpengineID, 
 
 	return r.sendRequest(ctx, commonoutline.QueueName(target), uri, method, resource, timeout, delayed, dataType, data)
 }
+
+// sendRequestKamailio sends a request to the kamailio-proxy and returns the response.
+// timeout millisecond
+// delayed millisecond
+func (r *requestHandler) sendRequestKamailio(ctx context.Context, uri string, method sock.RequestMethod, resource string, timeout int, delayed int, dataType string, data []byte) (*sock.Response, error) {
+	return r.sendRequest(ctx, commonoutline.QueueNameKamailioRequest, uri, method, resource, timeout, delayed, dataType, data)
+}
