@@ -554,7 +554,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
 			// getDialURI
-			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any()).Return(tt.responseRoutes, nil)
+			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any(), gomock.Any()).Return(tt.responseRoutes, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
@@ -1378,33 +1378,141 @@ func Test_getDialroutes(t *testing.T) {
 
 		customerID  uuid.UUID
 		destination *commonaddress.Address
+		metadata    map[string]interface{}
 
 		responseDialroutes []rmroute.Route
 
-		expectTarget string
+		expectTarget            string
+		expectTargetProviderIDs []uuid.UUID
 
 		expectRes []rmroute.Route
 	}{
 		{
-			"normal",
+			name: "normal without metadata",
 
-			uuid.FromStringOrNil("551562fe-5f81-11ed-b9b3-535fe8d67b80"),
-			&commonaddress.Address{
+			customerID: uuid.FromStringOrNil("551562fe-5f81-11ed-b9b3-535fe8d67b80"),
+			destination: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+821100000001",
 			},
+			metadata: nil,
 
-			[]rmroute.Route{
+			responseDialroutes: []rmroute.Route{
 				{
 					ID: uuid.FromStringOrNil("b8d6da7a-5f81-11ed-9274-9313db0184ad"),
 				},
 			},
 
-			"+82",
+			expectTarget:            "+82",
+			expectTargetProviderIDs: nil,
 
-			[]rmroute.Route{
+			expectRes: []rmroute.Route{
 				{
 					ID: uuid.FromStringOrNil("b8d6da7a-5f81-11ed-9274-9313db0184ad"),
+				},
+			},
+		},
+		{
+			name: "metadata without route_provider_ids forwards nil",
+
+			customerID: uuid.FromStringOrNil("551562fe-5f81-11ed-b9b3-535fe8d67b80"),
+			destination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			metadata: map[string]interface{}{
+				"some_other_key": "some_other_value",
+			},
+
+			responseDialroutes: []rmroute.Route{
+				{
+					ID: uuid.FromStringOrNil("b8d6da7a-5f81-11ed-9274-9313db0184ad"),
+				},
+			},
+
+			expectTarget:            "+82",
+			expectTargetProviderIDs: nil,
+
+			expectRes: []rmroute.Route{
+				{
+					ID: uuid.FromStringOrNil("b8d6da7a-5f81-11ed-9274-9313db0184ad"),
+				},
+			},
+		},
+		{
+			name: "route_provider_ids metadata is parsed and forwarded as targetProviderIDs",
+
+			customerID: uuid.FromStringOrNil("551562fe-5f81-11ed-b9b3-535fe8d67b80"),
+			destination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			metadata: map[string]interface{}{
+				call.MetadataKeyRouteProviderIDs: []interface{}{
+					"11111111-1111-1111-1111-111111111111",
+					"22222222-2222-2222-2222-222222222222",
+				},
+			},
+
+			responseDialroutes: []rmroute.Route{
+				{
+					ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+					ProviderID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+					ProviderID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+				},
+			},
+
+			expectTarget: "+82",
+			expectTargetProviderIDs: []uuid.UUID{
+				uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+				uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+			},
+
+			expectRes: []rmroute.Route{
+				{
+					ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+					ProviderID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+				},
+				{
+					ID:         uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+					ProviderID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+				},
+			},
+		},
+		{
+			name: "invalid UUID in route_provider_ids is skipped",
+
+			customerID: uuid.FromStringOrNil("551562fe-5f81-11ed-b9b3-535fe8d67b80"),
+			destination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			metadata: map[string]interface{}{
+				call.MetadataKeyRouteProviderIDs: []interface{}{
+					"not-a-uuid",
+					"33333333-3333-3333-3333-333333333333",
+				},
+			},
+
+			responseDialroutes: []rmroute.Route{
+				{
+					ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+					ProviderID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+				},
+			},
+
+			expectTarget: "+82",
+			expectTargetProviderIDs: []uuid.UUID{
+				uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+			},
+
+			expectRes: []rmroute.Route{
+				{
+					ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+					ProviderID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
 				},
 			},
 		},
@@ -1429,9 +1537,13 @@ func Test_getDialroutes(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any()).Return(tt.responseDialroutes, nil)
+			expectedFilters := map[rmroute.Field]any{
+				rmroute.FieldCustomerID: tt.customerID,
+				rmroute.FieldTarget:     tt.expectTarget,
+			}
+			mockReq.EXPECT().RouteV1DialrouteList(ctx, expectedFilters, tt.expectTargetProviderIDs).Return(tt.responseDialroutes, nil)
 
-			res, err := h.getDialroutes(ctx, tt.customerID, tt.destination)
+			res, err := h.getDialroutes(ctx, tt.customerID, tt.destination, tt.metadata)
 			if err != nil {
 				t.Errorf("Wrong match. expect: nil, got: %v", err)
 			}
