@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
-	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-route-manager/pkg/listenhandler/models/request"
-
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-route-manager/models/route"
+	"monorepo/bin-route-manager/pkg/listenhandler/models/request"
 )
 
 // v1DialroutesGet handles /v1/dialroutes GET request
@@ -28,13 +30,34 @@ func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *sock.Request) (*
 		}
 	}
 
+	// Extract customer_id and target from filters.
+	// Task 6 is formally responsible for fully rewiring this to use the Filters
+	// map directly; this minimal extraction keeps the build green.
+	var customerID uuid.UUID
+	if v, ok := reqData.Filters[route.FieldCustomerID]; ok {
+		switch x := v.(type) {
+		case uuid.UUID:
+			customerID = x
+		case string:
+			customerID = uuid.FromStringOrNil(x)
+		}
+	}
+
+	var target string
+	if v, ok := reqData.Filters[route.FieldTarget]; ok {
+		if s, ok := v.(string); ok {
+			target = s
+		}
+	}
+
 	log.WithFields(logrus.Fields{
-		"customer_id":      reqData.CustomerID,
-		"target":           reqData.Target,
-		"filters_raw_data": string(m.Data),
+		"customer_id":         customerID,
+		"target":              target,
+		"target_provider_ids": reqData.TargetProviderIDs,
+		"filters_raw_data":    string(m.Data),
 	}).Debug("v1DialroutesGet: Parsed filters from request body")
 
-	tmp, err := h.routeHandler.DialrouteList(ctx, reqData.CustomerID, reqData.Target)
+	tmp, err := h.routeHandler.DialrouteList(ctx, customerID, target, reqData.TargetProviderIDs)
 	if err != nil {
 		log.Errorf("Could not get routes for dial. err: %v", err)
 		return nil, err

@@ -409,7 +409,7 @@ func runDialrouteList(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("target is required")
 	}
 
-	res, err := handler.DialrouteList(context.Background(), customerID, target)
+	res, err := handler.DialrouteList(context.Background(), customerID, target, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to retrieve dialroutes")
 	}

@@ -73,18 +73,18 @@ func (mr *MockRouteHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 }
 
 // DialrouteList mocks base method.
-func (m *MockRouteHandler) DialrouteList(ctx context.Context, customerID uuid.UUID, target string) ([]*route.Route, error) {
+func (m *MockRouteHandler) DialrouteList(ctx context.Context, customerID uuid.UUID, target string, targetProviderIDs []uuid.UUID) ([]*route.Route, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DialrouteList", ctx, customerID, target)
+	ret := m.ctrl.Call(m, "DialrouteList", ctx, customerID, target, targetProviderIDs)
 	ret0, _ := ret[0].([]*route.Route)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // DialrouteList indicates an expected call of DialrouteList.
-func (mr *MockRouteHandlerMockRecorder) DialrouteList(ctx, customerID, target any) *gomock.Call {
+func (mr *MockRouteHandlerMockRecorder) DialrouteList(ctx, customerID, target, targetProviderIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DialrouteList", reflect.TypeOf((*MockRouteHandler)(nil).DialrouteList), ctx, customerID, target)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DialrouteList", reflect.TypeOf((*MockRouteHandler)(nil).DialrouteList), ctx, customerID, target, targetProviderIDs)
 }
 
 // Get mocks base method.

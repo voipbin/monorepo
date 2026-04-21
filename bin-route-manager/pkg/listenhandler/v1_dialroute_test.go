@@ -34,7 +34,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 				URI:      "/v1/dialroutes",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"ad06dadc-9694-4179-920c-d0bbaf6bedc3","target":"+82"}`),
+				Data:     []byte(`{"filters":{"customer_id":"ad06dadc-9694-4179-920c-d0bbaf6bedc3","target":"+82"}}`),
 			},
 
 			uuid.FromStringOrNil("ad06dadc-9694-4179-920c-d0bbaf6bedc3"),
@@ -58,7 +58,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 				URI:      "/v1/dialroutes",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"555a5772-517a-45fa-b489-c0104dc0b993","target":"+82"}`),
+				Data:     []byte(`{"filters":{"customer_id":"555a5772-517a-45fa-b489-c0104dc0b993","target":"+82"}}`),
 			},
 
 			uuid.FromStringOrNil("555a5772-517a-45fa-b489-c0104dc0b993"),
@@ -85,7 +85,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 				URI:      "/v1/dialroutes",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"d66690be-777b-4cb4-8419-9334ceb57bd8","target":"+82"}`),
+				Data:     []byte(`{"filters":{"customer_id":"d66690be-777b-4cb4-8419-9334ceb57bd8","target":"+82"}}`),
 			},
 
 			uuid.FromStringOrNil("d66690be-777b-4cb4-8419-9334ceb57bd8"),
@@ -116,7 +116,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().DialrouteList(gomock.Any(), tt.customerID, tt.target).Return(tt.responseDialroutes, nil)
+			mockRoute.EXPECT().DialrouteList(gomock.Any(), tt.customerID, tt.target, gomock.Nil()).Return(tt.responseDialroutes, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
