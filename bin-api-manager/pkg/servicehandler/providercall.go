@@ -66,6 +66,7 @@ func (h *serviceHandler) ProviderCallCreate(
 	// CallV1CallsCreate has a flow to execute after answer. Mirrors the
 	// customer call-create path (see serviceHandler.CallCreate).
 	targetFlowID := flowID
+	tempFlowCreated := false
 	if targetFlowID == uuid.Nil && len(actions) > 0 {
 		f, errFlow := h.FlowCreate(ctx, a, "tmp", "tmp outbound flow for providercall", actions, uuid.Nil, false)
 		if errFlow != nil {
@@ -73,7 +74,19 @@ func (h *serviceHandler) ProviderCallCreate(
 			return nil, errFlow
 		}
 		targetFlowID = f.ID
+		tempFlowCreated = true
 	}
+	// Best-effort cleanup: if downstream CallV1CallsCreate or
+	// RouteV1ProviderCallCreate fails after we created the temp flow,
+	// delete it so the flow-manager isn't leaked "tmp" rows.
+	var returnErr error
+	defer func() {
+		if tempFlowCreated && returnErr != nil {
+			if _, delErr := h.FlowDelete(ctx, a, targetFlowID); delErr != nil {
+				log.Errorf("Could not clean up orphaned temp flow after error. flow_id: %s, err: %v", targetFlowID, delErr)
+			}
+		}
+	}()
 
 	// build server-side metadata: force the provider + preserve admin source
 	metadata := map[string]interface{}{
@@ -95,6 +108,7 @@ func (h *serviceHandler) ProviderCallCreate(
 	)
 	if err != nil {
 		log.Errorf("Could not create calls for providercall. err: %v", err)
+		returnErr = err
 		return nil, err
 	}
 
@@ -127,6 +141,7 @@ func (h *serviceHandler) ProviderCallCreate(
 		// retrieve the Calls via GET /calls. v1 accepts this trade-off rather
 		// than compensating with a Call delete.
 		log.Errorf("Could not persist providercall record (calls were created: %v, groupcalls: %v). err: %v", callIDs, groupcallIDs, err)
+		returnErr = err
 		return nil, err
 	}
 

@@ -20037,6 +20037,22 @@ func (response GetProvidercalls200JSONResponse) VisitGetProvidercallsResponse(w 
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetProvidercalls400Response struct {
+}
+
+func (response GetProvidercalls400Response) VisitGetProvidercallsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type GetProvidercalls403Response struct {
+}
+
+func (response GetProvidercalls403Response) VisitGetProvidercallsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
 type PostProvidercallsRequestObject struct {
 	Body *PostProvidercallsJSONRequestBody
 }
@@ -20052,6 +20068,22 @@ func (response PostProvidercalls200JSONResponse) VisitPostProvidercallsResponse(
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type PostProvidercalls400Response struct {
+}
+
+func (response PostProvidercalls400Response) VisitPostProvidercallsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostProvidercalls403Response struct {
+}
+
+func (response PostProvidercalls403Response) VisitPostProvidercallsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
 }
 
 type DeleteProvidercallsIdRequestObject struct {
@@ -20071,6 +20103,22 @@ func (response DeleteProvidercallsId200JSONResponse) VisitDeleteProvidercallsIdR
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteProvidercallsId403Response struct {
+}
+
+func (response DeleteProvidercallsId403Response) VisitDeleteProvidercallsIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteProvidercallsId404Response struct {
+}
+
+func (response DeleteProvidercallsId404Response) VisitDeleteProvidercallsIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
 type GetProvidercallsIdRequestObject struct {
 	Id openapi_types.UUID `json:"id"`
 }
@@ -20086,6 +20134,22 @@ func (response GetProvidercallsId200JSONResponse) VisitGetProvidercallsIdRespons
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type GetProvidercallsId403Response struct {
+}
+
+func (response GetProvidercallsId403Response) VisitGetProvidercallsIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetProvidercallsId404Response struct {
+}
+
+func (response GetProvidercallsId404Response) VisitGetProvidercallsIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
 }
 
 type GetProvidersRequestObject struct {

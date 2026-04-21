@@ -1,6 +1,8 @@
 package server
 
 import (
+	"strings"
+
 	"monorepo/bin-api-manager/gens/openapi_server"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -10,6 +12,23 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
+
+// providercallErrorStatus maps a servicehandler error message to an HTTP
+// status code. New convention for providercall endpoints: 403 on permission
+// failures, 404 on not-found, 400 for everything else. (The rest of
+// bin-api-manager uses 400 for all errors — this endpoint sets the pattern
+// future handlers should mirror when refactored.)
+func providercallErrorStatus(err error) int {
+	msg := err.Error()
+	switch {
+	case strings.Contains(msg, "no permission"), strings.Contains(msg, "direct access not supported"):
+		return 403
+	case strings.Contains(msg, "not found"):
+		return 404
+	default:
+		return 400
+	}
+}
 
 // GetProvidercalls handles GET /v1/providercalls — list providercall audit records.
 // Gated by PermissionProjectSuperAdmin; because that role is platform-level,
@@ -50,7 +69,7 @@ func (h *server) GetProvidercalls(c *gin.Context, params openapi_server.GetProvi
 	tmps, err := h.serviceHandler.ProviderCallGets(c.Request.Context(), a, pageSize, pageToken, providerID)
 	if err != nil {
 		log.Errorf("Could not get providercalls. err: %v", err)
-		c.AbortWithStatus(400)
+		c.AbortWithStatus(providercallErrorStatus(err))
 		return
 	}
 
@@ -138,7 +157,7 @@ func (h *server) PostProvidercalls(c *gin.Context) {
 	res, err := h.serviceHandler.ProviderCallCreate(c.Request.Context(), a, providerID, flowID, actions, source, destinations, anonymous)
 	if err != nil {
 		log.Errorf("Could not create the providercall. err: %v", err)
-		c.AbortWithStatus(400)
+		c.AbortWithStatus(providercallErrorStatus(err))
 		return
 	}
 
@@ -171,7 +190,7 @@ func (h *server) GetProvidercallsId(c *gin.Context, id openapi_types.UUID) {
 	res, err := h.serviceHandler.ProviderCallGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the providercall. err: %v", err)
-		c.AbortWithStatus(400)
+		c.AbortWithStatus(providercallErrorStatus(err))
 		return
 	}
 
@@ -204,7 +223,7 @@ func (h *server) DeleteProvidercallsId(c *gin.Context, id openapi_types.UUID) {
 	res, err := h.serviceHandler.ProviderCallDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not delete the providercall. err: %v", err)
-		c.AbortWithStatus(400)
+		c.AbortWithStatus(providercallErrorStatus(err))
 		return
 	}
 

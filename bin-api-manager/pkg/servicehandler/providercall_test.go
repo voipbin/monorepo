@@ -9,6 +9,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
+	cmcall "monorepo/bin-call-manager/models/call"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -227,6 +228,115 @@ func Test_ProviderCallCreate_NonAdmin_Denied(t *testing.T) {
 	}
 }
 
-// Suppress unused-import complaint for rmprovider — kept for future
-// cross-reference when expanding the provider-related test surface.
-var _ = rmprovider.Provider{}
+func Test_ProviderCallCreate_HappyPath(t *testing.T) {
+	providerID := uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555")
+	flowID := uuid.Nil
+	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+14155551234"}
+	destinations := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+821012345678"}}
+	anonymous := "auto"
+
+	createdCallID := uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777")
+	createdProviderCallID := uuid.FromStringOrNil("88888888-8888-8888-8888-888888888888")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &serviceHandler{reqHandler: mockReq, dbHandler: mockDB}
+	ctx := context.Background()
+
+	// 1. Provider existence check passes.
+	mockReq.EXPECT().
+		RouteV1ProviderGet(ctx, providerID).
+		Return(&rmprovider.Provider{ID: providerID}, nil)
+
+	// 2. Call is created. Server-side metadata must include both keys.
+	mockReq.EXPECT().
+		CallV1CallsCreate(
+			ctx,
+			adminAgent.CustomerID,
+			flowID,
+			uuid.Nil, // master_call_id
+			source,
+			destinations,
+			false, // early_execution
+			false, // connect
+			anonymous,
+			gomock.AssignableToTypeOf(map[string]interface{}{}),
+		).
+		DoAndReturn(func(_ context.Context, _, _, _ uuid.UUID, _ *commonaddress.Address, _ []commonaddress.Address, _, _ bool, _ string, md map[string]interface{}) ([]*cmcall.Call, []interface{}, error) {
+			// Assert the metadata shape: route_provider_ids and skip_source_validation.
+			if md[string(cmcall.MetadataKeyRouteProviderIDs)] == nil {
+				t.Errorf("expected metadata to contain route_provider_ids, got %v", md)
+			}
+			if skip, ok := md[string(cmcall.MetadataKeySkipSourceValidation)].(bool); !ok || !skip {
+				t.Errorf("expected metadata.skip_source_validation=true, got %v", md)
+			}
+			return []*cmcall.Call{{Identity: commonidentity.Identity{ID: createdCallID}}}, nil, nil
+		})
+
+	// 3. ProviderCall record is persisted with the created call IDs.
+	mockReq.EXPECT().
+		RouteV1ProviderCallCreate(
+			ctx,
+			adminAgent.CustomerID,
+			providerID,
+			flowID,
+			source,
+			destinations,
+			anonymous,
+			[]uuid.UUID{createdCallID},
+			gomock.Any(),
+		).
+		Return(&rmprovidercall.ProviderCall{
+			ID:         createdProviderCallID,
+			CustomerID: adminAgent.CustomerID,
+			ProviderID: providerID,
+			CallIDs:    []uuid.UUID{createdCallID},
+		}, nil)
+
+	res, err := h.ProviderCallCreate(ctx, adminAgent, providerID, flowID, nil, source, destinations, anonymous)
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if res.ID != createdProviderCallID {
+		t.Errorf("expected ID %s, got %s", createdProviderCallID, res.ID)
+	}
+	if len(res.CallIDs) != 1 || res.CallIDs[0] != createdCallID {
+		t.Errorf("expected call_ids=[%s], got %v", createdCallID, res.CallIDs)
+	}
+}
+
+func Test_ProviderCallCreate_PartialFailure_ProviderCallPersistErrors(t *testing.T) {
+	// Documents the explicit trade-off: when CallV1CallsCreate succeeds but
+	// RouteV1ProviderCallCreate fails, the created Call records are not
+	// rolled back. The handler returns an error; the admin can still retrieve
+	// the orphaned Calls via GET /v1/calls.
+	providerID := uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555")
+	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+14155551234"}
+	destinations := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+821012345678"}}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	h := &serviceHandler{reqHandler: mockReq, dbHandler: mockDB}
+	ctx := context.Background()
+
+	createdCallID := uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777")
+
+	mockReq.EXPECT().RouteV1ProviderGet(ctx, providerID).Return(&rmprovider.Provider{ID: providerID}, nil)
+	mockReq.EXPECT().
+		CallV1CallsCreate(ctx, adminAgent.CustomerID, uuid.Nil, uuid.Nil, source, destinations, false, false, "auto", gomock.Any()).
+		Return([]*cmcall.Call{{Identity: commonidentity.Identity{ID: createdCallID}}}, nil, nil)
+	mockReq.EXPECT().
+		RouteV1ProviderCallCreate(ctx, adminAgent.CustomerID, providerID, uuid.Nil, source, destinations, "auto", []uuid.UUID{createdCallID}, gomock.Any()).
+		Return(nil, fmt.Errorf("route-manager unavailable"))
+
+	_, err := h.ProviderCallCreate(ctx, adminAgent, providerID, uuid.Nil, nil, source, destinations, "auto")
+	if err == nil {
+		t.Fatal("expected error when ProviderCall persistence fails")
+	}
+}

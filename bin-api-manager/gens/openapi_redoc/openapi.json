@@ -9383,6 +9383,12 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Forbidden. Caller is not a project super-admin."
+          },
+          "404": {
+            "description": "Providercall not found (or soft-deleted)."
           }
         }
       },
@@ -9415,6 +9421,12 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Forbidden. Caller is not a project super-admin."
+          },
+          "404": {
+            "description": "Providercall not found (already soft-deleted or unknown id)."
           }
         }
       }
@@ -9470,6 +9482,12 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request. Query params malformed."
+          },
+          "403": {
+            "description": "Forbidden. Caller is not a project super-admin."
           }
         }
       },
@@ -9544,6 +9562,12 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Bad request. Required fields missing (`provider_id`, `destinations`), malformed body, unknown `provider_id`, or invalid addresses."
+          },
+          "403": {
+            "description": "Forbidden. Caller is not a project super-admin."
           }
         }
       }

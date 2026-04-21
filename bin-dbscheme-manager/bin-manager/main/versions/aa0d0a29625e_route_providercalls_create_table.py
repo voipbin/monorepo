@@ -49,8 +49,11 @@ def upgrade():
     op.execute("""
         create index idx_route_providercalls_provider_id on route_providercalls(provider_id);
     """)
+    # Compound index for the list query pattern: WHERE tm_delete IS NULL ORDER BY tm_create DESC.
+    # MySQL can use the leading column for the equality predicate and the trailing column for ordering,
+    # so as soft-deleted rows accumulate, list queries stay index-backed instead of scanning.
     op.execute("""
-        create index idx_route_providercalls_tm_create on route_providercalls(tm_create);
+        create index idx_route_providercalls_tm_delete_tm_create on route_providercalls(tm_delete, tm_create);
     """)
 
 

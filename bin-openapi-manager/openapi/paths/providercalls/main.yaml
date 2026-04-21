@@ -33,6 +33,10 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/RouteManagerProviderCall'
+    '400':
+      description: Bad request. Query params malformed.
+    '403':
+      description: Forbidden. Caller is not a project super-admin.
 
 post:
   summary: Create a provider call
@@ -92,3 +96,7 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/RouteManagerProviderCall'
+    '400':
+      description: Bad request. Required fields missing (`provider_id`, `destinations`), malformed body, unknown `provider_id`, or invalid addresses.
+    '403':
+      description: Forbidden. Caller is not a project super-admin.

@@ -21,6 +21,10 @@ get:
         application/json:
           schema:
             $ref: '#/components/schemas/RouteManagerProviderCall'
+    '403':
+      description: Forbidden. Caller is not a project super-admin.
+    '404':
+      description: Providercall not found (or soft-deleted).
 
 delete:
   summary: Delete providercall by ID
@@ -46,3 +50,7 @@ delete:
         application/json:
           schema:
             $ref: '#/components/schemas/RouteManagerProviderCall'
+    '403':
+      description: Forbidden. Caller is not a project super-admin.
+    '404':
+      description: Providercall not found (already soft-deleted or unknown id).
