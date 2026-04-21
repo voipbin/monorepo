@@ -30,14 +30,19 @@ func (h *routeHandler) DialrouteList(
 	})
 
 	// Override: when targetProviderIDs is set, return synthetic routes in order.
+	// Duplicate provider IDs are accepted as-is; the duplicate becomes unreachable
+	// by call-manager's failover tracker since tracking matches by Route.ID == ProviderID.
+	// Deduplication is the caller's responsibility if needed.
 	if len(targetProviderIDs) > 0 {
 		// Validate provider existence before constructing synthetic routes.
 		// Fail fast so the admin gets a clear error instead of a silent mid-dial hangup.
 		for _, pid := range targetProviderIDs {
-			if _, err := h.db.ProviderGet(ctx, pid); err != nil {
+			p, err := h.db.ProviderGet(ctx, pid)
+			if err != nil {
 				log.Errorf("Could not get provider for synthetic dialroute. provider_id: %s, err: %v", pid, err)
 				return nil, errors.Wrapf(err, "provider not found: %s", pid)
 			}
+			log.WithField("provider", p).Debugf("Validated provider for synthetic route. provider_id: %s", pid)
 		}
 
 		// Use ProviderID as the synthetic Route.ID so call-manager's failover
@@ -50,11 +55,12 @@ func (h *routeHandler) DialrouteList(
 				ProviderID: pid,
 				Target:     target,
 				Priority:   i,
-				Name:       "synthetic-route",
+				Name:       "synthetic-test-route",
 				Detail:     "Synthetic route generated for route_provider_ids override. Not persisted.",
 			})
 		}
-		log.WithField("synthetic_routes", res).Info("Returning synthetic dialroutes for provider override")
+		log.Info("Returning synthetic dialroutes for provider override")
+		log.WithField("synthetic_routes", res).Debug("Synthetic dialroute details")
 		return res, nil
 	}
 
