@@ -21,8 +21,9 @@ func Test_v1DialroutesGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		customerID uuid.UUID
-		target     string
+		customerID        uuid.UUID
+		target            string
+		targetProviderIDs []uuid.UUID
 
 		responseDialroutes []*route.Route
 
@@ -39,6 +40,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 
 			uuid.FromStringOrNil("ad06dadc-9694-4179-920c-d0bbaf6bedc3"),
 			"+82",
+			nil,
 
 			[]*route.Route{
 				{
@@ -63,6 +65,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 
 			uuid.FromStringOrNil("555a5772-517a-45fa-b489-c0104dc0b993"),
 			"+82",
+			nil,
 
 			[]*route.Route{
 				{
@@ -90,6 +93,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 
 			uuid.FromStringOrNil("d66690be-777b-4cb4-8419-9334ceb57bd8"),
 			"+82",
+			nil,
 
 			[]*route.Route{},
 
@@ -97,6 +101,33 @@ func Test_v1DialroutesGet(t *testing.T) {
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`[]`),
+			},
+		},
+		{
+			"with target_provider_ids",
+			&sock.Request{
+				URI:      "/v1/dialroutes",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"filters":{"customer_id":"11111111-1111-1111-1111-111111111111","target":"+1"},"target_provider_ids":["aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"]}`),
+			},
+
+			uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+			"+1",
+			[]uuid.UUID{
+				uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+				uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+			},
+
+			[]*route.Route{
+				{ID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")},
+				{ID: uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")},
+			},
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -116,7 +147,7 @@ func Test_v1DialroutesGet(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockRoute.EXPECT().DialrouteList(gomock.Any(), tt.customerID, tt.target, gomock.Nil()).Return(tt.responseDialroutes, nil)
+			mockRoute.EXPECT().DialrouteList(gomock.Any(), tt.customerID, tt.target, tt.targetProviderIDs).Return(tt.responseDialroutes, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
