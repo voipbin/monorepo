@@ -177,6 +177,14 @@
       }
     },
     {
+      "name": "ProviderCall",
+      "description": "Operations related to providercall (admin-triggered calls placed through a specific provider)",
+      "externalDocs": {
+        "description": "Find more about providercall",
+        "url": "https://api.voipbin.net/docs/providercall.html"
+      }
+    },
+    {
       "name": "Queue",
       "description": "Operations related to queue",
       "externalDocs": {
@@ -9338,6 +9346,201 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RouteManagerProvider"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/providercalls/{id}": {
+      "get": {
+        "summary": "Get providercall by ID",
+        "description": "Retrieves a single providercall audit record. Admin-only\n(PermissionProjectSuperAdmin).\n",
+        "tags": [
+          "ProviderCall"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The providercall ID. Obtained from the `POST /providercalls` or `GET /providercalls` response.",
+            "example": "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The providercall record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteManagerProviderCall"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete providercall by ID",
+        "description": "Soft-deletes the providercall record (sets `tm_delete`). The record is\nno longer returned by `GET /providercalls`. The underlying Call records\nare not affected. Admin-only (PermissionProjectSuperAdmin).\n",
+        "tags": [
+          "ProviderCall"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The providercall ID to delete.",
+            "example": "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted providercall record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteManagerProviderCall"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/providercalls": {
+      "get": {
+        "summary": "List providercalls",
+        "description": "Returns a paginated list of providercall audit records for the authenticated\nadmin's customer. Admin-only (PermissionProjectSuperAdmin).\n",
+        "tags": [
+          "ProviderCall"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          },
+          {
+            "name": "provider_id",
+            "in": "query",
+            "required": false,
+            "description": "Optional filter — narrow to providercalls for a single provider. Obtained from the `GET /providers` response.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "4dbeabd6-f397-4375-95d2-a38411e07ed1"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of providercalls.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/RouteManagerProviderCall"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a provider call",
+        "description": "Admin-triggered outbound call placed through the specified provider. The\nhandler bypasses normal dialroute selection (via server-side metadata) and\npreserves the admin-supplied source number verbatim so provider carrier\nallowlists accept it. The created Call(s)/Groupcall(s) are persisted and\ntheir IDs are returned on the `ProviderCall` record. Admin-only\n(PermissionProjectSuperAdmin).\n",
+        "tags": [
+          "ProviderCall"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "provider_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The provider to force the call through. Obtained from the `GET /providers` response.",
+                    "example": "4dbeabd6-f397-4375-95d2-a38411e07ed1"
+                  },
+                  "flow_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Optional flow to execute after the destination answers. Obtained from the `GET /flows` response.",
+                    "example": "00000000-0000-0000-0000-000000000000"
+                  },
+                  "actions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/FlowManagerAction"
+                    },
+                    "description": "Optional inline actions. Used when no `flow_id` is supplied."
+                  },
+                  "source": {
+                    "$ref": "#/components/schemas/CommonAddress"
+                  },
+                  "destinations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/CommonAddress"
+                    },
+                    "minItems": 1,
+                    "description": "Dial targets. One Call/Groupcall is created per destination."
+                  },
+                  "anonymous": {
+                    "type": "string",
+                    "enum": [
+                      "yes",
+                      "no",
+                      "auto"
+                    ],
+                    "description": "Controls the anonymous caller-ID flag. Defaults to `auto`.",
+                    "example": "auto"
+                  }
+                },
+                "required": [
+                  "provider_id",
+                  "destinations"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created providercall record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteManagerProviderCall"
                 }
               }
             }
@@ -21151,6 +21354,111 @@
             "x-go-type": "string",
             "description": "The deletion timestamp.",
             "example": "2026-01-17T18:45:00.000000Z"
+          }
+        }
+      },
+      "RouteManagerProviderCall": {
+        "type": "object",
+        "description": "An admin-triggered call placed through a specific provider. Captures the\nadmin's original request info plus the IDs of calls/groupcalls that were\ncreated by the underlying call-creation step. Admin polls the referenced\ncall IDs via `GET /calls/{id}` for per-call state.\n",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the providercall. Returned from the `POST /providercalls` response.",
+            "example": "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The customer the record is attributed to. Set server-side from the authenticated admin's own customer.",
+            "example": "6a93f71e-8b2d-4e5f-9a1c-2d3e4f5a6b7c"
+          },
+          "provider_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The provider the call was forced through. Returned from the `GET /providers` response.",
+            "example": "4dbeabd6-f397-4375-95d2-a38411e07ed1"
+          },
+          "flow_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The flow executed after the destination answered. `00000000-0000-0000-0000-000000000000` when no flow was attached.",
+            "example": "00000000-0000-0000-0000-000000000000"
+          },
+          "source": {
+            "$ref": "#/components/schemas/CommonAddress"
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommonAddress"
+            },
+            "minItems": 1,
+            "description": "The admin-supplied dial targets. One Call or Groupcall is created per destination, depending on destination type."
+          },
+          "anonymous": {
+            "type": "string",
+            "enum": [
+              "",
+              "yes",
+              "no",
+              "auto"
+            ],
+            "x-enum-varnames": [
+              "RouteManagerProviderCallAnonymousNone",
+              "RouteManagerProviderCallAnonymousYes",
+              "RouteManagerProviderCallAnonymousNo",
+              "RouteManagerProviderCallAnonymousAuto"
+            ],
+            "description": "The anonymous caller-ID option requested. `auto` (default) resolves the same as `no` today.",
+            "example": "auto"
+          },
+          "call_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string"
+            },
+            "description": "IDs of the Call records that the call-creation step produced. Returned from the `POST /calls` response and retrievable via `GET /calls/{id}`.",
+            "example": [
+              "9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345"
+            ]
+          },
+          "groupcall_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string"
+            },
+            "description": "IDs of any Groupcall records produced when a destination resolved to a group-type address. Retrievable via `GET /groupcalls/{id}`.",
+            "example": []
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "The creation timestamp.",
+            "example": "2026-04-21T23:15:00.000000Z"
+          },
+          "tm_update": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "The last update timestamp.",
+            "example": "2026-04-21T23:15:00.000000Z"
+          },
+          "tm_delete": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "The deletion timestamp. `null` until soft-deleted.",
+            "example": "2026-04-22T00:00:00.000000Z"
           }
         }
       },

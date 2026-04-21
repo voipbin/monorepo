@@ -1,0 +1,48 @@
+get:
+  summary: Get providercall by ID
+  description: |
+    Retrieves a single providercall audit record. Admin-only
+    (PermissionProjectSuperAdmin).
+  tags:
+    - ProviderCall
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The providercall ID. Obtained from the `POST /providercalls` or `GET /providercalls` response."
+      example: "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f"
+  responses:
+    '200':
+      description: The providercall record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RouteManagerProviderCall'
+
+delete:
+  summary: Delete providercall by ID
+  description: |
+    Soft-deletes the providercall record (sets `tm_delete`). The record is
+    no longer returned by `GET /providercalls`. The underlying Call records
+    are not affected. Admin-only (PermissionProjectSuperAdmin).
+  tags:
+    - ProviderCall
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: "The providercall ID to delete."
+      example: "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f"
+  responses:
+    '200':
+      description: The deleted providercall record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RouteManagerProviderCall'

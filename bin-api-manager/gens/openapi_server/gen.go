@@ -806,6 +806,14 @@ const (
 	RouteManagerProviderHealthStatusUnknown   RouteManagerProviderHealthStatus = "unknown"
 )
 
+// Defines values for RouteManagerProviderCallAnonymous.
+const (
+	RouteManagerProviderCallAnonymousAuto RouteManagerProviderCallAnonymous = "auto"
+	RouteManagerProviderCallAnonymousNo   RouteManagerProviderCallAnonymous = "no"
+	RouteManagerProviderCallAnonymousNone RouteManagerProviderCallAnonymous = ""
+	RouteManagerProviderCallAnonymousYes  RouteManagerProviderCallAnonymous = "yes"
+)
+
 // Defines values for RouteManagerProviderType.
 const (
 	RouteManagerProviderTypeSIP RouteManagerProviderType = "sip"
@@ -912,9 +920,9 @@ const (
 
 // Defines values for PostCallsJSONBodyAnonymous.
 const (
-	Auto PostCallsJSONBodyAnonymous = "auto"
-	No   PostCallsJSONBodyAnonymous = "no"
-	Yes  PostCallsJSONBodyAnonymous = "yes"
+	PostCallsJSONBodyAnonymousAuto PostCallsJSONBodyAnonymous = "auto"
+	PostCallsJSONBodyAnonymousNo   PostCallsJSONBodyAnonymous = "no"
+	PostCallsJSONBodyAnonymousYes  PostCallsJSONBodyAnonymous = "yes"
 )
 
 // Defines values for PostCallsIdRecordingStartJSONBodyFormat.
@@ -987,6 +995,13 @@ const (
 const (
 	Line    GetConversationsJSONBodyType = "line"
 	Message GetConversationsJSONBodyType = "message"
+)
+
+// Defines values for PostProvidercallsJSONBodyAnonymous.
+const (
+	PostProvidercallsJSONBodyAnonymousAuto PostProvidercallsJSONBodyAnonymous = "auto"
+	PostProvidercallsJSONBodyAnonymousNo   PostProvidercallsJSONBodyAnonymous = "no"
+	PostProvidercallsJSONBodyAnonymousYes  PostProvidercallsJSONBodyAnonymous = "yes"
 )
 
 // Defines values for PostServiceAgentsContactsJSONBodyEmailsType.
@@ -3910,6 +3925,51 @@ type RouteManagerProvider struct {
 // RouteManagerProviderHealthStatus The health status of the provider as determined by periodic SIP OPTIONS probes.
 type RouteManagerProviderHealthStatus string
 
+// RouteManagerProviderCall An admin-triggered call placed through a specific provider. Captures the
+// admin's original request info plus the IDs of calls/groupcalls that were
+// created by the underlying call-creation step. Admin polls the referenced
+// call IDs via `GET /calls/{id}` for per-call state.
+type RouteManagerProviderCall struct {
+	// Anonymous The anonymous caller-ID option requested. `auto` (default) resolves the same as `no` today.
+	Anonymous *RouteManagerProviderCallAnonymous `json:"anonymous,omitempty"`
+
+	// CallIds IDs of the Call records that the call-creation step produced. Returned from the `POST /calls` response and retrievable via `GET /calls/{id}`.
+	CallIds *[]string `json:"call_ids,omitempty"`
+
+	// CustomerId The customer the record is attributed to. Set server-side from the authenticated admin's own customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Destinations The admin-supplied dial targets. One Call or Groupcall is created per destination, depending on destination type.
+	Destinations *[]CommonAddress `json:"destinations,omitempty"`
+
+	// FlowId The flow executed after the destination answered. `00000000-0000-0000-0000-000000000000` when no flow was attached.
+	FlowId *string `json:"flow_id,omitempty"`
+
+	// GroupcallIds IDs of any Groupcall records produced when a destination resolved to a group-type address. Retrievable via `GET /groupcalls/{id}`.
+	GroupcallIds *[]string `json:"groupcall_ids,omitempty"`
+
+	// Id The unique identifier of the providercall. Returned from the `POST /providercalls` response.
+	Id *string `json:"id,omitempty"`
+
+	// ProviderId The provider the call was forced through. Returned from the `GET /providers` response.
+	ProviderId *string `json:"provider_id,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// TmCreate The creation timestamp.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete The deletion timestamp. `null` until soft-deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate The last update timestamp.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// RouteManagerProviderCallAnonymous The anonymous caller-ID option requested. `auto` (default) resolves the same as `no` today.
+type RouteManagerProviderCallAnonymous string
+
 // RouteManagerProviderType Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
 type RouteManagerProviderType string
 
@@ -5633,6 +5693,42 @@ type PutOutplansIdDialInfoJSONBody struct {
 	TryInterval int `json:"try_interval"`
 }
 
+// GetProvidercallsParams defines parameters for GetProvidercalls.
+type GetProvidercallsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ProviderId Optional filter — narrow to providercalls for a single provider. Obtained from the `GET /providers` response.
+	ProviderId *openapi_types.UUID `form:"provider_id,omitempty" json:"provider_id,omitempty"`
+}
+
+// PostProvidercallsJSONBody defines parameters for PostProvidercalls.
+type PostProvidercallsJSONBody struct {
+	// Actions Optional inline actions. Used when no `flow_id` is supplied.
+	Actions *[]FlowManagerAction `json:"actions,omitempty"`
+
+	// Anonymous Controls the anonymous caller-ID flag. Defaults to `auto`.
+	Anonymous *PostProvidercallsJSONBodyAnonymous `json:"anonymous,omitempty"`
+
+	// Destinations Dial targets. One Call/Groupcall is created per destination.
+	Destinations []CommonAddress `json:"destinations"`
+
+	// FlowId Optional flow to execute after the destination answers. Obtained from the `GET /flows` response.
+	FlowId *openapi_types.UUID `json:"flow_id,omitempty"`
+
+	// ProviderId The provider to force the call through. Obtained from the `GET /providers` response.
+	ProviderId openapi_types.UUID `json:"provider_id"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+}
+
+// PostProvidercallsJSONBodyAnonymous defines parameters for PostProvidercalls.
+type PostProvidercallsJSONBodyAnonymous string
+
 // GetProvidersParams defines parameters for GetProviders.
 type GetProvidersParams struct {
 	// PageSize Number of results to return per page.
@@ -6597,6 +6693,9 @@ type PutOutplansIdJSONRequestBody PutOutplansIdJSONBody
 // PutOutplansIdDialInfoJSONRequestBody defines body for PutOutplansIdDialInfo for application/json ContentType.
 type PutOutplansIdDialInfoJSONRequestBody PutOutplansIdDialInfoJSONBody
 
+// PostProvidercallsJSONRequestBody defines body for PostProvidercalls for application/json ContentType.
+type PostProvidercallsJSONRequestBody PostProvidercallsJSONBody
+
 // PostProvidersJSONRequestBody defines body for PostProviders for application/json ContentType.
 type PostProvidersJSONRequestBody PostProvidersJSONBody
 
@@ -7301,6 +7400,18 @@ type ServerInterface interface {
 	// Update dial information of an existing outplan.
 	// (PUT /outplans/{id}/dial_info)
 	PutOutplansIdDialInfo(c *gin.Context, id string)
+	// List providercalls
+	// (GET /providercalls)
+	GetProvidercalls(c *gin.Context, params GetProvidercallsParams)
+	// Create a provider call
+	// (POST /providercalls)
+	PostProvidercalls(c *gin.Context)
+	// Delete providercall by ID
+	// (DELETE /providercalls/{id})
+	DeleteProvidercallsId(c *gin.Context, id openapi_types.UUID)
+	// Get providercall by ID
+	// (GET /providercalls/{id})
+	GetProvidercallsId(c *gin.Context, id openapi_types.UUID)
 	// List providers of the given customer
 	// (GET /providers)
 	GetProviders(c *gin.Context, params GetProvidersParams)
@@ -12450,6 +12561,109 @@ func (siw *ServerInterfaceWrapper) PutOutplansIdDialInfo(c *gin.Context) {
 	siw.Handler.PutOutplansIdDialInfo(c, id)
 }
 
+// GetProvidercalls operation middleware
+func (siw *ServerInterfaceWrapper) GetProvidercalls(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetProvidercallsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "provider_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "provider_id", c.Request.URL.Query(), &params.ProviderId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter provider_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetProvidercalls(c, params)
+}
+
+// PostProvidercalls operation middleware
+func (siw *ServerInterfaceWrapper) PostProvidercalls(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostProvidercalls(c)
+}
+
+// DeleteProvidercallsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteProvidercallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteProvidercallsId(c, id)
+}
+
+// GetProvidercallsId operation middleware
+func (siw *ServerInterfaceWrapper) GetProvidercallsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetProvidercallsId(c, id)
+}
+
 // GetProviders operation middleware
 func (siw *ServerInterfaceWrapper) GetProviders(c *gin.Context) {
 
@@ -15937,6 +16151,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/outplans/:id", wrapper.GetOutplansId)
 	router.PUT(options.BaseURL+"/outplans/:id", wrapper.PutOutplansId)
 	router.PUT(options.BaseURL+"/outplans/:id/dial_info", wrapper.PutOutplansIdDialInfo)
+	router.GET(options.BaseURL+"/providercalls", wrapper.GetProvidercalls)
+	router.POST(options.BaseURL+"/providercalls", wrapper.PostProvidercalls)
+	router.DELETE(options.BaseURL+"/providercalls/:id", wrapper.DeleteProvidercallsId)
+	router.GET(options.BaseURL+"/providercalls/:id", wrapper.GetProvidercallsId)
 	router.GET(options.BaseURL+"/providers", wrapper.GetProviders)
 	router.POST(options.BaseURL+"/providers", wrapper.PostProviders)
 	router.DELETE(options.BaseURL+"/providers/:id", wrapper.DeleteProvidersId)
@@ -19799,6 +20017,78 @@ func (response PutOutplansIdDialInfo200JSONResponse) VisitPutOutplansIdDialInfoR
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetProvidercallsRequestObject struct {
+	Params GetProvidercallsParams
+}
+
+type GetProvidercallsResponseObject interface {
+	VisitGetProvidercallsResponse(w http.ResponseWriter) error
+}
+
+type GetProvidercalls200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                     `json:"next_page_token,omitempty"`
+	Result        *[]RouteManagerProviderCall `json:"result,omitempty"`
+}
+
+func (response GetProvidercalls200JSONResponse) VisitGetProvidercallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostProvidercallsRequestObject struct {
+	Body *PostProvidercallsJSONRequestBody
+}
+
+type PostProvidercallsResponseObject interface {
+	VisitPostProvidercallsResponse(w http.ResponseWriter) error
+}
+
+type PostProvidercalls200JSONResponse RouteManagerProviderCall
+
+func (response PostProvidercalls200JSONResponse) VisitPostProvidercallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteProvidercallsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteProvidercallsIdResponseObject interface {
+	VisitDeleteProvidercallsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteProvidercallsId200JSONResponse RouteManagerProviderCall
+
+func (response DeleteProvidercallsId200JSONResponse) VisitDeleteProvidercallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetProvidercallsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetProvidercallsIdResponseObject interface {
+	VisitGetProvidercallsIdResponse(w http.ResponseWriter) error
+}
+
+type GetProvidercallsId200JSONResponse RouteManagerProviderCall
+
+func (response GetProvidercallsId200JSONResponse) VisitGetProvidercallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetProvidersRequestObject struct {
 	Params GetProvidersParams
 }
@@ -23035,6 +23325,18 @@ type StrictServerInterface interface {
 	// Update dial information of an existing outplan.
 	// (PUT /outplans/{id}/dial_info)
 	PutOutplansIdDialInfo(ctx context.Context, request PutOutplansIdDialInfoRequestObject) (PutOutplansIdDialInfoResponseObject, error)
+	// List providercalls
+	// (GET /providercalls)
+	GetProvidercalls(ctx context.Context, request GetProvidercallsRequestObject) (GetProvidercallsResponseObject, error)
+	// Create a provider call
+	// (POST /providercalls)
+	PostProvidercalls(ctx context.Context, request PostProvidercallsRequestObject) (PostProvidercallsResponseObject, error)
+	// Delete providercall by ID
+	// (DELETE /providercalls/{id})
+	DeleteProvidercallsId(ctx context.Context, request DeleteProvidercallsIdRequestObject) (DeleteProvidercallsIdResponseObject, error)
+	// Get providercall by ID
+	// (GET /providercalls/{id})
+	GetProvidercallsId(ctx context.Context, request GetProvidercallsIdRequestObject) (GetProvidercallsIdResponseObject, error)
 	// List providers of the given customer
 	// (GET /providers)
 	GetProviders(ctx context.Context, request GetProvidersRequestObject) (GetProvidersResponseObject, error)
@@ -29244,6 +29546,120 @@ func (sh *strictHandler) PutOutplansIdDialInfo(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutOutplansIdDialInfoResponseObject); ok {
 		if err := validResponse.VisitPutOutplansIdDialInfoResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetProvidercalls operation middleware
+func (sh *strictHandler) GetProvidercalls(ctx *gin.Context, params GetProvidercallsParams) {
+	var request GetProvidercallsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProvidercalls(ctx, request.(GetProvidercallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetProvidercalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProvidercallsResponseObject); ok {
+		if err := validResponse.VisitGetProvidercallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostProvidercalls operation middleware
+func (sh *strictHandler) PostProvidercalls(ctx *gin.Context) {
+	var request PostProvidercallsRequestObject
+
+	var body PostProvidercallsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostProvidercalls(ctx, request.(PostProvidercallsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostProvidercalls")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostProvidercallsResponseObject); ok {
+		if err := validResponse.VisitPostProvidercallsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteProvidercallsId operation middleware
+func (sh *strictHandler) DeleteProvidercallsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteProvidercallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteProvidercallsId(ctx, request.(DeleteProvidercallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteProvidercallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteProvidercallsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteProvidercallsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetProvidercallsId operation middleware
+func (sh *strictHandler) GetProvidercallsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetProvidercallsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProvidercallsId(ctx, request.(GetProvidercallsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetProvidercallsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProvidercallsIdResponseObject); ok {
+		if err := validResponse.VisitGetProvidercallsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
