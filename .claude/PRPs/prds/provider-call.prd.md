@@ -35,11 +35,11 @@ New work in this PRD:
 
 The synthetic-route flow and metadata pass-through plumbing are already live (PR #793).
 
-## Key Hypothesis
+## Motivation
 
-We believe giving project admins an API to force a call through a specific provider gives them a direct observation tool for onboarding, post-config-change verification, and routing debugging — eliminating the wait for real customer traffic. The endpoint **triggers** a real outbound call; it does not produce a pass/fail verdict. Admins observe the resulting `Call` (via the existing Call API, webhooks, or downstream observability) and apply their own judgment.
+Giving project admins an API to force a call through a specific provider gives them a direct observation tool for onboarding, post-config-change verification, and routing debugging — eliminating the wait for real customer traffic. The endpoint **triggers** a real outbound call; it does not produce a pass/fail verdict. Admins observe the resulting `Call` (via the existing Call API, webhooks, or downstream observability) and apply their own judgment.
 
-We'll know we're right when admins actually use the endpoint for provider-verification tasks and stop relying on "wait for customer complaints."
+The feature succeeds when admins adopt it for provider-verification tasks in place of waiting for customer complaints. That adoption is the signal; there is no automated measure of correctness because correctness is the admin's interpretation.
 
 ## What We're NOT Building (v1)
 
@@ -75,7 +75,7 @@ All resolved. See the Decisions Log for the full list with alternatives and rati
 - **Who**: Platform project admin (agent carrying `PermissionProjectSuperAdmin`). Cross-customer scope — can see and test every provider in the system.
 - **Current behavior**: After configuring a provider or adjusting routing, waits for real traffic and watches dashboards for failures.
 - **Trigger**: (a) onboarding a new provider, (b) debugging a routing issue, (c) verifying after a config change.
-- **Success state**: One API call (or one click in the external admin console) → triggers the call → observes the resulting `Call` via `GET /v1/calls/{id}` → moves on within a minute. The endpoint itself does not interpret the outcome.
+- **Success state**: One API call → triggers the call → observes the resulting `Call` via `GET /v1/calls/{id}` → moves on within a minute. The endpoint itself does not interpret the outcome.
 
 **Job to Be Done**
 > When the admin needs to verify a provider, I want to trigger a real call through that specific provider with admin-chosen source and destination, so I can confirm the provider is working without waiting for production traffic.
@@ -106,7 +106,7 @@ All customer-tier roles (`PermissionCustomerAdmin`, `PermissionCustomerManager`,
 
 ### MVP Scope
 
-`POST /v1/providercalls` request body: **required** `provider_id` plus the customer call API shape — `source`, `destinations`, optional `flow_id` / `actions` / `anonymous`. Gated by `PermissionProjectSuperAdmin`. `customer_id` is derived from the auth context (JWT or accesskey) — not part of the request body. Handler builds metadata `{"route_provider_ids": [<provider_id from body>], "skip_source_validation": true}` **server-side**, calls `CallV1CallsCreate` with `a.CustomerID`, then calls `RouteV1ProviderCallCreate`. Returns the `ProviderCall.WebhookMessage`. Admin polls `GET /v1/calls/{id}` for per-call outcome; `GET /v1/providercalls/{id}` for the test-record summary.
+`POST /v1/providercalls` request body: **required** `provider_id` plus the customer call API shape — `source`, `destinations`, optional `flow_id` / `actions` / `anonymous`. Gated by `PermissionProjectSuperAdmin`. `customer_id` is derived from the auth context (JWT or accesskey) — not part of the request body. Handler builds metadata `{"route_provider_ids": [<provider_id from body>], "skip_source_validation": true}` **server-side**, calls `CallV1CallsCreate` with `a.CustomerID`, then calls `RouteV1ProviderCallCreate`. Returns the `ProviderCall.WebhookMessage`. Admin polls `GET /v1/calls/{id}` for per-call outcome; `GET /v1/providercalls/{id}` for the `ProviderCall` record.
 
 ### ProviderCall (new entity in `bin-route-manager`)
 
@@ -138,7 +138,7 @@ type ProviderCall struct {
 
 **`GET /v1/providercalls` filters**:
 - Pagination: `page_size`, `page_token` (standard monorepo pattern).
-- Scope: implicitly `customer_id = a.CustomerID` (admin's own customer, from auth). No cross-customer listing in v1; if/when cross-customer attribution is reintroduced in the body, extend with an explicit `customer_id` filter.
+- Scope: implicitly `customer_id = a.CustomerID` (admin's own customer, from auth). Every `ProviderCall` belongs to its creator's customer, so listing is naturally scoped to the admin's account.
 - Optional: `provider_id` (narrow to a single provider).
 - Dialect: URL query params for scalar filters; follow the monorepo's `Parsing Filters from Request Body` pattern only if pagination/filter surface grows.
 
@@ -174,7 +174,7 @@ type ProviderCall struct {
 - Metadata is built **server-side only** — the endpoint must not accept a `metadata` field in its request body. This preserves the trust invariant from the design doc: customer-derived input never flows into `Metadata`.
 - **Response unpacking**: `CallV1CallsCreate` returns `([]*Call, []*Groupcall, error)`. Handler collects the `[]uuid.UUID` of each slice's IDs and passes them to `RouteV1ProviderCallCreate`. If `CallV1CallsCreate` fails, abort before creating the `ProviderCall` record (no orphaned records).
 - **Source-validation bypass**: handler also sets `Metadata[MetadataKeySkipSourceValidation] = true` so `bin-call-manager`'s `getValidatedSourceForOutgoingCall` (in `pkg/callhandler/outgoing_call.go`) preserves the admin-supplied source verbatim instead of silently falling back to the customer's `DefaultOutgoingSourceNumberID` when the source isn't owned by the customer. This is required because providers commonly reject INVITEs whose `From` / `P-Asserted-Identity` doesn't match a pre-allowed caller ID — the admin typically supplies a source matching that allowlist, not a number owned by an arbitrary customer.
-- **ProviderCall failure semantics**: if the `Call` creation succeeds but the `ProviderCall` persistence fails, the Call records exist without a `ProviderCall` summary. Handler should log an error and return 500 with guidance to retrieve via `GET /v1/calls?customer_id=...`. Worth calling out as a risk; v1 accepts this trade-off rather than compensating with a rollback of the created calls.
+- **ProviderCall failure semantics**: if the `Call` creation succeeds but the `ProviderCall` persistence fails, the Call records exist without a `ProviderCall` record. Handler should log an error and return 500 with guidance to retrieve via `GET /v1/calls` (auth-scoped to the admin's customer). Worth calling out as a risk; v1 accepts this trade-off rather than compensating with a rollback of the created calls.
 - OpenAPI: add a new `ProviderCall` tag (separate from the existing `Provider` tag) grouping the four paths. Add a new `RouteManagerProviderCall` schema. No changes to `CallManagerCall`.
 - RST: new top-level `providercall_*.rst` pages per Phase 5 (overview + tutorial + struct). RST rebuild per monorepo rule (`rm -rf build && python3 -m sphinx -M html source build` → force-add `build/`).
 - api-validator: read-only tests only (e.g., verify `POST` returns 403 for non-admin, verify `POST` with invalid provider_id returns an expected error). Do not create real calls per the cost-safety rule.
@@ -186,7 +186,7 @@ type ProviderCall struct {
 | Admin triggers a provider call to an unintended destination (billable) | L | Admin explicitly supplies destination; documented behavior; existing outbound rate-limit applies |
 | `route_provider_ids` visible in the targeted customer's `Call.WebhookMessage` / webhook stream | L | Customer sees a Call with internal provider UUIDs. Provider UUIDs are not secrets (already retrievable via `/v1/providers`). If concealment becomes a requirement later, strip the `route_provider_ids` key from `WebhookMessage` (not `Call`) |
 | Admin supplies a non-existent or invalid `provider_id` | M | Validate the provider exists (via `bin-route-manager` RPC) before invoking `CallV1CallsCreate`; return 404 / 400 if absent |
-| `Call` creation succeeds but `ProviderCall` persistence fails — orphaned Calls without a `ProviderCall` record | L | Admin can still find the Calls via `GET /v1/calls?customer_id=...`; v1 logs the failure and returns 500. Revisit if orphans become a practical problem (compensating delete of the Call would complicate the happy path) |
+| `Call` creation succeeds but `ProviderCall` persistence fails — orphaned Calls without a `ProviderCall` record | L | Admin can still find the Calls via `GET /v1/calls` (auth-scoped to the admin's customer); v1 logs the failure and returns 500. Revisit if orphans become a practical problem (compensating delete of the Call would complicate the happy path) |
 | Alembic migration for `provider_call` table not applied before api-manager deploy | M | Standard monorepo policy: migration file in the PR; user applies `alembic upgrade` manually with VPN access; api-manager deploy should follow the migration |
 | OpenAPI-spec change not regenerated into `bin-api-manager` server code | M | Standard monorepo rule: regenerate **both** `bin-openapi-manager` and `bin-api-manager` after schema edits |
 | RST build output not committed (gitignored) | M | Standard rule: `git add -f bin-api-manager/docsdev/build/` |
