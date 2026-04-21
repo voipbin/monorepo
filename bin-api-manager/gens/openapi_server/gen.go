@@ -810,7 +810,6 @@ const (
 const (
 	RouteManagerProviderCallAnonymousAuto RouteManagerProviderCallAnonymous = "auto"
 	RouteManagerProviderCallAnonymousNo   RouteManagerProviderCallAnonymous = "no"
-	RouteManagerProviderCallAnonymousNone RouteManagerProviderCallAnonymous = ""
 	RouteManagerProviderCallAnonymousYes  RouteManagerProviderCallAnonymous = "yes"
 )
 

@@ -12,7 +12,9 @@ import (
 )
 
 // GetProvidercalls handles GET /v1/providercalls — list providercall audit records.
-// Scope is the authenticated admin's customer (auth-derived); optional provider_id filter.
+// Gated by PermissionProjectSuperAdmin; because that role is platform-level,
+// the list is cross-customer (matches GET /v1/providercalls/{id} and DELETE
+// /v1/providercalls/{id}). Optional provider_id filter narrows to one provider.
 func (h *server) GetProvidercalls(c *gin.Context, params openapi_server.GetProvidercallsParams) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetProvidercalls",
@@ -116,8 +118,19 @@ func (h *server) PostProvidercalls(c *gin.Context) {
 			destinations = append(destinations, ConvertCommonAddress(v))
 		}
 	}
+	// OpenAPI marks destinations as required with minItems: 1, but BindJSON
+	// doesn't enforce minItems. Guard explicitly to avoid an orphaned
+	// ProviderCall record with empty call_ids.
+	if len(destinations) == 0 {
+		log.Error("destinations is required and must not be empty.")
+		c.AbortWithStatus(400)
+		return
+	}
 
-	anonymous := ""
+	// OpenAPI response schema allows only yes/no/auto on ProviderCall.Anonymous;
+	// default to "auto" when the caller omits the field so the persisted record
+	// conforms to the schema.
+	anonymous := "auto"
 	if req.Anonymous != nil {
 		anonymous = string(*req.Anonymous)
 	}

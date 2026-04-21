@@ -2377,7 +2377,6 @@ func (e RouteManagerProviderHealthStatus) Valid() bool {
 const (
 	RouteManagerProviderCallAnonymousAuto RouteManagerProviderCallAnonymous = "auto"
 	RouteManagerProviderCallAnonymousNo   RouteManagerProviderCallAnonymous = "no"
-	RouteManagerProviderCallAnonymousNone RouteManagerProviderCallAnonymous = ""
 	RouteManagerProviderCallAnonymousYes  RouteManagerProviderCallAnonymous = "yes"
 )
 
@@ -2387,8 +2386,6 @@ func (e RouteManagerProviderCallAnonymous) Valid() bool {
 	case RouteManagerProviderCallAnonymousAuto:
 		return true
 	case RouteManagerProviderCallAnonymousNo:
-		return true
-	case RouteManagerProviderCallAnonymousNone:
 		return true
 	case RouteManagerProviderCallAnonymousYes:
 		return true

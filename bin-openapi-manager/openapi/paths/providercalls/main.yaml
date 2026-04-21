@@ -1,8 +1,11 @@
 get:
   summary: List providercalls
   description: |
-    Returns a paginated list of providercall audit records for the authenticated
-    admin's customer. Admin-only (PermissionProjectSuperAdmin).
+    Returns a paginated list of providercall audit records. Admin-only
+    (PermissionProjectSuperAdmin) — because that role is platform-level,
+    the list is cross-customer (matches GET /providercalls/{id} and
+    DELETE /providercalls/{id}). Optional `provider_id` filter narrows
+    to records for a single provider.
   tags:
     - ProviderCall
   parameters:

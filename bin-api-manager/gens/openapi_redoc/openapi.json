@@ -9422,7 +9422,7 @@
     "/providercalls": {
       "get": {
         "summary": "List providercalls",
-        "description": "Returns a paginated list of providercall audit records for the authenticated\nadmin's customer. Admin-only (PermissionProjectSuperAdmin).\n",
+        "description": "Returns a paginated list of providercall audit records. Admin-only\n(PermissionProjectSuperAdmin) — because that role is platform-level,\nthe list is cross-customer (matches GET /providercalls/{id} and\nDELETE /providercalls/{id}). Optional `provider_id` filter narrows\nto records for a single provider.\n",
         "tags": [
           "ProviderCall"
         ],
@@ -21403,13 +21403,11 @@
           "anonymous": {
             "type": "string",
             "enum": [
-              "",
               "yes",
               "no",
               "auto"
             ],
             "x-enum-varnames": [
-              "RouteManagerProviderCallAnonymousNone",
               "RouteManagerProviderCallAnonymousYes",
               "RouteManagerProviderCallAnonymousNo",
               "RouteManagerProviderCallAnonymousAuto"

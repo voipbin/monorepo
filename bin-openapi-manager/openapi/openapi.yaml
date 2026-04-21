@@ -5732,12 +5732,10 @@ components:
         anonymous:
           type: string
           enum:
-            - ""
             - "yes"
             - "no"
             - "auto"
           x-enum-varnames:
-            - RouteManagerProviderCallAnonymousNone
             - RouteManagerProviderCallAnonymousYes
             - RouteManagerProviderCallAnonymousNo
             - RouteManagerProviderCallAnonymousAuto
