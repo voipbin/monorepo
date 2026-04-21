@@ -54,6 +54,33 @@ The following invariants MUST hold for every caller of `CallV1CallsCreate` and `
 
 These invariants exist because `map[string]interface{}` is a loose contract. Forwarding caller-controlled values risks privilege escalation (e.g., a customer crafting a `route_provider_ids` value to bypass their assigned routes). The invariants establish the server-side-only boundary.
 
+### Runtime key enforcement (registry)
+
+The trust invariants above are enforced by code review. An additional **runtime check** at the call-manager listen handler rejects any request containing a metadata key that isn't explicitly declared:
+
+- `bin-call-manager/models/call/metadata.go` exposes `ValidMetadataKeys map[MetadataKey]bool` — the registry of every permitted key.
+- `bin-call-manager/pkg/listenhandler/v1_calls.go` (`processV1CallsPost` and `processV1CallsIDPost`) validates each incoming metadata key against the registry. Unknown key → HTTP 400.
+
+**To add a new metadata key:**
+1. Declare a `MetadataKey` constant in `metadata.go`.
+2. Add it to `ValidMetadataKeys`.
+3. Document its purpose and whether it's set at creation time or post-creation.
+
+**What this catches:** typos (`"route_providers_ids"`), missing registry entries, obvious key-name abuse.
+**What it does NOT catch:** legitimate-key misuse (e.g., a caller forwarding customer input as `route_provider_ids`). That remains a code-review concern per the trust invariants above.
+
+### Metadata merge rule
+
+**Rule:** Caller-supplied metadata at call creation time is the **initial** state of `Call.Metadata`. Post-creation internal processes that set a key with the same name will **overwrite** the caller's value.
+
+**Example (current behavior):** `bin-call-manager/pkg/callhandler/start.go:656-668` sets `rtp_debug` after creation. If a caller pre-set `rtp_debug=false` in the metadata param, the post-creation logic would overwrite it to `true` when the customer has RTP debug enabled.
+
+**Guidance:**
+- Callers must not set keys that are managed post-creation. Today the only post-creation key is `rtp_debug`.
+- When declaring a new `MetadataKey`, its `metadata.go` comment must state whether it is **creation-time only** or **may be set/overwritten post-creation**.
+
+`route_provider_ids` is **creation-time only** — no internal process reads or mutates it after the call is created.
+
 ## Components
 
 ### `bin-call-manager`

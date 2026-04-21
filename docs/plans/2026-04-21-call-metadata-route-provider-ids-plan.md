@@ -490,38 +490,104 @@ git commit -m "NOJIRA-call-metadata-route-provider-ids
 
 ## Phase 3 — bin-call-manager: metadata on call + wire to dialroute
 
-### Task 8: Add `MetadataKeyRouteProviderIDs` constant
+### Task 8: Add `MetadataKeyRouteProviderIDs` constant + `ValidMetadataKeys` registry
 
 **Files:**
 - Modify: `bin-call-manager/models/call/metadata.go`
+- Test: `bin-call-manager/models/call/metadata_test.go` (create)
 
-**Step 1: Add the constant**
+**Step 1: Write the failing test**
+
+```go
+// bin-call-manager/models/call/metadata_test.go
+package call
+
+import "testing"
+
+func Test_ValidMetadataKeys_contains_all_declared_constants(t *testing.T) {
+    // Every declared MetadataKey constant must be registered.
+    required := []MetadataKey{
+        MetadataKeyRTPDebug,
+        MetadataKeyRouteProviderIDs,
+    }
+    for _, k := range required {
+        if !ValidMetadataKeys[k] {
+            t.Errorf("MetadataKey %q is declared but missing from ValidMetadataKeys", k)
+        }
+    }
+}
+
+func Test_ValidMetadataKeys_rejects_unknown(t *testing.T) {
+    if ValidMetadataKeys["route_providers_ids"] { // typo
+        t.Error("ValidMetadataKeys should not accept typo key")
+    }
+    if ValidMetadataKeys[""] {
+        t.Error("ValidMetadataKeys should not accept empty key")
+    }
+}
+```
+
+**Step 2: Run test to verify it fails**
+
+```bash
+cd bin-call-manager
+go test ./models/call -run Test_ValidMetadataKeys -v
+# Expected: FAIL (undefined: ValidMetadataKeys)
+```
+
+**Step 3: Implement the constant + registry**
 
 ```go
 // bin-call-manager/models/call/metadata.go
 package call
 
+// MetadataKey defines typed keys for Call.Metadata map entries.
 type MetadataKey = string
 
 const (
     // MetadataKeyRTPDebug indicates RTP debug capture was enabled for this call.
+    // Set POST-CREATION in callhandler/start.go based on customer/number metadata.
+    // Callers must not pre-set this key — it will be overwritten.
     MetadataKeyRTPDebug MetadataKey = "rtp_debug"
 
-    // MetadataKeyRouteProviderIDs lists provider UUIDs (as strings) that the call
-    // must be routed through in order. Used by the admin provider-test-call flow.
-    // When set, call-manager passes these IDs to route-manager's DialrouteList,
-    // which returns synthetic dialroutes bypassing normal customer/default merging.
+    // MetadataKeyRouteProviderIDs lists provider UUIDs (as a []string) that the call
+    // must be routed through in failover order. Used by internal admin-test flows.
+    // Set CREATION-TIME only by server-side trusted code. When present, call-manager
+    // forwards the IDs to route-manager's DialrouteList, which returns synthetic
+    // dialroutes bypassing normal customer/default merging.
     MetadataKeyRouteProviderIDs MetadataKey = "route_provider_ids"
 )
+
+// ValidMetadataKeys is the registry of every permitted metadata key.
+// Every key that may appear in Call.Metadata MUST be declared here.
+// The call-manager listen handler rejects requests with unknown keys.
+//
+// To add a new key:
+//  1. Declare a MetadataKey constant above.
+//  2. Add it to this registry.
+//  3. Document whether it is creation-time only or post-creation-mutated.
+var ValidMetadataKeys = map[MetadataKey]bool{
+    MetadataKeyRTPDebug:         true,
+    MetadataKeyRouteProviderIDs: true,
+}
 ```
 
-**Step 2: Commit**
+**Step 4: Run test to verify it passes**
 
 ```bash
-git add bin-call-manager/models/call/metadata.go
+go test ./models/call -run Test_ValidMetadataKeys -v
+# Expected: PASS
+```
+
+**Step 5: Commit**
+
+```bash
+git add bin-call-manager/models/call/metadata.go bin-call-manager/models/call/metadata_test.go
 git commit -m "NOJIRA-call-metadata-route-provider-ids
 
-- bin-call-manager: Add MetadataKeyRouteProviderIDs constant"
+- bin-call-manager: Add MetadataKeyRouteProviderIDs constant
+- bin-call-manager: Add ValidMetadataKeys registry for runtime key enforcement
+- bin-call-manager: Document creation-time vs post-creation key semantics"
 ```
 
 ---
@@ -621,16 +687,51 @@ git commit -m "NOJIRA-call-metadata-route-provider-ids
 - Modify: `bin-call-manager/pkg/listenhandler/models/request/calls.go` (add `Metadata` to `V1DataCallsIDPost` too)
 - Test: `bin-call-manager/pkg/listenhandler/v1_calls_test.go`
 
-**Step 1: Write failing test**
+**Step 1: Write failing tests**
 
-Add a `TestProcessV1CallsPost_WithMetadata` test asserting that a request body containing `"metadata": {"route_provider_ids": ["abc"]}` results in `h.callHandler.CreateCallsOutgoing` being called with that metadata argument.
+Three test cases in `v1_calls_test.go`:
+
+1. **Happy path** — request with `"metadata": {"route_provider_ids": ["<uuid>"]}` → `CreateCallsOutgoing` is called with that map.
+2. **Nil metadata** — request without `metadata` field → `CreateCallsOutgoing` is called with `nil` (backward compat).
+3. **Unknown key rejected** — request with `"metadata": {"unknown_key": "x"}` → handler returns HTTP 400 **without** calling `CreateCallsOutgoing` (S1 enforcement).
+
+```go
+// Test sketch for the rejection case
+func Test_processV1CallsPost_rejects_unknown_metadata_key(t *testing.T) {
+    req := &sock.Request{
+        URI:    "/v1/calls",
+        Method: sock.RequestMethodPost,
+        Data:   []byte(`{"customer_id":"...","metadata":{"unknown_key":"x"}}`),
+    }
+    // mockCallHandler.CreateCallsOutgoing MUST NOT be called
+    resp, _ := h.processV1CallsPost(ctx, req)
+    if resp.StatusCode != 400 {
+        t.Errorf("expected 400, got %d", resp.StatusCode)
+    }
+}
+```
 
 **Step 2: Run to fail**
 
-**Step 3: Plumb `req.Metadata` into the handler call**
+**Step 3: Plumb `req.Metadata` + add key validation**
 
 ```go
-// v1_calls.go:131
+// v1_calls.go:processV1CallsPost (and processV1CallsIDPost identically)
+var req request.V1DataCallsPost
+if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+    log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+    return simpleResponse(400), nil
+}
+
+// S1: Validate every metadata key against the registry.
+// Unknown keys are rejected to catch typos and enforce explicit key declaration.
+for key := range req.Metadata {
+    if !call.ValidMetadataKeys[key] {
+        log.Warnf("Rejected call create: unknown metadata key %q", key)
+        return simpleResponse(400), nil
+    }
+}
+
 calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(
     ctx, req.CustomerID, req.FlowID, req.MasterCallID,
     req.Source, req.Destinations,
@@ -641,13 +742,21 @@ calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(
 
 Do the same for `processV1CallsIDPost`.
 
-**Step 4: Commit**
+**Step 4: Run to verify PASS**
+
+```bash
+cd bin-call-manager
+go test ./pkg/listenhandler -v -run Test_processV1Calls
+```
+
+**Step 5: Commit**
 
 ```bash
 git add bin-call-manager/pkg/listenhandler/
 git commit -m "NOJIRA-call-metadata-route-provider-ids
 
 - bin-call-manager: Plumb metadata through processV1CallsPost and CallsIDPost
+- bin-call-manager: Reject unknown metadata keys at listen handler (ValidMetadataKeys registry)
 - bin-call-manager: Add Metadata field to V1DataCallsIDPost"
 ```
 
