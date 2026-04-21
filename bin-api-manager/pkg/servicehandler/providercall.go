@@ -160,8 +160,11 @@ func (h *serviceHandler) ProviderCallGet(ctx context.Context, a *auth.AuthIdenti
 	return tmp.ConvertWebhookMessage(), nil
 }
 
-// ProviderCallGets returns a paginated list of providercalls, scoped to the
-// admin's own customer (auth-derived), with an optional provider_id filter.
+// ProviderCallGets returns a paginated list of providercalls. Because the
+// endpoint is gated by PermissionProjectSuperAdmin — a platform-level
+// (cross-customer) role — the list is not scoped by customer_id. This
+// matches the single-record Get/Delete methods, which also do not apply
+// a customer boundary (per the PRD: "admin sees/controls every provider").
 func (h *serviceHandler) ProviderCallGets(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, providerID uuid.UUID) ([]*rmprovidercall.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderCallGets",
@@ -185,9 +188,7 @@ func (h *serviceHandler) ProviderCallGets(ctx context.Context, a *auth.AuthIdent
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	filters := map[rmprovidercall.Field]any{
-		rmprovidercall.FieldCustomerID: a.CustomerID,
-	}
+	filters := map[rmprovidercall.Field]any{}
 	if providerID != uuid.Nil {
 		filters[rmprovidercall.FieldProviderID] = providerID
 	}

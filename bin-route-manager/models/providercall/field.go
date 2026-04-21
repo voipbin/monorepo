@@ -19,7 +19,4 @@ const (
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
 	FieldTMDelete Field = "tm_delete"
-
-	// filter only
-	FieldDeleted Field = "deleted"
 )

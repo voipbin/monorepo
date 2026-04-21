@@ -722,9 +722,12 @@ func (h *callHandler) getValidatedSourceForOutgoingCall(
 	}
 
 	// metadata opts out of customer-ownership validation entirely
-	// (used by internal admin-test flows — see MetadataKeySkipSourceValidation)
+	// (used by internal admin-test flows — see MetadataKeySkipSourceValidation).
+	// Logged at Debug to avoid surfacing the source phone number (PII) in
+	// production Info logs. The skip flag is set server-side by trusted code,
+	// so its presence itself is not a signal operators need to alert on.
 	if skip, ok := metadata[call.MetadataKeySkipSourceValidation].(bool); ok && skip {
-		log.Infof("Source validation skipped per metadata. source: %s", source.Target)
+		log.Debug("Source validation skipped per metadata.")
 		return &source
 	}
 
