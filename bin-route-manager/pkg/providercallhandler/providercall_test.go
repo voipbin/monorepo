@@ -5,8 +5,14 @@ import (
 	"reflect"
 	"testing"
 
+	cmcall "monorepo/bin-call-manager/models/call"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -14,6 +20,13 @@ import (
 	"monorepo/bin-route-manager/models/providercall"
 	"monorepo/bin-route-manager/pkg/dbhandler"
 )
+
+// stubFlow builds a minimal *fmflow.Flow for use as a FlowV1FlowCreate return value.
+func stubFlow(id uuid.UUID) *fmflow.Flow {
+	return &fmflow.Flow{
+		Identity: commonidentity.Identity{ID: id},
+	}
+}
 
 func Test_Get(t *testing.T) {
 	tests := []struct {
@@ -38,9 +51,11 @@ func Test_Get(t *testing.T) {
 			defer mc.Finish()
 
 			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			h := &providerCallHandler{
 				db:            mockDB,
+				reqHandler:    mockReq,
 				notifyHandler: mockNotify,
 			}
 
@@ -59,68 +74,90 @@ func Test_Get(t *testing.T) {
 	}
 }
 
-func Test_Create(t *testing.T) {
-	tests := []struct {
-		name string
-
-		customerID   uuid.UUID
-		providerID   uuid.UUID
-		flowID       uuid.UUID
-		source       *commonaddress.Address
-		destinations []commonaddress.Address
-		anonymous    string
-		callIDs      []uuid.UUID
-		groupcallIDs []uuid.UUID
-
-		responseProviderCall *providercall.ProviderCall
-	}{
-		{
-			"normal",
-
-			uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
-			uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001"),
-			uuid.Nil,
-			&commonaddress.Address{Type: commonaddress.TypeTel, Target: "+14155551234"},
-			[]commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+821012345678"}},
-			"auto",
-			[]uuid.UUID{uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001")},
-			[]uuid.UUID{},
-
-			&providercall.ProviderCall{
-				ID:         uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000001"),
-				CustomerID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
-				ProviderID: uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001"),
-			},
-		},
+func Test_Create_NoActions_HappyPath(t *testing.T) {
+	// No inline actions + explicit flow_id — handler skips temp-flow creation
+	// and goes straight to CallV1CallsCreate, then persists the ProviderCall.
+	customerID := uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001")
+	providerID := uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001")
+	flowID := uuid.FromStringOrNil("e0000000-0000-0000-0000-000000000001")
+	source := &commonaddress.Address{Type: commonaddress.TypeTel, Target: "+14155551234"}
+	destinations := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+821012345678"}}
+	createdCallID := uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000001")
+	persistedPC := &providercall.ProviderCall{
+		ID:         uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000001"),
+		CustomerID: customerID,
+		ProviderID: providerID,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			h := &providerCallHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerCallHandler{db: mockDB, reqHandler: mockReq, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	// No FlowV1FlowCreate — caller provided a flow_id.
+	mockReq.EXPECT().
+		CallV1CallsCreate(ctx, customerID, flowID, uuid.Nil, source, destinations, false, false, "auto", gomock.Any()).
+		DoAndReturn(func(_ context.Context, _, _, _ uuid.UUID, _ *commonaddress.Address, _ []commonaddress.Address, _, _ bool, _ string, md map[string]any) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error) {
+			// Verify server-side metadata — both keys must be set by this handler.
+			if md[string(cmcall.MetadataKeyRouteProviderIDs)] == nil {
+				t.Errorf("expected metadata.route_provider_ids to be set, got %v", md)
 			}
-
-			ctx := context.Background()
-
-			// Accept any ProviderCall struct (the handler mints its own UUID).
-			mockDB.EXPECT().ProviderCallCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ProviderCallGet(ctx, gomock.Any()).Return(tt.responseProviderCall, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, providercall.EventTypeProviderCallCreated, tt.responseProviderCall).Return()
-
-			res, err := h.Create(ctx, tt.customerID, tt.providerID, tt.flowID, tt.source, tt.destinations, tt.anonymous, tt.callIDs, tt.groupcallIDs)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			if skip, ok := md[string(cmcall.MetadataKeySkipSourceValidation)].(bool); !ok || !skip {
+				t.Errorf("expected metadata.skip_source_validation=true, got %v", md)
 			}
-			if !reflect.DeepEqual(res, tt.responseProviderCall) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseProviderCall, res)
-			}
+			return []*cmcall.Call{{Identity: commonidentity.Identity{ID: createdCallID}}}, nil, nil
 		})
+	mockDB.EXPECT().ProviderCallCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderCallGet(ctx, gomock.Any()).Return(persistedPC, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, providercall.EventTypeProviderCallCreated, persistedPC).Return()
+
+	res, err := h.Create(ctx, customerID, providerID, flowID, nil, source, destinations, "auto")
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if !reflect.DeepEqual(res, persistedPC) {
+		t.Errorf("wrong match.\nexpect: %v\ngot: %v", persistedPC, res)
+	}
+}
+
+func Test_Create_WithActions_CreatesTempFlow(t *testing.T) {
+	// Inline actions without a flow_id — handler must create a temp flow
+	// via FlowV1FlowCreate and pass that flow's ID to CallV1CallsCreate.
+	customerID := uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000002")
+	providerID := uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000002")
+	actions := []fmaction.Action{{Type: fmaction.TypeHangup}}
+	destinations := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+821012345678"}}
+	tempFlowID := uuid.FromStringOrNil("f0000000-0000-0000-0000-000000000001")
+	createdCallID := uuid.FromStringOrNil("c0000000-0000-0000-0000-000000000002")
+	persistedPC := &providercall.ProviderCall{ID: uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000002")}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerCallHandler{db: mockDB, reqHandler: mockReq, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	// Temp flow is created. fmflow.TypeFlow is "flow".
+	mockReq.EXPECT().
+		FlowV1FlowCreate(ctx, customerID, gomock.Any(), "tmp", gomock.Any(), actions, uuid.Nil, false).
+		Return(stubFlow(tempFlowID), nil)
+	// Call-create uses the temp flow's ID.
+	mockReq.EXPECT().
+		CallV1CallsCreate(ctx, customerID, tempFlowID, uuid.Nil, nil, destinations, false, false, "auto", gomock.Any()).
+		Return([]*cmcall.Call{{Identity: commonidentity.Identity{ID: createdCallID}}}, nil, nil)
+	mockDB.EXPECT().ProviderCallCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderCallGet(ctx, gomock.Any()).Return(persistedPC, nil)
+	mockNotify.EXPECT().PublishEvent(ctx, providercall.EventTypeProviderCallCreated, persistedPC).Return()
+
+	if _, err := h.Create(ctx, customerID, providerID, uuid.Nil, actions, nil, destinations, "auto"); err != nil {
+		t.Fatalf("unexpected err: %v", err)
 	}
 }
 

@@ -8,26 +8,27 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
+	fmaction "monorepo/bin-flow-manager/models/action"
 	rmprovidercall "monorepo/bin-route-manager/models/providercall"
 	rmrequest "monorepo/bin-route-manager/pkg/listenhandler/models/request"
 
 	"github.com/gofrs/uuid"
 )
 
-// RouteV1ProviderCallCreate sends a request to route-manager to persist a new
-// providercall record — capturing the admin's original request info plus the
-// IDs of the calls/groupcalls that were already created by the caller via
-// CallV1CallsCreate. Returns the persisted record on success.
+// RouteV1ProviderCallCreate sends the admin's provider-call request to
+// bin-route-manager, which does the full orchestration: optional temp-flow
+// creation from inline actions, metadata construction (route_provider_ids +
+// skip_source_validation), CallV1CallsCreate, and ProviderCall persistence
+// with the resulting call IDs. Returns the persisted ProviderCall.
 func (r *requestHandler) RouteV1ProviderCallCreate(
 	ctx context.Context,
 	customerID uuid.UUID,
 	providerID uuid.UUID,
 	flowID uuid.UUID,
+	actions []fmaction.Action,
 	source *commonaddress.Address,
 	destinations []commonaddress.Address,
 	anonymous string,
-	callIDs []uuid.UUID,
-	groupcallIDs []uuid.UUID,
 ) (*rmprovidercall.ProviderCall, error) {
 	uri := "/v1/providercalls"
 
@@ -35,11 +36,10 @@ func (r *requestHandler) RouteV1ProviderCallCreate(
 		CustomerID:   customerID,
 		ProviderID:   providerID,
 		FlowID:       flowID,
+		Actions:      actions,
 		Source:       source,
 		Destinations: destinations,
 		Anonymous:    anonymous,
-		CallIDs:      callIDs,
-		GroupcallIDs: groupcallIDs,
 	}
 
 	m, err := json.Marshal(data)

@@ -12,6 +12,7 @@ package providercallhandler
 import (
 	context "context"
 	address "monorepo/bin-common-handler/models/address"
+	action "monorepo/bin-flow-manager/models/action"
 	providercall "monorepo/bin-route-manager/models/providercall"
 	reflect "reflect"
 
@@ -44,18 +45,18 @@ func (m *MockProviderCallHandler) EXPECT() *MockProviderCallHandlerMockRecorder 
 }
 
 // Create mocks base method.
-func (m *MockProviderCallHandler) Create(ctx context.Context, customerID, providerID, flowID uuid.UUID, source *address.Address, destinations []address.Address, anonymous string, callIDs, groupcallIDs []uuid.UUID) (*providercall.ProviderCall, error) {
+func (m *MockProviderCallHandler) Create(ctx context.Context, customerID, providerID, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address, anonymous string) (*providercall.ProviderCall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, customerID, providerID, flowID, source, destinations, anonymous, callIDs, groupcallIDs)
+	ret := m.ctrl.Call(m, "Create", ctx, customerID, providerID, flowID, actions, source, destinations, anonymous)
 	ret0, _ := ret[0].(*providercall.ProviderCall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockProviderCallHandlerMockRecorder) Create(ctx, customerID, providerID, flowID, source, destinations, anonymous, callIDs, groupcallIDs any) *gomock.Call {
+func (mr *MockProviderCallHandlerMockRecorder) Create(ctx, customerID, providerID, flowID, actions, source, destinations, anonymous any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockProviderCallHandler)(nil).Create), ctx, customerID, providerID, flowID, source, destinations, anonymous, callIDs, groupcallIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockProviderCallHandler)(nil).Create), ctx, customerID, providerID, flowID, actions, source, destinations, anonymous)
 }
 
 // Delete mocks base method.

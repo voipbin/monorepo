@@ -21,14 +21,18 @@ The endpoint **triggers** a call — it does not produce a pass/fail verdict. Ad
 How ProviderCalls Work
 ----------------------
 
-Placing a ProviderCall is a two-step orchestration performed by bin-api-manager:
+bin-api-manager is a thin gateway: it authenticates, verifies the ``provider_id`` exists, and forwards the full request to bin-route-manager. The orchestration happens inside route-manager (which owns the ``ProviderCall`` entity):
 
-1. **Create the underlying Call(s)** via the normal ``POST /v1/calls`` path, but with two internal metadata keys attached server-side:
+1. **Optional temp-flow creation** — when the admin supplies inline ``actions`` without a ``flow_id``, route-manager creates a temporary flow via ``FlowV1FlowCreate`` and passes that flow's id to call-manager. If any downstream step fails, the temp flow is cleaned up.
+
+2. **Server-side metadata construction** — two internal keys are attached to the Call:
 
    - ``route_provider_ids`` — tells call-manager / route-manager to return a synthetic dialroute that points at exactly the specified provider, bypassing the normal customer / default merge.
    - ``skip_source_validation`` — tells call-manager to preserve the admin-supplied source number verbatim, instead of silently falling back to the customer's ``DefaultOutgoingSourceNumberID`` when the source is not owned by the customer. Necessary because providers commonly reject INVITEs whose ``From`` / ``P-Asserted-Identity`` doesn't match a pre-allowlisted caller ID.
 
-2. **Persist the ProviderCall audit record** via route-manager, capturing the admin's request info (``customer_id``, ``provider_id``, ``flow_id``, ``source``, ``destinations``, ``anonymous``) alongside the IDs of the Call and Groupcall records that step 1 produced.
+3. **Create the underlying Call(s)** — route-manager issues ``CallV1CallsCreate`` synchronously. Call-manager persists the Call(s), reads ``route_provider_ids`` in ``getDialroutes`` and forwards them to ``DialrouteList``, honors ``skip_source_validation`` in ``getValidatedSourceForOutgoingCall``.
+
+4. **Persist the ProviderCall audit record** — route-manager saves the admin's request info (``customer_id``, ``provider_id``, ``flow_id``, ``source``, ``destinations``, ``anonymous``) alongside the IDs of the Call and Groupcall records that step 3 produced.
 
 The response is the persisted ``ProviderCall.WebhookMessage`` — an atomic record (IDs only, no embedded Call/Groupcall objects, per the VoIPBIN atomic-API rule). Admin retrieves per-call state separately.
 

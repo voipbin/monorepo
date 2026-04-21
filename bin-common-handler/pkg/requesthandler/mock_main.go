@@ -5623,18 +5623,18 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1DialrouteList(ctx, filters, tar
 }
 
 // RouteV1ProviderCallCreate mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderCallCreate(ctx context.Context, customerID, providerID, flowID uuid.UUID, source *address.Address, destinations []address.Address, anonymous string, callIDs, groupcallIDs []uuid.UUID) (*providercall.ProviderCall, error) {
+func (m *MockRequestHandler) RouteV1ProviderCallCreate(ctx context.Context, customerID, providerID, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address, anonymous string) (*providercall.ProviderCall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1ProviderCallCreate", ctx, customerID, providerID, flowID, source, destinations, anonymous, callIDs, groupcallIDs)
+	ret := m.ctrl.Call(m, "RouteV1ProviderCallCreate", ctx, customerID, providerID, flowID, actions, source, destinations, anonymous)
 	ret0, _ := ret[0].(*providercall.ProviderCall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteV1ProviderCallCreate indicates an expected call of RouteV1ProviderCallCreate.
-func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderCallCreate(ctx, customerID, providerID, flowID, source, destinations, anonymous, callIDs, groupcallIDs any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderCallCreate(ctx, customerID, providerID, flowID, actions, source, destinations, anonymous any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderCallCreate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderCallCreate), ctx, customerID, providerID, flowID, source, destinations, anonymous, callIDs, groupcallIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderCallCreate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderCallCreate), ctx, customerID, providerID, flowID, actions, source, destinations, anonymous)
 }
 
 // RouteV1ProviderCallDelete mocks base method.

@@ -16,9 +16,10 @@ import (
 	"monorepo/bin-route-manager/pkg/listenhandler/models/request"
 )
 
-// v1ProviderCallsPost handles POST /v1/providercalls — create a providercall record.
-// The caller (bin-api-manager) has already created the underlying calls; this
-// endpoint persists the audit record that correlates the request to those call IDs.
+// v1ProviderCallsPost handles POST /v1/providercalls — orchestrate an admin-triggered
+// provider call end-to-end inside route-manager: optional temp-flow creation, build
+// server-side metadata (route_provider_ids + skip_source_validation), issue
+// CallV1CallsCreate, and persist the ProviderCall audit record.
 func (h *listenHandler) v1ProviderCallsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "v1ProviderCallsPost",
@@ -36,11 +37,10 @@ func (h *listenHandler) v1ProviderCallsPost(ctx context.Context, m *sock.Request
 		req.CustomerID,
 		req.ProviderID,
 		req.FlowID,
+		req.Actions,
 		req.Source,
 		req.Destinations,
 		req.Anonymous,
-		req.CallIDs,
-		req.GroupcallIDs,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new providercall. err: %v", err)

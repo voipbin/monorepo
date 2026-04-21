@@ -1187,11 +1187,10 @@ type RequestHandler interface {
 		customerID uuid.UUID,
 		providerID uuid.UUID,
 		flowID uuid.UUID,
+		actions []fmaction.Action,
 		source *commonaddress.Address,
 		destinations []commonaddress.Address,
 		anonymous string,
-		callIDs []uuid.UUID,
-		groupcallIDs []uuid.UUID,
 	) (*rmprovidercall.ProviderCall, error)
 	RouteV1ProviderCallGet(ctx context.Context, providerCallID uuid.UUID) (*rmprovidercall.ProviderCall, error)
 	RouteV1ProviderCallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmprovidercall.Field]any) ([]rmprovidercall.ProviderCall, error)

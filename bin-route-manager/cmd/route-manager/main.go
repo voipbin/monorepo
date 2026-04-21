@@ -132,7 +132,7 @@ func runService(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHand
 
 	routeHandler := routehandler.NewRouteHandler(db, reqHandler, notifyHandler)
 	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler)
-	providerCallHandler := providercallhandler.NewProviderCallHandler(db, notifyHandler)
+	providerCallHandler := providercallhandler.NewProviderCallHandler(db, reqHandler, notifyHandler)
 
 	// start background provider health check loop
 	healthChecker := healthcheckhandler.NewHealthCheckHandler(db, reqHandler)
