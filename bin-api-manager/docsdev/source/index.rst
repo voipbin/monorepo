@@ -75,6 +75,7 @@ Welcome to VoIPBIN's documentation!
    storage
    tag
    provider
+   providercall
    route
    extension
    trunk

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en" data-content_root="./">
+<head>
+    <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+        <title>Tutorial &mdash; voipbin  documentation</title>
+    
+    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+            <link rel="index" title="Index" href="genindex.html" />
+            <link rel="search" title="Search" href="search.html" />
+            <link rel="top" title="voipbin  documentation" href="#" />
+    </head>
+<body>
+    <script type="text/javascript" src="_static/dist/blocking.js"></script>
+    <header class="container-fluid bg-primary">
+        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
+        <div class="container-fluid">
+            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
+                    <a href="intro.html"
+                        title="voipbin"
+                        class="logo navbar-brand"
+                    >
+                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
+                            class="logo-img"
+                        />
+                        VoIPBin Documentation
+                    </a>
+                
+                
+                    <div class="collapse navbar-collapse justify-content-end">
+                        <ul class="navbar-nav">
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
+                            
+                                
+                                
+                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
+                            
+                        </ul>
+                    </div>
+                
+                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="sr-only">menu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-12 col-lg-3 sidebar-container">
+                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
+<div id="searchbox" class="searchbox mb-6 px-1" role="search">
+    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
+            </div>
+            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
+        </div>
+        <input type="hidden" name="check_keywords" value="yes" />
+        <input type="hidden" name="area" value="default" />
+    </form>
+</div><div class="site-toc">
+    <nav class="toc mt-3" aria-label="Main menu">
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html#activeflow">Activeflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variable.html">Variable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="webhook.html">Webhook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="direct_hash.html">Direct Hash</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common.html">Common</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="call.html">Call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
+<li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transcribe.html">Transcribe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speaking.html">Speaking</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mediastream.html">Mediastream</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Message</a></li>
+<li class="toctree-l1"><a class="reference internal" href="email.html">Email</a></li>
+<li class="toctree-l1"><a class="reference internal" href="talk.html">Talk</a></li>
+<li class="toctree-l1"><a class="reference internal" href="conversation.html">Conversation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ai.html">AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rag.html">RAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="team.html">Team</a></li>
+<li class="toctree-l1"><a class="reference internal" href="campaign.html">Campaign</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
+<li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
+<li class="toctree-l1"><a class="reference internal" href="providercall.html">ProviderCall</a></li>
+<li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
+<li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="websocket.html">Websocket</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+    </nav>
+    <template data-toggle-item-template>
+        <button class="btn btn-sm btn-link toctree-expand" type="button">
+            <span class="sr-only">Toggle menu contents</span>
+        </button>
+    </template>
+</div>
+                    <div class="d-lg-none border-bottom">
+                        
+                    </div>
+                </div>
+            </aside>
+            <div class="col-12 col-lg-9 pt-5">
+                <header class="row align-items-baseline">
+                    <div class="col">
+                        <nav aria-label="breadcrumb">
+    <ol class="breadcrumb m-0 p-0 bg-transparent">
+        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Tutorial</li>
+    </ol>
+</nav>
+                    </div>
+                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
+                        <noscript>
+                            <p>JavaScript is required to toggle light/dark mode..</p>
+                        </noscript>
+                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
+                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
+                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
+                        </button>
+    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/providercall_tutorial.rst.txt" rel="nofollow">
+        <span class="btn-icon"><span class="fas fa-code"></span></span>
+        <span class="btn-text">View source</span>
+    </a>
+                        
+                    </div>
+                </header>
+                <div class="row" >
+                    <div class="col-12">
+                        <hr class="w-100 my-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
+                        <main role="main" id="main">
+    <section id="tutorial">
+<span id="providercall-tutorial"></span><h1>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h1>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before placing a providercall, you need:</p>
+<ul class="simple">
+<li><p>A <strong>platform super-admin</strong> authentication token. Obtain one by logging in as a user with the <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code> permission. Customer-tier tokens are rejected with 403.</p></li>
+<li><p>A <strong>provider ID</strong> (UUID). Obtain one from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/providers</span></code>. The provider must exist and must not be soft-deleted.</p></li>
+<li><p>A <strong>source address</strong> — typically a phone number in E.164 format that the provider’s carrier has pre-allowlisted as an acceptable <code class="docutils literal notranslate"><span class="pre">From</span></code> / <code class="docutils literal notranslate"><span class="pre">P-Asserted-Identity</span></code>. Because this endpoint skips the normal customer-ownership check on the source, the admin is trusted to supply a value the provider will accept.</p></li>
+<li><p>At least one <strong>destination address</strong> — typically a phone number in E.164 format.</p></li>
+<li><p>(Optional) A <strong>flow ID</strong> (UUID) from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/flows</span></code> if you want a specific flow to execute after the destination answers.</p></li>
+<li><p>(Optional) A list of <strong>inline actions</strong> (see the <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Flow Action struct</span></a>) to execute post-answer. A temporary flow is auto-created for the call if you supply actions without a <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/providercalls</span></code> endpoint creates real, billable outbound calls. One Call record is created per entry in <code class="docutils literal notranslate"><span class="pre">destinations</span></code>. The admin’s own customer is charged. Existing outbound rate-limiting applies. Do not call this endpoint in automated CI — it will generate real PSTN traffic.</p>
+</div>
+<section id="place-a-providercall">
+<h3>Place a providercall<a class="headerlink" href="#place-a-providercall" title="Link to this heading"></a></h3>
+<p>The minimum required body is <code class="docutils literal notranslate"><span class="pre">provider_id</span></code> + at least one destination. <code class="docutils literal notranslate"><span class="pre">source</span></code> is strongly recommended (without it the call leaves with no caller ID, which most providers reject).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+14155551234&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+821012345678&quot;
+            }
+        ],
+        &quot;anonymous&quot;: &quot;auto&quot;
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f&quot;,
+    &quot;customer_id&quot;: &quot;6a93f71e-8b2d-4e5f-9a1c-2d3e4f5a6b7c&quot;,
+    &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+    &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;source&quot;: {&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+14155551234&quot;, &quot;target_name&quot;: &quot;&quot;},
+    &quot;destinations&quot;: [{&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+821012345678&quot;, &quot;target_name&quot;: &quot;&quot;}],
+    &quot;anonymous&quot;: &quot;auto&quot;,
+    &quot;call_ids&quot;: [&quot;9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345&quot;],
+    &quot;groupcall_ids&quot;: [],
+    &quot;tm_create&quot;: &quot;2026-04-21 23:15:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2026-04-21 23:15:00.000000&quot;,
+    &quot;tm_delete&quot;: null
+}
+</pre></div>
+</div>
+<p>Save <code class="docutils literal notranslate"><span class="pre">call_ids[0]</span></code> as <code class="docutils literal notranslate"><span class="pre">call_id</span></code> and poll it for per-call state.</p>
+</section>
+<section id="place-a-providercall-with-inline-actions">
+<h3>Place a providercall with inline actions<a class="headerlink" href="#place-a-providercall-with-inline-actions" title="Link to this heading"></a></h3>
+<p>If you want the call to execute a short post-answer sequence (e.g., play a TTS prompt and hang up), supply inline <code class="docutils literal notranslate"><span class="pre">actions</span></code> instead of a <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>. A temporary flow is created for you.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+        &quot;source&quot;: {&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+14155551234&quot;},
+        &quot;destinations&quot;: [{&quot;type&quot;: &quot;tel&quot;, &quot;target&quot;: &quot;+821012345678&quot;}],
+        &quot;actions&quot;: [
+            {&quot;type&quot;: &quot;answer&quot;},
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;This is a provider verification call.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;,
+                    &quot;gender&quot;: &quot;female&quot;
+                }
+            },
+            {&quot;type&quot;: &quot;hangup&quot;}
+        ]
+    }&#39;
+</pre></div>
+</div>
+</section>
+<section id="observe-call-outcome">
+<h3>Observe call outcome<a class="headerlink" href="#observe-call-outcome" title="Link to this heading"></a></h3>
+<p>The ProviderCall record is an audit summary — it does not update as the call progresses. Use the standard call API with each ID in <code class="docutils literal notranslate"><span class="pre">call_ids</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;hangup_reason&quot;: &quot;&quot;,
+    &quot;metadata&quot;: {
+        &quot;route_provider_ids&quot;: [&quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;],
+        &quot;skip_source_validation&quot;: true
+    },
+    ...
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>If the call never reaches <code class="docutils literal notranslate"><span class="pre">progressing</span></code> and ends with <code class="docutils literal notranslate"><span class="pre">hangup_reason:</span> <span class="pre">failed</span></code> immediately, the provider rejected the INVITE. Common causes: hostname unreachable, authentication failure on the provider’s end, source number not on the provider’s allowlist, or destination number not supported by the provider.</p>
+</div>
+</section>
+<section id="get-list-of-providercalls">
+<h3>Get list of providercalls<a class="headerlink" href="#get-list-of-providercalls" title="Link to this heading"></a></h3>
+<p>Returns records scoped to the authenticated admin’s own customer. Optional <code class="docutils literal notranslate"><span class="pre">provider_id</span></code> filter narrows to a single provider.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providercalls?token=&lt;YOUR_AUTH_TOKEN&gt;&amp;provider_id=4dbeabd6-f397-4375-95d2-a38411e07ed1&#39;
+
+{
+    &quot;result&quot;: [
+        {
+            &quot;id&quot;: &quot;b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f&quot;,
+            &quot;provider_id&quot;: &quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;,
+            &quot;call_ids&quot;: [&quot;9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345&quot;],
+            ...
+        }
+    ],
+    &quot;next_page_token&quot;: &quot;2026-04-21 23:15:00.000000&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="get-detail-of-a-providercall">
+<h3>Get detail of a providercall<a class="headerlink" href="#get-detail-of-a-providercall" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/providercalls/b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+</pre></div>
+</div>
+</section>
+<section id="delete-soft-a-providercall">
+<h3>Delete (soft) a providercall<a class="headerlink" href="#delete-soft-a-providercall" title="Link to this heading"></a></h3>
+<p>Removes the audit record from list results. Does <strong>not</strong> affect the underlying Call records.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request DELETE &#39;https://api.voipbin.net/v1.0/providercalls/b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
+
+{
+    &quot;id&quot;: &quot;b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f&quot;,
+    &quot;tm_delete&quot;: &quot;2026-04-22 00:00:00.000000&quot;,
+    ...
+}
+</pre></div>
+</div>
+</section>
+<section id="troubleshooting">
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>403 Forbidden:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Token belongs to a customer-tier user. ProviderCalls require <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Log in as a platform super-admin or use an admin access key.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request — provider not found:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> The supplied <code class="docutils literal notranslate"><span class="pre">provider_id</span></code> does not exist, or has been soft-deleted.</p></li>
+<li><p><strong>Fix:</strong> List providers with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/providers</span></code> and choose a current ID.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Call immediately hangs up (``hangup_reason: failed``):</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Provider rejected the INVITE. Common reasons: source not on allowlist, destination unsupported, provider auth failed, hostname unreachable.</p></li>
+<li><p><strong>Fix:</strong> Review the provider’s acceptance rules. Try a source number the provider is known to accept. Cross-check the provider’s SIP server health via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/providers/{id}</span></code> (<code class="docutils literal notranslate"><span class="pre">health_status</span></code> field).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>Call reports ``no_answer`` / ``busy``:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Signaling reached the provider and the destination, but the far-end did not answer or rejected the call.</p></li>
+<li><p><strong>Fix:</strong> This usually means the provider is working correctly — the destination phone’s state is the issue, not the routing.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</section>
+</section>
+</section>
+
+</main>
+                        
+                    </div>
+                    
+                    <nav class="col-12 col-lg-3 pb-4">
+                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
+                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
+                            <ul>
+<li><a class="reference internal" href="#">Tutorial</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#place-a-providercall">Place a providercall</a></li>
+<li><a class="reference internal" href="#place-a-providercall-with-inline-actions">Place a providercall with inline actions</a></li>
+<li><a class="reference internal" href="#observe-call-outcome">Observe call outcome</a></li>
+<li><a class="reference internal" href="#get-list-of-providercalls">Get list of providercalls</a></li>
+<li><a class="reference internal" href="#get-detail-of-a-providercall">Get detail of a providercall</a></li>
+<li><a class="reference internal" href="#delete-soft-a-providercall">Delete (soft) a providercall</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+                        </div>
+                    </nav>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="container-fluid bg-primary text-light">
+        <div class="container">
+            <div class="row">
+        <div class="col p-4">
+            
+                <nav aria-label="Footer">
+                    <ul class="nav justify-content-center mb-2">
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
+                        
+                            
+                            
+                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
+                        
+                    </ul>
+                </nav>
+            
+            <div class="text-center">
+                    &copy; Copyright 2026, VoIPBIN
+            </div>
+            <div class="text-center text-white-50 font-italic mt-3">
+                <small>
+                    Created using
+                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
+                        Sphinx Wagtail Theme 6.5.0
+                    </a>
+                    and
+                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
+                        Sphinx 7.2.6
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+        </div>
+    </footer>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+        <script type="text/javascript" src="_static/dist/theme.js"></script>
+        <script type="text/javascript" src="_static/dist/vendor.js"></script>
+        <script type="text/javascript" src="_static/searchtools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
+        </script>
+        <script type="text/javascript" id="searchindexloader"></script>
+    </body>
+</html>
