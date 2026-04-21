@@ -48,9 +48,17 @@ func (h *providerCallHandler) Create(
 		tempFlowCreated = true
 	}
 
-	// Best-effort cleanup: if any downstream step fails after the temp flow
-	// was created, delete the flow so flow-manager doesn't accumulate orphaned
-	// "tmp" rows.
+	// Best-effort cleanup of the temp flow when any subsequent step fails.
+	// Uses a sentinel `returnErr` that every error-return path MUST set
+	// before returning so the defer can tell success from failure.
+	//
+	// Known limitation: this defer is process-scoped. If route-manager
+	// crashes (SIGKILL / OOM / pod eviction) between FlowV1FlowCreate and
+	// the final return, the orphaned "tmp" flow is leaked — the runtime
+	// never fires this defer. The admin-only, low-frequency nature of this
+	// endpoint makes the accumulation negligible; if it ever becomes a
+	// problem, a periodic flow-manager sweep of `name = "tmp"` + age >
+	// threshold is the right mitigation, not a distributed transaction.
 	var returnErr error
 	defer func() {
 		if tempFlowCreated && returnErr != nil {
@@ -128,6 +136,7 @@ func (h *providerCallHandler) Create(
 	res, err := h.db.ProviderCallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get created providercall info. err: %v", err)
+		returnErr = err
 		return nil, errors.Wrap(err, "could not get created providercall info")
 	}
 	h.notifyHandler.PublishEvent(ctx, providercall.EventTypeProviderCallCreated, res)

@@ -28,6 +28,16 @@ func stubFlow(id uuid.UUID) *fmflow.Flow {
 	}
 }
 
+// errTestFailure is a sentinel error for simulating downstream RPC failures in tests.
+var errTestFailure = errorsNew("downstream rpc failure")
+
+// errorsNew is a tiny local helper so we don't pull stdlib errors into imports.
+func errorsNew(msg string) error { return &stringError{msg: msg} }
+
+type stringError struct{ msg string }
+
+func (e *stringError) Error() string { return e.msg }
+
 func Test_Get(t *testing.T) {
 	tests := []struct {
 		name string
@@ -121,6 +131,41 @@ func Test_Create_NoActions_HappyPath(t *testing.T) {
 	}
 	if !reflect.DeepEqual(res, persistedPC) {
 		t.Errorf("wrong match.\nexpect: %v\ngot: %v", persistedPC, res)
+	}
+}
+
+func Test_Create_TempFlowCleanup_OnCallsCreateFailure(t *testing.T) {
+	// Exercises the defer+returnErr cleanup path: FlowV1FlowCreate succeeds,
+	// then CallV1CallsCreate fails, and the deferred cleanup must fire
+	// FlowV1FlowDelete to avoid leaking the orphaned "tmp" flow.
+	customerID := uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000003")
+	providerID := uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000003")
+	actions := []fmaction.Action{{Type: fmaction.TypeHangup}}
+	destinations := []commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+821012345678"}}
+	tempFlowID := uuid.FromStringOrNil("f0000000-0000-0000-0000-000000000002")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := &providerCallHandler{db: mockDB, reqHandler: mockReq, notifyHandler: mockNotify}
+	ctx := context.Background()
+
+	// Temp flow is created.
+	mockReq.EXPECT().
+		FlowV1FlowCreate(ctx, customerID, gomock.Any(), "tmp", gomock.Any(), actions, uuid.Nil, false).
+		Return(stubFlow(tempFlowID), nil)
+	// Call creation fails downstream.
+	mockReq.EXPECT().
+		CallV1CallsCreate(ctx, customerID, tempFlowID, uuid.Nil, nil, destinations, false, false, "auto", gomock.Any()).
+		Return(nil, nil, errTestFailure)
+	// Cleanup of the orphaned temp flow MUST fire.
+	mockReq.EXPECT().FlowV1FlowDelete(ctx, tempFlowID).Return(stubFlow(tempFlowID), nil)
+
+	if _, err := h.Create(ctx, customerID, providerID, uuid.Nil, actions, nil, destinations, "auto"); err == nil {
+		t.Fatal("expected error when CallV1CallsCreate fails")
 	}
 }
 
