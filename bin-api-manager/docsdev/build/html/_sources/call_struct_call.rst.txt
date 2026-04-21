@@ -68,7 +68,7 @@ Call
 * ``destination`` (Object): Destination address info. See :ref:`Address <common-struct-address-address>`.
 * ``status`` (enum string): The call's current status. See :ref:`Status <call-struct-call-status>`.
 * ``action`` (Object): The call's currently executing flow action. See :ref:`Action <flow-struct-action>`.
-* ``metadata`` (Object, Optional): Internal metadata for the call. Contains key-value pairs set by the system. Currently supported keys: ``rtp_debug`` (boolean) — when true, RTPEngine is capturing RTP traffic for this call.
+* ``metadata`` (Object, Optional): Internal metadata for the call. See :ref:`Call Metadata <call-struct-call-metadata>` for the list of supported keys and their meanings.
 * ``direction`` (enum string): The call's direction. See :ref:`Direction <call-struct-call-direction>`.
 * ``mute_direction`` (enum string): Which direction is muted. One of: ``""`` (none), ``in`` (inbound muted), ``out`` (outbound muted), ``both`` (both directions muted).
 * ``hangup_by`` (enum string): Which endpoint initiated the hangup. See :ref:`Hangup by <call-struct-call-hangupby>`.
@@ -219,4 +219,27 @@ noanswer    The destination did not answer before the destination's ring timeout
 dialout     The call exceeded VoIPBIN's dialing timeout before being answered. This is VoIPBIN's own timeout for outgoing calls.
 amd         The Answering Machine Detection (AMD) action detected a voicemail and hung up the call according to your AMD settings.
 =========== ============
+
+.. _call-struct-call-metadata:
+
+Call Metadata
+-------------
+
+The ``metadata`` field on a call is an internal-only key/value map populated by VoIPBIN services during call setup and execution. Customers can **read** this field via ``GET https://api.voipbin.net/v1.0/calls/{id}`` and via call webhook events for calls they own, but they **cannot set** it on call creation — ``POST /calls`` does not accept a ``metadata`` parameter, and any such field in the request body is ignored.
+
+The map is a JSON object of the form ``{"<key>": <value>}``. Keys not listed below are reserved for internal use and may appear or disappear without notice. Customers should only rely on the documented keys.
+
+Supported keys
+++++++++++++++
+
+================== ========================= ============
+Key                Type                      Description
+================== ========================= ============
+route_provider_ids Array of UUID             Ordered list of provider UUIDs to force routing through when placing the outgoing leg of a call. Set by internal admin test flows only; never populated for normal customer traffic. When present, VoIPBIN attempts the listed providers in order and bypasses the default customer provider selection.
+rtp_debug          Boolean                   When true, RTPEngine is capturing RTP traffic for this call for debugging. Inherited from the source customer or destination number metadata at call-creation time.
+================== ========================= ============
+
+.. note:: **AI Implementation Hint**
+
+   Do not include a ``metadata`` field in the request body when calling ``POST https://api.voipbin.net/v1.0/calls``. The field is read-only from a customer's perspective and is managed entirely by VoIPBIN's internal services. Treat ``metadata`` in API responses and webhook payloads as informational: use ``rtp_debug`` to surface RTP capture status in admin UIs, but do not depend on ``route_provider_ids`` being present — it only appears on internal admin test calls.
 

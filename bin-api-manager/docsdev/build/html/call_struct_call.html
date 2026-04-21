@@ -251,7 +251,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">destination</span></code> (Object): Destination address info. See <a class="reference internal" href="common_struct_address.html#common-struct-address-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The call’s current status. See <a class="reference internal" href="#call-struct-call-status"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">action</span></code> (Object): The call’s currently executing flow action. See <a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Action</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object, Optional): Internal metadata for the call. Contains key-value pairs set by the system. Currently supported keys: <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (boolean) — when true, RTPEngine is capturing RTP traffic for this call.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object, Optional): Internal metadata for the call. See <a class="reference internal" href="#call-struct-call-metadata"><span class="std std-ref">Call Metadata</span></a> for the list of supported keys and their meanings.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): The call’s direction. See <a class="reference internal" href="#call-struct-call-direction"><span class="std std-ref">Direction</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">mute_direction</span></code> (enum string): Which direction is muted. One of: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> (none), <code class="docutils literal notranslate"><span class="pre">in</span></code> (inbound muted), <code class="docutils literal notranslate"><span class="pre">out</span></code> (outbound muted), <code class="docutils literal notranslate"><span class="pre">both</span></code> (both directions muted).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">hangup_by</span></code> (enum string): Which endpoint initiated the hangup. See <a class="reference internal" href="#call-struct-call-hangupby"><span class="std std-ref">Hangup by</span></a>.</p></li>
@@ -454,6 +454,37 @@
 </tbody>
 </table>
 </section>
+<section id="call-metadata">
+<span id="call-struct-call-metadata"></span><h2>Call Metadata<a class="headerlink" href="#call-metadata" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field on a call is an internal-only key/value map populated by VoIPBIN services during call setup and execution. Customers can <strong>read</strong> this field via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> and via call webhook events for calls they own, but they <strong>cannot set</strong> it on call creation — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> does not accept a <code class="docutils literal notranslate"><span class="pre">metadata</span></code> parameter, and any such field in the request body is ignored.</p>
+<p>The map is a JSON object of the form <code class="docutils literal notranslate"><span class="pre">{&quot;&lt;key&gt;&quot;:</span> <span class="pre">&lt;value&gt;}</span></code>. Keys not listed below are reserved for internal use and may appear or disappear without notice. Customers should only rely on the documented keys.</p>
+<section id="supported-keys">
+<h3>Supported keys<a class="headerlink" href="#supported-keys" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Key</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>route_provider_ids</p></td>
+<td><p>Array of UUID</p></td>
+<td><p>Ordered list of provider UUIDs to force routing through when placing the outgoing leg of a call. Set by internal admin test flows only; never populated for normal customer traffic. When present, VoIPBIN attempts the listed providers in order and bypasses the default customer provider selection.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rtp_debug</p></td>
+<td><p>Boolean</p></td>
+<td><p>When true, RTPEngine is capturing RTP traffic for this call for debugging. Inherited from the source customer or destination number metadata at call-creation time.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Do not include a <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field in the request body when calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code>. The field is read-only from a customer’s perspective and is managed entirely by VoIPBIN’s internal services. Treat <code class="docutils literal notranslate"><span class="pre">metadata</span></code> in API responses and webhook payloads as informational: use <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> to surface RTP capture status in admin UIs, but do not depend on <code class="docutils literal notranslate"><span class="pre">route_provider_ids</span></code> being present — it only appears on internal admin test calls.</p>
+</div>
+</section>
+</section>
 </section>
 
 </main>
@@ -474,6 +505,10 @@
 <li><a class="reference internal" href="#direction">Direction</a></li>
 <li><a class="reference internal" href="#hangup-by">Hangup by</a></li>
 <li><a class="reference internal" href="#hangup-reason">Hangup reason</a></li>
+<li><a class="reference internal" href="#call-metadata">Call Metadata</a><ul>
+<li><a class="reference internal" href="#supported-keys">Supported keys</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
