@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-route-manager/models/provider"
+	"monorepo/bin-route-manager/models/providercall"
 	"monorepo/bin-route-manager/models/route"
 	"monorepo/bin-route-manager/pkg/cachehandler"
 )
@@ -26,6 +27,12 @@ type DBHandler interface {
 	ProviderDelete(ctx context.Context, id uuid.UUID) error
 	ProviderUpdate(ctx context.Context, id uuid.UUID, fields map[provider.Field]any) error
 	ProviderUpdateHealthStatus(ctx context.Context, id uuid.UUID, status string, checkedAt *time.Time) error
+
+	// providercall
+	ProviderCallCreate(ctx context.Context, p *providercall.ProviderCall) error
+	ProviderCallGet(ctx context.Context, id uuid.UUID) (*providercall.ProviderCall, error)
+	ProviderCallList(ctx context.Context, token string, limit uint64, filters map[providercall.Field]any) ([]*providercall.ProviderCall, error)
+	ProviderCallDelete(ctx context.Context, id uuid.UUID) error
 
 	// route
 	RouteCreate(ctx context.Context, r *route.Route) error

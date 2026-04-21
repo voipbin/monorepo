@@ -12,6 +12,7 @@ package dbhandler
 import (
 	context "context"
 	provider "monorepo/bin-route-manager/models/provider"
+	providercall "monorepo/bin-route-manager/models/providercall"
 	route "monorepo/bin-route-manager/models/route"
 	reflect "reflect"
 	time "time"
@@ -42,6 +43,64 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// ProviderCallCreate mocks base method.
+func (m *MockDBHandler) ProviderCallCreate(ctx context.Context, p *providercall.ProviderCall) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCallCreate", ctx, p)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ProviderCallCreate indicates an expected call of ProviderCallCreate.
+func (mr *MockDBHandlerMockRecorder) ProviderCallCreate(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCallCreate", reflect.TypeOf((*MockDBHandler)(nil).ProviderCallCreate), ctx, p)
+}
+
+// ProviderCallDelete mocks base method.
+func (m *MockDBHandler) ProviderCallDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCallDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ProviderCallDelete indicates an expected call of ProviderCallDelete.
+func (mr *MockDBHandlerMockRecorder) ProviderCallDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCallDelete", reflect.TypeOf((*MockDBHandler)(nil).ProviderCallDelete), ctx, id)
+}
+
+// ProviderCallGet mocks base method.
+func (m *MockDBHandler) ProviderCallGet(ctx context.Context, id uuid.UUID) (*providercall.ProviderCall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCallGet", ctx, id)
+	ret0, _ := ret[0].(*providercall.ProviderCall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderCallGet indicates an expected call of ProviderCallGet.
+func (mr *MockDBHandlerMockRecorder) ProviderCallGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCallGet", reflect.TypeOf((*MockDBHandler)(nil).ProviderCallGet), ctx, id)
+}
+
+// ProviderCallList mocks base method.
+func (m *MockDBHandler) ProviderCallList(ctx context.Context, token string, limit uint64, filters map[providercall.Field]any) ([]*providercall.ProviderCall, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCallList", ctx, token, limit, filters)
+	ret0, _ := ret[0].([]*providercall.ProviderCall)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderCallList indicates an expected call of ProviderCallList.
+func (mr *MockDBHandlerMockRecorder) ProviderCallList(ctx, token, limit, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCallList", reflect.TypeOf((*MockDBHandler)(nil).ProviderCallList), ctx, token, limit, filters)
 }
 
 // ProviderCreate mocks base method.
