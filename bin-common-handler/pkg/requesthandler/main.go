@@ -1159,7 +1159,7 @@ type RequestHandler interface {
 	RegistrarV1TrunkCountByCustomerID(ctx context.Context, customerID uuid.UUID) (int, error)
 
 	// route-manager dialroutes
-	RouteV1DialrouteList(ctx context.Context, filters map[rmroute.Field]any) ([]rmroute.Route, error)
+	RouteV1DialrouteList(ctx context.Context, filters map[rmroute.Field]any, targetProviderIDs []uuid.UUID) ([]rmroute.Route, error)
 
 	// route-manager providers
 	RouteV1ProviderCreate(ctx context.Context, provierType rmprovider.Type, hostname string, techPrefix string, techPostfix string, techHeaders map[string]string, name string, detail string) (*rmprovider.Provider, error)
