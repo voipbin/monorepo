@@ -75,7 +75,7 @@ All resolved. See the Decisions Log for the full list with alternatives and rati
 - **Who**: Platform project admin (agent carrying `PermissionProjectSuperAdmin`). Cross-customer scope — can see and test every provider in the system.
 - **Current behavior**: After configuring a provider or adjusting routing, waits for real traffic and watches dashboards for failures.
 - **Trigger**: (a) onboarding a new provider, (b) debugging a routing issue, (c) verifying after a config change.
-- **Success state**: One API call (or one click in the external admin console) → sees pass/fail → moves on within a minute.
+- **Success state**: One API call (or one click in the external admin console) → triggers the call → observes the resulting `Call` via `GET /v1/calls/{id}` → moves on within a minute. The endpoint itself does not interpret the outcome.
 
 **Job to Be Done**
 > When the admin needs to verify a provider, I want to trigger a real call through that specific provider with admin-chosen source and destination, so I can confirm the provider is working without waiting for production traffic.
@@ -134,6 +134,14 @@ type ProviderCall struct {
 
 `WebhookMessage` variant exposes all fields above (nothing infrastructure-only). `Actions` are not stored on the record — they are captured on each created `Call` and accessible via `CallIDs`. (Re-examine if admins report wanting replay of inline actions.)
 
+**Deletion semantics**: soft-delete via `tm_delete`. `DELETE /v1/providercalls/{id}` returns the deleted `ProviderCall.WebhookMessage` (consistent with the monorepo convention used by Call / Conference / Agent deletes).
+
+**`GET /v1/providercalls` filters**:
+- Pagination: `page_size`, `page_token` (standard monorepo pattern).
+- Scope: implicitly `customer_id = a.CustomerID` (admin's own customer, from auth). No cross-customer listing in v1; if/when cross-customer attribution is reintroduced in the body, extend with an explicit `customer_id` filter.
+- Optional: `provider_id` (narrow to a single provider).
+- Dialect: URL query params for scalar filters; follow the monorepo's `Parsing Filters from Request Body` pattern only if pagination/filter surface grows.
+
 ### User Flow
 
 1. Admin authenticates with `PermissionProjectSuperAdmin`.
@@ -159,7 +167,7 @@ type ProviderCall struct {
 - `ProviderCall` model files: `bin-route-manager/models/providercall/providercall.go`, `field.go`, `webhook.go`. Business handler in `pkg/providercallhandler/`. dbhandler methods added to `pkg/dbhandler/providercall.go` and `DBHandler` interface. RabbitMQ routes in the listen handler.
 - `bin-common-handler` gets new wrappers: `RouteV1ProviderCallCreate`, `RouteV1ProviderCallGet`, `RouteV1ProviderCallGets`, `RouteV1ProviderCallDelete`. Additive — no existing RPC signatures change.
 - `bin-call-manager` gets one new metadata constant (`MetadataKeySkipSourceValidation`) + one branch in `getValidatedSourceForOutgoingCall`. No schema change.
-- `bin-api-manager` orchestrates: validate customer → build metadata → `CallV1CallsCreate` → `RouteV1ProviderCallCreate` → return `ProviderCall.WebhookMessage`.
+- `bin-api-manager` orchestrates: check permission → read `customer_id` from auth → validate `provider_id` (via route-manager) → build metadata → `CallV1CallsCreate` → `RouteV1ProviderCallCreate` → return `ProviderCall.WebhookMessage`.
 - Services touched: `bin-call-manager`, `bin-route-manager`, `bin-dbscheme-manager`, `bin-common-handler`, `bin-api-manager`, `bin-openapi-manager`, `bin-api-manager/docsdev/`, `monorepo-monitoring/api-validator/`.
 - Admin permission check uses the existing pattern: `h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionProjectSuperAdmin)`.
 - **Customer attribution**: `customer_id` is derived from the auth context (`a.CustomerID` — the project admin's own customer, carried in the JWT or accesskey). Not accepted in the request body. `CallV1CallsCreate` is invoked with `a.CustomerID`. No additional customer-validation RPC needed — auth middleware already ensures the agent/customer is valid.
@@ -167,8 +175,8 @@ type ProviderCall struct {
 - **Response unpacking**: `CallV1CallsCreate` returns `([]*Call, []*Groupcall, error)`. Handler collects the `[]uuid.UUID` of each slice's IDs and passes them to `RouteV1ProviderCallCreate`. If `CallV1CallsCreate` fails, abort before creating the `ProviderCall` record (no orphaned records).
 - **Source-validation bypass**: handler also sets `Metadata[MetadataKeySkipSourceValidation] = true` so `bin-call-manager`'s `getValidatedSourceForOutgoingCall` (in `pkg/callhandler/outgoing_call.go`) preserves the admin-supplied source verbatim instead of silently falling back to the customer's `DefaultOutgoingSourceNumberID` when the source isn't owned by the customer. This is required because providers commonly reject INVITEs whose `From` / `P-Asserted-Identity` doesn't match a pre-allowed caller ID — the admin typically supplies a source matching that allowlist, not a number owned by an arbitrary customer.
 - **ProviderCall failure semantics**: if the `Call` creation succeeds but the `ProviderCall` persistence fails, the Call records exist without a `ProviderCall` summary. Handler should log an error and return 500 with guidance to retrieve via `GET /v1/calls?customer_id=...`. Worth calling out as a risk; v1 accepts this trade-off rather than compensating with a rollback of the created calls.
-- OpenAPI: add the new endpoint under the `Provider` tag. No schema additions — `CallManagerCall` already has `metadata`.
-- RST: a new tutorial entry under `provider_tutorial.rst` (or similar) showing the admin flow; a struct note if needed. RST rebuild per monorepo rule (`rm -rf build && python3 -m sphinx -M html source build` → force-add `build/`).
+- OpenAPI: add a new `ProviderCall` tag (separate from the existing `Provider` tag) grouping the four paths. Add a new `RouteManagerProviderCall` schema. No changes to `CallManagerCall`.
+- RST: new top-level `providercall_*.rst` pages per Phase 5 (overview + tutorial + struct). RST rebuild per monorepo rule (`rm -rf build && python3 -m sphinx -M html source build` → force-add `build/`).
 - api-validator: read-only tests only (e.g., verify `POST` returns 403 for non-admin, verify `POST` with invalid provider_id returns an expected error). Do not create real calls per the cost-safety rule.
 
 **Technical Risks**
@@ -218,7 +226,7 @@ type ProviderCall struct {
 **Phase 2: `bin-dbscheme-manager` migration + `bin-route-manager` `ProviderCall` entity**
 - Goal: First-class audit entity that wraps a provider-test request plus the resulting call / groupcall IDs.
 - Scope:
-  - `bin-dbscheme-manager` — new Alembic migration generated via `alembic revision` (never hand-rolled) creating a `provider_call` table with columns for all `ProviderCall` fields.
+  - `bin-dbscheme-manager` — new Alembic migration generated via `alembic revision` (never hand-rolled) creating a `provider_call` table with columns for all `ProviderCall` fields. Implement both `upgrade()` and `downgrade()`; `tm_delete` default `"9999-01-01 00:00:00.000000"` for active rows.
   - `bin-route-manager/models/providercall/providercall.go`, `field.go`, `webhook.go` — model + typed `Field` enum + external-facing `WebhookMessage` variant.
   - `bin-route-manager/pkg/dbhandler/providercall.go` — squirrel-based CRUD using `commondatabasehandler.PrepareFields` / `ScanRow`; added to the `DBHandler` interface; empty-slice init on list.
   - `bin-route-manager/pkg/providercallhandler/` — business handler.
@@ -228,16 +236,21 @@ type ProviderCall struct {
 **Phase 3: `bin-common-handler` RPC wrappers**
 - Goal: Expose the new route-manager RPCs to all consumers.
 - Scope: `bin-common-handler/pkg/requesthandler/` — add `RouteV1ProviderCallCreate`, `RouteV1ProviderCallGet`, `RouteV1ProviderCallGets`, `RouteV1ProviderCallDelete`; regenerate mocks.
+- Blast radius: additive-only signatures, but the full verification workflow must run on `bin-common-handler` AND every service that imports it (30+). Most of the wall-clock is the cross-service verification, not the wrapper code itself.
 - Success signal: full verification workflow (`go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run`) passes on `bin-common-handler` AND every service that imports it.
+
+**Operator step (manual, between Phase 2 and Phase 4)**
+- Apply the Alembic migration from Phase 2 to the target environments: `alembic upgrade head` in `bin-dbscheme-manager` (requires VPN + manual authorization per monorepo policy). Phase 4's end-to-end verification depends on the `provider_call` table existing at runtime. Phases 2 and 3 can still land as code without the migration being applied; only Phase 4 verification is blocked.
 
 **Phase 4: `bin-api-manager` endpoint + OpenAPI**
 - Goal: Public HTTP surface for provider test calls and retrieval.
+- Concurrency note: Phase 4 implementation can be written in parallel with Phase 3 by mocking the new `RouteV1ProviderCall*` RPCs; only Phase 4 **verification** (and merge) requires Phase 3 landing first so the mocks line up with real signatures.
 - Scope:
   - `pkg/servicehandler/` — new methods for `ProviderCallCreate`, `ProviderCallGet`, `ProviderCallGets`, `ProviderCallDelete`. The create method checks `PermissionProjectSuperAdmin`, takes `customer_id` from `a.CustomerID`, validates `provider_id` (from body), builds metadata with **both** keys, calls `CallV1CallsCreate`, then `RouteV1ProviderCallCreate`, returns `ProviderCall.WebhookMessage`. All Get/Delete methods also require `PermissionProjectSuperAdmin`.
   - `server/` — route registrations.
   - `bin-openapi-manager/openapi/openapi.yaml` — new paths `/providercalls` (GET list, POST create) and `/providercalls/{id}` (GET, DELETE); modular path files under `paths/providercalls/` (`main.yaml`, `id.yaml`). New `RouteManagerProviderCall` schema that mirrors the `WebhookMessage`. Follow AI-Native spec rules (realistic examples, `format: uuid` on ID fields, `minItems: 1` on `destinations`, etc.).
   - Regenerate `go generate ./...` in both `bin-openapi-manager` and `bin-api-manager`.
-- Success signal: endpoints callable in a local dev environment; unit tests pass for permission, customer-id validation, metadata construction, and providercall orchestration; both services' verification workflows green.
+- Success signal: endpoints callable in a local dev environment; unit tests pass for permission, `provider_id` validation, metadata construction, and providercall orchestration; both services' verification workflows green.
 
 **Phase 5: RST docs**
 - Goal: Public docs reflect the new admin endpoint and the `ProviderCall` struct.
@@ -248,7 +261,7 @@ type ProviderCall struct {
 - Goal: Regression coverage without incurring real-call cost.
 - Scope: `monorepo-monitoring/api-validator/` — tests that verify:
   - Non-admin gets 403 on POST / GET list / GET by ID / DELETE.
-  - POST with missing or unknown `provider_id` returns the expected error.
+  - POST with missing, malformed, unknown, or soft-deleted `provider_id` returns the expected error (soft-deleted requires that `ProviderGet` filters `tm_delete`, which the synthetic-route flow relies on).
   - GET list / GET by ID return the expected schema.
   - DELETE on an unknown ID returns the expected error; DELETE response shape matches `ProviderCall.WebhookMessage`.
   - OpenAPI schema conformance for request/response shape.
