@@ -262,6 +262,7 @@ func (h *campaignHandler) executeCall(
 		false,
 		false,
 		"",
+		nil,
 	)
 	if err != nil {
 		// update camapaign call to fail
