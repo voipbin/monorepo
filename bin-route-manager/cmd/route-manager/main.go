@@ -28,6 +28,7 @@ import (
 	"monorepo/bin-route-manager/pkg/dbhandler"
 	"monorepo/bin-route-manager/pkg/healthcheckhandler"
 	"monorepo/bin-route-manager/pkg/listenhandler"
+	"monorepo/bin-route-manager/pkg/providercallhandler"
 	"monorepo/bin-route-manager/pkg/providerhandler"
 	"monorepo/bin-route-manager/pkg/routehandler"
 )
@@ -131,13 +132,14 @@ func runService(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHand
 
 	routeHandler := routehandler.NewRouteHandler(db, reqHandler, notifyHandler)
 	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler)
+	providerCallHandler := providercallhandler.NewProviderCallHandler(db, reqHandler, notifyHandler)
 
 	// start background provider health check loop
 	healthChecker := healthcheckhandler.NewHealthCheckHandler(db, reqHandler)
 	go healthChecker.Run(ctx, cfg.HealthCheckInterval)
 
 	// run request listener
-	if err := runRequestListen(sockHandler, providerHandler, routeHandler); err != nil {
+	if err := runRequestListen(sockHandler, providerHandler, providerCallHandler, routeHandler); err != nil {
 		return err
 	}
 
@@ -145,8 +147,8 @@ func runService(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHand
 }
 
 // runRequestListen runs the request listen service
-func runRequestListen(sockHandler sockhandler.SockHandler, providerHandler providerhandler.ProviderHandler, routeHandler routehandler.RouteHandler) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, providerHandler, routeHandler)
+func runRequestListen(sockHandler sockhandler.SockHandler, providerHandler providerhandler.ProviderHandler, providerCallHandler providercallhandler.ProviderCallHandler, routeHandler routehandler.RouteHandler) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, providerHandler, providerCallHandler, routeHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameRouteRequest), string(commonoutline.QueueNameDelay)); err != nil {

@@ -131,6 +131,12 @@ tags:
       description: Find more about provider
       url: https://api.voipbin.net/docs/provider.html
 
+  - name: ProviderCall
+    description: Operations related to providercall (admin-triggered calls placed through a specific provider)
+    externalDocs:
+      description: Find more about providercall
+      url: https://api.voipbin.net/docs/providercall.html
+
   - name: Queue
     description: Operations related to queue
     externalDocs:
@@ -5683,6 +5689,93 @@ components:
           description: "The deletion timestamp."
           example: "2026-01-17T18:45:00.000000Z"
 
+    RouteManagerProviderCall:
+      type: object
+      description: |
+        An admin-triggered call placed through a specific provider. Captures the
+        admin's original request info plus the IDs of calls/groupcalls that were
+        created by the underlying call-creation step. Admin polls the referenced
+        call IDs via `GET /calls/{id}` for per-call state.
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the providercall. Returned from the `POST /providercalls` response."
+          example: "b7d1c0f6-9a2e-4b3f-8e2a-1c7d5b8a9e0f"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The customer the record is attributed to. Set server-side from the authenticated admin's own customer."
+          example: "6a93f71e-8b2d-4e5f-9a1c-2d3e4f5a6b7c"
+        provider_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The provider the call was forced through. Returned from the `GET /providers` response."
+          example: "4dbeabd6-f397-4375-95d2-a38411e07ed1"
+        flow_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The flow executed after the destination answered. `00000000-0000-0000-0000-000000000000` when no flow was attached."
+          example: "00000000-0000-0000-0000-000000000000"
+        source:
+          $ref: '#/components/schemas/CommonAddress'
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommonAddress'
+          minItems: 1
+          description: "The admin-supplied dial targets. One Call or Groupcall is created per destination, depending on destination type."
+        anonymous:
+          type: string
+          enum:
+            - "yes"
+            - "no"
+            - "auto"
+          x-enum-varnames:
+            - RouteManagerProviderCallAnonymousYes
+            - RouteManagerProviderCallAnonymousNo
+            - RouteManagerProviderCallAnonymousAuto
+          description: "The anonymous caller-ID option requested. `auto` (default) resolves the same as `no` today."
+          example: "auto"
+        call_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: "IDs of the Call records that the call-creation step produced. Returned from the `POST /calls` response and retrievable via `GET /calls/{id}`."
+          example: ["9f8e7d6c-5b4a-3c2d-1e0f-abcdef012345"]
+        groupcall_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: "IDs of any Groupcall records produced when a destination resolved to a group-type address. Retrievable via `GET /groupcalls/{id}`."
+          example: []
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "The creation timestamp."
+          example: "2026-04-21T23:15:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "The last update timestamp."
+          example: "2026-04-21T23:15:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "The deletion timestamp. `null` until soft-deleted."
+          example: "2026-04-22T00:00:00.000000Z"
+
     RouteManagerRoute:
       type: object
       properties:
@@ -7086,6 +7179,11 @@ paths:
     $ref: './paths/providers/id.yaml'
   /providers:
     $ref: './paths/providers/main.yaml'
+
+  /providercalls/{id}:
+    $ref: './paths/providercalls/id.yaml'
+  /providercalls:
+    $ref: './paths/providercalls/main.yaml'
 
   /queuecalls/{id}/kick:
     $ref: './paths/queuecalls/id_kick.yaml'

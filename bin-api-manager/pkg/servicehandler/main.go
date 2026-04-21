@@ -63,6 +63,7 @@ import (
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 
 	rmprovider "monorepo/bin-route-manager/models/provider"
+	rmprovidercall "monorepo/bin-route-manager/models/providercall"
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
@@ -674,6 +675,21 @@ type ServiceHandler interface {
 		name string,
 		detail string,
 	) (*rmprovider.WebhookMessage, error)
+
+	// providercall handlers
+	ProviderCallCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		providerID uuid.UUID,
+		flowID uuid.UUID,
+		actions []fmaction.Action,
+		source *commonaddress.Address,
+		destinations []commonaddress.Address,
+		anonymous string,
+	) (*rmprovidercall.WebhookMessage, error)
+	ProviderCallGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovidercall.WebhookMessage, error)
+	ProviderCallGets(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, providerID uuid.UUID) ([]*rmprovidercall.WebhookMessage, error)
+	ProviderCallDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovidercall.WebhookMessage, error)
 
 	// queue handlers
 	QueueGet(ctx context.Context, a *auth.AuthIdentity, queueID uuid.UUID) (*qmqueue.WebhookMessage, error)

@@ -55,6 +55,7 @@ import (
 	sipauth "monorepo/bin-registrar-manager/models/sipauth"
 	trunk "monorepo/bin-registrar-manager/models/trunk"
 	provider "monorepo/bin-route-manager/models/provider"
+	providercall "monorepo/bin-route-manager/models/providercall"
 	route "monorepo/bin-route-manager/models/route"
 	account1 "monorepo/bin-storage-manager/models/account"
 	file "monorepo/bin-storage-manager/models/file"
@@ -3071,6 +3072,66 @@ func (m *MockServiceHandler) OutplanUpdateDialInfo(ctx context.Context, a *auth.
 func (mr *MockServiceHandlerMockRecorder) OutplanUpdateDialInfo(ctx, a, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutplanUpdateDialInfo", reflect.TypeOf((*MockServiceHandler)(nil).OutplanUpdateDialInfo), ctx, a, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
+}
+
+// ProviderCallCreate mocks base method.
+func (m *MockServiceHandler) ProviderCallCreate(ctx context.Context, a *auth.AuthIdentity, providerID, flowID uuid.UUID, actions []action.Action, source *address.Address, destinations []address.Address, anonymous string) (*providercall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCallCreate", ctx, a, providerID, flowID, actions, source, destinations, anonymous)
+	ret0, _ := ret[0].(*providercall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderCallCreate indicates an expected call of ProviderCallCreate.
+func (mr *MockServiceHandlerMockRecorder) ProviderCallCreate(ctx, a, providerID, flowID, actions, source, destinations, anonymous any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCallCreate", reflect.TypeOf((*MockServiceHandler)(nil).ProviderCallCreate), ctx, a, providerID, flowID, actions, source, destinations, anonymous)
+}
+
+// ProviderCallDelete mocks base method.
+func (m *MockServiceHandler) ProviderCallDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*providercall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCallDelete", ctx, a, id)
+	ret0, _ := ret[0].(*providercall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderCallDelete indicates an expected call of ProviderCallDelete.
+func (mr *MockServiceHandlerMockRecorder) ProviderCallDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCallDelete", reflect.TypeOf((*MockServiceHandler)(nil).ProviderCallDelete), ctx, a, id)
+}
+
+// ProviderCallGet mocks base method.
+func (m *MockServiceHandler) ProviderCallGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*providercall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCallGet", ctx, a, id)
+	ret0, _ := ret[0].(*providercall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderCallGet indicates an expected call of ProviderCallGet.
+func (mr *MockServiceHandlerMockRecorder) ProviderCallGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCallGet", reflect.TypeOf((*MockServiceHandler)(nil).ProviderCallGet), ctx, a, id)
+}
+
+// ProviderCallGets mocks base method.
+func (m *MockServiceHandler) ProviderCallGets(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, providerID uuid.UUID) ([]*providercall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderCallGets", ctx, a, size, token, providerID)
+	ret0, _ := ret[0].([]*providercall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderCallGets indicates an expected call of ProviderCallGets.
+func (mr *MockServiceHandlerMockRecorder) ProviderCallGets(ctx, a, size, token, providerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCallGets", reflect.TypeOf((*MockServiceHandler)(nil).ProviderCallGets), ctx, a, size, token, providerID)
 }
 
 // ProviderCreate mocks base method.

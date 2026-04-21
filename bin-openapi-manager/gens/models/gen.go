@@ -2373,6 +2373,27 @@ func (e RouteManagerProviderHealthStatus) Valid() bool {
 	}
 }
 
+// Defines values for RouteManagerProviderCallAnonymous.
+const (
+	RouteManagerProviderCallAnonymousAuto RouteManagerProviderCallAnonymous = "auto"
+	RouteManagerProviderCallAnonymousNo   RouteManagerProviderCallAnonymous = "no"
+	RouteManagerProviderCallAnonymousYes  RouteManagerProviderCallAnonymous = "yes"
+)
+
+// Valid indicates whether the value is a known member of the RouteManagerProviderCallAnonymous enum.
+func (e RouteManagerProviderCallAnonymous) Valid() bool {
+	switch e {
+	case RouteManagerProviderCallAnonymousAuto:
+		return true
+	case RouteManagerProviderCallAnonymousNo:
+		return true
+	case RouteManagerProviderCallAnonymousYes:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for RouteManagerProviderType.
 const (
 	RouteManagerProviderTypeSIP RouteManagerProviderType = "sip"
@@ -2687,19 +2708,19 @@ func (e TtsManagerSpeakingStatus) Valid() bool {
 
 // Defines values for PostCallsJSONBodyAnonymous.
 const (
-	Auto PostCallsJSONBodyAnonymous = "auto"
-	No   PostCallsJSONBodyAnonymous = "no"
-	Yes  PostCallsJSONBodyAnonymous = "yes"
+	PostCallsJSONBodyAnonymousAuto PostCallsJSONBodyAnonymous = "auto"
+	PostCallsJSONBodyAnonymousNo   PostCallsJSONBodyAnonymous = "no"
+	PostCallsJSONBodyAnonymousYes  PostCallsJSONBodyAnonymous = "yes"
 )
 
 // Valid indicates whether the value is a known member of the PostCallsJSONBodyAnonymous enum.
 func (e PostCallsJSONBodyAnonymous) Valid() bool {
 	switch e {
-	case Auto:
+	case PostCallsJSONBodyAnonymousAuto:
 		return true
-	case No:
+	case PostCallsJSONBodyAnonymousNo:
 		return true
-	case Yes:
+	case PostCallsJSONBodyAnonymousYes:
 		return true
 	default:
 		return false
@@ -2916,6 +2937,27 @@ func (e GetConversationsJSONBodyType) Valid() bool {
 	case Line:
 		return true
 	case Message:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostProvidercallsJSONBodyAnonymous.
+const (
+	PostProvidercallsJSONBodyAnonymousAuto PostProvidercallsJSONBodyAnonymous = "auto"
+	PostProvidercallsJSONBodyAnonymousNo   PostProvidercallsJSONBodyAnonymous = "no"
+	PostProvidercallsJSONBodyAnonymousYes  PostProvidercallsJSONBodyAnonymous = "yes"
+)
+
+// Valid indicates whether the value is a known member of the PostProvidercallsJSONBodyAnonymous enum.
+func (e PostProvidercallsJSONBodyAnonymous) Valid() bool {
+	switch e {
+	case PostProvidercallsJSONBodyAnonymousAuto:
+		return true
+	case PostProvidercallsJSONBodyAnonymousNo:
+		return true
+	case PostProvidercallsJSONBodyAnonymousYes:
 		return true
 	default:
 		return false
@@ -5991,6 +6033,51 @@ type RouteManagerProvider struct {
 // RouteManagerProviderHealthStatus The health status of the provider as determined by periodic SIP OPTIONS probes.
 type RouteManagerProviderHealthStatus string
 
+// RouteManagerProviderCall An admin-triggered call placed through a specific provider. Captures the
+// admin's original request info plus the IDs of calls/groupcalls that were
+// created by the underlying call-creation step. Admin polls the referenced
+// call IDs via `GET /calls/{id}` for per-call state.
+type RouteManagerProviderCall struct {
+	// Anonymous The anonymous caller-ID option requested. `auto` (default) resolves the same as `no` today.
+	Anonymous *RouteManagerProviderCallAnonymous `json:"anonymous,omitempty"`
+
+	// CallIds IDs of the Call records that the call-creation step produced. Returned from the `POST /calls` response and retrievable via `GET /calls/{id}`.
+	CallIds *[]string `json:"call_ids,omitempty"`
+
+	// CustomerId The customer the record is attributed to. Set server-side from the authenticated admin's own customer.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Destinations The admin-supplied dial targets. One Call or Groupcall is created per destination, depending on destination type.
+	Destinations *[]CommonAddress `json:"destinations,omitempty"`
+
+	// FlowId The flow executed after the destination answered. `00000000-0000-0000-0000-000000000000` when no flow was attached.
+	FlowId *string `json:"flow_id,omitempty"`
+
+	// GroupcallIds IDs of any Groupcall records produced when a destination resolved to a group-type address. Retrievable via `GET /groupcalls/{id}`.
+	GroupcallIds *[]string `json:"groupcall_ids,omitempty"`
+
+	// Id The unique identifier of the providercall. Returned from the `POST /providercalls` response.
+	Id *string `json:"id,omitempty"`
+
+	// ProviderId The provider the call was forced through. Returned from the `GET /providers` response.
+	ProviderId *string `json:"provider_id,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+
+	// TmCreate The creation timestamp.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete The deletion timestamp. `null` until soft-deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate The last update timestamp.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// RouteManagerProviderCallAnonymous The anonymous caller-ID option requested. `auto` (default) resolves the same as `no` today.
+type RouteManagerProviderCallAnonymous string
+
 // RouteManagerProviderType Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
 type RouteManagerProviderType string
 
@@ -7714,6 +7801,42 @@ type PutOutplansIdDialInfoJSONBody struct {
 	TryInterval int `json:"try_interval"`
 }
 
+// GetProvidercallsParams defines parameters for GetProvidercalls.
+type GetProvidercallsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ProviderId Optional filter — narrow to providercalls for a single provider. Obtained from the `GET /providers` response.
+	ProviderId *openapi_types.UUID `form:"provider_id,omitempty" json:"provider_id,omitempty"`
+}
+
+// PostProvidercallsJSONBody defines parameters for PostProvidercalls.
+type PostProvidercallsJSONBody struct {
+	// Actions Optional inline actions. Used when no `flow_id` is supplied.
+	Actions *[]FlowManagerAction `json:"actions,omitempty"`
+
+	// Anonymous Controls the anonymous caller-ID flag. Defaults to `auto`.
+	Anonymous *PostProvidercallsJSONBodyAnonymous `json:"anonymous,omitempty"`
+
+	// Destinations Dial targets. One Call/Groupcall is created per destination.
+	Destinations []CommonAddress `json:"destinations"`
+
+	// FlowId Optional flow to execute after the destination answers. Obtained from the `GET /flows` response.
+	FlowId *openapi_types.UUID `json:"flow_id,omitempty"`
+
+	// ProviderId The provider to force the call through. Obtained from the `GET /providers` response.
+	ProviderId openapi_types.UUID `json:"provider_id"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
+}
+
+// PostProvidercallsJSONBodyAnonymous defines parameters for PostProvidercalls.
+type PostProvidercallsJSONBodyAnonymous string
+
 // GetProvidersParams defines parameters for GetProviders.
 type GetProvidersParams struct {
 	// PageSize Number of results to return per page.
@@ -8677,6 +8800,9 @@ type PutOutplansIdJSONRequestBody PutOutplansIdJSONBody
 
 // PutOutplansIdDialInfoJSONRequestBody defines body for PutOutplansIdDialInfo for application/json ContentType.
 type PutOutplansIdDialInfoJSONRequestBody PutOutplansIdDialInfoJSONBody
+
+// PostProvidercallsJSONRequestBody defines body for PostProvidercalls for application/json ContentType.
+type PostProvidercallsJSONRequestBody PostProvidercallsJSONBody
 
 // PostProvidersJSONRequestBody defines body for PostProviders for application/json ContentType.
 type PostProvidersJSONRequestBody PostProvidersJSONBody

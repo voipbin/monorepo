@@ -14,6 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-route-manager/pkg/providercallhandler"
 	"monorepo/bin-route-manager/pkg/providerhandler"
 	"monorepo/bin-route-manager/pkg/routehandler"
 )
@@ -32,8 +33,9 @@ type ListenHandler interface {
 type listenHandler struct {
 	sockHandler sockhandler.SockHandler
 
-	providerHandler providerhandler.ProviderHandler
-	routeHandler    routehandler.RouteHandler
+	providerHandler     providerhandler.ProviderHandler
+	providerCallHandler providercallhandler.ProviderCallHandler
+	routeHandler        routehandler.RouteHandler
 }
 
 var (
@@ -43,6 +45,11 @@ var (
 	regV1Providers    = regexp.MustCompile("/v1/providers$")
 	regV1ProvidersGet = regexp.MustCompile(`/v1/providers\?`)
 	regV1ProvidersID  = regexp.MustCompile("/v1/providers/" + regUUID + "$")
+
+	// providercalls
+	regV1ProviderCalls    = regexp.MustCompile(`/v1/providercalls$`)
+	regV1ProviderCallsGet = regexp.MustCompile(`/v1/providercalls(\?.*)?$`)
+	regV1ProviderCallsID  = regexp.MustCompile("/v1/providercalls/" + regUUID + "$")
 
 	// routes
 	regV1Routes    = regexp.MustCompile("/v1/routes$")
@@ -87,13 +94,15 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 
 	providerHandler providerhandler.ProviderHandler,
+	providerCallHandler providercallhandler.ProviderCallHandler,
 	routeHandler routehandler.RouteHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler: sockHandler,
 
-		providerHandler: providerHandler,
-		routeHandler:    routeHandler,
+		providerHandler:     providerHandler,
+		providerCallHandler: providerCallHandler,
+		routeHandler:        routeHandler,
 	}
 
 	return h
@@ -181,6 +190,24 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ProvidersID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/providers/<provider-id>"
 		response, err = h.v1ProvidersIDDelete(ctx, m)
+
+	// providercalls
+	case regV1ProviderCallsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/providercalls"
+		response, err = h.v1ProviderCallsGet(ctx, m)
+
+	case regV1ProviderCalls.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/providercalls"
+		response, err = h.v1ProviderCallsPost(ctx, m)
+
+	// providercalls/<providercall-id>
+	case regV1ProviderCallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/providercalls/<providercall-id>"
+		response, err = h.v1ProviderCallsIDGet(ctx, m)
+
+	case regV1ProviderCallsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		requestType = "/providercalls/<providercall-id>"
+		response, err = h.v1ProviderCallsIDDelete(ctx, m)
 
 	// dialroute
 	case regV1DialroutesGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

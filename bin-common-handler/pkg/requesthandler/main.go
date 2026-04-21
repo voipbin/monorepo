@@ -72,6 +72,7 @@ import (
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
 
 	rmprovider "monorepo/bin-route-manager/models/provider"
+	rmprovidercall "monorepo/bin-route-manager/models/providercall"
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	smaccount "monorepo/bin-storage-manager/models/account"
@@ -1179,6 +1180,21 @@ type RequestHandler interface {
 		detail string,
 	) (*rmprovider.Provider, error)
 	RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
+
+	// route-manager providercalls
+	RouteV1ProviderCallCreate(
+		ctx context.Context,
+		customerID uuid.UUID,
+		providerID uuid.UUID,
+		flowID uuid.UUID,
+		actions []fmaction.Action,
+		source *commonaddress.Address,
+		destinations []commonaddress.Address,
+		anonymous string,
+	) (*rmprovidercall.ProviderCall, error)
+	RouteV1ProviderCallGet(ctx context.Context, providerCallID uuid.UUID) (*rmprovidercall.ProviderCall, error)
+	RouteV1ProviderCallGets(ctx context.Context, pageToken string, pageSize uint64, filters map[rmprovidercall.Field]any) ([]rmprovidercall.ProviderCall, error)
+	RouteV1ProviderCallDelete(ctx context.Context, providerCallID uuid.UUID) (*rmprovidercall.ProviderCall, error)
 
 	// route-manager routes
 	RouteV1RouteCreate(

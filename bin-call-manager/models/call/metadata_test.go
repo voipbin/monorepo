@@ -7,6 +7,7 @@ func Test_ValidMetadataKeys_contains_all_declared_constants(t *testing.T) {
 	required := []MetadataKey{
 		MetadataKeyRTPDebug,
 		MetadataKeyRouteProviderIDs,
+		MetadataKeySkipSourceValidation,
 	}
 	for _, k := range required {
 		if !ValidMetadataKeys[k] {

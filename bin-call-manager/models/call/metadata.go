@@ -15,6 +15,16 @@ const (
 	// forwards the IDs to route-manager's DialrouteList, which returns synthetic
 	// dialroutes bypassing normal customer/default merging.
 	MetadataKeyRouteProviderIDs MetadataKey = "route_provider_ids"
+
+	// MetadataKeySkipSourceValidation, when set to true, instructs call-manager's
+	// getValidatedSourceForOutgoingCall to return the caller-supplied source address
+	// verbatim — skipping the customer-ownership lookup and the silent fallback to
+	// Customer.DefaultOutgoingSourceNumberID. Used by internal admin-test flows that
+	// must preserve a source number the provider's carrier has pre-authorized
+	// (which is typically NOT a number owned by any voipbin customer).
+	// Set CREATION-TIME only by server-side trusted code. Do not expose in any
+	// customer-facing API body.
+	MetadataKeySkipSourceValidation MetadataKey = "skip_source_validation"
 )
 
 // ValidMetadataKeys is the registry of every permitted metadata key.
@@ -26,6 +36,7 @@ const (
 //  2. Add it to this registry.
 //  3. Document whether it is creation-time only or post-creation-mutated.
 var ValidMetadataKeys = map[MetadataKey]bool{
-	MetadataKeyRTPDebug:         true,
-	MetadataKeyRouteProviderIDs: true,
+	MetadataKeyRTPDebug:             true,
+	MetadataKeyRouteProviderIDs:     true,
+	MetadataKeySkipSourceValidation: true,
 }
