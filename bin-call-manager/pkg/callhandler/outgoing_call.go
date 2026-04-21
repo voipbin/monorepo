@@ -488,24 +488,32 @@ func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, d
 
 	// extract optional route_provider_ids from metadata.
 	// expected shape after JSON round-trip through Call.Metadata: []interface{} of string UUIDs.
+	//
+	// Fail fast if the key is present but yields zero valid UUIDs — silently
+	// falling through to normal routing would mis-route an admin test call.
 	var targetProviderIDs []uuid.UUID
 	if raw, ok := metadata[call.MetadataKeyRouteProviderIDs]; ok {
-		if arr, ok := raw.([]interface{}); ok {
-			for _, v := range arr {
-				s, ok := v.(string)
-				if !ok {
-					log.Warnf("Skipping non-string entry in route_provider_ids metadata: %v", v)
-					continue
-				}
-				id, errParse := uuid.FromString(s)
-				if errParse != nil {
-					log.Warnf("Skipping invalid provider ID in route_provider_ids metadata: %s, err: %v", s, errParse)
-					continue
-				}
-				targetProviderIDs = append(targetProviderIDs, id)
+		arr, ok := raw.([]interface{})
+		if !ok {
+			log.Errorf("route_provider_ids metadata is not a []interface{}: %T", raw)
+			return nil, fmt.Errorf("route_provider_ids metadata has invalid shape: %T", raw)
+		}
+		for _, v := range arr {
+			s, ok := v.(string)
+			if !ok {
+				log.Warnf("Skipping non-string entry in route_provider_ids metadata: %v", v)
+				continue
 			}
-		} else {
-			log.Warnf("route_provider_ids metadata is not a []interface{}: %T", raw)
+			id, errParse := uuid.FromString(s)
+			if errParse != nil {
+				log.Warnf("Skipping invalid provider ID in route_provider_ids metadata: %s, err: %v", s, errParse)
+				continue
+			}
+			targetProviderIDs = append(targetProviderIDs, id)
+		}
+		if len(arr) > 0 && len(targetProviderIDs) == 0 {
+			log.Errorf("route_provider_ids metadata contained no valid UUIDs, refusing to fall through to normal routing")
+			return nil, fmt.Errorf("route_provider_ids contained no valid UUIDs")
 		}
 	}
 

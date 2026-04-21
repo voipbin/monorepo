@@ -1555,6 +1555,76 @@ func Test_getDialroutes(t *testing.T) {
 	}
 }
 
+// Test_getDialroutes_errorCases verifies that malformed route_provider_ids metadata
+// fails fast instead of silently falling through to normal routing.
+func Test_getDialroutes_errorCases(t *testing.T) {
+
+	tests := []struct {
+		name        string
+		customerID  uuid.UUID
+		destination *commonaddress.Address
+		metadata    map[string]interface{}
+	}{
+		{
+			name:       "route_provider_ids with only invalid UUIDs returns error (no silent fallback)",
+			customerID: uuid.FromStringOrNil("551562fe-5f81-11ed-b9b3-535fe8d67b80"),
+			destination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			metadata: map[string]interface{}{
+				call.MetadataKeyRouteProviderIDs: []interface{}{
+					"not-a-uuid",
+					"also-not-a-uuid",
+				},
+			},
+		},
+		{
+			name:       "route_provider_ids with wrong top-level type returns error",
+			customerID: uuid.FromStringOrNil("551562fe-5f81-11ed-b9b3-535fe8d67b80"),
+			destination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			metadata: map[string]interface{}{
+				call.MetadataKeyRouteProviderIDs: "not-an-array",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &callHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			// mockReq.EXPECT is NOT set — RouteV1DialrouteList must NOT be called.
+			// gomock will fail the test if it is.
+
+			res, err := h.getDialroutes(ctx, tt.customerID, tt.destination, tt.metadata)
+			if err == nil {
+				t.Errorf("Expected error for malformed route_provider_ids, got nil")
+			}
+			if res != nil {
+				t.Errorf("Expected nil result, got: %v", res)
+			}
+		})
+	}
+}
+
 func Test_setChannelVariablesCallerID(t *testing.T) {
 
 	tests := []struct {

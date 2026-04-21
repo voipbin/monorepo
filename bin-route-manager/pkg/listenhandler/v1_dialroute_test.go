@@ -130,6 +130,30 @@ func Test_v1DialroutesGet(t *testing.T) {
 				Data:       []byte(`[{"id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
+		{
+			// backward-compat: older bin-common-handler sends flat customer_id/target without a Filters envelope.
+			"legacy flat customer_id and target (no filters envelope)",
+			&sock.Request{
+				URI:      "/v1/dialroutes",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"ad06dadc-9694-4179-920c-d0bbaf6bedc3","target":"+82"}`),
+			},
+
+			uuid.FromStringOrNil("ad06dadc-9694-4179-920c-d0bbaf6bedc3"),
+			"+82",
+			nil,
+
+			[]*route.Route{
+				{ID: uuid.FromStringOrNil("79f2705e-b57f-4957-8ad6-6e162802b115")},
+			},
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"79f2705e-b57f-4957-8ad6-6e162802b115","customer_id":"00000000-0000-0000-0000-000000000000","name":"","detail":"","provider_id":"00000000-0000-0000-0000-000000000000","priority":0,"target":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
+			},
+		},
 	}
 
 	for _, tt := range tests {

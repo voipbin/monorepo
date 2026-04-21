@@ -22,7 +22,25 @@ func (r *requestHandler) RouteV1DialrouteList(
 ) ([]rmroute.Route, error) {
 	uri := "/v1/dialroutes"
 
+	// Populate legacy top-level CustomerID/Target alongside the Filters map
+	// so an older route-manager (deployed during a rolling update) can still
+	// parse the request. See V1DataDialroutesGet for the backward-compat contract.
+	var legacyCustomerID uuid.UUID
+	var legacyTarget string
+	if v, ok := filters[rmroute.FieldCustomerID]; ok {
+		if id, ok := v.(uuid.UUID); ok {
+			legacyCustomerID = id
+		}
+	}
+	if v, ok := filters[rmroute.FieldTarget]; ok {
+		if s, ok := v.(string); ok {
+			legacyTarget = s
+		}
+	}
+
 	m, err := json.Marshal(rmrequest.V1DataDialroutesGet{
+		CustomerID:        legacyCustomerID,
+		Target:            legacyTarget,
 		Filters:           filters,
 		TargetProviderIDs: targetProviderIDs,
 	})

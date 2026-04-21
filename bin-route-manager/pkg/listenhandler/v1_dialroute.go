@@ -30,20 +30,18 @@ func (h *listenHandler) v1DialroutesGet(ctx context.Context, m *sock.Request) (*
 		}
 	}
 
-	// Extract customer_id and target from filters.
-	// Task 6 is formally responsible for fully rewiring this to use the Filters
-	// map directly; this minimal extraction keeps the build green.
+	// Extract customer_id and target. Prefer the new Filters map; fall back to the
+	// legacy top-level fields for backward compatibility during rolling deploys.
 	//
 	// NOTE: json.Unmarshal decodes untyped map values as string (never uuid.UUID),
-	// so in practice the string branch below is the only path that fires at runtime.
-	var customerID uuid.UUID
+	// so only the string branch fires at runtime for the Filters path.
+	customerID := reqData.CustomerID
+	target := reqData.Target
 	if v, ok := reqData.Filters[route.FieldCustomerID]; ok {
 		if s, ok := v.(string); ok {
 			customerID = uuid.FromStringOrNil(s)
 		}
 	}
-
-	var target string
 	if v, ok := reqData.Filters[route.FieldTarget]; ok {
 		if s, ok := v.(string); ok {
 			target = s

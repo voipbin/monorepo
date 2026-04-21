@@ -48,7 +48,7 @@ func Test_DialrouteV1RouteList(t *testing.T) {
 				URI:      "/v1/dialroutes",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"filters":{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82"}}`),
+				Data:     []byte(`{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82","filters":{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82"}}`),
 			},
 			[]rmroute.Route{
 				{
@@ -79,7 +79,7 @@ func Test_DialrouteV1RouteList(t *testing.T) {
 				URI:      "/v1/dialroutes",
 				Method:   sock.RequestMethodGet,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"filters":{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82"},"target_provider_ids":["9a6d2f7e-52b8-11ed-9b1a-cb4e7dfe0001","9a6d2f7e-52b8-11ed-9b1a-cb4e7dfe0002"]}`),
+				Data:     []byte(`{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82","filters":{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82"},"target_provider_ids":["9a6d2f7e-52b8-11ed-9b1a-cb4e7dfe0001","9a6d2f7e-52b8-11ed-9b1a-cb4e7dfe0002"]}`),
 			},
 			[]rmroute.Route{
 				{
