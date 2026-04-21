@@ -1,4 +1,4 @@
-# Provider Test Call
+# Provider Call
 
 > **Revision note (2026-04-21):** This PRD was revised after PR [#793](https://github.com/voipbin/monorepo/pull/793) (`NOJIRA-call-metadata-route-provider-ids`, commit `2ebdf0b4e`) shipped the underlying metadata mechanism. Option A (general metadata pass-through on `CallV1CallsCreate`) was chosen over Option B (dedicated RPC) with improvements: **plural** `route_provider_ids` array (failover semantics), typed `MetadataKey` registry with runtime validation, and synthetic-route ID == provider ID. The `ProviderCall` entity has been **reinstated** as a first-class record in `bin-route-manager` — it captures the admin's request info and the IDs of the created calls/groupcalls, and is the response shape of the admin endpoint.
 
@@ -99,7 +99,7 @@ All customer-tier roles (`PermissionCustomerAdmin`, `PermissionCustomerManager`,
 | Must | RST doc updates (admin endpoint + ProviderCall struct + extended internal-metadata note) | **To build** |
 | Must | api-validator tests (read-only — cost-safety rule forbids creating real calls in the validator) | **To build** |
 | Must | `targetProviderIDs` on `DialrouteList`, synthetic-route generation, `route_provider_ids` key + registry, `metadata` param on `CallV1CallsCreate` / `CallV1CallCreateWithID`, `getDialroutes` extracts `route_provider_ids` | ✅ Done (PR #793) |
-| Should | `GET /v1/providercalls`, `GET /v1/providercalls/{id}`, `DELETE /v1/providercalls/{id}` for retrieval and cleanup of past test summaries | **To build** |
+| Should | `GET /v1/providercalls`, `GET /v1/providercalls/{id}`, `DELETE /v1/providercalls/{id}` for retrieval and cleanup of past `ProviderCall` records | **To build** |
 | Won't (v1) | Synchronous SIP-response-code pass/fail in response body | Call lifecycle is async; admin polls `GET /v1/calls/{id}` |
 | Won't (v1) | `actions` inline replay from the `ProviderCall` record | Captured on Call records; derive via `CallIDs` if needed |
 | Won't (v1) | UI | External repo |
@@ -153,7 +153,7 @@ type ProviderCall struct {
 7. Handler extracts `call_ids` and `groupcall_ids` from the create result.
 8. Handler calls `RouteV1ProviderCallCreate(ctx, a.CustomerID, providerID, flowID, source, destinations, anonymous, callIDs, groupcallIDs)`; receives the `ProviderCall` record.
 9. API responds with `ProviderCall.WebhookMessage`.
-10. Admin polls `GET /v1/calls/{id}` for per-call progress and `GET /v1/providercalls/{id}` for the test summary.
+10. Admin polls `GET /v1/calls/{id}` for per-call progress and `GET /v1/providercalls/{id}` for the `ProviderCall` record.
 
 ---
 
@@ -183,10 +183,10 @@ type ProviderCall struct {
 
 | Risk | Likelihood | Mitigation |
 |------|------------|------------|
-| Admin triggers a test call to an unintended destination (billable) | L | Admin explicitly supplies destination; documented behavior; existing outbound rate-limit applies |
+| Admin triggers a provider call to an unintended destination (billable) | L | Admin explicitly supplies destination; documented behavior; existing outbound rate-limit applies |
 | `route_provider_ids` visible in the targeted customer's `Call.WebhookMessage` / webhook stream | L | Customer sees a Call with internal provider UUIDs. Provider UUIDs are not secrets (already retrievable via `/v1/providers`). If concealment becomes a requirement later, strip the `route_provider_ids` key from `WebhookMessage` (not `Call`) |
 | Admin supplies a non-existent or invalid `provider_id` | M | Validate the provider exists (via `bin-route-manager` RPC) before invoking `CallV1CallsCreate`; return 404 / 400 if absent |
-| `Call` creation succeeds but `ProviderCall` persistence fails — orphaned Calls without a test-summary record | L | Admin can still find the Calls via `GET /v1/calls?customer_id=...`; v1 logs the failure and returns 500. Revisit if orphans become a practical problem (compensating delete of the Call would complicate the happy path) |
+| `Call` creation succeeds but `ProviderCall` persistence fails — orphaned Calls without a `ProviderCall` record | L | Admin can still find the Calls via `GET /v1/calls?customer_id=...`; v1 logs the failure and returns 500. Revisit if orphans become a practical problem (compensating delete of the Call would complicate the happy path) |
 | Alembic migration for `provider_call` table not applied before api-manager deploy | M | Standard monorepo policy: migration file in the PR; user applies `alembic upgrade` manually with VPN access; api-manager deploy should follow the migration |
 | OpenAPI-spec change not regenerated into `bin-api-manager` server code | M | Standard monorepo rule: regenerate **both** `bin-openapi-manager` and `bin-api-manager` after schema edits |
 | RST build output not committed (gitignored) | M | Standard rule: `git add -f bin-api-manager/docsdev/build/` |
@@ -224,7 +224,7 @@ type ProviderCall struct {
 - Success signal: `bin-call-manager` verification workflow green; existing source-validation tests still pass.
 
 **Phase 2: `bin-dbscheme-manager` migration + `bin-route-manager` `ProviderCall` entity**
-- Goal: First-class audit entity that wraps a provider-test request plus the resulting call / groupcall IDs.
+- Goal: First-class entity that wraps a provider-call request plus the resulting call / groupcall IDs.
 - Scope:
   - `bin-dbscheme-manager` — new Alembic migration generated via `alembic revision` (never hand-rolled) creating a `provider_call` table with columns for all `ProviderCall` fields. Implement both `upgrade()` and `downgrade()`; `tm_delete` default `"9999-01-01 00:00:00.000000"` for active rows.
   - `bin-route-manager/models/providercall/providercall.go`, `field.go`, `webhook.go` — model + typed `Field` enum + external-facing `WebhookMessage` variant.
@@ -243,7 +243,7 @@ type ProviderCall struct {
 - Apply the Alembic migration from Phase 2 to the target environments: `alembic upgrade head` in `bin-dbscheme-manager` (requires VPN + manual authorization per monorepo policy). Phase 4's end-to-end verification depends on the `provider_call` table existing at runtime. Phases 2 and 3 can still land as code without the migration being applied; only Phase 4 verification is blocked.
 
 **Phase 4: `bin-api-manager` endpoint + OpenAPI**
-- Goal: Public HTTP surface for provider test calls and retrieval.
+- Goal: Public HTTP surface for provider calls and retrieval.
 - Concurrency note: Phase 4 implementation can be written in parallel with Phase 3 by mocking the new `RouteV1ProviderCall*` RPCs; only Phase 4 **verification** (and merge) requires Phase 3 landing first so the mocks line up with real signatures.
 - Scope:
   - `pkg/servicehandler/` — new methods for `ProviderCallCreate`, `ProviderCallGet`, `ProviderCallGets`, `ProviderCallDelete`. The create method checks `PermissionProjectSuperAdmin`, takes `customer_id` from `a.CustomerID`, validates `provider_id` (from body), builds metadata with **both** keys, calls `CallV1CallsCreate`, then `RouteV1ProviderCallCreate`, returns `ProviderCall.WebhookMessage`. All Get/Delete methods also require `PermissionProjectSuperAdmin`.
@@ -282,7 +282,7 @@ type ProviderCall struct {
 
 | Decision | Choice | Alternatives | Rationale |
 |----------|--------|--------------|-----------|
-| Test fidelity | Real call | Signaling-only INVITE probe via `kamailio-proxy` | User explicitly chose real-call path |
+| Call fidelity | Real call | Signaling-only INVITE probe via `kamailio-proxy` | User explicitly chose real-call path |
 | Provider override plumbing | `bin-route-manager` synthetic routes via `targetProviderIDs` on `DialrouteList` | Thread `providerID` as a dedicated parameter through call-manager | Implemented in PR #793 |
 | api-manager → call-manager signal | Option A: general `metadata` pass-through on `CallV1CallsCreate` with typed `MetadataKey` registry and runtime validation | Option B: dedicated `CallV1CallsCreateForProviderTest` RPC | Implemented in PR #793; general mechanism reusable for future internal features (e.g., `rtp_debug` already uses it) |
 | Metadata array shape | Plural `route_provider_ids` array (failover semantics, try in order) | Singular `test_call_provider_id` | Implemented; also future-proofs failover testing |
@@ -291,10 +291,10 @@ type ProviderCall struct {
 | Response shape | `ProviderCall.WebhookMessage` (IDs of created Calls/Groupcalls + request summary); admin polls `GET /v1/calls/{id}` per call | Synchronous pass/fail + SIP code | Matches async call lifecycle; ProviderCall.WebhookMessage is the atomic return type |
 | Permission level | `PermissionProjectSuperAdmin` only | `PermissionCustomerAdmin` (customer-scoped) | User constraint: platform admin must see/control every provider across customers |
 | Provider ownership check | None — admin can target any provider in the system | Restrict to providers owned by the admin's customer | Admin is platform-level by design; no customer boundary applies |
-| Access to tests | Admin-only | Customer-tier self-serve | User constraint |
-| CDR / billing tagging of test calls | Deferred; `Metadata` mechanism already supports it | Add `test_call: true` now | User: "no need now" |
-| Endpoint shape | `POST /v1/providercalls` (flat resource) | `POST /v1/providers/{provider_id}/calls` (nested); `POST /v1/providers/{provider_id}/test-call` (verb-style) | Matches monorepo convention for compound resources (`/v1/campaigncalls`, `/v1/conferencecalls`); ProviderCall is a first-class top-level resource |
-| Customer attribution | Derived from auth context (`a.CustomerID` — project admin's own customer via JWT/accesskey); not in the request body | Required `customer_id` in body so admin can attribute to an arbitrary customer | Auth context already carries this; keeps body minimal; avoids a customer-existence RPC on every request. Revisit if admins need to bill test calls to other customers |
+| Access to the endpoint | Admin-only | Customer-tier self-serve | User constraint |
+| CDR / billing tagging of provider calls | Deferred; `Metadata` mechanism already supports it | Add a tagging key now | User: "no need now" |
+| Endpoint shape | `POST /v1/providercalls` (flat resource) | `POST /v1/providers/{provider_id}/calls` (nested); verb-style path | Matches monorepo convention for compound resources (`/v1/campaigncalls`, `/v1/conferencecalls`); ProviderCall is a first-class top-level resource |
+| Customer attribution | Derived from auth context (`a.CustomerID` — project admin's own customer via JWT/accesskey); not in the request body | Required `customer_id` in body so admin can attribute to an arbitrary customer | Auth context already carries this; keeps body minimal; avoids a customer-existence RPC on every request. Revisit if admins need to bill provider calls to other customers |
 | Request body shape | Required `provider_id` + customer call API shape (`source`, `destinations`, optional `flow_id` / `actions` / `anonymous`). No `customer_id` (auth-derived) | `{source, destination}` minimal; include `customer_id` explicitly | Consistency with the existing customer call API; minimal body; auth-derived customer |
 | Source validation bypass | New metadata key `skip_source_validation` (bool); set server-side by the admin endpoint; `bin-call-manager/getValidatedSourceForOutgoingCall` honors it and preserves the admin-supplied source verbatim | Endpoint-only bypass (would require call-manager to know which endpoint originated the call); always-bypass for every call (unsafe) | Follows the PR #793 metadata pattern; typed `MetadataKey` constant; runtime-registry enforced; reusable by any future internal "trusted source" scenario |
 | Kill-switch / runtime toggle | None | Config flag to disable endpoint at runtime | `PermissionProjectSuperAdmin` gate is sufficient; revisit only if abuse observed |
@@ -304,7 +304,7 @@ type ProviderCall struct {
 ## Research Summary
 
 **Market Context**
-- Commercial CPaaS platforms (Twilio, Telnyx, Vonage) expose per-provider / per-route test-call tooling via admin dashboards. Admin-only + real-outbound is the established pattern.
+- Commercial CPaaS platforms (Twilio, Telnyx, Vonage) expose per-provider / per-route call-placement tooling via admin dashboards. Admin-only + real-outbound is the established pattern.
 - VoIP admin tooling distinguishes reachability (SIP OPTIONS) from call-through (full INVITE). VoIPbin already has the former from completed health-check work; PR #793 + this PRD deliver the latter.
 
 **Technical Context (current state)**
