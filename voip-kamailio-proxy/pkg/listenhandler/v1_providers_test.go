@@ -9,6 +9,7 @@ import (
 
 	"go.uber.org/mock/gomock"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/voip-kamailio-proxy/pkg/listenhandler/request"
@@ -84,7 +85,7 @@ func Test_processV1ProvidersHealthPost(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			h := &listenHandler{
 				sockHandler:                mockSock,
-				rabbitQueueListenPermanent: "voip.kamailio.request",
+				rabbitQueueListenPermanent: string(commonoutline.QueueNameKamailioRequest),
 				sipTimeout:                 5 * time.Second,
 				sipChecker:                 tt.sipChecker,
 			}
@@ -133,7 +134,7 @@ func Test_processRequest_routing(t *testing.T) {
 			mockSock := sockhandler.NewMockSockHandler(mc)
 			h := &listenHandler{
 				sockHandler:                mockSock,
-				rabbitQueueListenPermanent: "voip.kamailio.request",
+				rabbitQueueListenPermanent: string(commonoutline.QueueNameKamailioRequest),
 				sipTimeout:                 5 * time.Second,
 				sipChecker:                 nil, // not called for unknown routes
 			}

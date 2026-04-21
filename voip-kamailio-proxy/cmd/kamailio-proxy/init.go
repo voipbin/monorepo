@@ -6,6 +6,8 @@ import (
 	"syscall"
 	"time"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	joonix "github.com/joonix/log"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -15,7 +17,7 @@ import (
 
 const (
 	defaultRabbitMQAddress     = "amqp://guest:guest@localhost:5672"
-	defaultRabbitMQQueueListen = "voip.kamailio.request"
+	defaultRabbitMQQueueListen = string(commonoutline.QueueNameKamailioRequest)
 
 	defaultInterfaceName = "eth0"
 
