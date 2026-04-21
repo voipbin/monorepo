@@ -1801,6 +1801,7 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 		source      commonaddress.Address
 		destination commonaddress.Address
 		customer    *cucustomer.Customer
+		metadata    map[string]interface{}
 
 		responseNumbers []nmnumber.Number
 		responseNumErr  error
@@ -2020,6 +2021,103 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 				Target: "test@example.com",
 			},
 		},
+		{
+			name: "skip_source_validation=true preserves unowned source (no mocks called)",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15559999999", // not owned by customer
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID:                            uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+				DefaultOutgoingSourceNumberID: uuid.FromStringOrNil("b0000000-0000-0000-0000-000000000001"),
+			},
+			metadata: map[string]interface{}{
+				call.MetadataKeySkipSourceValidation: true,
+			},
+
+			expectRes: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+15559999999",
+			},
+		},
+		{
+			name: "skip_source_validation=true preserves non-E.164 source",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "5551234", // not E.164, admin-supplied verbatim
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			},
+			metadata: map[string]interface{}{
+				call.MetadataKeySkipSourceValidation: true,
+			},
+
+			expectRes: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "5551234",
+			},
+		},
+		{
+			name: "skip_source_validation=false falls through to ownership validation",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			},
+			metadata: map[string]interface{}{
+				call.MetadataKeySkipSourceValidation: false,
+			},
+
+			responseNumbers: []nmnumber.Number{{Number: "+821100000001"}},
+
+			expectRes: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+		},
+		{
+			name: "skip_source_validation with non-bool value falls through to ownership validation",
+
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000002",
+			},
+			customer: &cucustomer.Customer{
+				ID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			},
+			metadata: map[string]interface{}{
+				call.MetadataKeySkipSourceValidation: "true", // wrong type — string not bool
+			},
+
+			responseNumbers: []nmnumber.Number{{Number: "+821100000001"}},
+
+			expectRes: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000001",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -2035,8 +2133,16 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 
 			ctx := context.Background()
 
-			// set up mocks based on test case
-			if tt.customer != nil && tt.destination.Type == commonaddress.TypeTel && strings.HasPrefix(tt.source.Target, "+") {
+			// set up mocks based on test case.
+			// when skip_source_validation is true, the function short-circuits before
+			// any number-manager RPC is made — so we must NOT register expectations
+			// that gomock would flag as unfulfilled.
+			skipValidation := false
+			if v, ok := tt.metadata[call.MetadataKeySkipSourceValidation].(bool); ok && v {
+				skipValidation = true
+			}
+
+			if !skipValidation && tt.customer != nil && tt.destination.Type == commonaddress.TypeTel && strings.HasPrefix(tt.source.Target, "+") {
 				mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), map[nmnumber.Field]any{
 					nmnumber.FieldCustomerID: tt.customer.ID,
 					nmnumber.FieldNumber:     tt.source.Target,
@@ -2046,11 +2152,11 @@ func Test_getValidatedSourceForOutgoingCall(t *testing.T) {
 				}).Return(tt.responseNumbers, tt.responseNumErr)
 			}
 
-			if tt.customer != nil && tt.destination.Type == commonaddress.TypeTel && (tt.responseDefaultNum != nil || tt.responseDefaultNumErr != nil) {
+			if !skipValidation && tt.customer != nil && tt.destination.Type == commonaddress.TypeTel && (tt.responseDefaultNum != nil || tt.responseDefaultNumErr != nil) {
 				mockReq.EXPECT().NumberV1NumberGet(ctx, tt.customer.DefaultOutgoingSourceNumberID).Return(tt.responseDefaultNum, tt.responseDefaultNumErr)
 			}
 
-			res := h.getValidatedSourceForOutgoingCall(ctx, tt.source, tt.destination, tt.customer)
+			res := h.getValidatedSourceForOutgoingCall(ctx, tt.source, tt.destination, tt.customer, tt.metadata)
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}

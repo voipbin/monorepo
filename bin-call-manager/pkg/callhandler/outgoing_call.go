@@ -194,7 +194,7 @@ func (h *callHandler) CreateCallOutgoing(
 	channelID := h.utilHandler.UUIDCreate().String()
 
 	// validate and resolve the source address for outgoing call
-	s := h.getValidatedSourceForOutgoingCall(ctx, source, destination, cu)
+	s := h.getValidatedSourceForOutgoingCall(ctx, source, destination, cu, metadata)
 	if s == nil {
 		log.Errorf("No valid source number available for outgoing call.")
 		if af.ID != uuid.Nil {
@@ -698,11 +698,17 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anon
 // If either condition fails, it falls back to the customer's default outgoing source number.
 // If no valid source can be determined, it returns nil.
 // For non-tel destinations, the source is returned as-is.
+//
+// If metadata contains MetadataKeySkipSourceValidation == true, all of the above is
+// bypassed and the caller-supplied source is returned verbatim. This is used by
+// internal admin-test flows (e.g., the provider-call endpoint) where the admin needs
+// to preserve a source the provider's carrier has pre-authorized.
 func (h *callHandler) getValidatedSourceForOutgoingCall(
 	ctx context.Context,
 	source commonaddress.Address,
 	destination commonaddress.Address,
 	cu *cucustomer.Customer,
+	metadata map[string]interface{},
 ) *commonaddress.Address {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "getValidatedSourceForOutgoingCall",
@@ -712,6 +718,13 @@ func (h *callHandler) getValidatedSourceForOutgoingCall(
 
 	// non-tel destinations don't need source validation
 	if destination.Type != commonaddress.TypeTel {
+		return &source
+	}
+
+	// metadata opts out of customer-ownership validation entirely
+	// (used by internal admin-test flows — see MetadataKeySkipSourceValidation)
+	if skip, ok := metadata[call.MetadataKeySkipSourceValidation].(bool); ok && skip {
+		log.Infof("Source validation skipped per metadata. source: %s", source.Target)
 		return &source
 	}
 
