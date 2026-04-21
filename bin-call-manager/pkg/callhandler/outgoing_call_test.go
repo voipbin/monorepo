@@ -208,13 +208,188 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "")
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if !reflect.DeepEqual(res, tt.expectCall) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+			}
+		})
+	}
+}
+
+// Test_CreateCallOutgoing_Metadata verifies that caller-supplied metadata is persisted
+// verbatim on the Call record at creation time. This is the plumbing that Task 11 relies
+// on so getDialroutes can forward targetProviderIDs to route-manager.
+func Test_CreateCallOutgoing_Metadata(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id             uuid.UUID
+		customerID     uuid.UUID
+		flowID         uuid.UUID
+		activeflowID   uuid.UUID
+		masterCallID   uuid.UUID
+		source         commonaddress.Address
+		destination    commonaddress.Address
+		earlyExecution bool
+		connect        bool
+		metadata       map[string]interface{}
+
+		responseActiveflow  *fmactiveflow.Activeflow
+		responseAgent       *amagent.Agent
+		responseUUIDChannel uuid.UUID
+
+		expectCall *call.Call
+	}{
+		{
+			name: "metadata with route_provider_ids is persisted on Call",
+
+			id:           uuid.FromStringOrNil("9e9c3b3e-0e8a-4a9d-9f5e-2ce6a0c63d77"),
+			customerID:   uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+			flowID:       uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+			activeflowID: uuid.FromStringOrNil("679f0eb2-8c21-41a6-876d-9d778b1b0167"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:       commonaddress.TypeSIP,
+				Target:     "testsrc@test.com",
+				TargetName: "test",
+			},
+			destination: commonaddress.Address{
+				Type:       commonaddress.TypeSIP,
+				Target:     "testoutgoing@test.com",
+				TargetName: "test target",
+			},
+			earlyExecution: true,
+			connect:        true,
+			metadata: map[string]interface{}{
+				call.MetadataKeyRouteProviderIDs: []interface{}{
+					"6a5c1b8e-11ef-4e3a-9a1b-abc123456789",
+					"7f2d9c01-11ef-4b2a-8c3d-def987654321",
+				},
+			},
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+			},
+			responseAgent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				},
+			},
+			responseUUIDChannel: uuid.FromStringOrNil("80d67b3a-5f3b-11ed-a709-0f2943ef0184"),
+
+			expectCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("9e9c3b3e-0e8a-4a9d-9f5e-2ce6a0c63d77"),
+					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+				},
+				ChannelID: "80d67b3a-5f3b-11ed-a709-0f2943ef0184",
+				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+				Type:      call.TypeFlow,
+
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+
+				Status:      call.StatusDialing,
+				Direction:   call.DirectionOutgoing,
+				GroupcallID: uuid.Nil,
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeSIP,
+					Target:     "testsrc@test.com",
+					TargetName: "test",
+				},
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeSIP,
+					Target:     "testoutgoing@test.com",
+					TargetName: "test target",
+				},
+				Data: map[call.DataType]string{
+					call.DataTypeEarlyExecution:            "true",
+					call.DataTypeExecuteNextMasterOnHangup: "true",
+					call.DataTypeAnonymous:                 "false",
+				},
+				Metadata: map[string]interface{}{
+					call.MetadataKeyRouteProviderIDs: []interface{}{
+						"6a5c1b8e-11ef-4e3a-9a1b-abc123456789",
+						"7f2d9c01-11ef-4b2a-8c3d-def987654321",
+					},
+				},
+				Action: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+
+				Dialroutes: []rmroute.Route{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			}, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
+
+			// CRITICAL assertion: verify the Call passed to CallCreate carries the caller-supplied Metadata.
+			// CallCreate expectation matches against tt.expectCall (Matches uses reflect.DeepEqual on all fields
+			// including Metadata — see call.Call.Matches in models/call/call.go).
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0).Return(nil)
+
+			// setVariables
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), gomock.Any(), gomock.Any(), "", "", "", gomock.Any()).Return(&channel.Channel{}, nil)
+
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", tt.metadata)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res == nil {
+				t.Fatalf("Wrong match. expected non-nil call result")
+			}
+			if !reflect.DeepEqual(res.Metadata, tt.expectCall.Metadata) {
+				t.Errorf("Wrong match. Metadata differs.\nexpect: %v\ngot:    %v", tt.expectCall.Metadata, res.Metadata)
 			}
 		})
 	}
@@ -425,7 +600,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "")
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

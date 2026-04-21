@@ -49,6 +49,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	earlyExecution bool,
 	connect bool,
 	anonymous string,
+	metadata map[string]interface{},
 ) ([]*call.Call, []*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CreateCallsOutgoing",
@@ -60,6 +61,7 @@ func (h *callHandler) CreateCallsOutgoing(
 		"early_execution": earlyExecution,
 		"connect":         connect,
 		"anonymous":       anonymous,
+		"metadata":        metadata,
 	})
 
 	resCalls := []*call.Call{}
@@ -67,7 +69,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	for _, destination := range destinations {
 		switch {
 		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect, anonymous)
+			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect, anonymous, metadata)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -112,6 +114,7 @@ func (h *callHandler) CreateCallOutgoing(
 	earlyExecution bool,
 	executeNextMasterOnHangup bool,
 	anonymous string,
+	metadata map[string]interface{},
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":                         "CreateCallOutgoing",
@@ -126,6 +129,7 @@ func (h *callHandler) CreateCallOutgoing(
 		"early_execution":               earlyExecution,
 		"execute_next_master_on_hangup": executeNextMasterOnHangup,
 		"anonymous":                     anonymous,
+		"metadata":                      metadata,
 	})
 	log.Debug("Creating a call for outgoing.")
 
@@ -264,6 +268,8 @@ func (h *callHandler) CreateCallOutgoing(
 
 		dialrouteID,
 		dialroutes,
+
+		metadata,
 	)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing call. err: %v", err)
