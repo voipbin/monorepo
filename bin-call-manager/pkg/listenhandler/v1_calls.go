@@ -128,7 +128,16 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *sock.Request)
 		return simpleResponse(400), nil
 	}
 
-	calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.Connect, req.Anonymous)
+	// Validate every metadata key against the registry.
+	// Unknown keys are rejected to catch typos and enforce explicit key declaration.
+	for key := range req.Metadata {
+		if !call.ValidMetadataKeys[key] {
+			log.Warnf("Rejected call create: unknown metadata key %q", key)
+			return simpleResponse(400), nil
+		}
+	}
+
+	calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.Connect, req.Anonymous, req.Metadata)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return simpleResponse(500), nil
@@ -175,7 +184,16 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.GroupcallID, req.Source, req.Destination, req.EarlyExecution, req.Connect, req.Anonymous)
+	// Validate every metadata key against the registry.
+	// Unknown keys are rejected to catch typos and enforce explicit key declaration.
+	for key := range req.Metadata {
+		if !call.ValidMetadataKeys[key] {
+			log.Warnf("Rejected call create: unknown metadata key %q", key)
+			return simpleResponse(400), nil
+		}
+	}
+
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.GroupcallID, req.Source, req.Destination, req.EarlyExecution, req.Connect, req.Anonymous, req.Metadata)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", req.FlowID, req.Source, req.Destination, err)
 		return simpleResponse(500), nil
