@@ -12,7 +12,7 @@
 
 **Scope:** This plan implements the metadata mechanism and `route_provider_ids` wiring through call-manager + route-manager + RPC layer. The admin-facing `POST /v1/providers/{id}/calls` endpoint and `ProviderCall` persistence belong to the separate `provider-test-call.prd.md` — out of scope here.
 
-**Affected services (5):** `bin-common-handler`, `bin-route-manager`, `bin-call-manager`, `bin-flow-manager`, `bin-queue-manager`, `bin-api-manager` (caller-signature update only, no new endpoint).
+**Affected services (7):** `bin-common-handler`, `bin-route-manager`, `bin-call-manager`, `bin-flow-manager`, `bin-queue-manager`, `bin-api-manager`, `bin-campaign-manager` (all caller-signature updates only; no new customer-facing endpoint in this PR).
 
 **Worktree:** `~/gitvoipbin/monorepo/.worktrees/NOJIRA-call-metadata-route-provider-ids`
 
@@ -91,12 +91,16 @@ git commit -m "NOJIRA-call-metadata-route-provider-ids
 
 ---
 
-### Task 2: Extend `CallV1CallsCreate` with `metadata`
+### Task 2: Extend `CallV1CallsCreate` **and** `CallV1CallCreateWithID` with `metadata`
 
 **Files:**
-- Modify: `bin-common-handler/pkg/requesthandler/call_calls.go:110-148`
+- Modify: `bin-common-handler/pkg/requesthandler/call_calls.go:110-148` (`CallV1CallsCreate`)
+- Modify: `bin-common-handler/pkg/requesthandler/call_calls.go:153-189` (`CallV1CallCreateWithID`)
+- Modify: `bin-common-handler/pkg/requesthandler/main.go` (both interface signatures)
 - Test: `bin-common-handler/pkg/requesthandler/call_calls_test.go:291`
-- Modify: `bin-call-manager/pkg/listenhandler/models/request/calls.go` (add `Metadata` field to `V1DataCallsPost`)
+- Modify: `bin-call-manager/pkg/listenhandler/models/request/calls.go` (add `Metadata` field to both `V1DataCallsPost` and `V1DataCallsIDPost`)
+
+**Parity requirement:** Both RPCs must accept `metadata` so groupcall fan-out (`bin-call-manager/pkg/groupcallhandler`) and campaign calls (`bin-campaign-manager`) can carry metadata identically. v1 callers all pass `nil`.
 
 **Step 1: Update request struct first**
 
@@ -127,10 +131,10 @@ go test ./pkg/requesthandler -run TestCallV1CallsCreate -v
 # Expected: FAIL
 ```
 
-**Step 4: Implement the signature change**
+**Step 4: Implement the signature changes for both RPCs**
 
 ```go
-// call_calls.go:110
+// call_calls.go — CallV1CallsCreate
 func (r *requestHandler) CallV1CallsCreate(
     ctx context.Context,
     customerID uuid.UUID,
@@ -143,18 +147,27 @@ func (r *requestHandler) CallV1CallsCreate(
     anonymous string,
     metadata map[string]interface{}, // NEW
 ) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error) {
-    // ...
-    m, err := json.Marshal(cmrequest.V1DataCallsPost{
-        CustomerID:     customerID,
-        FlowID:         flowID,
-        MasterCallID:   masterCallID,
-        Source:         *source,
-        Destinations:   destinations,
-        EarlyExecution: earlyExecution,
-        Connect:        connect,
-        Anonymous:      anonymous,
-        Metadata:       metadata, // NEW
-    })
+    // marshal V1DataCallsPost with Metadata: metadata
+    // ... rest unchanged
+}
+
+// call_calls.go — CallV1CallCreateWithID
+func (r *requestHandler) CallV1CallCreateWithID(
+    ctx context.Context,
+    id uuid.UUID,
+    customerID uuid.UUID,
+    flowID uuid.UUID,
+    activeflowID uuid.UUID,
+    masterCallID uuid.UUID,
+    source *commonaddress.Address,
+    destination *commonaddress.Address,
+    groupcallID uuid.UUID,
+    earlyExecution bool,
+    connect bool,
+    anonymous string,
+    metadata map[string]interface{}, // NEW
+) (*cmcall.Call, error) {
+    // marshal V1DataCallsIDPost with Metadata: metadata
     // ... rest unchanged
 }
 ```
@@ -273,50 +286,47 @@ git commit -m "NOJIRA-call-metadata-route-provider-ids
 - Modify: `bin-route-manager/pkg/routehandler/main.go` (interface definition)
 - Test: `bin-route-manager/pkg/routehandler/dialroute_test.go`
 
-**Step 1: Write the failing test**
+**Step 1: Write the failing tests**
 
-Add a test case to `dialroute_test.go`:
+Add test cases to `dialroute_test.go` covering:
+
+1. **Single provider override** — one ID in the array, returns one synthetic route with `Route.ID == ProviderID`.
+2. **Three providers in order** — asserts three synthetic routes, IDs match provider IDs, priorities 0/1/2, and each `Route.ID` is unique.
+3. **Synthetic route IDs are unique and non-Nil** — critical for call-manager failover (C1).
+4. **Unknown provider returns error** — mock `providerHandler.Get` to return an error; assert `DialrouteList` propagates the error without falling back to normal merge (S2).
+5. **Empty `targetProviderIDs` preserves existing behavior** — the signature change alone must not regress the normal merge path. Update existing tests to pass `nil` for the new param.
 
 ```go
 func Test_DialrouteList_WithTargetProviderIDs(t *testing.T) {
     tests := []struct {
-        name             string
-        customerID       uuid.UUID
-        target           string
+        name              string
+        customerID        uuid.UUID
+        target            string
         targetProviderIDs []uuid.UUID
-        responseProviders map[uuid.UUID]*provider.Provider // mocked lookups
+
+        providerGetError  error // for unknown-provider case
 
         expectRes []*route.Route
+        expectErr bool
     }{
         {
-            name: "single provider override returns synthetic route",
-            customerID: uuid.FromStringOrNil("..."),
-            target: "+1",
-            targetProviderIDs: []uuid.UUID{uuid.FromStringOrNil("provider-a")},
+            name:              "single provider override returns synthetic route with ID=ProviderID",
+            customerID:        uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+            target:            "+1",
+            targetProviderIDs: []uuid.UUID{uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")},
             expectRes: []*route.Route{
                 {
-                    // synthetic: minimal fields matching production Route shape
-                    CustomerID: uuid.FromStringOrNil("..."),
-                    ProviderID: uuid.FromStringOrNil("provider-a"),
+                    ID:         uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), // = ProviderID
+                    CustomerID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+                    ProviderID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                     Target:     "+1",
                     Priority:   0,
-                    // ID/Name/Detail left as zero values — downstream call-manager only needs ProviderID + Target
+                    Name:       "synthetic-test-route",
+                    Detail:     "Synthetic route generated for route_provider_ids override. Not persisted.",
                 },
             },
         },
-        {
-            name: "three providers return three routes in order",
-            targetProviderIDs: []uuid.UUID{
-                uuid.FromStringOrNil("provider-a"),
-                uuid.FromStringOrNil("provider-b"),
-                uuid.FromStringOrNil("provider-c"),
-            },
-            // ... expect 3 synthetic routes in the same order
-        },
-        {
-            name: "empty targetProviderIDs falls back to normal merge (existing behavior)",
-            // existing test case; just adds the new nil param
-        },
+        // ... more cases per list above
     }
     // ...
 }
@@ -349,13 +359,29 @@ func (h *routeHandler) DialrouteList(
 
     // Override: when targetProviderIDs is set, return synthetic routes in order.
     if len(targetProviderIDs) > 0 {
+        // Validate provider existence before constructing synthetic routes (S2).
+        // Fail fast so the admin gets a clear error instead of a silent mid-dial hangup.
+        for _, pid := range targetProviderIDs {
+            if _, err := h.providerHandler.Get(ctx, pid); err != nil {
+                log.Errorf("Could not get provider for synthetic dialroute. provider_id: %s, err: %v", pid, err)
+                return nil, errors.Wrapf(err, "provider not found: %s", pid)
+            }
+        }
+
+        // C1 fix: use ProviderID as the synthetic Route.ID so call-manager's failover
+        // tracking (outgoing_call.go:306, 571) can uniquely identify each route.
+        // Avoids generating throwaway UUIDs. Duplicate provider IDs make the duplicate
+        // unreachable by the failover tracker (pathological input, accepted as-is).
         res := make([]*route.Route, 0, len(targetProviderIDs))
         for i, pid := range targetProviderIDs {
             res = append(res, &route.Route{
+                ID:         pid, // synthetic ID = provider ID
                 CustomerID: customerID,
                 ProviderID: pid,
                 Target:     target,
-                Priority:   i, // preserve array ordering as priority
+                Priority:   i,
+                Name:       "synthetic-test-route",
+                Detail:     "Synthetic route generated for route_provider_ids override. Not persisted.",
             })
         }
         log.WithField("synthetic_routes", res).Info("Returning synthetic dialroutes for provider override")
@@ -368,7 +394,10 @@ func (h *routeHandler) DialrouteList(
 }
 ```
 
-Note: per monorepo `rules/common/code-review.md` "External Event & Webhook Processing Logs" guidance, this is an *internal admin override* — not an external event. Info-level log on the override is appropriate (it's a significant state change worth tracing in production), but keep the normal path at Debug.
+Notes:
+- **Info-level log** on override activation — it's a significant state change worth tracing in production (internal admin feature, not a customer event).
+- **`providerHandler.Get`** requires the route handler to depend on the provider handler. Check the existing handler dependency graph in `cmd/route-manager/main.go` — if not already wired, add the dependency in a separate earlier step. If it would create a cycle, use `h.db.ProviderGet` directly (already used by `providerHandler.Get` internally).
+- **Synthetic route field population** (S3): `Name` and `Detail` are populated with human-readable strings so log/event consumers see something meaningful instead of empty strings. `TMCreate`/`TMUpdate`/`TMDelete` remain nil (acceptable: the route is never persisted).
 
 **Step 4: Update the interface in `main.go`**
 
@@ -777,6 +806,78 @@ git commit -m "NOJIRA-call-metadata-route-provider-ids
 
 ---
 
+### Task 14b: Update bin-call-manager `groupcallhandler` callers of `CallV1CallCreateWithID`
+
+**Files:**
+- Modify: `bin-call-manager/pkg/groupcallhandler/start.go:151, 227, 351`
+- Modify: `bin-call-manager/pkg/groupcallhandler/dial.go:119`
+- Modify: corresponding `_test.go` files that set mock expectations on `CallV1CallCreateWithID`
+
+**Step 1: Pass `nil` metadata at every call site**
+
+```go
+// Example — start.go:151
+tmp, err := h.reqHandler.CallV1CallCreateWithID(
+    ctx, callID, customerID, flowID, uuid.Nil, masterCallID,
+    source, destination, id, false, false, anonymous,
+    nil, // metadata: groupcall fan-out carries no metadata in v1
+)
+```
+
+**Step 2: Update test expectations**
+
+`gomock.Any()` or explicit `nil` on the new param for every `mockReq.EXPECT().CallV1CallCreateWithID(...)` call.
+
+**Step 3: Verify (already part of bin-call-manager verification in Task 12)**
+
+This task's changes are inside `bin-call-manager`, so the Task 12 verification run covers them. Commit separately for reviewability:
+
+```bash
+git add bin-call-manager/pkg/groupcallhandler/
+git commit -m "NOJIRA-call-metadata-route-provider-ids
+
+- bin-call-manager: Pass nil metadata from groupcallhandler CallV1CallCreateWithID callers"
+```
+
+---
+
+### Task 14c: Update bin-campaign-manager caller
+
+**Files:**
+- Modify: `bin-campaign-manager/pkg/campaignhandler/execute.go:252`
+- Modify: corresponding `_test.go` file
+
+**Step 1: Pass `nil` metadata**
+
+```go
+newCall, err := h.reqHandler.CallV1CallCreateWithID(
+    ctx, /* existing args */,
+    nil, // metadata
+)
+```
+
+**Step 2: Update test expectations**
+
+Add the new param to any `mockReq.EXPECT().CallV1CallCreateWithID(...)` call.
+
+**Step 3: Verify**
+
+```bash
+cd bin-campaign-manager
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+**Step 4: Commit**
+
+```bash
+git add bin-campaign-manager/
+git commit -m "NOJIRA-call-metadata-route-provider-ids
+
+- bin-campaign-manager: Pass nil metadata to CallV1CallCreateWithID"
+```
+
+---
+
 ### Task 15: Update bin-api-manager existing caller
 
 **Files:**
@@ -863,7 +964,7 @@ git commit -m "NOJIRA-call-metadata-route-provider-ids
 Run verification on every affected service in sequence. Stop at the first failure.
 
 ```bash
-for svc in bin-common-handler bin-route-manager bin-call-manager bin-flow-manager bin-queue-manager bin-api-manager; do
+for svc in bin-common-handler bin-route-manager bin-call-manager bin-flow-manager bin-queue-manager bin-api-manager bin-campaign-manager; do
   echo "=== $svc ==="
   cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-call-metadata-route-provider-ids/$svc
   go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m || { echo "FAILED: $svc"; exit 1; }
@@ -898,6 +999,7 @@ through call-manager and route-manager.
 - bin-flow-manager: Pass nil metadata to CallV1CallsCreate (unchanged behavior)
 - bin-queue-manager: Pass nil metadata to CallV1CallsCreate (unchanged behavior)
 - bin-api-manager: Pass nil metadata from customer-facing call create; document internal-only metadata in RST docs
+- bin-campaign-manager: Pass nil metadata to CallV1CallCreateWithID
 EOF
 )"
 ```
@@ -915,9 +1017,10 @@ EOF
 
 | Risk | Likelihood | Mitigation |
 |---|---|---|
-| `Call.Metadata` collision between caller-supplied and `rtp_debug` | Low | `rtp_debug` is set post-creation via `Metadata[key] = true`; collision-free |
-| Signature change breaks a service missed in the audit | Medium | Full verification runs on all 6 services; `go build` fails fast on missed sites |
-| Route-manager synthetic route missing a field the call-manager expects | Medium | Task 5 test asserts the synthetic route shape; compare against production `Route` in `dialroute_test.go` existing fixtures |
+| `Call.Metadata` collision between caller-supplied and `rtp_debug` | Low | `rtp_debug` is set post-creation via `Metadata[key] = true`; collision-free. Documented merge rule: post-creation keys overwrite same-key caller values |
+| Signature change breaks a service missed in the audit | Medium | Full verification runs on all 7 services; `go build` fails fast on missed sites |
+| Synthetic routes have duplicate `uuid.Nil` IDs breaking failover | **Resolved by C1 fix** | Synthetic `Route.ID` = `ProviderID`; test asserts all IDs unique and non-Nil |
+| Customer-derived input forwarded into `metadata` param | Medium | Design invariant forbids it; reviewer must check every new `CallV1CallsCreate`/`CallV1CallCreateWithID` caller for unsafe forwarding |
 | Metadata leaks sensitive info via webhook | Low | `route_provider_ids` is UUIDs only; admin owns the call; acceptable for v1 |
 | `uuid.FromString` typo silently skips IDs | Medium | Log at Info level when any ID fails to parse; fail fast at api-manager in the future admin endpoint |
 

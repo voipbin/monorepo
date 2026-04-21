@@ -42,7 +42,17 @@ admin → POST /v1/providers/{provider_id}/calls
 |---|---|
 | Customer `POST /v1/calls` | **No** — field not exposed on public schema |
 | Admin `POST /v1/providers/{id}/calls` | **No from client** — api-manager builds metadata server-side |
-| Internal RPC `CallV1CallsCreate` | **Yes** — only internal services call this |
+| Internal RPC `CallV1CallsCreate` / `CallV1CallCreateWithID` | **Yes** — only internal services call this |
+
+### Trust invariants (MANDATORY)
+
+The following invariants MUST hold for every caller of `CallV1CallsCreate` and `CallV1CallCreateWithID`:
+
+1. **No customer-derived input may flow into the `metadata` param.** Values coming from flow actions, API request bodies, queue callback payloads, or any other caller-controlled source are explicitly forbidden as metadata. Only server-side-derived values (e.g., a validated provider ID read from a trusted admin request, an internal feature flag) are permitted.
+2. **Only typed `MetadataKey` constants are permitted as keys.** Declared in `bin-call-manager/models/call/metadata.go`. String literals at call sites are forbidden.
+3. **Default is `nil`.** Services that have no reason to set metadata must pass `nil`. `bin-flow-manager`, `bin-queue-manager`, `bin-campaign-manager`, and the customer-facing `bin-api-manager` paths all pass `nil` in v1.
+
+These invariants exist because `map[string]interface{}` is a loose contract. Forwarding caller-controlled values risks privilege escalation (e.g., a customer crafting a `route_provider_ids` value to bypass their assigned routes). The invariants establish the server-side-only boundary.
 
 ## Components
 
@@ -59,12 +69,14 @@ admin → POST /v1/providers/{provider_id}/calls
 ### `bin-route-manager`
 
 - **`pkg/routehandler/dialroute.go`** — extend `DialrouteList`: when `targetProviderIDs` non-empty, return `len(ids)` synthetic `Route` entries in array order; skip normal customer/default merge. When empty/absent, behavior unchanged.
+- **Synthetic route ID = provider ID.** To avoid generating throwaway UUIDs while preserving call-manager's failover tracking (which matches by `route.ID == c.DialrouteID`), synthetic routes use the `ProviderID` as their `Route.ID`. Each synthetic route is still uniquely identifiable, and the ID is human-traceable (the "route" being attempted is literally "provider X"). Duplicate provider IDs in the array are pathological input and are accepted as-is (the second duplicate becomes unreachable by the failover tracker, which is acceptable).
+- **Provider existence validation.** Before generating synthetic routes, verify each provider ID exists (not soft-deleted) via `providerHandler.Get`. If any is missing, return an error immediately so the call fails fast rather than hanging up mid-dial.
 
 ### `bin-common-handler`
 
-- **`pkg/requesthandler/call_calls.go`** — extend `CallV1CallsCreate` signature with `metadata map[string]interface{}`.
+- **`pkg/requesthandler/call_calls.go`** — extend **both** `CallV1CallsCreate` and `CallV1CallCreateWithID` with `metadata map[string]interface{}`. Parity is required so groupcall fan-out and campaign calls can carry metadata when future features need it (v1 passes `nil`).
 - **`pkg/requesthandler/route_dialroutes.go`** — extend `RouteV1DialrouteList` signature with `targetProviderIDs []uuid.UUID`.
-- Regenerate mocks; update all callers across the 30+ services.
+- Regenerate mocks; update callers in the 7 affected services (enumerated below).
 
 ### `bin-api-manager`
 
@@ -125,9 +137,16 @@ admin → POST /v1/providers/{provider_id}/calls
 
 ## Blast Radius
 
-- `CallV1CallsCreate` signature change: every service that mocks it needs a mock regenerate + test fixture update (~15 services).
-- `RouteV1DialrouteList` signature change: all callers must pass `nil`/empty for `targetProviderIDs` unless overriding (~3 services).
-- Full verification workflow required on every affected service.
+**Affected services (7):**
+- `bin-common-handler` — signature sources (extends `CallV1CallsCreate`, `CallV1CallCreateWithID`, `RouteV1DialrouteList`).
+- `bin-route-manager` — implements the synthetic-route override and provider-existence validation.
+- `bin-call-manager` — new metadata key constant, metadata persistence at creation, metadata → `targetProviderIDs` extraction in `getDialroutes`, also updates `groupcallhandler` which calls `CallV1CallCreateWithID`.
+- `bin-flow-manager` — caller of `CallV1CallsCreate` (2 sites); pass `nil` metadata.
+- `bin-queue-manager` — caller of `CallV1CallsCreate`; pass `nil` metadata.
+- `bin-api-manager` — caller of `CallV1CallsCreate`; pass `nil` metadata. (Admin endpoint is a separate feature.)
+- `bin-campaign-manager` — caller of `CallV1CallCreateWithID`; pass `nil` metadata.
+
+Full verification workflow required on every affected service.
 
 ## Out of Scope (follow-ups)
 
