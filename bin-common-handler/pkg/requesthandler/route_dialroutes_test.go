@@ -19,8 +19,8 @@ func Test_DialrouteV1RouteList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID uuid.UUID
-		target     string
+		filters           map[rmroute.Field]any
+		targetProviderIDs []uuid.UUID
 
 		response *sock.Response
 
@@ -31,8 +31,11 @@ func Test_DialrouteV1RouteList(t *testing.T) {
 		{
 			"normal",
 
-			uuid.FromStringOrNil("177ca524-52b6-11ed-bc27-67e42188fe83"),
-			"+82",
+			map[rmroute.Field]any{
+				rmroute.FieldCustomerID: uuid.FromStringOrNil("177ca524-52b6-11ed-bc27-67e42188fe83"),
+				rmroute.FieldTarget:     "+82",
+			},
+			nil,
 
 			&sock.Response{
 				StatusCode: 200,
@@ -42,10 +45,41 @@ func Test_DialrouteV1RouteList(t *testing.T) {
 
 			"bin-manager.route-manager.request",
 			&sock.Request{
-			URI:      "/v1/dialroutes",
-			Method:   sock.RequestMethodGet,
-			DataType: ContentTypeJSON,
-			Data:     []byte(`{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82"}`),
+				URI:      "/v1/dialroutes",
+				Method:   sock.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82","filters":{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82"}}`),
+			},
+			[]rmroute.Route{
+				{
+					ID: uuid.FromStringOrNil("8297fc2c-52b7-11ed-b257-2b1bd9fe3671"),
+				},
+			},
+		},
+		{
+			"with target provider ids",
+
+			map[rmroute.Field]any{
+				rmroute.FieldCustomerID: uuid.FromStringOrNil("177ca524-52b6-11ed-bc27-67e42188fe83"),
+				rmroute.FieldTarget:     "+82",
+			},
+			[]uuid.UUID{
+				uuid.FromStringOrNil("9a6d2f7e-52b8-11ed-9b1a-cb4e7dfe0001"),
+				uuid.FromStringOrNil("9a6d2f7e-52b8-11ed-9b1a-cb4e7dfe0002"),
+			},
+
+			&sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[{"id":"8297fc2c-52b7-11ed-b257-2b1bd9fe3671"}]`),
+			},
+
+			"bin-manager.route-manager.request",
+			&sock.Request{
+				URI:      "/v1/dialroutes",
+				Method:   sock.RequestMethodGet,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82","filters":{"customer_id":"177ca524-52b6-11ed-bc27-67e42188fe83","target":"+82"},"target_provider_ids":["9a6d2f7e-52b8-11ed-9b1a-cb4e7dfe0001","9a6d2f7e-52b8-11ed-9b1a-cb4e7dfe0002"]}`),
 			},
 			[]rmroute.Route{
 				{
@@ -67,12 +101,8 @@ func Test_DialrouteV1RouteList(t *testing.T) {
 
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
-		filters := map[rmroute.Field]any{
-			rmroute.FieldCustomerID: tt.customerID,
-			rmroute.FieldTarget: tt.target,
-		}
 
-		res, err := reqHandler.RouteV1DialrouteList(ctx, filters)
+			res, err := reqHandler.RouteV1DialrouteList(ctx, tt.filters, tt.targetProviderIDs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

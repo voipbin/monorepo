@@ -24,22 +24,24 @@ type V1DataCallsPost struct {
 	EarlyExecution bool                    `json:"early_execution,omitempty"` // if it sets to true, the call's flow exection will not wait for call answer.
 	Connect        bool                    `json:"connect,omitempty"`         // if the call is created for connect, sets this to true,
 	Anonymous      string                  `json:"anonymous,omitempty"`       // Tri-state: "yes", "no", "auto". Controls anonymous caller ID.
+	Metadata       map[string]interface{}  `json:"metadata,omitempty"`        // Internal-only metadata (e.g., route_provider_ids for admin-test overrides).
 }
 
 // V1DataCallsIDPost is
 // v1 data type request struct for
 // /v1/calls/<call-id> POST
 type V1DataCallsIDPost struct {
-	FlowID         uuid.UUID             `json:"flow_id,omitempty"`
-	ActiveflosID   uuid.UUID             `json:"activeflow_id,omitempty"`
-	CustomerID     uuid.UUID             `json:"customer_id,omitempty"`
-	MasterCallID   uuid.UUID             `json:"master_call_id,omitempty"`
-	Source         commonaddress.Address `json:"source,omitempty"`
-	Destination    commonaddress.Address `json:"destination,omitempty"`
-	GroupcallID    uuid.UUID             `json:"groupcall_id,omitempty"`
-	EarlyExecution bool                  `json:"early_execution,omitempty"` // if it sets to true, the call's flow exection will not wait for call answer.
-	Connect        bool                  `json:"connect,omitempty"`         // if the call is created for connect, sets this to true,
-	Anonymous      string                `json:"anonymous,omitempty"`       // Tri-state: "yes", "no", "auto". Controls anonymous caller ID.
+	FlowID         uuid.UUID              `json:"flow_id,omitempty"`
+	ActiveflosID   uuid.UUID              `json:"activeflow_id,omitempty"`
+	CustomerID     uuid.UUID              `json:"customer_id,omitempty"`
+	MasterCallID   uuid.UUID              `json:"master_call_id,omitempty"`
+	Source         commonaddress.Address  `json:"source,omitempty"`
+	Destination    commonaddress.Address  `json:"destination,omitempty"`
+	GroupcallID    uuid.UUID              `json:"groupcall_id,omitempty"`
+	EarlyExecution bool                   `json:"early_execution,omitempty"` // if it sets to true, the call's flow exection will not wait for call answer.
+	Connect        bool                   `json:"connect,omitempty"`         // if the call is created for connect, sets this to true,
+	Anonymous      string                 `json:"anonymous,omitempty"`       // Tri-state: "yes", "no", "auto". Controls anonymous caller ID.
+	Metadata       map[string]interface{} `json:"metadata,omitempty"`        // Internal-only metadata (e.g., route_provider_ids for admin-test overrides).
 }
 
 // V1DataCallsIDHealthPost is

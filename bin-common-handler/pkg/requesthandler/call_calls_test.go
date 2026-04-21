@@ -218,6 +218,7 @@ func Test_CallV1CallsCreate(t *testing.T) {
 		destinations   []address.Address
 		ealryExecution bool
 		connect        bool
+		metadata       map[string]interface{}
 
 		response *sock.Response
 
@@ -244,6 +245,7 @@ func Test_CallV1CallsCreate(t *testing.T) {
 			},
 			ealryExecution: true,
 			connect:        true,
+			metadata:       nil,
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -257,6 +259,56 @@ func Test_CallV1CallsCreate(t *testing.T) {
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"flow_id":"0783c168-4c70-11ec-a613-bfcd98aaa6da","customer_id":"3a09efda-7f52-11ec-a775-cfd868cdc292","master_call_id":"ecd7b104-8c97-11ec-895d-67294ed5a4d0","source":{"type":"tel","target":"+821021656521"},"destinations":[{"type":"tel","target":"+821021656522"}],"early_execution":true,"connect":true}`),
+			},
+			expectResCalls: []*cmcall.Call{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("fa0ddb32-25cd-11eb-a604-8b239b305055"),
+					},
+				},
+			},
+			expectResGroupcalls: []*cmgroupcall.Groupcall{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("69b105a6-939b-4eb0-99a5-0efa5b3cd80e"),
+					},
+				},
+			},
+		},
+		{
+			name: "with metadata route_provider_ids",
+
+			customerID:   uuid.FromStringOrNil("3a09efda-7f52-11ec-a775-cfd868cdc292"),
+			flowID:       uuid.FromStringOrNil("0783c168-4c70-11ec-a613-bfcd98aaa6da"),
+			masterCallID: uuid.FromStringOrNil("ecd7b104-8c97-11ec-895d-67294ed5a4d0"),
+			source: &address.Address{
+				Type:   address.TypeTel,
+				Target: "+821021656521",
+			},
+			destinations: []address.Address{
+				{
+					Type:   address.TypeTel,
+					Target: "+821021656522",
+				},
+			},
+			ealryExecution: true,
+			connect:        true,
+			metadata: map[string]interface{}{
+				"route_provider_ids": []interface{}{"a1b2c3d4-e5f6-7890-abcd-ef1234567890"},
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"calls":[{"id":"fa0ddb32-25cd-11eb-a604-8b239b305055"}],"groupcalls":[{"id":"69b105a6-939b-4eb0-99a5-0efa5b3cd80e"}]}`),
+			},
+
+			expectTarget: "bin-manager.call-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/calls",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"flow_id":"0783c168-4c70-11ec-a613-bfcd98aaa6da","customer_id":"3a09efda-7f52-11ec-a775-cfd868cdc292","master_call_id":"ecd7b104-8c97-11ec-895d-67294ed5a4d0","source":{"type":"tel","target":"+821021656521"},"destinations":[{"type":"tel","target":"+821021656522"}],"early_execution":true,"connect":true,"metadata":{"route_provider_ids":["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]}}`),
 			},
 			expectResCalls: []*cmcall.Call{
 				{
@@ -288,7 +340,7 @@ func Test_CallV1CallsCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			resCalls, resGroupcalls, err := reqHandler.CallV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.ealryExecution, tt.connect, "")
+			resCalls, resGroupcalls, err := reqHandler.CallV1CallsCreate(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.ealryExecution, tt.connect, "", tt.metadata)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -317,6 +369,7 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 		groupcallID    uuid.UUID
 		earlyExecution bool
 		connect        bool
+		metadata       map[string]interface{}
 
 		source      *address.Address
 		destination *address.Address
@@ -337,6 +390,7 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 			groupcallID:    uuid.FromStringOrNil("8214ceaa-bbe0-11ed-9ae2-b72d8846362b"),
 			earlyExecution: true,
 			connect:        true,
+			metadata:       nil,
 
 			source: &address.Address{
 				Type:   address.TypeTel,
@@ -365,6 +419,48 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "with metadata route_provider_ids",
+
+			callID:         uuid.FromStringOrNil("9dcdc9a0-4d1c-11ec-81cc-bf06212a283e"),
+			customerID:     uuid.FromStringOrNil("45a4dbac-7f52-11ec-98a8-7f1e6d2fae52"),
+			flowID:         uuid.FromStringOrNil("9f4b89b6-4d1c-11ec-a565-af220567858d"),
+			activeflowID:   uuid.FromStringOrNil("0a5273c9-73ac-4590-87de-4c7f33da7614"),
+			masterCallID:   uuid.FromStringOrNil("f993c284-8c97-11ec-aaa3-a76b1106d031"),
+			groupcallID:    uuid.FromStringOrNil("8214ceaa-bbe0-11ed-9ae2-b72d8846362b"),
+			earlyExecution: true,
+			connect:        true,
+			metadata: map[string]interface{}{
+				"route_provider_ids": []interface{}{"a1b2c3d4-e5f6-7890-abcd-ef1234567890"},
+			},
+
+			source: &address.Address{
+				Type:   address.TypeTel,
+				Target: "+821021656521",
+			},
+			destination: &address.Address{
+				Type:   address.TypeTel,
+				Target: "+821021656522",
+			},
+
+			expectTarget: "bin-manager.call-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/calls/9dcdc9a0-4d1c-11ec-81cc-bf06212a283e",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"flow_id":"9f4b89b6-4d1c-11ec-a565-af220567858d","activeflow_id":"0a5273c9-73ac-4590-87de-4c7f33da7614","customer_id":"45a4dbac-7f52-11ec-98a8-7f1e6d2fae52","master_call_id":"f993c284-8c97-11ec-aaa3-a76b1106d031","source":{"type":"tel","target":"+821021656521"},"destination":{"type":"tel","target":"+821021656522"},"groupcall_id":"8214ceaa-bbe0-11ed-9ae2-b72d8846362b","early_execution":true,"connect":true,"metadata":{"route_provider_ids":["a1b2c3d4-e5f6-7890-abcd-ef1234567890"]}}`),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"9dcdc9a0-4d1c-11ec-81cc-bf06212a283e"}`),
+			},
+			expectRes: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("9dcdc9a0-4d1c-11ec-81cc-bf06212a283e"),
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -380,7 +476,7 @@ func Test_CallV1CallCreateWithID(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.CallV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.groupcallID, tt.earlyExecution, tt.connect, "")
+			res, err := reqHandler.CallV1CallCreateWithID(ctx, tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.source, tt.destination, tt.groupcallID, tt.earlyExecution, tt.connect, "", tt.metadata)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

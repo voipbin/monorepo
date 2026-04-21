@@ -311,6 +311,9 @@ func Test_processV1CallsIDPost(t *testing.T) {
 		earlyExecution bool
 		connect        bool
 
+		expectMetadata   map[string]interface{}
+		expectCreateCall bool
+
 		call      *call.Call
 		expectRes *sock.Response
 	}{
@@ -329,6 +332,8 @@ func Test_processV1CallsIDPost(t *testing.T) {
 			flowID:       uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
 			activeflowID: uuid.FromStringOrNil("bf88a888-ddab-435b-8ae1-1eb8a3072230"),
 			masterCallID: uuid.FromStringOrNil("11b1b1fa-8c93-11ec-9597-2320d5458176"),
+
+			expectCreateCall: true,
 
 			call: &call.Call{
 				Identity: commonidentity.Identity{
@@ -375,6 +380,8 @@ func Test_processV1CallsIDPost(t *testing.T) {
 			earlyExecution: true,
 			connect:        true,
 
+			expectCreateCall: true,
+
 			call: &call.Call{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
@@ -398,6 +405,90 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","customer_id":"ffeda266-7f50-11ec-8089-df3388aef0cc","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","activeflow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{"type":"sip","target":"test_source@127.0.0.1:5061","name":"test_source"},"destination":{"type":"tel","target":"+821100000001"},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"dialroute_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
 		},
+		{
+			name: "with valid metadata route_provider_ids",
+
+			request: &sock.Request{
+				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "metadata": {"route_provider_ids": ["d1e1abf6-0001-0001-0001-000000000001"]}}`),
+			},
+
+			callID:     uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+			customerID: uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
+			flowID:     uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+
+			expectCreateCall: true,
+			expectMetadata: map[string]interface{}{
+				"route_provider_ids": []interface{}{"d1e1abf6-0001-0001-0001-000000000001"},
+			},
+
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+					CustomerID: uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
+				},
+				FlowID: uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+			},
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","customer_id":"ff0a0722-7f50-11ec-a839-4be463701c2f","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","activeflow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"dialroute_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+		},
+		{
+			name: "without metadata forwards nil",
+
+			request: &sock.Request{
+				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc"}`),
+			},
+
+			callID:     uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+			customerID: uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
+			flowID:     uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+
+			expectCreateCall: true,
+			expectMetadata:   nil,
+
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+					CustomerID: uuid.FromStringOrNil("ff0a0722-7f50-11ec-a839-4be463701c2f"),
+				},
+				FlowID: uuid.FromStringOrNil("59518eae-ed66-11ea-85ef-b77bdbc74ccc"),
+			},
+
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"47a468d4-ed66-11ea-be25-97f0d867d634","customer_id":"ff0a0722-7f50-11ec-a839-4be463701c2f","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"59518eae-ed66-11ea-85ef-b77bdbc74ccc","activeflow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"dialroute_id":"00000000-0000-0000-0000-000000000000"}`),
+			},
+		},
+		{
+			name: "rejects unknown metadata key with 400",
+
+			request: &sock.Request{
+				URI:      "/v1/calls/47a468d4-ed66-11ea-be25-97f0d867d634",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "ff0a0722-7f50-11ec-a839-4be463701c2f", "flow_id": "59518eae-ed66-11ea-85ef-b77bdbc74ccc", "metadata": {"unknown_key": "x"}}`),
+			},
+
+			callID: uuid.FromStringOrNil("47a468d4-ed66-11ea-be25-97f0d867d634"),
+
+			// CreateCallOutgoing MUST NOT be called; leave expectCreateCall=false so
+			// the mock controller fails if the handler reaches it.
+			expectCreateCall: false,
+
+			expectRes: &sock.Response{
+				StatusCode: 400,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -413,7 +504,9 @@ func Test_processV1CallsIDPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.groupcallID, tt.source, tt.destination, tt.earlyExecution, tt.connect, "").Return(tt.call, nil)
+			if tt.expectCreateCall {
+				mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.groupcallID, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", tt.expectMetadata).Return(tt.call, nil)
+			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -438,6 +531,9 @@ func Test_processV1CallsPost(t *testing.T) {
 		destinations   []commonaddress.Address
 		earlyExeuction bool
 		connect        bool
+
+		expectMetadata   map[string]interface{}
+		expectCreateCall bool
 
 		responseCalls      []*call.Call
 		responseGroupcalls []*groupcall.Groupcall
@@ -465,6 +561,8 @@ func Test_processV1CallsPost(t *testing.T) {
 			},
 			earlyExeuction: true,
 			connect:        true,
+
+			expectCreateCall: true,
 
 			responseCalls: []*call.Call{
 				{
@@ -504,6 +602,8 @@ func Test_processV1CallsPost(t *testing.T) {
 			earlyExeuction: false,
 			connect:        false,
 
+			expectCreateCall: true,
+
 			responseCalls: []*call.Call{
 				{
 					Identity: commonidentity.Identity{
@@ -531,6 +631,127 @@ func Test_processV1CallsPost(t *testing.T) {
 				Data:       []byte(`{"calls":[{"id":"72d56d08-f3a8-11ea-9c0c-ef8258d54f42","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"dialroute_id":"00000000-0000-0000-0000-000000000000"}],"groupcalls":[{"id":"50e70d60-d722-43ce-a6b6-d69a28e36cbe","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","answer_call_id":"00000000-0000-0000-0000-000000000000","answer_groupcall_id":"00000000-0000-0000-0000-000000000000"}]}`),
 			},
 		},
+		{
+			name: "with valid metadata route_provider_ids",
+
+			customerID:   uuid.FromStringOrNil("351014ec-7f51-11ec-9e7c-2b6427f906b7"),
+			flowID:       uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000000",
+			},
+			destinations: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+			},
+			earlyExeuction: false,
+			connect:        false,
+
+			expectCreateCall: true,
+			expectMetadata: map[string]interface{}{
+				"route_provider_ids": []interface{}{"d1e1abf6-0001-0001-0001-000000000001"},
+			},
+
+			responseCalls: []*call.Call{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
+					},
+				},
+			},
+			responseGroupcalls: []*groupcall.Groupcall{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4f1e2d54-7d52-4c1f-ad49-5b51feea0055"),
+					},
+				},
+			},
+
+			request: &sock.Request{
+				URI:      "/v1/calls",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type":"tel","target":"+821100000000"}, "destinations": [{"type":"tel","target":"+821100000001"}], "metadata": {"route_provider_ids": ["d1e1abf6-0001-0001-0001-000000000001"]}}`),
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"calls":[{"id":"cd561ba6-f3a8-11ea-b7ac-57b19fa28e09","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"dialroute_id":"00000000-0000-0000-0000-000000000000"}],"groupcalls":[{"id":"4f1e2d54-7d52-4c1f-ad49-5b51feea0055","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","answer_call_id":"00000000-0000-0000-0000-000000000000","answer_groupcall_id":"00000000-0000-0000-0000-000000000000"}]}`),
+			},
+		},
+		{
+			name: "without metadata forwards nil",
+
+			customerID:   uuid.FromStringOrNil("351014ec-7f51-11ec-9e7c-2b6427f906b7"),
+			flowID:       uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821100000000",
+			},
+			destinations: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000001",
+				},
+			},
+			earlyExeuction: false,
+			connect:        false,
+
+			expectCreateCall: true,
+			expectMetadata:   nil,
+
+			responseCalls: []*call.Call{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("cd561ba6-f3a8-11ea-b7ac-57b19fa28e09"),
+					},
+				},
+			},
+			responseGroupcalls: []*groupcall.Groupcall{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("4f1e2d54-7d52-4c1f-ad49-5b51feea0055"),
+					},
+				},
+			},
+
+			request: &sock.Request{
+				URI:      "/v1/calls",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type":"tel","target":"+821100000000"}, "destinations": [{"type":"tel","target":"+821100000001"}]}`),
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"calls":[{"id":"cd561ba6-f3a8-11ea-b7ac-57b19fa28e09","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","recording_id":"00000000-0000-0000-0000-000000000000","groupcall_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"dialroute_id":"00000000-0000-0000-0000-000000000000"}],"groupcalls":[{"id":"4f1e2d54-7d52-4c1f-ad49-5b51feea0055","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","master_call_id":"00000000-0000-0000-0000-000000000000","master_groupcall_id":"00000000-0000-0000-0000-000000000000","answer_call_id":"00000000-0000-0000-0000-000000000000","answer_groupcall_id":"00000000-0000-0000-0000-000000000000"}]}`),
+			},
+		},
+		{
+			name: "rejects unknown metadata key with 400",
+
+			customerID:   uuid.FromStringOrNil("351014ec-7f51-11ec-9e7c-2b6427f906b7"),
+			flowID:       uuid.FromStringOrNil("d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1"),
+			masterCallID: uuid.Nil,
+
+			// CreateCallsOutgoing MUST NOT be called; leave expectCreateCall=false so
+			// the mock controller fails if the handler reaches it.
+			expectCreateCall: false,
+
+			request: &sock.Request{
+				URI:      "/v1/calls",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id": "351014ec-7f51-11ec-9e7c-2b6427f906b7", "flow_id": "d4df6ed6-f3a8-11ea-bf19-6f8063fdcfa1", "source": {"type":"tel","target":"+821100000000"}, "destinations": [{"type":"tel","target":"+821100000001"}], "metadata": {"unknown_key": "x"}}`),
+			},
+			expectRes: &sock.Response{
+				StatusCode: 400,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -546,7 +767,9 @@ func Test_processV1CallsPost(t *testing.T) {
 				callHandler: mockCall,
 			}
 
-			mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect, "").Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			if tt.expectCreateCall {
+				mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect, "", tt.expectMetadata).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

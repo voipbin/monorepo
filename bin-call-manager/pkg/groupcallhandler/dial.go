@@ -116,7 +116,7 @@ func (h *groupcallHandler) dialNextDestinationCall(ctx context.Context, gc *grou
 	// create chained call
 	go func() {
 		// about the connect option. and because the groupcall is making the multiple outgoing calls, it is not possible to add the connect option.
-		tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, id, gc.CustomerID, gc.FlowID, uuid.Nil, gc.MasterCallID, gc.Source, destination, res.ID, false, false, gc.Anonymous)
+		tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, id, gc.CustomerID, gc.FlowID, uuid.Nil, gc.MasterCallID, gc.Source, destination, res.ID, false, false, gc.Anonymous, nil)
 		if err != nil {
 			// could not create a call, but we don't stop the call creating.
 			log.Errorf("Could not create a chained call. err: %v", err)

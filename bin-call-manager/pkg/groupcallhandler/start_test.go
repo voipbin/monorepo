@@ -249,7 +249,7 @@ func Test_Start_ringall(t *testing.T) {
 
 			// create chained call
 			for i, destination := range tt.expectCallDestinations {
-				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.expectCallIDs[i], tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, destination, tt.expectGroupcall.ID, false, false, "").Return(&call.Call{}, nil)
+				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.expectCallIDs[i], tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, destination, tt.expectGroupcall.ID, false, false, "", nil).Return(&call.Call{}, nil)
 			}
 
 			// create chained groupcall
@@ -367,7 +367,7 @@ func Test_Start_linear(t *testing.T) {
 			if tt.destinations[0].Type == commonaddress.TypeAgent {
 				// todo: need to add the test
 			} else {
-				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, &tt.destinations[0], tt.responseGroupcall.ID, false, false, "").Return(&call.Call{}, nil)
+				mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.customerID, tt.flowID, uuid.Nil, tt.masterCallID, tt.source, &tt.destinations[0], tt.responseGroupcall.ID, false, false, "", nil).Return(&call.Call{}, nil)
 			}
 
 			res, err := h.Start(ctx, tt.id, tt.customerID, tt.flowID, tt.source, tt.destinations, tt.masterCallID, tt.masterGroupcallID, groupcall.RingMethodLinear, tt.answerMethod, "")

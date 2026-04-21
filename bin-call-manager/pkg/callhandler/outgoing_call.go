@@ -49,6 +49,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	earlyExecution bool,
 	connect bool,
 	anonymous string,
+	metadata map[string]interface{},
 ) ([]*call.Call, []*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CreateCallsOutgoing",
@@ -60,6 +61,7 @@ func (h *callHandler) CreateCallsOutgoing(
 		"early_execution": earlyExecution,
 		"connect":         connect,
 		"anonymous":       anonymous,
+		"metadata":        metadata,
 	})
 
 	resCalls := []*call.Call{}
@@ -67,7 +69,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	for _, destination := range destinations {
 		switch {
 		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect, anonymous)
+			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect, anonymous, metadata)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -112,6 +114,7 @@ func (h *callHandler) CreateCallOutgoing(
 	earlyExecution bool,
 	executeNextMasterOnHangup bool,
 	anonymous string,
+	metadata map[string]interface{},
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":                         "CreateCallOutgoing",
@@ -126,6 +129,7 @@ func (h *callHandler) CreateCallOutgoing(
 		"early_execution":               earlyExecution,
 		"execute_next_master_on_hangup": executeNextMasterOnHangup,
 		"anonymous":                     anonymous,
+		"metadata":                      metadata,
 	})
 	log.Debug("Creating a call for outgoing.")
 
@@ -170,7 +174,7 @@ func (h *callHandler) CreateCallOutgoing(
 	dialrouteID := uuid.Nil
 	if destination.Type == commonaddress.TypeTel {
 		var err error
-		dialroutes, err = h.getDialroutes(ctx, customerID, &destination)
+		dialroutes, err = h.getDialroutes(ctx, customerID, &destination, metadata)
 		if err != nil || len(dialroutes) == 0 {
 			log.Errorf("Could not get the dialroute. err: %v", err)
 			return nil, errors.Wrap(err, "could not get the dialroutes")
@@ -264,6 +268,8 @@ func (h *callHandler) CreateCallOutgoing(
 
 		dialrouteID,
 		dialroutes,
+
+		metadata,
 	)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing call. err: %v", err)
@@ -451,8 +457,17 @@ func (h *callHandler) createCallsOutgoingGroupcall(
 	return res, nil
 }
 
-// getDialroutes generates dialroutes for outgoing call
-func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address) ([]rmroute.Route, error) {
+// getDialroutes generates dialroutes for outgoing call.
+//
+// If metadata contains MetadataKeyRouteProviderIDs (a []interface{} of string UUIDs after JSON
+// round-trip), the parsed provider IDs are forwarded to route-manager as targetProviderIDs.
+// Route-manager then returns synthetic routes targeted at those providers, bypassing the
+// normal customer/default route merging. See Task 5 / Task 8 in the NOJIRA-call-metadata-
+// route-provider-ids design doc.
+//
+// Malformed UUID strings are logged and skipped — the admin may still have valid provider IDs
+// in the array, so we don't fail the whole call over one typo.
+func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, destination *commonaddress.Address, metadata map[string]interface{}) ([]rmroute.Route, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "getDialroutes",
 		"customer_id": customerID,
@@ -471,12 +486,43 @@ func (h *callHandler) getDialroutes(ctx context.Context, customerID uuid.UUID, d
 	}
 	target := fmt.Sprintf("+%d", *n.CountryCode)
 
+	// extract optional route_provider_ids from metadata.
+	// expected shape after JSON round-trip through Call.Metadata: []interface{} of string UUIDs.
+	//
+	// Fail fast if the key is present but yields zero valid UUIDs — silently
+	// falling through to normal routing would mis-route an admin test call.
+	var targetProviderIDs []uuid.UUID
+	if raw, ok := metadata[call.MetadataKeyRouteProviderIDs]; ok {
+		arr, ok := raw.([]interface{})
+		if !ok {
+			log.Errorf("route_provider_ids metadata is not a []interface{}: %T", raw)
+			return nil, fmt.Errorf("route_provider_ids metadata has invalid shape: %T", raw)
+		}
+		for _, v := range arr {
+			s, ok := v.(string)
+			if !ok {
+				log.Warnf("Skipping non-string entry in route_provider_ids metadata: %v", v)
+				continue
+			}
+			id, errParse := uuid.FromString(s)
+			if errParse != nil {
+				log.Warnf("Skipping invalid provider ID in route_provider_ids metadata: %s, err: %v", s, errParse)
+				continue
+			}
+			targetProviderIDs = append(targetProviderIDs, id)
+		}
+		if len(arr) > 0 && len(targetProviderIDs) == 0 {
+			log.Errorf("route_provider_ids metadata contained no valid UUIDs, refusing to fall through to normal routing")
+			return nil, fmt.Errorf("route_provider_ids contained no valid UUIDs")
+		}
+	}
+
 	// send request
 	filters := map[rmroute.Field]any{
 		rmroute.FieldCustomerID: customerID,
 		rmroute.FieldTarget:     target,
 	}
-	res, err := h.reqHandler.RouteV1DialrouteList(ctx, filters)
+	res, err := h.reqHandler.RouteV1DialrouteList(ctx, filters, targetProviderIDs)
 	if err != nil {
 		log.Errorf("Could not get dialroutes. err: %v", err)
 		return nil, err

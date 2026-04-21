@@ -635,6 +635,8 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 
 		uuid.Nil,
 		[]rmroute.Route{},
+
+		nil,
 	)
 	if err != nil {
 		log.Errorf("Could not create a call info. call_id: %s, err: %v", id, err)
