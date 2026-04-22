@@ -152,6 +152,14 @@ func (h *callHandler) CreateCallOutgoing(
 	}
 	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 
+	// embed rtp_debug in call metadata at creation time so status.go doesn't need to re-fetch the customer
+	if cu.Metadata.RTPDebug {
+		if metadata == nil {
+			metadata = map[string]any{}
+		}
+		metadata[call.MetadataKeyRTPDebug] = true
+	}
+
 	// validate outgoing call permission (customer status + identity verification)
 	if err := h.validateOutgoingCallPermission(ctx, cu, destination); err != nil {
 		return nil, err

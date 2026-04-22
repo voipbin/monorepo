@@ -395,6 +395,173 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 	}
 }
 
+// Test_CreateCallOutgoing_RTPDebug verifies that when a customer has RTPDebug enabled,
+// the call's Metadata map is populated with rtp_debug=true at creation time.
+func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		activeflowID uuid.UUID
+		masterCallID uuid.UUID
+		source       commonaddress.Address
+		destination  commonaddress.Address
+
+		responseActiveflow  *fmactiveflow.Activeflow
+		responseAgent       *amagent.Agent
+		responseUUIDChannel uuid.UUID
+		responseCustomer    *cucustomer.Customer
+
+		expectCall *call.Call
+	}{
+		{
+			name: "customer rtp_debug true embeds metadata key at creation",
+
+			id:           uuid.FromStringOrNil("a1b2c3d4-ecb2-11ea-ab94-a768ab787da0"),
+			customerID:   uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+			flowID:       uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+			activeflowID: uuid.FromStringOrNil("679f0eb2-8c21-41a6-876d-9d778b1b0167"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:       commonaddress.TypeSIP,
+				Target:     "testsrc@test.com",
+				TargetName: "test",
+			},
+			destination: commonaddress.Address{
+				Type:       commonaddress.TypeSIP,
+				Target:     "testoutgoing@test.com",
+				TargetName: "test target",
+			},
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+			},
+			responseAgent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				},
+			},
+			responseUUIDChannel: uuid.FromStringOrNil("80d67b3a-5f3b-11ed-a709-0f2943ef0184"),
+			responseCustomer: &cucustomer.Customer{
+				ID:                         uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+				Metadata: cucustomer.Metadata{
+					RTPDebug: true,
+				},
+			},
+
+			expectCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-ecb2-11ea-ab94-a768ab787da0"),
+					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+				},
+				ChannelID: "80d67b3a-5f3b-11ed-a709-0f2943ef0184",
+				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+				Type:      call.TypeFlow,
+
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+
+				Status:      call.StatusDialing,
+				Direction:   call.DirectionOutgoing,
+				GroupcallID: uuid.Nil,
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeSIP,
+					Target:     "testsrc@test.com",
+					TargetName: "test",
+				},
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeSIP,
+					Target:     "testoutgoing@test.com",
+					TargetName: "test target",
+				},
+				Data: map[call.DataType]string{
+					call.DataTypeEarlyExecution:            "false",
+					call.DataTypeExecuteNextMasterOnHangup: "true",
+					call.DataTypeAnonymous:                 "false",
+				},
+				// rtp_debug must be embedded in Metadata at creation time
+				Metadata: map[string]any{
+					call.MetadataKeyRTPDebug: true,
+				},
+				Action: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+
+				Dialroutes: []rmroute.Route{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
+
+			// CRITICAL assertion: CallCreate must receive the call with rtp_debug in Metadata.
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0).Return(nil)
+
+			// setVariables
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), gomock.Any(), gomock.Any(), "", "", "", gomock.Any()).Return(&channel.Channel{}, nil)
+
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, true, "", nil)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if res == nil {
+				t.Fatalf("Wrong match. expected non-nil call result")
+			}
+			if !reflect.DeepEqual(res.Metadata, tt.expectCall.Metadata) {
+				t.Errorf("Wrong match. Metadata differs.\nexpect: %v\ngot:    %v", tt.expectCall.Metadata, res.Metadata)
+			}
+			if res.Metadata[call.MetadataKeyRTPDebug] != true {
+				t.Errorf("Wrong match. expected rtp_debug=true in metadata, got: %v", res.Metadata[call.MetadataKeyRTPDebug])
+			}
+		})
+	}
+}
+
 func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 	tests := []struct {
