@@ -252,8 +252,8 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 			mockReq.EXPECT().ConferenceV1ConferenceGet(ctx, uuid.FromStringOrNil(tt.channel.DestinationNumber)).Return(tt.responseConference, nil)
 
 			// addCallBridge
-			// Times(2): first call for ValidateCustomerStatusIncoming, second for RTP debug check
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseConference.CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(2)
+			// Times(1): ValidateCustomerStatusIncoming now returns the customer for reuse; rtp_debug embedded at creation, no second fetch
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseConference.CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(1)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseConference.CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
 			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), tt.expectBridgeName, []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}).Return(tt.responseBridge, nil)
@@ -449,8 +449,8 @@ func Test_StartCallHandle_IncomingTypeFlow(t *testing.T) {
 			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CustomerID, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 
-			// Times(2): first call for ValidateCustomerStatusIncoming, second for RTP debug check
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(2)
+			// Times(1): ValidateCustomerStatusIncoming now returns the customer for reuse; rtp_debug embedded at creation, no second fetch
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(1)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
@@ -643,8 +643,8 @@ func Test_StartCallHandle_IncomingTypeSIP(t *testing.T) {
 			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CustomerID, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
 
-			// Times(2): first call for ValidateCustomerStatusIncoming, second for RTP debug check
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(2)
+			// Times(1): ValidateCustomerStatusIncoming now returns the customer for reuse; rtp_debug embedded at creation, no second fetch
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(&cucustomer.Customer{Status: cucustomer.StatusActive}, nil).Times(1)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
@@ -664,6 +664,215 @@ func Test_StartCallHandle_IncomingTypeSIP(t *testing.T) {
 			// action next part.
 			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
+
+			if err := h.Start(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
+
+// Test_StartCallTypeFlow_RTPDebug verifies that when the customer has RTPDebug=true,
+// the incoming call is created with rtp_debug=true in Metadata at creation time,
+// and rtpDebugStartRecording is invoked (early-returns silently because there's no
+// rtpengine_address in the channel's SIPData).
+func Test_StartCallTypeFlow_RTPDebug(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		channel *channel.Channel
+
+		responseSource      *commonaddress.Address
+		responseDestination *commonaddress.Address
+		responseUUIDCall    uuid.UUID
+		responseUUIDBridge  uuid.UUID
+		responseBridge      *bridge.Bridge
+		responseNumbers     []number.Number
+		responseActiveflow  *fmactiveflow.Activeflow
+		responseCall        *call.Call
+		responseCustomer    *cucustomer.Customer
+
+		expectFilters map[number.Field]any
+		expectCall    *call.Call
+	}{
+		{
+			name: "customer rtp_debug=true — call created with rtp_debug in metadata",
+
+			channel: &channel.Channel{
+				AsteriskID:        "80:fa:5b:5e:da:81",
+				ID:                "6e872d74-aaaa-11eb-b3a6-37860f73cbd8",
+				Name:              "PJSIP/in-voipbin-00000999",
+				DestinationNumber: "+123456789",
+				State:             ari.ChannelStateRing,
+				StasisData: map[channel.StasisDataType]string{
+					"context": string(channel.ContextCallIncoming),
+					"domain":  "pstn.voipbin.net",
+				},
+				// No SIPData.rtpengine_address — rtpDebugStartRecording will return early silently
+			},
+
+			responseSource: &commonaddress.Address{
+				Type: commonaddress.TypeTel,
+			},
+			responseDestination: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+123456789",
+			},
+			responseUUIDCall:   uuid.FromStringOrNil("aaaa0001-09ef-11eb-92f7-1b906bde6408"),
+			responseUUIDBridge: uuid.FromStringOrNil("bbbb0001-5e5e-11ed-917e-a70e0240c226"),
+			responseBridge: &bridge.Bridge{
+				ID: "bbbb0001-5e5e-11ed-917e-a70e0240c226",
+			},
+			responseNumbers: []number.Number{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("cccc0001-09ef-11eb-9347-377b97e1b9ea"),
+						CustomerID: uuid.FromStringOrNil("dddd0001-5e5f-11ed-a85f-9f66d5e00566"),
+					},
+					CallFlowID: uuid.FromStringOrNil("eeee0001-09ef-11eb-bdec-e3ef3b78ac73"),
+				},
+			},
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ffff0001-a7b9-11ec-9409-b77946009116"),
+				},
+				ReferenceType: fmactiveflow.ReferenceTypeCall,
+				ReferenceID:   uuid.FromStringOrNil("aaaa0001-09ef-11eb-92f7-1b906bde6408"),
+				FlowID:        uuid.FromStringOrNil("eeee0001-09ef-11eb-bdec-e3ef3b78ac73"),
+				CurrentAction: fmaction.Action{
+					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				},
+			},
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("aaaa0001-09ef-11eb-92f7-1b906bde6408"),
+				},
+				ChannelID:    "6e872d74-aaaa-11eb-b3a6-37860f73cbd8",
+				FlowID:       uuid.FromStringOrNil("eeee0001-09ef-11eb-bdec-e3ef3b78ac73"),
+				ActiveflowID: uuid.FromStringOrNil("ffff0001-a7b9-11ec-9409-b77946009116"),
+				Direction:    call.DirectionIncoming,
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+123456789",
+				},
+				Action: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+			},
+			// Customer with RTPDebug=true
+			responseCustomer: &cucustomer.Customer{
+				ID:     uuid.FromStringOrNil("dddd0001-5e5f-11ed-a85f-9f66d5e00566"),
+				Status: cucustomer.StatusActive,
+				Metadata: cucustomer.Metadata{
+					RTPDebug: true,
+				},
+			},
+
+			expectFilters: map[number.Field]any{
+				number.FieldNumber:  "+123456789",
+				number.FieldDeleted: false,
+			},
+			expectCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaa0001-09ef-11eb-92f7-1b906bde6408"),
+					CustomerID: uuid.FromStringOrNil("dddd0001-5e5f-11ed-a85f-9f66d5e00566"),
+				},
+
+				ChannelID: "6e872d74-aaaa-11eb-b3a6-37860f73cbd8",
+				BridgeID:  "bbbb0001-5e5e-11ed-917e-a70e0240c226",
+
+				FlowID:       uuid.FromStringOrNil("eeee0001-09ef-11eb-bdec-e3ef3b78ac73"),
+				ActiveflowID: uuid.FromStringOrNil("ffff0001-a7b9-11ec-9409-b77946009116"),
+				Type:         call.TypeFlow,
+
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+
+				Source: commonaddress.Address{
+					Type: commonaddress.TypeTel,
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+123456789",
+				},
+
+				Status: call.StatusRinging,
+				Data:   map[call.DataType]string{},
+				Action: fmaction.Action{
+					ID: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000001"),
+				},
+				Direction:  call.DirectionIncoming,
+				Dialroutes: []rmroute.Route{},
+
+				// rtp_debug must be embedded at creation time
+				Metadata: map[string]interface{}{
+					call.MetadataKeyRTPDebug: true,
+				},
+
+				TMCreate: testhelper.TimePtr("2020-04-18T03:22:17.995000Z"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+				bridgeHandler:  mockBridge,
+			}
+
+			ctx := context.Background()
+
+			mockChannel.EXPECT().HangingUpWithDelay(ctx, tt.channel.ID, ari.ChannelCauseCallDurationTimeout, defaultTimeoutCallDuration).Return(&channel.Channel{}, nil)
+
+			mockChannel.EXPECT().AddressGetSource(tt.channel, commonaddress.TypeTel).Return(tt.responseSource)
+			mockChannel.EXPECT().AddressGetDestination(tt.channel, commonaddress.TypeTel).Return(tt.responseDestination)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDCall)
+
+			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), tt.expectFilters).Return(tt.responseNumbers, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, uuid.Nil, tt.responseNumbers[0].CustomerID, tt.responseNumbers[0].CallFlowID, fmactiveflow.ReferenceTypeCall, gomock.Any(), uuid.Nil).Return(tt.responseActiveflow, nil)
+
+			// Times(1): ValidateCustomerStatusIncoming returns customer for reuse; rtp_debug embedded at creation, no second fetch
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseNumbers[0].CustomerID).Return(tt.responseCustomer, nil).Times(1)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.responseNumbers[0].CustomerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDBridge)
+			mockBridge.EXPECT().Start(ctx, tt.channel.AsteriskID, tt.responseUUIDBridge.String(), gomock.Any(), []bridge.Type{bridge.TypeMixing, bridge.TypeVideoSFU}).Return(tt.responseBridge, nil)
+			mockBridge.EXPECT().ChannelJoin(ctx, tt.responseUUIDBridge.String(), tt.channel.ID, "", false, false).Return(nil)
+
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.responseNumbers[0].CustomerID, *tt.responseSource).Return(nil, fmt.Errorf(""))
+
+			// CallCreate must receive the call with rtp_debug=true in Metadata
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.responseUUIDCall).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0).Return(nil)
+
+			// setVariables
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+			// action next part.
+			mockDB.EXPECT().CallSetActionNextHold(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			mockReq.EXPECT().FlowV1ActiveflowGetNextAction(ctx, gomock.Any(), fmaction.IDStart).Return(nil, fmt.Errorf(""))
+
+			// rtpDebugStartRecording: responseCall has no SIPData.rtpengine_address → returns early silently (no mock needed)
 
 			if err := h.Start(ctx, tt.channel); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

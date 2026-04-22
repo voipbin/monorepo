@@ -69,7 +69,7 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 	// rtp_debug is set in call metadata at creation time (outgoing_call.go or providercallhandler).
 	// No customer fetch needed — read directly from call metadata.
 	if rtpDebug, _ := res.Metadata[call.MetadataKeyRTPDebug].(bool); rtpDebug {
-		log.WithField("rtp_debug", rtpDebug).Debugf("RTP debug enabled from call metadata. call_id: %s", res.ID)
+		log.Debugf("RTP debug enabled from call metadata. call_id: %s", res.ID)
 		h.rtpDebugStartRecording(ctx, res, cn)
 	}
 

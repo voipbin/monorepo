@@ -397,6 +397,8 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 
 // Test_CreateCallOutgoing_RTPDebug verifies that when a customer has RTPDebug enabled,
 // the call's Metadata map is populated with rtp_debug=true at creation time.
+// It also verifies that a pre-set rtp_debug=true (e.g., from providercallhandler) is
+// preserved even when the customer has RTPDebug=false.
 func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 
 	tests := []struct {
@@ -409,6 +411,7 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 		masterCallID uuid.UUID
 		source       commonaddress.Address
 		destination  commonaddress.Address
+		metadata     map[string]interface{} // incoming metadata passed to CreateCallOutgoing
 
 		responseActiveflow  *fmactiveflow.Activeflow
 		responseAgent       *amagent.Agent
@@ -503,6 +506,97 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 				Dialroutes: []rmroute.Route{},
 			},
 		},
+		{
+			name: "provider call pre-sets rtp_debug=true, customer has RTPDebug=false — flag is preserved",
+
+			id:           uuid.FromStringOrNil("b2c3d4e5-ecb2-11ea-ab94-a768ab787da0"),
+			customerID:   uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+			flowID:       uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+			activeflowID: uuid.FromStringOrNil("679f0eb2-8c21-41a6-876d-9d778b1b0167"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:       commonaddress.TypeSIP,
+				Target:     "testsrc@test.com",
+				TargetName: "test",
+			},
+			destination: commonaddress.Address{
+				Type:       commonaddress.TypeSIP,
+				Target:     "testoutgoing@test.com",
+				TargetName: "test target",
+			},
+			// Simulate what providercallhandler sets: rtp_debug forced to true
+			metadata: map[string]interface{}{
+				call.MetadataKeyRTPDebug: true,
+			},
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+			},
+			responseAgent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				},
+			},
+			responseUUIDChannel: uuid.FromStringOrNil("90e78c4b-5f3b-11ed-a709-0f2943ef0184"),
+			// Customer has RTPDebug=false — the provider-set flag must NOT be cleared
+			responseCustomer: &cucustomer.Customer{
+				ID:                         uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+				Metadata: cucustomer.Metadata{
+					RTPDebug: false,
+				},
+			},
+
+			expectCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b2c3d4e5-ecb2-11ea-ab94-a768ab787da0"),
+					CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("1aa075dc-2bfe-11ef-9203-37278cb94d16"),
+				},
+				ChannelID: "90e78c4b-5f3b-11ed-a709-0f2943ef0184",
+				FlowID:    uuid.FromStringOrNil("fd5b3234-ecb2-11ea-8f23-4369cba01ddb"),
+				Type:      call.TypeFlow,
+
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+
+				Status:      call.StatusDialing,
+				Direction:   call.DirectionOutgoing,
+				GroupcallID: uuid.Nil,
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeSIP,
+					Target:     "testsrc@test.com",
+					TargetName: "test",
+				},
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeSIP,
+					Target:     "testoutgoing@test.com",
+					TargetName: "test target",
+				},
+				Data: map[call.DataType]string{
+					call.DataTypeEarlyExecution:            "false",
+					call.DataTypeExecuteNextMasterOnHangup: "true",
+					call.DataTypeAnonymous:                 "false",
+				},
+				// rtp_debug must be preserved even though customer has RTPDebug=false
+				Metadata: map[string]any{
+					call.MetadataKeyRTPDebug: true,
+				},
+				Action: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+
+				Dialroutes: []rmroute.Route{},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -544,7 +638,7 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), gomock.Any(), gomock.Any(), "", "", "", gomock.Any()).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, true, "", nil)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, true, "", tt.metadata)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
