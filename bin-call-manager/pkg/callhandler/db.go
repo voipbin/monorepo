@@ -21,8 +21,7 @@ import (
 
 // Create creates a call record.
 // The metadata parameter is stored verbatim on the Call record; pass nil if the caller
-// has no metadata to seed. Post-creation paths (e.g. rtp_debug in start.go) can still
-// mutate Call.Metadata after Create returns.
+// has no metadata to seed. rtp_debug is embedded at creation time in outgoing_call.go.
 func (h *callHandler) Create(
 	ctx context.Context,
 
