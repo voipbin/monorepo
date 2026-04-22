@@ -66,25 +66,11 @@ func (h *callHandler) updateStatusProgressing(ctx context.Context, cn *channel.C
 		return nil
 	}
 
-	// RTP debug: check if customer has RTP debug enabled (outgoing calls)
-	cs, errCS := h.reqHandler.CustomerV1CustomerGet(ctx, res.CustomerID)
-	if errCS != nil {
-		log.Errorf("Could not get customer for RTP debug check. customer_id: %s, err: %v", res.CustomerID, errCS)
-	} else {
-		log.WithField("customer", cs).Debugf("Retrieved customer for RTP debug check. customer_id: %s", cs.ID)
-		if cs.Metadata.RTPDebug {
-			if res.Metadata == nil {
-				res.Metadata = map[string]interface{}{}
-			}
-			res.Metadata[call.MetadataKeyRTPDebug] = true
-			if errMeta := h.db.CallUpdate(ctx, res.ID, map[call.Field]any{
-				call.FieldMetadata: res.Metadata,
-			}); errMeta != nil {
-				log.Errorf("Could not update call metadata for RTP debug. err: %v", errMeta)
-			} else {
-				h.rtpDebugStartRecording(ctx, res, cn)
-			}
-		}
+	// rtp_debug is set in call metadata at creation time (outgoing_call.go or providercallhandler).
+	// No customer fetch needed — read directly from call metadata.
+	if rtpDebug, _ := res.Metadata[call.MetadataKeyRTPDebug].(bool); rtpDebug {
+		log.Debugf("RTP debug enabled from call metadata. call_id: %s", res.ID)
+		h.rtpDebugStartRecording(ctx, res, cn)
 	}
 
 	// check the groupcall info and answer the groupcall

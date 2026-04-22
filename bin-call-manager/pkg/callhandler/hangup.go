@@ -62,10 +62,8 @@ func (h *callHandler) Hangup(ctx context.Context, cn *channel.Channel) (*call.Ca
 	}
 
 	// RTP debug: stop recording if enabled for this call
-	if v, ok := res.Metadata[call.MetadataKeyRTPDebug]; ok {
-		if b, isBool := v.(bool); isBool && b {
-			h.rtpDebugStopRecording(ctx, res)
-		}
+	if rtpDebug, _ := res.Metadata[call.MetadataKeyRTPDebug].(bool); rtpDebug {
+		h.rtpDebugStopRecording(ctx, res)
 	}
 
 	// check the call is part of groupcall

@@ -569,12 +569,13 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	id := h.utilHandler.UUIDCreate()
 
 	// validate customer status
-	_, validStatus := h.ValidateCustomerStatusIncoming(ctx, customerID)
+	cs, validStatus := h.ValidateCustomerStatusIncoming(ctx, customerID)
 	if !validStatus {
 		log.Errorf("Customer account is not active. Rejecting incoming call. customer_id: %s", customerID)
 		_, _ = h.channelHandler.HangingUp(ctx, cn.ID, ari.ChannelCauseNetworkOutOfOrder)
 		return
 	}
+	log.WithField("customer", cs).Debugf("Retrieved customer info. customer_id: %s", customerID)
 
 	// validate balance
 	if validBalance := h.ValidateCustomerBalance(ctx, id, customerID, call.DirectionIncoming, *source, *destination); !validBalance {
@@ -604,6 +605,19 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 		return
 	}
 	log.WithField("activeflow", af).Debugf("Created an active flow. activeflow_id: %s", af.ID)
+
+	// embed rtp_debug in call metadata at creation time (no post-creation customer fetch needed).
+	// inclusive OR: either customer or number can enable RTP debug.
+	var callMetadata map[string]any
+	rtpDebugEnabled := cs != nil && cs.Metadata.RTPDebug
+	if num != nil {
+		rtpDebugEnabled = rtpDebugEnabled || num.Metadata.RTPDebug
+	}
+	if rtpDebugEnabled {
+		callMetadata = map[string]any{
+			call.MetadataKeyRTPDebug: true,
+		}
+	}
 
 	status := call.GetStatusByChannelState(cn.State)
 	c, err := h.Create(
@@ -636,7 +650,7 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 		uuid.Nil,
 		[]rmroute.Route{},
 
-		nil,
+		callMetadata,
 	)
 	if err != nil {
 		log.Errorf("Could not create a call info. call_id: %s, err: %v", id, err)
@@ -645,29 +659,11 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 	}
 	log.WithField("call", c).Debugf("Created a call. call: %s", c.ID)
 
-	// RTP debug: check if customer or number has RTP debug enabled (inclusive OR)
-	cs, errCS := h.reqHandler.CustomerV1CustomerGet(ctx, customerID)
-	if errCS != nil {
-		log.Errorf("Could not get customer for RTP debug check. customer_id: %s, err: %v", customerID, errCS)
-	} else {
-		log.WithField("customer", cs).Debugf("Retrieved customer for RTP debug check. customer_id: %s", cs.ID)
-		rtpDebugEnabled := cs.Metadata.RTPDebug
-		if num != nil {
-			rtpDebugEnabled = rtpDebugEnabled || num.Metadata.RTPDebug
-		}
-		if rtpDebugEnabled {
-			if c.Metadata == nil {
-				c.Metadata = map[string]interface{}{}
-			}
-			c.Metadata[call.MetadataKeyRTPDebug] = true
-			if errMeta := h.db.CallUpdate(ctx, c.ID, map[call.Field]any{
-				call.FieldMetadata: c.Metadata,
-			}); errMeta != nil {
-				log.Errorf("Could not update call metadata for RTP debug. err: %v", errMeta)
-			} else {
-				h.rtpDebugStartRecording(ctx, c, cn)
-			}
-		}
+	// rtp_debug is set in call metadata at creation time (above).
+	// Read directly from call metadata — no customer fetch needed.
+	if rtpDebug, _ := c.Metadata[call.MetadataKeyRTPDebug].(bool); rtpDebug {
+		log.Debugf("RTP debug enabled from call metadata. call_id: %s", c.ID)
+		h.rtpDebugStartRecording(ctx, c, cn)
 	}
 
 	// set variables

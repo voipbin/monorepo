@@ -18,8 +18,6 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
-	cucustomer "monorepo/bin-customer-manager/models/customer"
-
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
@@ -110,8 +108,7 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 			mockDB.EXPECT().CallGet(gomock.Any(), tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 			if tt.call.Direction != call.DirectionIncoming {
-				// RTP debug check
-				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseCall.CustomerID).Return(&cucustomer.Customer{}, nil)
+				// rtp_debug is now read from call metadata; no CustomerV1CustomerGet expected.
 				// ActionNext
 				// consider the call was hungup already to make this test done quickly.
 				mockDB.EXPECT().CallGet(ctx, gomock.Any()).Return(&call.Call{Status: call.StatusHangup}, nil)

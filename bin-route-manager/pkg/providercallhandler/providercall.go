@@ -73,6 +73,7 @@ func (h *providerCallHandler) Create(
 	metadata := map[string]any{
 		string(cmcall.MetadataKeyRouteProviderIDs):     []string{providerID.String()},
 		string(cmcall.MetadataKeySkipSourceValidation): true,
+		string(cmcall.MetadataKeyRTPDebug):             true, // force rtp_debug for all provider calls
 	}
 
 	// 3. Issue the call creation synchronously. Call-manager persists the Call(s),

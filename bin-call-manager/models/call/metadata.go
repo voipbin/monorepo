@@ -4,9 +4,12 @@ package call
 type MetadataKey = string
 
 const (
-	// MetadataKeyRTPDebug indicates RTP debug capture was enabled for this call.
-	// Set POST-CREATION in callhandler/start.go based on customer/number metadata.
-	// Callers must not pre-set this key — it will be overwritten.
+	// MetadataKeyRTPDebug triggers RTP packet capture via rtpengine-proxy for debugging.
+	// Set at CREATION TIME:
+	//   - outgoing_call.go: set when cu.Metadata.RTPDebug is true (customer preference)
+	//   - start.go: set when cs.Metadata.RTPDebug is true (incoming calls, customer preference)
+	//   - providercallhandler (bin-route-manager): always forced to true for provider calls
+	// status.go and startCallTypeFlow read this key from call metadata directly (no customer fetch needed).
 	MetadataKeyRTPDebug MetadataKey = "rtp_debug"
 
 	// MetadataKeyRouteProviderIDs lists provider UUIDs (as a []string) that the call

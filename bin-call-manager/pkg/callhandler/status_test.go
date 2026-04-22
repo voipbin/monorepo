@@ -11,8 +11,6 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
-	cucustomer "monorepo/bin-customer-manager/models/customer"
-
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
@@ -289,8 +287,8 @@ func Test_UpdateStatusProgressing(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.call.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
 			if tt.call.Direction != call.DirectionIncoming {
-				mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseCall.CustomerID).Return(&cucustomer.Customer{}, nil)
-
+				// rtp_debug is now read from call metadata (set at creation time);
+				// no CustomerV1CustomerGet call expected here.
 				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
 				mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
 				mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
@@ -342,6 +340,10 @@ func Test_UpdateStatusProgressing_rtpDebugEnabled(t *testing.T) {
 				},
 				Status:    call.StatusProgressing,
 				Direction: call.DirectionOutgoing,
+				// rtp_debug set in metadata at creation time — no customer fetch needed
+				Metadata: map[string]any{
+					call.MetadataKeyRTPDebug: true,
+				},
 			},
 		},
 	}
@@ -371,18 +373,9 @@ func Test_UpdateStatusProgressing_rtpDebugEnabled(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
-			// RTP debug: customer has RTPDebug=true
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseCall.CustomerID).Return(&cucustomer.Customer{
-				Metadata: cucustomer.Metadata{
-					RTPDebug: true,
-				},
-			}, nil)
-
-			// RTP debug: metadata update
-			mockDB.EXPECT().CallUpdate(ctx, tt.responseCall.ID, gomock.Any()).Return(nil)
-
-			// RTP debug: start recording command to RTPEngine
-			mockReq.EXPECT().RTPEngineV1CommandsSend(ctx, "10.0.0.1:2223", gomock.Any()).Return(map[string]interface{}{"result": "ok"}, nil)
+			// RTP debug: rtp_debug=true is in call metadata — no customer fetch, no metadata DB update.
+			// rtpDebugStartRecording calls RTPEngineV1CommandsSend (query command first).
+			mockReq.EXPECT().RTPEngineV1CommandsSend(ctx, "10.0.0.1:2223", gomock.Any()).Return(map[string]any{"result": "ok"}, nil)
 
 			// ActionNext path: returns tt.call (no activeflow_id) → hangup flow
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
@@ -472,10 +465,160 @@ func Test_UpdateStatusProgressing_answerGroupcall(t *testing.T) {
 			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
 
-			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.responseCall.CustomerID).Return(&cucustomer.Customer{}, nil)
-
+			// rtp_debug is now read from call metadata; no CustomerV1CustomerGet expected.
 			mockGroupcall.EXPECT().AnswerCall(ctx, tt.responseCall.GroupcallID, tt.responseCall.ID).Return(nil)
 
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
+			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
+			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+			mockChannel.EXPECT().HangingUp(gomock.Any(), gomock.Any(), gomock.Any()).Return(&channel.Channel{TMEnd: nil}, nil)
+
+			if err := h.updateStatusProgressing(ctx, tt.channel, tt.call); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			time.Sleep(time.Millisecond * 100)
+		})
+	}
+}
+
+// Test_UpdateStatusProgressing_rtpDebugFromMetadata verifies that updateStatusProgressing
+// reads the rtp_debug flag from call metadata (set at creation time) and does NOT
+// fetch the customer to make the decision.
+func Test_UpdateStatusProgressing_rtpDebugFromMetadata(t *testing.T) {
+
+	tests := []struct {
+		name         string
+		channel      *channel.Channel
+		call         *call.Call
+		responseCall *call.Call
+
+		// expectRTPDebug indicates whether rtpDebugStartRecording should be triggered
+		// (verified via RTPEngineV1CommandsSend mock expectation)
+		expectRTPDebug bool
+	}{
+		{
+			name: "outgoing call with rtp_debug=true in metadata triggers RTP debug",
+			channel: &channel.Channel{
+				ID:        "ch-meta-rtp-001",
+				SIPCallID: "sip-call-id-meta-001",
+				TMAnswer:  testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
+				SIPData: map[string]string{
+					"rtpengine_address": "10.0.0.2:2223",
+					"from_tag":          "tagxyz",
+				},
+			},
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b2c3d4e5-0002-0002-0002-000000000001"),
+					CustomerID: uuid.FromStringOrNil("b2c3d4e5-0002-0002-0002-000000000002"),
+				},
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+			},
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b2c3d4e5-0002-0002-0002-000000000001"),
+					CustomerID: uuid.FromStringOrNil("b2c3d4e5-0002-0002-0002-000000000002"),
+				},
+				Status:    call.StatusProgressing,
+				Direction: call.DirectionOutgoing,
+				Metadata: map[string]any{
+					call.MetadataKeyRTPDebug: true,
+				},
+			},
+			expectRTPDebug: true,
+		},
+		{
+			name: "outgoing call without rtp_debug in metadata does not trigger RTP debug",
+			channel: &channel.Channel{
+				ID:       "ch-meta-rtp-002",
+				TMAnswer: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
+			},
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c3d4e5f6-0003-0003-0003-000000000001"),
+					CustomerID: uuid.FromStringOrNil("c3d4e5f6-0003-0003-0003-000000000002"),
+				},
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+			},
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c3d4e5f6-0003-0003-0003-000000000001"),
+					CustomerID: uuid.FromStringOrNil("c3d4e5f6-0003-0003-0003-000000000002"),
+				},
+				Status:    call.StatusProgressing,
+				Direction: call.DirectionOutgoing,
+				// Metadata is nil — no rtp_debug key
+			},
+			expectRTPDebug: false,
+		},
+		{
+			name: "outgoing call with rtp_debug=false in metadata does not trigger RTP debug",
+			channel: &channel.Channel{
+				ID:       "ch-meta-rtp-003",
+				TMAnswer: testhelper.TimePtr("2020-09-20T03:23:20.995000Z"),
+			},
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d4e5f6a7-0004-0004-0004-000000000001"),
+					CustomerID: uuid.FromStringOrNil("d4e5f6a7-0004-0004-0004-000000000002"),
+				},
+				Status:    call.StatusDialing,
+				Direction: call.DirectionOutgoing,
+			},
+			responseCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d4e5f6a7-0004-0004-0004-000000000001"),
+					CustomerID: uuid.FromStringOrNil("d4e5f6a7-0004-0004-0004-000000000002"),
+				},
+				Status:    call.StatusProgressing,
+				Direction: call.DirectionOutgoing,
+				// rtp_debug key is explicitly set to false — two-value type assertion returns false
+				Metadata: map[string]any{
+					call.MetadataKeyRTPDebug: false,
+				},
+			},
+			expectRTPDebug: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().CallSetStatusProgressing(ctx, tt.call.ID).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.call.ID).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), tt.responseCall.CustomerID, call.EventTypeCallProgressing, tt.responseCall)
+
+			// NEW BEHAVIOR: CustomerV1CustomerGet must NOT be called for rtp_debug decision.
+			// (No mock set up for it — gomock will fail the test if it is called.)
+
+			if tt.expectRTPDebug {
+				// rtpDebugStartRecording calls RTPEngineV1CommandsSend
+				mockReq.EXPECT().RTPEngineV1CommandsSend(ctx, "10.0.0.2:2223", gomock.Any()).Return(map[string]any{"result": "ok"}, nil)
+			}
+
+			// ActionNext path: no activeflow_id → hangup flow
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.call, nil)
 			mockDB.EXPECT().CallSetStatus(gomock.Any(), tt.responseCall.ID, gomock.Any())
 			mockDB.EXPECT().CallGet(ctx, tt.responseCall.ID).Return(tt.responseCall, nil)
