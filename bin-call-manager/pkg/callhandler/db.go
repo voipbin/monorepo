@@ -21,7 +21,8 @@ import (
 
 // Create creates a call record.
 // The metadata parameter is stored verbatim on the Call record; pass nil if the caller
-// has no metadata to seed. rtp_debug is embedded at creation time in outgoing_call.go.
+// has no metadata to seed. rtp_debug is embedded at creation time in outgoing_call.go (outgoing)
+// and start.go (incoming); providercallhandler always forces it true for provider calls.
 func (h *callHandler) Create(
 	ctx context.Context,
 
