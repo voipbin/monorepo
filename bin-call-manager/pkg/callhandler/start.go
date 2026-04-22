@@ -608,13 +608,13 @@ func (h *callHandler) startCallTypeFlow(ctx context.Context, cn *channel.Channel
 
 	// embed rtp_debug in call metadata at creation time (no post-creation customer fetch needed).
 	// inclusive OR: either customer or number can enable RTP debug.
-	var callMetadata map[string]interface{}
+	var callMetadata map[string]any
 	rtpDebugEnabled := cs != nil && cs.Metadata.RTPDebug
 	if num != nil {
 		rtpDebugEnabled = rtpDebugEnabled || num.Metadata.RTPDebug
 	}
 	if rtpDebugEnabled {
-		callMetadata = map[string]interface{}{
+		callMetadata = map[string]any{
 			call.MetadataKeyRTPDebug: true,
 		}
 	}
