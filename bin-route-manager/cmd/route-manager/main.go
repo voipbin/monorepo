@@ -131,7 +131,7 @@ func runService(ctx context.Context, sqlDB *sql.DB, cache cachehandler.CacheHand
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameRouteEvent, serviceName)
 
 	routeHandler := routehandler.NewRouteHandler(db, reqHandler, notifyHandler)
-	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler, cfg.SipLBIP, cfg.SipLBPort)
+	providerHandler := providerhandler.NewProviderHandler(db, reqHandler, notifyHandler, cfg.SipLBAddresses)
 	providerCallHandler := providercallhandler.NewProviderCallHandler(db, reqHandler, notifyHandler)
 
 	// start background provider health check loop

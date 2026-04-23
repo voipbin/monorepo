@@ -24,8 +24,7 @@ type Config struct {
 	RedisDatabase           int
 	RedisPassword           string
 	HealthCheckInterval     time.Duration
-	SipLBIP                 string
-	SipLBPort               int
+	SipLBAddresses          []string
 }
 
 // Get returns the current configuration
@@ -46,8 +45,7 @@ func Bootstrap(cmd *cobra.Command) error {
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 1, "Redis database index")
 	f.Duration("health_check_interval", 30*time.Second, "Provider health check interval")
-	f.String("sip_lb_ip", "", "SIP load balancer IP address registered on Telnyx for IP-auth")
-	f.Int("sip_lb_port", 5060, "SIP load balancer port registered on Telnyx")
+	f.String("sip_lb_addresses", "", "Comma-separated list of SIP LB addresses (ip:port) registered on Telnyx for IP-auth")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -58,8 +56,7 @@ func Bootstrap(cmd *cobra.Command) error {
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
 		"health_check_interval":     "HEALTH_CHECK_INTERVAL",
-		"sip_lb_ip":                 "SIP_LB_IP",
-		"sip_lb_port":               "SIP_LB_PORT",
+		"sip_lb_addresses":          "SIP_LB_ADDRESSES",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -88,8 +85,7 @@ func LoadGlobalConfig() {
 			RedisDatabase:           viper.GetInt("redis_database"),
 			RedisPassword:           viper.GetString("redis_password"),
 			HealthCheckInterval:     viper.GetDuration("health_check_interval"),
-			SipLBIP:                 viper.GetString("sip_lb_ip"),
-			SipLBPort:               viper.GetInt("sip_lb_port"),
+			SipLBAddresses:          viper.GetStringSlice("sip_lb_addresses"),
 		}
 	})
 }

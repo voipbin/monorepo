@@ -3,6 +3,8 @@ package providerhandler
 import (
 	"context"
 	"fmt"
+	"net"
+	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -49,25 +51,41 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	connID, err := client.CreateIPConnection(ctx, name, profileID)
 	if err != nil {
 		log.Errorf("Could not create Telnyx IP connection. err: %v", err)
-		h.telnyxCleanup(log, client, "", "", profileID)
+		h.telnyxCleanup(log, client, nil, "", profileID)
 		return nil, fmt.Errorf("telnyx create ip connection failed: %w", err)
 	}
 	log.Debugf("Created Telnyx IP connection. conn_id: %s", connID)
 
-	// Step 4: register our SIP load balancer IP on the connection
-	ipID, err := client.RegisterIP(ctx, connID, h.sipLBIP, h.sipLBPort)
-	if err != nil {
-		log.Errorf("Could not register SIP LB IP on Telnyx connection. ip: %s, err: %v", h.sipLBIP, err)
-		h.telnyxCleanup(log, client, "", connID, profileID)
-		return nil, fmt.Errorf("telnyx register ip failed: %w", err)
+	// Step 4: register each SIP LB address on the connection
+	ipIDs := make([]string, 0, len(h.sipLBAddresses))
+	for _, addr := range h.sipLBAddresses {
+		ip, portStr, parseErr := net.SplitHostPort(addr)
+		if parseErr != nil {
+			log.Errorf("Invalid SIP LB address. addr: %s, err: %v", addr, parseErr)
+			h.telnyxCleanup(log, client, ipIDs, connID, profileID)
+			return nil, fmt.Errorf("invalid sip lb address %q: %w", addr, parseErr)
+		}
+		port, convErr := strconv.Atoi(portStr)
+		if convErr != nil {
+			log.Errorf("Invalid SIP LB port. addr: %s, err: %v", addr, convErr)
+			h.telnyxCleanup(log, client, ipIDs, connID, profileID)
+			return nil, fmt.Errorf("invalid sip lb port in %q: %w", addr, convErr)
+		}
+		ipID, regErr := client.RegisterIP(ctx, connID, ip, port)
+		if regErr != nil {
+			log.Errorf("Could not register SIP LB IP. addr: %s, err: %v", addr, regErr)
+			h.telnyxCleanup(log, client, ipIDs, connID, profileID)
+			return nil, fmt.Errorf("telnyx register ip %q failed: %w", addr, regErr)
+		}
+		log.Debugf("Registered SIP LB IP. addr: %s, ip_id: %s", addr, ipID)
+		ipIDs = append(ipIDs, ipID)
 	}
-	log.Debugf("Registered SIP LB IP on Telnyx connection. ip_id: %s", ipID)
 
 	// Step 5: create the VoIPBin provider record
 	res, err := h.Create(ctx, provider.TypeSIP, telnyxSIPHostname, "", "", map[string]string{}, name, detail)
 	if err != nil {
 		log.Errorf("Could not create provider record. Attempting Telnyx cleanup. err: %v", err)
-		h.telnyxCleanup(log, client, ipID, connID, profileID)
+		h.telnyxCleanup(log, client, ipIDs, connID, profileID)
 		return nil, fmt.Errorf("provider create failed: %w", err)
 	}
 
@@ -77,11 +95,11 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 // telnyxCleanup attempts to delete Telnyx resources created before a failure.
 // Empty IDs are skipped. Errors are logged but not returned — the caller's
 // original error takes precedence.
-func (h *providerHandler) telnyxCleanup(log *logrus.Entry, client telnyxclient.TelnyxClient, ipID, connID, profileID string) {
+func (h *providerHandler) telnyxCleanup(log *logrus.Entry, client telnyxclient.TelnyxClient, ipIDs []string, connID, profileID string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	if ipID != "" {
+	for _, ipID := range ipIDs {
 		if err := client.DeleteIP(ctx, ipID); err != nil {
 			log.Errorf("Telnyx IP cleanup failed. ip_id: %s, err: %v", ipID, err)
 		} else {
