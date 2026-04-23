@@ -34,21 +34,24 @@ type telnyxClient struct {
 	httpClient *http.Client
 }
 
+// defaultHTTPClient is reused across calls to preserve TCP connection pooling.
+var defaultHTTPClient = &http.Client{Timeout: telnyxTimeout}
+
 // NewTelnyxClient creates a TelnyxClient for a single request. The API key is
 // never persisted — it is used only for the duration of the setup call.
 func NewTelnyxClient(apiKey string) TelnyxClient {
 	return &telnyxClient{
-		apiKey:  apiKey,
-		baseURL: telnyxBaseURL,
-		httpClient: &http.Client{Timeout: telnyxTimeout},
+		apiKey:     apiKey,
+		baseURL:    telnyxBaseURL,
+		httpClient: defaultHTTPClient,
 	}
 }
 
 // newTelnyxClientWithBase is used in tests to inject a custom base URL.
 func newTelnyxClientWithBase(apiKey, baseURL string) TelnyxClient {
 	return &telnyxClient{
-		apiKey:  apiKey,
-		baseURL: baseURL,
+		apiKey:     apiKey,
+		baseURL:    baseURL,
 		httpClient: &http.Client{Timeout: telnyxTimeout},
 	}
 }

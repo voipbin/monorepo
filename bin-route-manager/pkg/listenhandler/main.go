@@ -136,12 +136,17 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	ctx := context.Background()
 
+	// Redact request body for routes that carry credentials.
+	logData := m.Data
+	if regV1ProvidersSetup.MatchString(m.URI) {
+		logData = []byte("[redacted]")
+	}
 	logrus.WithFields(
 		logrus.Fields{
 			"uri":       m.URI,
 			"method":    m.Method,
 			"data_type": m.DataType,
-			"data":      m.Data,
+			"data":      logData,
 		}).Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	start := time.Now()

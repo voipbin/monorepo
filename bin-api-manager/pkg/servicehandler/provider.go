@@ -2,9 +2,11 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	commonrequesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -206,7 +208,10 @@ func (h *serviceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity
 	tmp, err := h.reqHandler.RouteV1ProviderSetup(ctx, carrier, name, detail, apiKey)
 	if err != nil {
 		log.Infof("Could not set up provider. err: %v", err)
-		return nil, err
+		if errors.Is(err, commonrequesthandler.ErrUnprocessableEntity) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("provider setup failed: %w", err)
 	}
 	log.WithField("provider", tmp).Debugf("Created provider via setup. provider_id: %s", tmp.ID)
 

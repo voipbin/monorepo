@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -370,29 +371,47 @@ func TestRouteV1ProviderSetup(t *testing.T) {
 		expectRequest *sock.Request
 		response      *sock.Response
 		expectRes     *rmprovider.Provider
+		expectErr     error
 	}{
 		{
-			"normal",
-			"telnyx",
-			"My Telnyx",
-			"desc",
-			"KEY_xxx",
+			name:    "normal",
+			carrier: "telnyx",
+			pname:   "My Telnyx",
+			detail:  "desc",
+			apiKey:  "KEY_xxx",
 
-			"bin-manager.route-manager.request",
-			&sock.Request{
+			expectTarget: "bin-manager.route-manager.request",
+			expectRequest: &sock.Request{
 				URI:      "/v1/providers/setup",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"carrier":"telnyx","name":"My Telnyx","detail":"desc","credentials":{"api_key":"KEY_xxx"}}`),
 			},
-			&sock.Response{
+			response: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"997a7752-4872-11ed-be7a-5783111a9092"}`),
 			},
-			&rmprovider.Provider{
+			expectRes: &rmprovider.Provider{
 				ID: uuid.FromStringOrNil("997a7752-4872-11ed-be7a-5783111a9092"),
 			},
+		},
+		{
+			name:    "invalid_key_returns_unprocessable_entity",
+			carrier: "telnyx",
+			pname:   "My Telnyx",
+			detail:  "desc",
+			apiKey:  "BAD_KEY",
+
+			expectTarget: "bin-manager.route-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/providers/setup",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"carrier":"telnyx","name":"My Telnyx","detail":"desc","credentials":{"api_key":"BAD_KEY"}}`),
+			},
+			response:  &sock.Response{StatusCode: 422},
+			expectErr: ErrUnprocessableEntity,
 		},
 	}
 
@@ -410,6 +429,13 @@ func TestRouteV1ProviderSetup(t *testing.T) {
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
 			res, err := reqHandler.RouteV1ProviderSetup(ctx, tt.carrier, tt.pname, tt.detail, tt.apiKey)
+
+			if tt.expectErr != nil {
+				if !errors.Is(err, tt.expectErr) {
+					t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+				}
+				return
+			}
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
