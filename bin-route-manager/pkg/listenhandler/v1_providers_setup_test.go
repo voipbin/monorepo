@@ -53,7 +53,7 @@ func Test_v1ProvidersSetupPost(t *testing.T) {
 			expectStatus: 422,
 		},
 		{
-			name: "generic_error_propagates",
+			name: "generic_error_returns_400",
 			request: &sock.Request{
 				URI:      "/v1/providers/setup",
 				Method:   sock.RequestMethodPost,
@@ -64,7 +64,7 @@ func Test_v1ProvidersSetupPost(t *testing.T) {
 				m.EXPECT().Setup(gomock.Any(), "telnyx", "My Telnyx", "desc", "KEY_xxx").
 					Return(nil, errors.New("internal error"))
 			},
-			expectErr: true,
+			expectStatus: 400,
 		},
 		{
 			name: "missing_carrier_returns_400",

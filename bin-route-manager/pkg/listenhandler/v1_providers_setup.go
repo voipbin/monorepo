@@ -35,7 +35,7 @@ func (h *listenHandler) v1ProvidersSetupPost(ctx context.Context, m *sock.Reques
 			return simpleResponse(422), nil
 		}
 		log.Errorf("Could not set up provider. err: %v", err)
-		return nil, err
+		return simpleResponse(400), nil
 	}
 
 	data, err := json.Marshal(res)

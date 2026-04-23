@@ -56,7 +56,8 @@ func (c *telnyxClient) CreateCredentialConnection(ctx context.Context, name stri
 	}
 	defer resp.Body.Close() //nolint:errcheck
 
-	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden ||
+		resp.StatusCode == http.StatusUnprocessableEntity {
 		return "", ErrInvalidKey
 	}
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
