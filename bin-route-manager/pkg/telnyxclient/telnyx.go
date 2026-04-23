@@ -156,9 +156,9 @@ func (c *telnyxClient) DeleteIPConnection(ctx context.Context, connID string) er
 
 func (c *telnyxClient) RegisterIP(ctx context.Context, connID string, ipAddress string, port int) (string, error) {
 	body, err := json.Marshal(map[string]interface{}{
-		"ip_connection_id": connID,
-		"ip_address":       ipAddress,
-		"port":             port,
+		"connection_id": connID,
+		"ip_address":    ipAddress,
+		"port":          port,
 	})
 	if err != nil {
 		return "", fmt.Errorf("marshal register ip request: %w", err)
