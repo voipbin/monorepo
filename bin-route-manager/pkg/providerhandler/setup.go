@@ -2,7 +2,6 @@ package providerhandler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -58,7 +57,3 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	return res, nil
 }
 
-// isTelnyxInvalidKey reports whether err is a Telnyx key validation failure.
-func isTelnyxInvalidKey(err error) bool {
-	return errors.Is(err, telnyxclient.ErrInvalidKey)
-}

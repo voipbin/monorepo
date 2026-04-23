@@ -42,9 +42,10 @@ var (
 	regUUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 	// providers
-	regV1Providers    = regexp.MustCompile("/v1/providers$")
-	regV1ProvidersGet = regexp.MustCompile(`/v1/providers\?`)
-	regV1ProvidersID  = regexp.MustCompile("/v1/providers/" + regUUID + "$")
+	regV1ProvidersSetup = regexp.MustCompile("/v1/providers/setup$")
+	regV1Providers      = regexp.MustCompile("/v1/providers$")
+	regV1ProvidersGet   = regexp.MustCompile(`/v1/providers\?`)
+	regV1ProvidersID    = regexp.MustCompile("/v1/providers/" + regUUID + "$")
 
 	// providercalls
 	regV1ProviderCalls    = regexp.MustCompile(`/v1/providercalls$`)
@@ -168,6 +169,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1RoutesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		requestType = "/routes/<route-id>"
 		response, err = h.v1RoutesIDDelete(ctx, m)
+
+	// providers/setup (must be before /providers to avoid wrong match)
+	case regV1ProvidersSetup.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/providers/setup"
+		response, err = h.v1ProvidersSetupPost(ctx, m)
 
 	// providers
 	case regV1ProvidersGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
