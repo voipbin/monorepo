@@ -1180,6 +1180,13 @@ type RequestHandler interface {
 		detail string,
 	) (*rmprovider.Provider, error)
 	RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
+	RouteV1ProviderSetup(
+		ctx context.Context,
+		carrier string,
+		name string,
+		detail string,
+		apiKey string,
+	) (*rmprovider.Provider, error)
 
 	// route-manager providercalls
 	RouteV1ProviderCallCreate(

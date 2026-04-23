@@ -102,6 +102,21 @@ func (mr *MockProviderHandlerMockRecorder) List(ctx, token, limit any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockProviderHandler)(nil).List), ctx, token, limit)
 }
 
+// Setup mocks base method.
+func (m *MockProviderHandler) Setup(ctx context.Context, carrier, name, detail, apiKey string) (*provider.Provider, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Setup", ctx, carrier, name, detail, apiKey)
+	ret0, _ := ret[0].(*provider.Provider)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Setup indicates an expected call of Setup.
+func (mr *MockProviderHandlerMockRecorder) Setup(ctx, carrier, name, detail, apiKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Setup", reflect.TypeOf((*MockProviderHandler)(nil).Setup), ctx, carrier, name, detail, apiKey)
+}
+
 // Update mocks base method.
 func (m *MockProviderHandler) Update(ctx context.Context, id uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
 	m.ctrl.T.Helper()

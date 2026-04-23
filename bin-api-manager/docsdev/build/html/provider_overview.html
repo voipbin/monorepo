@@ -202,12 +202,34 @@
 <p>VoIPBIN’s Provider API enables management of telecommunication service providers that handle external call routing. Providers are SIP trunking services that connect VoIPBIN to the PSTN (Public Switched Telephone Network) and other external networks.</p>
 <p>With the Provider API you can:</p>
 <ul class="simple">
-<li><p>Configure SIP trunk providers</p></li>
+<li><p>Set up a carrier-backed SIP trunk in one step via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code></p></li>
+<li><p>Configure SIP trunk providers manually</p></li>
 <li><p>Set technical parameters for call routing</p></li>
 <li><p>Manage provider credentials</p></li>
 <li><p>Define routing preferences</p></li>
 <li><p>Monitor provider status</p></li>
 </ul>
+<section id="easy-provider-setup">
+<h2>Easy Provider Setup<a class="headerlink" href="#easy-provider-setup" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/providers/setup</span></code> lets a ProjectSuperAdmin submit a carrier API key and have VoIPBIN automatically validate the key, create the carrier-side SIP credential connection, and create the VoIPBin provider record — all in a single request.</p>
+<p><strong>Supported carriers:</strong> <code class="docutils literal notranslate"><span class="pre">telnyx</span></code></p>
+<p><strong>How it works:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+--------------------------------------------+
+|  POST /providers/setup                     |
+|                                            |
+|  1. Validate carrier API key               |
+|  2. Create carrier SIP credential conn.    |
+|  3. Create VoIPBIN provider record         |
+|  Returns: provider (id, hostname, …)       |
++--------------------------------------------+
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code> instead of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code> when you have a carrier API key and want the platform to handle the SIP trunk creation automatically. If the API key is invalid or lacks the required permissions, the endpoint returns <code class="docutils literal notranslate"><span class="pre">422</span> <span class="pre">Unprocessable</span> <span class="pre">Entity</span></code>. On success, the returned provider <code class="docutils literal notranslate"><span class="pre">id</span></code> can immediately be referenced in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code> to enable outbound call routing.</p>
+</div>
+</section>
 <section id="how-providers-work">
 <h2>How Providers Work<a class="headerlink" href="#how-providers-work" title="Link to this heading"></a></h2>
 <p>Providers connect VoIPBIN to external telephone networks.</p>
@@ -421,6 +443,26 @@
 </section>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<p><strong>Setup Endpoint Errors</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>HTTP Status</p></th>
+<th class="head"><p>Cause and Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>422 Unprocessable Entity</p></td>
+<td><p>The carrier API key is invalid or lacks
+sufficient permissions. Verify the key in the
+carrier’s dashboard and try again.</p></td>
+</tr>
+<tr class="row-odd"><td><p>400 Bad Request</p></td>
+<td><p>Missing required fields (<code class="docutils literal notranslate"><span class="pre">carrier</span></code>,
+<code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, <code class="docutils literal notranslate"><span class="pre">credentials.api_key</span></code>)
+or unsupported carrier name.</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Connection Issues</strong></p>
 <table class="docutils align-default">
 <thead>
@@ -477,6 +519,7 @@ number is allowed</p></td>
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#easy-provider-setup">Easy Provider Setup</a></li>
 <li><a class="reference internal" href="#how-providers-work">How Providers Work</a></li>
 <li><a class="reference internal" href="#provider-configuration">Provider Configuration</a></li>
 <li><a class="reference internal" href="#provider-types">Provider Types</a></li>

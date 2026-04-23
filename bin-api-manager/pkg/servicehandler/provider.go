@@ -2,9 +2,11 @@ package servicehandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	commonrequesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -181,6 +183,37 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentit
 		log.Errorf("Could not delete the provider. err: %v", err)
 		return nil, err
 	}
+
+	return tmp.ConvertWebhookMessage(), nil
+}
+
+// ProviderSetup validates the carrier API key, creates the carrier-side SIP trunk,
+// and auto-creates a VoIPBin provider record.
+func (h *serviceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity, carrier, name, detail, apiKey string) (*rmprovider.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ProviderSetup",
+		"customer_id": a.CustomerID,
+		"carrier":     carrier,
+	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.reqHandler.RouteV1ProviderSetup(ctx, carrier, name, detail, apiKey)
+	if err != nil {
+		log.Infof("Could not set up provider. err: %v", err)
+		if errors.Is(err, commonrequesthandler.ErrUnprocessableEntity) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("provider setup failed: %w", err)
+	}
+	log.WithField("provider", tmp).Debugf("Created provider via setup. provider_id: %s", tmp.ID)
 
 	return tmp.ConvertWebhookMessage(), nil
 }

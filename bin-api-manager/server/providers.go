@@ -1,7 +1,10 @@
 package server
 
 import (
+	"errors"
+
 	"monorepo/bin-api-manager/gens/openapi_server"
+	commonrequesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
 	"github.com/gin-gonic/gin"
@@ -162,6 +165,53 @@ func (h *server) GetProvidersId(c *gin.Context, id string) {
 	res, err := h.serviceHandler.ProviderGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the provider info. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostProvidersSetup(c *gin.Context) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostProvidersSetup",
+		"request_address": c.ClientIP,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		c.AbortWithStatus(400)
+		return
+	}
+	log = log.WithField("agent", a)
+
+	var req openapi_server.PostProvidersSetupJSONRequestBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		c.AbortWithStatus(400)
+		return
+	}
+
+	detail := ""
+	if req.Detail != nil {
+		detail = *req.Detail
+	}
+	res, err := h.serviceHandler.ProviderSetup(
+		c.Request.Context(),
+		a,
+		string(req.Carrier),
+		req.Name,
+		detail,
+		req.Credentials.ApiKey,
+	)
+	if err != nil {
+		if errors.Is(err, commonrequesthandler.ErrUnprocessableEntity) {
+			log.Infof("Carrier API key rejected. err: %v", err)
+			c.AbortWithStatus(422)
+			return
+		}
+		log.Errorf("Could not set up provider. err: %v", err)
 		c.AbortWithStatus(400)
 		return
 	}

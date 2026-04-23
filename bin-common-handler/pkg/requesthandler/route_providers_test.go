@@ -2,6 +2,7 @@ package requesthandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"reflect"
@@ -352,6 +353,94 @@ func Test_RouteV1ProviderList(t *testing.T) {
 			}
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func TestRouteV1ProviderSetup(t *testing.T) {
+	tests := []struct {
+		name    string
+		carrier string
+		pname   string
+		detail  string
+		apiKey  string
+
+		expectTarget  string
+		expectRequest *sock.Request
+		response      *sock.Response
+		expectRes     *rmprovider.Provider
+		expectErr     error
+	}{
+		{
+			name:    "normal",
+			carrier: "telnyx",
+			pname:   "My Telnyx",
+			detail:  "desc",
+			apiKey:  "KEY_xxx",
+
+			expectTarget: "bin-manager.route-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/providers/setup",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"carrier":"telnyx","name":"My Telnyx","detail":"desc","credentials":{"api_key":"KEY_xxx"}}`),
+			},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"997a7752-4872-11ed-be7a-5783111a9092"}`),
+			},
+			expectRes: &rmprovider.Provider{
+				ID: uuid.FromStringOrNil("997a7752-4872-11ed-be7a-5783111a9092"),
+			},
+		},
+		{
+			name:    "invalid_key_returns_unprocessable_entity",
+			carrier: "telnyx",
+			pname:   "My Telnyx",
+			detail:  "desc",
+			apiKey:  "BAD_KEY",
+
+			expectTarget: "bin-manager.route-manager.request",
+			expectRequest: &sock.Request{
+				URI:      "/v1/providers/setup",
+				Method:   sock.RequestMethodPost,
+				DataType: ContentTypeJSON,
+				Data:     []byte(`{"carrier":"telnyx","name":"My Telnyx","detail":"desc","credentials":{"api_key":"BAD_KEY"}}`),
+			},
+			response:  &sock.Response{StatusCode: 422},
+			expectErr: ErrUnprocessableEntity,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+
+			ctx := context.Background()
+			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+
+			res, err := reqHandler.RouteV1ProviderSetup(ctx, tt.carrier, tt.pname, tt.detail, tt.apiKey)
+
+			if tt.expectErr != nil {
+				if !errors.Is(err, tt.expectErr) {
+					t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.expectRes, res) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
 			}
 		})

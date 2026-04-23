@@ -13,11 +13,37 @@ VoIPBIN's Provider API enables management of telecommunication service providers
 
 With the Provider API you can:
 
-- Configure SIP trunk providers
+- Set up a carrier-backed SIP trunk in one step via ``POST /providers/setup``
+- Configure SIP trunk providers manually
 - Set technical parameters for call routing
 - Manage provider credentials
 - Define routing preferences
 - Monitor provider status
+
+
+Easy Provider Setup
+-------------------
+
+``POST https://api.voipbin.net/v1.0/providers/setup`` lets a ProjectSuperAdmin submit a carrier API key and have VoIPBIN automatically validate the key, create the carrier-side SIP credential connection, and create the VoIPBin provider record — all in a single request.
+
+**Supported carriers:** ``telnyx``
+
+**How it works:**
+
+::
+
+    +--------------------------------------------+
+    |  POST /providers/setup                     |
+    |                                            |
+    |  1. Validate carrier API key               |
+    |  2. Create carrier SIP credential conn.    |
+    |  3. Create VoIPBIN provider record         |
+    |  Returns: provider (id, hostname, …)       |
+    +--------------------------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   Use ``POST /providers/setup`` instead of ``POST /providers`` when you have a carrier API key and want the platform to handle the SIP trunk creation automatically. If the API key is invalid or lacks the required permissions, the endpoint returns ``422 Unprocessable Entity``. On success, the returned provider ``id`` can immediately be referenced in ``POST /routes`` to enable outbound call routing.
 
 
 How Providers Work
@@ -244,6 +270,20 @@ Best Practices
 
 Troubleshooting
 ---------------
+
+**Setup Endpoint Errors**
+
++---------------------------+------------------------------------------------+
+| HTTP Status               | Cause and Fix                                  |
++===========================+================================================+
+| 422 Unprocessable Entity  | The carrier API key is invalid or lacks        |
+|                           | sufficient permissions. Verify the key in the  |
+|                           | carrier's dashboard and try again.             |
++---------------------------+------------------------------------------------+
+| 400 Bad Request           | Missing required fields (``carrier``,          |
+|                           | ``name``, ``detail``, ``credentials.api_key``) |
+|                           | or unsupported carrier name.                   |
++---------------------------+------------------------------------------------+
 
 **Connection Issues**
 

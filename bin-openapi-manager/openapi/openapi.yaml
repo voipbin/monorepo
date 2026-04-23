@@ -5613,6 +5613,39 @@ components:
       x-enum-varnames:
         - RouteManagerProviderTypeSIP
       example: "sip"
+    RouteManagerProviderSetupRequest:
+      type: object
+      description: "Request body for POST /providers/setup. Submits carrier credentials so the platform can validate the key, create the carrier-side SIP trunk, and auto-create a VoIPBin provider record."
+      required:
+        - carrier
+        - name
+        - credentials
+      properties:
+        carrier:
+          type: string
+          enum:
+            - telnyx
+          x-enum-varnames:
+            - RouteManagerProviderSetupCarrierTelnyx
+          description: "The carrier to set up. Currently only 'telnyx' is supported."
+          example: "telnyx"
+        name:
+          type: string
+          description: "A human-readable name for the created provider."
+          example: "My Telnyx Trunk"
+        detail:
+          type: string
+          description: "Optional description of the provider."
+          example: "Primary outbound Telnyx SIP trunk"
+        credentials:
+          type: object
+          required:
+            - api_key
+          properties:
+            api_key:
+              type: string
+              description: "The carrier API key used to validate access and create the SIP trunk."
+              example: "KEY_01234567890abcdef"
     RouteManagerProvider:
       type: object
       properties:
@@ -7175,6 +7208,8 @@ paths:
   /outplans:
     $ref: './paths/outplans/main.yaml'
 
+  /providers/setup:
+    $ref: './paths/providers/setup.yaml'
   /providers/{id}:
     $ref: './paths/providers/id.yaml'
   /providers:
