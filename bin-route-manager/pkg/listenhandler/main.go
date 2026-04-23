@@ -230,7 +230,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 			logrus.Fields{
 				"uri":    m.URI,
 				"method": m.Method,
-			}).Errorf("Could not find corresponded message handler. data: %s", m.Data)
+			}).Errorf("Could not find corresponded message handler. data: %s", logData)
 		response = simpleResponse(404)
 		err = nil
 		requestType = "notfound"

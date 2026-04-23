@@ -33,6 +33,10 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 		return nil, fmt.Errorf("unsupported carrier: %s", carrier)
 	}
 
+	if len(h.sipLBAddresses) == 0 {
+		return nil, fmt.Errorf("no SIP gateway addresses configured; set EXTERNAL_SIP_GATEWAY_ADDRESSES")
+	}
+
 	// Step 1: validate the API key
 	if err := client.ValidateKey(ctx); err != nil {
 		log.Infof("Telnyx key validation failed. err: %v", err)

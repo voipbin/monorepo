@@ -32,6 +32,15 @@ func Test_Setup_UnknownCarrier(t *testing.T) {
 	}
 }
 
+func Test_Setup_NoAddressesConfigured(t *testing.T) {
+	h := &providerHandler{sipLBAddresses: nil}
+	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail",
+		telnyxclient.NewTelnyxClient("key"))
+	if err == nil {
+		t.Fatal("expected error for empty sipLBAddresses, got nil")
+	}
+}
+
 func Test_Setup_InvalidKey(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
