@@ -20,7 +20,7 @@ type providerHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 }
 
-// ProviderHandler interface
+// ProviderHandler defines provider management operations.
 type ProviderHandler interface {
 	Get(ctx context.Context, id uuid.UUID) (*provider.Provider, error)
 	Create(
@@ -45,6 +45,16 @@ type ProviderHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
+	) (*provider.Provider, error)
+	// Setup validates the carrier API key, creates the carrier-side SIP trunk,
+	// and creates the VoIPBin provider record. Compensating cleanup is attempted
+	// if the provider insert fails.
+	Setup(
+		ctx context.Context,
+		carrier string,
+		name string,
+		detail string,
+		apiKey string,
 	) (*provider.Provider, error)
 }
 
