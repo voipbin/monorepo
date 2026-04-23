@@ -137,6 +137,42 @@ func (r *requestHandler) RouteV1ProviderUpdate(
 	return &res, nil
 }
 
+// RouteV1ProviderSetup sends a request to route-manager to validate the carrier
+// API key, create the carrier-side SIP trunk, and create a VoIPBin provider record.
+func (r *requestHandler) RouteV1ProviderSetup(
+	ctx context.Context,
+	carrier string,
+	name string,
+	detail string,
+	apiKey string,
+) (*rmprovider.Provider, error) {
+	uri := "/v1/providers/setup"
+
+	data := &rmrequest.V1DataProvidersSetupPost{
+		Carrier: carrier,
+		Name:    name,
+		Detail:  detail,
+	}
+	data.Credentials.APIKey = apiKey
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodPost, "route/providers/setup", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	if err != nil {
+		return nil, err
+	}
+
+	var res rmprovider.Provider
+	if errParse := parseResponse(tmp, &res); errParse != nil {
+		return nil, errParse
+	}
+
+	return &res, nil
+}
+
 // RouteV1ProviderList sends a request to route-manager
 // to getting a list of provider info.
 // it returns detail list of provider info if it succeed.
