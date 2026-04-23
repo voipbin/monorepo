@@ -3969,6 +3969,22 @@ type RouteManagerProviderCall struct {
 // RouteManagerProviderCallAnonymous The anonymous caller-ID option requested. `auto` (default) resolves the same as `no` today.
 type RouteManagerProviderCallAnonymous string
 
+// RouteManagerProviderSetupRequest Request body for POST /providers/setup. Submits carrier credentials so the platform can validate the key, create the carrier-side SIP trunk, and auto-create a VoIPBin provider record.
+type RouteManagerProviderSetupRequest struct {
+	// Carrier The carrier to set up. Currently only 'telnyx' is supported.
+	Carrier     string `json:"carrier"`
+	Credentials struct {
+		// ApiKey The carrier API key used to validate access and create the SIP trunk.
+		ApiKey string `json:"api_key"`
+	} `json:"credentials"`
+
+	// Detail Optional description of the provider.
+	Detail string `json:"detail"`
+
+	// Name A human-readable name for the created provider.
+	Name string `json:"name"`
+}
+
 // RouteManagerProviderType Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
 type RouteManagerProviderType string
 
@@ -6698,6 +6714,9 @@ type PostProvidercallsJSONRequestBody PostProvidercallsJSONBody
 // PostProvidersJSONRequestBody defines body for PostProviders for application/json ContentType.
 type PostProvidersJSONRequestBody PostProvidersJSONBody
 
+// PostProvidersSetupJSONRequestBody defines body for PostProvidersSetup for application/json ContentType.
+type PostProvidersSetupJSONRequestBody = RouteManagerProviderSetupRequest
+
 // PutProvidersIdJSONRequestBody defines body for PutProvidersId for application/json ContentType.
 type PutProvidersIdJSONRequestBody PutProvidersIdJSONBody
 
@@ -7417,6 +7436,9 @@ type ServerInterface interface {
 	// Create a new provider
 	// (POST /providers)
 	PostProviders(c *gin.Context)
+	// Set up a provider via carrier API key
+	// (POST /providers/setup)
+	PostProvidersSetup(c *gin.Context)
 	// Delete provider by ID
 	// (DELETE /providers/{id})
 	DeleteProvidersId(c *gin.Context, id string)
@@ -12710,6 +12732,19 @@ func (siw *ServerInterfaceWrapper) PostProviders(c *gin.Context) {
 	siw.Handler.PostProviders(c)
 }
 
+// PostProvidersSetup operation middleware
+func (siw *ServerInterfaceWrapper) PostProvidersSetup(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostProvidersSetup(c)
+}
+
 // DeleteProvidersId operation middleware
 func (siw *ServerInterfaceWrapper) DeleteProvidersId(c *gin.Context) {
 
@@ -16156,6 +16191,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/providercalls/:id", wrapper.GetProvidercallsId)
 	router.GET(options.BaseURL+"/providers", wrapper.GetProviders)
 	router.POST(options.BaseURL+"/providers", wrapper.PostProviders)
+	router.POST(options.BaseURL+"/providers/setup", wrapper.PostProvidersSetup)
 	router.DELETE(options.BaseURL+"/providers/:id", wrapper.DeleteProvidersId)
 	router.GET(options.BaseURL+"/providers/:id", wrapper.GetProvidersId)
 	router.PUT(options.BaseURL+"/providers/:id", wrapper.PutProvidersId)
@@ -20190,6 +20226,31 @@ func (response PostProviders200JSONResponse) VisitPostProvidersResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostProvidersSetupRequestObject struct {
+	Body *PostProvidersSetupJSONRequestBody
+}
+
+type PostProvidersSetupResponseObject interface {
+	VisitPostProvidersSetupResponse(w http.ResponseWriter) error
+}
+
+type PostProvidersSetup200JSONResponse RouteManagerProvider
+
+func (response PostProvidersSetup200JSONResponse) VisitPostProvidersSetupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostProvidersSetup422Response struct {
+}
+
+func (response PostProvidersSetup422Response) VisitPostProvidersSetupResponse(w http.ResponseWriter) error {
+	w.WriteHeader(422)
+	return nil
+}
+
 type DeleteProvidersIdRequestObject struct {
 	Id string `json:"id"`
 }
@@ -23406,6 +23467,9 @@ type StrictServerInterface interface {
 	// Create a new provider
 	// (POST /providers)
 	PostProviders(ctx context.Context, request PostProvidersRequestObject) (PostProvidersResponseObject, error)
+	// Set up a provider via carrier API key
+	// (POST /providers/setup)
+	PostProvidersSetup(ctx context.Context, request PostProvidersSetupRequestObject) (PostProvidersSetupResponseObject, error)
 	// Delete provider by ID
 	// (DELETE /providers/{id})
 	DeleteProvidersId(ctx context.Context, request DeleteProvidersIdRequestObject) (DeleteProvidersIdResponseObject, error)
@@ -29783,6 +29847,39 @@ func (sh *strictHandler) PostProviders(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostProvidersResponseObject); ok {
 		if err := validResponse.VisitPostProvidersResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostProvidersSetup operation middleware
+func (sh *strictHandler) PostProvidersSetup(ctx *gin.Context) {
+	var request PostProvidersSetupRequestObject
+
+	var body PostProvidersSetupJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostProvidersSetup(ctx, request.(PostProvidersSetupRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostProvidersSetup")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostProvidersSetupResponseObject); ok {
+		if err := validResponse.VisitPostProvidersSetupResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

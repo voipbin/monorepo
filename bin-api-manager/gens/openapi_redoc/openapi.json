@@ -9116,6 +9116,40 @@
         }
       }
     },
+    "/providers/setup": {
+      "post": {
+        "summary": "Set up a provider via carrier API key",
+        "description": "Validates the carrier API key, creates a carrier-side SIP trunk, and auto-creates a VoIPBin provider record. Requires ProjectSuperAdmin permission. Currently supports carrier `telnyx` only.\n",
+        "tags": [
+          "Provider"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RouteManagerProviderSetupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The created provider record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RouteManagerProvider"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The carrier API key is invalid or lacks sufficient permissions."
+          }
+        }
+      }
+    },
     "/providers/{id}": {
       "get": {
         "summary": "Get provider by ID",
@@ -21285,6 +21319,46 @@
           "RouteManagerProviderTypeSIP"
         ],
         "example": "sip"
+      },
+      "RouteManagerProviderSetupRequest": {
+        "type": "object",
+        "description": "Request body for POST /providers/setup. Submits carrier credentials so the platform can validate the key, create the carrier-side SIP trunk, and auto-create a VoIPBin provider record.",
+        "required": [
+          "carrier",
+          "name",
+          "detail",
+          "credentials"
+        ],
+        "properties": {
+          "carrier": {
+            "type": "string",
+            "description": "The carrier to set up. Currently only 'telnyx' is supported.",
+            "example": "telnyx"
+          },
+          "name": {
+            "type": "string",
+            "description": "A human-readable name for the created provider.",
+            "example": "My Telnyx Trunk"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Optional description of the provider.",
+            "example": "Primary outbound Telnyx SIP trunk"
+          },
+          "credentials": {
+            "type": "object",
+            "required": [
+              "api_key"
+            ],
+            "properties": {
+              "api_key": {
+                "type": "string",
+                "description": "The carrier API key used to validate access and create the SIP trunk.",
+                "example": "KEY_01234567890abcdef"
+              }
+            }
+          }
+        }
       },
       "RouteManagerProvider": {
         "type": "object",

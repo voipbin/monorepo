@@ -3194,6 +3194,21 @@ func (mr *MockServiceHandlerMockRecorder) ProviderList(ctx, a, size, token any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderList", reflect.TypeOf((*MockServiceHandler)(nil).ProviderList), ctx, a, size, token)
 }
 
+// ProviderSetup mocks base method.
+func (m *MockServiceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity, carrier, name, detail, apiKey string) (*provider.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProviderSetup", ctx, a, carrier, name, detail, apiKey)
+	ret0, _ := ret[0].(*provider.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ProviderSetup indicates an expected call of ProviderSetup.
+func (mr *MockServiceHandlerMockRecorder) ProviderSetup(ctx, a, carrier, name, detail, apiKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderSetup", reflect.TypeOf((*MockServiceHandler)(nil).ProviderSetup), ctx, a, carrier, name, detail, apiKey)
+}
+
 // ProviderUpdate mocks base method.
 func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.WebhookMessage, error) {
 	m.ctrl.T.Helper()

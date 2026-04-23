@@ -663,6 +663,7 @@ type ServiceHandler interface {
 	ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovider.WebhookMessage, error)
 	ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*rmprovider.WebhookMessage, error)
 	ProviderList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmprovider.WebhookMessage, error)
+	ProviderSetup(ctx context.Context, a *auth.AuthIdentity, carrier string, name string, detail string, apiKey string) (*rmprovider.WebhookMessage, error)
 	ProviderUpdate(
 		ctx context.Context,
 		a *auth.AuthIdentity,

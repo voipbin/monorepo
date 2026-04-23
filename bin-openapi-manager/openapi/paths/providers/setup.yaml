@@ -1,0 +1,23 @@
+post:
+  summary: Set up a provider via carrier API key
+  description: >
+    Validates the carrier API key, creates a carrier-side SIP trunk, and
+    auto-creates a VoIPBin provider record. Requires ProjectSuperAdmin
+    permission. Currently supports carrier `telnyx` only.
+  tags:
+    - Provider
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/RouteManagerProviderSetupRequest'
+  responses:
+    '200':
+      description: The created provider record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RouteManagerProvider'
+    '422':
+      description: The carrier API key is invalid or lacks sufficient permissions.

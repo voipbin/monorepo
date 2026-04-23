@@ -185,6 +185,34 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentit
 	return tmp.ConvertWebhookMessage(), nil
 }
 
+// ProviderSetup validates the carrier API key, creates the carrier-side SIP trunk,
+// and auto-creates a VoIPBin provider record.
+func (h *serviceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity, carrier, name, detail, apiKey string) (*rmprovider.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "ProviderSetup",
+		"customer_id": a.CustomerID,
+		"carrier":     carrier,
+	})
+
+	if a.IsDirect() {
+		return nil, fmt.Errorf("direct access not supported")
+	}
+
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, fmt.Errorf("agent has no permission")
+	}
+
+	tmp, err := h.reqHandler.RouteV1ProviderSetup(ctx, carrier, name, detail, apiKey)
+	if err != nil {
+		log.Infof("Could not set up provider. err: %v", err)
+		return nil, err
+	}
+	log.WithField("provider", tmp).Debugf("Created provider via setup. provider_id: %s", tmp.ID)
+
+	return tmp.ConvertWebhookMessage(), nil
+}
+
 // ProviderUpdate sends a request to route-manager
 // to updating the provider.
 // it returns error if it failed.
