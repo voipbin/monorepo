@@ -7,7 +7,32 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
+
+// allTelnyxDestinations is the full set of ISO 3166-1 alpha-2 codes we request.
+// Telnyx will reject codes the account has not been approved for; those are
+// stripped and the request is retried automatically.
+var allTelnyxDestinations = []string{
+	"AD", "AE", "AF", "AG", "AL", "AM", "AO", "AR", "AT", "AU", "AZ",
+	"BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BN", "BO",
+	"BR", "BS", "BT", "BW", "BY", "BZ", "CA", "CD", "CF", "CG", "CH",
+	"CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CY", "CZ",
+	"DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "ER", "ES",
+	"ET", "FI", "FJ", "FM", "FR", "GA", "GB", "GD", "GE", "GH", "GM",
+	"GN", "GQ", "GR", "GT", "GW", "GY", "HN", "HR", "HT", "HU", "ID",
+	"IE", "IL", "IN", "IQ", "IR", "IS", "IT", "JM", "JO", "JP", "KE",
+	"KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KZ", "LA", "LB",
+	"LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC",
+	"MD", "ME", "MG", "MH", "MK", "ML", "MM", "MN", "MR", "MT", "MU",
+	"MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NG", "NI", "NL",
+	"NO", "NP", "NR", "NZ", "OM", "PA", "PE", "PG", "PH", "PK", "PL",
+	"PR", "PS", "PT", "PW", "PY", "QA", "RO", "RS", "RU", "RW", "SA",
+	"SB", "SC", "SD", "SE", "SG", "SI", "SK", "SL", "SM", "SN", "SO",
+	"SR", "SS", "ST", "SV", "SY", "SZ", "TD", "TG", "TH", "TJ", "TL",
+	"TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "US",
+	"UY", "UZ", "VA", "VC", "VE", "VN", "VU", "WS", "YE", "ZA", "ZM", "ZW",
+}
 
 func (c *telnyxClient) ValidateKey(ctx context.Context) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/whoami", nil)
@@ -37,43 +62,112 @@ type idResponse struct {
 	} `json:"data"`
 }
 
+type telnyxErrorResponse struct {
+	Errors []struct {
+		Code   string `json:"code"`
+		Detail string `json:"detail"`
+	} `json:"errors"`
+}
+
 func (c *telnyxClient) CreateOutboundVoiceProfile(ctx context.Context, name string) (string, error) {
+	destinations := make([]string, len(allTelnyxDestinations))
+	copy(destinations, allTelnyxDestinations)
+
+	for {
+		id, rejected, err := c.tryCreateOutboundVoiceProfile(ctx, name, destinations)
+		if err != nil {
+			return "", err
+		}
+		if id != "" {
+			return id, nil
+		}
+		// Remove rejected countries and retry.
+		keep := destinations[:0]
+		rejectedSet := make(map[string]bool, len(rejected))
+		for _, r := range rejected {
+			rejectedSet[r] = true
+		}
+		for _, d := range destinations {
+			if !rejectedSet[d] {
+				keep = append(keep, d)
+			}
+		}
+		if len(keep) == len(destinations) {
+			return "", fmt.Errorf("telnyx create voice profile failed with unapproved countries but none could be identified")
+		}
+		destinations = keep
+	}
+}
+
+// tryCreateOutboundVoiceProfile attempts creation. Returns (id, nil, nil) on success,
+// ("", rejectedCodes, nil) when Telnyx rejects specific country codes, or ("", nil, err) on other failures.
+func (c *telnyxClient) tryCreateOutboundVoiceProfile(ctx context.Context, name string, destinations []string) (string, []string, error) {
 	body, err := json.Marshal(map[string]interface{}{
-		"name":                    name,
-		"traffic_type":            "conversational",
-		"service_plan":            "global",
-		"whitelisted_destinations": []string{},
+		"name":                     name,
+		"traffic_type":             "conversational",
+		"service_plan":             "global",
+		"whitelisted_destinations": destinations,
 	})
 	if err != nil {
-		return "", fmt.Errorf("marshal create voice profile request: %w", err)
+		return "", nil, fmt.Errorf("marshal create voice profile request: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/outbound_voice_profiles",
 		bytes.NewReader(body))
 	if err != nil {
-		return "", fmt.Errorf("build create voice profile request: %w", err)
+		return "", nil, fmt.Errorf("build create voice profile request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("create voice profile request failed: %w", err)
+		return "", nil, fmt.Errorf("create voice profile request failed: %w", err)
 	}
 	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
-		return "", ErrInvalidKey
+		return "", nil, ErrInvalidKey
 	}
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return "", fmt.Errorf("telnyx create voice profile returned unexpected status %d", resp.StatusCode)
+	if resp.StatusCode == http.StatusOK || resp.StatusCode == http.StatusCreated {
+		var res idResponse
+		if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+			return "", nil, fmt.Errorf("decode create voice profile response: %w", err)
+		}
+		return res.Data.ID, nil, nil
 	}
+	if resp.StatusCode == http.StatusUnprocessableEntity {
+		respBody, _ := io.ReadAll(resp.Body)
+		var errResp telnyxErrorResponse
+		if jsonErr := json.Unmarshal(respBody, &errResp); jsonErr == nil {
+			for _, e := range errResp.Errors {
+				if rejected := parseRejectedCountries(e.Detail); len(rejected) > 0 {
+					return "", rejected, nil
+				}
+			}
+		}
+		return "", nil, fmt.Errorf("telnyx create voice profile unprocessable: %s", string(respBody))
+	}
+	return "", nil, fmt.Errorf("telnyx create voice profile returned unexpected status %d", resp.StatusCode)
+}
 
-	var res idResponse
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return "", fmt.Errorf("decode create voice profile response: %w", err)
+// parseRejectedCountries extracts 2-letter country codes from a Telnyx error detail like:
+// "You must have your account approved ... to use the following countries: US, CA, ..."
+func parseRejectedCountries(detail string) []string {
+	const marker = "following countries: "
+	idx := strings.Index(detail, marker)
+	if idx == -1 {
+		return nil
 	}
-	return res.Data.ID, nil
+	parts := strings.Split(detail[idx+len(marker):], ", ")
+	codes := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if len(p) == 2 {
+			codes = append(codes, p)
+		}
+	}
+	return codes
 }
 
 func (c *telnyxClient) DeleteOutboundVoiceProfile(ctx context.Context, profileID string) error {
