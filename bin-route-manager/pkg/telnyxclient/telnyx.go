@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -181,7 +182,8 @@ func (c *telnyxClient) RegisterIP(ctx context.Context, connID string, ipAddress 
 		return "", ErrInvalidKey
 	}
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		return "", fmt.Errorf("telnyx register ip returned unexpected status %d", resp.StatusCode)
+		errBody, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("telnyx register ip returned status %d: %s", resp.StatusCode, string(errBody))
 	}
 
 	var res idResponse
