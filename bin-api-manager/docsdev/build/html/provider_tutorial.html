@@ -194,8 +194,8 @@
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <p>Before working with providers, you need:</p>
 <ul class="simple">
-<li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
-<li><p>The provider’s SIP hostname (e.g., <code class="docutils literal notranslate"><span class="pre">sip.telnyx.com</span></code>). This is provided by the telephony service provider.</p></li>
+<li><p>An authentication token with <strong>ProjectSuperAdmin</strong> permission. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code>.</p></li>
+<li><p>The provider’s SIP hostname (e.g., <code class="docutils literal notranslate"><span class="pre">sip.telnyx.com</span></code>), or a carrier API key if using <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code>.</p></li>
 <li><p>(Optional) Any custom SIP headers or number formatting rules required by the provider.</p></li>
 </ul>
 <div class="admonition note">
@@ -203,6 +203,45 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>Providers are typically managed by platform administrators. After creating a provider, you must create at least one route (via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code>) that references the provider’s <code class="docutils literal notranslate"><span class="pre">id</span></code> before outbound calls can use it. The provider alone does not enable call routing.</p>
 </div>
+<section id="set-up-a-provider-via-carrier-api-key">
+<h3>Set up a provider via carrier API key<a class="headerlink" href="#set-up-a-provider-via-carrier-api-key" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code> validates your carrier API key, creates the carrier-side SIP trunk, and returns a ready-to-use VoIPBIN provider record — all in one call. Requires <strong>ProjectSuperAdmin</strong> permission.</p>
+<p><strong>Supported carriers:</strong> <code class="docutils literal notranslate"><span class="pre">telnyx</span></code></p>
+<p>Request</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/providers/setup?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;carrier&quot;: &quot;telnyx&quot;,
+        &quot;name&quot;: &quot;My Telnyx Trunk&quot;,
+        &quot;detail&quot;: &quot;Primary outbound Telnyx SIP trunk&quot;,
+        &quot;credentials&quot;: {
+            &quot;api_key&quot;: &quot;KEY_01234567890abcdef&quot;
+        }
+    }&#39;
+</pre></div>
+</div>
+<p>Response (200 OK)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;4dbeabd6-f397-4375-95d2-a38411e07ed1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;hostname&quot;</span><span class="p">:</span> <span class="s2">&quot;sip.telnyx.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_postfix&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tech_headers&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;My Telnyx Trunk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Primary outbound Telnyx SIP trunk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-23T10:00:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-23T10:00:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Save the returned <code class="docutils literal notranslate"><span class="pre">id</span></code> field (UUID). You will need it when creating a route via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/routes</span></code> to enable outbound calling through this provider. If the API key is invalid or lacks the required permissions, the endpoint returns <code class="docutils literal notranslate"><span class="pre">422</span> <span class="pre">Unprocessable</span> <span class="pre">Entity</span></code> — verify the key in the Telnyx portal and retry.</p>
+</div>
+</section>
 <section id="get-list-of-providers">
 <h3>Get list of providers<a class="headerlink" href="#get-list-of-providers" title="Link to this heading"></a></h3>
 <p>Example</p>
@@ -305,6 +344,7 @@
                             <ul>
 <li><a class="reference internal" href="#">Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#set-up-a-provider-via-carrier-api-key">Set up a provider via carrier API key</a></li>
 <li><a class="reference internal" href="#get-list-of-providers">Get list of providers</a></li>
 <li><a class="reference internal" href="#get-detail-of-provider">Get detail of provider</a></li>
 <li><a class="reference internal" href="#create-a-new-provider">Create a new provider</a></li>

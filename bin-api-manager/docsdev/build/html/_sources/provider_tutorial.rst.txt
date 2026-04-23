@@ -8,13 +8,58 @@ Prerequisites
 
 Before working with providers, you need:
 
-* An authentication token. Obtain one via ``POST /auth/login`` or use an access key from ``GET /accesskeys``.
-* The provider's SIP hostname (e.g., ``sip.telnyx.com``). This is provided by the telephony service provider.
+* An authentication token with **ProjectSuperAdmin** permission. Obtain one via ``POST /auth/login``.
+* The provider's SIP hostname (e.g., ``sip.telnyx.com``), or a carrier API key if using ``POST /providers/setup``.
 * (Optional) Any custom SIP headers or number formatting rules required by the provider.
 
 .. note:: **AI Implementation Hint**
 
    Providers are typically managed by platform administrators. After creating a provider, you must create at least one route (via ``POST /routes``) that references the provider's ``id`` before outbound calls can use it. The provider alone does not enable call routing.
+
+
+Set up a provider via carrier API key
+--------------------------------------
+
+``POST /providers/setup`` validates your carrier API key, creates the carrier-side SIP trunk, and returns a ready-to-use VoIPBIN provider record — all in one call. Requires **ProjectSuperAdmin** permission.
+
+**Supported carriers:** ``telnyx``
+
+Request
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/providers/setup?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "carrier": "telnyx",
+            "name": "My Telnyx Trunk",
+            "detail": "Primary outbound Telnyx SIP trunk",
+            "credentials": {
+                "api_key": "KEY_01234567890abcdef"
+            }
+        }'
+
+Response (200 OK)
+
+.. code::
+
+    {
+        "id": "4dbeabd6-f397-4375-95d2-a38411e07ed1",
+        "type": "sip",
+        "hostname": "sip.telnyx.com",
+        "tech_prefix": "",
+        "tech_postfix": "",
+        "tech_headers": {},
+        "name": "My Telnyx Trunk",
+        "detail": "Primary outbound Telnyx SIP trunk",
+        "tm_create": "2026-04-23T10:00:00.000000Z",
+        "tm_update": "2026-04-23T10:00:00.000000Z",
+        "tm_delete": "9999-01-01T00:00:00.000000Z"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   Save the returned ``id`` field (UUID). You will need it when creating a route via ``POST /routes`` to enable outbound calling through this provider. If the API key is invalid or lacks the required permissions, the endpoint returns ``422 Unprocessable Entity`` — verify the key in the Telnyx portal and retry.
 
 Get list of providers
 ---------------------
