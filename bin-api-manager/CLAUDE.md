@@ -6,6 +6,57 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `bin-api-manager` is a RESTful API gateway for the VoIPBIN platform that handles authentication, routing, and API requests to various backend managers. It's part of a Go monorepo architecture and serves as the public-facing API for the entire VoIPBIN system.
 
+## Thin Gateway Principle (CRITICAL)
+
+**`bin-api-manager` is a thin HTTP gateway — it MUST NOT implement business logic, external API calls, or multi-step orchestration. All of that belongs in the appropriate manager service.**
+
+### What bin-api-manager MUST do
+1. Parse and validate the HTTP request format
+2. Authenticate the JWT and extract identity
+3. Check authorization (permission level)
+4. Forward the request to the appropriate manager via RabbitMQ RPC
+5. Return the manager's response as HTTP
+
+### What bin-api-manager MUST NOT do
+- ❌ Call external APIs (Telnyx, Twilio, Stripe, GCP, etc.)
+- ❌ Implement multi-step business workflows or orchestration
+- ❌ Access the database directly
+- ❌ Transform or enrich data from multiple managers
+- ❌ Contain provider-specific or carrier-specific logic
+
+### Why
+bin-api-manager is the only public-facing service. Keeping it thin means:
+- Business logic is testable in isolation within the appropriate manager
+- bin-api-manager stays simple and easy to reason about
+- External API failures are isolated to the manager that owns them
+- Adding a new carrier/provider only touches the relevant manager, not the gateway
+
+### Example — Provider Setup
+
+**WRONG — api-manager doing business logic:**
+```go
+// ❌ pkg/servicehandler/provider_setup.go
+func (h *serviceHandler) ProviderSetup(ctx context.Context, ...) {
+    h.telnyxClient.ValidateKey(...)               // NO: external API call in gateway
+    connID, _ := h.telnyxClient.CreateConnection(...) // NO: orchestration in gateway
+    h.reqHandler.RouteV1ProviderCreate(...)
+}
+```
+
+**CORRECT — api-manager as thin gateway:**
+```go
+// ✅ pkg/servicehandler/provider_setup.go
+func (h *serviceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity, carrier, name, detail, apiKey string) (*rmprovider.WebhookMessage, error) {
+    if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+        return nil, fmt.Errorf("agent has no permission")
+    }
+    // Forward everything to route-manager — it owns all provider logic including Telnyx calls
+    return h.reqHandler.RouteV1ProviderSetup(ctx, carrier, name, detail, apiKey)
+}
+```
+
+The Telnyx API calls, orchestration, and compensating cleanup all live in `bin-route-manager/pkg/providerhandler/`.
+
 ## Build & Development Commands
 
 ### Prerequisites
