@@ -18,6 +18,8 @@ type providerHandler struct {
 	db            dbhandler.DBHandler
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
+	sipLBIP       string
+	sipLBPort     int
 }
 
 // ProviderHandler defines provider management operations.
@@ -63,11 +65,15 @@ func NewProviderHandler(
 	db dbhandler.DBHandler,
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
+	sipLBIP string,
+	sipLBPort int,
 ) ProviderHandler {
 	h := &providerHandler{
 		db:            db,
 		reqHandler:    reqHandler,
 		notifyHandler: notifyHandler,
+		sipLBIP:       sipLBIP,
+		sipLBPort:     sipLBPort,
 	}
 
 	return h
