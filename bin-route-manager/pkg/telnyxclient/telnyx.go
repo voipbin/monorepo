@@ -19,7 +19,7 @@ func (c *telnyxClient) ValidateKey(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("whoami request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return ErrInvalidKey
@@ -54,7 +54,7 @@ func (c *telnyxClient) CreateCredentialConnection(ctx context.Context, name stri
 	if err != nil {
 		return "", fmt.Errorf("create connection request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return "", ErrInvalidKey
@@ -82,7 +82,7 @@ func (c *telnyxClient) DeleteCredentialConnection(ctx context.Context, connID st
 	if err != nil {
 		return fmt.Errorf("delete connection request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("telnyx delete connection returned unexpected status %d", resp.StatusCode)
