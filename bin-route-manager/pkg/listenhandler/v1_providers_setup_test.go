@@ -2,6 +2,7 @@ package listenhandler
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"go.uber.org/mock/gomock"
@@ -9,6 +10,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-route-manager/models/provider"
 	"monorepo/bin-route-manager/pkg/providerhandler"
+	"monorepo/bin-route-manager/pkg/telnyxclient"
 
 	"github.com/gofrs/uuid"
 )
@@ -18,12 +20,9 @@ func Test_v1ProvidersSetupPost(t *testing.T) {
 		name    string
 		request *sock.Request
 
-		carrier          string
-		pname            string
-		detail           string
-		apiKey           string
-		responseProvider *provider.Provider
-		expectStatus     int
+		setupMock    func(m *providerhandler.MockProviderHandler)
+		expectStatus int
+		expectErr    bool
 	}{
 		{
 			name: "normal",
@@ -33,12 +32,61 @@ func Test_v1ProvidersSetupPost(t *testing.T) {
 				DataType: "application/json",
 				Data:     []byte(`{"carrier":"telnyx","name":"My Telnyx","detail":"desc","credentials":{"api_key":"KEY_xxx"}}`),
 			},
-			carrier:          "telnyx",
-			pname:            "My Telnyx",
-			detail:           "desc",
-			apiKey:           "KEY_xxx",
-			responseProvider: &provider.Provider{ID: uuid.FromStringOrNil("997a7752-4872-11ed-be7a-5783111a9092")},
-			expectStatus:     200,
+			setupMock: func(m *providerhandler.MockProviderHandler) {
+				m.EXPECT().Setup(gomock.Any(), "telnyx", "My Telnyx", "desc", "KEY_xxx").
+					Return(&provider.Provider{ID: uuid.FromStringOrNil("997a7752-4872-11ed-be7a-5783111a9092")}, nil)
+			},
+			expectStatus: 200,
+		},
+		{
+			name: "invalid_api_key_returns_422",
+			request: &sock.Request{
+				URI:      "/v1/providers/setup",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"carrier":"telnyx","name":"My Telnyx","detail":"desc","credentials":{"api_key":"BAD_KEY"}}`),
+			},
+			setupMock: func(m *providerhandler.MockProviderHandler) {
+				m.EXPECT().Setup(gomock.Any(), "telnyx", "My Telnyx", "desc", "BAD_KEY").
+					Return(nil, telnyxclient.ErrInvalidKey)
+			},
+			expectStatus: 422,
+		},
+		{
+			name: "generic_error_propagates",
+			request: &sock.Request{
+				URI:      "/v1/providers/setup",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"carrier":"telnyx","name":"My Telnyx","detail":"desc","credentials":{"api_key":"KEY_xxx"}}`),
+			},
+			setupMock: func(m *providerhandler.MockProviderHandler) {
+				m.EXPECT().Setup(gomock.Any(), "telnyx", "My Telnyx", "desc", "KEY_xxx").
+					Return(nil, errors.New("internal error"))
+			},
+			expectErr: true,
+		},
+		{
+			name: "missing_carrier_returns_400",
+			request: &sock.Request{
+				URI:      "/v1/providers/setup",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"carrier":"","name":"My Telnyx","detail":"desc","credentials":{"api_key":"KEY_xxx"}}`),
+			},
+			setupMock:    func(m *providerhandler.MockProviderHandler) {},
+			expectStatus: 400,
+		},
+		{
+			name: "missing_api_key_returns_400",
+			request: &sock.Request{
+				URI:      "/v1/providers/setup",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"carrier":"telnyx","name":"My Telnyx","detail":"desc","credentials":{"api_key":""}}`),
+			},
+			setupMock:    func(m *providerhandler.MockProviderHandler) {},
+			expectStatus: 400,
 		},
 	}
 
@@ -48,11 +96,18 @@ func Test_v1ProvidersSetupPost(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockProvider := providerhandler.NewMockProviderHandler(ctrl)
-			mockProvider.EXPECT().Setup(gomock.Any(), tt.carrier, tt.pname, tt.detail, tt.apiKey).
-				Return(tt.responseProvider, nil)
+			tt.setupMock(mockProvider)
 
 			h := &listenHandler{providerHandler: mockProvider}
 			res, err := h.v1ProvidersSetupPost(context.Background(), tt.request)
+
+			if tt.expectErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+				return
+			}
+
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

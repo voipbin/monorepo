@@ -813,6 +813,11 @@ const (
 	RouteManagerProviderCallAnonymousYes  RouteManagerProviderCallAnonymous = "yes"
 )
 
+// Defines values for RouteManagerProviderSetupRequestCarrier.
+const (
+	RouteManagerProviderSetupCarrierTelnyx RouteManagerProviderSetupRequestCarrier = "telnyx"
+)
+
 // Defines values for RouteManagerProviderType.
 const (
 	RouteManagerProviderTypeSIP RouteManagerProviderType = "sip"
@@ -3972,7 +3977,7 @@ type RouteManagerProviderCallAnonymous string
 // RouteManagerProviderSetupRequest Request body for POST /providers/setup. Submits carrier credentials so the platform can validate the key, create the carrier-side SIP trunk, and auto-create a VoIPBin provider record.
 type RouteManagerProviderSetupRequest struct {
 	// Carrier The carrier to set up. Currently only 'telnyx' is supported.
-	Carrier     string `json:"carrier"`
+	Carrier     RouteManagerProviderSetupRequestCarrier `json:"carrier"`
 	Credentials struct {
 		// ApiKey The carrier API key used to validate access and create the SIP trunk.
 		ApiKey string `json:"api_key"`
@@ -3984,6 +3989,9 @@ type RouteManagerProviderSetupRequest struct {
 	// Name A human-readable name for the created provider.
 	Name string `json:"name"`
 }
+
+// RouteManagerProviderSetupRequestCarrier The carrier to set up. Currently only 'telnyx' is supported.
+type RouteManagerProviderSetupRequestCarrier string
 
 // RouteManagerProviderType Defines the type of the provider. Currently, only 'sip' is supported for VoIP/SIP providers.
 type RouteManagerProviderType string

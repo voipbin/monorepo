@@ -21332,6 +21332,12 @@
         "properties": {
           "carrier": {
             "type": "string",
+            "enum": [
+              "telnyx"
+            ],
+            "x-enum-varnames": [
+              "RouteManagerProviderSetupCarrierTelnyx"
+            ],
             "description": "The carrier to set up. Currently only 'telnyx' is supported.",
             "example": "telnyx"
           },

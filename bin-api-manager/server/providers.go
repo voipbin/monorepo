@@ -196,7 +196,7 @@ func (h *server) PostProvidersSetup(c *gin.Context) {
 	res, err := h.serviceHandler.ProviderSetup(
 		c.Request.Context(),
 		a,
-		req.Carrier,
+		string(req.Carrier),
 		req.Name,
 		req.Detail,
 		req.Credentials.ApiKey,

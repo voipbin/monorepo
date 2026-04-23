@@ -16,12 +16,17 @@ import (
 // Returns 422 for invalid Telnyx API keys, 400 for other errors, 200 on success.
 func (h *listenHandler) v1ProvidersSetupPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithField("func", "v1ProvidersSetupPost")
-	log.WithField("request", m).Debug("Received request.")
+	log.Debugf("Received request. uri: %s, method: %s", m.URI, m.Method)
 
 	var req request.V1DataProvidersSetupPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not unmarshal request. err: %v", err)
 		return nil, err
+	}
+
+	if req.Carrier == "" || req.Name == "" || req.Credentials.APIKey == "" {
+		log.Errorf("Missing required fields. carrier: %q, name: %q, api_key_empty: %v", req.Carrier, req.Name, req.Credentials.APIKey == "")
+		return simpleResponse(400), nil
 	}
 
 	res, err := h.providerHandler.Setup(ctx, req.Carrier, req.Name, req.Detail, req.Credentials.APIKey)

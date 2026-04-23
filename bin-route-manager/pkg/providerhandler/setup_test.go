@@ -70,6 +70,25 @@ func Test_Setup_ProviderCreateFails_TriggersCleanup(t *testing.T) {
 	}
 }
 
+func Test_Setup_ProviderCreateFails_CleanupAlsoFails(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
+	mockClient.EXPECT().CreateCredentialConnection(gomock.Any(), "name").Return("conn-456", nil)
+	mockClient.EXPECT().DeleteCredentialConnection(gomock.Any(), "conn-456").Return(errors.New("cleanup failed"))
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
+
+	h := &providerHandler{db: mockDB}
+	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
+	if err == nil {
+		t.Fatal("expected error even when cleanup fails, got nil")
+	}
+}
+
 func Test_Setup_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
