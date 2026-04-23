@@ -160,7 +160,7 @@ func (r *requestHandler) RouteV1ProviderSetup(
 		return nil, err
 	}
 
-	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodPost, "route/providers/setup", requestTimeoutDefault, 0, ContentTypeJSON, m)
+	tmp, err := r.sendRequestRoute(ctx, uri, sock.RequestMethodPost, "route/providers/setup", requestTimeoutLong, 0, ContentTypeJSON, m)
 	if err != nil {
 		return nil, err
 	}

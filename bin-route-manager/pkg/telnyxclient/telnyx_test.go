@@ -2,6 +2,7 @@ package telnyxclient
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -30,8 +31,8 @@ func TestValidateKey_InvalidKey(t *testing.T) {
 	defer srv.Close()
 
 	c := newTelnyxClientWithBase("badkey", srv.URL)
-	if err := c.ValidateKey(context.Background()); err != ErrInvalidKey {
-		t.Fatalf("expected ErrInvalidKey, got %v", err)
+	if !errors.Is(c.ValidateKey(context.Background()), ErrInvalidKey) {
+		t.Fatalf("expected ErrInvalidKey")
 	}
 }
 

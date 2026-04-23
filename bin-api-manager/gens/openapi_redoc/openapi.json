@@ -21326,7 +21326,6 @@
         "required": [
           "carrier",
           "name",
-          "detail",
           "credentials"
         ],
         "properties": {

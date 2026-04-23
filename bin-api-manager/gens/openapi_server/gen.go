@@ -3984,7 +3984,7 @@ type RouteManagerProviderSetupRequest struct {
 	} `json:"credentials"`
 
 	// Detail Optional description of the provider.
-	Detail string `json:"detail"`
+	Detail *string `json:"detail,omitempty"`
 
 	// Name A human-readable name for the created provider.
 	Name string `json:"name"`

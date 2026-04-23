@@ -3,6 +3,7 @@ package providerhandler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -46,7 +47,9 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	res, err := h.Create(ctx, provider.TypeSIP, telnyxSIPHostname, "", "", map[string]string{}, name, detail)
 	if err != nil {
 		log.Errorf("Could not create provider record. Attempting Telnyx cleanup. err: %v", err)
-		if cleanupErr := client.DeleteCredentialConnection(ctx, connID); cleanupErr != nil {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cleanupCancel()
+		if cleanupErr := client.DeleteCredentialConnection(cleanupCtx, connID); cleanupErr != nil {
 			log.Errorf("Telnyx cleanup failed. conn_id: %s, err: %v", connID, cleanupErr)
 		} else {
 			log.Infof("Telnyx connection deleted during cleanup. conn_id: %s", connID)

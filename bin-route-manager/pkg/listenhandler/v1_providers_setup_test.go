@@ -88,6 +88,17 @@ func Test_v1ProvidersSetupPost(t *testing.T) {
 			setupMock:    func(m *providerhandler.MockProviderHandler) {},
 			expectStatus: 400,
 		},
+		{
+			name: "missing_name_returns_400",
+			request: &sock.Request{
+				URI:      "/v1/providers/setup",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"carrier":"telnyx","name":"","detail":"desc","credentials":{"api_key":"KEY_xxx"}}`),
+			},
+			setupMock:    func(m *providerhandler.MockProviderHandler) {},
+			expectStatus: 400,
+		},
 	}
 
 	for _, tt := range tests {

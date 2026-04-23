@@ -193,12 +193,16 @@ func (h *server) PostProvidersSetup(c *gin.Context) {
 		return
 	}
 
+	detail := ""
+	if req.Detail != nil {
+		detail = *req.Detail
+	}
 	res, err := h.serviceHandler.ProviderSetup(
 		c.Request.Context(),
 		a,
 		string(req.Carrier),
 		req.Name,
-		req.Detail,
+		detail,
 		req.Credentials.ApiKey,
 	)
 	if err != nil {
