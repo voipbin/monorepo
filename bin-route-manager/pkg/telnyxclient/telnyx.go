@@ -38,10 +38,11 @@ type idResponse struct {
 }
 
 func (c *telnyxClient) CreateOutboundVoiceProfile(ctx context.Context, name string) (string, error) {
-	body, err := json.Marshal(map[string]string{
-		"name":         name,
-		"traffic_type": "conversational",
-		"service_plan": "global",
+	body, err := json.Marshal(map[string]interface{}{
+		"name":                    name,
+		"traffic_type":            "conversational",
+		"service_plan":            "global",
+		"whitelisted_destinations": []string{},
 	})
 	if err != nil {
 		return "", fmt.Errorf("marshal create voice profile request: %w", err)
