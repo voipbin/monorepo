@@ -11,6 +11,8 @@ import (
 	"monorepo/bin-api-manager/models/auth"
 	modelscommon "monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +34,7 @@ func Authenticate() gin.HandlerFunc {
 
 		authType, authString, err := getAuthString(c)
 		if err != nil {
-			c.AbortWithStatus(401)
+			abortUnauthenticated(c, "AUTHENTICATION_REQUIRED", "Authentication is required.")
 			return
 		}
 
@@ -51,7 +53,7 @@ func Authenticate() gin.HandlerFunc {
 
 		if err != nil {
 			log.Infof("Authentication failed. err: %v", err)
-			c.AbortWithStatus(401)
+			abortUnauthenticated(c, "INVALID_CREDENTIALS", "The provided credentials are invalid.")
 			return
 		}
 
@@ -177,19 +179,8 @@ func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
 		return false
 	}
 
-	// Account is frozen - return 403 with DELETION_SCHEDULED error
-	var deletionEffectiveAt *time.Time
-	if cu.TMDeletionScheduled != nil {
-		t := cu.TMDeletionScheduled.Add(30 * 24 * time.Hour)
-		deletionEffectiveAt = &t
-	}
-	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-		"error":                  "DELETION_SCHEDULED",
-		"message":                "Account deletion scheduled",
-		"deletion_scheduled_at":  cu.TMDeletionScheduled,
-		"deletion_effective_at":  deletionEffectiveAt,
-		"recovery_endpoint":      "DELETE /auth/unregister",
-	})
+	// Account is frozen — return 403 with PERMISSION_DENIED envelope.
+	abortForbidden(c, "ACCOUNT_FROZEN", "This account is frozen. Contact support.")
 	return true
 }
 
@@ -253,4 +244,33 @@ func getAccesskey(c *gin.Context) string {
 	}
 
 	return ""
+}
+
+// abortUnauthenticated writes the standard UNAUTHENTICATED envelope.
+// lib/middleware cannot import the server package (would create an
+// import cycle), so the envelope is built inline here in the same
+// shape as server.abortWithError.
+func abortUnauthenticated(c *gin.Context, reason, message string) {
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+		"error": gin.H{
+			"status":     string(cerrors.StatusUnauthenticated),
+			"reason":     reason,
+			"domain":     string(commonoutline.ServiceNameAPIManager),
+			"message":    message,
+			"request_id": RequestIDFromContext(c),
+		},
+	})
+}
+
+// abortForbidden writes the standard PERMISSION_DENIED envelope.
+func abortForbidden(c *gin.Context, reason, message string) {
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+		"error": gin.H{
+			"status":     string(cerrors.StatusPermissionDenied),
+			"reason":     reason,
+			"domain":     string(commonoutline.ServiceNameAPIManager),
+			"message":    message,
+			"request_id": RequestIDFromContext(c),
+		},
+	})
 }

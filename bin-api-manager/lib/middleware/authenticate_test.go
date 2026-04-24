@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -353,6 +354,129 @@ func TestAuthenticate(t *testing.T) {
 			}
 		})
 	}
+}
+
+// assertAuthErrorEnvelope decodes the response body and asserts the
+// standard error envelope fields used by the Authenticate middleware.
+func assertAuthErrorEnvelope(t *testing.T, body []byte, wantStatus, wantReason string) {
+	t.Helper()
+	var decoded struct {
+		Error struct {
+			Status    string `json:"status"`
+			Reason    string `json:"reason"`
+			Domain    string `json:"domain"`
+			Message   string `json:"message"`
+			RequestID string `json:"request_id"`
+		} `json:"error"`
+	}
+	if err := json.Unmarshal(body, &decoded); err != nil {
+		t.Fatalf("unmarshal: %v; body: %s", err, string(body))
+	}
+	if decoded.Error.Status != wantStatus {
+		t.Errorf("wrong status: got %q, want %q", decoded.Error.Status, wantStatus)
+	}
+	if decoded.Error.Reason != wantReason {
+		t.Errorf("wrong reason: got %q, want %q", decoded.Error.Reason, wantReason)
+	}
+	if decoded.Error.Domain != "api-manager" {
+		t.Errorf("wrong domain: got %q, want %q", decoded.Error.Domain, "api-manager")
+	}
+	if decoded.Error.Message == "" {
+		t.Error("message missing")
+	}
+	if decoded.Error.RequestID == "" {
+		t.Error("request_id missing")
+	}
+}
+
+func TestAuthenticate_MissingHeaderEnvelope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	r := gin.New()
+	r.Use(RequestID())
+	r.Use(Authenticate())
+	r.GET("/", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d want 401", w.Code)
+	}
+	assertAuthErrorEnvelope(t, w.Body.Bytes(), "UNAUTHENTICATED", "AUTHENTICATION_REQUIRED")
+}
+
+func TestAuthenticate_InvalidCredentialsEnvelope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSH := servicehandler.NewMockServiceHandler(mc)
+	mockSH.EXPECT().AuthJWTParse(gomock.Any(), "badToken").Return(nil, fmt.Errorf("invalid signature"))
+
+	r := gin.New()
+	r.Use(RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set(modelscommon.OBJServiceHandler, mockSH)
+	})
+	r.Use(Authenticate())
+	r.GET("/", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("Authorization", "Bearer badToken")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d want 401", w.Code)
+	}
+	assertAuthErrorEnvelope(t, w.Body.Bytes(), "UNAUTHENTICATED", "INVALID_CREDENTIALS")
+}
+
+func TestAuthenticate_FrozenAccountEnvelope(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	testCustomerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	deletionTime := time.Date(2026, 3, 19, 0, 0, 0, 0, time.UTC)
+
+	testAgent := amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: testCustomerID,
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	}
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSH := servicehandler.NewMockServiceHandler(mc)
+	mockSH.EXPECT().AuthJWTParse(gomock.Any(), "validToken").Return(map[string]interface{}{
+		"agent": testAgent,
+	}, nil)
+	mockSH.EXPECT().CustomerGet(gomock.Any(), gomock.Any(), testCustomerID).Return(&cscustomer.Customer{
+		Status:              cscustomer.StatusFrozen,
+		TMDeletionScheduled: &deletionTime,
+	}, nil)
+
+	r := gin.New()
+	r.Use(RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set(modelscommon.OBJServiceHandler, mockSH)
+	})
+	r.Use(Authenticate())
+	r.GET("/v1.0/agents", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
+
+	req := httptest.NewRequest(http.MethodGet, "/v1.0/agents", nil)
+	req.Header.Set("Authorization", "Bearer validToken")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("status = %d want 403", w.Code)
+	}
+	assertAuthErrorEnvelope(t, w.Body.Bytes(), "PERMISSION_DENIED", "ACCOUNT_FROZEN")
 }
 
 func TestAuthenticateWithInvalidAgentData(t *testing.T) {
