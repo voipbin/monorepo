@@ -827,3 +827,87 @@ func Test_customersIDGet_ServiceError(t *testing.T) {
 
 	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
 }
+
+// Test_customersIDBillingAccountIDPut_InvalidBodyID verifies the body-UUID
+// INVALID_ID branch of PutCustomersIdBillingAccountId. The path UUID is
+// valid, but the billing_account_id body field is not a UUID — the
+// body field is typed as a plain string, so uuid.FromStringOrNil returns
+// uuid.Nil and the handler rejects with INVALID_ID. This complements the
+// path-UUID INVALID_ID test (malformed path) by exercising the second
+// UUID parse site in the same handler.
+func Test_customersIDBillingAccountIDPut_InvalidBodyID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+		},
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Valid path UUID, but the embedded billing_account_id is not a UUID —
+	// uuid.FromStringOrNil returns uuid.Nil and the handler rejects with
+	// INVALID_ID.
+	req, _ := http.NewRequest(http.MethodPut, "/customers/cc876058-1773-11ee-9694-136fe246dd34/billing_account_id",
+		bytes.NewBufferString(`{"billing_account_id":"not-a-uuid"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_customersIDDefaultOutgoingSourceNumberIDPut_InvalidBodyID verifies
+// the body-UUID INVALID_ID branch of PutCustomersIdDefaultOutgoingSourceNumberId.
+// The body field is typed as openapi_types.UUID so malformed strings fail
+// at JSON binding with INVALID_JSON_BODY; the Nil-UUID path is the
+// INVALID_ID branch (valid shape, all zeros). This complements the path-UUID
+// INVALID_ID test by exercising the second UUID parse site in the same
+// handler.
+func Test_customersIDDefaultOutgoingSourceNumberIDPut_InvalidBodyID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
+		},
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Valid path UUID and valid UUID shape in the body, but the body UUID
+	// is all zeros — uuid.FromStringOrNil returns uuid.Nil and the handler
+	// rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodPut, "/customers/cc876058-1773-11ee-9694-136fe246dd34/default_outgoing_source_number_id",
+		bytes.NewBufferString(`{"default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+}

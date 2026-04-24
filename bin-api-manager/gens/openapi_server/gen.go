@@ -19174,6 +19174,15 @@ func (response GetCustomers401JSONResponse) VisitGetCustomersResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetCustomers403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetCustomers403JSONResponse) VisitGetCustomersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetCustomers500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetCustomers500JSONResponse) VisitGetCustomersResponse(w http.ResponseWriter) error {
@@ -19214,6 +19223,15 @@ type PostCustomers401JSONResponse struct{ UnauthenticatedJSONResponse }
 func (response PostCustomers401JSONResponse) VisitPostCustomersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCustomers403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCustomers403JSONResponse) VisitPostCustomersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
 
 	return json.NewEncoder(w).Encode(response)
 }
