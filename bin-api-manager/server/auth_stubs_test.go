@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"

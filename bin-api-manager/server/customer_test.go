@@ -3,20 +3,19 @@ package server
 import (
 	"bytes"
 	"fmt"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/lib/middleware"
-	"monorepo/bin-api-manager/pkg/servicehandler"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
-
-	"net/http"
-	"net/http/httptest"
-	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -529,4 +528,105 @@ func Test_customerMetadataPut(t *testing.T) {
 			}
 		})
 	}
+}
+
+// assertMissingAuthIdentity is a small helper that reduces boilerplate for
+// the auth-identity-missing branch of each handler. It builds a minimal
+// Gin router with the RequestID middleware installed (but no auth_identity
+// set), dispatches the request, and asserts the UNAUTHENTICATED /
+// AUTHENTICATION_REQUIRED error envelope.
+func assertMissingAuthIdentity(t *testing.T, method, path string, body []byte) {
+	t.Helper()
+	gin.SetMode(gin.TestMode)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	// Intentionally do not set auth_identity.
+	openapi_server.RegisterHandlers(r, h)
+
+	var req *http.Request
+	if body == nil {
+		req, _ = http.NewRequest(method, path, nil)
+	} else {
+		req, _ = http.NewRequest(method, path, bytes.NewBuffer(body))
+		req.Header.Set("Content-Type", "application/json")
+	}
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_customerPut_MissingAuthIdentity exercises the auth-identity-missing
+// branch of PutCustomer.
+func Test_customerPut_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPut, "/customer",
+		[]byte(`{"name":"new name","detail":"new detail","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`))
+}
+
+// Test_customerMetadataPut_MissingAuthIdentity exercises the
+// auth-identity-missing branch of PutCustomerMetadata.
+func Test_customerMetadataPut_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPut, "/customer/metadata", []byte(`{"rtp_debug":true}`))
+}
+
+// Test_customerBillingAccountIDPut_MissingAuthIdentity exercises the
+// auth-identity-missing branch of PutCustomerBillingAccountId.
+func Test_customerBillingAccountIDPut_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPut, "/customer/billing_account_id",
+		[]byte(`{"billing_account_id":"245bc55e-c514-11ef-85d3-23d66dfc487a"}`))
+}
+
+// Test_customerDefaultOutgoingSourceNumberIDPut_MissingAuthIdentity
+// exercises the auth-identity-missing branch of
+// PutCustomerDefaultOutgoingSourceNumberId.
+func Test_customerDefaultOutgoingSourceNumberIDPut_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPut, "/customer/default_outgoing_source_number_id",
+		[]byte(`{"default_outgoing_source_number_id":"d3c4e5f6-a7b8-9012-cdef-123456789012"}`))
+}
+
+// Test_customerDefaultOutgoingSourceNumberIDPut_InvalidID verifies that
+// when the body parses as a valid UUID but resolves to uuid.Nil (all
+// zeros), the handler rejects the request with INVALID_ID. The field is
+// typed as openapi_types.UUID so malformed strings fail at JSON binding
+// with INVALID_JSON_BODY; the Nil-UUID path is the INVALID_ID branch.
+func Test_customerDefaultOutgoingSourceNumberIDPut_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d1a2b3c4-e5f6-7890-abcd-ef1234567890"),
+			CustomerID: uuid.FromStringOrNil("d2b3c4e5-f6a7-8901-bcde-f12345678901"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Valid UUID shape but uuid.Nil — uuid.FromStringOrNil returns Nil
+	// and the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodPut, "/customer/default_outgoing_source_number_id",
+		bytes.NewBufferString(`{"default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
 }
