@@ -1,0 +1,49 @@
+package errors
+
+import (
+	"testing"
+
+	"monorepo/bin-common-handler/models/outline"
+)
+
+func TestConstructors(t *testing.T) {
+	tests := []struct {
+		name       string
+		build      func(outline.ServiceName, string, string) *VoipbinError
+		wantStatus Status
+	}{
+		{"invalid_argument", InvalidArgument, StatusInvalidArgument},
+		{"unauthenticated", Unauthenticated, StatusUnauthenticated},
+		{"payment_required", PaymentRequired, StatusPaymentRequired},
+		{"permission_denied", PermissionDenied, StatusPermissionDenied},
+		{"not_found", NotFound, StatusNotFound},
+		{"already_exists", AlreadyExists, StatusAlreadyExists},
+		{"failed_precondition", FailedPrecondition, StatusFailedPrecondition},
+		{"resource_exhausted", ResourceExhausted, StatusResourceExhausted},
+		{"unavailable", Unavailable, StatusUnavailable},
+		{"internal", Internal, StatusInternal},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := tt.build(outline.ServiceNameAPIManager, "R", "m")
+			if e == nil {
+				t.Fatal("nil VoipbinError")
+			}
+			if e.Status != tt.wantStatus {
+				t.Errorf("wrong Status: got %q want %q", e.Status, tt.wantStatus)
+			}
+			if e.Domain != "api-manager" || e.Reason != "R" || e.Message != "m" {
+				t.Errorf("wrong fields: %+v", e)
+			}
+			if e.Cause != nil {
+				t.Errorf("Cause should be nil by default")
+			}
+		})
+	}
+}
+
+func TestDataTypeVoipbinError(t *testing.T) {
+	if DataTypeVoipbinError != "voipbin_error" {
+		t.Errorf("DataTypeVoipbinError = %q, want %q", DataTypeVoipbinError, "voipbin_error")
+	}
+}

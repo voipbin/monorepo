@@ -2,6 +2,7 @@ package sock
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -147,5 +148,38 @@ func TestResponseStatusCodes(t *testing.T) {
 				t.Errorf("Response.StatusCode = %v, expected %v", r.StatusCode, tt.statusCode)
 			}
 		})
+	}
+}
+
+func TestRequestRequestIDField(t *testing.T) {
+	r := Request{
+		URI:       "/v1/calls/1",
+		Method:    RequestMethodGet,
+		RequestID: "req_01hxyz12345",
+	}
+	if r.RequestID != "req_01hxyz12345" {
+		t.Errorf("RequestID not set: %q", r.RequestID)
+	}
+
+	b, err := json.Marshal(r)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if !strings.Contains(string(b), `"request_id":"req_01hxyz12345"`) {
+		t.Errorf("request_id missing from JSON: %s", string(b))
+	}
+}
+
+func TestRequestRequestIDOmitempty(t *testing.T) {
+	r := Request{
+		URI:    "/v1/calls",
+		Method: RequestMethodPost,
+	}
+	b, err := json.Marshal(r)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if strings.Contains(string(b), "request_id") {
+		t.Errorf("request_id should be omitted when empty, got: %s", string(b))
 	}
 }
