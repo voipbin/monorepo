@@ -1,8 +1,6 @@
 package server
 
 import (
-	stderrors "errors"
-
 	"monorepo/bin-api-manager/lib/middleware"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -33,26 +31,8 @@ func abortWithError(c *gin.Context, e *cerrors.VoipbinError) {
 }
 
 // abortWithServiceError runs any error returned from servicehandler
-// through the translator, then aborts with the resulting VoipbinError.
-// The translator is replaced with a richer fallback chain in
-// server/error_translate.go (next commit); this file only includes
-// the typed-passthrough shortcut and a default Internal return.
+// through the translator (see server/error_translate.go), then aborts
+// with the resulting VoipbinError.
 func abortWithServiceError(c *gin.Context, err error) {
 	abortWithError(c, translateToVoipbinError(err))
-}
-
-// translateToVoipbinError is the minimal translator used until Task 5
-// lands the full fallback chain. For now it recognises typed errors
-// (via errors.As) and defaults everything else to Internal. Do not
-// extend this stub — the replacement in error_translate.go handles
-// sentinels, transport errors, and substring fallback.
-func translateToVoipbinError(err error) *cerrors.VoipbinError {
-	if err == nil {
-		return cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.")
-	}
-	var ve *cerrors.VoipbinError
-	if stderrors.As(err, &ve) {
-		return ve
-	}
-	return cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.").Wrap(err)
 }
