@@ -90,8 +90,20 @@ func TestToResponse(t *testing.T) {
 
 	// Round-trip: FromResponse must recover the original.
 	got := FromResponse(resp)
-	if got == nil || got.Status != StatusNotFound || got.Reason != "CALL_NOT_FOUND" {
-		t.Errorf("round-trip failed: %+v", got)
+	if got == nil {
+		t.Fatal("round-trip returned nil")
+	}
+	if got.Status != StatusNotFound {
+		t.Errorf("round-trip Status: got %q want %q", got.Status, StatusNotFound)
+	}
+	if got.Reason != "CALL_NOT_FOUND" {
+		t.Errorf("round-trip Reason: got %q want %q", got.Reason, "CALL_NOT_FOUND")
+	}
+	if got.Domain != "call-manager" {
+		t.Errorf("round-trip Domain: got %q want %q", got.Domain, "call-manager")
+	}
+	if got.Message != "The call was not found." {
+		t.Errorf("round-trip Message: got %q want %q", got.Message, "The call was not found.")
 	}
 }
 
@@ -120,6 +132,10 @@ func TestToResponseAllStatuses(t *testing.T) {
 			}
 			if resp.StatusCode != tt.http {
 				t.Errorf("wrong StatusCode for %s: got %d want %d", tt.status, resp.StatusCode, tt.http)
+			}
+			// Verify the body always round-trips back through FromResponse.
+			if got := FromResponse(resp); got == nil {
+				t.Errorf("round-trip returned nil for %s; ToResponse must produce a body FromResponse recognizes", tt.status)
 			}
 		})
 	}
