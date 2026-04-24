@@ -1,16 +1,17 @@
 package server
 
 import (
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -79,4 +80,12 @@ func Test_GetServiceAgentsCustomer(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_GetServiceAgentsCustomer_MissingAuthIdentity exercises the
+// auth-identity-missing branch of GetServiceAgentsCustomer. Without
+// auth_identity in the gin context, the handler must emit UNAUTHENTICATED /
+// AUTHENTICATION_REQUIRED with a populated request_id.
+func Test_GetServiceAgentsCustomer_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodGet, "/service_agents/customer", nil)
 }
