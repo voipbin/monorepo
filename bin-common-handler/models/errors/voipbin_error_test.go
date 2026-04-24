@@ -3,6 +3,7 @@ package errors
 import (
 	"encoding/json"
 	stderrors "errors"
+	"strings"
 	"testing"
 )
 
@@ -52,22 +53,13 @@ func TestVoipbinErrorJSONExcludesCause(t *testing.T) {
 		`"domain":"call-manager"`,
 		`"message":"The call was not found."`,
 	} {
-		if !contains(s, want) {
+		if !strings.Contains(s, want) {
 			t.Errorf("expected %q in JSON %q", want, s)
 		}
 	}
 	for _, forbidden := range []string{"cause", "connection refused", "DB driver"} {
-		if contains(s, forbidden) {
+		if strings.Contains(s, forbidden) {
 			t.Errorf("forbidden token %q leaked into JSON %q", forbidden, s)
 		}
 	}
-}
-
-func contains(haystack, needle string) bool {
-	for i := 0; i+len(needle) <= len(haystack); i++ {
-		if haystack[i:i+len(needle)] == needle {
-			return true
-		}
-	}
-	return false
 }
