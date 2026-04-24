@@ -40,6 +40,9 @@ api-manager
    * - ``RESOURCE_NOT_FOUND``
      - 404
      - The requested resource does not exist or does not belong to the authenticated customer. Verify the UUID was obtained from a recent ``GET`` list call.
+   * - ``ROUTE_NOT_FOUND``
+     - 404
+     - The requested HTTP endpoint does not exist (wrong path or typo). Verify the URL against the API reference; check API version prefix (``/v1.0/``) and resource name.
    * - ``INVALID_ARGUMENT``
      - 400
      - The request body or a path/query parameter is invalid. Inspect ``error.message`` for details.

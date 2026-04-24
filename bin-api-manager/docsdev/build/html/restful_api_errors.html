@@ -242,19 +242,23 @@
 <td><p>404</p></td>
 <td><p>The requested resource does not exist or does not belong to the authenticated customer. Verify the UUID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span></code> list call.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_ARGUMENT</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ROUTE_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>The requested HTTP endpoint does not exist (wrong path or typo). Verify the URL against the API reference; check API version prefix (<code class="docutils literal notranslate"><span class="pre">/v1.0/</span></code>) and resource name.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_ARGUMENT</span></code></p></td>
 <td><p>400</p></td>
 <td><p>The request body or a path/query parameter is invalid. Inspect <code class="docutils literal notranslate"><span class="pre">error.message</span></code> for details.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">REQUEST_TIMEOUT</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">REQUEST_TIMEOUT</span></code></p></td>
 <td><p>503</p></td>
 <td><p>Upstream manager did not respond within the deadline. Retry with the same idempotency key after a short delay.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">REQUEST_CANCELED</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">REQUEST_CANCELED</span></code></p></td>
 <td><p>503</p></td>
 <td><p>The request was canceled before completion (typically the client disconnected). Usually safe to ignore; the server did not finish processing.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code></p></td>
 <td><p>500</p></td>
 <td><p>Unexpected server error. Include <code class="docutils literal notranslate"><span class="pre">error.request_id</span></code> when opening a support ticket.</p></td>
 </tr>
