@@ -19,6 +19,19 @@
 - `bin-common-handler/models/errors` package exists (delivered in PR 0a): `VoipbinError`, 10 constructors, `FromResponse`, `ToResponse`, `DataTypeVoipbinError`. `sock.Request.RequestID` field exists.
 - `ServiceNameAPIManager = "api-manager"` constant exists in `bin-common-handler/models/outline/servicename.go`.
 
+## Post-execution deltas (reflects PR 0a Rounds 1–3)
+
+This plan was written against the PR 0a API surface as it existed at PR push time. During PR 0a's self-review loop, several small refinements shipped. Reviewers executing PR 0b should read the **design doc §13** for the final API, and treat the following plan sections as superseded:
+
+- **Task 2 (VoipbinError struct):** the shipped struct now includes `Details []map[string]any \`json:"details,omitempty"\`` between `Message` and `Cause`. The test should assert Details is omitted from JSON when empty; already covered in bin-common-handler's `TestVoipbinErrorDetailsOmitempty`.
+- **Task 5 (Wrap):** the shipped `Wrap()` returns a shallow copy of the receiver (does NOT mutate). The TDD pattern in this task would implement the wrong semantics — see design §5 and `voipbin_error.go` for the final method. The existing bin-common-handler test `TestVoipbinErrorWrap` enforces the immutable behavior.
+- **Task 6 (constructors):** all 10 constructors take `domain outline.ServiceName`, not `domain string`. Update all constructor call sites in subsequent tasks accordingly (e.g., `cerrors.NotFound(outline.ServiceNameCallManager, ...)` instead of `cerrors.NotFound("call-manager", ...)`).
+- **Task 3 (export HTTPStatusFor):** already delivered in PR 0a Round 1 as commit `9c42eb162`. Skip this task entirely — `cerrors.HTTPStatusFor(Status) int` is already exported from `bin-common-handler/models/errors`.
+- **Task 9 (ToResponse):** `ToResponse` and `httpStatusFor` already exist in bin-common-handler (shipped in PR 0a). Task 9 here is redundant for those two items; only its test-expansion aspects remain relevant.
+- **PR 0b scope bullet (top of plan, PR 0b high-level):** `httpStatusFor` lives in bin-common-handler now; api-manager's `abortWithError` simply calls `cerrors.HTTPStatusFor(e.Status)`. Do not re-declare the helper in api-manager.
+
+When PR 0a merges, rebase this branch onto main, then when executing: always cross-check the task's code example against the current `bin-common-handler/models/errors/` source before copying. The design doc §13 (Rounds 1-3 subsections) is the ground truth for API shape.
+
 ## Files that will be touched (final list)
 
 **New files in `bin-api-manager/`:**
