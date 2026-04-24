@@ -2,6 +2,7 @@ package errors
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"monorepo/bin-common-handler/models/sock"
 )
@@ -19,4 +20,51 @@ func FromResponse(resp *sock.Response) *VoipbinError {
 		return nil
 	}
 	return out
+}
+
+// ToResponse encodes a VoipbinError into a sock.Response carrying the
+// JSON-serialized error in Data and the canonical HTTP status code.
+// Returns an error if e is nil or marshaling fails — neither is
+// expected in normal operation.
+func ToResponse(e *VoipbinError) (*sock.Response, error) {
+	if e == nil {
+		return nil, fmt.Errorf("cannot marshal nil VoipbinError")
+	}
+	body, err := json.Marshal(e)
+	if err != nil {
+		return nil, fmt.Errorf("marshal VoipbinError: %w", err)
+	}
+	return &sock.Response{
+		StatusCode: httpStatusFor(e.Status),
+		DataType:   DataTypeVoipbinError,
+		Data:       body,
+	}, nil
+}
+
+// httpStatusFor maps a canonical Status to an HTTP status code. This
+// mapping is the single source of truth for the RPC→HTTP layer;
+// bin-api-manager's abortWithError uses it too.
+func httpStatusFor(s Status) int {
+	switch s {
+	case StatusInvalidArgument:
+		return 400
+	case StatusUnauthenticated:
+		return 401
+	case StatusPaymentRequired:
+		return 402
+	case StatusPermissionDenied:
+		return 403
+	case StatusNotFound:
+		return 404
+	case StatusAlreadyExists, StatusFailedPrecondition:
+		return 409
+	case StatusResourceExhausted:
+		return 429
+	case StatusUnavailable:
+		return 503
+	case StatusInternal:
+		return 500
+	default:
+		return 500
+	}
 }

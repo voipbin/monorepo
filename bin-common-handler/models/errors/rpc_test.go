@@ -73,3 +73,59 @@ func TestFromResponseNil(t *testing.T) {
 		t.Errorf("nil response must return nil, got %+v", got)
 	}
 }
+
+func TestToResponse(t *testing.T) {
+	e := NotFound("call-manager", "CALL_NOT_FOUND", "The call was not found.")
+	resp, err := ToResponse(e)
+	if err != nil {
+		t.Fatalf("ToResponse returned error: %v", err)
+	}
+	if resp.StatusCode != 404 {
+		t.Errorf("wrong StatusCode: %d", resp.StatusCode)
+	}
+	if resp.DataType != DataTypeVoipbinError {
+		t.Errorf("wrong DataType: %s", resp.DataType)
+	}
+
+	// Round-trip: FromResponse must recover the original.
+	got := FromResponse(resp)
+	if got == nil || got.Status != StatusNotFound || got.Reason != "CALL_NOT_FOUND" {
+		t.Errorf("round-trip failed: %+v", got)
+	}
+}
+
+func TestToResponseAllStatuses(t *testing.T) {
+	tests := []struct {
+		status Status
+		http   int
+	}{
+		{StatusInvalidArgument, 400},
+		{StatusUnauthenticated, 401},
+		{StatusPaymentRequired, 402},
+		{StatusPermissionDenied, 403},
+		{StatusNotFound, 404},
+		{StatusAlreadyExists, 409},
+		{StatusFailedPrecondition, 409},
+		{StatusResourceExhausted, 429},
+		{StatusUnavailable, 503},
+		{StatusInternal, 500},
+	}
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			e := &VoipbinError{Status: tt.status, Reason: "X", Domain: "d", Message: "m"}
+			resp, err := ToResponse(e)
+			if err != nil {
+				t.Fatalf("ToResponse failed: %v", err)
+			}
+			if resp.StatusCode != tt.http {
+				t.Errorf("wrong StatusCode for %s: got %d want %d", tt.status, resp.StatusCode, tt.http)
+			}
+		})
+	}
+}
+
+func TestToResponseNil(t *testing.T) {
+	if _, err := ToResponse(nil); err == nil {
+		t.Errorf("ToResponse(nil) must return an error")
+	}
+}
