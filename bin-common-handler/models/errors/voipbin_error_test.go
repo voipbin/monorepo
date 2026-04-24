@@ -92,3 +92,12 @@ func TestVoipbinErrorErrorMethodWithCause(t *testing.T) {
 		t.Errorf("Error() = %q, want %q", got, want)
 	}
 }
+
+func TestVoipbinErrorErrorMethodNilReceiver(t *testing.T) {
+	var e *VoipbinError
+	got := e.Error()
+	want := "<nil VoipbinError>"
+	if got != want {
+		t.Errorf("Error() on nil = %q, want %q", got, want)
+	}
+}
