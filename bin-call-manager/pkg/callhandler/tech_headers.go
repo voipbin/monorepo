@@ -52,13 +52,13 @@ func mergeTechHeaders(dst map[string]string, src map[string]string, log *logrus.
 			skipped++
 			continue
 		}
-		if strings.ContainsAny(k, "\r\n(),") {
-			log.Warnf("Skipping tech_header with invalid key char. key=%q", k)
+		if _, reserved := reservedTechHeaderKeys[k]; reserved {
+			log.Warnf("Skipping tech_header that collides with system-reserved key. key=%q", k)
 			skipped++
 			continue
 		}
-		if _, reserved := reservedTechHeaderKeys[k]; reserved {
-			log.Warnf("Skipping tech_header that collides with system-reserved key. key=%q", k)
+		if strings.ContainsAny(k, "\r\n(),") {
+			log.Warnf("Skipping tech_header with invalid key char. key=%q", k)
 			skipped++
 			continue
 		}

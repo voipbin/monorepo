@@ -72,9 +72,10 @@ Reserved set (explicit denylist):
 var reservedTechHeaderKeys = map[string]struct{}{
     "PJSIP_HEADER(add,P-Asserted-Identity)":     {},
     "PJSIP_HEADER(add,Privacy)":                 {},
-    "PJSIP_HEADER(add,SDP-Transport)":           {},
-    "PJSIP_HEADER(add,X-VoIPBin-Call-ID)":       {},
-    "PJSIP_HEADER(add,X-VoIPBin-Confbridge-ID)": {},
+    "PJSIP_HEADER(add,VBOUT-SDP_Transport)":     {},
+    "PJSIP_HEADER(add,VB-CALL-ID)":              {},
+    "PJSIP_HEADER(add,VB-CONFBRIDGE-ID)":        {},
+    "PJSIP_HEADER(add,VB-DIRECTION)":            {},
     "CALLERID(name)": {},
     "CALLERID(num)":  {},
     "CALLERID(pres)": {},
