@@ -2,12 +2,16 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"net/http"
@@ -308,6 +312,147 @@ func Test_customerDefaultOutgoingSourceNumberIDPut(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_customerGET_MissingAuthIdentity exercises the auth-identity-missing
+// branch of GetCustomer. Without auth_identity in the gin context, the
+// handler must emit UNAUTHENTICATED / AUTHENTICATION_REQUIRED with a
+// populated request_id (RequestID middleware runs before the handler).
+func Test_customerGET_MissingAuthIdentity(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	// Intentionally do not set auth_identity.
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodGet, "/customer", nil)
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_customerGET_ServiceError exercises the servicehandler-failure path
+// through abortWithServiceError. The translator's substring fallback
+// maps "customer not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
+func Test_customerGET_ServiceError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+			CustomerID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodGet, "/customer", nil)
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().CustomerSelfGet(gomock.Any(), agent).Return(nil, fmt.Errorf("customer not found"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_customerPut_InvalidJSONBody verifies PutCustomer rejects malformed
+// JSON with INVALID_ARGUMENT / INVALID_JSON_BODY.
+func Test_customerPut_InvalidJSONBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("4afd144c-c451-11ef-a8d8-6fd67202355e"),
+			CustomerID: uuid.FromStringOrNil("4b7dcc68-c451-11ef-a289-33cbfe065115"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Intentionally invalid JSON body.
+	req, _ := http.NewRequest(http.MethodPut, "/customer", bytes.NewBufferString("{not json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_customerBillingAccountIDPut_InvalidID verifies that a syntactically
+// invalid UUID in the billing_account_id body triggers INVALID_ID.
+func Test_customerBillingAccountIDPut_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("23ad14fa-c514-11ef-a03b-af3d499fdf18"),
+			CustomerID: uuid.FromStringOrNil("2422306e-c514-11ef-a89d-2f0585ee15f9"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Valid JSON shape, but the embedded id is not a UUID — uuid.FromStringOrNil
+	// returns uuid.Nil and the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodPut, "/customer/billing_account_id", bytes.NewBufferString(`{"billing_account_id":"not-a-uuid"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
 }
 
 func Test_customerMetadataPut(t *testing.T) {
