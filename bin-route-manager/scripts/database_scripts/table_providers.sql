@@ -12,6 +12,8 @@ create table route_providers(
   name      varchar(255),
   detail    text,
 
+  metadata  json,
+
   -- health check
   health_status     varchar(64) default 'unknown',
   health_checked_at datetime(6),

@@ -93,6 +93,24 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 		return nil, fmt.Errorf("provider create failed: %w", err)
 	}
 
+	// Step 6: store Telnyx resource IDs as metadata for future reference.
+	metadata := map[string]interface{}{
+		"telnyx_profile_id":    profileID,
+		"telnyx_connection_id": connID,
+		"telnyx_ip_ids":        ipIDs,
+	}
+	if errMeta := h.db.ProviderUpdate(ctx, res.ID, map[provider.Field]any{
+		provider.FieldMetadata: metadata,
+	}); errMeta != nil {
+		log.Warnf("Could not save Telnyx metadata on provider. provider_id: %s, err: %v", res.ID, errMeta)
+	}
+
+	res, err = h.db.ProviderGet(ctx, res.ID)
+	if err != nil {
+		log.Errorf("Could not re-fetch provider after metadata update. err: %v", err)
+		return nil, fmt.Errorf("provider get failed: %w", err)
+	}
+
 	return res, nil
 }
 

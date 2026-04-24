@@ -41,6 +41,7 @@ func Test_ProviderCreate(t *testing.T) {
 			&provider.Provider{
 				ID:          uuid.FromStringOrNil("55b05798-42d8-11ed-bf01-63eb9485e19d"),
 				TechHeaders: map[string]string{},
+				Metadata:    map[string]interface{}{},
 				TMCreate:    timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 				TMUpdate:    nil,
 				TMDelete:    nil,
@@ -74,6 +75,7 @@ func Test_ProviderCreate(t *testing.T) {
 				},
 				Name:     "provider name",
 				Detail:   "provider detail",
+				Metadata: map[string]interface{}{},
 				TMCreate: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 				TMUpdate: nil,
 				TMDelete: nil,
@@ -272,6 +274,7 @@ func Test_ProviderUpdate(t *testing.T) {
 				Name:        "update name",
 				Detail:      "update detail",
 				TechHeaders: map[string]string{},
+				Metadata:    map[string]interface{}{},
 
 				TMCreate: timePtr(time.Date(2021, 4, 18, 3, 22, 17, 995000000, time.UTC)),
 				TMUpdate: timePtr(time.Date(2021, 4, 18, 3, 22, 17, 995000000, time.UTC)),

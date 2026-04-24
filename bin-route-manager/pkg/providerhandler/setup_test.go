@@ -136,6 +136,8 @@ func Test_Setup_Success(t *testing.T) {
 	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(nil)
 	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any())
+	mockDB.EXPECT().ProviderUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
 
 	res, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
 	if err != nil {
@@ -169,6 +171,8 @@ func Test_Setup_MultipleIPs_Success(t *testing.T) {
 	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(nil)
 	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any())
+	mockDB.EXPECT().ProviderUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
 
 	res, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
 	if err != nil {

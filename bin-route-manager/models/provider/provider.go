@@ -21,6 +21,9 @@ type Provider struct {
 	Name   string `json:"name" db:"name"`
 	Detail string `json:"detail" db:"detail"`
 
+	// metadata stores carrier-specific resource IDs (e.g. Telnyx profile/connection/IP IDs).
+	Metadata map[string]interface{} `json:"metadata" db:"metadata,json"`
+
 	// health check
 	HealthStatus    string     `json:"health_status"     db:"health_status"`
 	HealthCheckedAt *time.Time `json:"health_checked_at" db:"health_checked_at"`

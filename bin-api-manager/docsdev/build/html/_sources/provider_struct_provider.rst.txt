@@ -21,6 +21,7 @@ Provider
         "tech_headers": {
             "<string>": "<string">,
         },
+        "metadata": {},
         "health_status": "<string>",
         "health_checked_at": "<string>",
         "tm_create": "<string>",
@@ -36,6 +37,7 @@ Provider
 * ``tech_prefix`` (String): Prefix attached to the beginning of the dialed destination number. Valid only for type ``sip``. Leave as empty string if not required.
 * ``tech_postfix`` (String): Postfix attached to the end of the dialed destination number. Valid only for type ``sip``. Leave as empty string if not required.
 * ``tech_headers`` (Object): Key/value pairs of custom SIP headers sent with outbound calls. Valid only for type ``sip``. Use empty object ``{}`` if not required.
+* ``metadata`` (Object): Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via ``POST /providers/setup``, contains ``telnyx_profile_id``, ``telnyx_connection_id``, and ``telnyx_ip_ids``. Read-only — populated automatically by the setup endpoint. Empty object ``{}`` if the provider was created manually via ``POST /providers``.
 * ``health_status`` (enum string): The result of the most recent SIP OPTIONS health check. See :ref:`Health Status <provider-struct-provider-health-status>`.
 * ``health_checked_at`` (string, ISO 8601 or null): Timestamp of the last completed health check. ``null`` if no check has been performed yet. Resets to ``null`` when ``hostname`` is updated.
 * ``tm_create`` (string, ISO 8601): Timestamp when the provider was created.
@@ -58,6 +60,11 @@ Example
         "tech_prefix": "",
         "tech_postfix": "",
         "tech_headers": {},
+        "metadata": {
+            "telnyx_profile_id": "2944757397136082899",
+            "telnyx_connection_id": "2944757397198982899",
+            "telnyx_ip_ids": ["2944757397261882899"]
+        },
         "health_status": "healthy",
         "health_checked_at": "2026-04-20 03:15:00.000000",
         "name": "telnyx basic",
