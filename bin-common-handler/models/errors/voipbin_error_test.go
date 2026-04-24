@@ -128,3 +128,16 @@ func TestVoipbinErrorUnwrap(t *testing.T) {
 		t.Errorf("errors.As returned wrong VoipbinError: %v", target)
 	}
 }
+
+func TestVoipbinErrorWrap(t *testing.T) {
+	e := &VoipbinError{Status: StatusInternal, Reason: "INTERNAL", Domain: "api-manager", Message: "x"}
+	inner := stderrors.New("boom")
+	out := e.Wrap(inner)
+
+	if out != e {
+		t.Errorf("Wrap should return the receiver for chaining")
+	}
+	if e.Cause != inner {
+		t.Errorf("Wrap did not set Cause: %v", e.Cause)
+	}
+}

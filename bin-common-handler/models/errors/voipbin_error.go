@@ -39,3 +39,15 @@ func (e *VoipbinError) Unwrap() error {
 	}
 	return e.Cause
 }
+
+// Wrap attaches an underlying cause to the VoipbinError and returns
+// the receiver so callers can chain: Internal(...).Wrap(err).
+// The cause is only used in server-side logs (Error() includes it);
+// JSON serialization still excludes it.
+func (e *VoipbinError) Wrap(cause error) *VoipbinError {
+	if e == nil {
+		return nil
+	}
+	e.Cause = cause
+	return e
+}
