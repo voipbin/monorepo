@@ -3,9 +3,17 @@ package errors
 import "fmt"
 
 // VoipbinError is the canonical error shape returned from the external
-// VoIPbin API and (eventually) over RPC between internal managers.
-// The Cause field is for server-side logging only and is never
-// serialized to clients.
+// VoIPbin API and over RPC between internal managers.
+//
+// Wire contract:
+//   - Status, Reason, Domain, Message are emitted to clients and to
+//     internal RPC consumers.
+//   - Details is reserved for future structured detail; omitempty.
+//   - Cause is server-side only (json:"-"); it is included by Error()
+//     for server logs but MUST NOT be written into HTTP response
+//     bodies. Call json.Marshal(e) or construct a response envelope
+//     from fields directly — do not use e.Error() as a user-visible
+//     message.
 type VoipbinError struct {
 	Status  Status `json:"status"`
 	Reason  string `json:"reason"`

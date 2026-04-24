@@ -37,6 +37,12 @@ func NotFound(domain outline.ServiceName, reason, message string) *VoipbinError 
 }
 
 // AlreadyExists returns a VoipbinError with StatusAlreadyExists.
+//
+// Note: the api-manager translator never emits ALREADY_EXISTS as a
+// fallback mapping — 409 responses default to FAILED_PRECONDITION.
+// Use this constructor explicitly at sites that genuinely represent
+// a duplicate-create conflict (e.g., CreateXxx handlers hitting a
+// unique-constraint violation).
 func AlreadyExists(domain outline.ServiceName, reason, message string) *VoipbinError {
 	return newVoipbinError(StatusAlreadyExists, domain, reason, message)
 }
