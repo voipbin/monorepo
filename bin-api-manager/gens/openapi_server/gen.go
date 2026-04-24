@@ -3901,6 +3901,9 @@ type RouteManagerProvider struct {
 	// Id The unique identifier of the provider. Returned from the `POST /providers` or `GET /providers` response.
 	Id *string `json:"id,omitempty"`
 
+	// Metadata Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via `POST /providers/setup`, contains `telnyx_profile_id`, `telnyx_connection_id`, and `telnyx_ip_ids`. Read-only — populated automatically by the setup endpoint. Empty object `{}` for providers created manually via `POST /providers`.
+	Metadata *map[string]interface{} `json:"metadata"`
+
 	// Name The name of the provider.
 	Name *string `json:"name,omitempty"`
 

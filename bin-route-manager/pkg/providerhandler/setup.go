@@ -94,6 +94,10 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	}
 
 	// Step 6: store Telnyx resource IDs as metadata for future reference.
+	// Failure here is non-fatal: setup already succeeded, the metadata is for
+	// visibility/reference only, and forcing a rollback would orphan the
+	// Telnyx-side resources we just created. Log and return the provider
+	// record we already have from Step 5.
 	metadata := map[string]interface{}{
 		"telnyx_profile_id":    profileID,
 		"telnyx_connection_id": connID,
@@ -103,15 +107,15 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 		provider.FieldMetadata: metadata,
 	}); errMeta != nil {
 		log.Warnf("Could not save Telnyx metadata on provider. provider_id: %s, err: %v", res.ID, errMeta)
+		return res, nil
 	}
 
-	res, err = h.db.ProviderGet(ctx, res.ID)
+	updated, err := h.db.ProviderGet(ctx, res.ID)
 	if err != nil {
-		log.Errorf("Could not re-fetch provider after metadata update. err: %v", err)
-		return nil, fmt.Errorf("provider get failed: %w", err)
+		log.Warnf("Could not re-fetch provider after metadata update. Returning pre-update record. err: %v", err)
+		return res, nil
 	}
-
-	return res, nil
+	return updated, nil
 }
 
 // telnyxCleanup attempts to delete Telnyx resources created before a failure.
