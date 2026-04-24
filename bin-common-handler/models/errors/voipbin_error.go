@@ -11,7 +11,15 @@ type VoipbinError struct {
 	Reason  string `json:"reason"`
 	Domain  string `json:"domain"`
 	Message string `json:"message"`
-	Cause   error  `json:"-"`
+	// Details is reserved for future per-field or structured error
+	// detail (e.g., BadRequest field violations). Optional; may be
+	// omitted. New detail shapes must be additive-only so existing
+	// consumers tolerate unknown keys.
+	Details []map[string]any `json:"details,omitempty"`
+	// Cause is for server-side logging only — never serialized to
+	// clients. WARNING: Error() DOES include Cause.Error() in its
+	// return value. Never use err.Error() as an HTTP response body.
+	Cause error `json:"-"`
 }
 
 // Error satisfies the error interface. Format:

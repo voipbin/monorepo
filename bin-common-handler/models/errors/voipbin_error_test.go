@@ -159,3 +159,38 @@ func TestVoipbinErrorWrapNilReceiver(t *testing.T) {
 		t.Errorf("Wrap on nil receiver = %v, want nil", got)
 	}
 }
+
+func TestVoipbinErrorDetailsOmitempty(t *testing.T) {
+	// Without details — field must be absent from JSON.
+	e := &VoipbinError{Status: StatusInternal, Reason: "X", Domain: "d", Message: "m"}
+	b, err := json.Marshal(e)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if strings.Contains(string(b), "details") {
+		t.Errorf("details should be omitted when empty, got: %s", string(b))
+	}
+
+	// With details — field must round-trip through JSON.
+	e.Details = []map[string]any{
+		{"field": "phone_number", "issue": "not E.164"},
+	}
+	b, err = json.Marshal(e)
+	if err != nil {
+		t.Fatalf("marshal with details: %v", err)
+	}
+	if !strings.Contains(string(b), `"details"`) {
+		t.Errorf("details should be present when set, got: %s", string(b))
+	}
+	if !strings.Contains(string(b), "phone_number") {
+		t.Errorf("details content missing: %s", string(b))
+	}
+
+	var round VoipbinError
+	if err := json.Unmarshal(b, &round); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if len(round.Details) != 1 {
+		t.Fatalf("round-trip lost details: %+v", round.Details)
+	}
+}
