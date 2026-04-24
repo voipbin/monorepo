@@ -40,14 +40,19 @@ func (e *VoipbinError) Unwrap() error {
 	return e.Cause
 }
 
-// Wrap attaches an underlying cause to the VoipbinError and returns
-// the receiver so callers can chain: Internal(...).Wrap(err).
+// Wrap returns a shallow copy of the VoipbinError with Cause set to
+// the given error. Callers can chain: Internal(...).Wrap(err). Wrap
+// does NOT mutate the receiver — this prevents aliasing surprises if
+// the receiver has been stored in a package-level variable or passed
+// to another goroutine.
+//
 // The cause is only used in server-side logs (Error() includes it);
-// JSON serialization still excludes it.
+// JSON serialization still excludes it via the json:"-" tag.
 func (e *VoipbinError) Wrap(cause error) *VoipbinError {
 	if e == nil {
 		return nil
 	}
-	e.Cause = cause
-	return e
+	out := *e
+	out.Cause = cause
+	return &out
 }

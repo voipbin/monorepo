@@ -134,11 +134,21 @@ func TestVoipbinErrorWrap(t *testing.T) {
 	inner := stderrors.New("boom")
 	out := e.Wrap(inner)
 
-	if out != e {
-		t.Errorf("Wrap should return the receiver for chaining")
+	if out == nil {
+		t.Fatal("Wrap returned nil")
 	}
-	if e.Cause != inner {
-		t.Errorf("Wrap did not set Cause: %v", e.Cause)
+	if out.Cause != inner {
+		t.Errorf("Wrap did not set Cause on returned value: %v", out.Cause)
+	}
+	if e.Cause != nil {
+		t.Errorf("Wrap must NOT mutate the receiver; e.Cause = %v", e.Cause)
+	}
+	if out == e {
+		t.Error("Wrap must return a copy, not the receiver")
+	}
+	// Also verify all other fields are copied correctly.
+	if out.Status != e.Status || out.Reason != e.Reason || out.Domain != e.Domain || out.Message != e.Message {
+		t.Errorf("Wrap copy lost fields: out=%+v e=%+v", out, e)
 	}
 }
 
