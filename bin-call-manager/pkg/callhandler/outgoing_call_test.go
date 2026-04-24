@@ -1035,11 +1035,11 @@ func Test_getDialURI_Tel(t *testing.T) {
 		responseProvider *rmprovider.Provider
 
 		expectProviderID uuid.UUID
-		expectTarget     string
 		expectRes        string
+		expectTechHdrs   map[string]string
 	}{
 		{
-			"normal",
+			"no tech config (backwards compat)",
 
 			&call.Call{
 				Identity: commonidentity.Identity{
@@ -1065,8 +1065,118 @@ func Test_getDialURI_Tel(t *testing.T) {
 			},
 
 			uuid.FromStringOrNil("8730a3da-5350-11ed-aa47-7f44741127c1"),
-			"+82",
 			"pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
+			nil,
+		},
+		{
+			"prefix only",
+
+			&call.Call{
+				Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "15551234"},
+				DialrouteID: uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000001"),
+				Dialroutes: []rmroute.Route{
+					{ID: uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000001"),
+						ProviderID: uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000001")},
+				},
+			},
+
+			&rmprovider.Provider{
+				Hostname:   "carrier.example.com",
+				TechPrefix: "0011",
+			},
+
+			uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000001"),
+			"pjsip/call-out/sip:001115551234@carrier.example.com;transport=udp",
+			nil,
+		},
+		{
+			"postfix only",
+
+			&call.Call{
+				Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234"},
+				DialrouteID: uuid.FromStringOrNil("a0000002-0000-0000-0000-000000000002"),
+				Dialroutes: []rmroute.Route{
+					{ID: uuid.FromStringOrNil("a0000002-0000-0000-0000-000000000002"),
+						ProviderID: uuid.FromStringOrNil("b0000002-0000-0000-0000-000000000002")},
+				},
+			},
+
+			&rmprovider.Provider{
+				Hostname:    "carrier.example.com",
+				TechPostfix: "#",
+			},
+
+			uuid.FromStringOrNil("b0000002-0000-0000-0000-000000000002"),
+			"pjsip/call-out/sip:+15551234#@carrier.example.com;transport=udp",
+			nil,
+		},
+		{
+			"prefix and postfix both",
+
+			&call.Call{
+				Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234"},
+				DialrouteID: uuid.FromStringOrNil("a0000003-0000-0000-0000-000000000003"),
+				Dialroutes: []rmroute.Route{
+					{ID: uuid.FromStringOrNil("a0000003-0000-0000-0000-000000000003"),
+						ProviderID: uuid.FromStringOrNil("b0000003-0000-0000-0000-000000000003")},
+				},
+			},
+
+			&rmprovider.Provider{
+				Hostname:    "carrier.example.com",
+				TechPrefix:  "0011",
+				TechPostfix: "#",
+			},
+
+			uuid.FromStringOrNil("b0000003-0000-0000-0000-000000000003"),
+			"pjsip/call-out/sip:0011+15551234#@carrier.example.com;transport=udp",
+			nil,
+		},
+		{
+			"headers only — returned raw (unsanitized), caller sanitizes via mergeTechHeaders",
+
+			&call.Call{
+				Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234"},
+				DialrouteID: uuid.FromStringOrNil("a0000004-0000-0000-0000-000000000004"),
+				Dialroutes: []rmroute.Route{
+					{ID: uuid.FromStringOrNil("a0000004-0000-0000-0000-000000000004"),
+						ProviderID: uuid.FromStringOrNil("b0000004-0000-0000-0000-000000000004")},
+				},
+			},
+
+			&rmprovider.Provider{
+				Hostname: "carrier.example.com",
+				TechHeaders: map[string]string{
+					"X-Carrier-Auth": "tok-abc",
+				},
+			},
+
+			uuid.FromStringOrNil("b0000004-0000-0000-0000-000000000004"),
+			"pjsip/call-out/sip:+15551234@carrier.example.com;transport=udp",
+			map[string]string{"X-Carrier-Auth": "tok-abc"},
+		},
+		{
+			"all three together",
+
+			&call.Call{
+				Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "15551234"},
+				DialrouteID: uuid.FromStringOrNil("a0000005-0000-0000-0000-000000000005"),
+				Dialroutes: []rmroute.Route{
+					{ID: uuid.FromStringOrNil("a0000005-0000-0000-0000-000000000005"),
+						ProviderID: uuid.FromStringOrNil("b0000005-0000-0000-0000-000000000005")},
+				},
+			},
+
+			&rmprovider.Provider{
+				Hostname:    "carrier.example.com",
+				TechPrefix:  "0011",
+				TechPostfix: "#",
+				TechHeaders: map[string]string{"X-Route-Hint": "premium"},
+			},
+
+			uuid.FromStringOrNil("b0000005-0000-0000-0000-000000000005"),
+			"pjsip/call-out/sip:001115551234#@carrier.example.com;transport=udp",
+			map[string]string{"X-Route-Hint": "premium"},
 		},
 	}
 
@@ -1087,13 +1197,22 @@ func Test_getDialURI_Tel(t *testing.T) {
 
 			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
 
-			res, err := h.getDialURI(ctx, tt.call)
+			res, techHdrs, err := h.getDialURI(ctx, tt.call)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if res != tt.expectRes {
 				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, res)
+			}
+
+			if len(techHdrs) != len(tt.expectTechHdrs) {
+				t.Errorf("Wrong techHdrs size. expect: %d, got: %d. techHdrs=%v", len(tt.expectTechHdrs), len(techHdrs), techHdrs)
+			}
+			for k, v := range tt.expectTechHdrs {
+				if got, ok := techHdrs[k]; !ok || got != v {
+					t.Errorf("Wrong techHdrs entry. key=%s expect=%q got=%q (present=%v)", k, v, got, ok)
+				}
 			}
 		})
 	}
@@ -1158,7 +1277,7 @@ func Test_getDialURI_SIP(t *testing.T) {
 
 			ctx := context.Background()
 
-			res, err := h.getDialURI(ctx, tt.c)
+			res, _, err := h.getDialURI(ctx, tt.c)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -1230,7 +1349,7 @@ func Test_getDialURI_error(t *testing.T) {
 
 			ctx := context.Background()
 
-			_, err := h.getDialURI(ctx, tt.call)
+			_, _, err := h.getDialURI(ctx, tt.call)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
@@ -1290,6 +1409,51 @@ func Test_createChannel(t *testing.T) {
 			expectVariables: map[string]string{
 				"CALLERID(name)": "",
 				"CALLERID(num)":  "+821100000002",
+				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
+			},
+		},
+		{
+			name: "provider tech config applied — prefix, postfix, header",
+
+			call: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000002"),
+				},
+
+				ChannelID: "c1c1c1c1-0000-0000-0000-000000000003",
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+821100000002",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "15551234",
+				},
+				DialrouteID: uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000004"),
+				Dialroutes: []rmroute.Route{
+					{
+						ID:         uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000004"),
+						ProviderID: uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000005"),
+					},
+				},
+			},
+
+			responseProvider: &rmprovider.Provider{
+				ID:          uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000005"),
+				Hostname:    "carrier.example.com",
+				TechPrefix:  "0011",
+				TechPostfix: "#",
+				TechHeaders: map[string]string{"X-Route-Hint": "premium"},
+			},
+
+			expectProviderID: uuid.FromStringOrNil("c1c1c1c1-0000-0000-0000-000000000005"),
+			expectArgs:       "context_type=call,context=call-out,call_id=c1c1c1c1-0000-0000-0000-000000000001,transport=udp,direction=outgoing",
+			expectDialURI:    "pjsip/call-out/sip:001115551234#@carrier.example.com;transport=udp",
+			expectVariables: map[string]string{
+				"PJSIP_HEADER(add,X-Route-Hint)":                         "premium",
+				"CALLERID(name)":                                         "",
+				"CALLERID(num)":                                          "+821100000002",
 				"PJSIP_HEADER(add," + common.SIPHeaderSDPTransport + ")": "RTP/AVP",
 			},
 		},
@@ -2694,7 +2858,7 @@ func Test_getDialURISIP(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			res, err := h.getDialURISIP(ctx, tt.call)
+			res, _, err := h.getDialURISIP(ctx, tt.call)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -2752,7 +2916,7 @@ func Test_getDialURISIPDirect(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			res, err := h.getDialURISIPDirect(ctx, tt.call)
+			res, _, err := h.getDialURISIPDirect(ctx, tt.call)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

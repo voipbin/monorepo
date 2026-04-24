@@ -313,8 +313,12 @@ func (h *callHandler) CreateCallOutgoing(
 	return res, nil
 }
 
-// getDialURITel returns dial uri of the given tel type destination.
-func (h *callHandler) getDialURITel(ctx context.Context, c *call.Call) (string, error) {
+// getDialURITel returns dial uri and provider-supplied tech_headers for the
+// given tel type destination. Prefix/postfix from the Provider wrap the
+// user part of the URI; tech_headers are returned raw for the caller to
+// merge via mergeTechHeaders (so sanitization and reserved-key enforcement
+// happen next to the channel-variable assembly).
+func (h *callHandler) getDialURITel(ctx context.Context, c *call.Call) (string, map[string]string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":    "getDialURITel",
 		"call_id": c.ID,
@@ -330,34 +334,34 @@ func (h *callHandler) getDialURITel(ctx context.Context, c *call.Call) (string, 
 
 	if providerID == uuid.Nil {
 		log.Debugf("No available dialroute left.")
-		return "", fmt.Errorf("no available dialroute left")
+		return "", nil, fmt.Errorf("no available dialroute left")
 	}
 
-	// get provider info
 	pr, err := h.reqHandler.RouteV1ProviderGet(ctx, providerID)
 	if err != nil {
 		log.Errorf("Could not get provider info. err: %v", err)
-		return "", err
+		return "", nil, err
 	}
 
-	res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, c.Destination.Target, pr.Hostname, constTransportUDP)
+	userPart := pr.TechPrefix + c.Destination.Target + pr.TechPostfix
+	res := fmt.Sprintf("pjsip/%s/sip:%s@%s;transport=%s", pjsipEndpointOutgoing, userPart, pr.Hostname, constTransportUDP)
 
-	return res, nil
+	return res, pr.TechHeaders, nil
 }
 
 // getDialURISIP returns dial uri of the given sip type destination.
-func (h *callHandler) getDialURISIP(ctx context.Context, c *call.Call) (string, error) {
+func (h *callHandler) getDialURISIP(ctx context.Context, c *call.Call) (string, map[string]string, error) {
 	endpoint := c.Destination.Target
 	if !strings.HasPrefix(c.Destination.Target, "sip:") && !strings.HasPrefix(c.Destination.Target, "sips:") {
 		endpoint = "sip:" + endpoint
 	}
 
 	res := fmt.Sprintf("pjsip/%s/%s", pjsipEndpointOutgoing, endpoint)
-	return res, nil
+	return res, nil, nil
 }
 
 // getDialURISIP returns dial uri of the given sip type destination.
-func (h *callHandler) getDialURISIPDirect(ctx context.Context, c *call.Call) (string, error) {
+func (h *callHandler) getDialURISIPDirect(ctx context.Context, c *call.Call) (string, map[string]string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "getDialURISIPDirect",
 		"destination_target": c.Destination.Target,
@@ -370,7 +374,7 @@ func (h *callHandler) getDialURISIPDirect(ctx context.Context, c *call.Call) (st
 
 	tmpTargets := strings.Split(endpointTarget, ";")
 	if len(tmpTargets) < 1 {
-		return "", fmt.Errorf("wrong destination uri")
+		return "", nil, fmt.Errorf("wrong destination uri")
 	}
 
 	// get target host/port
@@ -383,11 +387,13 @@ func (h *callHandler) getDialURISIPDirect(ctx context.Context, c *call.Call) (st
 	log.Debugf("Found outbound proxy host info. outbound_proxy: %s", porxyHost)
 
 	res := fmt.Sprintf("pjsip/%s%s/%s", pjsipEndpointOutgoingDirect, porxyHost, endpointTarget)
-	return res, nil
+	return res, nil, nil
 }
 
-// getDialURI returns the given destination address's dial URI for Asterisk's dialing
-func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, error) {
+// getDialURI returns the given destination address's dial URI and optional
+// provider tech_headers for Asterisk's dialing. tech_headers is nil for
+// non-provider paths.
+func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, map[string]string, error) {
 
 	switch c.Destination.Type {
 	case commonaddress.TypeTel:
@@ -395,15 +401,12 @@ func (h *callHandler) getDialURI(ctx context.Context, c *call.Call) (string, err
 
 	case commonaddress.TypeSIP:
 		if strings.Contains(c.Destination.Target, "transport=ws") {
-			// websocket transport(WebRTC)
 			return h.getDialURISIPDirect(ctx, c)
 		}
 		return h.getDialURISIP(ctx, c)
 
 	default:
-		// for address type endpoint, conference, ... are possible to return the multiple address.
-		// so we can not handle those address types are here.
-		return "", fmt.Errorf("unsupported address type for get dial uri")
+		return "", nil, fmt.Errorf("unsupported address type for get dial uri")
 	}
 }
 
@@ -550,15 +553,19 @@ func (h *callHandler) createChannelOutgoing(ctx context.Context, c *call.Call) e
 		"call_id": c.ID,
 	})
 
-	// get a endpoint destination
-	dialURI, err := h.getDialURI(ctx, c)
+	// get dial uri and provider-supplied tech headers
+	dialURI, techHeaders, err := h.getDialURI(ctx, c)
 	if err != nil {
 		log.Errorf("Could not create a destination endpoint. err: %v", err)
 		return err
 	}
 
-	// set channel variables
+	// set channel variables — tech_headers first so system-set headers
+	// (transport, CALLERID, PAI when anonymous) overwrite on collision.
+	// mergeTechHeaders additionally enforces the reserved-key denylist.
 	channelVariables := map[string]string{}
+	techApplied, techSkipped := mergeTechHeaders(channelVariables, techHeaders, log)
+
 	transport := getDestinationTransport(dialURI)
 	setChannelVariableTransport(channelVariables, transport)
 	anonymous := c.Data[call.DataTypeAnonymous] == "true"
@@ -566,6 +573,12 @@ func (h *callHandler) createChannelOutgoing(ctx context.Context, c *call.Call) e
 		log.Errorf("Could not set caller ID variables. err: %v", err)
 		return err
 	}
+
+	if techApplied > 0 || techSkipped > 0 {
+		log.Infof("Applied provider tech config. headers_applied=%d headers_skipped=%d",
+			techApplied, techSkipped)
+	}
+
 	log.Debugf("Endpoint detail. endpoint_destination: %s, variables: %v, anonymous: %v", dialURI, channelVariables, anonymous)
 
 	// set app args
