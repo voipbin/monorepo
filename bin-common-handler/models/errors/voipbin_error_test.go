@@ -141,3 +141,11 @@ func TestVoipbinErrorWrap(t *testing.T) {
 		t.Errorf("Wrap did not set Cause: %v", e.Cause)
 	}
 }
+
+func TestVoipbinErrorWrapNilReceiver(t *testing.T) {
+	var e *VoipbinError
+	got := e.Wrap(stderrors.New("x"))
+	if got != nil {
+		t.Errorf("Wrap on nil receiver = %v, want nil", got)
+	}
+}
