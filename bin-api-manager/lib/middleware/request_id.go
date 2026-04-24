@@ -6,7 +6,6 @@ import (
 	"encoding/base32"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -44,9 +43,6 @@ func RequestID() gin.HandlerFunc {
 			context.WithValue(c.Request.Context(), requestIDCtxKey{}, id),
 		)
 		c.Writer.Header().Set(headerRequestID, id)
-
-		// Make logrus.WithContext pick up the request_id automatically.
-		c.Set("logger", logrus.WithField("request_id", id))
 
 		c.Next()
 	}

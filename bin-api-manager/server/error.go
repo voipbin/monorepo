@@ -19,15 +19,17 @@ func abortWithError(c *gin.Context, e *cerrors.VoipbinError) {
 	if e == nil {
 		e = cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.")
 	}
-	c.AbortWithStatusJSON(cerrors.HTTPStatusFor(e.Status), gin.H{
-		"error": gin.H{
-			"status":     string(e.Status),
-			"reason":     e.Reason,
-			"domain":     e.Domain,
-			"message":    e.Message,
-			"request_id": middleware.RequestIDFromContext(c),
-		},
-	})
+	body := gin.H{
+		"status":     string(e.Status),
+		"reason":     e.Reason,
+		"domain":     e.Domain,
+		"message":    e.Message,
+		"request_id": middleware.RequestIDFromContext(c),
+	}
+	if len(e.Details) > 0 {
+		body["details"] = e.Details
+	}
+	c.AbortWithStatusJSON(cerrors.HTTPStatusFor(e.Status), gin.H{"error": body})
 }
 
 // abortWithServiceError runs any error returned from servicehandler

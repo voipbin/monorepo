@@ -61,18 +61,20 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "REQUEST_TIMEOUT", "The request timed out.").Wrap(err)
 	}
 
-	// 4. Substring fallback for legacy fmt.Errorf errors. This set is
-	// intentionally small — each pattern here is a migration target
-	// for a sentinel in subsequent PRs.
-	msg := err.Error()
+	// 4. Substring fallback for legacy fmt.Errorf errors. Case-insensitive
+	// match so title-cased requesthandler errors (e.g. "Not Found" from
+	// http.StatusText) are caught alongside lowercase servicehandler
+	// strings. This set is intentionally small — each pattern is a
+	// migration target for a sentinel in subsequent PRs.
+	lowered := strings.ToLower(err.Error())
 	switch {
-	case strings.Contains(msg, "no permission"):
+	case strings.Contains(lowered, "no permission"), strings.Contains(lowered, "permission denied"), strings.Contains(lowered, "forbidden"):
 		return cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "PERMISSION_DENIED", "You do not have permission to access this resource.").Wrap(err)
-	case strings.Contains(msg, "authentication required"):
+	case strings.Contains(lowered, "authentication required"), strings.Contains(lowered, "unauthorized"):
 		return cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required.").Wrap(err)
-	case strings.Contains(msg, "not found"):
+	case strings.Contains(lowered, "not found"):
 		return cerrors.NotFound(commonoutline.ServiceNameAPIManager, "RESOURCE_NOT_FOUND", "The requested resource was not found.").Wrap(err)
-	case strings.Contains(msg, "unavailable"):
+	case strings.Contains(lowered, "unavailable"):
 		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE", "An upstream service is temporarily unavailable.").Wrap(err)
 	}
 

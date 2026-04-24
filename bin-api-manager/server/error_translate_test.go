@@ -39,6 +39,7 @@ func TestTranslateSentinels(t *testing.T) {
 		{"auth_required", serviceerrors.ErrAuthenticationRequired, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED"},
 		{"direct_access", serviceerrors.ErrDirectAccessNotSupported, cerrors.StatusPermissionDenied, "DIRECT_ACCESS_NOT_SUPPORTED"},
 		{"invalid_argument", serviceerrors.ErrInvalidArgument, cerrors.StatusInvalidArgument, "INVALID_ARGUMENT"},
+		{"internal", serviceerrors.ErrInternal, cerrors.StatusInternal, "INTERNAL"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -47,6 +48,19 @@ func TestTranslateSentinels(t *testing.T) {
 				t.Errorf("got status=%q reason=%q want %q/%q", got.Status, got.Reason, tt.wantStatus, tt.wantReason)
 			}
 		})
+	}
+}
+
+func TestTranslateSentinelErrInternalWrapsCause(t *testing.T) {
+	got := translateToVoipbinError(serviceerrors.ErrInternal)
+	if got.Status != cerrors.StatusInternal {
+		t.Errorf("wrong status: %q", got.Status)
+	}
+	if got.Cause == nil {
+		t.Error("Cause should be set (wraps the sentinel)")
+	}
+	if !stderrors.Is(got, serviceerrors.ErrInternal) {
+		t.Error("errors.Is chain should still find the sentinel")
 	}
 }
 

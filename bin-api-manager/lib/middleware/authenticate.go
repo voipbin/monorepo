@@ -209,7 +209,6 @@ func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
 			"details":    details,
 		},
 	})
-	c.Abort()
 	return true
 }
 
