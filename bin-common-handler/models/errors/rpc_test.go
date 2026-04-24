@@ -75,6 +75,32 @@ func TestFromResponseNil(t *testing.T) {
 	}
 }
 
+func TestFromResponseEmptyData(t *testing.T) {
+	// DataType matches DataTypeVoipbinError and StatusCode is error,
+	// but Data is absent (e.g., a manager set DataType then failed
+	// to marshal the body). FromResponse must return nil, not panic,
+	// and not attempt to unmarshal an empty payload.
+	tests := []struct {
+		name string
+		data json.RawMessage
+	}{
+		{"nil_data", nil},
+		{"empty_data", json.RawMessage{}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resp := &sock.Response{
+				StatusCode: 500,
+				DataType:   DataTypeVoipbinError,
+				Data:       tt.data,
+			}
+			if got := FromResponse(resp); got != nil {
+				t.Errorf("FromResponse with %s must return nil, got %+v", tt.name, got)
+			}
+		})
+	}
+}
+
 func TestToResponse(t *testing.T) {
 	e := NotFound(outline.ServiceNameCallManager, "CALL_NOT_FOUND", "The call was not found.")
 	resp, err := ToResponse(e)

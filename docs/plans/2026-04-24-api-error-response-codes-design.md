@@ -271,7 +271,7 @@ components:
 
 ### 10.2 PR 0b — `bin-api-manager` infrastructure
 
-- `abortWithError` / `abortWithServiceError` / `httpStatusFor` / `assertErrorResponse` helpers + tests.
+- `abortWithError` / `abortWithServiceError` / `assertErrorResponse` helpers + tests (reuses `cerrors.HTTPStatusFor` from bin-common-handler).
 - Request-ID middleware registered in `cmd/api-manager/main.go`.
 - Migrate `ratelimit.go` and `authenticate.go` middleware.
 - OpenAPI `ErrorBody` / `ErrorResponse` / named responses components added.
