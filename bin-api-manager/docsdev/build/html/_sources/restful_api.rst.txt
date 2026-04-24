@@ -63,12 +63,9 @@ List Response::
 
    List endpoints return paginated results. If ``next_page_token`` is non-empty, pass it as the ``page_token`` query parameter in the next request to retrieve subsequent pages. When ``next_page_token`` is empty or absent, you have reached the last page.
 
-Error Response (4xx, 5xx)::
-
-    {
-        "error": "error_code",
-        "message": "Human-readable error description"
-    }
+Error Response (4xx, 5xx):
+    See :ref:`Error Response Envelope <error-response-envelope>` below for the canonical error
+    envelope shape returned by all ``api.voipbin.net/v1.0/...`` endpoints.
 
 Common HTTP Status Codes
 ------------------------
@@ -100,3 +97,88 @@ Common HTTP Status Codes
     * **Fix:** Retry the request. If the error persists, contact support with the request details.
 
 For detailed endpoint documentation, parameter descriptions, and response schemas, visit the API reference documentation linked above.
+
+.. _error-response-envelope:
+
+Error Response Envelope
+=======================
+
+.. note:: **AI Context**
+
+   Every 4xx/5xx response from the VoIPbin API (v1.0 paths under ``api.voipbin.net``) contains a JSON error envelope with a canonical ``status``, a specific ``reason``, the originating ``domain``, a human-readable ``message``, and a ``request_id`` for support correlation. Branch on ``error.reason`` for debugging; ``error.status`` maps 1:1 to the HTTP status code.
+
+All errors emitted by ``https://api.voipbin.net/v1.0/...`` carry the same envelope shape:
+
+.. code:: json
+
+   {
+     "error": {
+       "status": "PERMISSION_DENIED",
+       "reason": "BILLING_ACCESS_DENIED",
+       "domain": "billing-manager",
+       "message": "You do not have permission to access this billing account.",
+       "request_id": "req_01HXYZ..."
+     }
+   }
+
+Fields
+------
+
+* ``status`` (enum string, required): Canonical error status. One of:
+  ``INVALID_ARGUMENT``, ``UNAUTHENTICATED``, ``PAYMENT_REQUIRED``, ``PERMISSION_DENIED``, ``NOT_FOUND``, ``ALREADY_EXISTS``, ``FAILED_PRECONDITION``, ``RESOURCE_EXHAUSTED``, ``UNAVAILABLE``, ``INTERNAL``.
+* ``reason`` (string, required): Specific VoIPbin reason code in ``UPPER_SNAKE``. Open-ended — see :ref:`error-reason-catalog` for the full list grouped by domain.
+* ``domain`` (string, required): Originating manager service (e.g., ``call-manager``, ``billing-manager``, ``api-manager``).
+* ``message`` (string, required): Human-readable message for debugging. Do not parse or display this to end users verbatim — use ``reason`` for programmatic branching and craft user-facing text based on ``reason``.
+* ``request_id`` (string, required): Request correlation ID. Include this in support tickets so engineers can grep the server logs for the exact request.
+* ``details`` (array of object, optional): Reserved for future per-field or structured error detail (e.g., field violations on ``INVALID_ARGUMENT``). May be omitted.
+
+Status to HTTP Mapping
+----------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 15 60
+
+   * - Canonical Status
+     - HTTP
+     - When
+   * - ``INVALID_ARGUMENT``
+     - 400
+     - Malformed request, invalid field, unparseable id.
+   * - ``UNAUTHENTICATED``
+     - 401
+     - Missing or invalid JWT / access key.
+   * - ``PAYMENT_REQUIRED``
+     - 402
+     - Insufficient balance, suspended billing account.
+   * - ``PERMISSION_DENIED``
+     - 403
+     - Authenticated but not authorized for the resource.
+   * - ``NOT_FOUND``
+     - 404
+     - Resource doesn't exist or belongs to another customer.
+   * - ``ALREADY_EXISTS``
+     - 409
+     - Duplicate create (explicit construction only).
+   * - ``FAILED_PRECONDITION``
+     - 409
+     - Resource in wrong state (default 409 tie-breaker).
+   * - ``RESOURCE_EXHAUSTED``
+     - 429
+     - Rate limit or quota exceeded.
+   * - ``UNAVAILABLE``
+     - 503
+     - Upstream manager RPC timeout or RabbitMQ unreachable.
+   * - ``INTERNAL``
+     - 500
+     - Unclassified failure, panic recovery.
+
+Self-Correcting Error Handling
+------------------------------
+
+Use the ``reason`` field to branch. See :ref:`error-reason-catalog` for per-reason cause + fix pairs.
+
+.. note:: **AI Implementation Hint**
+
+   When handling a VoIPbin API response, check the HTTP status code first for branching on the canonical class (4xx vs 5xx), then inspect ``error.reason`` for the specific cause. Include ``error.request_id`` in any support escalation — it is the single piece of information that lets engineering find the exact server-side log line.
+

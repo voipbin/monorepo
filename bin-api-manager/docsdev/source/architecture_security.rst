@@ -646,7 +646,10 @@ Protect against abuse:
     +------------------------------------------+
     | Status: 429 Too Many Requests            |
     | Header: Retry-After: 60                  |
-    | Body: {"error": "rate_limit_exceeded"}   |
+    | Body: canonical error envelope with      |
+    |   status=RESOURCE_EXHAUSTED              |
+    |   reason=RATE_LIMIT_EXCEEDED             |
+    | (see restful_api.rst error envelope)     |
     +------------------------------------------+
 
 **DDoS Protection:**

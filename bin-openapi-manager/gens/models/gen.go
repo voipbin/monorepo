@@ -1734,6 +1734,48 @@ func (e EmailManagerEmailStatus) Valid() bool {
 	}
 }
 
+// Defines values for ErrorBodyStatus.
+const (
+	ALREADYEXISTS      ErrorBodyStatus = "ALREADY_EXISTS"
+	FAILEDPRECONDITION ErrorBodyStatus = "FAILED_PRECONDITION"
+	INTERNAL           ErrorBodyStatus = "INTERNAL"
+	INVALIDARGUMENT    ErrorBodyStatus = "INVALID_ARGUMENT"
+	NOTFOUND           ErrorBodyStatus = "NOT_FOUND"
+	PAYMENTREQUIRED    ErrorBodyStatus = "PAYMENT_REQUIRED"
+	PERMISSIONDENIED   ErrorBodyStatus = "PERMISSION_DENIED"
+	RESOURCEEXHAUSTED  ErrorBodyStatus = "RESOURCE_EXHAUSTED"
+	UNAUTHENTICATED    ErrorBodyStatus = "UNAUTHENTICATED"
+	UNAVAILABLE        ErrorBodyStatus = "UNAVAILABLE"
+)
+
+// Valid indicates whether the value is a known member of the ErrorBodyStatus enum.
+func (e ErrorBodyStatus) Valid() bool {
+	switch e {
+	case ALREADYEXISTS:
+		return true
+	case FAILEDPRECONDITION:
+		return true
+	case INTERNAL:
+		return true
+	case INVALIDARGUMENT:
+		return true
+	case NOTFOUND:
+		return true
+	case PAYMENTREQUIRED:
+		return true
+	case PERMISSIONDENIED:
+		return true
+	case RESOURCEEXHAUSTED:
+		return true
+	case UNAUTHENTICATED:
+		return true
+	case UNAVAILABLE:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for FlowManagerActionOptionAMDMachineHandle.
 const (
 	FlowManagerActionOptionAMDMachineHandleContinue FlowManagerActionOptionAMDMachineHandle = "continue"
@@ -4946,6 +4988,35 @@ type EmailManagerEmailAttachmentReferenceType string
 // EmailManagerEmailStatus Email status.
 type EmailManagerEmailStatus string
 
+// ErrorBody defines model for ErrorBody.
+type ErrorBody struct {
+	// Details Reserved for future per-field or structured error detail. May be omitted.
+	Details *[]map[string]interface{} `json:"details,omitempty"`
+
+	// Domain Originating manager service.
+	Domain string `json:"domain"`
+
+	// Message Human-readable message for debugging.
+	Message string `json:"message"`
+
+	// Reason Specific VoIPbin reason code in UPPER_SNAKE (open-ended).
+	Reason string `json:"reason"`
+
+	// RequestId Request correlation ID. Include in support tickets.
+	RequestId string `json:"request_id"`
+
+	// Status Canonical error status. Maps 1:1 to HTTP status code.
+	Status ErrorBodyStatus `json:"status"`
+}
+
+// ErrorBodyStatus Canonical error status. Maps 1:1 to HTTP status code.
+type ErrorBodyStatus string
+
+// ErrorResponse defines model for ErrorResponse.
+type ErrorResponse struct {
+	Error ErrorBody `json:"error"`
+}
+
 // FlowManagerAction defines model for FlowManagerAction.
 type FlowManagerAction struct {
 	// Id The unique identifier of this action within the flow.
@@ -6602,6 +6673,33 @@ type PageSize = int
 
 // PageToken defines model for PageToken.
 type PageToken = string
+
+// BadRequest defines model for BadRequest.
+type BadRequest = ErrorResponse
+
+// Conflict defines model for Conflict.
+type Conflict = ErrorResponse
+
+// InternalError defines model for InternalError.
+type InternalError = ErrorResponse
+
+// NotFound defines model for NotFound.
+type NotFound = ErrorResponse
+
+// PaymentRequired defines model for PaymentRequired.
+type PaymentRequired = ErrorResponse
+
+// PermissionDenied defines model for PermissionDenied.
+type PermissionDenied = ErrorResponse
+
+// TooManyRequests defines model for TooManyRequests.
+type TooManyRequests = ErrorResponse
+
+// Unauthenticated defines model for Unauthenticated.
+type Unauthenticated = ErrorResponse
+
+// Unavailable defines model for Unavailable.
+type Unavailable = ErrorResponse
 
 // GetAccesskeysParams defines parameters for GetAccesskeys.
 type GetAccesskeysParams struct {

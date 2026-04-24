@@ -77,6 +77,7 @@
 <li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
 <ul>
@@ -786,7 +787,10 @@ query := sq.Select(&quot;*&quot;).
 <span class="o">+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Status</span><span class="p">:</span> <span class="mi">429</span> <span class="n">Too</span> <span class="n">Many</span> <span class="n">Requests</span>            <span class="o">|</span>
 <span class="o">|</span> <span class="n">Header</span><span class="p">:</span> <span class="n">Retry</span><span class="o">-</span><span class="n">After</span><span class="p">:</span> <span class="mi">60</span>                  <span class="o">|</span>
-<span class="o">|</span> <span class="n">Body</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;rate_limit_exceeded&quot;</span><span class="p">}</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">Body</span><span class="p">:</span> <span class="n">canonical</span> <span class="n">error</span> <span class="n">envelope</span> <span class="k">with</span>      <span class="o">|</span>
+<span class="o">|</span>   <span class="n">status</span><span class="o">=</span><span class="n">RESOURCE_EXHAUSTED</span>              <span class="o">|</span>
+<span class="o">|</span>   <span class="n">reason</span><span class="o">=</span><span class="n">RATE_LIMIT_EXCEEDED</span>             <span class="o">|</span>
+<span class="o">|</span> <span class="p">(</span><span class="n">see</span> <span class="n">restful_api</span><span class="o">.</span><span class="n">rst</span> <span class="n">error</span> <span class="n">envelope</span><span class="p">)</span>     <span class="o">|</span>
 <span class="o">+------------------------------------------+</span>
 </pre></div>
 </div>

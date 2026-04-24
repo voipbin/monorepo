@@ -133,40 +133,15 @@ Code        Description
 503 Service Unavailable Service temporarily unavailable.
 =========== =====================================================
 
-Error Response Format
----------------------
+Error Responses
+---------------
 
-When an error occurs, the API returns a JSON response with error details:
+All 4xx and 5xx responses share a single canonical envelope shape. See
+:ref:`error-response-envelope` in the RESTful API page for the field
+definitions, status-to-HTTP mapping, and AI implementation hints.
 
-.. code::
-
-    {
-        "error": {
-            "code": "invalid_parameter",
-            "message": "The 'destination' field is required",
-            "field": "destination"
-        }
-    }
-
-**Error fields:**
-
-* ``code``: Machine-readable error code
-* ``message``: Human-readable error description
-* ``field``: (Optional) Field that caused the error
-
-Common Error Codes
-++++++++++++++++++
-
-======================= =====================================================
-Code                    Description
-======================= =====================================================
-invalid_parameter       Request parameter is invalid or missing.
-resource_not_found      Requested resource does not exist.
-permission_denied       Insufficient permissions for this operation.
-duplicate_resource      Resource with same identifier already exists.
-invalid_state           Operation not allowed in current resource state.
-rate_limit_exceeded     Too many requests. Wait before retrying.
-======================= =====================================================
+The reason-code catalog grouped by originating manager is at
+:doc:`restful_api_errors`.
 
 Request/Response Formats
 ------------------------

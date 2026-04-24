@@ -7739,6 +7739,12 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
           }
         }
       }
@@ -22880,6 +22886,164 @@
             "x-go-type": "string",
             "description": "Token expiry timestamp in ISO 8601 format.",
             "example": "2026-04-07T12:00:00Z"
+          }
+        }
+      },
+      "ErrorBody": {
+        "type": "object",
+        "required": [
+          "status",
+          "reason",
+          "domain",
+          "message",
+          "request_id"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "INVALID_ARGUMENT",
+              "UNAUTHENTICATED",
+              "PAYMENT_REQUIRED",
+              "PERMISSION_DENIED",
+              "NOT_FOUND",
+              "ALREADY_EXISTS",
+              "FAILED_PRECONDITION",
+              "RESOURCE_EXHAUSTED",
+              "UNAVAILABLE",
+              "INTERNAL"
+            ],
+            "description": "Canonical error status. Maps 1:1 to HTTP status code."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Specific VoIPbin reason code in UPPER_SNAKE (open-ended).",
+            "example": "CALL_NOT_FOUND"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Originating manager service.",
+            "example": "call-manager"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable message for debugging."
+          },
+          "request_id": {
+            "type": "string",
+            "description": "Request correlation ID. Include in support tickets.",
+            "example": "req_ABCDEF0123456789"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            },
+            "description": "Reserved for future per-field or structured error detail. May be omitted."
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request (INVALID_ARGUMENT).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthenticated": {
+        "description": "Authentication required (UNAUTHENTICATED).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "PaymentRequired": {
+        "description": "Payment required (PAYMENT_REQUIRED).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "PermissionDenied": {
+        "description": "Insufficient permission (PERMISSION_DENIED).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found (NOT_FOUND).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "State conflict (ALREADY_EXISTS or FAILED_PRECONDITION).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Rate or quota exceeded (RESOURCE_EXHAUSTED).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unavailable": {
+        "description": "Upstream unavailable (UNAVAILABLE).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Internal error (INTERNAL).",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
           }
         }
       }
