@@ -58,6 +58,9 @@ api-manager
    * - ``REQUEST_CANCELED``
      - 503
      - The request was canceled before completion (typically the client disconnected). Usually safe to ignore; the server did not finish processing.
+   * - ``SERVICE_UNAVAILABLE``
+     - 503
+     - An upstream manager service is temporarily unavailable. Retry the request with the same idempotency key after a short delay (exponential backoff).
    * - ``INTERNAL``
      - 500
      - Unexpected server error. Include ``error.request_id`` when opening a support ticket.

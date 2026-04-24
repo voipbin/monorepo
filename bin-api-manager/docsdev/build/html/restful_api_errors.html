@@ -266,7 +266,11 @@
 <td><p>503</p></td>
 <td><p>The request was canceled before completion (typically the client disconnected). Usually safe to ignore; the server did not finish processing.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SERVICE_UNAVAILABLE</span></code></p></td>
+<td><p>503</p></td>
+<td><p>An upstream manager service is temporarily unavailable. Retry the request with the same idempotency key after a short delay (exponential backoff).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code></p></td>
 <td><p>500</p></td>
 <td><p>Unexpected server error. Include <code class="docutils literal notranslate"><span class="pre">error.request_id</span></code> when opening a support ticket.</p></td>
 </tr>
