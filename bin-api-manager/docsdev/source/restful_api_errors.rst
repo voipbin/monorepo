@@ -46,6 +46,12 @@ api-manager
    * - ``INVALID_ARGUMENT``
      - 400
      - The request body or a path/query parameter is invalid. Inspect ``error.message`` for details.
+   * - ``INVALID_JSON_BODY``
+     - 400
+     - The request body is not valid JSON. Ensure ``Content-Type`` is ``application/json`` and the payload parses as a JSON object or array.
+   * - ``INVALID_ID``
+     - 400
+     - A path or body parameter is not a valid UUID. Verify the ID was obtained from a recent ``GET`` list call and has the form ``a1b2c3d4-e5f6-7890-abcd-ef1234567890``.
    * - ``REQUEST_TIMEOUT``
      - 503
      - Upstream manager did not respond within the deadline. Retry with the same idempotency key after a short delay.
