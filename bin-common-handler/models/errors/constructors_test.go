@@ -37,3 +37,9 @@ func TestConstructors(t *testing.T) {
 		})
 	}
 }
+
+func TestDataTypeVoipbinError(t *testing.T) {
+	if DataTypeVoipbinError != "voipbin_error" {
+		t.Errorf("DataTypeVoipbinError = %q, want %q", DataTypeVoipbinError, "voipbin_error")
+	}
+}
