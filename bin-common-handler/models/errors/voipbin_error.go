@@ -30,3 +30,12 @@ func (e *VoipbinError) Error() string {
 	}
 	return base
 }
+
+// Unwrap returns the underlying cause so errors.Is and errors.As
+// can walk the chain across fmt.Errorf("%w", VoipbinError) wraps.
+func (e *VoipbinError) Unwrap() error {
+	if e == nil {
+		return nil
+	}
+	return e.Cause
+}

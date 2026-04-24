@@ -3,6 +3,7 @@ package errors
 import (
 	"encoding/json"
 	stderrors "errors"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -99,5 +100,31 @@ func TestVoipbinErrorErrorMethodNilReceiver(t *testing.T) {
 	want := "<nil VoipbinError>"
 	if got != want {
 		t.Errorf("Error() on nil = %q, want %q", got, want)
+	}
+}
+
+func TestVoipbinErrorUnwrap(t *testing.T) {
+	inner := stderrors.New("inner failure")
+	e := &VoipbinError{
+		Status:  StatusInternal,
+		Reason:  "INTERNAL",
+		Domain:  "api-manager",
+		Message: "wrap test",
+		Cause:   inner,
+	}
+
+	// errors.Is walks the chain via Unwrap.
+	if !stderrors.Is(e, inner) {
+		t.Fatalf("errors.Is did not find wrapped cause")
+	}
+
+	// errors.As on a wrapped VoipbinError finds it.
+	wrapped := fmt.Errorf("context: %w", e)
+	var target *VoipbinError
+	if !stderrors.As(wrapped, &target) {
+		t.Fatalf("errors.As did not recover VoipbinError from wrapped chain")
+	}
+	if target.Reason != "INTERNAL" {
+		t.Errorf("errors.As returned wrong VoipbinError: %v", target)
 	}
 }
