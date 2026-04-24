@@ -120,29 +120,36 @@ Add optional `RequestID string \`json:"request_id,omitempty"\`` to `sock.Request
 
 ### 6.1 Default error-block per endpoint class (OpenAPI wiring)
 
-Each OpenAPI path's `responses:` block SHOULD reference the named error responses below as a baseline. Endpoints with special semantics (billing → 402, conflict-able writes → 409, rate-limited paths → 429) add the corresponding response on top of the baseline.
+Each OpenAPI path's `responses:` block MUST reference the named error responses below as a baseline. Endpoints with special semantics (billing-sensitive → 402, conflict-able state transitions → 409, rate-limited paths → 429) add the corresponding response on top of the baseline. Deviations (see counter-examples at the end of this section) MUST be explicitly justified in the PR description.
 
 | Endpoint class | Baseline error responses |
 |---|---|
 | Read (GET, no path param) | `401`, `500` |
-| Read (GET with resource ID) | `401`, `403`, `404`, `500` |
+| Read (GET with resource ID) | `400`, `401`, `403`, `404`, `500` |
 | Write (POST / PUT / PATCH / DELETE, no resource ID) | `400`, `401`, `500` |
 | Write (POST / PUT / PATCH / DELETE with resource ID) | `400`, `401`, `403`, `404`, `500` |
-| Billing-sensitive | baseline + `402` |
+| Admin-gated (hasPermission check, any method, no resource ID) | baseline + `403` |
+| Billing-sensitive (success path deducts credits) | baseline + `402` |
 | Rate-limited | baseline + `429` |
 
 Rationale:
 - `500` is always possible — translator default or panic recovery.
-- `401` is always possible on authenticated endpoints — `Authenticate` middleware rejects missing/invalid tokens before the handler runs.
-- `400` is possible on writes that parse a body — `INVALID_JSON_BODY` or per-field validation can reject.
-- `403` and `404` are possible only when there's a resource to authorize/find.
-- `402` / `409` / `429` are path-specific.
+- `401` is always possible on authenticated endpoints.
+- `400` is possible on writes that parse a body AND on any endpoint parsing a path-param UUID (malformed or zero-value UUID → INVALID_ID).
+- `403` and `404` apply when there's a resource to authorize or find, or when the endpoint is admin-gated (even collection endpoints — `hasPermission(PermissionProjectSuperAdmin)` on a collection emits 403 for non-admins).
+- `402` / `409` / `429` are opt-in per endpoint semantics.
 
-Applied starting PR 1b — see `docs/plans/2026-04-25-api-error-pr1b-admin-agent-ui-plan.md` for the first full application. PR 0b's `/me` and PR 1's `/customer*` pre-date this convention and will be retrofit in a follow-up pass when any of those paths is next modified for other reasons.
+Billing-sensitive = any endpoint whose success path deducts credits from the customer's balance (e.g., `POST /calls`, `POST /messages`, `POST /emails`, `POST /numbers`). The 402 response is used for insufficient balance.
 
-Counter-examples (endpoints that deliberately deviate):
-- `/ping` — read, no path param, but no `401` because it's unauthenticated (health check). Only `500` makes sense.
-- Auth stubs (`POST /v1.0/auth/boot` etc.) — entire purpose is `404 ROUTE_NOT_FOUND`. Baseline ignored.
+Counter-examples (endpoints that deliberately deviate — each MUST cite this list in its OpenAPI spec):
+- `/ping` — unauthenticated health check. Only `500` applies.
+- Auth stubs (`POST /v1.0/auth/boot` etc.) — entire purpose is `404 ROUTE_NOT_FOUND`; baseline does not apply.
+- Enumeration-safe endpoints (`POST /auth/signup`, `POST /auth/email-verify`, `POST /auth/unregister`) — deliberately return `200` on both success and failure to prevent email/account enumeration. Their specs declare minimal error responses on parse/shape errors only (`400`), not on logical failure.
+- WebSocket upgrade endpoints (`/ws`, `/service-agents/ws`) — handshake errors use HTTP (and go through this baseline), but post-upgrade errors use WebSocket close codes out of HTTP scope.
+
+Applied starting PR 1b — see `docs/plans/2026-04-25-api-error-pr1b-admin-agent-ui-plan.md` for the first full application. PR 0b's `/me` and PR 1's `/customer*` pre-date this convention and will be retrofit in a single sweep alongside §10.5's "shrink fallback" PR.
+
+Known gap: HTTP 405 Method Not Allowed has no canonical status equivalent in the enum. `server/no_route.go` documents that a wrong-method request currently falls through to `ROUTE_NOT_FOUND` / 404. A future coordinated schema update to add `METHOD_NOT_ALLOWED` will close this gap; until then, migration PRs do not need to declare 405 on their paths.
 
 ## 7. `bin-api-manager` server-layer changes
 
