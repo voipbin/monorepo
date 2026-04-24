@@ -284,54 +284,13 @@
 <h3>Server Error Codes<a class="headerlink" href="#server-error-codes" title="Link to this heading"></a></h3>
 </section>
 </section>
-<section id="error-response-format">
-<h2>Error Response Format<a class="headerlink" href="#error-response-format" title="Link to this heading"></a></h2>
-<p>When an error occurs, the API returns a JSON response with error details:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;invalid_parameter&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;The &#39;destination&#39; field is required&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;field&quot;</span><span class="p">:</span> <span class="s2">&quot;destination&quot;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p><strong>Error fields:</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">code</span></code>: Machine-readable error code</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code>: Human-readable error description</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">field</span></code>: (Optional) Field that caused the error</p></li>
-</ul>
-<section id="common-error-codes">
-<h3>Common Error Codes<a class="headerlink" href="#common-error-codes" title="Link to this heading"></a></h3>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Code</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>invalid_parameter</p></td>
-<td><p>Request parameter is invalid or missing.</p></td>
-</tr>
-<tr class="row-odd"><td><p>resource_not_found</p></td>
-<td><p>Requested resource does not exist.</p></td>
-</tr>
-<tr class="row-even"><td><p>permission_denied</p></td>
-<td><p>Insufficient permissions for this operation.</p></td>
-</tr>
-<tr class="row-odd"><td><p>duplicate_resource</p></td>
-<td><p>Resource with same identifier already exists.</p></td>
-</tr>
-<tr class="row-even"><td><p>invalid_state</p></td>
-<td><p>Operation not allowed in current resource state.</p></td>
-</tr>
-<tr class="row-odd"><td><p>rate_limit_exceeded</p></td>
-<td><p>Too many requests. Wait before retrying.</p></td>
-</tr>
-</tbody>
-</table>
-</section>
+<section id="error-responses">
+<h2>Error Responses<a class="headerlink" href="#error-responses" title="Link to this heading"></a></h2>
+<p>All 4xx and 5xx responses share a single canonical envelope shape. See
+<a class="reference internal" href="restful_api.html#error-response-envelope"><span class="std std-ref">Error Response Envelope</span></a> in the RESTful API page for the field
+definitions, status-to-HTTP mapping, and AI implementation hints.</p>
+<p>The reason-code catalog grouped by originating manager is at
+<a class="reference internal" href="restful_api_errors.html"><span class="doc">Error Reason Codes</span></a>.</p>
 </section>
 <section id="request-response-formats">
 <h2>Request/Response Formats<a class="headerlink" href="#request-response-formats" title="Link to this heading"></a></h2>
@@ -409,10 +368,7 @@
 <li><a class="reference internal" href="#server-error-codes">Server Error Codes</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#error-response-format">Error Response Format</a><ul>
-<li><a class="reference internal" href="#common-error-codes">Common Error Codes</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#error-responses">Error Responses</a></li>
 <li><a class="reference internal" href="#request-response-formats">Request/Response Formats</a></li>
 <li><a class="reference internal" href="#rate-limiting">Rate Limiting</a></li>
 </ul>

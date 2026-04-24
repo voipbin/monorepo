@@ -80,9 +80,14 @@ func TestTranslateSubstringFallback(t *testing.T) {
 	}{
 		{stderrors.New("user has no permission"), cerrors.StatusPermissionDenied},
 		{stderrors.New("agent has no permission"), cerrors.StatusPermissionDenied},
+		{stderrors.New("permission denied"), cerrors.StatusPermissionDenied},
+		{stderrors.New("Forbidden"), cerrors.StatusPermissionDenied},
 		{stderrors.New("agent authentication required"), cerrors.StatusUnauthenticated},
+		{stderrors.New("Unauthorized"), cerrors.StatusUnauthenticated},
 		{stderrors.New("call not found"), cerrors.StatusNotFound},
+		{stderrors.New("Not Found"), cerrors.StatusNotFound},
 		{stderrors.New("upstream service unavailable"), cerrors.StatusUnavailable},
+		{stderrors.New("Service Unavailable"), cerrors.StatusUnavailable},
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {

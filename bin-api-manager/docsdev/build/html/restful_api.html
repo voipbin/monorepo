@@ -255,7 +255,7 @@
 <p>List endpoints return paginated results. If <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> is non-empty, pass it as the <code class="docutils literal notranslate"><span class="pre">page_token</span></code> query parameter in the next request to retrieve subsequent pages. When <code class="docutils literal notranslate"><span class="pre">next_page_token</span></code> is empty or absent, you have reached the last page.</p>
 </div>
 <dl class="simple">
-<dt>Error Response (4xx, 5xx):</dt><dd><p>See <a class="reference internal" href="#restful-api"><span class="std std-ref">Error Response Envelope</span></a> below for the canonical error
+<dt>Error Response (4xx, 5xx):</dt><dd><p>See <a class="reference internal" href="#error-response-envelope"><span class="std std-ref">Error Response Envelope</span></a> below for the canonical error
 envelope shape returned by all <code class="docutils literal notranslate"><span class="pre">api.voipbin.net/v1.0/...</span></code> endpoints.</p>
 </dd>
 </dl>
@@ -329,7 +329,7 @@ envelope shape returned by all <code class="docutils literal notranslate"><span 
 </section>
 </section>
 <section id="error-response-envelope">
-<h2>Error Response Envelope<a class="headerlink" href="#error-response-envelope" title="Link to this heading"></a></h2>
+<span id="id1"></span><h2>Error Response Envelope<a class="headerlink" href="#error-response-envelope" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>

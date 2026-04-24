@@ -64,7 +64,7 @@ List Response::
    List endpoints return paginated results. If ``next_page_token`` is non-empty, pass it as the ``page_token`` query parameter in the next request to retrieve subsequent pages. When ``next_page_token`` is empty or absent, you have reached the last page.
 
 Error Response (4xx, 5xx):
-    See :ref:`Error Response Envelope <restful_api>` below for the canonical error
+    See :ref:`Error Response Envelope <error-response-envelope>` below for the canonical error
     envelope shape returned by all ``api.voipbin.net/v1.0/...`` endpoints.
 
 Common HTTP Status Codes
@@ -97,6 +97,8 @@ Common HTTP Status Codes
     * **Fix:** Retry the request. If the error persists, contact support with the request details.
 
 For detailed endpoint documentation, parameter descriptions, and response schemas, visit the API reference documentation linked above.
+
+.. _error-response-envelope:
 
 Error Response Envelope
 =======================
