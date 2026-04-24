@@ -26,7 +26,10 @@ func TestNoRouteEmitsEnvelope(t *testing.T) {
 }
 
 func TestNoRouteUnknownMethod(t *testing.T) {
-	// Gin's NoRoute fires for any HTTP method that lands on an unmatched path.
+	// Gin's NoRoute fires for any HTTP method that lands on an unmatched
+	// path. Verify POST returns the full canonical envelope, not just a
+	// 404 status — a regression that returned plain text for non-GET
+	// would otherwise slip past a status-only check.
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	r.Use(middleware.RequestID())
@@ -36,7 +39,5 @@ func TestNoRouteUnknownMethod(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/v1.0/definitely-not-a-route", nil)
 	r.ServeHTTP(w, req)
 
-	if w.Code != http.StatusNotFound {
-		t.Errorf("status = %d want 404", w.Code)
-	}
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "ROUTE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
 }
