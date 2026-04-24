@@ -250,6 +250,14 @@
 <td><p>400</p></td>
 <td><p>The request body or a path/query parameter is invalid. Inspect <code class="docutils literal notranslate"><span class="pre">error.message</span></code> for details.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_JSON_BODY</span></code></p></td>
+<td><p>400</p></td>
+<td><p>The request body is not valid JSON. Ensure <code class="docutils literal notranslate"><span class="pre">Content-Type</span></code> is <code class="docutils literal notranslate"><span class="pre">application/json</span></code> and the payload parses as a JSON object or array.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_ID</span></code></p></td>
+<td><p>400</p></td>
+<td><p>A path or body parameter is not a valid UUID. Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span></code> list call and has the form <code class="docutils literal notranslate"><span class="pre">a1b2c3d4-e5f6-7890-abcd-ef1234567890</span></code>.</p></td>
+</tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">REQUEST_TIMEOUT</span></code></p></td>
 <td><p>503</p></td>
 <td><p>Upstream manager did not respond within the deadline. Retry with the same idempotency key after a short delay.</p></td>
@@ -258,7 +266,11 @@
 <td><p>503</p></td>
 <td><p>The request was canceled before completion (typically the client disconnected). Usually safe to ignore; the server did not finish processing.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">SERVICE_UNAVAILABLE</span></code></p></td>
+<td><p>503</p></td>
+<td><p>An upstream manager service is temporarily unavailable. Retry the request with the same idempotency key after a short delay (exponential backoff).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code></p></td>
 <td><p>500</p></td>
 <td><p>Unexpected server error. Include <code class="docutils literal notranslate"><span class="pre">error.request_id</span></code> when opening a support ticket.</p></td>
 </tr>

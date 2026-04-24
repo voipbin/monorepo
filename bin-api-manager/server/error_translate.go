@@ -68,7 +68,11 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	// migration target for a sentinel in subsequent PRs.
 	lowered := strings.ToLower(err.Error())
 	switch {
-	case strings.Contains(lowered, "no permission"), strings.Contains(lowered, "permission denied"), strings.Contains(lowered, "forbidden"):
+	case strings.Contains(lowered, "no permission"),
+		strings.Contains(lowered, "permission denied"),
+		strings.Contains(lowered, "forbidden"),
+		strings.Contains(lowered, "direct access"),
+		strings.Contains(lowered, "does not belong"):
 		return cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "PERMISSION_DENIED", "You do not have permission to access this resource.").Wrap(err)
 	case strings.Contains(lowered, "authentication required"), strings.Contains(lowered, "unauthorized"):
 		return cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required.").Wrap(err)

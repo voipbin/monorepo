@@ -18941,6 +18941,33 @@ func (response GetCustomer200JSONResponse) VisitGetCustomerResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetCustomer400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetCustomer400JSONResponse) VisitGetCustomerResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCustomer401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetCustomer401JSONResponse) VisitGetCustomerResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCustomer500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetCustomer500JSONResponse) VisitGetCustomerResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PutCustomerRequestObject struct {
 	Body *PutCustomerJSONRequestBody
 }
@@ -18954,6 +18981,33 @@ type PutCustomer200JSONResponse CustomerManagerCustomer
 func (response PutCustomer200JSONResponse) VisitPutCustomerResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomer400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutCustomer400JSONResponse) VisitPutCustomerResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomer401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutCustomer401JSONResponse) VisitPutCustomerResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomer500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutCustomer500JSONResponse) VisitPutCustomerResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -18975,6 +19029,33 @@ func (response PutCustomerBillingAccountId200JSONResponse) VisitPutCustomerBilli
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PutCustomerBillingAccountId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutCustomerBillingAccountId400JSONResponse) VisitPutCustomerBillingAccountIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomerBillingAccountId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutCustomerBillingAccountId401JSONResponse) VisitPutCustomerBillingAccountIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomerBillingAccountId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutCustomerBillingAccountId500JSONResponse) VisitPutCustomerBillingAccountIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PutCustomerDefaultOutgoingSourceNumberIdRequestObject struct {
 	Body *PutCustomerDefaultOutgoingSourceNumberIdJSONRequestBody
 }
@@ -18992,6 +19073,33 @@ func (response PutCustomerDefaultOutgoingSourceNumberId200JSONResponse) VisitPut
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PutCustomerDefaultOutgoingSourceNumberId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutCustomerDefaultOutgoingSourceNumberId400JSONResponse) VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomerDefaultOutgoingSourceNumberId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutCustomerDefaultOutgoingSourceNumberId401JSONResponse) VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomerDefaultOutgoingSourceNumberId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutCustomerDefaultOutgoingSourceNumberId500JSONResponse) VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PutCustomerMetadataRequestObject struct {
 	Body *PutCustomerMetadataJSONRequestBody
 }
@@ -19005,6 +19113,33 @@ type PutCustomerMetadata200JSONResponse CustomerManagerCustomer
 func (response PutCustomerMetadata200JSONResponse) VisitPutCustomerMetadataResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomerMetadata400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutCustomerMetadata400JSONResponse) VisitPutCustomerMetadataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomerMetadata401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutCustomerMetadata401JSONResponse) VisitPutCustomerMetadataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutCustomerMetadata500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutCustomerMetadata500JSONResponse) VisitPutCustomerMetadataResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }

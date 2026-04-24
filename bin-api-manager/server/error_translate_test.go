@@ -82,6 +82,8 @@ func TestTranslateSubstringFallback(t *testing.T) {
 		{stderrors.New("agent has no permission"), cerrors.StatusPermissionDenied},
 		{stderrors.New("permission denied"), cerrors.StatusPermissionDenied},
 		{stderrors.New("Forbidden"), cerrors.StatusPermissionDenied},
+		{stderrors.New("direct access not supported"), cerrors.StatusPermissionDenied},
+		{stderrors.New("the number does not belong to this customer"), cerrors.StatusPermissionDenied},
 		{stderrors.New("agent authentication required"), cerrors.StatusUnauthenticated},
 		{stderrors.New("Unauthorized"), cerrors.StatusUnauthenticated},
 		{stderrors.New("call not found"), cerrors.StatusNotFound},
