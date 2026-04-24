@@ -178,6 +178,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 
 	app := gin.Default()
 	app.Use(middleware.RequestID()) // NEW — tag every request with a correlation ID first.
+	app.NoRoute(server.NoRoute())   // Emit the canonical error envelope for unrouted paths.
 
 	// Use Cloudflare's CF-Connecting-IP header to get the real client IP.
 	// This is required because the service runs behind Cloudflare (L7 proxy) + GKE L4 LB.
