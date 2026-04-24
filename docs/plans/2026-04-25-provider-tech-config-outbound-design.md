@@ -105,11 +105,11 @@ Empty `TechPrefix`/`TechPostfix` are harmless no-ops (empty-string concat). This
 ## Observability
 
 - One `Info` log in `createChannelOutgoing` when any tech config is applied:
-  `"Applied provider tech config. provider_id=%s prefix_len=%d postfix_len=%d headers_applied=%d headers_skipped=%d"`
-- One `Warn` log per skipped header with reason (empty key / invalid char / reserved / CRLF value) and provider_id.
-- No metrics. The log line is sufficient for production debugging; adding a counter here would be overkill.
+  `"Applied provider tech config. headers_applied=%d headers_skipped=%d"`
+- One `Debug` log per skipped header with the reason (empty key / invalid char / reserved / CRLF value) and the offending key.
+- No metrics. The aggregate `Info` line is sufficient for production debugging; per-skip detail is available at `Debug` when operators need to diagnose a specific provider's config.
 
-Per monorepo convention (memory: external-integration logging), these are `Info`/`Warn`, not `Debug`, because tech config changes the on-wire INVITE and must be traceable in production without raising the log level.
+The aggregate `Info` line is the production-visible signal that something was skipped (`headers_skipped > 0`). Per-skip detail stays at `Debug` to avoid log spam on high-volume providers with a misconfigured `tech_headers` — e.g., a provider with 20 invalid entries would otherwise emit 20 Warn lines per outgoing call. An operator seeing `headers_skipped > 0` in `Info` can raise the log level to `Debug` for that pod/provider to recover the per-key reason.
 
 ## Testing strategy
 
