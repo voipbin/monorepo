@@ -31,10 +31,25 @@ func TestSentinelsExist(t *testing.T) {
 }
 
 func TestSentinelsAreDistinct(t *testing.T) {
-	if stderrors.Is(ErrPermissionDenied, ErrNotFound) {
-		t.Error("ErrPermissionDenied must not match ErrNotFound")
+	sentinels := []struct {
+		name string
+		err  error
+	}{
+		{"ErrPermissionDenied", ErrPermissionDenied},
+		{"ErrNotFound", ErrNotFound},
+		{"ErrAuthenticationRequired", ErrAuthenticationRequired},
+		{"ErrDirectAccessNotSupported", ErrDirectAccessNotSupported},
+		{"ErrInvalidArgument", ErrInvalidArgument},
+		{"ErrInternal", ErrInternal},
 	}
-	if stderrors.Is(ErrNotFound, ErrPermissionDenied) {
-		t.Error("ErrNotFound must not match ErrPermissionDenied")
+	for i, a := range sentinels {
+		for j, b := range sentinels {
+			if i == j {
+				continue
+			}
+			if stderrors.Is(a.err, b.err) {
+				t.Errorf("%s must not match %s", a.name, b.name)
+			}
+		}
 	}
 }
