@@ -366,3 +366,15 @@ During PR #799 self-review, six refinement commits tightened the API before merg
 - Typed the constructor `domain` parameter as `outline.ServiceName` to catch service-name typos at compile time.
 - Expanded `ToResponse` round-trip tests to assert all four wire fields; added per-status `FromResponse` round-trip assertion.
 - Documentation: package godoc states the cerrors import alias convention and admission-rule justification; `DataTypeVoipbinError` documents additive-only wire-format contract; Error() documented as non-client-safe; sock.Request.RequestID doc points to the design's propagation chain.
+
+### Round 2 refinements
+
+- `Wrap()` doc comment extended to acknowledge the shallow-copy aliasing semantics of the Details slice backing array.
+- `TestHTTPStatusFor` now covers the empty-string Status case (zero-value safety).
+- Removed the redundant `outline` import alias across `constructors.go`, `constructors_test.go`, and `rpc_test.go`.
+- `FromResponse` godoc corrected to enumerate all four nil-return guards (nil response / success status / wrong DataType / empty Data / unmarshal failure).
+
+### Round 3 refinements
+
+- Design doc §10.2 updated to no longer reference the private `httpStatusFor`; PR 0b's `abortWithError` reuses the exported `cerrors.HTTPStatusFor`.
+- `TestFromResponseEmptyData` added to cover the DataType-matches-but-Data-empty branch with both `nil` and empty-slice inputs.
