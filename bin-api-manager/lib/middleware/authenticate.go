@@ -180,7 +180,36 @@ func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
 	}
 
 	// Account is frozen — return 403 with PERMISSION_DENIED envelope.
-	abortForbidden(c, "ACCOUNT_FROZEN", "This account is frozen. Contact support.")
+	//
+	// Self-service recovery clients (admin.voipbin.net, talk.voipbin.net) rely
+	// on the deletion schedule and recovery endpoint to render the "account
+	// frozen" UX, so these fields are carried in the envelope's details array
+	// while keeping the overall error shape consistent with the rest of the
+	// API.
+	var deletionEffectiveAt *time.Time
+	if cu.TMDeletionScheduled != nil {
+		t := cu.TMDeletionScheduled.Add(30 * 24 * time.Hour)
+		deletionEffectiveAt = &t
+	}
+	details := []map[string]any{
+		{
+			"deletion_scheduled_at": cu.TMDeletionScheduled,
+			"deletion_effective_at": deletionEffectiveAt,
+			"recovery_endpoint":     "DELETE /auth/unregister",
+		},
+	}
+
+	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+		"error": gin.H{
+			"status":     string(cerrors.StatusPermissionDenied),
+			"reason":     "ACCOUNT_FROZEN",
+			"domain":     string(commonoutline.ServiceNameAPIManager),
+			"message":    "This account is frozen. Contact support.",
+			"request_id": RequestIDFromContext(c),
+			"details":    details,
+		},
+	})
+	c.Abort()
 	return true
 }
 

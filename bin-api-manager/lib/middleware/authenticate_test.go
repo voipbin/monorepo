@@ -477,6 +477,34 @@ func TestAuthenticate_FrozenAccountEnvelope(t *testing.T) {
 		t.Fatalf("status = %d want 403", w.Code)
 	}
 	assertAuthErrorEnvelope(t, w.Body.Bytes(), "PERMISSION_DENIED", "ACCOUNT_FROZEN")
+
+	// The frozen-account response must also carry the deletion schedule and
+	// recovery endpoint in the envelope's details array — self-service
+	// recovery clients depend on these exact JSON keys.
+	var body struct {
+		Error struct {
+			Details []map[string]any `json:"details"`
+		} `json:"error"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatalf("unmarshal details: %v; body=%s", err, w.Body.String())
+	}
+	if len(body.Error.Details) != 1 {
+		t.Fatalf("expected 1 details entry, got %d; body=%s", len(body.Error.Details), w.Body.String())
+	}
+	entry := body.Error.Details[0]
+	for _, key := range []string{"deletion_scheduled_at", "deletion_effective_at", "recovery_endpoint"} {
+		if _, ok := entry[key]; !ok {
+			gotKeys := make([]string, 0, len(entry))
+			for k := range entry {
+				gotKeys = append(gotKeys, k)
+			}
+			t.Errorf("details missing %q; got keys=%v", key, gotKeys)
+		}
+	}
+	if got, want := entry["recovery_endpoint"], "DELETE /auth/unregister"; got != want {
+		t.Errorf("recovery_endpoint = %v, want %q", got, want)
+	}
 }
 
 func TestAuthenticateWithInvalidAgentData(t *testing.T) {
