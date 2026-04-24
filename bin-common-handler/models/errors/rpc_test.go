@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	outline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 )
 
@@ -75,7 +76,7 @@ func TestFromResponseNil(t *testing.T) {
 }
 
 func TestToResponse(t *testing.T) {
-	e := NotFound("call-manager", "CALL_NOT_FOUND", "The call was not found.")
+	e := NotFound(outline.ServiceNameCallManager, "CALL_NOT_FOUND", "The call was not found.")
 	resp, err := ToResponse(e)
 	if err != nil {
 		t.Fatalf("ToResponse returned error: %v", err)
