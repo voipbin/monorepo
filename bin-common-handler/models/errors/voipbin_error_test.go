@@ -63,3 +63,32 @@ func TestVoipbinErrorJSONExcludesCause(t *testing.T) {
 		}
 	}
 }
+
+func TestVoipbinErrorErrorMethod(t *testing.T) {
+	e := &VoipbinError{
+		Status:  StatusPermissionDenied,
+		Reason:  "BILLING_ACCESS_DENIED",
+		Domain:  "billing-manager",
+		Message: "Not allowed.",
+	}
+	got := e.Error()
+	want := "billing-manager: BILLING_ACCESS_DENIED: Not allowed."
+	if got != want {
+		t.Errorf("Error() = %q, want %q", got, want)
+	}
+}
+
+func TestVoipbinErrorErrorMethodWithCause(t *testing.T) {
+	e := &VoipbinError{
+		Status:  StatusInternal,
+		Reason:  "INTERNAL",
+		Domain:  "api-manager",
+		Message: "Something went wrong.",
+		Cause:   stderrors.New("pq: connection refused"),
+	}
+	got := e.Error()
+	want := "api-manager: INTERNAL: Something went wrong.: pq: connection refused"
+	if got != want {
+		t.Errorf("Error() = %q, want %q", got, want)
+	}
+}
