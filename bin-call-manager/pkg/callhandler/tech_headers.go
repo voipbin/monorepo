@@ -33,7 +33,7 @@ var reservedTechHeaderKeys = map[string]struct{}{
 // with PJSIP_HEADER(add,...) so Asterisk attaches the header to the outgoing
 // INVITE.
 //
-// Entries are skipped and logged as Warn when:
+// Entries are skipped and logged as Debug when:
 //   - key is empty
 //   - key contains \r, \n, (, ), or ,
 //   - wrapped key matches reservedTechHeaderKeys
@@ -48,29 +48,29 @@ var reservedTechHeaderKeys = map[string]struct{}{
 func mergeTechHeaders(dst map[string]string, src map[string]string, log *logrus.Entry) (applied int, skipped int) {
 	for k, v := range src {
 		if k == "" {
-			log.Warnf("Skipping tech_header with empty key.")
+			log.Debugf("Skipping tech_header with empty key.")
 			skipped++
 			continue
 		}
 		if _, reserved := reservedTechHeaderKeys[k]; reserved {
-			log.Warnf("Skipping tech_header that collides with system-reserved key. key=%q", k)
+			log.Debugf("Skipping tech_header that collides with system-reserved key. key=%q", k)
 			skipped++
 			continue
 		}
 		if strings.ContainsAny(k, "\r\n(),") {
-			log.Warnf("Skipping tech_header with invalid key char. key=%q", k)
+			log.Debugf("Skipping tech_header with invalid key char. key=%q", k)
 			skipped++
 			continue
 		}
 		if strings.ContainsAny(v, "\r\n") {
-			log.Warnf("Skipping tech_header with CRLF in value. key=%q", k)
+			log.Debugf("Skipping tech_header with CRLF in value. key=%q", k)
 			skipped++
 			continue
 		}
 
 		varKey := "PJSIP_HEADER(add," + k + ")"
 		if _, reserved := reservedTechHeaderKeys[varKey]; reserved {
-			log.Warnf("Skipping tech_header that collides with system-reserved header. key=%q", k)
+			log.Debugf("Skipping tech_header that collides with system-reserved header. key=%q", k)
 			skipped++
 			continue
 		}

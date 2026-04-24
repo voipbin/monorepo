@@ -360,7 +360,7 @@ func (h *callHandler) getDialURISIP(ctx context.Context, c *call.Call) (string, 
 	return res, nil, nil
 }
 
-// getDialURISIP returns dial uri of the given sip type destination.
+// getDialURISIPDirect returns dial uri of the given sip type destination via the direct endpoint.
 func (h *callHandler) getDialURISIPDirect(ctx context.Context, c *call.Call) (string, map[string]string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":               "getDialURISIPDirect",

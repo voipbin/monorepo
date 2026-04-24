@@ -1037,6 +1037,7 @@ func Test_getDialURI_Tel(t *testing.T) {
 		expectProviderID uuid.UUID
 		expectRes        string
 		expectTechHdrs   map[string]string
+		expectErr        bool
 	}{
 		{
 			"no tech config (backwards compat)",
@@ -1067,6 +1068,7 @@ func Test_getDialURI_Tel(t *testing.T) {
 			uuid.FromStringOrNil("8730a3da-5350-11ed-aa47-7f44741127c1"),
 			"pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
 			nil,
+			false,
 		},
 		{
 			"prefix only",
@@ -1088,6 +1090,7 @@ func Test_getDialURI_Tel(t *testing.T) {
 			uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000001"),
 			"pjsip/call-out/sip:001115551234@carrier.example.com;transport=udp",
 			nil,
+			false,
 		},
 		{
 			"postfix only",
@@ -1109,6 +1112,7 @@ func Test_getDialURI_Tel(t *testing.T) {
 			uuid.FromStringOrNil("b0000002-0000-0000-0000-000000000002"),
 			"pjsip/call-out/sip:+15551234#@carrier.example.com;transport=udp",
 			nil,
+			false,
 		},
 		{
 			"prefix and postfix both",
@@ -1131,6 +1135,7 @@ func Test_getDialURI_Tel(t *testing.T) {
 			uuid.FromStringOrNil("b0000003-0000-0000-0000-000000000003"),
 			"pjsip/call-out/sip:0011+15551234#@carrier.example.com;transport=udp",
 			nil,
+			false,
 		},
 		{
 			"headers only — returned raw (unsanitized), caller sanitizes via mergeTechHeaders",
@@ -1154,6 +1159,7 @@ func Test_getDialURI_Tel(t *testing.T) {
 			uuid.FromStringOrNil("b0000004-0000-0000-0000-000000000004"),
 			"pjsip/call-out/sip:+15551234@carrier.example.com;transport=udp",
 			map[string]string{"X-Carrier-Auth": "tok-abc"},
+			false,
 		},
 		{
 			"all three together",
@@ -1177,6 +1183,26 @@ func Test_getDialURI_Tel(t *testing.T) {
 			uuid.FromStringOrNil("b0000005-0000-0000-0000-000000000005"),
 			"pjsip/call-out/sip:001115551234#@carrier.example.com;transport=udp",
 			map[string]string{"X-Route-Hint": "premium"},
+			false,
+		},
+		{
+			"provider fetch error — returns err with nil tech_headers",
+
+			&call.Call{
+				Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "+15551234"},
+				DialrouteID: uuid.FromStringOrNil("a0000006-0000-0000-0000-000000000006"),
+				Dialroutes: []rmroute.Route{
+					{ID: uuid.FromStringOrNil("a0000006-0000-0000-0000-000000000006"),
+						ProviderID: uuid.FromStringOrNil("b0000006-0000-0000-0000-000000000006")},
+				},
+			},
+
+			nil,
+
+			uuid.FromStringOrNil("b0000006-0000-0000-0000-000000000006"),
+			"",
+			nil,
+			true,
 		},
 	}
 
@@ -1195,9 +1221,27 @@ func Test_getDialURI_Tel(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
+			if tt.expectErr {
+				mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(nil, fmt.Errorf("mock provider-fetch failure"))
+			} else {
+				mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
+			}
 
 			res, techHdrs, err := h.getDialURI(ctx, tt.call)
+
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: err, got: ok")
+				}
+				if res != "" {
+					t.Errorf("Wrong res on error. expect: empty, got: %q", res)
+				}
+				if techHdrs != nil {
+					t.Errorf("Wrong techHdrs on error. expect: nil, got: %v", techHdrs)
+				}
+				return
+			}
+
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
