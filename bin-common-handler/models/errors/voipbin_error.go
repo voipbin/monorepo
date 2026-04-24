@@ -57,10 +57,16 @@ func (e *VoipbinError) Unwrap() error {
 }
 
 // Wrap returns a shallow copy of the VoipbinError with Cause set to
-// the given error. Callers can chain: Internal(...).Wrap(err). Wrap
-// does NOT mutate the receiver — this prevents aliasing surprises if
-// the receiver has been stored in a package-level variable or passed
-// to another goroutine.
+// the given error. Callers can chain: Internal(...).Wrap(err).
+//
+// Wrap does NOT mutate the receiver's Cause field — string, Status,
+// Reason, Domain, and Message are independently copied. However, the
+// Details slice is a shallow copy: mutating an existing Details entry
+// on the returned value will also mutate the receiver's same entry
+// (they share the backing array). In practice this is never an issue
+// because Wrap is called immediately after construction, before
+// Details is populated — but do not mutate Details entries after
+// calling Wrap if you intend to reuse the receiver.
 //
 // The cause is only used in server-side logs (Error() includes it);
 // JSON serialization still excludes it via the json:"-" tag.

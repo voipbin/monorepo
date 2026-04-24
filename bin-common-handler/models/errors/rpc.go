@@ -9,17 +9,16 @@ import (
 
 // FromResponse extracts a typed *VoipbinError from a sock.Response if
 // the response signals one: StatusCode >= 400 AND DataType ==
-// DataTypeVoipbinError AND Data unmarshals cleanly.
+// DataTypeVoipbinError AND Data is non-empty AND Data unmarshals
+// cleanly.
 //
-// Returns nil in three cases, none of which are distinguished:
-//   - success response (StatusCode < 400)
-//   - legacy error without typed body (DataType != DataTypeVoipbinError)
-//   - typed body present but JSON unmarshal failed
-//
-// Callers should treat nil as "not a typed error" and apply their own
-// fallback — for api-manager this means passing the raw error into
-// the translator, which runs sentinel-matching, transport-error
-// detection, and substring fallback before defaulting to INTERNAL.
+// Returns nil when any of those conditions fail (nil response, success
+// status, wrong DataType, empty Data, or unmarshal failure) — none of
+// the failure modes are distinguished. Callers should treat nil as
+// "not a typed error" and apply their own fallback. For api-manager
+// this means passing the raw error into the translator, which runs
+// sentinel-matching, transport-error detection, and substring fallback
+// before defaulting to INTERNAL.
 func FromResponse(resp *sock.Response) *VoipbinError {
 	if resp == nil || resp.StatusCode < 400 || resp.DataType != DataTypeVoipbinError || len(resp.Data) == 0 {
 		return nil

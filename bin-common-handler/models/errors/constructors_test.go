@@ -3,7 +3,7 @@ package errors
 import (
 	"testing"
 
-	outline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/outline"
 )
 
 func TestConstructors(t *testing.T) {

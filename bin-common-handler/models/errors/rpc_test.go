@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	outline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 )
 
@@ -162,6 +162,7 @@ func TestHTTPStatusFor(t *testing.T) {
 		{StatusResourceExhausted, 429},
 		{StatusUnavailable, 503},
 		{StatusInternal, 500},
+		{Status(""), 500},
 		{Status("UNKNOWN"), 500},
 	}
 	for _, tt := range tests {

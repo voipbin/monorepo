@@ -58,6 +58,7 @@ type VoipbinError struct {
     Reason  string `json:"reason"`   // UPPER_SNAKE, domain-scoped
     Domain  string `json:"domain"`   // e.g. "call-manager"
     Message string `json:"message"`
+    Details []map[string]any `json:"details,omitempty"` // reserved for future per-field detail
     Cause   error  `json:"-"`        // server-side only, never serialized
 }
 
@@ -65,20 +66,22 @@ func (e *VoipbinError) Error() string
 func (e *VoipbinError) Unwrap() error           // supports errors.Is / errors.As
 func (e *VoipbinError) Wrap(cause error) *VoipbinError
 
-// Constructors — one per canonical status
-func InvalidArgument(domain, reason, message string) *VoipbinError
-func Unauthenticated(domain, reason, message string) *VoipbinError
-func PaymentRequired(domain, reason, message string) *VoipbinError
-func PermissionDenied(domain, reason, message string) *VoipbinError
-func NotFound(domain, reason, message string) *VoipbinError
-func AlreadyExists(domain, reason, message string) *VoipbinError
-func FailedPrecondition(domain, reason, message string) *VoipbinError
-func ResourceExhausted(domain, reason, message string) *VoipbinError
-func Unavailable(domain, reason, message string) *VoipbinError
-func Internal(domain, reason, message string) *VoipbinError
+// Constructors — one per canonical status. The `domain` parameter
+// is typed as outline.ServiceName for compile-time rejection of
+// service-name typos; the struct field stays string on the wire.
+func InvalidArgument(domain outline.ServiceName, reason, message string) *VoipbinError
+func Unauthenticated(domain outline.ServiceName, reason, message string) *VoipbinError
+func PaymentRequired(domain outline.ServiceName, reason, message string) *VoipbinError
+func PermissionDenied(domain outline.ServiceName, reason, message string) *VoipbinError
+func NotFound(domain outline.ServiceName, reason, message string) *VoipbinError
+func AlreadyExists(domain outline.ServiceName, reason, message string) *VoipbinError
+func FailedPrecondition(domain outline.ServiceName, reason, message string) *VoipbinError
+func ResourceExhausted(domain outline.ServiceName, reason, message string) *VoipbinError
+func Unavailable(domain outline.ServiceName, reason, message string) *VoipbinError
+func Internal(domain outline.ServiceName, reason, message string) *VoipbinError
 ```
 
-**Domain naming:** uses `commonoutline.ServiceName*` constants (`"call-manager"`, `"billing-manager"`, `"api-manager"`, etc.). Add `ServiceNameApiManager = "api-manager"` if not already present.
+**Domain naming:** uses `commonoutline.ServiceName*` constants (`"call-manager"`, `"billing-manager"`, `"api-manager"`, etc.).
 
 ### 5.1 RPC carrier contract (additive, non-breaking)
 
@@ -122,10 +125,11 @@ Add optional `RequestID string \`json:"request_id,omitempty"\`` to `sock.Request
 ```go
 func abortWithError(c *gin.Context, err *cerrors.VoipbinError)
 func abortWithServiceError(c *gin.Context, err error)   // runs translator
-func httpStatusFor(s cerrors.Status) int                 // 10-entry switch
 func assertErrorResponse(t *testing.T, w *httptest.ResponseRecorder,
                           status cerrors.Status, reason string)  // test helper
 ```
+
+The Status-to-HTTP mapping lives in `bin-common-handler/models/errors` as the exported `HTTPStatusFor(cerrors.Status) int` (10-entry switch) so it can be reused by both the RPC carrier (`ToResponse`) and this abort helper without duplication.
 
 ### 7.2 Request-ID middleware (`lib/middleware/request_id.go`)
 
@@ -262,6 +266,7 @@ components:
 - `VoipbinError` type + constructors + `Error()`/`Unwrap()`/`Wrap()` + tests.
 - `sock.Request.RequestID` optional field.
 - RPC-response unmarshal helpers for `DataType = "voipbin_error"`.
+- Exported `HTTPStatusFor(Status) int` — single source of truth for the canonical-status → HTTP-status mapping, consumed by both `ToResponse` (RPC) and bin-api-manager's abort helper (HTTP).
 - Must land before any api-manager work depends on it.
 
 ### 10.2 PR 0b — `bin-api-manager` infrastructure
@@ -350,3 +355,14 @@ Seven rounds of self-review were run against this design. Issue counts per round
 - Reason-code catalog RST page added.
 - api-validator companion PRs scoped per migration PR.
 - Frontend-client audit added as blocking pre-flight for PR 1.
+
+### Round 1 implementation refinements (post-design, pre-merge)
+
+During PR #799 self-review, six refinement commits tightened the API before merge:
+
+- Exported `HTTPStatusFor` (was private `httpStatusFor`) so bin-api-manager can reuse the mapping without duplication.
+- `Wrap()` now returns a shallow copy instead of mutating the receiver, eliminating aliasing surprises when error pointers are memoized or passed across goroutines.
+- Added reserved `Details []map[string]any` field with `omitempty` so per-field validation detail can land later without a breaking schema change.
+- Typed the constructor `domain` parameter as `outline.ServiceName` to catch service-name typos at compile time.
+- Expanded `ToResponse` round-trip tests to assert all four wire fields; added per-status `FromResponse` round-trip assertion.
+- Documentation: package godoc states the cerrors import alias convention and admission-rule justification; `DataTypeVoipbinError` documents additive-only wire-format contract; Error() documented as non-client-safe; sock.Request.RequestID doc points to the design's propagation chain.

@@ -1,7 +1,7 @@
 package errors
 
 import (
-	outline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/models/outline"
 )
 
 // newVoipbinError is the single internal factory. The exported
