@@ -126,6 +126,9 @@ func TestRequestIDFromStdContextEmptyWhenAbsent(t *testing.T) {
 	if got := RequestIDFromStdContext(context.Background()); got != "" {
 		t.Errorf("unset context should yield empty, got %q", got)
 	}
+	// Intentionally pass a nil context.Context to verify the nil-safety
+	// guarantee documented on RequestIDFromStdContext.
+	//nolint:staticcheck // SA1012: intentional nil to exercise nil-safety path
 	if got := RequestIDFromStdContext(nil); got != "" {
 		t.Errorf("nil context should yield empty, got %q", got)
 	}

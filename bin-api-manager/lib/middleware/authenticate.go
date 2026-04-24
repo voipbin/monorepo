@@ -291,15 +291,3 @@ func abortUnauthenticated(c *gin.Context, reason, message string) {
 	})
 }
 
-// abortForbidden writes the standard PERMISSION_DENIED envelope.
-func abortForbidden(c *gin.Context, reason, message string) {
-	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-		"error": gin.H{
-			"status":     string(cerrors.StatusPermissionDenied),
-			"reason":     reason,
-			"domain":     string(commonoutline.ServiceNameAPIManager),
-			"message":    message,
-			"request_id": RequestIDFromContext(c),
-		},
-	})
-}
