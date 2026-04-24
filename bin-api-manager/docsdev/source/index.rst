@@ -19,6 +19,7 @@ Welcome to VoIPBIN's documentation!
    accesskey
    sdk
    restful_api
+   restful_api_errors
 
 .. toctree::
    :maxdepth: 5

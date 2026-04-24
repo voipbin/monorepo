@@ -14,7 +14,7 @@
             <link rel="index" title="Index" href="genindex.html" />
             <link rel="search" title="Search" href="search.html" />
             <link rel="top" title="voipbin  documentation" href="#" />
-            <link rel="next" title="Flow" href="flow.html" />
+            <link rel="next" title="Error Reason Codes" href="restful_api_errors.html" />
             <link rel="prev" title="SDK(Software Development Kit)" href="sdk.html" />
     </head>
 <body>
@@ -79,6 +79,7 @@
 <li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
 <ul>
@@ -329,6 +330,105 @@
 <p>For detailed endpoint documentation, parameter descriptions, and response schemas, visit the API reference documentation linked above.</p>
 </section>
 </section>
+<section id="error-response-envelope">
+<h2>Error Response Envelope<a class="headerlink" href="#error-response-envelope" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>Every 4xx/5xx response from the VoIPbin API (v1.0 paths under <code class="docutils literal notranslate"><span class="pre">api.voipbin.net</span></code>) contains a JSON error envelope with a canonical <code class="docutils literal notranslate"><span class="pre">status</span></code>, a specific <code class="docutils literal notranslate"><span class="pre">reason</span></code>, the originating <code class="docutils literal notranslate"><span class="pre">domain</span></code>, a human-readable <code class="docutils literal notranslate"><span class="pre">message</span></code>, and a <code class="docutils literal notranslate"><span class="pre">request_id</span></code> for support correlation. Branch on <code class="docutils literal notranslate"><span class="pre">error.reason</span></code> for debugging; <code class="docutils literal notranslate"><span class="pre">error.status</span></code> maps 1:1 to the HTTP status code.</p>
+</div>
+<p>All errors emitted by <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/...</span></code> carry the same envelope shape:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PERMISSION_DENIED&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BILLING_ACCESS_DENIED&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;billing-manager&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You do not have permission to access this billing account.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;req_01HXYZ...&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="fields">
+<h3>Fields<a class="headerlink" href="#fields" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string, required): Canonical error status. One of:
+<code class="docutils literal notranslate"><span class="pre">INVALID_ARGUMENT</span></code>, <code class="docutils literal notranslate"><span class="pre">UNAUTHENTICATED</span></code>, <code class="docutils literal notranslate"><span class="pre">PAYMENT_REQUIRED</span></code>, <code class="docutils literal notranslate"><span class="pre">PERMISSION_DENIED</span></code>, <code class="docutils literal notranslate"><span class="pre">NOT_FOUND</span></code>, <code class="docutils literal notranslate"><span class="pre">ALREADY_EXISTS</span></code>, <code class="docutils literal notranslate"><span class="pre">FAILED_PRECONDITION</span></code>, <code class="docutils literal notranslate"><span class="pre">RESOURCE_EXHAUSTED</span></code>, <code class="docutils literal notranslate"><span class="pre">UNAVAILABLE</span></code>, <code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reason</span></code> (string, required): Specific VoIPbin reason code in <code class="docutils literal notranslate"><span class="pre">UPPER_SNAKE</span></code>. Open-ended — see <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a> for the full list grouped by domain.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">domain</span></code> (string, required): Originating manager service (e.g., <code class="docutils literal notranslate"><span class="pre">call-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">api-manager</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (string, required): Human-readable message for debugging. Do not parse or display this to end users verbatim — use <code class="docutils literal notranslate"><span class="pre">reason</span></code> for programmatic branching and craft user-facing text based on <code class="docutils literal notranslate"><span class="pre">reason</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">request_id</span></code> (string, required): Request correlation ID. Include this in support tickets so engineers can grep the server logs for the exact request.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">details</span></code> (array of object, optional): Reserved for future per-field or structured error detail (e.g., field violations on <code class="docutils literal notranslate"><span class="pre">INVALID_ARGUMENT</span></code>). May be omitted.</p></li>
+</ul>
+</section>
+<section id="status-to-http-mapping">
+<h3>Status to HTTP Mapping<a class="headerlink" href="#status-to-http-mapping" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 15.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Canonical Status</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>When</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INVALID_ARGUMENT</span></code></p></td>
+<td><p>400</p></td>
+<td><p>Malformed request, invalid field, unparseable id.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">UNAUTHENTICATED</span></code></p></td>
+<td><p>401</p></td>
+<td><p>Missing or invalid JWT / access key.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PAYMENT_REQUIRED</span></code></p></td>
+<td><p>402</p></td>
+<td><p>Insufficient balance, suspended billing account.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PERMISSION_DENIED</span></code></p></td>
+<td><p>403</p></td>
+<td><p>Authenticated but not authorized for the resource.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Resource doesn’t exist or belongs to another customer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ALREADY_EXISTS</span></code></p></td>
+<td><p>409</p></td>
+<td><p>Duplicate create (explicit construction only).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">FAILED_PRECONDITION</span></code></p></td>
+<td><p>409</p></td>
+<td><p>Resource in wrong state (default 409 tie-breaker).</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RESOURCE_EXHAUSTED</span></code></p></td>
+<td><p>429</p></td>
+<td><p>Rate limit or quota exceeded.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">UNAVAILABLE</span></code></p></td>
+<td><p>503</p></td>
+<td><p>Upstream manager RPC timeout or RabbitMQ unreachable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code></p></td>
+<td><p>500</p></td>
+<td><p>Unclassified failure, panic recovery.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="self-correcting-error-handling">
+<h3>Self-Correcting Error Handling<a class="headerlink" href="#self-correcting-error-handling" title="Link to this heading"></a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">reason</span></code> field to branch. See <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a> for per-reason cause + fix pairs.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When handling a VoIPbin API response, check the HTTP status code first for branching on the canonical class (4xx vs 5xx), then inspect <code class="docutils literal notranslate"><span class="pre">error.reason</span></code> for the specific cause. Include <code class="docutils literal notranslate"><span class="pre">error.request_id</span></code> in any support escalation — it is the single piece of information that lets engineering find the exact server-side log line.</p>
+</div>
+</section>
+</section>
 </section>
 
 </main>
@@ -336,8 +436,8 @@
     <a class="float-left" href="sdk.html" title="Previous">
         <span aria-hidden="true">←&nbsp;</span>SDK(Software Development Kit)
     </a>
-    <a class="float-right" href="flow.html" title="Next">
-        Flow <span aria-hidden="true">&nbsp;→</span>
+    <a class="float-right" href="restful_api_errors.html" title="Next">
+        Error Reason Codes <span aria-hidden="true">&nbsp;→</span>
     </a>
 </nav>
                     </div>
@@ -357,6 +457,12 @@
 <li><a class="reference internal" href="#request-format">Request Format</a></li>
 <li><a class="reference internal" href="#response-format">Response Format</a></li>
 <li><a class="reference internal" href="#common-http-status-codes">Common HTTP Status Codes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#error-response-envelope">Error Response Envelope</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
+<li><a class="reference internal" href="#status-to-http-mapping">Status to HTTP Mapping</a></li>
+<li><a class="reference internal" href="#self-correcting-error-handling">Self-Correcting Error Handling</a></li>
 </ul>
 </li>
 </ul>
