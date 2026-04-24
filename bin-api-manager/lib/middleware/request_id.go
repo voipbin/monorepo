@@ -14,17 +14,29 @@ const (
 	ctxKeyRequestID  = "request_id"
 	requestIDPrefix  = "req_"
 	requestIDRawBits = 16 // 16 bytes -> 26 base32 chars -> 30 total w/ prefix
+	// maxRequestIDLen caps the client-supplied X-Request-Id length.
+	// Anything longer is treated as malformed and the middleware
+	// generates a fresh ID instead.
+	maxRequestIDLen = 64
 )
 
 // RequestID returns a Gin middleware that ensures every request has a
-// unique correlation ID. If the client sends X-Request-Id, that value
-// is echoed; otherwise a fresh ULID-like ID is generated. The ID is
-// stored in the Gin context, propagated to c.Request.Context(), and
-// attached to the X-Request-Id response header.
+// unique correlation ID. If the client sends a safe X-Request-Id, that
+// value is echoed; otherwise a fresh ULID-like ID is generated.
+//
+// An inbound header is "safe" when it is non-empty, at most 64 bytes,
+// and contains only characters in [A-Za-z0-9_-]. Any violation causes
+// the middleware to silently discard the inbound value and generate a
+// fresh ID. This prevents log injection via newlines / control
+// characters and bounds memory pressure from hostile clients.
+//
+// The ID is stored in the Gin context, propagated to
+// c.Request.Context(), and attached to the X-Request-Id response
+// header.
 func RequestID() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.GetHeader(headerRequestID)
-		if id == "" {
+		if !isSafeRequestID(id) {
 			id = newRequestID()
 		}
 		c.Set(ctxKeyRequestID, id)
@@ -56,10 +68,11 @@ func RequestIDFromContext(c *gin.Context) string {
 
 type requestIDCtxKey struct{}
 
-// requestIDFromStdContext returns the request ID attached to a
-// context.Context by this middleware. Used by non-Gin consumers such
-// as the reqHandler wrapper that needs to forward the ID into RPC.
-func requestIDFromStdContext(ctx context.Context) string {
+// RequestIDFromStdContext returns the request ID attached to a
+// context.Context by this middleware, or "" if not present. Used by
+// non-Gin consumers such as the reqHandler RPC wrapper that forwards
+// the ID into sock.Request.RequestID for downstream log correlation.
+func RequestIDFromStdContext(ctx context.Context) string {
 	if ctx == nil {
 		return ""
 	}
@@ -69,12 +82,34 @@ func requestIDFromStdContext(ctx context.Context) string {
 	return ""
 }
 
+// isSafeRequestID reports whether an inbound X-Request-Id value is
+// suitable for echoing: non-empty, bounded length, and limited to
+// characters that cannot inject into logs (no CR/LF or control bytes).
+func isSafeRequestID(id string) bool {
+	if id == "" || len(id) > maxRequestIDLen {
+		return false
+	}
+	for i := 0; i < len(id); i++ {
+		c := id[i]
+		switch {
+		case c >= 'A' && c <= 'Z':
+		case c >= 'a' && c <= 'z':
+		case c >= '0' && c <= '9':
+		case c == '_' || c == '-':
+		default:
+			return false
+		}
+	}
+	return true
+}
+
 func newRequestID() string {
 	buf := make([]byte, requestIDRawBits)
 	if _, err := rand.Read(buf); err != nil {
 		// Cryptographically impossible in practice; fall back to a
-		// fixed sentinel so downstream code never sees an empty ID.
-		return requestIDPrefix + "deadbeef"
+		// full-length placeholder so downstream format checks still
+		// see req_ + 26 chars.
+		return requestIDPrefix + "AAAAAAAAAAAAAAAAAAAAAAAAAA"
 	}
 	return requestIDPrefix + base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(buf)
 }
