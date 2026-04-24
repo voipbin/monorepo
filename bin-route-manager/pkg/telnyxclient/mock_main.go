@@ -40,33 +40,91 @@ func (m *MockTelnyxClient) EXPECT() *MockTelnyxClientMockRecorder {
 	return m.recorder
 }
 
-// CreateCredentialConnection mocks base method.
-func (m *MockTelnyxClient) CreateCredentialConnection(ctx context.Context, name string) (string, error) {
+// CreateIPConnection mocks base method.
+func (m *MockTelnyxClient) CreateIPConnection(ctx context.Context, name, profileID string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCredentialConnection", ctx, name)
+	ret := m.ctrl.Call(m, "CreateIPConnection", ctx, name, profileID)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateCredentialConnection indicates an expected call of CreateCredentialConnection.
-func (mr *MockTelnyxClientMockRecorder) CreateCredentialConnection(ctx, name any) *gomock.Call {
+// CreateIPConnection indicates an expected call of CreateIPConnection.
+func (mr *MockTelnyxClientMockRecorder) CreateIPConnection(ctx, name, profileID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCredentialConnection", reflect.TypeOf((*MockTelnyxClient)(nil).CreateCredentialConnection), ctx, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateIPConnection", reflect.TypeOf((*MockTelnyxClient)(nil).CreateIPConnection), ctx, name, profileID)
 }
 
-// DeleteCredentialConnection mocks base method.
-func (m *MockTelnyxClient) DeleteCredentialConnection(ctx context.Context, connID string) error {
+// CreateOutboundVoiceProfile mocks base method.
+func (m *MockTelnyxClient) CreateOutboundVoiceProfile(ctx context.Context, name string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteCredentialConnection", ctx, connID)
+	ret := m.ctrl.Call(m, "CreateOutboundVoiceProfile", ctx, name)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateOutboundVoiceProfile indicates an expected call of CreateOutboundVoiceProfile.
+func (mr *MockTelnyxClientMockRecorder) CreateOutboundVoiceProfile(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOutboundVoiceProfile", reflect.TypeOf((*MockTelnyxClient)(nil).CreateOutboundVoiceProfile), ctx, name)
+}
+
+// DeleteIP mocks base method.
+func (m *MockTelnyxClient) DeleteIP(ctx context.Context, ipID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteIP", ctx, ipID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteCredentialConnection indicates an expected call of DeleteCredentialConnection.
-func (mr *MockTelnyxClientMockRecorder) DeleteCredentialConnection(ctx, connID any) *gomock.Call {
+// DeleteIP indicates an expected call of DeleteIP.
+func (mr *MockTelnyxClientMockRecorder) DeleteIP(ctx, ipID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCredentialConnection", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteCredentialConnection), ctx, connID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIP", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteIP), ctx, ipID)
+}
+
+// DeleteIPConnection mocks base method.
+func (m *MockTelnyxClient) DeleteIPConnection(ctx context.Context, connID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteIPConnection", ctx, connID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteIPConnection indicates an expected call of DeleteIPConnection.
+func (mr *MockTelnyxClientMockRecorder) DeleteIPConnection(ctx, connID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteIPConnection", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteIPConnection), ctx, connID)
+}
+
+// DeleteOutboundVoiceProfile mocks base method.
+func (m *MockTelnyxClient) DeleteOutboundVoiceProfile(ctx context.Context, profileID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOutboundVoiceProfile", ctx, profileID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOutboundVoiceProfile indicates an expected call of DeleteOutboundVoiceProfile.
+func (mr *MockTelnyxClientMockRecorder) DeleteOutboundVoiceProfile(ctx, profileID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOutboundVoiceProfile", reflect.TypeOf((*MockTelnyxClient)(nil).DeleteOutboundVoiceProfile), ctx, profileID)
+}
+
+// RegisterIP mocks base method.
+func (m *MockTelnyxClient) RegisterIP(ctx context.Context, connID, ipAddress string, port int) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterIP", ctx, connID, ipAddress, port)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RegisterIP indicates an expected call of RegisterIP.
+func (mr *MockTelnyxClientMockRecorder) RegisterIP(ctx, connID, ipAddress, port any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterIP", reflect.TypeOf((*MockTelnyxClient)(nil).RegisterIP), ctx, connID, ipAddress, port)
 }
 
 // ValidateKey mocks base method.

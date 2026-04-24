@@ -21,11 +21,24 @@ const (
 type TelnyxClient interface {
 	// ValidateKey calls GET /v2/whoami. Returns ErrInvalidKey on 401/403.
 	ValidateKey(ctx context.Context) error
-	// CreateCredentialConnection calls POST /v2/credential_connections.
-	// Returns the Telnyx connection ID (held in memory for compensating cleanup only).
-	CreateCredentialConnection(ctx context.Context, name string) (connID string, err error)
-	// DeleteCredentialConnection calls DELETE /v2/credential_connections/{id}.
-	DeleteCredentialConnection(ctx context.Context, connID string) error
+
+	// CreateOutboundVoiceProfile calls POST /v2/outbound_voice_profiles.
+	// Returns the Telnyx profile ID.
+	CreateOutboundVoiceProfile(ctx context.Context, name string) (profileID string, err error)
+	// DeleteOutboundVoiceProfile calls DELETE /v2/outbound_voice_profiles/{id}.
+	DeleteOutboundVoiceProfile(ctx context.Context, profileID string) error
+
+	// CreateIPConnection calls POST /v2/ip_connections.
+	// Returns the Telnyx connection ID.
+	CreateIPConnection(ctx context.Context, name string, profileID string) (connID string, err error)
+	// DeleteIPConnection calls DELETE /v2/ip_connections/{id}.
+	DeleteIPConnection(ctx context.Context, connID string) error
+
+	// RegisterIP calls POST /v2/ips to attach our SIP LB IP to the connection.
+	// Returns the Telnyx IP resource ID.
+	RegisterIP(ctx context.Context, connID string, ipAddress string, port int) (ipID string, err error)
+	// DeleteIP calls DELETE /v2/ips/{id}.
+	DeleteIP(ctx context.Context, ipID string) error
 }
 
 type telnyxClient struct {

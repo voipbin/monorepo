@@ -13,8 +13,18 @@ import (
 	"monorepo/bin-route-manager/pkg/telnyxclient"
 )
 
+const testSipLBAddr = "10.0.0.1:5060"
+
+func newTestProviderHandler(ctrl *gomock.Controller) (*providerHandler, *telnyxclient.MockTelnyxClient, *dbhandler.MockDBHandler, *notifyhandler.MockNotifyHandler) {
+	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	h := &providerHandler{db: mockDB, notifyHandler: mockNotify, sipLBAddresses: []string{testSipLBAddr}}
+	return h, mockClient, mockDB, mockNotify
+}
+
 func Test_Setup_UnknownCarrier(t *testing.T) {
-	h := &providerHandler{}
+	h := &providerHandler{sipLBAddresses: []string{testSipLBAddr}}
 	_, err := h.setupWithClient(context.Background(), "vonage", "name", "detail",
 		telnyxclient.NewTelnyxClient("key"))
 	if err == nil || err.Error() != "unsupported carrier: vonage" {
@@ -22,70 +32,93 @@ func Test_Setup_UnknownCarrier(t *testing.T) {
 	}
 }
 
+func Test_Setup_NoAddressesConfigured(t *testing.T) {
+	h := &providerHandler{sipLBAddresses: nil}
+	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail",
+		telnyxclient.NewTelnyxClient("key"))
+	if err == nil {
+		t.Fatal("expected error for empty sipLBAddresses, got nil")
+	}
+}
+
 func Test_Setup_InvalidKey(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+	h, mockClient, _, _ := newTestProviderHandler(ctrl)
 	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(telnyxclient.ErrInvalidKey)
 
-	h := &providerHandler{}
 	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
 	if !errors.Is(err, telnyxclient.ErrInvalidKey) {
 		t.Fatalf("expected ErrInvalidKey, got %v", err)
 	}
 }
 
-func Test_Setup_CreateConnectionFails(t *testing.T) {
+func Test_Setup_CreateVoiceProfileFails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+	h, mockClient, _, _ := newTestProviderHandler(ctrl)
 	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
-	mockClient.EXPECT().CreateCredentialConnection(gomock.Any(), "name").Return("", errors.New("telnyx down"))
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("", errors.New("telnyx down"))
 
-	h := &providerHandler{}
 	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
 }
 
-func Test_Setup_ProviderCreateFails_TriggersCleanup(t *testing.T) {
+func Test_Setup_CreateIPConnectionFails_CleansUpProfile(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+	h, mockClient, _, _ := newTestProviderHandler(ctrl)
 	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
-	mockClient.EXPECT().CreateCredentialConnection(gomock.Any(), "name").Return("conn-123", nil)
-	mockClient.EXPECT().DeleteCredentialConnection(gomock.Any(), "conn-123").Return(nil)
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("profile-123", nil)
+	mockClient.EXPECT().CreateIPConnection(gomock.Any(), "name", "profile-123").Return("", errors.New("telnyx down"))
+	mockClient.EXPECT().DeleteOutboundVoiceProfile(gomock.Any(), "profile-123").Return(nil)
 
-	mockDB := dbhandler.NewMockDBHandler(ctrl)
-	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
-
-	h := &providerHandler{db: mockDB}
 	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
 }
 
-func Test_Setup_ProviderCreateFails_CleanupAlsoFails(t *testing.T) {
+func Test_Setup_RegisterIPFails_CleansUpConnectionAndProfile(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+	h, mockClient, _, _ := newTestProviderHandler(ctrl)
 	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
-	mockClient.EXPECT().CreateCredentialConnection(gomock.Any(), "name").Return("conn-456", nil)
-	mockClient.EXPECT().DeleteCredentialConnection(gomock.Any(), "conn-456").Return(errors.New("cleanup failed"))
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("profile-123", nil)
+	mockClient.EXPECT().CreateIPConnection(gomock.Any(), "name", "profile-123").Return("conn-456", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.1", 5060).Return("", errors.New("ip conflict"))
+	mockClient.EXPECT().DeleteIPConnection(gomock.Any(), "conn-456").Return(nil)
+	mockClient.EXPECT().DeleteOutboundVoiceProfile(gomock.Any(), "profile-123").Return(nil)
 
-	mockDB := dbhandler.NewMockDBHandler(ctrl)
-	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
-
-	h := &providerHandler{db: mockDB}
 	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
 	if err == nil {
-		t.Fatal("expected error even when cleanup fails, got nil")
+		t.Fatal("expected error, got nil")
+	}
+}
+
+func Test_Setup_ProviderCreateFails_CleansUpAll(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h, mockClient, mockDB, _ := newTestProviderHandler(ctrl)
+	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("profile-123", nil)
+	mockClient.EXPECT().CreateIPConnection(gomock.Any(), "name", "profile-123").Return("conn-456", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.1", 5060).Return("ip-789", nil)
+	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(errors.New("db error"))
+	mockClient.EXPECT().DeleteIP(gomock.Any(), "ip-789").Return(nil)
+	mockClient.EXPECT().DeleteIPConnection(gomock.Any(), "conn-456").Return(nil)
+	mockClient.EXPECT().DeleteOutboundVoiceProfile(gomock.Any(), "profile-123").Return(nil)
+
+	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
+	if err == nil {
+		t.Fatal("expected error, got nil")
 	}
 }
 
@@ -95,23 +128,148 @@ func Test_Setup_Success(t *testing.T) {
 
 	created := &provider.Provider{Hostname: "sip.telnyx.com", Name: "name"}
 
-	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+	h, mockClient, mockDB, mockNotify := newTestProviderHandler(ctrl)
 	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
-	mockClient.EXPECT().CreateCredentialConnection(gomock.Any(), "name").Return("conn-123", nil)
-
-	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("profile-123", nil)
+	mockClient.EXPECT().CreateIPConnection(gomock.Any(), "name", "profile-123").Return("conn-456", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.1", 5060).Return("ip-789", nil)
 	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(nil)
 	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
-
-	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
 	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any())
+	mockDB.EXPECT().ProviderUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
 
-	h := &providerHandler{db: mockDB, notifyHandler: mockNotify}
 	res, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
 	if err != nil {
 		t.Fatalf("expected nil, got %v", err)
 	}
 	if res.Hostname != "sip.telnyx.com" {
 		t.Fatalf("expected sip.telnyx.com, got %s", res.Hostname)
+	}
+}
+
+func Test_Setup_MultipleIPs_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	created := &provider.Provider{Hostname: "sip.telnyx.com", Name: "name"}
+
+	h := &providerHandler{
+		db:             dbhandler.NewMockDBHandler(ctrl),
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(ctrl),
+		sipLBAddresses: []string{"10.0.0.1:5060", "10.0.0.2:5060"},
+	}
+	mockDB := h.db.(*dbhandler.MockDBHandler)
+	mockNotify := h.notifyHandler.(*notifyhandler.MockNotifyHandler)
+	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+
+	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("profile-123", nil)
+	mockClient.EXPECT().CreateIPConnection(gomock.Any(), "name", "profile-123").Return("conn-456", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.1", 5060).Return("ip-111", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.2", 5060).Return("ip-222", nil)
+	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any())
+	mockDB.EXPECT().ProviderUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
+
+	res, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
+	if err != nil {
+		t.Fatalf("expected nil, got %v", err)
+	}
+	if res.Hostname != "sip.telnyx.com" {
+		t.Fatalf("expected sip.telnyx.com, got %s", res.Hostname)
+	}
+}
+
+// Test_Setup_MetadataUpdateFails_StillSucceeds verifies that a failure to persist
+// Telnyx resource IDs as metadata is non-fatal: the setup still returns the
+// pre-update provider record without issuing a second ProviderGet.
+func Test_Setup_MetadataUpdateFails_StillSucceeds(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	created := &provider.Provider{Hostname: "sip.telnyx.com", Name: "name"}
+
+	h, mockClient, mockDB, mockNotify := newTestProviderHandler(ctrl)
+	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("profile-123", nil)
+	mockClient.EXPECT().CreateIPConnection(gomock.Any(), "name", "profile-123").Return("conn-456", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.1", 5060).Return("ip-789", nil)
+	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any())
+	// Metadata update fails; no follow-up ProviderGet should be issued.
+	mockDB.EXPECT().ProviderUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("db error"))
+
+	res, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
+	if err != nil {
+		t.Fatalf("expected nil, got %v", err)
+	}
+	if res == nil {
+		t.Fatal("expected non-nil provider, got nil")
+	}
+	if res.Hostname != "sip.telnyx.com" {
+		t.Fatalf("expected sip.telnyx.com, got %s", res.Hostname)
+	}
+}
+
+// Test_Setup_MetadataRefetchFails_StillSucceeds verifies that a failure to
+// re-fetch the provider after a successful metadata update is non-fatal:
+// setup still returns the pre-update provider record.
+func Test_Setup_MetadataRefetchFails_StillSucceeds(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	created := &provider.Provider{Hostname: "sip.telnyx.com", Name: "name"}
+
+	h, mockClient, mockDB, mockNotify := newTestProviderHandler(ctrl)
+	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("profile-123", nil)
+	mockClient.EXPECT().CreateIPConnection(gomock.Any(), "name", "profile-123").Return("conn-456", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.1", 5060).Return("ip-789", nil)
+	mockDB.EXPECT().ProviderCreate(gomock.Any(), gomock.Any()).Return(nil)
+	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(created, nil)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any())
+	mockDB.EXPECT().ProviderUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+	// Re-fetch fails — setup should return the pre-update record anyway.
+	mockDB.EXPECT().ProviderGet(gomock.Any(), gomock.Any()).Return(nil, errors.New("db error"))
+
+	res, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
+	if err != nil {
+		t.Fatalf("expected nil, got %v", err)
+	}
+	if res == nil {
+		t.Fatal("expected non-nil provider, got nil")
+	}
+	if res.Hostname != "sip.telnyx.com" {
+		t.Fatalf("expected sip.telnyx.com, got %s", res.Hostname)
+	}
+}
+
+func Test_Setup_SecondIPFails_CleansUpFirstIPAndRest(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	h := &providerHandler{
+		db:             dbhandler.NewMockDBHandler(ctrl),
+		notifyHandler:  notifyhandler.NewMockNotifyHandler(ctrl),
+		sipLBAddresses: []string{"10.0.0.1:5060", "10.0.0.2:5060"},
+	}
+	mockClient := telnyxclient.NewMockTelnyxClient(ctrl)
+
+	mockClient.EXPECT().ValidateKey(gomock.Any()).Return(nil)
+	mockClient.EXPECT().CreateOutboundVoiceProfile(gomock.Any(), "name").Return("profile-123", nil)
+	mockClient.EXPECT().CreateIPConnection(gomock.Any(), "name", "profile-123").Return("conn-456", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.1", 5060).Return("ip-111", nil)
+	mockClient.EXPECT().RegisterIP(gomock.Any(), "conn-456", "10.0.0.2", 5060).Return("", errors.New("ip conflict"))
+	mockClient.EXPECT().DeleteIP(gomock.Any(), "ip-111").Return(nil)
+	mockClient.EXPECT().DeleteIPConnection(gomock.Any(), "conn-456").Return(nil)
+	mockClient.EXPECT().DeleteOutboundVoiceProfile(gomock.Any(), "profile-123").Return(nil)
+
+	_, err := h.setupWithClient(context.Background(), "telnyx", "name", "detail", mockClient)
+	if err == nil {
+		t.Fatal("expected error, got nil")
 	}
 }

@@ -21405,6 +21405,19 @@
               "X-Custom-Header": "value1"
             }
           },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "description": "Carrier-specific resource identifiers stored during automated setup. For Telnyx providers created via `POST /providers/setup`, contains `telnyx_profile_id`, `telnyx_connection_id`, and `telnyx_ip_ids`. Read-only — populated automatically by the setup endpoint. Empty object `{}` for providers created manually via `POST /providers`.",
+            "example": {
+              "telnyx_profile_id": "2944757397136082899",
+              "telnyx_connection_id": "2944757397198982899",
+              "telnyx_ip_ids": [
+                "2944757397261882899"
+              ]
+            }
+          },
           "name": {
             "type": "string",
             "description": "The name of the provider.",

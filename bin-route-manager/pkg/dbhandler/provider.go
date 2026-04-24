@@ -38,9 +38,12 @@ func (h *handler) ProviderCreate(ctx context.Context, p *provider.Provider) erro
 	p.TMUpdate = nil
 	p.TMDelete = nil
 
-	// Initialize tech_headers if nil to avoid null in database
+	// Initialize tech_headers and metadata if nil to avoid null in database
 	if p.TechHeaders == nil {
 		p.TechHeaders = map[string]string{}
+	}
+	if p.Metadata == nil {
+		p.Metadata = map[string]interface{}{}
 	}
 
 	// Use PrepareFields to get field map

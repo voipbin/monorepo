@@ -47,13 +47,14 @@ func Test_providersGet(t *testing.T) {
 			responseProviders: []*rmprovider.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("088b16ac-515f-11ed-a848-cb013a2391a9"),
+					Metadata: map[string]interface{}{},
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"088b16ac-515f-11ed-a848-cb013a2391a9","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes:       `{"result":[{"id":"088b16ac-515f-11ed-a848-cb013a2391a9","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "more than 2 items",
@@ -68,21 +69,24 @@ func Test_providersGet(t *testing.T) {
 			responseProviders: []*rmprovider.WebhookMessage{
 				{
 					ID:       uuid.FromStringOrNil("3829653a-515f-11ed-a1a8-6b5ca0211d65"),
+					Metadata: map[string]interface{}{},
 					TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 				},
 				{
 					ID:       uuid.FromStringOrNil("38587906-515f-11ed-b4dc-877b6c706934"),
+					Metadata: map[string]interface{}{},
 					TMCreate: timePtr("2020-09-20T03:23:22.995000Z"),
 				},
 				{
 					ID:       uuid.FromStringOrNil("388af98a-515f-11ed-b16e-f3d7e7085feb"),
+					Metadata: map[string]interface{}{},
 					TMCreate: timePtr("2020-09-20T03:23:23.995000Z"),
 				},
 			},
 
 			expectPageSize:  10,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
-			expectRes:       `{"result":[{"id":"3829653a-515f-11ed-a1a8-6b5ca0211d65","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"38587906-515f-11ed-b4dc-877b6c706934","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"388af98a-515f-11ed-b16e-f3d7e7085feb","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
+			expectRes:       `{"result":[{"id":"3829653a-515f-11ed-a1a8-6b5ca0211d65","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null},{"id":"38587906-515f-11ed-b4dc-877b6c706934","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:22.995Z","tm_update":null,"tm_delete":null},{"id":"388af98a-515f-11ed-b16e-f3d7e7085feb","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:23.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:23.995000Z"}`,
 		},
 	}
 
@@ -155,7 +159,8 @@ func Test_providersPost(t *testing.T) {
 			reqBody:  []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header_1":"val1","header_2":"val2"},"name":"test name","detail":"test detail"}`),
 
 			responseProvider: &rmprovider.WebhookMessage{
-				ID: uuid.FromStringOrNil("72fe03fa-6475-11ec-b559-0fdf19201178"),
+				ID:       uuid.FromStringOrNil("72fe03fa-6475-11ec-b559-0fdf19201178"),
+				Metadata: map[string]interface{}{},
 			},
 
 			expectType:        rmprovider.TypeSIP,
@@ -168,7 +173,7 @@ func Test_providersPost(t *testing.T) {
 			},
 			expectName:   "test name",
 			expectDetail: "test detail",
-			expectRes:    `{"id":"72fe03fa-6475-11ec-b559-0fdf19201178","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:    `{"id":"72fe03fa-6475-11ec-b559-0fdf19201178","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -245,11 +250,12 @@ func Test_providersIDGet(t *testing.T) {
 
 			responseProvider: &rmprovider.WebhookMessage{
 				ID:       uuid.FromStringOrNil("d091abe2-5160-11ed-b13c-57769429b0f0"),
+				Metadata: map[string]interface{}{},
 				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 
 			expectProviderID: uuid.FromStringOrNil("d091abe2-5160-11ed-b13c-57769429b0f0"),
-			expectRes:        `{"id":"d091abe2-5160-11ed-b13c-57769429b0f0","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+			expectRes:        `{"id":"d091abe2-5160-11ed-b13c-57769429b0f0","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -314,11 +320,12 @@ func Test_providersIDDelete(t *testing.T) {
 			reqQuery: "/providers/528bae9a-5161-11ed-b6c1-03e42a38600c",
 
 			responseProvider: &rmprovider.WebhookMessage{
-				ID: uuid.FromStringOrNil("528bae9a-5161-11ed-b6c1-03e42a38600c"),
+				ID:       uuid.FromStringOrNil("528bae9a-5161-11ed-b6c1-03e42a38600c"),
+				Metadata: map[string]interface{}{},
 			},
 
 			expectProviderID: uuid.FromStringOrNil("528bae9a-5161-11ed-b6c1-03e42a38600c"),
-			expectRes:        `{"id":"528bae9a-5161-11ed-b6c1-03e42a38600c","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:        `{"id":"528bae9a-5161-11ed-b6c1-03e42a38600c","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -403,10 +410,11 @@ func Test_providersIDPut(t *testing.T) {
 			expectDetail: "update detail",
 
 			responseProvider: &rmprovider.WebhookMessage{
-				ID: uuid.FromStringOrNil("169cbfe0-5162-11ed-9be1-872503f37e02"),
+				ID:       uuid.FromStringOrNil("169cbfe0-5162-11ed-9be1-872503f37e02"),
+				Metadata: map[string]interface{}{},
 			},
 
-			expectRes: `{"id":"169cbfe0-5162-11ed-9be1-872503f37e02","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"169cbfe0-5162-11ed-9be1-872503f37e02","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 

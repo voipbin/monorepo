@@ -526,7 +526,7 @@ func Test_NewProviderHandler(t *testing.T) {
 	mockReq := requesthandler.NewMockRequestHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
-	h := NewProviderHandler(mockDB, mockReq, mockNotify)
+	h := NewProviderHandler(mockDB, mockReq, mockNotify, []string{"10.0.0.1:5060"})
 	if h == nil {
 		t.Errorf("Expected handler to be created, got nil")
 	}
