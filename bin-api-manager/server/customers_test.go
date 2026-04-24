@@ -3,16 +3,19 @@ package server
 import (
 	"bytes"
 	"fmt"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	cscustomer "monorepo/bin-customer-manager/models/customer"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -629,114 +632,198 @@ func Test_customersIDMetadataPut(t *testing.T) {
 	}
 }
 
-func Test_customersIDMetadataPut_invalid_id(t *testing.T) {
+// Test_customersIDMetadataPut_InvalidID verifies that a malformed UUID in
+// the path triggers INVALID_ARGUMENT / INVALID_ID.
+func Test_customersIDMetadataPut_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 
-	tests := []struct {
-		name  string
-		agent *auth.AuthIdentity
-
-		reqQuery string
-		reqBody  []byte
-	}{
-		{
-			name: "invalid uuid returns 400",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
-				},
-				Permission: amagent.PermissionProjectSuperAdmin,
-			}),
-
-			reqQuery: "/customers/invalid-uuid/metadata",
-			reqBody:  []byte(`{"rtp_debug":true}`),
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 		},
-	}
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{
-				serviceHandler: mockSvc,
-			}
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
 
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
 
-			r.Use(func(c *gin.Context) {
-				c.Set("auth_identity", tt.agent)
-			})
-			openapi_server.RegisterHandlers(r, h)
+	req, _ := http.NewRequest(http.MethodPut, "/customers/invalid-uuid/metadata", bytes.NewBufferString(`{"rtp_debug":true}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
 
-			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			req.Header.Set("Content-Type", "application/json")
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-			}
-		})
-	}
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
 }
 
-func Test_customersIDMetadataPut_service_error(t *testing.T) {
+// Test_customersIDMetadataPut_ServiceError exercises the servicehandler-failure
+// path through abortWithServiceError. The translator's substring fallback
+// maps "permission denied" to PERMISSION_DENIED / PERMISSION_DENIED.
+func Test_customersIDMetadataPut_ServiceError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 
-	tests := []struct {
-		name  string
-		agent *auth.AuthIdentity
-
-		reqQuery string
-		reqBody  []byte
-
-		expectedCustomerID uuid.UUID
-		expectedMetadata   cscustomer.Metadata
-	}{
-		{
-			name: "service error returns 400",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
-				},
-				Permission: amagent.PermissionProjectSuperAdmin,
-			}),
-
-			reqQuery: "/customers/cc876058-1773-11ee-9694-136fe246dd34/metadata",
-			reqBody:  []byte(`{"rtp_debug":true}`),
-
-			expectedCustomerID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
-			expectedMetadata:   cscustomer.Metadata{RTPDebug: true},
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34"),
 		},
-	}
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
+	customerID := uuid.FromStringOrNil("cc876058-1773-11ee-9694-136fe246dd34")
+	metadata := cscustomer.Metadata{RTPDebug: true}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
+	mc := gomock.NewController(t)
+	defer mc.Finish()
 
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{
-				serviceHandler: mockSvc,
-			}
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
 
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
 
-			r.Use(func(c *gin.Context) {
-				c.Set("auth_identity", tt.agent)
-			})
-			openapi_server.RegisterHandlers(r, h)
+	req, _ := http.NewRequest(http.MethodPut, "/customers/cc876058-1773-11ee-9694-136fe246dd34/metadata",
+		bytes.NewBufferString(`{"rtp_debug":true}`))
+	req.Header.Set("Content-Type", "application/json")
 
-			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			req.Header.Set("Content-Type", "application/json")
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().CustomerUpdateMetadata(gomock.Any(), agent, customerID, metadata).Return(nil, fmt.Errorf("permission denied"))
 
-			mockSvc.EXPECT().CustomerUpdateMetadata(req.Context(), tt.agent, tt.expectedCustomerID, tt.expectedMetadata).Return(nil, fmt.Errorf("permission denied"))
+	r.ServeHTTP(w, req)
 
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-			}
-		})
-	}
+	assertErrorResponse(t, w, cerrors.StatusPermissionDenied, "PERMISSION_DENIED", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_customersGET_MissingAuthIdentity exercises the auth-identity-missing
+// branch of GetCustomers.
+func Test_customersGET_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodGet, "/customers", nil)
+}
+
+// Test_customersIDPut_MissingAuthIdentity exercises the auth-identity-missing
+// branch of PutCustomersId.
+func Test_customersIDPut_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPut, "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f",
+		[]byte(`{"name":"new name","detail":"new detail","email":"test@test.com","phone_number":"+821100000001","address":"somewhere","webhook_method":"POST","webhook_uri":"test.com"}`))
+}
+
+// Test_customersIDDelete_MissingAuthIdentity exercises the auth-identity-missing
+// branch of DeleteCustomersId.
+func Test_customersIDDelete_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodDelete, "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f", nil)
+}
+
+// Test_customersPOST_InvalidJSONBody verifies PostCustomers rejects malformed
+// JSON with INVALID_ARGUMENT / INVALID_JSON_BODY.
+func Test_customersPOST_InvalidJSONBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+		},
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Intentionally invalid JSON body.
+	req, _ := http.NewRequest(http.MethodPost, "/customers", bytes.NewBufferString("{not json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_customersIDGet_InvalidID verifies that a malformed UUID in the path
+// triggers INVALID_ARGUMENT / INVALID_ID on GetCustomersId.
+func Test_customersIDGet_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+		},
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodGet, "/customers/invalid-uuid", nil)
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_customersIDGet_ServiceError exercises the servicehandler-failure path
+// through abortWithServiceError on GetCustomersId. The translator's
+// substring fallback maps "customer not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
+func Test_customersIDGet_ServiceError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+		},
+		Permission: amagent.PermissionProjectSuperAdmin,
+	})
+	customerID := uuid.FromStringOrNil("d98ed7ec-83f7-11ec-8b43-e7de0184974f")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodGet, "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f", nil)
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().CustomerGet(gomock.Any(), agent, customerID).Return(nil, fmt.Errorf("customer not found"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
 }
