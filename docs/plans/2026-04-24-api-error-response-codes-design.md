@@ -120,13 +120,18 @@ Add optional `RequestID string \`json:"request_id,omitempty"\`` to `sock.Request
 
 ## 7. `bin-api-manager` server-layer changes
 
-### 7.1 Helpers (`server/error.go`)
+### 7.1 Helpers (`server/error.go` and `server/error_test.go`)
 
 ```go
+// server/error.go (production code)
 func abortWithError(c *gin.Context, err *cerrors.VoipbinError)
 func abortWithServiceError(c *gin.Context, err error)   // runs translator
+
+// server/error_test.go (test helper — kept out of the production binary
+// per Go convention so `testing` is not imported by runtime code)
 func assertErrorResponse(t *testing.T, w *httptest.ResponseRecorder,
-                          status cerrors.Status, reason string)  // test helper
+                          status cerrors.Status, reason string,
+                          domain commonoutline.ServiceName)
 ```
 
 The Status-to-HTTP mapping lives in `bin-common-handler/models/errors` as the exported `HTTPStatusFor(cerrors.Status) int` (10-entry switch) so it can be reused by both the RPC carrier (`ToResponse`) and this abort helper without duplication.
@@ -182,7 +187,7 @@ Priority chain — first match wins:
 
 1. **Typed passthrough:** `errors.As(err, &*VoipbinError)` → use directly.
 2. **Sentinel match:** `errors.Is(err, shandlererrors.ErrX)` → convert with a canned generic message. Sentinels live at `bin-api-manager/pkg/serviceerrors/sentinels.go` (parallel to `servicehandler/`, not nested).
-3. **Transport failure detection:** `errors.Is(err, context.Canceled)` → log-only, no body (client is gone). `errors.Is(err, context.DeadlineExceeded)` or RabbitMQ transport errors → `Unavailable("api-manager", "UPSTREAM_UNAVAILABLE", ...)`.
+3. **Transport failure detection:** `context.Canceled` → maps to `UNAVAILABLE` with reason `REQUEST_CANCELED` (full envelope returned; the client is likely gone but the envelope is built anyway so server-side logging still captures the correlation ID). `context.DeadlineExceeded` → maps to `UNAVAILABLE` with reason `REQUEST_TIMEOUT`. RabbitMQ transport errors fall through to the substring fallback (`"unavailable"`) → `Unavailable("api-manager", "SERVICE_UNAVAILABLE", ...)`.
 4. **Substring fallback (shrinks over time):** small set of stable legacy patterns — `"no permission"` → `PermissionDenied`, `"not found"` → `NotFound`, `"authentication required"` → `Unauthenticated`, `"unavailable"` → `Unavailable`.
 5. **Default:** `Internal("api-manager", "INTERNAL", "An internal error occurred.").Wrap(err)`. Original error wrapped for server-side logs only, never serialized to client.
 

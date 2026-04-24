@@ -29,6 +29,7 @@ This plan was written against the PR 0a API surface as it existed at PR push tim
 - **Task 3 (export HTTPStatusFor):** already delivered in PR 0a Round 1 as commit `9c42eb162`. Skip this task entirely — `cerrors.HTTPStatusFor(Status) int` is already exported from `bin-common-handler/models/errors`.
 - **Task 9 (ToResponse):** `ToResponse` and `httpStatusFor` already exist in bin-common-handler (shipped in PR 0a). Task 9 here is redundant for those two items; only its test-expansion aspects remain relevant.
 - **PR 0b scope bullet (top of plan, PR 0b high-level):** `httpStatusFor` lives in bin-common-handler now; api-manager's `abortWithError` simply calls `cerrors.HTTPStatusFor(e.Status)`. Do not re-declare the helper in api-manager.
+- **Task 10 spike endpoint:** `GET /ping` does not exist in the OpenAPI spec; the spike was performed against `GET /me` instead. The loose `ServerInterface.GetMe(c *gin.Context)` signature was unchanged after adding 401/500 responses, confirming oapi-codegen compatibility with the `abortWithError` pattern.
 
 When PR 0a merges, rebase this branch onto main, then when executing: always cross-check the task's code example against the current `bin-common-handler/models/errors/` source before copying. The design doc §13 (Rounds 1-3 subsections) is the ground truth for API shape.
 
@@ -1535,7 +1536,7 @@ EOF
 
 1. **`oapi-codegen` spike fails.** Handled in Task 10 decision point: pivot to docs-only components.
 2. **Middleware import cycle.** `lib/middleware` cannot depend on `server`, so error envelopes are inlined in two places (rate-limit + authenticate). Acceptable for PR 0b; follow-up PR can refactor both sites to a shared `pkg/httperr` package if drift becomes a problem.
-3. **Sentinel message text drift.** Sentinels in Task 1 use specific strings (e.g. `"permission denied"`). Each servicehandler callsite in PRs 1+ must return the sentinel, NOT a `fmt.Errorf` with its own string — the substring fallback in Task 5 catches the old style, but once migrated, the sentinel path is exact and fast.
+3. **Sentinel message text drift.** Sentinels in Task 1 use specific strings (e.g. `"permission denied"`). Each servicehandler callsite in PRs 1+ must return the sentinel, NOT a `fmt.Errorf` with its own string — the substring fallback in Task 5 catches the old style, but once migrated, the sentinel path is exact and fast. **Round 1 update:** the substring fallback is now case-insensitive and covers `"permission denied"` / `"forbidden"` / `"unauthorized"` / `"Not Found"` (title-cased `http.StatusText` variants from requesthandler) alongside the original lowercase patterns.
 4. **ULID dependency avoided.** Plan originally said `github.com/oklog/ulid/v2`; Task 2 switched to `crypto/rand + base32` to avoid a new external dep. ID format is still opaque 26-char base32 with `req_` prefix, satisfying all downstream needs.
 5. **Request-ID not yet propagated to RPC.** Task 2 puts the ID into `c.Request.Context()` and a logrus field, but the bin-common-handler `requesthandler` does not yet read it into `sock.Request.RequestID`. That wiring is a follow-up for PR 0b-part-2 or PR 1 — flag in the PR body.
 
