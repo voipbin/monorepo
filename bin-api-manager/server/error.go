@@ -1,10 +1,7 @@
 package server
 
 import (
-	"encoding/json"
 	stderrors "errors"
-	"net/http/httptest"
-	"testing"
 
 	"monorepo/bin-api-manager/lib/middleware"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -58,30 +55,4 @@ func translateToVoipbinError(err error) *cerrors.VoipbinError {
 		return ve
 	}
 	return cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.").Wrap(err)
-}
-
-// assertErrorResponse is a test helper shared across handler tests in
-// subsequent migration PRs. It asserts the HTTP status code matches
-// the canonical Status AND the response body's status/reason fields
-// match the expected values.
-func assertErrorResponse(t *testing.T, w *httptest.ResponseRecorder, wantStatus cerrors.Status, wantReason string) {
-	t.Helper()
-	if got, want := w.Code, cerrors.HTTPStatusFor(wantStatus); got != want {
-		t.Errorf("status code = %d want %d", got, want)
-	}
-	var body struct {
-		Error struct {
-			Status string `json:"status"`
-			Reason string `json:"reason"`
-		} `json:"error"`
-	}
-	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
-		t.Fatalf("unmarshal body: %v; body=%s", err, w.Body.String())
-	}
-	if body.Error.Status != string(wantStatus) {
-		t.Errorf("status field = %q want %q", body.Error.Status, wantStatus)
-	}
-	if body.Error.Reason != wantReason {
-		t.Errorf("reason = %q want %q", body.Error.Reason, wantReason)
-	}
 }
