@@ -35,16 +35,15 @@ func ToResponse(e *VoipbinError) (*sock.Response, error) {
 		return nil, fmt.Errorf("marshal VoipbinError: %w", err)
 	}
 	return &sock.Response{
-		StatusCode: httpStatusFor(e.Status),
+		StatusCode: HTTPStatusFor(e.Status),
 		DataType:   DataTypeVoipbinError,
 		Data:       body,
 	}, nil
 }
 
-// httpStatusFor maps a canonical Status to an HTTP status code. This
-// mapping is the single source of truth for the RPC→HTTP layer;
-// bin-api-manager's abortWithError uses it too.
-func httpStatusFor(s Status) int {
+// HTTPStatusFor maps a canonical Status to an HTTP status code.
+// This is the single source of truth for the Status-to-HTTP mapping.
+func HTTPStatusFor(s Status) int {
 	switch s {
 	case StatusInvalidArgument:
 		return 400

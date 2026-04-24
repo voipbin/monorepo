@@ -129,3 +129,29 @@ func TestToResponseNil(t *testing.T) {
 		t.Errorf("ToResponse(nil) must return an error")
 	}
 }
+
+func TestHTTPStatusFor(t *testing.T) {
+	tests := []struct {
+		status Status
+		want   int
+	}{
+		{StatusInvalidArgument, 400},
+		{StatusUnauthenticated, 401},
+		{StatusPaymentRequired, 402},
+		{StatusPermissionDenied, 403},
+		{StatusNotFound, 404},
+		{StatusAlreadyExists, 409},
+		{StatusFailedPrecondition, 409},
+		{StatusResourceExhausted, 429},
+		{StatusUnavailable, 503},
+		{StatusInternal, 500},
+		{Status("UNKNOWN"), 500},
+	}
+	for _, tt := range tests {
+		t.Run(string(tt.status), func(t *testing.T) {
+			if got := HTTPStatusFor(tt.status); got != tt.want {
+				t.Errorf("got %d want %d", got, tt.want)
+			}
+		})
+	}
+}
