@@ -9,6 +9,7 @@ type Request struct {
 	Publisher string          `json:"publisher"`
 	DataType  string          `json:"data_type"`
 	Data      json.RawMessage `json:"data,omitempty"`
+	RequestID string          `json:"request_id,omitempty"`
 }
 
 // Response struct
