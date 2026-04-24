@@ -5,6 +5,9 @@ import (
 	"sync"
 	"time"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 )
@@ -71,9 +74,17 @@ func RateLimit(r float64, burst int) gin.HandlerFunc {
 		limiter := store.getLimiter(ip)
 
 		if !limiter.Allow() {
+			// Inline envelope construction — lib/middleware cannot import
+			// the server package (would create an import cycle), so we
+			// build the same shape as server.abortWithError here.
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
-				"error":   "rate_limit_exceeded",
-				"message": "Too many requests. Please try again later.",
+				"error": gin.H{
+					"status":     string(cerrors.StatusResourceExhausted),
+					"reason":     "RATE_LIMIT_EXCEEDED",
+					"domain":     string(commonoutline.ServiceNameAPIManager),
+					"message":    "Too many requests. Please try again later.",
+					"request_id": RequestIDFromContext(c),
+				},
 			})
 			return
 		}
