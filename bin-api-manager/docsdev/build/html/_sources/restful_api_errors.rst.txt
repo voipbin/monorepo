@@ -144,6 +144,11 @@ flow-manager
 billing-manager
 ---------------
 
+.. note::
+
+   ``INSUFFICIENT_BALANCE`` is reachable today via the translator's case-insensitive ``"insufficient"`` substring fallback — billing-manager surfaces credit-shortfall errors as ``fmt.Errorf("insufficient balance")`` (or similar) and the api-manager translator maps that to **402 PAYMENT_REQUIRED** with reason ``INSUFFICIENT_BALANCE`` in the api-manager domain.
+   The full billing-manager typed-error contract (deeper reasons such as ``BILLING_ACCOUNT_NOT_FOUND``, ``ACCOUNT_SUSPENDED``) is scheduled for migration PR 5.
+
 .. list-table::
    :header-rows: 1
    :widths: 30 10 60
@@ -151,10 +156,60 @@ billing-manager
    * - Reason
      - HTTP
      - Cause → Fix
+   * - ``INSUFFICIENT_BALANCE``
+     - 402
+     - Customer balance is below the minimum required for a chargeable operation. Currently fired by ``POST /numbers`` (number purchase) and ``POST /numbers/renew`` (number renewal); migration PR 6 will extend the list to ``POST /messages`` and ``POST /emails``. **Fix:** Top up the customer balance via ``POST /billing-accounts/{id}/balance-add`` (admin) or have the customer add credit, then retry.
 
-   (Populated as migration PR 5 ships.)
+number-manager
+--------------
+
+.. note::
+
+   ``NUMBER_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the number-manager typed-error migration ships.
+   ``IDENTITY_VERIFICATION_REQUIRED`` is wired in PR 4 via the dedicated ``"identity verification required"`` translator pattern and is reachable today.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``NUMBER_NOT_FOUND``
+     - 404
+     - Number ID does not exist or belongs to another customer. Verify the ID was obtained from a recent ``GET /numbers`` list call.
+   * - ``IDENTITY_VERIFICATION_REQUIRED``
+     - 403
+     - Customer identity verification is required for this operation. Fired by ``POST /numbers`` for non-virtual purchases when the customer's ``identity_verification_status`` is not ``verified``. **Fix:** Complete the customer identity verification flow (see Customer overview), then retry the purchase. Virtual numbers do not require verification.
+
+provisioning-admin
+------------------
+
+The ``provider``, ``trunk``, and ``route`` resources are admin-gated and share a common reason-code pattern. Listed together to avoid repetition.
+
+.. note::
+
+   The ``*_NOT_FOUND`` reasons in this section are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the corresponding manager's typed-error migration ships.
+   These resources are admin-gated. Non-admin callers receive **403 PERMISSION_DENIED** via the standard ``"no permission"`` translator pattern (the call site falls back to the api-manager generic ``PERMISSION_DENIED`` reason — there is no resource-specific permission reason for these admin endpoints).
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 10 60
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``PROVIDER_NOT_FOUND``
+     - 404
+     - Provider ID does not exist. Verify the ID was obtained from a recent ``GET /providers`` list call. Admin-only resource.
+   * - ``TRUNK_NOT_FOUND``
+     - 404
+     - Trunk ID does not exist. Verify via ``GET /trunks``. Admin-only resource.
+   * - ``ROUTE_NOT_FOUND``
+     - 404
+     - Route ID does not exist. Verify via ``GET /routes``. Admin-only resource.
 
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``number-manager``, ``conversation-manager``, ``email-manager``, ``ai-manager``, ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``storage-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager``, ``provider-manager``, ``route-manager``, ``trunk-manager`` — will be added as migration PRs 3–9 ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``conversation-manager``, ``email-manager``, ``ai-manager``, ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``storage-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager`` — will be added as migration PRs 5–9 ship. See the design doc for the PR rollout.
