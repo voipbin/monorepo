@@ -107,6 +107,29 @@ func TestTranslateSubstringFallback(t *testing.T) {
 	}
 }
 
+// TestTranslateIdentityVerificationRequired verifies that error messages
+// containing "identity verification required" map to PERMISSION_DENIED with
+// the distinct reason IDENTITY_VERIFICATION_REQUIRED — not to the generic
+// PERMISSION_DENIED reason. The pattern lands in PR 4 to surface number-
+// purchase identity gates as user-actionable 403s instead of opaque 500s.
+func TestTranslateIdentityVerificationRequired(t *testing.T) {
+	tests := []error{
+		stderrors.New("customer identity verification required for number purchase"),
+		stderrors.New("identity verification required"),
+	}
+	for _, in := range tests {
+		t.Run(in.Error(), func(t *testing.T) {
+			got := translateToVoipbinError(in)
+			if got.Status != cerrors.StatusPermissionDenied {
+				t.Errorf("got status %q want %q", got.Status, cerrors.StatusPermissionDenied)
+			}
+			if got.Reason != "IDENTITY_VERIFICATION_REQUIRED" {
+				t.Errorf("got reason %q want IDENTITY_VERIFICATION_REQUIRED", got.Reason)
+			}
+		})
+	}
+}
+
 func TestTranslateDefault(t *testing.T) {
 	orig := stderrors.New("something nobody anticipated")
 	got := translateToVoipbinError(orig)

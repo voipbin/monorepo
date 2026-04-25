@@ -767,10 +767,8 @@ func Test_numbersPost_InsufficientBalance(t *testing.T) {
 // Test_numbersPost_IdentityVerificationRequired exercises the
 // servicehandler-failure path through abortWithServiceError. The
 // translator's "identity verification required" pattern maps to
-// PERMISSION_DENIED / IDENTITY_VERIFICATION_REQUIRED. The translator
-// pattern is added in Task 8 of this PR; the t.Skip is removed there.
+// PERMISSION_DENIED / IDENTITY_VERIFICATION_REQUIRED.
 func Test_numbersPost_IdentityVerificationRequired(t *testing.T) {
-	t.Skip("re-enabled in Task 8 once the translator pattern lands")
 	gin.SetMode(gin.TestMode)
 
 	agent := auth.NewAgentIdentity(&amagent.Agent{
