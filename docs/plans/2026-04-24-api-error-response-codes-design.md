@@ -131,6 +131,8 @@ Each OpenAPI path's `responses:` block MUST reference the named error responses 
 | Admin-gated (hasPermission check, any method, no resource ID) | baseline + `403` |
 | Billing-sensitive (success path deducts credits) | baseline + `402` |
 | Rate-limited | baseline + `429` |
+| State-transition (operation invalid for current resource state) | baseline + `409` |
+| RPC-heavy (success path fans out to ≥2 internal managers) | baseline + `503` |
 
 Rationale:
 - `500` is always possible — translator default or panic recovery.
@@ -140,6 +142,10 @@ Rationale:
 - `402` / `409` / `429` are opt-in per endpoint semantics.
 
 Billing-sensitive = any endpoint whose success path deducts credits from the customer's balance (e.g., `POST /calls`, `POST /messages`, `POST /emails`, `POST /numbers`). The 402 response is used for insufficient balance.
+
+**State-transition rationale.** Many resources have state machines: a call goes `dialing → ringing → progressing → hangup`; a recording goes `inactive → active`; a transfer requires the source call to be `progressing`. An operation that's invalid for the current state (e.g., `POST /calls/{id}/hangup` on an already-hung-up call, `POST /calls/{id}/recording-start` on an already-recording call) returns `409 FAILED_PRECONDITION`. Use a domain-specific reason code (`CALL_ALREADY_HANGUP`, `RECORDING_ALREADY_ACTIVE`, `CALL_STATE_INVALID`) so clients can branch precisely.
+
+**RPC-heavy rationale.** Endpoints that fan out to multiple internal managers in their success path can fail mid-fan-out from any of them. `POST /calls`, for example, calls call-manager + flow-manager + number-manager + billing-manager. A transient RabbitMQ failure or downstream manager outage surfaces as `503 UNAVAILABLE`. Single-manager endpoints (read paths in particular) typically don't add `503` to their baseline because their failure surface is dominated by `INTERNAL` (single hop).
 
 Counter-examples (endpoints that deliberately deviate — each MUST cite this list in its OpenAPI spec):
 - `/ping` — unauthenticated health check. Only `500` applies.
@@ -431,3 +437,10 @@ During PR #799 self-review, six refinement commits tightened the API before merg
 - Codified the default error-block convention (§6.1) — read-no-ID vs read-with-ID vs write-no-ID vs write-with-ID.
 - Applied the convention to 12 OpenAPI path files.
 - `/me` (PR 0b) and `/customer*` (PR 1) remain on their original simpler error-block declarations; retrofit deferred to next modification of those paths.
+
+### PR 2 calls-group refinements (2026-04-25)
+
+- §6.1 extended with two new endpoint classes: state-transition (baseline + 409) and RPC-heavy (baseline + 503). Concrete billing-sensitive examples enumerated.
+- 92 error sites migrated across 27 handlers in 5 files (`calls.go`, `groupcalls.go`, `recordings.go`, `recordingfiles.go`, `transfers.go`).
+- New `call-manager` domain section in the RST reason-code catalog, populated with `CALL_NOT_FOUND`, `CALL_ALREADY_HANGUP`, `CALL_STATE_INVALID`, `RECORDING_NOT_FOUND`, `RECORDING_ALREADY_ACTIVE`, `RECORDING_NOT_ACTIVE`, `INSUFFICIENT_BALANCE`, `GROUPCALL_NOT_FOUND`.
+- WebSocket counter-example confirmed in practice: `GET /calls/{id}/media-stream` declares only handshake-level error responses; post-upgrade errors stay out of HTTP scope.
