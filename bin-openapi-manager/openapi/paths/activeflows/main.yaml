@@ -29,7 +29,11 @@ post:
           schema:
             $ref: '#/components/schemas/FlowManagerActiveflow'
     '400':
-      description: Invalid input. One of `flow_id` or `actions` is required.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 get:
   summary: List all activeflows
@@ -53,5 +57,7 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/FlowManagerActiveflow'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
     '500':
-      description: Server error.
+      $ref: '#/components/responses/InternalError'

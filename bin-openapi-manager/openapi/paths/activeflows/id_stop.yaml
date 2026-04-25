@@ -17,7 +17,15 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/FlowManagerActiveflow'
-    '404':
-      description: Flow not found.
     '400':
-      description: Unable to stop the flow.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '500':
+      $ref: '#/components/responses/InternalError'
