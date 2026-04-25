@@ -23,3 +23,11 @@ post:
             type: array
             items:
               $ref: '#/components/schemas/NumberManagerNumber'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '402':
+      $ref: '#/components/responses/PaymentRequired'
+    '500':
+      $ref: '#/components/responses/InternalError'

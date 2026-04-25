@@ -26,10 +26,12 @@ put:
           schema:
             $ref: '#/components/schemas/NumberManagerNumber'
     '400':
-      description: |
-        Invalid request. Possible causes:
-        - The `id` path parameter is not a valid UUID.
-        - The request body is not valid JSON or does not match the `NumberManagerMetadata` schema.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
     '403':
-      description: |
-        Permission denied. The authenticated agent does not have `CustomerAdmin` or `CustomerManager` permission.
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
