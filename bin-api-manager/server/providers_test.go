@@ -2,16 +2,19 @@ package server
 
 import (
 	"bytes"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	rmprovider "monorepo/bin-route-manager/models/provider"
-
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	rmprovider "monorepo/bin-route-manager/models/provider"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -452,4 +455,40 @@ func Test_providersIDPut(t *testing.T) {
 
 		})
 	}
+}
+
+// Test_providersIDPut_InvalidID verifies that a malformed UUID in the
+// path triggers INVALID_ARGUMENT / INVALID_ID before the servicehandler
+// is consulted.
+func Test_providersIDPut_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// "not-a-uuid" passes the path-shape check but uuid.FromStringOrNil
+	// returns uuid.Nil, so the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodPut, "/providers/not-a-uuid",
+		bytes.NewBufferString(`{"type":"sip","hostname":"example.com","tech_prefix":"","tech_postfix":"","tech_headers":{},"name":"x","detail":"x"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
 }

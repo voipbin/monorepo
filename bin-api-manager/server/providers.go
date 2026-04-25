@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	commonrequesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
@@ -21,7 +23,7 @@ func (h *server) GetProviders(c *gin.Context, params openapi_server.GetProviders
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -43,13 +45,15 @@ func (h *server) GetProviders(c *gin.Context, params openapi_server.GetProviders
 	tmps, err := h.serviceHandler.ProviderList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get providers info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -65,7 +69,7 @@ func (h *server) PostProviders(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -73,7 +77,7 @@ func (h *server) PostProviders(c *gin.Context) {
 	var req openapi_server.PostProvidersJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -82,7 +86,7 @@ func (h *server) PostProviders(c *gin.Context) {
 		strValue, ok := value.(string)
 		if !ok {
 			log.Errorf("Invalid type for tech header value. key: %s, value: %v", key, value)
-			c.AbortWithStatus(400)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "tech_headers values must be strings."))
 			return
 		}
 		techHeaders[key] = strValue
@@ -101,7 +105,7 @@ func (h *server) PostProviders(c *gin.Context) {
 	)
 	if err != nil {
 		log.Errorf("Could not create a provider. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -118,7 +122,7 @@ func (h *server) DeleteProvidersId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -126,14 +130,14 @@ func (h *server) DeleteProvidersId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ProviderDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the delete the provider info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -150,7 +154,7 @@ func (h *server) GetProvidersId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -158,14 +162,14 @@ func (h *server) GetProvidersId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ProviderGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the provider info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -181,7 +185,7 @@ func (h *server) PostProvidersSetup(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -189,7 +193,7 @@ func (h *server) PostProvidersSetup(c *gin.Context) {
 	var req openapi_server.PostProvidersSetupJSONRequestBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -208,11 +212,11 @@ func (h *server) PostProvidersSetup(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, commonrequesthandler.ErrUnprocessableEntity) {
 			log.Infof("Carrier API key rejected. err: %v", err)
-			c.AbortWithStatus(422)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "CARRIER_CREDENTIALS_REJECTED", "The carrier rejected the supplied credentials.").Wrap(err))
 			return
 		}
 		log.Errorf("Could not set up provider. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -228,7 +232,7 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -236,14 +240,14 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutProvidersIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -252,7 +256,7 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 		strValue, ok := value.(string)
 		if !ok {
 			log.Errorf("Invalid type for tech header value. key: %s, value: %v", key, value)
-			c.AbortWithStatus(400)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "tech_headers values must be strings."))
 			return
 		}
 		techHeaders[key] = strValue
@@ -272,7 +276,7 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 	)
 	if err != nil {
 		log.Errorf("Could not update the provider. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
