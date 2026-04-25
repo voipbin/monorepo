@@ -90,6 +90,12 @@ func TestTranslateSubstringFallback(t *testing.T) {
 		{stderrors.New("Not Found"), cerrors.StatusNotFound},
 		{stderrors.New("upstream service unavailable"), cerrors.StatusUnavailable},
 		{stderrors.New("Service Unavailable"), cerrors.StatusUnavailable},
+		{stderrors.New("call already hangup"), cerrors.StatusFailedPrecondition},
+		{stderrors.New("recording already active"), cerrors.StatusFailedPrecondition},
+		{stderrors.New("recording not active"), cerrors.StatusFailedPrecondition},
+		{stderrors.New("deleted call"), cerrors.StatusFailedPrecondition},
+		{stderrors.New("Insufficient balance"), cerrors.StatusPaymentRequired},
+		{stderrors.New("insufficient funds for this operation"), cerrors.StatusPaymentRequired},
 	}
 	for _, tt := range tests {
 		t.Run(tt.err.Error(), func(t *testing.T) {

@@ -30,7 +30,9 @@
 
 **Write — billing-sensitive (deducts credits):** `PostCalls`, `PostGroupcalls` — baseline `400, 401, 500` + `402` (insufficient balance) + `503` (RPC-heavy).
 
-**Write — state-transition (resource state machine):** `PostCallsIdHangup`, `PostCallsIdTalk`, `PostCallsIdHold`, `DeleteCallsIdHold`, `PostCallsIdMute`, `DeleteCallsIdMute`, `PostCallsIdMoh`, `DeleteCallsIdMoh`, `PostCallsIdSilence`, `DeleteCallsIdSilence`, `PostCallsIdRecordingStart`, `PostCallsIdRecordingStop`, `PostGroupcallsIdHangup`, `PostTransfers`, `DeleteCallsId`, `DeleteGroupcallsId`, `DeleteRecordingsId` — baseline `400, 401, 403, 404, 500` + `409` (wrong state) + `503` (RPC-heavy).
+**Write (POST/PUT/PATCH/DELETE with resource ID, no state restriction):** `DeleteRecordingsId` — baseline `400, 401, 403, 404, 500` + `503` (RPC-heavy). No 409: recording deletion has no state machine to violate (unlike call hangup which can only happen once on a non-terminated call).
+
+**Write — state-transition (resource state machine):** `PostCallsIdHangup`, `PostCallsIdTalk`, `PostCallsIdHold`, `DeleteCallsIdHold`, `PostCallsIdMute`, `DeleteCallsIdMute`, `PostCallsIdMoh`, `DeleteCallsIdMoh`, `PostCallsIdSilence`, `DeleteCallsIdSilence`, `PostCallsIdRecordingStart`, `PostCallsIdRecordingStop`, `PostGroupcallsIdHangup`, `PostTransfers`, `DeleteCallsId`, `DeleteGroupcallsId` — baseline `400, 401, 403, 404, 500` + `409` (wrong state) + `503` (RPC-heavy).
 
 **WebSocket upgrade (counter-example):** `GetCallsIdMediaStream` — handshake errors get baseline; post-upgrade errors use WS close codes. Per §6.1 counter-example.
 
@@ -101,7 +103,8 @@ Wire all calls/groupcalls/recordings/recordingfiles/transfers paths per §6.1:
 - `GET /calls/{id}/media-stream` → counter-example (WebSocket upgrade); declare 401, 500 for handshake errors only
 - `POST /groupcalls` → 400, 401, 402, 500, 503 (billing + RPC-heavy)
 - `GET /groupcalls`, `GET /groupcalls/{id}`, `DELETE /groupcalls/{id}`, `POST /groupcalls/{id}/hangup` → standard per class
-- `GET /recordings`, `GET /recordings/{id}`, `DELETE /recordings/{id}` → standard per class
+- `GET /recordings`, `GET /recordings/{id}` → standard per class
+- `DELETE /recordings/{id}` → 400, 401, 403, 404, 500, 503 (write-with-ID + RPC-heavy; no 409 — no state machine on recording deletion)
 - `GET /recordingfiles/{id}` → 400, 401, 403, 404, 500, 503
 - `POST /transfers` → 400, 401, 403, 404, 409, 500, 503 (write-with-ID — operates on source call; state-transition; RPC-heavy)
 
