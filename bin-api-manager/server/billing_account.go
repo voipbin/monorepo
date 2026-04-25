@@ -3,6 +3,8 @@ package server
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -17,7 +19,7 @@ func (h *server) GetBillingAccount(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("auth", a)
@@ -25,7 +27,7 @@ func (h *server) GetBillingAccount(c *gin.Context) {
 	res, err := h.serviceHandler.BillingAccountSelfGet(c.Request.Context(), a)
 	if err != nil {
 		log.Infof("Could not get the billing account info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -41,7 +43,7 @@ func (h *server) PutBillingAccount(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("auth", a)
@@ -49,7 +51,7 @@ func (h *server) PutBillingAccount(c *gin.Context) {
 	var req openapi_server.PutBillingAccountJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -66,7 +68,7 @@ func (h *server) PutBillingAccount(c *gin.Context) {
 	res, err := h.serviceHandler.BillingAccountSelfUpdateBasicInfo(c.Request.Context(), a, name, detail)
 	if err != nil {
 		log.Errorf("Could not update. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -82,7 +84,7 @@ func (h *server) PutBillingAccountPaymentInfo(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("auth", a)
@@ -90,7 +92,7 @@ func (h *server) PutBillingAccountPaymentInfo(c *gin.Context) {
 	var req openapi_server.PutBillingAccountPaymentInfoJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -107,7 +109,7 @@ func (h *server) PutBillingAccountPaymentInfo(c *gin.Context) {
 	res, err := h.serviceHandler.BillingAccountSelfUpdatePaymentInfo(c.Request.Context(), a, paymentType, paymentMethod)
 	if err != nil {
 		log.Errorf("Could not update payment info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -123,7 +125,7 @@ func (h *server) PostBillingAccountPaddlePortalSession(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("auth", a)
@@ -131,7 +133,7 @@ func (h *server) PostBillingAccountPaddlePortalSession(c *gin.Context) {
 	url, err := h.serviceHandler.BillingAccountSelfCreatePaddlePortalSession(c.Request.Context(), a)
 	if err != nil {
 		log.Infof("Could not create portal session. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
