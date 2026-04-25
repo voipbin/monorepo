@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
@@ -337,7 +339,7 @@ func (h *server) PostCallsIdTalk(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) PostCallsIdHold(c *gin.Context, id string) {
@@ -377,7 +379,7 @@ func (h *server) PostCallsIdHold(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) DeleteCallsIdHold(c *gin.Context, id string) {
@@ -417,7 +419,7 @@ func (h *server) DeleteCallsIdHold(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) PostCallsIdMute(c *gin.Context, id string) {
@@ -473,7 +475,7 @@ func (h *server) PostCallsIdMute(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) DeleteCallsIdMute(c *gin.Context, id string) {
@@ -529,7 +531,7 @@ func (h *server) DeleteCallsIdMute(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) PostCallsIdMoh(c *gin.Context, id string) {
@@ -569,7 +571,7 @@ func (h *server) PostCallsIdMoh(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) DeleteCallsIdMoh(c *gin.Context, id string) {
@@ -609,7 +611,7 @@ func (h *server) DeleteCallsIdMoh(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) PostCallsIdSilence(c *gin.Context, id string) {
@@ -649,7 +651,7 @@ func (h *server) PostCallsIdSilence(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) DeleteCallsIdSilence(c *gin.Context, id string) {
@@ -689,7 +691,7 @@ func (h *server) DeleteCallsIdSilence(c *gin.Context, id string) {
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) GetCallsIdMediaStream(c *gin.Context, id string, params openapi_server.GetCallsIdMediaStreamParams) {
@@ -734,7 +736,7 @@ func (h *server) GetCallsIdMediaStream(c *gin.Context, id string, params openapi
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) PostCallsIdRecordingStart(c *gin.Context, id string) {
