@@ -1,6 +1,6 @@
 get:
   summary: Get media stream for the call
-  description: Retrieve the media stream information for a specific call.
+  description: Retrieve the media stream information for a specific call. WebSocket endpoint — only handshake-time errors are reported via HTTP status. Errors after the connection upgrades to WebSocket are signaled via close frames and are not in HTTP scope.
   tags:
     - Call
   parameters:
@@ -19,3 +19,7 @@ get:
   responses:
     '200':
       description: Media stream information retrieved successfully
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

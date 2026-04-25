@@ -17673,6 +17673,24 @@ func (response GetCalls200JSONResponse) VisitGetCallsResponse(w http.ResponseWri
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetCalls401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetCalls401JSONResponse) VisitGetCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCalls500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetCalls500JSONResponse) VisitGetCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostCallsRequestObject struct {
 	Body *PostCallsJSONRequestBody
 }
@@ -17689,6 +17707,51 @@ type PostCalls200JSONResponse struct {
 func (response PostCalls200JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCalls400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCalls400JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCalls401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCalls401JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCalls402JSONResponse struct{ PaymentRequiredJSONResponse }
+
+func (response PostCalls402JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(402)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCalls500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCalls500JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCalls503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCalls503JSONResponse) VisitPostCallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -17710,6 +17773,69 @@ func (response DeleteCallsId200JSONResponse) VisitDeleteCallsIdResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteCallsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteCallsId400JSONResponse) VisitDeleteCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteCallsId401JSONResponse) VisitDeleteCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteCallsId403JSONResponse) VisitDeleteCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteCallsId404JSONResponse) VisitDeleteCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsId409JSONResponse struct{ ConflictJSONResponse }
+
+func (response DeleteCallsId409JSONResponse) VisitDeleteCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteCallsId500JSONResponse) VisitDeleteCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsId503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response DeleteCallsId503JSONResponse) VisitDeleteCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetCallsIdRequestObject struct {
 	Id string `json:"id"`
 }
@@ -17723,6 +17849,60 @@ type GetCallsId200JSONResponse CallManagerCall
 func (response GetCallsId200JSONResponse) VisitGetCallsIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetCallsId400JSONResponse) VisitGetCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetCallsId401JSONResponse) VisitGetCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetCallsId403JSONResponse) VisitGetCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetCallsId404JSONResponse) VisitGetCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetCallsId500JSONResponse) VisitGetCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsId503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetCallsId503JSONResponse) VisitGetCallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -17744,6 +17924,69 @@ func (response PostCallsIdHangup200JSONResponse) VisitPostCallsIdHangupResponse(
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostCallsIdHangup400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCallsIdHangup400JSONResponse) VisitPostCallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHangup401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCallsIdHangup401JSONResponse) VisitPostCallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHangup403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCallsIdHangup403JSONResponse) VisitPostCallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHangup404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCallsIdHangup404JSONResponse) VisitPostCallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHangup409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCallsIdHangup409JSONResponse) VisitPostCallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHangup500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCallsIdHangup500JSONResponse) VisitPostCallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHangup503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCallsIdHangup503JSONResponse) VisitPostCallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type DeleteCallsIdHoldRequestObject struct {
 	Id string `json:"id"`
 }
@@ -17760,6 +18003,69 @@ func (response DeleteCallsIdHold200Response) VisitDeleteCallsIdHoldResponse(w ht
 	return nil
 }
 
+type DeleteCallsIdHold400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteCallsIdHold400JSONResponse) VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdHold401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteCallsIdHold401JSONResponse) VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdHold403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteCallsIdHold403JSONResponse) VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdHold404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteCallsIdHold404JSONResponse) VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdHold409JSONResponse struct{ ConflictJSONResponse }
+
+func (response DeleteCallsIdHold409JSONResponse) VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdHold500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteCallsIdHold500JSONResponse) VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdHold503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response DeleteCallsIdHold503JSONResponse) VisitDeleteCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostCallsIdHoldRequestObject struct {
 	Id string `json:"id"`
 }
@@ -17774,6 +18080,69 @@ type PostCallsIdHold200Response struct {
 func (response PostCallsIdHold200Response) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
 	return nil
+}
+
+type PostCallsIdHold400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCallsIdHold400JSONResponse) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHold401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCallsIdHold401JSONResponse) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHold403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCallsIdHold403JSONResponse) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHold404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCallsIdHold404JSONResponse) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHold409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCallsIdHold409JSONResponse) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHold500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCallsIdHold500JSONResponse) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdHold503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCallsIdHold503JSONResponse) VisitPostCallsIdHoldResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetCallsIdMediaStreamRequestObject struct {
@@ -17793,6 +18162,24 @@ func (response GetCallsIdMediaStream200Response) VisitGetCallsIdMediaStreamRespo
 	return nil
 }
 
+type GetCallsIdMediaStream401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetCallsIdMediaStream401JSONResponse) VisitGetCallsIdMediaStreamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCallsIdMediaStream500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetCallsIdMediaStream500JSONResponse) VisitGetCallsIdMediaStreamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type DeleteCallsIdMohRequestObject struct {
 	Id string `json:"id"`
 }
@@ -17809,6 +18196,69 @@ func (response DeleteCallsIdMoh200Response) VisitDeleteCallsIdMohResponse(w http
 	return nil
 }
 
+type DeleteCallsIdMoh400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteCallsIdMoh400JSONResponse) VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMoh401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteCallsIdMoh401JSONResponse) VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMoh403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteCallsIdMoh403JSONResponse) VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMoh404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteCallsIdMoh404JSONResponse) VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMoh409JSONResponse struct{ ConflictJSONResponse }
+
+func (response DeleteCallsIdMoh409JSONResponse) VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMoh500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteCallsIdMoh500JSONResponse) VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMoh503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response DeleteCallsIdMoh503JSONResponse) VisitDeleteCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostCallsIdMohRequestObject struct {
 	Id string `json:"id"`
 }
@@ -17823,6 +18273,69 @@ type PostCallsIdMoh200Response struct {
 func (response PostCallsIdMoh200Response) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
 	return nil
+}
+
+type PostCallsIdMoh400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCallsIdMoh400JSONResponse) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMoh401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCallsIdMoh401JSONResponse) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMoh403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCallsIdMoh403JSONResponse) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMoh404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCallsIdMoh404JSONResponse) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMoh409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCallsIdMoh409JSONResponse) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMoh500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCallsIdMoh500JSONResponse) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMoh503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCallsIdMoh503JSONResponse) VisitPostCallsIdMohResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type DeleteCallsIdMuteRequestObject struct {
@@ -17842,6 +18355,69 @@ func (response DeleteCallsIdMute200Response) VisitDeleteCallsIdMuteResponse(w ht
 	return nil
 }
 
+type DeleteCallsIdMute400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteCallsIdMute400JSONResponse) VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMute401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteCallsIdMute401JSONResponse) VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMute403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteCallsIdMute403JSONResponse) VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMute404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteCallsIdMute404JSONResponse) VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMute409JSONResponse struct{ ConflictJSONResponse }
+
+func (response DeleteCallsIdMute409JSONResponse) VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMute500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteCallsIdMute500JSONResponse) VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdMute503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response DeleteCallsIdMute503JSONResponse) VisitDeleteCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostCallsIdMuteRequestObject struct {
 	Id   string `json:"id"`
 	Body *PostCallsIdMuteJSONRequestBody
@@ -17859,6 +18435,69 @@ func (response PostCallsIdMute200Response) VisitPostCallsIdMuteResponse(w http.R
 	return nil
 }
 
+type PostCallsIdMute400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCallsIdMute400JSONResponse) VisitPostCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMute401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCallsIdMute401JSONResponse) VisitPostCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMute403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCallsIdMute403JSONResponse) VisitPostCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMute404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCallsIdMute404JSONResponse) VisitPostCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMute409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCallsIdMute409JSONResponse) VisitPostCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMute500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCallsIdMute500JSONResponse) VisitPostCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdMute503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCallsIdMute503JSONResponse) VisitPostCallsIdMuteResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostCallsIdRecordingStartRequestObject struct {
 	Id   string `json:"id"`
 	Body *PostCallsIdRecordingStartJSONRequestBody
@@ -17873,6 +18512,69 @@ type PostCallsIdRecordingStart200JSONResponse CallManagerCall
 func (response PostCallsIdRecordingStart200JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStart400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCallsIdRecordingStart400JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStart401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCallsIdRecordingStart401JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStart403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCallsIdRecordingStart403JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStart404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCallsIdRecordingStart404JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStart409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCallsIdRecordingStart409JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStart500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCallsIdRecordingStart500JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStart503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCallsIdRecordingStart503JSONResponse) VisitPostCallsIdRecordingStartResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -17894,6 +18596,69 @@ func (response PostCallsIdRecordingStop200JSONResponse) VisitPostCallsIdRecordin
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostCallsIdRecordingStop400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCallsIdRecordingStop400JSONResponse) VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStop401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCallsIdRecordingStop401JSONResponse) VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStop403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCallsIdRecordingStop403JSONResponse) VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStop404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCallsIdRecordingStop404JSONResponse) VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStop409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCallsIdRecordingStop409JSONResponse) VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStop500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCallsIdRecordingStop500JSONResponse) VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdRecordingStop503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCallsIdRecordingStop503JSONResponse) VisitPostCallsIdRecordingStopResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type DeleteCallsIdSilenceRequestObject struct {
 	Id string `json:"id"`
 }
@@ -17910,12 +18675,67 @@ func (response DeleteCallsIdSilence200Response) VisitDeleteCallsIdSilenceRespons
 	return nil
 }
 
-type DeleteCallsIdSilence400Response struct {
+type DeleteCallsIdSilence400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteCallsIdSilence400JSONResponse) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response DeleteCallsIdSilence400Response) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
+type DeleteCallsIdSilence401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteCallsIdSilence401JSONResponse) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdSilence403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteCallsIdSilence403JSONResponse) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdSilence404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteCallsIdSilence404JSONResponse) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdSilence409JSONResponse struct{ ConflictJSONResponse }
+
+func (response DeleteCallsIdSilence409JSONResponse) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdSilence500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteCallsIdSilence500JSONResponse) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteCallsIdSilence503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response DeleteCallsIdSilence503JSONResponse) VisitDeleteCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PostCallsIdSilenceRequestObject struct {
@@ -17934,12 +18754,67 @@ func (response PostCallsIdSilence200Response) VisitPostCallsIdSilenceResponse(w 
 	return nil
 }
 
-type PostCallsIdSilence400Response struct {
+type PostCallsIdSilence400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCallsIdSilence400JSONResponse) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response PostCallsIdSilence400Response) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
+type PostCallsIdSilence401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCallsIdSilence401JSONResponse) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdSilence403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCallsIdSilence403JSONResponse) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdSilence404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCallsIdSilence404JSONResponse) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdSilence409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCallsIdSilence409JSONResponse) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdSilence500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCallsIdSilence500JSONResponse) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdSilence503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCallsIdSilence503JSONResponse) VisitPostCallsIdSilenceResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PostCallsIdTalkRequestObject struct {
@@ -17957,6 +18832,69 @@ type PostCallsIdTalk200Response struct {
 func (response PostCallsIdTalk200Response) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
 	w.WriteHeader(200)
 	return nil
+}
+
+type PostCallsIdTalk400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostCallsIdTalk400JSONResponse) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdTalk401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostCallsIdTalk401JSONResponse) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdTalk403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostCallsIdTalk403JSONResponse) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdTalk404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostCallsIdTalk404JSONResponse) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdTalk409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostCallsIdTalk409JSONResponse) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdTalk500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostCallsIdTalk500JSONResponse) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostCallsIdTalk503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostCallsIdTalk503JSONResponse) VisitPostCallsIdTalkResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetCampaigncallsRequestObject struct {
@@ -20059,6 +20997,24 @@ func (response GetGroupcalls200JSONResponse) VisitGetGroupcallsResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetGroupcalls401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetGroupcalls401JSONResponse) VisitGetGroupcallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGroupcalls500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetGroupcalls500JSONResponse) VisitGetGroupcallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostGroupcallsRequestObject struct {
 	Body *PostGroupcallsJSONRequestBody
 }
@@ -20072,6 +21028,51 @@ type PostGroupcalls200JSONResponse CallManagerGroupcall
 func (response PostGroupcalls200JSONResponse) VisitPostGroupcallsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcalls400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostGroupcalls400JSONResponse) VisitPostGroupcallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcalls401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostGroupcalls401JSONResponse) VisitPostGroupcallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcalls402JSONResponse struct{ PaymentRequiredJSONResponse }
+
+func (response PostGroupcalls402JSONResponse) VisitPostGroupcallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(402)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcalls500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostGroupcalls500JSONResponse) VisitPostGroupcallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcalls503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostGroupcalls503JSONResponse) VisitPostGroupcallsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -20093,6 +21094,69 @@ func (response DeleteGroupcallsId200JSONResponse) VisitDeleteGroupcallsIdRespons
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteGroupcallsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteGroupcallsId400JSONResponse) VisitDeleteGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteGroupcallsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteGroupcallsId401JSONResponse) VisitDeleteGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteGroupcallsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteGroupcallsId403JSONResponse) VisitDeleteGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteGroupcallsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteGroupcallsId404JSONResponse) VisitDeleteGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteGroupcallsId409JSONResponse struct{ ConflictJSONResponse }
+
+func (response DeleteGroupcallsId409JSONResponse) VisitDeleteGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteGroupcallsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteGroupcallsId500JSONResponse) VisitDeleteGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteGroupcallsId503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response DeleteGroupcallsId503JSONResponse) VisitDeleteGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetGroupcallsIdRequestObject struct {
 	Id string `json:"id"`
 }
@@ -20110,6 +21174,60 @@ func (response GetGroupcallsId200JSONResponse) VisitGetGroupcallsIdResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetGroupcallsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetGroupcallsId400JSONResponse) VisitGetGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGroupcallsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetGroupcallsId401JSONResponse) VisitGetGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGroupcallsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetGroupcallsId403JSONResponse) VisitGetGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGroupcallsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetGroupcallsId404JSONResponse) VisitGetGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGroupcallsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetGroupcallsId500JSONResponse) VisitGetGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGroupcallsId503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetGroupcallsId503JSONResponse) VisitGetGroupcallsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostGroupcallsIdHangupRequestObject struct {
 	Id string `json:"id"`
 }
@@ -20123,6 +21241,69 @@ type PostGroupcallsIdHangup200JSONResponse CallManagerGroupcall
 func (response PostGroupcallsIdHangup200JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcallsIdHangup400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostGroupcallsIdHangup400JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcallsIdHangup401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostGroupcallsIdHangup401JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcallsIdHangup403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostGroupcallsIdHangup403JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcallsIdHangup404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostGroupcallsIdHangup404JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcallsIdHangup409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostGroupcallsIdHangup409JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcallsIdHangup500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostGroupcallsIdHangup500JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostGroupcallsIdHangup503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostGroupcallsIdHangup503JSONResponse) VisitPostGroupcallsIdHangupResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -21336,9 +22517,7 @@ func (response GetRecordingfilesId307JSONResponse) VisitGetRecordingfilesIdRespo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetRecordingfilesId400JSONResponse struct {
-	Error *string `json:"error,omitempty"`
-}
+type GetRecordingfilesId400JSONResponse struct{ BadRequestJSONResponse }
 
 func (response GetRecordingfilesId400JSONResponse) VisitGetRecordingfilesIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -21347,13 +22526,47 @@ func (response GetRecordingfilesId400JSONResponse) VisitGetRecordingfilesIdRespo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetRecordingfilesId404JSONResponse struct {
-	Error *string `json:"error,omitempty"`
+type GetRecordingfilesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetRecordingfilesId401JSONResponse) VisitGetRecordingfilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
 }
+
+type GetRecordingfilesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetRecordingfilesId403JSONResponse) VisitGetRecordingfilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRecordingfilesId404JSONResponse struct{ NotFoundJSONResponse }
 
 func (response GetRecordingfilesId404JSONResponse) VisitGetRecordingfilesIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRecordingfilesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetRecordingfilesId500JSONResponse) VisitGetRecordingfilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRecordingfilesId503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetRecordingfilesId503JSONResponse) VisitGetRecordingfilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -21379,6 +22592,24 @@ func (response GetRecordings200JSONResponse) VisitGetRecordingsResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetRecordings401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetRecordings401JSONResponse) VisitGetRecordingsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRecordings500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetRecordings500JSONResponse) VisitGetRecordingsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type DeleteRecordingsIdRequestObject struct {
 	Id string `json:"id"`
 }
@@ -21396,12 +22627,58 @@ func (response DeleteRecordingsId200JSONResponse) VisitDeleteRecordingsIdRespons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type DeleteRecordingsId400Response struct {
+type DeleteRecordingsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteRecordingsId400JSONResponse) VisitDeleteRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response DeleteRecordingsId400Response) VisitDeleteRecordingsIdResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
+type DeleteRecordingsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteRecordingsId401JSONResponse) VisitDeleteRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteRecordingsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteRecordingsId403JSONResponse) VisitDeleteRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteRecordingsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteRecordingsId404JSONResponse) VisitDeleteRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteRecordingsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteRecordingsId500JSONResponse) VisitDeleteRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteRecordingsId503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response DeleteRecordingsId503JSONResponse) VisitDeleteRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetRecordingsIdRequestObject struct {
@@ -21421,20 +22698,58 @@ func (response GetRecordingsId200JSONResponse) VisitGetRecordingsIdResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetRecordingsId400Response struct {
-}
+type GetRecordingsId400JSONResponse struct{ BadRequestJSONResponse }
 
-func (response GetRecordingsId400Response) VisitGetRecordingsIdResponse(w http.ResponseWriter) error {
+func (response GetRecordingsId400JSONResponse) VisitGetRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetRecordingsId404Response struct {
+type GetRecordingsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetRecordingsId401JSONResponse) VisitGetRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response GetRecordingsId404Response) VisitGetRecordingsIdResponse(w http.ResponseWriter) error {
+type GetRecordingsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetRecordingsId403JSONResponse) VisitGetRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRecordingsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetRecordingsId404JSONResponse) VisitGetRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRecordingsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetRecordingsId500JSONResponse) VisitGetRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetRecordingsId503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response GetRecordingsId503JSONResponse) VisitGetRecordingsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetRoutesRequestObject struct {
@@ -23561,6 +24876,69 @@ type PostTransfers200JSONResponse TransferManagerTransfer
 func (response PostTransfers200JSONResponse) VisitPostTransfersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTransfers400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostTransfers400JSONResponse) VisitPostTransfersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTransfers401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostTransfers401JSONResponse) VisitPostTransfersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTransfers403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostTransfers403JSONResponse) VisitPostTransfersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTransfers404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostTransfers404JSONResponse) VisitPostTransfersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTransfers409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostTransfers409JSONResponse) VisitPostTransfersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTransfers500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostTransfers500JSONResponse) VisitPostTransfersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTransfers503JSONResponse struct{ UnavailableJSONResponse }
+
+func (response PostTransfers503JSONResponse) VisitPostTransfersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(503)
 
 	return json.NewEncoder(w).Encode(response)
 }

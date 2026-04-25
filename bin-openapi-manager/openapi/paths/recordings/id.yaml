@@ -18,9 +18,17 @@ get:
           schema:
             $ref: '#/components/schemas/CallManagerRecording'
     '400':
-      description: Bad request. Could not find agent information or recording.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Recording not found.
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+    '503':
+      $ref: '#/components/responses/Unavailable'
 
 delete:
   summary: Delete recording
@@ -42,4 +50,14 @@ delete:
           schema:
             $ref: '#/components/schemas/CallManagerRecording'
     '400':
-      description: Bad request. Could not find agent information or recording to delete.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+    '503':
+      $ref: '#/components/responses/Unavailable'

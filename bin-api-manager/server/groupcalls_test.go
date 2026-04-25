@@ -2,18 +2,22 @@ package server
 
 import (
 	"bytes"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
-	commonaddress "monorepo/bin-common-handler/models/address"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	fmaction "monorepo/bin-flow-manager/models/action"
-
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -401,4 +405,119 @@ func Test_groupcallsIDDELETE(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_groupcallsPOST_MissingAuthIdentity verifies PostGroupcalls emits the
+// canonical UNAUTHENTICATED / AUTHENTICATION_REQUIRED envelope when
+// auth_identity is missing from the gin context.
+func Test_groupcallsPOST_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost, "/groupcalls",
+		[]byte(`{"source":{"type":"tel","target":"+821100000001"},"destinations":[{"type":"tel","target":"+821100000002"}],"flow_id":"6b83babe-bf07-11ed-930f-8f4a33752b7f","actions":[{"type":"answer"}],"ring_method":"ring_all","answer_method":"hangup_others"}`))
+}
+
+// Test_groupcallsPOST_InvalidJSONBody verifies PostGroupcalls rejects malformed
+// JSON with INVALID_ARGUMENT / INVALID_JSON_BODY.
+func Test_groupcallsPOST_InvalidJSONBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodPost, "/groupcalls", bytes.NewBufferString("{not json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_groupcallsIDGet_InvalidID verifies that a malformed UUID in the path
+// triggers INVALID_ARGUMENT / INVALID_ID before the servicehandler is consulted.
+func Test_groupcallsIDGet_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// "not-a-uuid" passes the path-shape check but uuid.FromStringOrNil
+	// returns uuid.Nil, so the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodGet, "/groupcalls/not-a-uuid", nil)
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_groupcallsIDGet_ServiceError exercises the servicehandler-failure path
+// through abortWithServiceError. The translator's substring fallback maps
+// "groupcall not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
+func Test_groupcallsIDGet_ServiceError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	groupcallID := uuid.FromStringOrNil("c1423b7c-bf09-11ed-a3f8-cb3f5a42b528")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodGet, "/groupcalls/c1423b7c-bf09-11ed-a3f8-cb3f5a42b528", nil)
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().GroupcallGet(gomock.Any(), agent, groupcallID).Return(nil, fmt.Errorf("groupcall not found"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_groupcallsIDHangupPost_MissingAuthIdentity exercises the
+// auth-identity-missing branch of PostGroupcallsIdHangup.
+func Test_groupcallsIDHangupPost_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost, "/groupcalls/0410089e-bf0a-11ed-93b7-f3a49f2b479f/hangup", nil)
 }

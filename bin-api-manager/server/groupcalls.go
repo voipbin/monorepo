@@ -4,6 +4,8 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +22,11 @@ func (h *server) PostGroupcalls(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -28,7 +34,11 @@ func (h *server) PostGroupcalls(c *gin.Context) {
 	var req openapi_server.PostGroupcallsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_JSON_BODY",
+			"The request body is not valid JSON.",
+		))
 		return
 	}
 
@@ -46,7 +56,7 @@ func (h *server) PostGroupcalls(c *gin.Context) {
 	res, err := h.serviceHandler.GroupcallCreate(c.Request.Context(), a, source, destinations, flowID, actions, cmgroupcall.RingMethod(req.RingMethod), cmgroupcall.AnswerMethod(req.AnswerMethod))
 	if err != nil {
 		log.Errorf("Could not create a groupcall. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -62,7 +72,11 @@ func (h *server) GetGroupcalls(c *gin.Context, params openapi_server.GetGroupcal
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -84,13 +98,15 @@ func (h *server) GetGroupcalls(c *gin.Context, params openapi_server.GetGroupcal
 	tmps, err := h.serviceHandler.GroupcallList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a groupcall list. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -107,7 +123,11 @@ func (h *server) GetGroupcallsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -115,14 +135,18 @@ func (h *server) GetGroupcallsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
 		return
 	}
 
 	res, err := h.serviceHandler.GroupcallGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a groupcall. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -138,7 +162,11 @@ func (h *server) PostGroupcallsIdHangup(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -146,14 +174,18 @@ func (h *server) PostGroupcallsIdHangup(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
 		return
 	}
 
 	res, err := h.serviceHandler.GroupcallHangup(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not hangup the groupcall. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -169,7 +201,11 @@ func (h *server) DeleteGroupcallsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -177,14 +213,18 @@ func (h *server) DeleteGroupcallsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
 		return
 	}
 
 	res, err := h.serviceHandler.GroupcallDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the groupcall. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 

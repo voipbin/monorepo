@@ -78,6 +78,14 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required.").Wrap(err)
 	case strings.Contains(lowered, "not found"):
 		return cerrors.NotFound(commonoutline.ServiceNameAPIManager, "RESOURCE_NOT_FOUND", "The requested resource was not found.").Wrap(err)
+	case strings.Contains(lowered, "insufficient"):
+		return cerrors.PaymentRequired(commonoutline.ServiceNameAPIManager, "INSUFFICIENT_BALANCE", "Customer balance is below the minimum required for this operation.").Wrap(err)
+	case strings.Contains(lowered, "already"),
+		strings.Contains(lowered, "deleted call"),
+		strings.Contains(lowered, "deleted groupcall"),
+		strings.Contains(lowered, "deleted recording"),
+		strings.Contains(lowered, "not active"):
+		return cerrors.FailedPrecondition(commonoutline.ServiceNameAPIManager, "STATE_INVALID", "The operation is invalid for the current resource state.").Wrap(err)
 	case strings.Contains(lowered, "unavailable"):
 		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE", "An upstream service is temporarily unavailable.").Wrap(err)
 	}
