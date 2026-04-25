@@ -18575,10 +18575,19 @@
             }
           },
           "400": {
-            "description": "Invalid request parameters"
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
           },
           "404": {
-            "description": "Resource not found"
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
           }
         }
       }
@@ -18710,16 +18719,19 @@
             }
           },
           "400": {
-            "description": "Invalid request parameters"
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
           },
           "403": {
-            "description": "Permission denied"
+            "$ref": "#/components/responses/PermissionDenied"
           },
           "404": {
-            "description": "Call not found or no SIP data available"
+            "$ref": "#/components/responses/NotFound"
           },
-          "502": {
-            "description": "Upstream service unavailable"
+          "500": {
+            "$ref": "#/components/responses/InternalError"
           }
         }
       }
@@ -18756,16 +18768,19 @@
             }
           },
           "400": {
-            "description": "Invalid request parameters"
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
           },
           "403": {
-            "description": "Permission denied"
+            "$ref": "#/components/responses/PermissionDenied"
           },
           "404": {
-            "description": "Call not found or no SIP data available"
+            "$ref": "#/components/responses/NotFound"
           },
-          "502": {
-            "description": "Upstream service unavailable"
+          "500": {
+            "$ref": "#/components/responses/InternalError"
           }
         }
       }
@@ -18834,10 +18849,16 @@
             }
           },
           "400": {
-            "description": "Invalid request. Either both or neither query params provided."
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
           },
           "404": {
-            "description": "Resource not found or call has no activeflow."
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
           }
         }
       }

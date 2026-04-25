@@ -17636,20 +17636,40 @@ func (response GetAggregatedEvents200JSONResponse) VisitGetAggregatedEventsRespo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetAggregatedEvents400Response struct {
-}
+type GetAggregatedEvents400JSONResponse struct{ BadRequestJSONResponse }
 
-func (response GetAggregatedEvents400Response) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+func (response GetAggregatedEvents400JSONResponse) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetAggregatedEvents404Response struct {
+type GetAggregatedEvents401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAggregatedEvents401JSONResponse) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response GetAggregatedEvents404Response) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+type GetAggregatedEvents404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetAggregatedEvents404JSONResponse) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAggregatedEvents500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAggregatedEvents500JSONResponse) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetAicallsRequestObject struct {
@@ -34003,36 +34023,49 @@ func (response GetTimelinesCallsCallIdPcap200ApplicationoctetStreamResponse) Vis
 	return err
 }
 
-type GetTimelinesCallsCallIdPcap400Response struct {
-}
+type GetTimelinesCallsCallIdPcap400JSONResponse struct{ BadRequestJSONResponse }
 
-func (response GetTimelinesCallsCallIdPcap400Response) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdPcap400JSONResponse) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesCallsCallIdPcap403Response struct {
+type GetTimelinesCallsCallIdPcap401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetTimelinesCallsCallIdPcap401JSONResponse) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response GetTimelinesCallsCallIdPcap403Response) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
+type GetTimelinesCallsCallIdPcap403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetTimelinesCallsCallIdPcap403JSONResponse) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(403)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesCallsCallIdPcap404Response struct {
-}
+type GetTimelinesCallsCallIdPcap404JSONResponse struct{ NotFoundJSONResponse }
 
-func (response GetTimelinesCallsCallIdPcap404Response) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdPcap404JSONResponse) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesCallsCallIdPcap502Response struct {
-}
+type GetTimelinesCallsCallIdPcap500JSONResponse struct{ InternalErrorJSONResponse }
 
-func (response GetTimelinesCallsCallIdPcap502Response) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
-	w.WriteHeader(502)
-	return nil
+func (response GetTimelinesCallsCallIdPcap500JSONResponse) VisitGetTimelinesCallsCallIdPcapResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetTimelinesCallsCallIdSipAnalysisRequestObject struct {
@@ -34094,36 +34127,49 @@ func (response GetTimelinesCallsCallIdSipAnalysis200JSONResponse) VisitGetTimeli
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesCallsCallIdSipAnalysis400Response struct {
-}
+type GetTimelinesCallsCallIdSipAnalysis400JSONResponse struct{ BadRequestJSONResponse }
 
-func (response GetTimelinesCallsCallIdSipAnalysis400Response) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdSipAnalysis400JSONResponse) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesCallsCallIdSipAnalysis403Response struct {
+type GetTimelinesCallsCallIdSipAnalysis401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetTimelinesCallsCallIdSipAnalysis401JSONResponse) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response GetTimelinesCallsCallIdSipAnalysis403Response) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
+type GetTimelinesCallsCallIdSipAnalysis403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetTimelinesCallsCallIdSipAnalysis403JSONResponse) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(403)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesCallsCallIdSipAnalysis404Response struct {
-}
+type GetTimelinesCallsCallIdSipAnalysis404JSONResponse struct{ NotFoundJSONResponse }
 
-func (response GetTimelinesCallsCallIdSipAnalysis404Response) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
+func (response GetTimelinesCallsCallIdSipAnalysis404JSONResponse) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesCallsCallIdSipAnalysis502Response struct {
-}
+type GetTimelinesCallsCallIdSipAnalysis500JSONResponse struct{ InternalErrorJSONResponse }
 
-func (response GetTimelinesCallsCallIdSipAnalysis502Response) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
-	w.WriteHeader(502)
-	return nil
+func (response GetTimelinesCallsCallIdSipAnalysis500JSONResponse) VisitGetTimelinesCallsCallIdSipAnalysisResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetTimelinesResourceTypeResourceIdEventsRequestObject struct {
@@ -34149,20 +34195,49 @@ func (response GetTimelinesResourceTypeResourceIdEvents200JSONResponse) VisitGet
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesResourceTypeResourceIdEvents400Response struct {
-}
+type GetTimelinesResourceTypeResourceIdEvents400JSONResponse struct{ BadRequestJSONResponse }
 
-func (response GetTimelinesResourceTypeResourceIdEvents400Response) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+func (response GetTimelinesResourceTypeResourceIdEvents400JSONResponse) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTimelinesResourceTypeResourceIdEvents404Response struct {
+type GetTimelinesResourceTypeResourceIdEvents401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetTimelinesResourceTypeResourceIdEvents401JSONResponse) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response GetTimelinesResourceTypeResourceIdEvents404Response) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+type GetTimelinesResourceTypeResourceIdEvents403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetTimelinesResourceTypeResourceIdEvents403JSONResponse) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelinesResourceTypeResourceIdEvents404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetTimelinesResourceTypeResourceIdEvents404JSONResponse) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelinesResourceTypeResourceIdEvents500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetTimelinesResourceTypeResourceIdEvents500JSONResponse) VisitGetTimelinesResourceTypeResourceIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetTranscribesRequestObject struct {

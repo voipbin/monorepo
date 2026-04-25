@@ -40,6 +40,10 @@ get:
                     items:
                       $ref: '#/components/schemas/TimelineManagerEvent'
     '400':
-      description: "Invalid request. Either both or neither query params provided."
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
     '404':
-      description: "Resource not found or call has no activeflow."
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
