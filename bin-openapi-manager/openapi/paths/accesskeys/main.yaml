@@ -20,6 +20,10 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/CustomerManagerAccesskey'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 post:
   summary: Create a new accesskey.
@@ -47,3 +51,9 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/CustomerManagerAccesskey'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

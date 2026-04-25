@@ -3,12 +3,12 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -442,4 +442,12 @@ func Test_PutAccesskeysId(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_accesskeysPost_MissingAuthIdentity verifies PostAccesskeys emits the
+// canonical UNAUTHENTICATED / AUTHENTICATION_REQUIRED envelope when
+// auth_identity is missing from the gin context.
+func Test_accesskeysPost_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost, "/accesskeys",
+		[]byte(`{"name":"test","detail":"test","expire":3600}`))
 }
