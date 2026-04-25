@@ -75,8 +75,34 @@ call-manager
    * - Reason
      - HTTP
      - Cause → Fix
+   * - ``CALL_NOT_FOUND``
+     - 404
+     - Call ID does not exist or belongs to another customer. Verify the ID was obtained from a recent ``GET /calls`` list call.
+   * - ``CALL_ALREADY_HANGUP``
+     - 409
+     - Operation invalid because the call has already ended. Check current status via ``GET /calls/{id}`` before retrying.
+   * - ``CALL_STATE_INVALID``
+     - 409
+     - Operation invalid for the current call state (e.g., transfer from a call that is not yet progressing). Check ``status`` via ``GET /calls/{id}`` and retry when the state matches the operation's prerequisite.
+   * - ``RECORDING_NOT_FOUND``
+     - 404
+     - Recording ID does not exist or belongs to another customer. Verify via ``GET /recordings``.
+   * - ``RECORDING_ALREADY_ACTIVE``
+     - 409
+     - A recording is already in progress on this call. Stop the existing recording with ``POST /calls/{id}/recording-stop`` before starting a new one.
+   * - ``RECORDING_NOT_ACTIVE``
+     - 409
+     - No recording is active on this call. Start one with ``POST /calls/{id}/recording-start`` before attempting to stop.
+   * - ``INSUFFICIENT_BALANCE``
+     - 402
+     - Customer balance is below the minimum required for this operation. Top up via the customer billing portal, then retry.
+   * - ``GROUPCALL_NOT_FOUND``
+     - 404
+     - Groupcall ID does not exist or belongs to another customer. Verify via ``GET /groupcalls``.
 
-   (Populated as migration PR 2 ships.)
+.. note::
+
+   Today these reasons surface via the translator's substring fallback against legacy ``fmt.Errorf`` strings produced by handlers in ``bin-api-manager/pkg/servicehandler/``. Future typed-error migration will replace those with reason-code constructors. The contract in this catalog is stable regardless of which path emits the reason.
 
 billing-manager
 ---------------

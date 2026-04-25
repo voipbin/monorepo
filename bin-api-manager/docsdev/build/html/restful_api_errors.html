@@ -279,6 +279,57 @@
 </section>
 <section id="call-manager">
 <h2>call-manager<a class="headerlink" href="#call-manager" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 10.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CALL_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Call ID does not exist or belongs to another customer. Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> list call.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CALL_ALREADY_HANGUP</span></code></p></td>
+<td><p>409</p></td>
+<td><p>Operation invalid because the call has already ended. Check current status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> before retrying.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CALL_STATE_INVALID</span></code></p></td>
+<td><p>409</p></td>
+<td><p>Operation invalid for the current call state (e.g., transfer from a call that is not yet progressing). Check <code class="docutils literal notranslate"><span class="pre">status</span></code> via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> and retry when the state matches the operation’s prerequisite.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RECORDING_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Recording ID does not exist or belongs to another customer. Verify via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">RECORDING_ALREADY_ACTIVE</span></code></p></td>
+<td><p>409</p></td>
+<td><p>A recording is already in progress on this call. Stop the existing recording with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls/{id}/recording-stop</span></code> before starting a new one.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">RECORDING_NOT_ACTIVE</span></code></p></td>
+<td><p>409</p></td>
+<td><p>No recording is active on this call. Start one with <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls/{id}/recording-start</span></code> before attempting to stop.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code></p></td>
+<td><p>402</p></td>
+<td><p>Customer balance is below the minimum required for this operation. Top up via the customer billing portal, then retry.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GROUPCALL_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Groupcall ID does not exist or belongs to another customer. Verify via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Today these reasons surface via the translator’s substring fallback against legacy <code class="docutils literal notranslate"><span class="pre">fmt.Errorf</span></code> strings produced by handlers in <code class="docutils literal notranslate"><span class="pre">bin-api-manager/pkg/servicehandler/</span></code>. Future typed-error migration will replace those with reason-code constructors. The contract in this catalog is stable regardless of which path emits the reason.</p>
+</div>
 </section>
 <section id="billing-manager">
 <h2>billing-manager<a class="headerlink" href="#billing-manager" title="Link to this heading"></a></h2>
