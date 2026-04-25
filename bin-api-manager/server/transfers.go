@@ -3,6 +3,8 @@ package server
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
 	"github.com/gin-gonic/gin"
@@ -28,7 +30,11 @@ func (h *server) PostTransfers(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -38,7 +44,11 @@ func (h *server) PostTransfers(c *gin.Context) {
 	var req openapi_server.PostTransfersJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_JSON_BODY",
+			"The request body is not valid JSON.",
+		))
 		return
 	}
 
@@ -51,7 +61,7 @@ func (h *server) PostTransfers(c *gin.Context) {
 	res, err := h.serviceHandler.TransferStart(c.Request.Context(), a, tmtransfer.Type(req.TransferType), transfererCallID, transfereeAddresses)
 	if err != nil {
 		log.Errorf("Could not create a transcribe. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
