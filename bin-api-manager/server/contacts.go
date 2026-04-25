@@ -2,6 +2,8 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +20,7 @@ func (h *server) GetContacts(c *gin.Context, params openapi_server.GetContactsPa
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -48,13 +50,15 @@ func (h *server) GetContacts(c *gin.Context, params openapi_server.GetContactsPa
 	tmps, err := h.serviceHandler.ContactList(c.Request.Context(), a, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get contacts info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -70,7 +74,7 @@ func (h *server) PostContacts(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -80,7 +84,7 @@ func (h *server) PostContacts(c *gin.Context) {
 	var req openapi_server.PostContactsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -182,7 +186,7 @@ func (h *server) PostContacts(c *gin.Context) {
 	)
 	if err != nil {
 		log.Errorf("Could not create a contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -198,7 +202,7 @@ func (h *server) GetContactsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -209,14 +213,14 @@ func (h *server) GetContactsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ContactGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the contact info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -232,7 +236,7 @@ func (h *server) PutContactsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -243,14 +247,14 @@ func (h *server) PutContactsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutContactsIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -268,7 +272,7 @@ func (h *server) PutContactsId(c *gin.Context, id string) {
 	)
 	if err != nil {
 		log.Errorf("Could not update the contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -284,7 +288,7 @@ func (h *server) DeleteContactsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -295,14 +299,14 @@ func (h *server) DeleteContactsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ContactDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not delete the contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -318,7 +322,7 @@ func (h *server) GetContactsLookup(c *gin.Context, params openapi_server.GetCont
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -338,14 +342,14 @@ func (h *server) GetContactsLookup(c *gin.Context, params openapi_server.GetCont
 
 	if phoneE164 == "" && email == "" {
 		log.Error("At least one of phone or email must be provided.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "At least one of phone or email must be provided."))
 		return
 	}
 
 	res, err := h.serviceHandler.ContactLookup(c.Request.Context(), a, phoneE164, email)
 	if err != nil {
 		log.Infof("Could not lookup the contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -361,7 +365,7 @@ func (h *server) PostContactsIdPhoneNumbers(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -371,14 +375,14 @@ func (h *server) PostContactsIdPhoneNumbers(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PostContactsIdPhoneNumbersJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -395,7 +399,7 @@ func (h *server) PostContactsIdPhoneNumbers(c *gin.Context, id string) {
 	res, err := h.serviceHandler.ContactPhoneNumberCreate(c.Request.Context(), a, target, req.Number, "", phoneType, isPrimary)
 	if err != nil {
 		log.Errorf("Could not add phone number to contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -411,7 +415,7 @@ func (h *server) PutContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id strin
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -421,21 +425,21 @@ func (h *server) PutContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id strin
 	contactID := uuid.FromStringOrNil(id)
 	if contactID == uuid.Nil {
 		log.Error("Could not parse the contact id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	phoneNumID := uuid.FromStringOrNil(phoneNumberId)
 	if phoneNumID == uuid.Nil {
 		log.Error("Could not parse the phone number id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided phone_number_id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutContactsIdPhoneNumbersPhoneNumberIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -454,7 +458,7 @@ func (h *server) PutContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id strin
 	res, err := h.serviceHandler.ContactPhoneNumberUpdate(c.Request.Context(), a, contactID, phoneNumID, fields)
 	if err != nil {
 		log.Errorf("Could not update phone number on contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -470,7 +474,7 @@ func (h *server) DeleteContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id st
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -480,21 +484,21 @@ func (h *server) DeleteContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id st
 	contactID := uuid.FromStringOrNil(id)
 	if contactID == uuid.Nil {
 		log.Error("Could not parse the contact id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	phoneNumID := uuid.FromStringOrNil(phoneNumberId)
 	if phoneNumID == uuid.Nil {
 		log.Error("Could not parse the phone number id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided phone_number_id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ContactPhoneNumberDelete(c.Request.Context(), a, contactID, phoneNumID)
 	if err != nil {
 		log.Infof("Could not delete phone number from contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -510,7 +514,7 @@ func (h *server) PostContactsIdEmails(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -520,14 +524,14 @@ func (h *server) PostContactsIdEmails(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PostContactsIdEmailsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -544,7 +548,7 @@ func (h *server) PostContactsIdEmails(c *gin.Context, id string) {
 	res, err := h.serviceHandler.ContactEmailCreate(c.Request.Context(), a, target, string(req.Address), emailType, isPrimary)
 	if err != nil {
 		log.Errorf("Could not add email to contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -560,7 +564,7 @@ func (h *server) PutContactsIdEmailsEmailId(c *gin.Context, id string, emailId s
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -570,21 +574,21 @@ func (h *server) PutContactsIdEmailsEmailId(c *gin.Context, id string, emailId s
 	contactID := uuid.FromStringOrNil(id)
 	if contactID == uuid.Nil {
 		log.Error("Could not parse the contact id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	emlID := uuid.FromStringOrNil(emailId)
 	if emlID == uuid.Nil {
 		log.Error("Could not parse the email id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided email_id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutContactsIdEmailsEmailIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -603,7 +607,7 @@ func (h *server) PutContactsIdEmailsEmailId(c *gin.Context, id string, emailId s
 	res, err := h.serviceHandler.ContactEmailUpdate(c.Request.Context(), a, contactID, emlID, fields)
 	if err != nil {
 		log.Errorf("Could not update email on contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -619,7 +623,7 @@ func (h *server) DeleteContactsIdEmailsEmailId(c *gin.Context, id string, emailI
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -629,21 +633,21 @@ func (h *server) DeleteContactsIdEmailsEmailId(c *gin.Context, id string, emailI
 	contactID := uuid.FromStringOrNil(id)
 	if contactID == uuid.Nil {
 		log.Error("Could not parse the contact id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	emlID := uuid.FromStringOrNil(emailId)
 	if emlID == uuid.Nil {
 		log.Error("Could not parse the email id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided email_id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ContactEmailDelete(c.Request.Context(), a, contactID, emlID)
 	if err != nil {
 		log.Infof("Could not delete email from contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -659,7 +663,7 @@ func (h *server) PostContactsIdTags(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -669,28 +673,28 @@ func (h *server) PostContactsIdTags(c *gin.Context, id string) {
 	contactID := uuid.FromStringOrNil(id)
 	if contactID == uuid.Nil {
 		log.Error("Could not parse the contact id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PostContactsIdTagsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	tagID := uuid.UUID(req.TagId)
 	if tagID == uuid.Nil {
 		log.Error("Could not parse the tag id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided tag_id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ContactTagAdd(c.Request.Context(), a, contactID, tagID)
 	if err != nil {
 		log.Errorf("Could not add tag to contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -706,7 +710,7 @@ func (h *server) DeleteContactsIdTagsTagId(c *gin.Context, id string, tagId stri
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -716,21 +720,21 @@ func (h *server) DeleteContactsIdTagsTagId(c *gin.Context, id string, tagId stri
 	contactID := uuid.FromStringOrNil(id)
 	if contactID == uuid.Nil {
 		log.Error("Could not parse the contact id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	tID := uuid.FromStringOrNil(tagId)
 	if tID == uuid.Nil {
 		log.Error("Could not parse the tag id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided tag_id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ContactTagRemove(c.Request.Context(), a, contactID, tID)
 	if err != nil {
 		log.Infof("Could not remove tag from contact. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 

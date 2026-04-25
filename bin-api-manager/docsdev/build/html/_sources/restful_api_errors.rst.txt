@@ -545,7 +545,56 @@ queue-manager
      - 404
      - Queue-call ID (or reference ID) does not exist or belongs to another customer. Fired by ``GET /queuecalls/{id}``, ``DELETE /queuecalls/{id}``, ``POST /queuecalls/{id}/kick``, and ``POST /queuecalls/reference_id/{id}/kick``. **Fix:** Verify the ID was obtained from a recent ``GET /queuecalls`` list call.
 
+contact-manager
+---------------
+
+.. note::
+
+   PR 12 introduced this section for the contact (``/contacts``) resource and its nested phone-number, email, and tag sub-resources.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the contact-manager typed-error migration ships.
+   ``POST /contacts``, ``POST /contacts/{id}/phone-numbers``, ``POST /contacts/{id}/emails``, and ``POST /contacts/{id}/tags`` are not billing-sensitive — contact records and their sub-resources are stored without per-operation charges. No 402 declarations apply to contact resource creation.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``CONTACT_NOT_FOUND``
+     - 404
+     - Contact ID does not exist or belongs to another customer. Fired by ``GET /contacts/{id}``, ``PUT /contacts/{id}``, ``DELETE /contacts/{id}``, ``GET /contacts/lookup``, ``POST /contacts/{id}/phone-numbers``, ``PUT /contacts/{id}/phone-numbers/{phone_number_id}``, ``DELETE /contacts/{id}/phone-numbers/{phone_number_id}``, ``POST /contacts/{id}/emails``, ``PUT /contacts/{id}/emails/{email_id}``, ``DELETE /contacts/{id}/emails/{email_id}``, ``POST /contacts/{id}/tags``, and ``DELETE /contacts/{id}/tags/{tag_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /contacts`` list call.
+   * - ``CONTACT_PHONE_NUMBER_NOT_FOUND``
+     - 404
+     - Phone-number ID does not exist on the supplied contact. Fired by ``PUT /contacts/{id}/phone-numbers/{phone_number_id}`` and ``DELETE /contacts/{id}/phone-numbers/{phone_number_id}``. **Fix:** Verify the phone-number ID was obtained from a recent ``GET /contacts/{id}`` response against the same contact.
+   * - ``CONTACT_EMAIL_NOT_FOUND``
+     - 404
+     - Email ID does not exist on the supplied contact. Fired by ``PUT /contacts/{id}/emails/{email_id}`` and ``DELETE /contacts/{id}/emails/{email_id}``. **Fix:** Verify the email ID was obtained from a recent ``GET /contacts/{id}`` response against the same contact.
+   * - ``CONTACT_TAG_NOT_FOUND``
+     - 404
+     - Tag ID is not currently associated with the supplied contact. Fired by ``DELETE /contacts/{id}/tags/{tag_id}``. **Fix:** Verify the tag ID is present in the ``tag_ids`` field of a recent ``GET /contacts/{id}`` response against the same contact.
+
+registrar-manager
+-----------------
+
+.. note::
+
+   PR 12 introduced this section for the extension (``/extensions``) resource.
+   ``EXTENSION_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the registrar-manager typed-error migration ships.
+   ``POST /extensions`` is not billing-sensitive — extension records are stored without per-operation charges. No 402 declarations apply to extension creation.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``EXTENSION_NOT_FOUND``
+     - 404
+     - Extension ID does not exist or belongs to another customer. Fired by ``GET /extensions/{id}``, ``PUT /extensions/{id}``, ``DELETE /extensions/{id}``, and ``POST /extensions/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /extensions`` list call.
+
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``talk-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``talk-manager``, ``timeline-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
