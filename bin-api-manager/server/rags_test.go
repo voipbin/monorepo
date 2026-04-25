@@ -7,11 +7,14 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	rmrag "monorepo/bin-rag-manager/models/rag"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	rmrag "monorepo/bin-rag-manager/models/rag"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -414,4 +417,39 @@ func Test_DeleteRagsId(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_ragsIDPut_InvalidJSONBody verifies PutRagsId rejects malformed JSON
+// with INVALID_ARGUMENT / INVALID_JSON_BODY.
+func Test_ragsIDPut_InvalidJSONBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("c96bf1c2-a2e9-11ec-a8e3-a716ee72ed9d"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Use a valid-looking UUID so the path-shape check passes; the
+	// JSON-bind step is what we want to exercise.
+	req, _ := http.NewRequest(http.MethodPut, "/rags/8400e29a-2e3f-11ee-bd91-2bc4b88ce5b4",
+		bytes.NewBufferString("{not json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
 }

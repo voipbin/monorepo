@@ -301,9 +301,9 @@ ai-manager
 
 .. note::
 
-   PR 6 migrates only the AI-message resource (``/aimessages``); broader AI resources (``/aicalls``, ``/aisummaries``, ``/ais``) are deferred to follow-up PRs.
-   ``AIMESSAGE_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the ai-manager typed-error migration ships.
-   ``POST /aimessages`` is conceptually billing-sensitive (LLM token cost), but bin-ai-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for AI message creation. Wiring the pre-check in ai-manager is deferred to a follow-up PR; the OpenAPI 402 declaration was removed in this PR to match runtime behavior.
+   PR 6 introduced this section for the AI-message resource (``/aimessages``); PR 7 extends it with the AI configuration (``/ais``), AI calls (``/aicalls``), and AI summaries (``/aisummaries``) resources.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the ai-manager typed-error migration ships.
+   ``POST /aimessages``, ``POST /aicalls``, and ``POST /aisummaries`` are conceptually billing-sensitive (LLM token cost, voice AI minutes, summary generation cost), but bin-ai-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for AI resource creation. Wiring the pre-check in ai-manager is deferred to a follow-up PR; no 402 declarations were added in PR 7 to match runtime behavior.
 
 .. list-table::
    :header-rows: 1
@@ -315,8 +315,35 @@ ai-manager
    * - ``AIMESSAGE_NOT_FOUND``
      - 404
      - AI message ID does not exist or belongs to another customer. Fired by ``GET /aimessages/{id}`` and ``DELETE /aimessages/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /aimessages`` list call.
+   * - ``AI_NOT_FOUND``
+     - 404
+     - AI configuration ID does not exist or belongs to another customer. Fired by ``GET /ais/{id}``, ``PUT /ais/{id}``, ``DELETE /ais/{id}``, and ``POST /ais/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /ais`` list call.
+   * - ``AICALL_NOT_FOUND``
+     - 404
+     - AI call ID does not exist or belongs to another customer. Fired by ``GET /aicalls/{id}`` and ``DELETE /aicalls/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /aicalls`` list call.
+   * - ``AISUMMARY_NOT_FOUND``
+     - 404
+     - AI summary ID does not exist or belongs to another customer. Fired by ``GET /aisummaries/{id}`` and ``DELETE /aisummaries/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /aisummaries`` list call.
+
+rag-manager
+-----------
+
+.. note::
+
+   ``RAG_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the rag-manager typed-error migration ships.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``RAG_NOT_FOUND``
+     - 404
+     - RAG knowledge-base ID does not exist or belongs to another customer. Fired by ``GET /rags/{id}``, ``PUT /rags/{id}``, ``DELETE /rags/{id}``, ``POST /rags/{id}/sources``, and ``DELETE /rags/{id}/sources/{source_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /rags`` list call.
 
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
