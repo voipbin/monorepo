@@ -401,7 +401,7 @@ The full billing-manager typed-error contract (deeper reasons such as <code clas
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code></p></td>
 <td><p>402</p></td>
-<td><p>Customer balance is below the minimum required for a chargeable operation. Currently fired by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> (number purchase) and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers/renew</span></code> (number renewal); migration PR 6 will extend the list to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/emails</span></code>. <strong>Fix:</strong> Top up the customer balance via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/billing-accounts/{id}/balance-add</span></code> (admin) or have the customer add credit, then retry.</p></td>
+<td><p>Customer balance is below the minimum required for a chargeable operation. Currently fired by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> (number purchase), <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers/renew</span></code> (number renewal), <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> (SMS send), <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/emails</span></code> (email send), <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/aimessages</span></code> (AI message creation), <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/messages</span></code> (conversation message send), and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service-agents/conversations/{id}/messages</span></code> (agent-surface conversation message send). <strong>Fix:</strong> Top up the customer balance via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/billing-accounts/{id}/balance-add</span></code> (admin) or have the customer add credit, then retry.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">BILLING_NOT_FOUND</span></code></p></td>
 <td><p>404</p></td>
@@ -513,7 +513,7 @@ The admin-gated <code class="docutils literal notranslate"><span class="pre">POS
 <h2>conversation-manager<a class="headerlink" href="#conversation-manager" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">CONVERSATION_ACCOUNT_NOT_FOUND</span></code> is reachable today via the translator’s <code class="docutils literal notranslate"><span class="pre">&quot;not</span> <span class="pre">found&quot;</span></code> substring fallback (currently surfacing as the api-manager generic <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code>); the typed reason will be emitted directly once the conversation-manager typed-error migration ships.
+<p><code class="docutils literal notranslate"><span class="pre">CONVERSATION_ACCOUNT_NOT_FOUND</span></code> and <code class="docutils literal notranslate"><span class="pre">CONVERSATION_NOT_FOUND</span></code> are reachable today via the translator’s <code class="docutils literal notranslate"><span class="pre">&quot;not</span> <span class="pre">found&quot;</span></code> substring fallback (currently surfacing as the api-manager generic <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code>); the typed reasons will be emitted directly once the conversation-manager typed-error migration ships.
 The admin-gated <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversation-accounts</span></code> endpoint returns <strong>403 PERMISSION_DENIED</strong> for non-admin callers via the standard <code class="docutils literal notranslate"><span class="pre">&quot;no</span> <span class="pre">permission&quot;</span></code> translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.</p>
 </div>
 <table class="docutils align-default">
@@ -533,12 +533,98 @@ The admin-gated <code class="docutils literal notranslate"><span class="pre">POS
 <td><p>404</p></td>
 <td><p>Conversation account ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversation-accounts/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/conversation-accounts/{id}</span></code>, and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/conversation-accounts/{id}</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversation-accounts</span></code> list call.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CONVERSATION_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Conversation ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/conversations/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations/{id}/messages</span></code>, <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/messages</span></code>, and the <code class="docutils literal notranslate"><span class="pre">/service-agents/conversations/{id}*</span></code> agent-surface endpoints. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations</span></code> list call.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="message-manager">
+<h2>message-manager<a class="headerlink" href="#message-manager" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">MESSAGE_NOT_FOUND</span></code> is reachable today via the translator’s <code class="docutils literal notranslate"><span class="pre">&quot;not</span> <span class="pre">found&quot;</span></code> substring fallback (currently surfacing as the api-manager generic <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code>); the typed reason will be emitted directly once the message-manager typed-error migration ships.
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> is billing-sensitive — see the <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> section above for the <code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code> (402) contract that applies to SMS send.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35.0%" />
+<col style="width: 10.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MESSAGE_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Message ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/messages/{id}</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/messages/{id}</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/messages</span></code> list call.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="email-manager">
+<h2>email-manager<a class="headerlink" href="#email-manager" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">EMAIL_NOT_FOUND</span></code> is reachable today via the translator’s <code class="docutils literal notranslate"><span class="pre">&quot;not</span> <span class="pre">found&quot;</span></code> substring fallback (currently surfacing as the api-manager generic <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code>); the typed reason will be emitted directly once the email-manager typed-error migration ships.
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/emails</span></code> is billing-sensitive — see the <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> section above for the <code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code> (402) contract that applies to email send.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35.0%" />
+<col style="width: 10.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">EMAIL_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Email ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/emails/{id}</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/emails/{id}</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/emails</span></code> list call.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ai-manager">
+<h2>ai-manager<a class="headerlink" href="#ai-manager" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>PR 6 migrates only the AI-message resource (<code class="docutils literal notranslate"><span class="pre">/aimessages</span></code>); broader AI resources (<code class="docutils literal notranslate"><span class="pre">/aicalls</span></code>, <code class="docutils literal notranslate"><span class="pre">/aisummaries</span></code>, <code class="docutils literal notranslate"><span class="pre">/ais</span></code>) are deferred to follow-up PRs.
+<code class="docutils literal notranslate"><span class="pre">AIMESSAGE_NOT_FOUND</span></code> is reachable today via the translator’s <code class="docutils literal notranslate"><span class="pre">&quot;not</span> <span class="pre">found&quot;</span></code> substring fallback (currently surfacing as the api-manager generic <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code>); the typed reason will be emitted directly once the ai-manager typed-error migration ships.
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/aimessages</span></code> is billing-sensitive (LLM token cost) — see the <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code> section above for the <code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code> (402) contract that applies to AI message creation.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35.0%" />
+<col style="width: 10.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">AIMESSAGE_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>AI message ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/aimessages/{id}</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/aimessages/{id}</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/aimessages</span></code> list call.</p></td>
+</tr>
 </tbody>
 </table>
 </section>
 <section id="other-domains">
 <h2>Other Domains<a class="headerlink" href="#other-domains" title="Link to this heading"></a></h2>
-<p>Reason code sections for the remaining manager services — <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">talk-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">agent-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">queue-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conference-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">campaign-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">tag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">team-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">timeline-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">contact-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> — will be added as migration PRs 6–9 ship. See the design doc for the PR rollout.</p>
+<p>Reason code sections for the remaining manager services — <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">talk-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">agent-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">queue-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conference-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">campaign-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">tag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">team-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">timeline-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">contact-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> — will be added as future migration PRs ship. See the design doc for the PR rollout.</p>
 </section>
 </section>
 
@@ -566,6 +652,9 @@ The admin-gated <code class="docutils literal notranslate"><span class="pre">POS
 <li><a class="reference internal" href="#provisioning-admin">provisioning-admin</a></li>
 <li><a class="reference internal" href="#storage-manager">storage-manager</a></li>
 <li><a class="reference internal" href="#conversation-manager">conversation-manager</a></li>
+<li><a class="reference internal" href="#message-manager">message-manager</a></li>
+<li><a class="reference internal" href="#email-manager">email-manager</a></li>
+<li><a class="reference internal" href="#ai-manager">ai-manager</a></li>
 <li><a class="reference internal" href="#other-domains">Other Domains</a></li>
 </ul>
 </li>
