@@ -497,7 +497,55 @@ outdial-manager
      - 404
      - Outdial-target ID does not exist or does not belong to the supplied outdial. Fired by ``GET /outdials/{id}/targets/{target_id}`` and ``DELETE /outdials/{id}/targets/{target_id}``. **Fix:** Verify the target ID was obtained from a recent ``GET /outdials/{id}/targets`` list call against the same outdial.
 
+conference-manager
+------------------
+
+.. note::
+
+   PR 11 introduced this section for the conference (``/conferences``) and conference-call (``/conferencecalls``) resources.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the conference-manager typed-error migration ships.
+   Conference state-mutation operations (``POST /conferences/{id}/recording_stop``, ``POST /conferences/{id}/transcribe_stop``, etc.) are **idempotent** in bin-conference-manager today — stopping an already-stopped recording or transcription returns success (no-op). The state-restriction reason ``CONFERENCE_STATE_INVALID`` (409) is **not declared** on these endpoints because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
+   ``POST /conferences`` is not directly billing-sensitive — per-call charges happen downstream when individual participants join. No 402 declarations apply to conference creation.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``CONFERENCE_NOT_FOUND``
+     - 404
+     - Conference ID does not exist or belongs to another customer. Fired by ``GET /conferences/{id}``, ``PUT /conferences/{id}``, ``DELETE /conferences/{id}``, ``POST /conferences/{id}/recording_start``, ``POST /conferences/{id}/recording_stop``, ``POST /conferences/{id}/transcribe_start``, ``POST /conferences/{id}/transcribe_stop``, ``GET /conferences/{id}/media_stream``, and ``POST /conferences/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /conferences`` list call.
+   * - ``CONFERENCECALL_NOT_FOUND``
+     - 404
+     - Conference-call ID does not exist or belongs to another customer. Fired by ``GET /conferencecalls/{id}`` and ``DELETE /conferencecalls/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /conferencecalls`` list call.
+
+queue-manager
+-------------
+
+.. note::
+
+   PR 11 introduced this section for the queue (``/queues``) and queue-call (``/queuecalls``) resources.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the queue-manager typed-error migration ships.
+   Queue-call kick operations (``POST /queuecalls/{id}/kick``, ``POST /queuecalls/reference_id/{id}/kick``, ``DELETE /queuecalls/{id}``) are **idempotent** in bin-queue-manager today — kicking an already-ended queue-call returns success (no-op). The state-restriction reason ``QUEUECALL_STATE_INVALID`` (409) is **not declared** on these endpoints because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
+   ``POST /queues`` is not directly billing-sensitive — per-call charges happen downstream when individual calls enter the queue. No 402 declarations apply to queue creation.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``QUEUE_NOT_FOUND``
+     - 404
+     - Queue ID does not exist or belongs to another customer. Fired by ``GET /queues/{id}``, ``PUT /queues/{id}``, ``DELETE /queues/{id}``, ``PUT /queues/{id}/tag_ids``, ``PUT /queues/{id}/routing_method``, and ``POST /queues/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /queues`` list call.
+   * - ``QUEUECALL_NOT_FOUND``
+     - 404
+     - Queue-call ID (or reference ID) does not exist or belongs to another customer. Fired by ``GET /queuecalls/{id}``, ``DELETE /queuecalls/{id}``, ``POST /queuecalls/{id}/kick``, and ``POST /queuecalls/reference_id/{id}/kick``. **Fix:** Verify the ID was obtained from a recent ``GET /queuecalls`` list call.
+
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``talk-manager``, ``queue-manager``, ``conference-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``talk-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.

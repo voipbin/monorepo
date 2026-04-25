@@ -20,6 +20,10 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/ConferenceManagerConference'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 post:
   summary: Create a new conference
@@ -65,3 +69,9 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/ConferenceManagerConference'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
