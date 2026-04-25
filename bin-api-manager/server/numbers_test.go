@@ -2,16 +2,20 @@ package server
 
 import (
 	"bytes"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	nmnumber "monorepo/bin-number-manager/models/number"
-
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	nmnumber "monorepo/bin-number-manager/models/number"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -643,4 +647,161 @@ func Test_NumbersRenewPOST(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_numbersPost_MissingAuthIdentity verifies PostNumbers emits the
+// canonical UNAUTHENTICATED / AUTHENTICATION_REQUIRED envelope when
+// auth_identity is missing from the gin context.
+func Test_numbersPost_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost, "/numbers",
+		[]byte(`{"number":"+821011112222","type":"tel","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test","detail":"test"}`))
+}
+
+// Test_numbersPost_InvalidJSONBody verifies PostNumbers rejects malformed
+// JSON with INVALID_ARGUMENT / INVALID_JSON_BODY.
+func Test_numbersPost_InvalidJSONBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodPost, "/numbers", bytes.NewBufferString("{not json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_numbersIDPut_InvalidID verifies that a malformed UUID in the path
+// triggers INVALID_ARGUMENT / INVALID_ID before the servicehandler is
+// consulted.
+func Test_numbersIDPut_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// "not-a-uuid" passes the path-shape check but uuid.FromStringOrNil
+	// returns uuid.Nil, so the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodPut, "/numbers/not-a-uuid",
+		bytes.NewBufferString(`{"call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"x","detail":"x"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_numbersPost_InsufficientBalance exercises the servicehandler-failure
+// path through abortWithServiceError. The translator's "insufficient"
+// substring fallback maps to PAYMENT_REQUIRED / INSUFFICIENT_BALANCE.
+func Test_numbersPost_InsufficientBalance(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	body := []byte(`{"number":"+821011112222","type":"tel","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test","detail":"test"}`)
+	req, _ := http.NewRequest(http.MethodPost, "/numbers", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().
+		NumberCreate(gomock.Any(), agent, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, fmt.Errorf("insufficient balance"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_numbersPost_IdentityVerificationRequired exercises the
+// servicehandler-failure path through abortWithServiceError. The
+// translator's "identity verification required" pattern maps to
+// PERMISSION_DENIED / IDENTITY_VERIFICATION_REQUIRED. The translator
+// pattern is added in Task 8 of this PR; the t.Skip is removed there.
+func Test_numbersPost_IdentityVerificationRequired(t *testing.T) {
+	t.Skip("re-enabled in Task 8 once the translator pattern lands")
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	body := []byte(`{"number":"+821011112222","type":"tel","call_flow_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","name":"test","detail":"test"}`)
+	req, _ := http.NewRequest(http.MethodPost, "/numbers", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().
+		NumberCreate(gomock.Any(), agent, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, fmt.Errorf("customer identity verification required for number purchase"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusPermissionDenied, "IDENTITY_VERIFICATION_REQUIRED", commonoutline.ServiceNameAPIManager)
 }

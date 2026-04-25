@@ -2,6 +2,8 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	nmnumber "monorepo/bin-number-manager/models/number"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +20,7 @@ func (h *server) GetNumbers(c *gin.Context, params openapi_server.GetNumbersPara
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -40,13 +42,15 @@ func (h *server) GetNumbers(c *gin.Context, params openapi_server.GetNumbersPara
 	tmps, err := h.serviceHandler.NumberList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a order number list. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -62,7 +66,7 @@ func (h *server) GetNumbersId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -70,14 +74,14 @@ func (h *server) GetNumbersId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.NumberGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get an order number. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -93,7 +97,7 @@ func (h *server) PostNumbers(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -101,7 +105,7 @@ func (h *server) PostNumbers(c *gin.Context) {
 	var req openapi_server.PostNumbersJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -116,7 +120,7 @@ func (h *server) PostNumbers(c *gin.Context) {
 	numb, err := h.serviceHandler.NumberCreate(c.Request.Context(), a, req.Number, numType, callFlowID, messageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create the number. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -132,7 +136,7 @@ func (h *server) DeleteNumbersId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -140,14 +144,14 @@ func (h *server) DeleteNumbersId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.NumberDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete an order number. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -163,7 +167,7 @@ func (h *server) PutNumbersId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -171,14 +175,14 @@ func (h *server) PutNumbersId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutNumbersIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -188,7 +192,7 @@ func (h *server) PutNumbersId(c *gin.Context, id string) {
 	res, err := h.serviceHandler.NumberUpdate(c.Request.Context(), a, target, callFlowID, messageFlowID, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -205,7 +209,7 @@ func (h *server) PutNumbersIdFlowIds(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -213,14 +217,14 @@ func (h *server) PutNumbersIdFlowIds(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutNumbersIdFlowIdsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -230,7 +234,7 @@ func (h *server) PutNumbersIdFlowIds(c *gin.Context, id string) {
 	res, err := h.serviceHandler.NumberUpdateFlowIDs(c.Request.Context(), a, target, callFlowID, messageFlowID)
 	if err != nil {
 		log.Errorf("Could not update a number. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -247,7 +251,7 @@ func (h *server) PutNumbersIdMetadata(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -255,14 +259,14 @@ func (h *server) PutNumbersIdMetadata(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutNumbersIdMetadataJSONRequestBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -278,7 +282,7 @@ func (h *server) PutNumbersIdMetadata(c *gin.Context, id string) {
 	res, err := h.serviceHandler.NumberUpdateMetadata(c.Request.Context(), a, target, metadata)
 	if err != nil {
 		log.Errorf("Could not update the number's metadata. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -294,7 +298,7 @@ func (h *server) PostNumbersRenew(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -302,14 +306,14 @@ func (h *server) PostNumbersRenew(c *gin.Context) {
 	var req openapi_server.PostNumbersRenewJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
 	res, err := h.serviceHandler.NumberRenew(c.Request.Context(), a, req.TmRenew)
 	if err != nil {
 		log.Errorf("Could not renew the numbers. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
