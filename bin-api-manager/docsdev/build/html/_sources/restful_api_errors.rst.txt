@@ -159,7 +159,7 @@ billing-manager
      - Cause → Fix
    * - ``INSUFFICIENT_BALANCE``
      - 402
-     - Customer balance is below the minimum required for a chargeable operation. Currently fired by ``POST /numbers`` (number purchase) and ``POST /numbers/renew`` (number renewal); migration PR 6 will extend the list to ``POST /messages`` and ``POST /emails``. **Fix:** Top up the customer balance via ``POST /billing-accounts/{id}/balance-add`` (admin) or have the customer add credit, then retry.
+     - Customer balance is below the minimum required for a chargeable operation. Currently fired by ``POST /numbers`` (number purchase), ``POST /numbers/renew`` (number renewal), ``POST /messages`` (SMS send), and ``POST /emails`` (email send). **Fix:** Top up the customer balance via ``POST /billing-accounts/{id}/balance-add`` (admin) or have the customer add credit, then retry. Future endpoints (deferred): ``POST /aimessages``, ``POST /conversations/{id}/messages``, ``POST /service-agents/conversations/{id}/messages`` — pending balance pre-check wiring in ai-manager and conversation-manager.
    * - ``BILLING_NOT_FOUND``
      - 404
      - Billing record ID does not exist or belongs to another customer. Fired by ``GET /billings/{billing_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /billings`` list call.
@@ -241,7 +241,7 @@ conversation-manager
 
 .. note::
 
-   ``CONVERSATION_ACCOUNT_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the conversation-manager typed-error migration ships.
+   ``CONVERSATION_ACCOUNT_NOT_FOUND`` and ``CONVERSATION_NOT_FOUND`` are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the conversation-manager typed-error migration ships.
    The admin-gated ``POST /conversation-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
 
 .. list-table::
@@ -254,8 +254,69 @@ conversation-manager
    * - ``CONVERSATION_ACCOUNT_NOT_FOUND``
      - 404
      - Conversation account ID does not exist or belongs to another customer. Fired by ``GET /conversation-accounts/{id}``, ``PUT /conversation-accounts/{id}``, and ``DELETE /conversation-accounts/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /conversation-accounts`` list call.
+   * - ``CONVERSATION_NOT_FOUND``
+     - 404
+     - Conversation ID does not exist or belongs to another customer. Fired by ``GET /conversations/{id}``, ``PUT /conversations/{id}``, ``GET /conversations/{id}/messages``, ``POST /conversations/{id}/messages``, and the ``/service-agents/conversations/{id}*`` agent-surface endpoints. **Fix:** Verify the ID was obtained from a recent ``GET /conversations`` list call.
+
+message-manager
+---------------
+
+.. note::
+
+   ``MESSAGE_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the message-manager typed-error migration ships.
+   ``POST /messages`` is billing-sensitive — see the ``billing-manager`` section above for the ``INSUFFICIENT_BALANCE`` (402) contract that applies to SMS send.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``MESSAGE_NOT_FOUND``
+     - 404
+     - Message ID does not exist or belongs to another customer. Fired by ``GET /messages/{id}`` and ``DELETE /messages/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /messages`` list call.
+
+email-manager
+-------------
+
+.. note::
+
+   ``EMAIL_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the email-manager typed-error migration ships.
+   ``POST /emails`` is billing-sensitive — see the ``billing-manager`` section above for the ``INSUFFICIENT_BALANCE`` (402) contract that applies to email send.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``EMAIL_NOT_FOUND``
+     - 404
+     - Email ID does not exist or belongs to another customer. Fired by ``GET /emails/{id}`` and ``DELETE /emails/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /emails`` list call.
+
+ai-manager
+----------
+
+.. note::
+
+   PR 6 migrates only the AI-message resource (``/aimessages``); broader AI resources (``/aicalls``, ``/aisummaries``, ``/ais``) are deferred to follow-up PRs.
+   ``AIMESSAGE_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the ai-manager typed-error migration ships.
+   ``POST /aimessages`` is conceptually billing-sensitive (LLM token cost), but bin-ai-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for AI message creation. Wiring the pre-check in ai-manager is deferred to a follow-up PR; the OpenAPI 402 declaration was removed in this PR to match runtime behavior.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``AIMESSAGE_NOT_FOUND``
+     - 404
+     - AI message ID does not exist or belongs to another customer. Fired by ``GET /aimessages/{id}`` and ``DELETE /aimessages/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /aimessages`` list call.
 
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``email-manager``, ``ai-manager``, ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager`` — will be added as migration PRs 6–9 ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.

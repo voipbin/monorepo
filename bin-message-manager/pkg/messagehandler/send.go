@@ -44,8 +44,8 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 		return nil, errors.Wrap(err, "could not validate the customer's balance")
 	}
 	if !valid {
-		log.Errorf("Customer has not enough balance. customer_id: %s", customerID)
-		return nil, fmt.Errorf("customer has not enought balance")
+		log.Errorf("Customer has insufficient balance. customer_id: %s", customerID)
+		return nil, fmt.Errorf("insufficient balance for message")
 	}
 
 	// select provider
