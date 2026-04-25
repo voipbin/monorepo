@@ -31624,6 +31624,24 @@ func (response GetServiceAgentsTalkChannels200JSONResponse) VisitGetServiceAgent
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsTalkChannels401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTalkChannels401JSONResponse) VisitGetServiceAgentsTalkChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkChannels500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTalkChannels500JSONResponse) VisitGetServiceAgentsTalkChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsTalkChatsRequestObject struct {
 	Params GetServiceAgentsTalkChatsParams
 }
@@ -31645,6 +31663,24 @@ func (response GetServiceAgentsTalkChats200JSONResponse) VisitGetServiceAgentsTa
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsTalkChats401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTalkChats401JSONResponse) VisitGetServiceAgentsTalkChatsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkChats500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTalkChats500JSONResponse) VisitGetServiceAgentsTalkChatsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostServiceAgentsTalkChatsRequestObject struct {
 	Body *PostServiceAgentsTalkChatsJSONRequestBody
 }
@@ -31658,6 +31694,33 @@ type PostServiceAgentsTalkChats200JSONResponse TalkManagerTalk
 func (response PostServiceAgentsTalkChats200JSONResponse) VisitPostServiceAgentsTalkChatsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChats400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsTalkChats400JSONResponse) VisitPostServiceAgentsTalkChatsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChats401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsTalkChats401JSONResponse) VisitPostServiceAgentsTalkChatsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChats500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsTalkChats500JSONResponse) VisitPostServiceAgentsTalkChatsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -31679,12 +31742,49 @@ func (response DeleteServiceAgentsTalkChatsId200JSONResponse) VisitDeleteService
 	return json.NewEncoder(w).Encode(response)
 }
 
-type DeleteServiceAgentsTalkChatsId404Response struct {
+type DeleteServiceAgentsTalkChatsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsId400JSONResponse) VisitDeleteServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response DeleteServiceAgentsTalkChatsId404Response) VisitDeleteServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+type DeleteServiceAgentsTalkChatsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsId401JSONResponse) VisitDeleteServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkChatsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsId403JSONResponse) VisitDeleteServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkChatsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsId404JSONResponse) VisitDeleteServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkChatsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsId500JSONResponse) VisitDeleteServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetServiceAgentsTalkChatsIdRequestObject struct {
@@ -31704,12 +31804,49 @@ func (response GetServiceAgentsTalkChatsId200JSONResponse) VisitGetServiceAgents
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetServiceAgentsTalkChatsId404Response struct {
+type GetServiceAgentsTalkChatsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsTalkChatsId400JSONResponse) VisitGetServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response GetServiceAgentsTalkChatsId404Response) VisitGetServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+type GetServiceAgentsTalkChatsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTalkChatsId401JSONResponse) VisitGetServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkChatsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsTalkChatsId403JSONResponse) VisitGetServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkChatsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceAgentsTalkChatsId404JSONResponse) VisitGetServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkChatsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTalkChatsId500JSONResponse) VisitGetServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PutServiceAgentsTalkChatsIdRequestObject struct {
@@ -31730,12 +31867,49 @@ func (response PutServiceAgentsTalkChatsId200JSONResponse) VisitPutServiceAgents
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PutServiceAgentsTalkChatsId404Response struct {
+type PutServiceAgentsTalkChatsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutServiceAgentsTalkChatsId400JSONResponse) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response PutServiceAgentsTalkChatsId404Response) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+type PutServiceAgentsTalkChatsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutServiceAgentsTalkChatsId401JSONResponse) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsTalkChatsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutServiceAgentsTalkChatsId403JSONResponse) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsTalkChatsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutServiceAgentsTalkChatsId404JSONResponse) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsTalkChatsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutServiceAgentsTalkChatsId500JSONResponse) VisitPutServiceAgentsTalkChatsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PostServiceAgentsTalkChatsIdJoinRequestObject struct {
@@ -31755,20 +31929,49 @@ func (response PostServiceAgentsTalkChatsIdJoin200JSONResponse) VisitPostService
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostServiceAgentsTalkChatsIdJoin400Response struct {
-}
+type PostServiceAgentsTalkChatsIdJoin400JSONResponse struct{ BadRequestJSONResponse }
 
-func (response PostServiceAgentsTalkChatsIdJoin400Response) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+func (response PostServiceAgentsTalkChatsIdJoin400JSONResponse) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-type PostServiceAgentsTalkChatsIdJoin404Response struct {
+type PostServiceAgentsTalkChatsIdJoin401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdJoin401JSONResponse) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response PostServiceAgentsTalkChatsIdJoin404Response) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+type PostServiceAgentsTalkChatsIdJoin403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdJoin403JSONResponse) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChatsIdJoin404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdJoin404JSONResponse) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChatsIdJoin500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdJoin500JSONResponse) VisitPostServiceAgentsTalkChatsIdJoinResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetServiceAgentsTalkChatsIdParticipantsRequestObject struct {
@@ -31788,12 +31991,49 @@ func (response GetServiceAgentsTalkChatsIdParticipants200JSONResponse) VisitGetS
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetServiceAgentsTalkChatsIdParticipants404Response struct {
+type GetServiceAgentsTalkChatsIdParticipants400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsTalkChatsIdParticipants400JSONResponse) VisitGetServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response GetServiceAgentsTalkChatsIdParticipants404Response) VisitGetServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+type GetServiceAgentsTalkChatsIdParticipants401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTalkChatsIdParticipants401JSONResponse) VisitGetServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkChatsIdParticipants403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsTalkChatsIdParticipants403JSONResponse) VisitGetServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkChatsIdParticipants404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceAgentsTalkChatsIdParticipants404JSONResponse) VisitGetServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkChatsIdParticipants500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTalkChatsIdParticipants500JSONResponse) VisitGetServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PostServiceAgentsTalkChatsIdParticipantsRequestObject struct {
@@ -31814,12 +32054,49 @@ func (response PostServiceAgentsTalkChatsIdParticipants200JSONResponse) VisitPos
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostServiceAgentsTalkChatsIdParticipants404Response struct {
+type PostServiceAgentsTalkChatsIdParticipants400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdParticipants400JSONResponse) VisitPostServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response PostServiceAgentsTalkChatsIdParticipants404Response) VisitPostServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+type PostServiceAgentsTalkChatsIdParticipants401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdParticipants401JSONResponse) VisitPostServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChatsIdParticipants403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdParticipants403JSONResponse) VisitPostServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChatsIdParticipants404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdParticipants404JSONResponse) VisitPostServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkChatsIdParticipants500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsTalkChatsIdParticipants500JSONResponse) VisitPostServiceAgentsTalkChatsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type DeleteServiceAgentsTalkChatsIdParticipantsParticipantIdRequestObject struct {
@@ -31840,12 +32117,49 @@ func (response DeleteServiceAgentsTalkChatsIdParticipantsParticipantId200JSONRes
 	return json.NewEncoder(w).Encode(response)
 }
 
-type DeleteServiceAgentsTalkChatsIdParticipantsParticipantId404Response struct {
+type DeleteServiceAgentsTalkChatsIdParticipantsParticipantId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsIdParticipantsParticipantId400JSONResponse) VisitDeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response DeleteServiceAgentsTalkChatsIdParticipantsParticipantId404Response) VisitDeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponse(w http.ResponseWriter) error {
+type DeleteServiceAgentsTalkChatsIdParticipantsParticipantId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsIdParticipantsParticipantId401JSONResponse) VisitDeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkChatsIdParticipantsParticipantId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsIdParticipantsParticipantId403JSONResponse) VisitDeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkChatsIdParticipantsParticipantId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsIdParticipantsParticipantId404JSONResponse) VisitDeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkChatsIdParticipantsParticipantId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceAgentsTalkChatsIdParticipantsParticipantId500JSONResponse) VisitDeleteServiceAgentsTalkChatsIdParticipantsParticipantIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetServiceAgentsTalkMessagesRequestObject struct {
@@ -31869,6 +32183,24 @@ func (response GetServiceAgentsTalkMessages200JSONResponse) VisitGetServiceAgent
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetServiceAgentsTalkMessages401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTalkMessages401JSONResponse) VisitGetServiceAgentsTalkMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkMessages500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTalkMessages500JSONResponse) VisitGetServiceAgentsTalkMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostServiceAgentsTalkMessagesRequestObject struct {
 	Body *PostServiceAgentsTalkMessagesJSONRequestBody
 }
@@ -31882,6 +32214,33 @@ type PostServiceAgentsTalkMessages200JSONResponse TalkManagerMessage
 func (response PostServiceAgentsTalkMessages200JSONResponse) VisitPostServiceAgentsTalkMessagesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkMessages400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsTalkMessages400JSONResponse) VisitPostServiceAgentsTalkMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkMessages401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsTalkMessages401JSONResponse) VisitPostServiceAgentsTalkMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkMessages500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsTalkMessages500JSONResponse) VisitPostServiceAgentsTalkMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -31903,12 +32262,49 @@ func (response DeleteServiceAgentsTalkMessagesId200JSONResponse) VisitDeleteServ
 	return json.NewEncoder(w).Encode(response)
 }
 
-type DeleteServiceAgentsTalkMessagesId404Response struct {
+type DeleteServiceAgentsTalkMessagesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteServiceAgentsTalkMessagesId400JSONResponse) VisitDeleteServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response DeleteServiceAgentsTalkMessagesId404Response) VisitDeleteServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+type DeleteServiceAgentsTalkMessagesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteServiceAgentsTalkMessagesId401JSONResponse) VisitDeleteServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkMessagesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteServiceAgentsTalkMessagesId403JSONResponse) VisitDeleteServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkMessagesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteServiceAgentsTalkMessagesId404JSONResponse) VisitDeleteServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteServiceAgentsTalkMessagesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteServiceAgentsTalkMessagesId500JSONResponse) VisitDeleteServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetServiceAgentsTalkMessagesIdRequestObject struct {
@@ -31928,12 +32324,49 @@ func (response GetServiceAgentsTalkMessagesId200JSONResponse) VisitGetServiceAge
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetServiceAgentsTalkMessagesId404Response struct {
+type GetServiceAgentsTalkMessagesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetServiceAgentsTalkMessagesId400JSONResponse) VisitGetServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response GetServiceAgentsTalkMessagesId404Response) VisitGetServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+type GetServiceAgentsTalkMessagesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetServiceAgentsTalkMessagesId401JSONResponse) VisitGetServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkMessagesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetServiceAgentsTalkMessagesId403JSONResponse) VisitGetServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkMessagesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetServiceAgentsTalkMessagesId404JSONResponse) VisitGetServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetServiceAgentsTalkMessagesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetServiceAgentsTalkMessagesId500JSONResponse) VisitGetServiceAgentsTalkMessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PostServiceAgentsTalkMessagesIdReactionsRequestObject struct {
@@ -31954,12 +32387,49 @@ func (response PostServiceAgentsTalkMessagesIdReactions200JSONResponse) VisitPos
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostServiceAgentsTalkMessagesIdReactions404Response struct {
+type PostServiceAgentsTalkMessagesIdReactions400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsTalkMessagesIdReactions400JSONResponse) VisitPostServiceAgentsTalkMessagesIdReactionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
-func (response PostServiceAgentsTalkMessagesIdReactions404Response) VisitPostServiceAgentsTalkMessagesIdReactionsResponse(w http.ResponseWriter) error {
+type PostServiceAgentsTalkMessagesIdReactions401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsTalkMessagesIdReactions401JSONResponse) VisitPostServiceAgentsTalkMessagesIdReactionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkMessagesIdReactions403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsTalkMessagesIdReactions403JSONResponse) VisitPostServiceAgentsTalkMessagesIdReactionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkMessagesIdReactions404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsTalkMessagesIdReactions404JSONResponse) VisitPostServiceAgentsTalkMessagesIdReactionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
-	return nil
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsTalkMessagesIdReactions500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsTalkMessagesIdReactions500JSONResponse) VisitPostServiceAgentsTalkMessagesIdReactionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetServiceAgentsWsRequestObject struct {

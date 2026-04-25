@@ -17,8 +17,16 @@ get:
         application/json:
           schema:
             $ref: '#/components/schemas/TalkManagerMessage'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Talk message not found.
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 delete:
   summary: Delete talk message
@@ -39,5 +47,13 @@ delete:
         application/json:
           schema:
             $ref: '#/components/schemas/TalkManagerMessage'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Talk message not found.
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
