@@ -102,7 +102,9 @@ call-manager
 
 .. note::
 
-   Today these reasons surface via the translator's substring fallback against legacy ``fmt.Errorf`` strings produced by handlers in ``bin-api-manager/pkg/servicehandler/``. Future typed-error migration will replace those with reason-code constructors. The contract in this catalog is stable regardless of which path emits the reason.
+   The reasons in this section define the platform's planned typed-error contract.
+   Reasons that match the translator's case-insensitive substring fallback (``CALL_NOT_FOUND``, ``RECORDING_NOT_FOUND``, ``GROUPCALL_NOT_FOUND``, ``CALL_ALREADY_HANGUP``, ``RECORDING_ALREADY_ACTIVE``, ``RECORDING_NOT_ACTIVE``, ``INSUFFICIENT_BALANCE`` via ``"already"`` / ``"deleted"`` / ``"not active"`` / ``"insufficient"`` / ``"not found"`` patterns) surface today.
+   Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships; until then, the translator routes the underlying ``fmt.Errorf`` strings through the substring fallback to the closest canonical reason (typically the api-manager generic equivalent, e.g., ``RESOURCE_NOT_FOUND`` rather than ``CALL_NOT_FOUND``).
 
 billing-manager
 ---------------
