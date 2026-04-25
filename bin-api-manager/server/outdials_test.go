@@ -3,12 +3,14 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
 
@@ -899,4 +901,41 @@ func Test_outdialsIDTargetGET(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_outdialsIDTargetsTargetIDDelete_InvalidTargetID verifies that when the
+// path's `id` is a valid UUID but `targetId` is malformed, the handler
+// rejects with INVALID_ARGUMENT / INVALID_ID before the servicehandler is
+// consulted. The error message refers to target_id specifically.
+func Test_outdialsIDTargetsTargetIDDelete_InvalidTargetID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("c96bf1c2-a2e9-11ec-a8e3-a716ee72ed9d"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Valid id, malformed targetId. uuid.FromStringOrNil returns uuid.Nil
+	// for "not-a-uuid", so the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodDelete,
+		"/outdials/a8ba6662-540a-11ec-9a9f-b31de1a77615/targets/not-a-uuid",
+		bytes.NewBufferString(""))
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
 }

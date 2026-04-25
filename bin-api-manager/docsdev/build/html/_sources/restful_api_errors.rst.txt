@@ -447,7 +447,57 @@ customer-manager
      - 404
      - Access-key ID does not exist or belongs to another customer. Fired by ``GET /accesskeys/{id}``, ``PUT /accesskeys/{id}``, and ``DELETE /accesskeys/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /accesskeys`` list call.
 
+campaign-manager
+----------------
+
+.. note::
+
+   PR 10 introduced this section for the campaign (``/campaigns``), campaign-call (``/campaigncalls``), and outplan (``/outplans``) resources. The outplan resource is owned by ``bin-campaign-manager`` (alongside campaigns and campaigncalls), so it lives in this section rather than under outdial-manager.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the campaign-manager typed-error migration ships.
+   Campaign state-transition operations (``PUT /campaigns/{id}/status``) are **idempotent** in bin-campaign-manager today — for example, stopping an already-stopped campaign returns success (no-op). The state-restriction reason ``CAMPAIGN_STATE_INVALID`` (409) is **not declared** on these endpoints because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
+   ``POST /campaigns`` and ``POST /outplans`` are not directly billing-sensitive — per-call charges happen downstream when individual outbound calls are dialed. No 402 declarations apply to campaign or outplan creation.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``CAMPAIGN_NOT_FOUND``
+     - 404
+     - Campaign ID does not exist or belongs to another customer. Fired by ``GET /campaigns/{id}``, ``PUT /campaigns/{id}``, ``DELETE /campaigns/{id}``, ``PUT /campaigns/{id}/status``, ``PUT /campaigns/{id}/service_level``, ``PUT /campaigns/{id}/actions``, ``PUT /campaigns/{id}/resource_info``, ``PUT /campaigns/{id}/next_campaign_id``, and ``GET /campaigns/{id}/campaigncalls``. **Fix:** Verify the ID was obtained from a recent ``GET /campaigns`` list call.
+   * - ``CAMPAIGNCALL_NOT_FOUND``
+     - 404
+     - Campaign-call ID does not exist or belongs to another customer. Fired by ``GET /campaigncalls/{id}`` and ``DELETE /campaigncalls/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /campaigncalls`` list call or from the response of ``GET /campaigns/{id}/campaigncalls``.
+   * - ``OUTPLAN_NOT_FOUND``
+     - 404
+     - Outplan ID does not exist or belongs to another customer. Fired by ``GET /outplans/{id}``, ``PUT /outplans/{id}``, ``DELETE /outplans/{id}``, and ``PUT /outplans/{id}/dial_info``. **Fix:** Verify the ID was obtained from a recent ``GET /outplans`` list call.
+
+outdial-manager
+---------------
+
+.. note::
+
+   PR 10 introduced this section for the outdial (``/outdials``) and outdial-target (``/outdials/{id}/targets``) resources.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the outdial-manager typed-error migration ships.
+   ``POST /outdials`` and ``POST /outdials/{id}/targets`` are not directly billing-sensitive — per-call charges happen downstream when individual outbound calls are dialed. No 402 declarations apply to outdial or outdial-target creation.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``OUTDIAL_NOT_FOUND``
+     - 404
+     - Outdial ID does not exist or belongs to another customer. Fired by ``GET /outdials/{id}``, ``PUT /outdials/{id}``, ``DELETE /outdials/{id}``, ``PUT /outdials/{id}/campaign_id``, ``PUT /outdials/{id}/data``, ``GET /outdials/{id}/targets``, and ``POST /outdials/{id}/targets``. **Fix:** Verify the ID was obtained from a recent ``GET /outdials`` list call.
+   * - ``OUTDIAL_TARGET_NOT_FOUND``
+     - 404
+     - Outdial-target ID does not exist or does not belong to the supplied outdial. Fired by ``GET /outdials/{id}/targets/{target_id}`` and ``DELETE /outdials/{id}/targets/{target_id}``. **Fix:** Verify the target ID was obtained from a recent ``GET /outdials/{id}/targets`` list call against the same outdial.
+
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``talk-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``talk-manager``, ``queue-manager``, ``conference-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
