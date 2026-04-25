@@ -81,7 +81,7 @@ func (h *serviceHandler) TimelineSIPAnalysisGet(
 	res, err := h.reqHandler.TimelineV1SIPAnalysisGet(ctx, callID, ch.SIPCallID, fromTime.Format(time.RFC3339), toTime.Format(time.RFC3339))
 	if err != nil {
 		log.Errorf("Could not get SIP analysis: %v", err)
-		return nil, fmt.Errorf("upstream service unavailable")
+		return nil, fmt.Errorf("%w: upstream service unavailable", serviceerrors.ErrServiceUnavailable)
 	}
 
 	return res, nil
@@ -154,7 +154,7 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 	res, err := h.reqHandler.TimelineV1SIPPcapGet(ctx, callID, ch.SIPCallID, fromTime.Format(time.RFC3339), toTime.Format(time.RFC3339))
 	if err != nil {
 		log.Errorf("Could not get PCAP: %v", err)
-		return nil, fmt.Errorf("upstream service unavailable")
+		return nil, fmt.Errorf("%w: upstream service unavailable", serviceerrors.ErrServiceUnavailable)
 	}
 
 	return res, nil

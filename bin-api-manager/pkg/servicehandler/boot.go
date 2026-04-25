@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
@@ -61,7 +62,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 
 	if cu.Status != cscustomer.StatusActive {
 		log.Infof("Customer is not active. status: %s", cu.Status)
-		return nil, fmt.Errorf("customer not active")
+		return nil, fmt.Errorf("%w: customer not active", serviceerrors.ErrStateInvalid)
 	}
 
 	// look up allowed resource types

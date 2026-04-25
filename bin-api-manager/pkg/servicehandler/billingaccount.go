@@ -33,7 +33,7 @@ func (h *serviceHandler) billingAccountGet(ctx context.Context, accountID uuid.U
 
 	if res.TMDelete != nil {
 		log.Debugf("Deleted billing_account. billing_account_id: %s", res.ID)
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil

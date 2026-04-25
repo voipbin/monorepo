@@ -98,7 +98,7 @@ func (h *serviceHandler) AggregatedEventList(
 		af, err := h.activeflowGet(ctx, activeflowID)
 		if err != nil {
 			log.Infof("Could not get activeflow: %v", err)
-			return nil, "", fmt.Errorf("not found")
+			return nil, "", serviceerrors.ErrNotFound
 		}
 		log.WithField("activeflow", af).Debugf("Retrieved activeflow info. activeflow_id: %s", af.ID)
 
@@ -112,7 +112,7 @@ func (h *serviceHandler) AggregatedEventList(
 		c, err := h.callGet(ctx, callID)
 		if err != nil {
 			log.Infof("Could not get call: %v", err)
-			return nil, "", fmt.Errorf("not found")
+			return nil, "", serviceerrors.ErrNotFound
 		}
 		log.WithField("call", c).Debugf("Retrieved call info. call_id: %s", c.ID)
 
@@ -123,7 +123,7 @@ func (h *serviceHandler) AggregatedEventList(
 
 		if c.ActiveflowID == uuid.Nil {
 			log.Info("Call has no activeflow")
-			return nil, "", fmt.Errorf("not found")
+			return nil, "", serviceerrors.ErrNotFound
 		}
 		resolvedActiveflowID = c.ActiveflowID
 	}

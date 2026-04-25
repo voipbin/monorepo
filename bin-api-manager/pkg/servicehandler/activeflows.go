@@ -32,7 +32,7 @@ func (h *serviceHandler) activeflowGet(ctx context.Context, activeflowID uuid.UU
 
 	if res.TMDelete != nil {
 		log.Debugf("Deleted activeflow.. activeflow_id: %s", res.ID)
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil

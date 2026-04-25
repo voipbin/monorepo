@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -22,7 +21,7 @@ func (h *serviceHandler) storageAccountGet(ctx context.Context, accountID uuid.U
 	}
 
 	if res.TMDelete != nil {
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil

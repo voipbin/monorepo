@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -24,7 +23,7 @@ func (h *serviceHandler) emailGet(ctx context.Context, emailID uuid.UUID) (*emem
 	}
 
 	if res.TMDelete != nil {
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil

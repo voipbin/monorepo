@@ -34,7 +34,7 @@ func (h *serviceHandler) callGet(ctx context.Context, callID uuid.UUID) (*cmcall
 	}
 
 	if res.TMDelete != nil {
-		return nil, fmt.Errorf("deleted call")
+		return nil, fmt.Errorf("%w: deleted call", serviceerrors.ErrStateInvalid)
 	}
 
 	return res, nil
@@ -81,7 +81,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, f
 
 		if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
 			log.Infof("Customer identity verification required for PSTN calls. customer_id: %s, status: %s", a.CustomerID, cu.IdentityVerificationStatus)
-			return nil, nil, fmt.Errorf("customer identity verification required for PSTN calls")
+			return nil, nil, fmt.Errorf("%w: PSTN calls", serviceerrors.ErrIdentityVerificationRequired)
 		}
 	}
 

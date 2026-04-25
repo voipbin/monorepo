@@ -32,7 +32,7 @@ func (h *serviceHandler) recordingGet(ctx context.Context, recordingID uuid.UUID
 
 	if res.TMDelete != nil {
 		log.Debugf("Deleted recording. recording_id: %s", res.ID)
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil

@@ -25,7 +25,7 @@ func (h *serviceHandler) flowGet(ctx context.Context, flowID uuid.UUID) (*fmflow
 	}
 
 	if res.TMDelete != nil {
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil

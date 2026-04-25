@@ -12,10 +12,13 @@ package serviceerrors
 import stderrors "errors"
 
 var (
-	ErrPermissionDenied         = stderrors.New("permission denied")
-	ErrNotFound                 = stderrors.New("not found")
-	ErrAuthenticationRequired   = stderrors.New("authentication required")
-	ErrDirectAccessNotSupported = stderrors.New("direct access not supported")
-	ErrInvalidArgument          = stderrors.New("invalid argument")
-	ErrInternal                 = stderrors.New("internal error")
+	ErrPermissionDenied             = stderrors.New("permission denied")
+	ErrNotFound                     = stderrors.New("not found")
+	ErrAuthenticationRequired       = stderrors.New("authentication required")
+	ErrDirectAccessNotSupported     = stderrors.New("direct access not supported")
+	ErrInvalidArgument              = stderrors.New("invalid argument")
+	ErrInternal                     = stderrors.New("internal error")
+	ErrIdentityVerificationRequired = stderrors.New("identity verification required")
+	ErrStateInvalid                 = stderrors.New("state invalid")
+	ErrServiceUnavailable           = stderrors.New("service unavailable")
 )

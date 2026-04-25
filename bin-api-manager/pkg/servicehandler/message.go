@@ -144,7 +144,7 @@ func (h *serviceHandler) MessageGet(ctx context.Context, a *auth.AuthIdentity, i
 
 	if tmp.TMDelete != nil {
 		log.WithField("message", tmp).Debugf("Deleted message.")
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	res := tmp.ConvertWebhookMessage()
