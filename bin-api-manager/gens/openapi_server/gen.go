@@ -33126,6 +33126,24 @@ func (response GetStorageFiles200JSONResponse) VisitGetStorageFilesResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetStorageFiles401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetStorageFiles401JSONResponse) VisitGetStorageFilesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFiles500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetStorageFiles500JSONResponse) VisitGetStorageFilesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PostStorageFilesRequestObject struct {
 	Body *multipart.Reader
 }
@@ -33139,6 +33157,33 @@ type PostStorageFiles200JSONResponse StorageManagerFile
 func (response PostStorageFiles200JSONResponse) VisitPostStorageFilesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostStorageFiles400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostStorageFiles400JSONResponse) VisitPostStorageFilesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostStorageFiles401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostStorageFiles401JSONResponse) VisitPostStorageFilesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostStorageFiles500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostStorageFiles500JSONResponse) VisitPostStorageFilesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -33160,6 +33205,51 @@ func (response DeleteStorageFilesId200JSONResponse) VisitDeleteStorageFilesIdRes
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteStorageFilesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteStorageFilesId400JSONResponse) VisitDeleteStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteStorageFilesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteStorageFilesId401JSONResponse) VisitDeleteStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteStorageFilesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteStorageFilesId403JSONResponse) VisitDeleteStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteStorageFilesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteStorageFilesId404JSONResponse) VisitDeleteStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteStorageFilesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteStorageFilesId500JSONResponse) VisitDeleteStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetStorageFilesIdRequestObject struct {
 	Id string `json:"id"`
 }
@@ -33173,6 +33263,51 @@ type GetStorageFilesId200JSONResponse StorageManagerFile
 func (response GetStorageFilesId200JSONResponse) VisitGetStorageFilesIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetStorageFilesId400JSONResponse) VisitGetStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetStorageFilesId401JSONResponse) VisitGetStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetStorageFilesId403JSONResponse) VisitGetStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetStorageFilesId404JSONResponse) VisitGetStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetStorageFilesId500JSONResponse) VisitGetStorageFilesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -33194,13 +33329,47 @@ func (response GetStorageFilesIdFile307JSONResponse) VisitGetStorageFilesIdFileR
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetStorageFilesIdFile400JSONResponse struct {
-	Error *string `json:"error,omitempty"`
-}
+type GetStorageFilesIdFile400JSONResponse struct{ BadRequestJSONResponse }
 
 func (response GetStorageFilesIdFile400JSONResponse) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesIdFile401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetStorageFilesIdFile401JSONResponse) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesIdFile403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetStorageFilesIdFile403JSONResponse) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesIdFile404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetStorageFilesIdFile404JSONResponse) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetStorageFilesIdFile500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetStorageFilesIdFile500JSONResponse) VisitGetStorageFilesIdFileResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -34677,6 +34846,24 @@ type GetWsRequestObject struct {
 
 type GetWsResponseObject interface {
 	VisitGetWsResponse(w http.ResponseWriter) error
+}
+
+type GetWs401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetWs401JSONResponse) VisitGetWsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWs500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetWs500JSONResponse) VisitGetWsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 // StrictServerInterface represents all server handlers.

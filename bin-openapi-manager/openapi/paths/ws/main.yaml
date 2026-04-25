@@ -3,3 +3,8 @@ get:
   description: Establishes a new websocket connection for real-time communication.
   tags:
     - Websocket
+  responses:
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
