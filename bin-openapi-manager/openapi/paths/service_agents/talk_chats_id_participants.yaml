@@ -19,8 +19,16 @@ get:
             type: array
             items:
               $ref: '#/components/schemas/TalkManagerParticipant'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Talk chat not found.
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 post:
   summary: Add a participant to a talk chat
@@ -56,5 +64,13 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/TalkManagerParticipant'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Talk chat not found.
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

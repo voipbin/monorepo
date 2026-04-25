@@ -603,7 +603,34 @@ registrar-manager
      - 404
      - Extension ID does not exist or belongs to another customer. Fired by ``GET /extensions/{id}``, ``PUT /extensions/{id}``, ``DELETE /extensions/{id}``, and ``POST /extensions/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /extensions`` list call.
 
+talk-manager
+------------
+
+.. note::
+
+   PR 14 introduced this section for the agent-scoped talk surface (chats, channels, messages, participants, reactions) under ``/service_agents/talk_chats*``, ``/service_agents/talk_channels``, and ``/service_agents/talk_messages*``.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the talk-manager typed-error migration ships.
+   The talk surface is internal agent collaboration only — it does not deduct balance and has no idempotent state-transition contracts. No 402 or 409 declarations apply to talk endpoints.
+   ``TALK_MESSAGE_NOT_FOUND`` is intentionally distinct from PR 6's ``MESSAGE_NOT_FOUND`` reason in the message-manager (which covers SMS messages under ``/messages``); the two share no code path despite the similar shape.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``CHAT_NOT_FOUND``
+     - 404
+     - Chat ID does not exist or belongs to another customer. Fired by ``GET /service_agents/talk_chats/{id}``, ``PUT /service_agents/talk_chats/{id}``, ``DELETE /service_agents/talk_chats/{id}``, ``POST /service_agents/talk_chats/{id}/join``, ``GET /service_agents/talk_chats/{id}/participants``, ``POST /service_agents/talk_chats/{id}/participants``, ``DELETE /service_agents/talk_chats/{id}/participants/{participant_id}``, and ``GET /service_agents/talk_messages?chat_id={chat_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /service_agents/talk_chats`` or ``GET /service_agents/talk_channels`` list call.
+   * - ``TALK_MESSAGE_NOT_FOUND``
+     - 404
+     - Talk message ID does not exist or belongs to another customer. Fired by ``GET /service_agents/talk_messages/{id}``, ``DELETE /service_agents/talk_messages/{id}``, and ``POST /service_agents/talk_messages/{id}/reactions``. **Fix:** Verify the ID was obtained from a recent ``GET /service_agents/talk_messages?chat_id={chat_id}`` list call. Distinct from PR 6's ``MESSAGE_NOT_FOUND`` (SMS messages).
+   * - ``PARTICIPANT_NOT_FOUND``
+     - 404
+     - Participant ID is not currently associated with the supplied chat. Fired by ``DELETE /service_agents/talk_chats/{id}/participants/{participant_id}``. **Fix:** Verify the participant ID was obtained from a recent ``GET /service_agents/talk_chats/{id}/participants`` response against the same chat.
+
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``talk-manager``, ``timeline-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``timeline-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.

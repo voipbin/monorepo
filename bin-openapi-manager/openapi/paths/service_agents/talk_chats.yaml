@@ -20,6 +20,10 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/TalkManagerTalk'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 post:
   summary: Create a new talk chat
@@ -62,3 +66,9 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/TalkManagerTalk'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
