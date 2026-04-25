@@ -2,16 +2,20 @@ package server
 
 import (
 	"bytes"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	ammessage "monorepo/bin-ai-manager/models/message"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	ammessage "monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -347,4 +351,43 @@ func Test_DeleteAimessagesId(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_aimessagesPost_InsufficientBalance exercises the servicehandler-failure
+// path through abortWithServiceError. The translator's "insufficient"
+// substring fallback maps to PAYMENT_REQUIRED / INSUFFICIENT_BALANCE.
+func Test_aimessagesPost_InsufficientBalance(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	body := []byte(`{"aicall_id":"e7b9d44a-c514-11ef-9ec3-87dfeb9a6d3e","role":"user","content":"hello"}`)
+	req, _ := http.NewRequest(http.MethodPost, "/aimessages", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().
+		AImessageCreate(gomock.Any(), agent, gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, fmt.Errorf("insufficient balance"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE", commonoutline.ServiceNameAPIManager)
 }
