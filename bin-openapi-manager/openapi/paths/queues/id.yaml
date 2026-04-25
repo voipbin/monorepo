@@ -16,6 +16,16 @@ get:
         application/json:
           schema:
             $ref: '#/components/schemas/QueueManagerQueue'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 delete:
   summary: Delete a queue by ID
@@ -35,6 +45,16 @@ delete:
         application/json:
           schema:
             $ref: '#/components/schemas/QueueManagerQueue'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 put:
   summary: Update the queue details
@@ -86,3 +106,13 @@ put:
         application/json:
           schema:
             $ref: '#/components/schemas/QueueManagerQueue'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

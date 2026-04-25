@@ -20,6 +20,10 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/QueueManagerQueue'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 post:
   summary: Create a new queue
@@ -64,3 +68,9 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/QueueManagerQueue'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
