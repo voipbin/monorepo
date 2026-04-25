@@ -32,7 +32,7 @@ func (h *serviceHandler) numberGet(ctx context.Context, id uuid.UUID) (*nmnumber
 
 	if res.TMDelete != nil {
 		log.WithField("number", res).Debugf("Deleted number.")
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil
@@ -128,7 +128,7 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity,
 
 		if cu.IdentityVerificationStatus != cscustomer.IdentityVerificationStatusVerified {
 			log.Infof("Customer identity verification required for number purchase. customer_id: %s, status: %s", a.CustomerID, cu.IdentityVerificationStatus)
-			return nil, fmt.Errorf("customer identity verification required for number purchase")
+			return nil, fmt.Errorf("%w: number purchase", serviceerrors.ErrIdentityVerificationRequired)
 		}
 	}
 

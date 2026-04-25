@@ -22,7 +22,7 @@ func (h *serviceHandler) accesskeyGet(ctx context.Context, a *auth.AuthIdentity,
 	}
 
 	if res.CustomerID != a.CustomerID {
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	if res.TMDelete != nil {
@@ -120,7 +120,7 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 	}
 
 	if len(tmps) == 0 {
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 	if len(tmps) > 1 {
 		log.Errorf("Multiple accesskeys found for token hash, expected exactly one")

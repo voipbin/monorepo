@@ -115,8 +115,8 @@ func Test_AggregatedEventList_ActiveflowNotFound(t *testing.T) {
 	if err == nil {
 		t.Error("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "not found" {
-		t.Errorf("Wrong error message. expect: not found, got: %s", err.Error())
+	if !errors.Is(err, serviceerrors.ErrNotFound) {
+		t.Errorf("Wrong error. expect: %v, got: %v", serviceerrors.ErrNotFound, err)
 	}
 }
 
@@ -270,8 +270,8 @@ func Test_AggregatedEventList_CallNotFound(t *testing.T) {
 	if err == nil {
 		t.Error("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "not found" {
-		t.Errorf("Wrong error message. expect: not found, got: %s", err.Error())
+	if !errors.Is(err, serviceerrors.ErrNotFound) {
+		t.Errorf("Wrong error. expect: %v, got: %v", serviceerrors.ErrNotFound, err)
 	}
 }
 
@@ -356,8 +356,8 @@ func Test_AggregatedEventList_CallNoActiveflow(t *testing.T) {
 	if err == nil {
 		t.Error("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "not found" {
-		t.Errorf("Wrong error message. expect: not found, got: %s", err.Error())
+	if !errors.Is(err, serviceerrors.ErrNotFound) {
+		t.Errorf("Wrong error. expect: %v, got: %v", serviceerrors.ErrNotFound, err)
 	}
 }
 

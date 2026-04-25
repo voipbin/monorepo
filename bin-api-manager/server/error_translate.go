@@ -51,6 +51,15 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request is invalid.")
 	case stderrors.Is(err, serviceerrors.ErrInternal):
 		return cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.").Wrap(err)
+	case stderrors.Is(err, serviceerrors.ErrIdentityVerificationRequired):
+		return cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "IDENTITY_VERIFICATION_REQUIRED",
+			"Customer identity verification is required for this operation.").Wrap(err)
+	case stderrors.Is(err, serviceerrors.ErrStateInvalid):
+		return cerrors.FailedPrecondition(commonoutline.ServiceNameAPIManager, "STATE_INVALID",
+			"The operation is invalid for the current resource state.").Wrap(err)
+	case stderrors.Is(err, serviceerrors.ErrServiceUnavailable):
+		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE",
+			"An upstream service is temporarily unavailable.").Wrap(err)
 	}
 
 	// 3. Transport failures.

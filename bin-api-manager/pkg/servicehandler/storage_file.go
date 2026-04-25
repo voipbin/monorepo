@@ -23,7 +23,7 @@ func (h *serviceHandler) storageFileGet(ctx context.Context, fileID uuid.UUID) (
 	}
 
 	if res.TMDelete != nil {
-		return nil, fmt.Errorf("not found")
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	return res, nil
