@@ -301,9 +301,10 @@ ai-manager
 
 .. note::
 
-   PR 6 introduced this section for the AI-message resource (``/aimessages``); PR 7 extends it with the AI configuration (``/ais``), AI calls (``/aicalls``), and AI summaries (``/aisummaries``) resources.
+   PR 6 introduced this section for the AI-message resource (``/aimessages``); PR 7 extended it with the AI configuration (``/ais``), AI calls (``/aicalls``), and AI summaries (``/aisummaries``) resources; PR 9 extends it with the AI team resource (``/teams``).
    The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the ai-manager typed-error migration ships.
    ``POST /aimessages``, ``POST /aicalls``, and ``POST /aisummaries`` are conceptually billing-sensitive (LLM token cost, voice AI minutes, summary generation cost), but bin-ai-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for AI resource creation. Wiring the pre-check in ai-manager is deferred to a follow-up PR; no 402 declarations were added in PR 7 to match runtime behavior.
+   Team write surfaces (``POST /teams``, ``PUT /teams/{id}``, ``DELETE /teams/{id}``, ``POST /teams/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
 
 .. list-table::
    :header-rows: 1
@@ -324,6 +325,9 @@ ai-manager
    * - ``AISUMMARY_NOT_FOUND``
      - 404
      - AI summary ID does not exist or belongs to another customer. Fired by ``GET /aisummaries/{id}`` and ``DELETE /aisummaries/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /aisummaries`` list call.
+   * - ``TEAM_NOT_FOUND``
+     - 404
+     - Team ID does not exist or belongs to another customer. Fired by ``GET /teams/{id}``, ``PUT /teams/{id}``, ``DELETE /teams/{id}``, and ``POST /teams/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /teams`` list call.
 
 rag-manager
 -----------
@@ -383,7 +387,67 @@ transcribe-manager
      - 404
      - Transcribe ID does not exist or belongs to another customer. Fired by ``GET /transcribes/{id}``, ``DELETE /transcribes/{id}``, and ``POST /transcribes/{id}/stop``. **Fix:** Verify the ID was obtained from a recent ``GET /transcribes`` list call or from the response of ``POST /transcribes``.
 
+agent-manager
+-------------
+
+.. note::
+
+   PR 9 introduced this section for the agent resource (``/agents``).
+   ``AGENT_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the agent-manager typed-error migration ships.
+   Agent write surfaces (``POST /agents``, ``PUT /agents/{id}``, ``PUT /agents/{id}/permission``, ``PUT /agents/{id}/password``, ``PUT /agents/{id}/addresses``, ``PUT /agents/{id}/tag_ids``, ``PUT /agents/{id}/status``, ``DELETE /agents/{id}``, ``POST /agents/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``AGENT_NOT_FOUND``
+     - 404
+     - Agent ID does not exist or belongs to another customer. Fired by ``GET /agents/{id}``, ``PUT /agents/{id}``, ``DELETE /agents/{id}``, ``PUT /agents/{id}/addresses``, ``PUT /agents/{id}/tag_ids``, ``PUT /agents/{id}/status``, ``PUT /agents/{id}/permission``, ``PUT /agents/{id}/password``, and ``POST /agents/{id}/direct_hash_regenerate``. **Fix:** Verify the ID was obtained from a recent ``GET /agents`` list call.
+
+tag-manager
+-----------
+
+.. note::
+
+   PR 9 introduced this section for the tag resource (``/tags``).
+   ``TAG_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the tag-manager typed-error migration ships.
+   Tag write surfaces (``POST /tags``, ``PUT /tags/{id}``, ``DELETE /tags/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``TAG_NOT_FOUND``
+     - 404
+     - Tag ID does not exist or belongs to another customer. Fired by ``GET /tags/{id}``, ``PUT /tags/{id}``, and ``DELETE /tags/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /tags`` list call.
+
+customer-manager
+----------------
+
+.. note::
+
+   PR 9 introduced this section for the access-key resource (``/accesskeys``).
+   ``ACCESSKEY_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the customer-manager typed-error migration ships.
+   Access-key write surfaces (``POST /accesskeys``, ``PUT /accesskeys/{id}``, ``DELETE /accesskeys/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``ACCESSKEY_NOT_FOUND``
+     - 404
+     - Access-key ID does not exist or belongs to another customer. Fired by ``GET /accesskeys/{id}``, ``PUT /accesskeys/{id}``, and ``DELETE /accesskeys/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /accesskeys`` list call.
+
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``talk-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
