@@ -2,10 +2,12 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
-	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,7 +20,7 @@ func (h *server) GetBillings(c *gin.Context, params openapi_server.GetBillingsPa
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -42,13 +44,15 @@ func (h *server) GetBillings(c *gin.Context, params openapi_server.GetBillingsPa
 	tmps, err := h.serviceHandler.BillingList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get billing accounts info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -64,7 +68,7 @@ func (h *server) GetBillingsBillingId(c *gin.Context, billingId openapi_types.UU
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -75,14 +79,14 @@ func (h *server) GetBillingsBillingId(c *gin.Context, billingId openapi_types.UU
 	billingID, err := uuid.FromString(billingId.String())
 	if err != nil {
 		log.Errorf("Invalid billing ID format. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	billing, err := h.serviceHandler.BillingGet(c.Request.Context(), a, billingID)
 	if err != nil {
 		logrus.Errorf("Could not get billing info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 

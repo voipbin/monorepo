@@ -11,12 +11,22 @@ get:
         type: string
       description: The ID of the billing account.
   responses:
-    200:
+    '200':
       description: Successfully retrieved billing account info
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/BillingManagerAccountAdmin'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 put:
   summary: Update billing account
@@ -42,9 +52,19 @@ put:
             detail:
               type: string
   responses:
-    200:
+    '200':
       description: Successfully updated billing account
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/BillingManagerAccountAdmin'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

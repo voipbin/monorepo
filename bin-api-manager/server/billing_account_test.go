@@ -2,17 +2,16 @@ package server
 
 import (
 	"bytes"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	bmaccount "monorepo/bin-billing-manager/models/account"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	bmaccount "monorepo/bin-billing-manager/models/account"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -237,4 +236,10 @@ func TestPutBillingAccountPaymentInfo(t *testing.T) {
 
 		})
 	}
+}
+
+// Test_billingAccountPaddlePortalSessionPost_MissingAuthIdentity exercises
+// the auth-identity-missing branch of PostBillingAccountPaddlePortalSession.
+func Test_billingAccountPaddlePortalSessionPost_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost, "/billing_account/paddle_portal_session", nil)
 }

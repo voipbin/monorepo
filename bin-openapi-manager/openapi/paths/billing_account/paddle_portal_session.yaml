@@ -17,9 +17,8 @@ post:
                 description: The Paddle Customer Portal URL. Valid for a limited time.
                 example: "https://customer-portal.paddle.com/cpl_session_abc123"
     '400':
-      description: |
-        Bad request. Possible causes:
-        - The billing account has no linked Paddle subscription (no paddle_customer_id).
-        - The Paddle API returned an error (e.g., invalid customer ID).
-    '404':
-      description: Billing account not found for the authenticated customer.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

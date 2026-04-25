@@ -2,17 +2,19 @@ package server
 
 import (
 	"bytes"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	bmaccount "monorepo/bin-billing-manager/models/account"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	bmaccount "monorepo/bin-billing-manager/models/account"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -393,3 +395,47 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 	}
 }
 
+
+// Test_billingAccountsIDPut_InvalidID verifies that a malformed UUID in the
+// path triggers INVALID_ARGUMENT / INVALID_ID before the servicehandler is
+// consulted.
+func Test_billingAccountsIDPut_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("23443698-11eb-11ee-93d2-83107308dab3"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// "not-a-uuid" passes the path-shape check but uuid.FromStringOrNil
+	// returns uuid.Nil, so the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodPut, "/billing_accounts/not-a-uuid",
+		bytes.NewBufferString(`{"name":"new","detail":"new"}`))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_billingAccountsIDBalanceAddForcePost_MissingAuthIdentity exercises the
+// auth-identity-missing branch of PostBillingAccountsIdBalanceAddForce.
+func Test_billingAccountsIDBalanceAddForcePost_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost,
+		"/billing_accounts/602eb6b4-11eb-11ee-b79f-03124621dcc4/balance_add_force",
+		[]byte(`{"balance":10}`))
+}

@@ -20,6 +20,10 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/ConversationManagerAccount'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 post:
   summary: Create a new conversation account
@@ -59,3 +63,11 @@ post:
         application/json:
           schema:
             $ref: '#/components/schemas/ConversationManagerAccount'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'

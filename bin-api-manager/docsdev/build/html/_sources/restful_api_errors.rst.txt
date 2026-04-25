@@ -147,11 +147,12 @@ billing-manager
 .. note::
 
    ``INSUFFICIENT_BALANCE`` is reachable today via the translator's case-insensitive ``"insufficient"`` substring fallback — billing-manager surfaces credit-shortfall errors as ``fmt.Errorf("insufficient balance")`` (or similar) and the api-manager translator maps that to **402 PAYMENT_REQUIRED** with reason ``INSUFFICIENT_BALANCE`` in the api-manager domain.
-   The full billing-manager typed-error contract (deeper reasons such as ``BILLING_ACCOUNT_NOT_FOUND``, ``ACCOUNT_SUSPENDED``) is scheduled for migration PR 5.
+   ``BILLING_NOT_FOUND`` and ``BILLING_ACCOUNT_NOT_FOUND`` are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the billing-manager typed-error migration ships.
+   The full billing-manager typed-error contract (deeper reasons such as ``ACCOUNT_SUSPENDED``) remains scheduled for a future migration.
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 10 60
+   :widths: 35 10 55
 
    * - Reason
      - HTTP
@@ -159,6 +160,12 @@ billing-manager
    * - ``INSUFFICIENT_BALANCE``
      - 402
      - Customer balance is below the minimum required for a chargeable operation. Currently fired by ``POST /numbers`` (number purchase) and ``POST /numbers/renew`` (number renewal); migration PR 6 will extend the list to ``POST /messages`` and ``POST /emails``. **Fix:** Top up the customer balance via ``POST /billing-accounts/{id}/balance-add`` (admin) or have the customer add credit, then retry.
+   * - ``BILLING_NOT_FOUND``
+     - 404
+     - Billing record ID does not exist or belongs to another customer. Fired by ``GET /billings/{billing_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /billings`` list call.
+   * - ``BILLING_ACCOUNT_NOT_FOUND``
+     - 404
+     - Billing account ID does not exist or belongs to another customer. Fired by the ``/billing-accounts/{id}*`` admin endpoints. **Fix:** Verify the ID was obtained from a recent ``GET /billing-accounts`` list call.
 
 number-manager
 --------------
@@ -210,7 +217,45 @@ The ``provider``, ``trunk``, and ``route`` resources are admin-gated and share a
      - 404
      - Route ID does not exist. Verify via ``GET /routes``. Admin-only resource.
 
+storage-manager
+---------------
+
+.. note::
+
+   ``STORAGE_ACCOUNT_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the storage-manager typed-error migration ships.
+   The admin-gated ``POST /storage-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``STORAGE_ACCOUNT_NOT_FOUND``
+     - 404
+     - Storage account ID does not exist or belongs to another customer. Fired by ``GET /storage-accounts/{id}`` and ``DELETE /storage-accounts/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /storage-accounts`` list call.
+
+conversation-manager
+--------------------
+
+.. note::
+
+   ``CONVERSATION_ACCOUNT_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the conversation-manager typed-error migration ships.
+   The admin-gated ``POST /conversation-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``CONVERSATION_ACCOUNT_NOT_FOUND``
+     - 404
+     - Conversation account ID does not exist or belongs to another customer. Fired by ``GET /conversation-accounts/{id}``, ``PUT /conversation-accounts/{id}``, and ``DELETE /conversation-accounts/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /conversation-accounts`` list call.
+
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``conversation-manager``, ``email-manager``, ``ai-manager``, ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``storage-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager`` — will be added as migration PRs 5–9 ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``email-manager``, ``ai-manager``, ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager`` — will be added as migration PRs 6–9 ship. See the design doc for the PR rollout.
