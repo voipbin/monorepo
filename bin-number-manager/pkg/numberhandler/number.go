@@ -38,8 +38,8 @@ func (h *numberHandler) Create(ctx context.Context, customerID uuid.UUID, num st
 	}
 
 	if !valid {
-		log.Errorf("The customer has not enough balance. valid: %v", valid)
-		return nil, fmt.Errorf("the customer has not enough balance")
+		log.Errorf("The customer has insufficient balance. valid: %v", valid)
+		return nil, fmt.Errorf("insufficient balance for number")
 	}
 
 	// use telnyx as a default

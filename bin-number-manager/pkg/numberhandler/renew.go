@@ -75,7 +75,7 @@ func (h *numberHandler) renewNumbersByTMRenew(ctx context.Context, tmRenew strin
 			}
 
 			if !valid {
-				log.WithField("number", n).Errorf("The customer has not enough balance for number renew.")
+				log.WithField("number", n).Errorf("The customer has insufficient balance for number renew.")
 				tmp, err := h.Delete(ctx, n.ID)
 				if err != nil {
 					log.Errorf("Could not release the number. err: %v", err)
