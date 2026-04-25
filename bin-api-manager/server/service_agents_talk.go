@@ -2,6 +2,8 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
@@ -21,7 +23,7 @@ func (h *server) GetServiceAgentsTalkChats(c *gin.Context, params openapi_server
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -45,13 +47,15 @@ func (h *server) GetServiceAgentsTalkChats(c *gin.Context, params openapi_server
 	tmps, err := h.serviceHandler.ServiceAgentTalkChatList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get talks info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -69,7 +73,7 @@ func (h *server) GetServiceAgentsTalkChannels(c *gin.Context, params openapi_ser
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -93,13 +97,15 @@ func (h *server) GetServiceAgentsTalkChannels(c *gin.Context, params openapi_ser
 	tmps, err := h.serviceHandler.ServiceAgentTalkChannelList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get channels info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -116,7 +122,7 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -126,7 +132,7 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 	var req openapi_server.PostServiceAgentsTalkChatsJSONRequestBody
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Errorf("Could not parse request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -150,7 +156,7 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 			ownerID := uuid.FromStringOrNil(p.OwnerId)
 			if ownerID == uuid.Nil {
 				log.Errorf("Invalid participant owner_id: %s", p.OwnerId)
-				c.AbortWithStatus(400)
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided owner_id is not a valid UUID."))
 				return
 			}
 			participants = append(participants, tkparticipant.ParticipantInput{
@@ -163,7 +169,7 @@ func (h *server) PostServiceAgentsTalkChats(c *gin.Context) {
 	res, err := h.serviceHandler.ServiceAgentTalkChatCreate(c.Request.Context(), a, talkType, name, detail, participants)
 	if err != nil {
 		log.Errorf("Could not create talk. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -180,7 +186,7 @@ func (h *server) GetServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -190,14 +196,14 @@ func (h *server) GetServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkChatGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get talk. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -214,7 +220,7 @@ func (h *server) PutServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -224,21 +230,21 @@ func (h *server) PutServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutServiceAgentsTalkChatsIdJSONRequestBody
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Errorf("Could not parse request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkChatUpdate(c.Request.Context(), a, target, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update talk. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -255,7 +261,7 @@ func (h *server) DeleteServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -265,14 +271,14 @@ func (h *server) DeleteServiceAgentsTalkChatsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkChatDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete talk. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -289,7 +295,7 @@ func (h *server) PostServiceAgentsTalkChatsIdJoin(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -299,14 +305,14 @@ func (h *server) PostServiceAgentsTalkChatsIdJoin(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkChatJoin(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not join chat. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -323,7 +329,7 @@ func (h *server) GetServiceAgentsTalkChatsIdParticipants(c *gin.Context, id stri
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -333,14 +339,14 @@ func (h *server) GetServiceAgentsTalkChatsIdParticipants(c *gin.Context, id stri
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkParticipantList(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get participants. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -357,7 +363,7 @@ func (h *server) PostServiceAgentsTalkChatsIdParticipants(c *gin.Context, id str
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -367,28 +373,28 @@ func (h *server) PostServiceAgentsTalkChatsIdParticipants(c *gin.Context, id str
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PostServiceAgentsTalkChatsIdParticipantsJSONRequestBody
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Errorf("Could not parse request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	ownerID := uuid.FromStringOrNil(req.OwnerId)
 	if ownerID == uuid.Nil {
 		log.Error("Could not parse owner_id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided owner_id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkParticipantCreate(c.Request.Context(), a, target, req.OwnerType, ownerID)
 	if err != nil {
 		log.Errorf("Could not add participant. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -405,7 +411,7 @@ func (h *server) DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -415,21 +421,21 @@ func (h *server) DeleteServiceAgentsTalkChatsIdParticipantsParticipantId(c *gin.
 	talkID := uuid.FromStringOrNil(id)
 	if talkID == uuid.Nil {
 		log.Error("Could not parse talk id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	participantID := uuid.FromStringOrNil(participantId)
 	if participantID == uuid.Nil {
 		log.Error("Could not parse participant id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided participant_id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkParticipantDelete(c.Request.Context(), a, talkID, participantID)
 	if err != nil {
 		log.Errorf("Could not delete participant. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -446,7 +452,7 @@ func (h *server) GetServiceAgentsTalkMessages(c *gin.Context, params openapi_ser
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -457,7 +463,7 @@ func (h *server) GetServiceAgentsTalkMessages(c *gin.Context, params openapi_ser
 	chatID := uuid.FromStringOrNil(params.ChatId)
 	if chatID == uuid.Nil {
 		log.Errorf("Invalid chat_id")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided chat_id is not a valid UUID."))
 		return
 	}
 
@@ -478,13 +484,15 @@ func (h *server) GetServiceAgentsTalkMessages(c *gin.Context, params openapi_ser
 	tmps, err := h.serviceHandler.ServiceAgentTalkMessageList(c.Request.Context(), a, chatID, pageSize, pageToken)
 	if err != nil {
 		logrus.Errorf("Could not get messages info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -501,7 +509,7 @@ func (h *server) PostServiceAgentsTalkMessages(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -511,14 +519,14 @@ func (h *server) PostServiceAgentsTalkMessages(c *gin.Context) {
 	var req openapi_server.PostServiceAgentsTalkMessagesJSONRequestBody
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Errorf("Could not parse request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	chatID := uuid.FromStringOrNil(req.ChatId)
 	if chatID == uuid.Nil {
 		log.Error("Could not parse chat_id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided chat_id is not a valid UUID."))
 		return
 	}
 
@@ -556,7 +564,7 @@ func (h *server) PostServiceAgentsTalkMessages(c *gin.Context) {
 	res, err := h.serviceHandler.ServiceAgentTalkMessageCreate(c.Request.Context(), a, chatID, parentID, msgType, req.Text, medias)
 	if err != nil {
 		log.Errorf("Could not create message. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -573,7 +581,7 @@ func (h *server) GetServiceAgentsTalkMessagesId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -583,14 +591,14 @@ func (h *server) GetServiceAgentsTalkMessagesId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkMessageGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get message. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -607,7 +615,7 @@ func (h *server) DeleteServiceAgentsTalkMessagesId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -617,14 +625,14 @@ func (h *server) DeleteServiceAgentsTalkMessagesId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkMessageDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete message. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -641,7 +649,7 @@ func (h *server) PostServiceAgentsTalkMessagesIdReactions(c *gin.Context, id str
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -651,21 +659,21 @@ func (h *server) PostServiceAgentsTalkMessagesIdReactions(c *gin.Context, id str
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PostServiceAgentsTalkMessagesIdReactionsJSONRequestBody
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Errorf("Could not parse request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.ServiceAgentTalkMessageReactionCreate(c.Request.Context(), a, target, req.Emoji)
 	if err != nil {
 		log.Errorf("Could not add reaction. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
