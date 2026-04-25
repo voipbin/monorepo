@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cvaccount "monorepo/bin-conversation-manager/models/account"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -45,7 +46,7 @@ func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context
 	log.Debug("Getting a conversation accounts.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -91,7 +92,7 @@ func (h *serviceHandler) ConversationAccountGet(ctx context.Context, a *auth.Aut
 	log.Debug("Getting an conversation account.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get
@@ -129,7 +130,7 @@ func (h *serviceHandler) ConversationAccountCreate(
 	log.Debug("Creating a new conversation account.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -157,7 +158,7 @@ func (h *serviceHandler) ConversationAccountUpdate(ctx context.Context, a *auth.
 	log.Debug("Creating a new conversation account.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -192,7 +193,7 @@ func (h *serviceHandler) ConversationAccountDelete(ctx context.Context, a *auth.
 	log.Debug("Creating a new conversation account.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign

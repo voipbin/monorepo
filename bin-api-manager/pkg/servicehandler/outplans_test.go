@@ -176,7 +176,7 @@ func Test_OutplanListByCustomerID(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -253,7 +253,7 @@ func Test_OutplanGet(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		outplanID uuid.UUID
 
 		response  *caoutplan.Outplan
@@ -317,7 +317,7 @@ func Test_OutplanUpdateBasicInfo(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		agent *auth.AuthIdentity
+		agent       *auth.AuthIdentity
 		outplanID   uuid.UUID
 		outplanName string
 		detail      string
@@ -386,7 +386,7 @@ func Test_OutplanUpdateDialInfo(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		agent *auth.AuthIdentity
+		agent        *auth.AuthIdentity
 		outplanID    uuid.UUID
 		source       *commonaddress.Address
 		dialTimeout  int

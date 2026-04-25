@@ -7,6 +7,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	cfconference "monorepo/bin-conference-manager/models/conference"
@@ -49,7 +50,7 @@ func (h *serviceHandler) TimelineEventList(
 	pageToken string,
 ) ([]*TimelineEvent, string, error) {
 	if a.IsDirect() {
-		return nil, "", fmt.Errorf("direct access not supported")
+		return nil, "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -77,7 +78,7 @@ func (h *serviceHandler) TimelineEventList(
 	// Check permission
 	if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("Agent has no permission")
-		return nil, "", fmt.Errorf("user has no permission")
+		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
 	// Query timeline events

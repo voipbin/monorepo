@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -43,7 +44,7 @@ func (h *serviceHandler) ConferencecallGet(ctx context.Context, a *auth.AuthIden
 	log.Debugf("Get conferencecall. conferencecall_id: %s", id)
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference
@@ -74,7 +75,7 @@ func (h *serviceHandler) ConferencecallList(ctx context.Context, a *auth.AuthIde
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -124,7 +125,7 @@ func (h *serviceHandler) ConferencecallKick(ctx context.Context, a *auth.AuthIde
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference for ownership check

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 
@@ -17,7 +18,7 @@ import (
 // it returns list of conversation messages if it succeed.
 func (h *serviceHandler) ServiceAgentConversationMessageList(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	cv, err := h.conversationGet(ctx, conversationID)
@@ -57,7 +58,7 @@ func (h *serviceHandler) ServiceAgentConversationMessageSend(
 	medias []cvmedia.Media,
 ) (*cvmessage.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{

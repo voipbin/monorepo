@@ -2,9 +2,9 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -27,7 +27,7 @@ func (h *serviceHandler) BillingList(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -35,7 +35,7 @@ func (h *serviceHandler) BillingList(ctx context.Context, a *auth.AuthIdentity, 
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -121,7 +121,7 @@ func (h *serviceHandler) BillingGet(ctx context.Context, a *auth.AuthIdentity, b
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get billing
@@ -132,7 +132,7 @@ func (h *serviceHandler) BillingGet(ctx context.Context, a *auth.AuthIdentity, b
 	}
 
 	if !h.hasPermission(ctx, a, b.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// convert

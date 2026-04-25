@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
@@ -42,7 +43,7 @@ func (h *serviceHandler) activeflowGet(ctx context.Context, activeflowID uuid.UU
 // it returns created activeflow info if it succeed.
 func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -55,7 +56,7 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdent
 	log.Debug("Creating a new activeflow.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerManager|amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if activeflowID == uuid.Nil {
@@ -110,7 +111,7 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdent
 // it returns activeflow if it succeed.
 func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -129,7 +130,7 @@ func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *auth.AuthIdentity
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// convert
@@ -143,7 +144,7 @@ func (h *serviceHandler) ActiveflowGet(ctx context.Context, a *auth.AuthIdentity
 // it returns list of activeflows if it succeed.
 func (h *serviceHandler) ActiveflowList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -158,7 +159,7 @@ func (h *serviceHandler) ActiveflowList(ctx context.Context, a *auth.AuthIdentit
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -188,7 +189,7 @@ func (h *serviceHandler) ActiveflowList(ctx context.Context, a *auth.AuthIdentit
 // it returns activeflow if it succeed.
 func (h *serviceHandler) ActiveflowStop(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -207,7 +208,7 @@ func (h *serviceHandler) ActiveflowStop(ctx context.Context, a *auth.AuthIdentit
 	}
 
 	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.FlowV1ActiveflowStop(ctx, activeflowID)
@@ -227,7 +228,7 @@ func (h *serviceHandler) ActiveflowStop(ctx context.Context, a *auth.AuthIdentit
 // it returns activeflow if it succeed.
 func (h *serviceHandler) ActiveflowDelete(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -245,7 +246,7 @@ func (h *serviceHandler) ActiveflowDelete(ctx context.Context, a *auth.AuthIdent
 	}
 
 	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request

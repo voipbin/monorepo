@@ -97,7 +97,7 @@ func Test_GroupcallCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent        *auth.AuthIdentity
 		source       commonaddress.Address
 		destinations []commonaddress.Address
 		flowID       uuid.UUID
@@ -191,7 +191,7 @@ func Test_GroupcallHangup(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent       *auth.AuthIdentity
 		groupcallID uuid.UUID
 
 		responseGroupcall *cmgroupcall.Groupcall
@@ -260,7 +260,7 @@ func Test_GroupcallDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent       *auth.AuthIdentity
 		groupcallID uuid.UUID
 
 		responseGroupcall *cmgroupcall.Groupcall

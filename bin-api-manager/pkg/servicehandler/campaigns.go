@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cacampaign "monorepo/bin-campaign-manager/models/campaign"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -55,11 +56,11 @@ func (h *serviceHandler) CampaignCreate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	log.Debug("Creating a new campaign.")
@@ -100,7 +101,7 @@ func (h *serviceHandler) CampaignGetsByCustomerID(ctx context.Context, a *auth.A
 	log.Debug("Getting a campaigns.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -108,7 +109,7 @@ func (h *serviceHandler) CampaignGetsByCustomerID(ctx context.Context, a *auth.A
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get campaigns
@@ -143,7 +144,7 @@ func (h *serviceHandler) CampaignGet(ctx context.Context, a *auth.AuthIdentity, 
 	log.Debug("Getting an campaign.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -154,7 +155,7 @@ func (h *serviceHandler) CampaignGet(ctx context.Context, a *auth.AuthIdentity, 
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -172,7 +173,7 @@ func (h *serviceHandler) CampaignDelete(ctx context.Context, a *auth.AuthIdentit
 	log.Debug("Deleting a campaign.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -183,7 +184,7 @@ func (h *serviceHandler) CampaignDelete(ctx context.Context, a *auth.AuthIdentit
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaignDelete(ctx, id)
@@ -222,7 +223,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(
 	log.Debug("Updating an campaign.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -233,7 +234,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaignUpdateBasicInfo(ctx, id, name, detail, campaignType, serviceLevel, endHandle)
@@ -258,7 +259,7 @@ func (h *serviceHandler) CampaignUpdateStatus(ctx context.Context, a *auth.AuthI
 	log.Debug("Updating an campaign.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -269,7 +270,7 @@ func (h *serviceHandler) CampaignUpdateStatus(ctx context.Context, a *auth.AuthI
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaignUpdateStatus(ctx, id, status)
@@ -294,7 +295,7 @@ func (h *serviceHandler) CampaignUpdateServiceLevel(ctx context.Context, a *auth
 	log.Debug("Updating an campaign.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -305,7 +306,7 @@ func (h *serviceHandler) CampaignUpdateServiceLevel(ctx context.Context, a *auth
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaignUpdateServiceLevel(ctx, id, serviceLevel)
@@ -330,7 +331,7 @@ func (h *serviceHandler) CampaignUpdateActions(ctx context.Context, a *auth.Auth
 	log.Debug("Updating an campaign.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -341,7 +342,7 @@ func (h *serviceHandler) CampaignUpdateActions(ctx context.Context, a *auth.Auth
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaignUpdateActions(ctx, id, actions)
@@ -366,7 +367,7 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, a *auth
 	log.Debug("Updating an campaign.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -377,7 +378,7 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, a *auth
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaignUpdateResourceInfo(ctx, id, outplanID, outdialID, queueID, nextCampaignID)
@@ -402,7 +403,7 @@ func (h *serviceHandler) CampaignUpdateNextCampaignID(ctx context.Context, a *au
 	log.Debug("Updating an campaign.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -413,7 +414,7 @@ func (h *serviceHandler) CampaignUpdateNextCampaignID(ctx context.Context, a *au
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaignUpdateNextCampaignID(ctx, id, nextCampaignID)

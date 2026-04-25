@@ -6,6 +6,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	tmtranscript "monorepo/bin-transcribe-manager/models/transcript"
 
@@ -18,7 +19,7 @@ import (
 // it returns list of transcribe info if it succeed.
 func (h *serviceHandler) TranscriptList(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) ([]*tmtranscript.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{

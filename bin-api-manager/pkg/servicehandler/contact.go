@@ -2,9 +2,9 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -57,11 +57,11 @@ func (h *serviceHandler) ContactCreate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -101,7 +101,7 @@ func (h *serviceHandler) ContactGet(ctx context.Context, a *auth.AuthIdentity, c
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.contactGet(ctx, contactID)
@@ -111,7 +111,7 @@ func (h *serviceHandler) ContactGet(ctx context.Context, a *auth.AuthIdentity, c
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -131,7 +131,7 @@ func (h *serviceHandler) ContactList(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -139,7 +139,7 @@ func (h *serviceHandler) ContactList(ctx context.Context, a *auth.AuthIdentity, 
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Convert string filters to typed filters
@@ -210,7 +210,7 @@ func (h *serviceHandler) ContactUpdate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -220,7 +220,7 @@ func (h *serviceHandler) ContactUpdate(
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -254,7 +254,7 @@ func (h *serviceHandler) ContactDelete(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -264,7 +264,7 @@ func (h *serviceHandler) ContactDelete(ctx context.Context, a *auth.AuthIdentity
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -289,11 +289,11 @@ func (h *serviceHandler) ContactLookup(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -325,7 +325,7 @@ func (h *serviceHandler) ContactPhoneNumberCreate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -335,7 +335,7 @@ func (h *serviceHandler) ContactPhoneNumberCreate(
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -366,7 +366,7 @@ func (h *serviceHandler) ContactPhoneNumberUpdate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -376,7 +376,7 @@ func (h *serviceHandler) ContactPhoneNumberUpdate(
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -401,7 +401,7 @@ func (h *serviceHandler) ContactPhoneNumberDelete(ctx context.Context, a *auth.A
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -411,7 +411,7 @@ func (h *serviceHandler) ContactPhoneNumberDelete(ctx context.Context, a *auth.A
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -442,7 +442,7 @@ func (h *serviceHandler) ContactEmailCreate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -452,7 +452,7 @@ func (h *serviceHandler) ContactEmailCreate(
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -483,7 +483,7 @@ func (h *serviceHandler) ContactEmailUpdate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -493,7 +493,7 @@ func (h *serviceHandler) ContactEmailUpdate(
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -518,7 +518,7 @@ func (h *serviceHandler) ContactEmailDelete(ctx context.Context, a *auth.AuthIde
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -528,7 +528,7 @@ func (h *serviceHandler) ContactEmailDelete(ctx context.Context, a *auth.AuthIde
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -553,7 +553,7 @@ func (h *serviceHandler) ContactTagAdd(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -563,7 +563,7 @@ func (h *serviceHandler) ContactTagAdd(ctx context.Context, a *auth.AuthIdentity
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -588,7 +588,7 @@ func (h *serviceHandler) ContactTagRemove(ctx context.Context, a *auth.AuthIdent
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -598,7 +598,7 @@ func (h *serviceHandler) ContactTagRemove(ctx context.Context, a *auth.AuthIdent
 	}
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request

@@ -7,6 +7,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amteam "monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -40,7 +41,7 @@ func (h *serviceHandler) TeamCreate(
 	parameter map[string]any,
 ) (*amteam.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -53,7 +54,7 @@ func (h *serviceHandler) TeamCreate(
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AIV1TeamCreate(
@@ -78,7 +79,7 @@ func (h *serviceHandler) TeamCreate(
 // TeamDirectHashRegenerate regenerates the direct hash for the team.
 func (h *serviceHandler) TeamDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, teamID uuid.UUID) (*amteam.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -96,7 +97,7 @@ func (h *serviceHandler) TeamDirectHashRegenerate(ctx context.Context, a *auth.A
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AIV1TeamDirectHashRegenerate(ctx, teamID)
@@ -112,7 +113,7 @@ func (h *serviceHandler) TeamDirectHashRegenerate(ctx context.Context, a *auth.A
 // TeamGetsByCustomerID gets the list of teams of the given customer id.
 func (h *serviceHandler) TeamGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amteam.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -129,7 +130,7 @@ func (h *serviceHandler) TeamGetsByCustomerID(ctx context.Context, a *auth.AuthI
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -182,7 +183,7 @@ func (h *serviceHandler) convertTeamFilters(filters map[string]string) (map[amte
 // TeamGet gets the team of the given id.
 func (h *serviceHandler) TeamGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amteam.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -200,7 +201,7 @@ func (h *serviceHandler) TeamGet(ctx context.Context, a *auth.AuthIdentity, id u
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -210,7 +211,7 @@ func (h *serviceHandler) TeamGet(ctx context.Context, a *auth.AuthIdentity, id u
 // TeamDelete deletes the team.
 func (h *serviceHandler) TeamDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amteam.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -229,7 +230,7 @@ func (h *serviceHandler) TeamDelete(ctx context.Context, a *auth.AuthIdentity, i
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AIV1TeamDelete(ctx, id)
@@ -254,7 +255,7 @@ func (h *serviceHandler) TeamUpdate(
 	parameter map[string]any,
 ) (*amteam.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -274,7 +275,7 @@ func (h *serviceHandler) TeamUpdate(
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AIV1TeamUpdate(

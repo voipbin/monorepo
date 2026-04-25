@@ -6,6 +6,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -119,7 +120,7 @@ func (h *serviceHandler) AImessageGet(ctx context.Context, a *auth.AuthIdentity,
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {

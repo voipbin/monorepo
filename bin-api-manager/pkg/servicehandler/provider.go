@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonrequesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
@@ -45,7 +46,7 @@ func (h *serviceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.providerGet(ctx, providerID)
@@ -75,7 +76,7 @@ func (h *serviceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -120,7 +121,7 @@ func (h *serviceHandler) ProviderCreate(
 		"customer_id": a.CustomerID,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Creating a new provider.")
@@ -159,7 +160,7 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentit
 		"provider_id": id,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Deleting a provider.")
@@ -197,7 +198,7 @@ func (h *serviceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -240,7 +241,7 @@ func (h *serviceHandler) ProviderUpdate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {

@@ -10,6 +10,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -60,7 +61,7 @@ func (h *serviceHandler) AIcallCreate(
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		if !h.hasPermission(ctx, a, customerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {
@@ -128,7 +129,7 @@ func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *auth.Aut
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {
@@ -197,7 +198,7 @@ func (h *serviceHandler) AIcallGet(ctx context.Context, a *auth.AuthIdentity, id
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {
@@ -222,7 +223,7 @@ func (h *serviceHandler) AIcallDelete(ctx context.Context, a *auth.AuthIdentity,
 	switch {
 	case a.IsAgent() || a.IsAccesskey():
 		if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {

@@ -7,6 +7,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 
 	"github.com/gofrs/uuid"
@@ -20,7 +21,7 @@ func (h *serviceHandler) TimelineSIPAnalysisGet(
 	callID uuid.UUID,
 ) (*tmsipmessage.SIPAnalysisResponse, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -93,7 +94,7 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 	callID uuid.UUID,
 ) ([]byte, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{

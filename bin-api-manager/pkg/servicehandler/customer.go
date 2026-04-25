@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -51,13 +52,13 @@ func (h *serviceHandler) CustomerCreate(
 	log.Debug("Creating a new customer.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// check permission
 	// only project super admin permssion can create a new customer.
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// create customer
@@ -79,7 +80,7 @@ func (h *serviceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -106,7 +107,7 @@ func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdenti
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -137,13 +138,13 @@ func (h *serviceHandler) CustomerList(ctx context.Context, a *auth.AuthIdentity,
 	log.Debug("Received request detail.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// check permission
 	// only project super admin permssion allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if size <= 0 {
@@ -202,7 +203,7 @@ func (h *serviceHandler) CustomerUpdate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -246,7 +247,7 @@ func (h *serviceHandler) CustomerSelfUpdate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -273,7 +274,7 @@ func (h *serviceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentit
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// check permission
@@ -308,7 +309,7 @@ func (h *serviceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentit
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// check permission
@@ -343,7 +344,7 @@ func (h *serviceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdenti
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// check permission
@@ -378,7 +379,7 @@ func (h *serviceHandler) CustomerSelfFreeze(ctx context.Context, a *auth.AuthIde
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -412,7 +413,7 @@ func (h *serviceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *aut
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -445,7 +446,7 @@ func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *auth.AuthId
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -479,7 +480,7 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -520,7 +521,7 @@ func (h *serviceHandler) CustomerUpdateDefaultOutgoingSourceNumberID(ctx context
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -543,7 +544,7 @@ func (h *serviceHandler) CustomerUpdateDefaultOutgoingSourceNumberID(ctx context
 	log.WithField("number", num).Debugf("Retrieved number info. number_id: %s", num.ID)
 	if num.CustomerID != customerID {
 		log.Infof("The number does not belong to this customer. number_customer_id: %s", num.CustomerID)
-		return nil, fmt.Errorf("the number does not belong to this customer")
+		return nil, fmt.Errorf("%w: the number does not belong to this customer", serviceerrors.ErrPermissionDenied)
 	}
 
 	res, err := h.reqHandler.CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx, customerID, defaultOutgoingSourceNumberID)
@@ -564,7 +565,7 @@ func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.Aut
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
@@ -598,7 +599,7 @@ func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -636,7 +637,7 @@ func (h *serviceHandler) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx con
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -653,7 +654,7 @@ func (h *serviceHandler) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx con
 	log.WithField("number", num).Debugf("Retrieved number info. number_id: %s", num.ID)
 	if num.CustomerID != a.CustomerID {
 		log.Infof("The number does not belong to this customer. number_customer_id: %s", num.CustomerID)
-		return nil, fmt.Errorf("the number does not belong to this customer")
+		return nil, fmt.Errorf("%w: the number does not belong to this customer", serviceerrors.ErrPermissionDenied)
 	}
 
 	res, err := h.reqHandler.CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx, a.CustomerID, defaultOutgoingSourceNumberID)
@@ -674,7 +675,7 @@ func (h *serviceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *auth
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {

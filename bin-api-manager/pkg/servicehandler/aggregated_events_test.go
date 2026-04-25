@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -19,6 +20,7 @@ import (
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/dbhandler"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 )
 
 func Test_AggregatedEventList_NeitherProvided(t *testing.T) {
@@ -46,8 +48,8 @@ func Test_AggregatedEventList_NeitherProvided(t *testing.T) {
 	if err == nil {
 		t.Error("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "either activeflow_id or call_id is required" {
-		t.Errorf("Wrong error message. expect: either activeflow_id or call_id is required, got: %s", err.Error())
+	if !errors.Is(err, serviceerrors.ErrInvalidArgument) {
+		t.Errorf("Wrong error. expect: ErrInvalidArgument, got: %v", err)
 	}
 }
 
@@ -79,8 +81,8 @@ func Test_AggregatedEventList_BothProvided(t *testing.T) {
 	if err == nil {
 		t.Error("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "only one of activeflow_id or call_id is allowed" {
-		t.Errorf("Wrong error message. expect: only one of activeflow_id or call_id is allowed, got: %s", err.Error())
+	if !errors.Is(err, serviceerrors.ErrInvalidArgument) {
+		t.Errorf("Wrong error. expect: ErrInvalidArgument, got: %v", err)
 	}
 }
 
@@ -156,8 +158,8 @@ func Test_AggregatedEventList_ActiveflowNoPermission(t *testing.T) {
 	if err == nil {
 		t.Error("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "user has no permission" {
-		t.Errorf("Wrong error message. expect: user has no permission, got: %s", err.Error())
+	if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
+		t.Errorf("Wrong error. expect: ErrPermissionDenied, got: %v", err)
 	}
 }
 
@@ -311,8 +313,8 @@ func Test_AggregatedEventList_CallNoPermission(t *testing.T) {
 	if err == nil {
 		t.Error("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "user has no permission" {
-		t.Errorf("Wrong error message. expect: user has no permission, got: %s", err.Error())
+	if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
+		t.Errorf("Wrong error. expect: ErrPermissionDenied, got: %v", err)
 	}
 }
 

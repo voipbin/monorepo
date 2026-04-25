@@ -2,9 +2,9 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -49,7 +49,7 @@ func (h *serviceHandler) GroupcallList(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -58,7 +58,7 @@ func (h *serviceHandler) GroupcallList(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -102,7 +102,7 @@ func (h *serviceHandler) GroupcallGet(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get call
@@ -115,7 +115,7 @@ func (h *serviceHandler) GroupcallGet(ctx context.Context, a *auth.AuthIdentity,
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// convert
@@ -139,14 +139,14 @@ func (h *serviceHandler) GroupcallCreate(ctx context.Context, a *auth.AuthIdenti
 		"answer_method": answerMethod,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Creating a new groupcall.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	targetFlowID := flowID
@@ -186,7 +186,7 @@ func (h *serviceHandler) GroupcallHangup(ctx context.Context, a *auth.AuthIdenti
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	gc, err := h.groupcallGet(ctx, groupcallID)
@@ -198,7 +198,7 @@ func (h *serviceHandler) GroupcallHangup(ctx context.Context, a *auth.AuthIdenti
 
 	if !h.hasPermission(ctx, a, gc.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -227,7 +227,7 @@ func (h *serviceHandler) GroupcallDelete(ctx context.Context, a *auth.AuthIdenti
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	gc, err := h.groupcallGet(ctx, callID)
@@ -239,7 +239,7 @@ func (h *serviceHandler) GroupcallDelete(ctx context.Context, a *auth.AuthIdenti
 
 	if !h.hasPermission(ctx, a, gc.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request

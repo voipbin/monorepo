@@ -24,11 +24,11 @@ func Test_AuthBoot(t *testing.T) {
 
 		directHash string
 
-		responseDirect    *dmdirect.Direct
-		responseDirectErr error
+		responseDirect      *dmdirect.Direct
+		responseDirectErr   error
 		responseCustomer    *cscustomer.Customer
 		responseCustomerErr error
-		responseCurTime string
+		responseCurTime     string
 
 		expectErr bool
 	}{

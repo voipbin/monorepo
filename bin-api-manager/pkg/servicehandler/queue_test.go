@@ -24,7 +24,7 @@ func Test_QueueList(t *testing.T) {
 
 	type test struct {
 		name      string
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -168,7 +168,7 @@ func Test_QueueCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent          *auth.AuthIdentity
 		queueName      string
 		detail         string
 		routingMethod  qmqueue.RoutingMethod
@@ -338,7 +338,7 @@ func Test_QueueUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent          *auth.AuthIdentity
 		queueID        uuid.UUID
 		queueName      string
 		detail         string
@@ -443,7 +443,7 @@ func Test_QueueUpdateTagIDs(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent   *auth.AuthIdentity
 		queueID uuid.UUID
 		tagIDs  []uuid.UUID
 
@@ -546,7 +546,7 @@ func Test_QueueUpdateRoutingMethod(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent         *auth.AuthIdentity
 		queueID       uuid.UUID
 		routingMethod qmqueue.RoutingMethod
 

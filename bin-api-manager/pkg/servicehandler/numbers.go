@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	nmnumber "monorepo/bin-number-manager/models/number"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	cscustomer "monorepo/bin-customer-manager/models/customer"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -50,7 +51,7 @@ func (h *serviceHandler) NumberList(ctx context.Context, a *auth.AuthIdentity, s
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -59,7 +60,7 @@ func (h *serviceHandler) NumberList(ctx context.Context, a *auth.AuthIdentity, s
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -103,7 +104,7 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if num == "" {
@@ -113,7 +114,7 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity,
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// check identity verification for non-virtual number purchases
@@ -154,7 +155,7 @@ func (h *serviceHandler) NumberGet(ctx context.Context, a *auth.AuthIdentity, id
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get number info
@@ -185,7 +186,7 @@ func (h *serviceHandler) NumberDelete(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get number info
@@ -197,7 +198,7 @@ func (h *serviceHandler) NumberDelete(ctx context.Context, a *auth.AuthIdentity,
 
 	if !h.hasPermission(ctx, a, n.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// delete numbers
@@ -224,7 +225,7 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get number
@@ -273,7 +274,7 @@ func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthId
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get number
@@ -309,7 +310,7 @@ func (h *serviceHandler) NumberUpdateMetadata(ctx context.Context, a *auth.AuthI
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get number
@@ -346,13 +347,13 @@ func (h *serviceHandler) NumberRenew(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// project admin only
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get number

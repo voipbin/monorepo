@@ -6,6 +6,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
@@ -18,7 +19,7 @@ import (
 // it returns transfer info if it succeed.
 func (h *serviceHandler) TransferStart(ctx context.Context, a *auth.AuthIdentity, transferType tmtransfer.Type, transfererCallID uuid.UUID, transfereeAddresses []commonaddress.Address) (*tmtransfer.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{

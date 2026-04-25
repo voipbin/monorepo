@@ -6,6 +6,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	rmsipauth "monorepo/bin-registrar-manager/models/sipauth"
 	rmtrunk "monorepo/bin-registrar-manager/models/trunk"
@@ -27,7 +28,7 @@ func (h *serviceHandler) trunkGet(ctx context.Context, id uuid.UUID) (*rmtrunk.T
 // TrunkCreate is a service handler for trunk creation.
 func (h *serviceHandler) TrunkCreate(ctx context.Context, a *auth.AuthIdentity, name string, detail string, domainName string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -41,7 +42,7 @@ func (h *serviceHandler) TrunkCreate(ctx context.Context, a *auth.AuthIdentity, 
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RegistrarV1TrunkCreate(ctx, a.CustomerID, name, detail, domainName, authTypes, username, password, allowedIPs)
@@ -57,7 +58,7 @@ func (h *serviceHandler) TrunkCreate(ctx context.Context, a *auth.AuthIdentity, 
 // TrunkDelete deletes the trunk of the given id.
 func (h *serviceHandler) TrunkDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmtrunk.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -94,7 +95,7 @@ func (h *serviceHandler) TrunkDelete(ctx context.Context, a *auth.AuthIdentity, 
 // It returns trunk if it succeed.
 func (h *serviceHandler) TrunkGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmtrunk.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -126,7 +127,7 @@ func (h *serviceHandler) TrunkGet(ctx context.Context, a *auth.AuthIdentity, id 
 // It returns list of trunks if it succeed.
 func (h *serviceHandler) TrunkList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmtrunk.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -180,7 +181,7 @@ func (h *serviceHandler) TrunkList(ctx context.Context, a *auth.AuthIdentity, si
 // It returns updated trunk if it succeed.
 func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name string, detail string, authTypes []rmsipauth.AuthType, username string, password string, allowedIPs []string) (*rmtrunk.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
@@ -49,7 +50,7 @@ func (h *serviceHandler) ConferenceGet(ctx context.Context, a *auth.AuthIdentity
 	log.Debugf("Get conference. conference: %s", id)
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference
@@ -80,7 +81,7 @@ func (h *serviceHandler) ConferenceList(ctx context.Context, a *auth.AuthIdentit
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -149,7 +150,7 @@ func (h *serviceHandler) ConferenceCreate(
 	log.Debugf("Creating a conference.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -175,7 +176,7 @@ func (h *serviceHandler) ConferenceDelete(ctx context.Context, a *auth.AuthIdent
 	log.Debug("Destroying conference.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference for ownership check
@@ -227,7 +228,7 @@ func (h *serviceHandler) ConferenceUpdate(
 	log.Debugf("Updating conference. conference_id: %s", conferenceID)
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference for ownership check
@@ -271,7 +272,7 @@ func (h *serviceHandler) ConferenceRecordingStart(
 	onEndFlowID uuid.UUID,
 ) (*cfconference.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference for ownership check
@@ -298,7 +299,7 @@ func (h *serviceHandler) ConferenceRecordingStart(
 func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, a *auth.AuthIdentity, confID uuid.UUID) (*cfconference.WebhookMessage, error) {
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference for ownership check
@@ -331,7 +332,7 @@ func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, a *auth.
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference for ownership check
@@ -366,7 +367,7 @@ func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *auth.A
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conference for ownership check
@@ -402,7 +403,7 @@ func (h *serviceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *
 	log.Debug("Regenerating conference direct hash.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.conferenceGet(ctx, conferenceID)
@@ -437,7 +438,7 @@ func (h *serviceHandler) ConferenceMediaStreamStart(ctx context.Context, a *auth
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.conferenceGet(ctx, conferenceID)

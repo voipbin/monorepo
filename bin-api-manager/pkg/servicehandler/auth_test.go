@@ -158,5 +158,3 @@ func Test_AuthJWTGenerate(t *testing.T) {
 		})
 	}
 }
-
-

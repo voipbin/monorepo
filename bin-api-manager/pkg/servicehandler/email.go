@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"monorepo/bin-api-manager/models/auth"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	ememail "monorepo/bin-email-manager/models/email"
@@ -40,11 +41,11 @@ func (h *serviceHandler) EmailSend(
 ) (*ememail.WebhookMessage, error) {
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.EmailV1EmailSend(ctx, a.CustomerID, uuid.Nil, destinations, subject, content, attachments)
@@ -61,11 +62,11 @@ func (h *serviceHandler) EmailSend(
 func (h *serviceHandler) EmailList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*ememail.WebhookMessage, error) {
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if token == "" {
@@ -104,7 +105,7 @@ func (h *serviceHandler) EmailList(ctx context.Context, a *auth.AuthIdentity, si
 func (h *serviceHandler) EmailGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ememail.WebhookMessage, error) {
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.emailGet(ctx, id)
@@ -113,7 +114,7 @@ func (h *serviceHandler) EmailGet(ctx context.Context, a *auth.AuthIdentity, id 
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -124,7 +125,7 @@ func (h *serviceHandler) EmailGet(ctx context.Context, a *auth.AuthIdentity, id 
 func (h *serviceHandler) EmailDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ememail.WebhookMessage, error) {
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get flow
@@ -134,7 +135,7 @@ func (h *serviceHandler) EmailDelete(ctx context.Context, a *auth.AuthIdentity, 
 	}
 
 	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.EmailV1EmailDelete(ctx, id)

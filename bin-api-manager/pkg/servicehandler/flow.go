@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
@@ -41,20 +42,20 @@ func (h *serviceHandler) FlowCreate(
 	persist bool,
 ) (*fmflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if persist {
 		// we are making a persist flow here.
 		// need to check if the customer has permission to create a persist flow.
 		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	} else {
 		// we are making a non-persist flow here.
 		// no need to check the agent's permission. checking the customer id is good enough
 		if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	}
 
@@ -66,7 +67,7 @@ func (h *serviceHandler) FlowCreate(
 		}
 
 		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-			return nil, fmt.Errorf("user has no permission for the onComplete flow")
+			return nil, fmt.Errorf("%w: onComplete flow", serviceerrors.ErrPermissionDenied)
 		}
 	}
 
@@ -82,7 +83,7 @@ func (h *serviceHandler) FlowCreate(
 // FlowDelete deletes the flow of the given id.
 func (h *serviceHandler) FlowDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*fmflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get flow
@@ -92,7 +93,7 @@ func (h *serviceHandler) FlowDelete(ctx context.Context, a *auth.AuthIdentity, i
 	}
 
 	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.FlowV1FlowDelete(ctx, id)
@@ -113,7 +114,7 @@ func (h *serviceHandler) FlowDirectHashRegenerate(ctx context.Context, a *auth.A
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Regenerating flow direct hash.")
@@ -126,7 +127,7 @@ func (h *serviceHandler) FlowDirectHashRegenerate(ctx context.Context, a *auth.A
 
 	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.FlowV1FlowDirectHashRegenerate(ctx, flowID)
@@ -143,7 +144,7 @@ func (h *serviceHandler) FlowDirectHashRegenerate(ctx context.Context, a *auth.A
 // It returns flow if it succeed.
 func (h *serviceHandler) FlowGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*fmflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get flow
@@ -153,7 +154,7 @@ func (h *serviceHandler) FlowGet(ctx context.Context, a *auth.AuthIdentity, id u
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -164,11 +165,11 @@ func (h *serviceHandler) FlowGet(ctx context.Context, a *auth.AuthIdentity, id u
 // It returns list of flows if it succeed.
 func (h *serviceHandler) FlowList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*fmflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if token == "" {
@@ -210,7 +211,7 @@ func (h *serviceHandler) FlowUpdate(
 	onCompleteID uuid.UUID,
 ) (*fmflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get flows
@@ -220,7 +221,7 @@ func (h *serviceHandler) FlowUpdate(
 	}
 
 	if !h.hasPermission(ctx, a, tmpFlow.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if onCompleteID != uuid.Nil {
@@ -230,7 +231,7 @@ func (h *serviceHandler) FlowUpdate(
 		}
 
 		if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-			return nil, fmt.Errorf("user has no permission for the onComplete flow")
+			return nil, fmt.Errorf("%w: onComplete flow", serviceerrors.ErrPermissionDenied)
 		}
 	}
 
@@ -247,7 +248,7 @@ func (h *serviceHandler) FlowUpdate(
 // It returns updated flow if it succeed.
 func (h *serviceHandler) FlowUpdateActions(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []fmaction.Action) (*fmflow.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get flows
@@ -257,7 +258,7 @@ func (h *serviceHandler) FlowUpdateActions(ctx context.Context, a *auth.AuthIden
 	}
 
 	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.FlowV1FlowUpdateActions(ctx, flowID, actions)

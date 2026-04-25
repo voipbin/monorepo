@@ -6,6 +6,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
 	"github.com/gofrs/uuid"
@@ -27,7 +28,7 @@ func (h *serviceHandler) tagGet(ctx context.Context, tagID uuid.UUID) (*tmtag.Ta
 // it returns created tag info if it succeed.
 func (h *serviceHandler) TagCreate(ctx context.Context, a *auth.AuthIdentity, name string, detail string) (*tmtag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -60,7 +61,7 @@ func (h *serviceHandler) TagCreate(ctx context.Context, a *auth.AuthIdentity, na
 // to getting a tag.
 func (h *serviceHandler) TagGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*tmtag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -91,7 +92,7 @@ func (h *serviceHandler) TagGet(ctx context.Context, a *auth.AuthIdentity, id uu
 // to getting a list of tags.
 func (h *serviceHandler) TagList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tmtag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -107,7 +108,7 @@ func (h *serviceHandler) TagList(ctx context.Context, a *auth.AuthIdentity, size
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[tmtag.Field]any{
@@ -132,7 +133,7 @@ func (h *serviceHandler) TagList(ctx context.Context, a *auth.AuthIdentity, size
 // to delete the tag.
 func (h *serviceHandler) TagDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*tmtag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -151,7 +152,7 @@ func (h *serviceHandler) TagDelete(ctx context.Context, a *auth.AuthIdentity, id
 	// permission check
 	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -171,7 +172,7 @@ func (h *serviceHandler) TagDelete(ctx context.Context, a *auth.AuthIdentity, id
 // to update the tag.
 func (h *serviceHandler) TagUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, name, detail string) (*tmtag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -190,7 +191,7 @@ func (h *serviceHandler) TagUpdate(ctx context.Context, a *auth.AuthIdentity, id
 	// permission check
 	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request

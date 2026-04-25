@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	omoutdial "monorepo/bin-outdial-manager/models/outdial"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -40,7 +41,7 @@ func (h *serviceHandler) OutdialCreate(ctx context.Context, a *auth.AuthIdentity
 		"name":        name,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Creating a new outdial.")
@@ -71,7 +72,7 @@ func (h *serviceHandler) OutdialGetsByCustomerID(ctx context.Context, a *auth.Au
 		"token":       token,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Getting a outdials.")
@@ -114,7 +115,7 @@ func (h *serviceHandler) OutdialDelete(ctx context.Context, a *auth.AuthIdentity
 		"outdial_id":  id,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Deleting a outdial.")
@@ -151,7 +152,7 @@ func (h *serviceHandler) OutdialGet(ctx context.Context, a *auth.AuthIdentity, i
 		"outdial_id":  id,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Getting an outdial.")
@@ -182,7 +183,7 @@ func (h *serviceHandler) OutdialUpdateBasicInfo(ctx context.Context, a *auth.Aut
 		"outdial_id":  id,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Updating an outdial.")
@@ -220,7 +221,7 @@ func (h *serviceHandler) OutdialUpdateCampaignID(ctx context.Context, a *auth.Au
 		"campaign_id": campaignID,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Executing OutdialUpdateCampaignID.")
@@ -258,7 +259,7 @@ func (h *serviceHandler) OutdialUpdateData(ctx context.Context, a *auth.AuthIden
 		"data":        data,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Executing OutdialUpdateData.")

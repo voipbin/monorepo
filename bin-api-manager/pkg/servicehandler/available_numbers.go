@@ -2,9 +2,9 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -26,11 +26,11 @@ func (h *serviceHandler) AvailableNumberList(ctx context.Context, a *auth.AuthId
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get available numbers

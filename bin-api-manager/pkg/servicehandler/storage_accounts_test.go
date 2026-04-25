@@ -23,7 +23,7 @@ func Test_StorageAccountGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent            *auth.AuthIdentity
 		storageAccountID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
