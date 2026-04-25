@@ -2,15 +2,20 @@ package server
 
 import (
 	"bytes"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonaddress "monorepo/bin-common-handler/models/address"
-	commonidentity "monorepo/bin-common-handler/models/identity"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -367,4 +372,84 @@ func Test_mePasswordPUT(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_GetServiceAgentsMe_MissingAuthIdentity exercises the
+// auth-identity-missing branch of GetServiceAgentsMe. Without auth_identity
+// in the gin context, the handler must emit UNAUTHENTICATED /
+// AUTHENTICATION_REQUIRED with a populated request_id.
+func Test_GetServiceAgentsMe_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodGet, "/service_agents/me", nil)
+}
+
+// Test_mePUT_InvalidJSONBody verifies PutServiceAgentsMe rejects malformed
+// JSON with INVALID_ARGUMENT / INVALID_JSON_BODY.
+func Test_mePUT_InvalidJSONBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// Intentionally invalid JSON body.
+	req, _ := http.NewRequest(http.MethodPut, "/service_agents/me", bytes.NewBufferString("{not json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_GetServiceAgentsMe_ServiceError exercises the servicehandler-failure
+// path through abortWithServiceError. The translator's substring fallback
+// maps "agent not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
+func Test_GetServiceAgentsMe_ServiceError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodGet, "/service_agents/me", nil)
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().ServiceAgentMeGet(gomock.Any(), agent).Return(nil, fmt.Errorf("agent not found"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
 }
