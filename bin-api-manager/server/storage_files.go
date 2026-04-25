@@ -1,9 +1,12 @@
 package server
 
 import (
-	"monorepo/bin-api-manager/gens/openapi_server"
-	smfile "monorepo/bin-storage-manager/models/file"
 	"net/http"
+
+	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	smfile "monorepo/bin-storage-manager/models/file"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -24,7 +27,7 @@ func (h *server) PostStorageFiles(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -37,7 +40,7 @@ func (h *server) PostStorageFiles(c *gin.Context) {
 	f, header, err := c.Request.FormFile("file")
 	if err != nil {
 		log.Errorf("Could not get file. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_FILE_UPLOAD", "The uploaded file is invalid or missing.").Wrap(err))
 		return
 	}
 	log.WithField("file", header).Debugf("Checking uploaded file header. filename: %s", header.Filename)
@@ -46,14 +49,14 @@ func (h *server) PostStorageFiles(c *gin.Context) {
 	fileType := c.PostForm("type")
 	if fileType != "rag" {
 		log.Errorf("Invalid or missing file type. type: %s", fileType)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_FILE_TYPE", "The provided file type is invalid or missing."))
 		return
 	}
 
 	res, err := h.serviceHandler.StorageFileCreate(c.Request.Context(), a, f, smfile.Type(fileType), "", "", header.Filename)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -69,7 +72,7 @@ func (h *server) GetStorageFiles(c *gin.Context, params openapi_server.GetStorag
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -93,13 +96,15 @@ func (h *server) GetStorageFiles(c *gin.Context, params openapi_server.GetStorag
 	tmps, err := h.serviceHandler.StorageFileList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a file list. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -115,7 +120,7 @@ func (h *server) GetStorageFilesId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -125,14 +130,14 @@ func (h *server) GetStorageFilesId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.StorageFileGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a file. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -148,7 +153,7 @@ func (h *server) DeleteStorageFilesId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -158,14 +163,14 @@ func (h *server) DeleteStorageFilesId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.StorageFileDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the file. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -182,7 +187,7 @@ func (h *server) GetStorageFilesIdFile(c *gin.Context, id openapi_types.UUID) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -192,14 +197,14 @@ func (h *server) GetStorageFilesIdFile(c *gin.Context, id openapi_types.UUID) {
 	target, err := uuid.FromString(id.String())
 	if err != nil {
 		log.Errorf("Invalid ID format. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	downloadURI, err := h.serviceHandler.StorageFileDownloadRedirect(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get storage file download URL. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
