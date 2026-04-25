@@ -13,8 +13,16 @@ delete:
   responses:
     '204':
       description: Activeflow deleted successfully.
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Flow not found.
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 get:
   summary: Get an activeflow by ID
@@ -35,5 +43,13 @@ get:
         application/json:
           schema:
             $ref: '#/components/schemas/FlowManagerActiveflow'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Flow not found.
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

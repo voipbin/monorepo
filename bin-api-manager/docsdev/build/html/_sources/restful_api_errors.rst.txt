@@ -106,6 +106,41 @@ call-manager
    Reasons that match the translator's case-insensitive substring fallback (``CALL_NOT_FOUND``, ``RECORDING_NOT_FOUND``, ``GROUPCALL_NOT_FOUND``, ``CALL_ALREADY_HANGUP``, ``RECORDING_ALREADY_ACTIVE``, ``RECORDING_NOT_ACTIVE``, ``INSUFFICIENT_BALANCE`` via ``"already"`` / ``"deleted"`` / ``"not active"`` / ``"insufficient"`` / ``"not found"`` patterns) surface today.
    Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships; until then, the translator routes the underlying ``fmt.Errorf`` strings through the substring fallback to the closest canonical reason (typically the api-manager generic equivalent, e.g., ``RESOURCE_NOT_FOUND`` rather than ``CALL_NOT_FOUND``).
 
+flow-manager
+------------
+
+.. note::
+
+   The reasons in this section define the platform's planned typed-error contract.
+   Reasons reachable today via the translator's case-insensitive substring fallback:
+   ``FLOW_NOT_FOUND`` and ``ACTIVEFLOW_NOT_FOUND`` (via ``"not found"`` pattern → currently surface as ``RESOURCE_NOT_FOUND`` in the api-manager domain),
+   ``ACTIVEFLOW_ALREADY_STOPPED`` (via ``"already"`` pattern added in PR 2 → currently surfaces as ``STATE_INVALID`` in the api-manager domain).
+   ``FLOW_STATE_INVALID`` (the generic state-restriction reason) is not currently reachable via fallback — it requires the typed-error migration to emit directly.
+   Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships.
+
+   Note: ``POST /activeflows/{id}/stop`` is idempotent in production today — stopping an already-stopped activeflow returns 200 (no-op).
+   The 409 ``ACTIVEFLOW_ALREADY_STOPPED`` response declared in the OpenAPI spec is forward-compatible for clients that prefer opt-in idempotency-aware semantics; it will be emitted once the typed-error migration ships.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 10 65
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``FLOW_NOT_FOUND``
+     - 404
+     - Flow ID does not exist or belongs to another customer. Verify the ID was obtained from a recent ``GET /flows`` list call.
+   * - ``ACTIVEFLOW_NOT_FOUND``
+     - 404
+     - Activeflow ID does not exist or belongs to another customer. Verify via ``GET /activeflows``.
+   * - ``FLOW_STATE_INVALID``
+     - 409
+     - Operation invalid for the current activeflow state (e.g., stop on an already-stopped activeflow). Check current status via ``GET /activeflows/{id}`` before retrying.
+   * - ``ACTIVEFLOW_ALREADY_STOPPED``
+     - 409
+     - Stop requested on an activeflow that has already terminated. Idempotent — treat as success or check status before retrying.
+
 billing-manager
 ---------------
 
@@ -122,4 +157,4 @@ billing-manager
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``flow-manager``, ``number-manager``, ``conversation-manager``, ``email-manager``, ``ai-manager``, ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``storage-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager``, ``provider-manager``, ``route-manager``, ``trunk-manager`` — will be added as migration PRs 3–9 ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``number-manager``, ``conversation-manager``, ``email-manager``, ``ai-manager``, ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``storage-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager``, ``rag-manager``, ``provider-manager``, ``route-manager``, ``trunk-manager`` — will be added as migration PRs 3–9 ship. See the design doc for the PR rollout.

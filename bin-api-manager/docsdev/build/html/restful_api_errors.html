@@ -333,12 +333,57 @@ Reasons that match the translator’s case-insensitive substring fallback (<code
 Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships; until then, the translator routes the underlying <code class="docutils literal notranslate"><span class="pre">fmt.Errorf</span></code> strings through the substring fallback to the closest canonical reason (typically the api-manager generic equivalent, e.g., <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code> rather than <code class="docutils literal notranslate"><span class="pre">CALL_NOT_FOUND</span></code>).</p>
 </div>
 </section>
+<section id="flow-manager">
+<h2>flow-manager<a class="headerlink" href="#flow-manager" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The reasons in this section define the platform’s planned typed-error contract.
+Reasons reachable today via the translator’s case-insensitive substring fallback:
+<code class="docutils literal notranslate"><span class="pre">FLOW_NOT_FOUND</span></code> and <code class="docutils literal notranslate"><span class="pre">ACTIVEFLOW_NOT_FOUND</span></code> (via <code class="docutils literal notranslate"><span class="pre">&quot;not</span> <span class="pre">found&quot;</span></code> pattern → currently surface as <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code> in the api-manager domain),
+<code class="docutils literal notranslate"><span class="pre">ACTIVEFLOW_ALREADY_STOPPED</span></code> (via <code class="docutils literal notranslate"><span class="pre">&quot;already&quot;</span></code> pattern added in PR 2 → currently surfaces as <code class="docutils literal notranslate"><span class="pre">STATE_INVALID</span></code> in the api-manager domain).
+<code class="docutils literal notranslate"><span class="pre">FLOW_STATE_INVALID</span></code> (the generic state-restriction reason) is not currently reachable via fallback — it requires the typed-error migration to emit directly.
+Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships.</p>
+<p>Note: <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows/{id}/stop</span></code> is idempotent in production today — stopping an already-stopped activeflow returns 200 (no-op).
+The 409 <code class="docutils literal notranslate"><span class="pre">ACTIVEFLOW_ALREADY_STOPPED</span></code> response declared in the OpenAPI spec is forward-compatible for clients that prefer opt-in idempotency-aware semantics; it will be emitted once the typed-error migration ships.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 10.0%" />
+<col style="width: 65.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">FLOW_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Flow ID does not exist or belongs to another customer. Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code> list call.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ACTIVEFLOW_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Activeflow ID does not exist or belongs to another customer. Verify via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">FLOW_STATE_INVALID</span></code></p></td>
+<td><p>409</p></td>
+<td><p>Operation invalid for the current activeflow state (e.g., stop on an already-stopped activeflow). Check current status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows/{id}</span></code> before retrying.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ACTIVEFLOW_ALREADY_STOPPED</span></code></p></td>
+<td><p>409</p></td>
+<td><p>Stop requested on an activeflow that has already terminated. Idempotent — treat as success or check status before retrying.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <section id="billing-manager">
 <h2>billing-manager<a class="headerlink" href="#billing-manager" title="Link to this heading"></a></h2>
 </section>
 <section id="other-domains">
 <h2>Other Domains<a class="headerlink" href="#other-domains" title="Link to this heading"></a></h2>
-<p>Reason code sections for the remaining manager services — <code class="docutils literal notranslate"><span class="pre">flow-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">number-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">talk-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">agent-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">queue-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conference-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">campaign-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">tag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">team-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">timeline-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">contact-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">provider-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">route-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk-manager</span></code> — will be added as migration PRs 3–9 ship. See the design doc for the PR rollout.</p>
+<p>Reason code sections for the remaining manager services — <code class="docutils literal notranslate"><span class="pre">number-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">talk-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">agent-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">queue-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conference-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">campaign-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">tag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">team-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">timeline-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">contact-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">provider-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">route-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk-manager</span></code> — will be added as migration PRs 3–9 ship. See the design doc for the PR rollout.</p>
 </section>
 </section>
 
@@ -360,6 +405,7 @@ Domain-specific reason codes will be emitted directly once the servicehandler ty
 <li><a class="reference internal" href="#">Error Reason Codes</a><ul>
 <li><a class="reference internal" href="#api-manager">api-manager</a></li>
 <li><a class="reference internal" href="#call-manager">call-manager</a></li>
+<li><a class="reference internal" href="#flow-manager">flow-manager</a></li>
 <li><a class="reference internal" href="#billing-manager">billing-manager</a></li>
 <li><a class="reference internal" href="#other-domains">Other Domains</a></li>
 </ul>
