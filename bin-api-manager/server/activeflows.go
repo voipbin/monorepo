@@ -1,9 +1,10 @@
 package server
 
 import (
-	fmaction "monorepo/bin-flow-manager/models/action"
-
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -19,7 +20,7 @@ func (h *server) GetActiveflows(c *gin.Context, params openapi_server.GetActivef
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -43,13 +44,15 @@ func (h *server) GetActiveflows(c *gin.Context, params openapi_server.GetActivef
 	tmps, err := h.serviceHandler.ActiveflowList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get calls info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -65,7 +68,7 @@ func (h *server) PostActiveflows(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -75,7 +78,7 @@ func (h *server) PostActiveflows(c *gin.Context) {
 	var req openapi_server.PostActiveflowsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
@@ -99,7 +102,7 @@ func (h *server) PostActiveflows(c *gin.Context) {
 	res, err := h.serviceHandler.ActiveflowCreate(c.Request.Context(), a, id, flowID, actions)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -115,7 +118,7 @@ func (h *server) GetActiveflowsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -123,12 +126,17 @@ func (h *server) GetActiveflowsId(c *gin.Context, id string) {
 	})
 
 	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
+		return
+	}
 	log = log.WithField("activeflow_id", target)
 
 	res, err := h.serviceHandler.ActiveflowGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a activeflow. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -144,7 +152,7 @@ func (h *server) DeleteActiveflowsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -152,12 +160,17 @@ func (h *server) DeleteActiveflowsId(c *gin.Context, id string) {
 	})
 
 	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
+		return
+	}
 	log = log.WithField("activeflow_id", target)
 
 	res, err := h.serviceHandler.ActiveflowDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete the activeflow. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -173,7 +186,7 @@ func (h *server) PostActiveflowsIdStop(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -181,12 +194,17 @@ func (h *server) PostActiveflowsIdStop(c *gin.Context, id string) {
 	})
 
 	target := uuid.FromStringOrNil(id)
+	if target == uuid.Nil {
+		log.Error("Could not parse the id.")
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
+		return
+	}
 	log = log.WithField("activeflow_id", target)
 
 	res, err := h.serviceHandler.ActiveflowStop(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not stop the activeflow. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 

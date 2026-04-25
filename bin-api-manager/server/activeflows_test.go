@@ -2,16 +2,21 @@ package server
 
 import (
 	"bytes"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	fmaction "monorepo/bin-flow-manager/models/action"
-	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -455,4 +460,92 @@ func Test_PostActiveflowsIdStop(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_activeflowsPOST_MissingAuthIdentity exercises the
+// auth-identity-missing branch of PostActiveflows.
+func Test_activeflowsPOST_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost, "/activeflows", []byte(`{}`))
+}
+
+// Test_activeflowsIDGet_InvalidID verifies that a malformed UUID in the
+// path triggers INVALID_ARGUMENT / INVALID_ID before the servicehandler
+// is consulted.
+func Test_activeflowsIDGet_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// "not-a-uuid" passes the path-shape check but uuid.FromStringOrNil
+	// returns uuid.Nil, so the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodGet, "/activeflows/not-a-uuid", nil)
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_activeflowsIDStopPost_MissingAuthIdentity exercises the
+// auth-identity-missing branch of PostActiveflowsIdStop.
+func Test_activeflowsIDStopPost_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost,
+		"/activeflows/da10d24c-cb2c-11ed-be08-1fca5d4747f4/stop", nil)
+}
+
+// Test_activeflowsIDStopPost_StateInvalid exercises the state-transition
+// failure path of PostActiveflowsIdStop. The translator's "already"
+// substring fallback maps "activeflow already stopped" to
+// FAILED_PRECONDITION / STATE_INVALID (HTTP 409). This validates the
+// state-transition routing introduced in PR 2 Round 1 without requiring
+// typed-error migration in the servicehandler layer.
+func Test_activeflowsIDStopPost_StateInvalid(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	activeflowID := uuid.FromStringOrNil("da10d24c-cb2c-11ed-be08-1fca5d4747f4")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodPost,
+		"/activeflows/da10d24c-cb2c-11ed-be08-1fca5d4747f4/stop", nil)
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().ActiveflowStop(gomock.Any(), agent, activeflowID).
+		Return(nil, fmt.Errorf("activeflow already stopped"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusFailedPrecondition, "STATE_INVALID", commonoutline.ServiceNameAPIManager)
 }
