@@ -1,12 +1,14 @@
 package server
 
 import (
+	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	tmstreaming "monorepo/bin-tts-manager/models/streaming"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
-
-	openapi_server "monorepo/bin-api-manager/gens/openapi_server"
-	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 )
 
 // GetSpeakings implements GET /v1/speakings
@@ -19,7 +21,7 @@ func (h *server) GetSpeakings(c *gin.Context, params openapi_server.GetSpeakings
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -42,13 +44,15 @@ func (h *server) GetSpeakings(c *gin.Context, params openapi_server.GetSpeakings
 	tmps, err := h.serviceHandler.SpeakingList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get speaking list: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 	res := GenerateListResponse(tmps, nextToken)
 
@@ -65,7 +69,7 @@ func (h *server) PostSpeakings(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -75,7 +79,7 @@ func (h *server) PostSpeakings(c *gin.Context) {
 	var req openapi_server.PostSpeakingsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -86,14 +90,14 @@ func (h *server) PostSpeakings(c *gin.Context) {
 		// valid
 	default:
 		log.Errorf("Invalid reference_type: %s", req.ReferenceType)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The provided reference_type is not valid."))
 		return
 	}
 
 	referenceID := uuid.FromStringOrNil(req.ReferenceId)
 	if referenceID == uuid.Nil {
 		log.Errorf("Invalid reference_id")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The provided reference_id is not a valid UUID."))
 		return
 	}
 
@@ -120,14 +124,14 @@ func (h *server) PostSpeakings(c *gin.Context) {
 		// valid
 	default:
 		log.Errorf("Invalid direction: %s", direction)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The provided direction is not valid."))
 		return
 	}
 
 	speaking, err := h.serviceHandler.SpeakingCreate(c.Request.Context(), a, referenceType, referenceID, language, provider, voiceID, direction)
 	if err != nil {
 		log.Errorf("Could not create speaking: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -144,7 +148,7 @@ func (h *server) DeleteSpeakingsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -154,14 +158,14 @@ func (h *server) DeleteSpeakingsId(c *gin.Context, id string) {
 	speakingID := uuid.FromStringOrNil(id)
 	if speakingID == uuid.Nil {
 		log.Errorf("Invalid speaking id")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	speaking, err := h.serviceHandler.SpeakingDelete(c.Request.Context(), a, speakingID)
 	if err != nil {
 		log.Errorf("Could not delete speaking: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -178,7 +182,7 @@ func (h *server) GetSpeakingsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -188,14 +192,14 @@ func (h *server) GetSpeakingsId(c *gin.Context, id string) {
 	speakingID := uuid.FromStringOrNil(id)
 	if speakingID == uuid.Nil {
 		log.Errorf("Invalid speaking id")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	speaking, err := h.serviceHandler.SpeakingGet(c.Request.Context(), a, speakingID)
 	if err != nil {
 		log.Errorf("Could not get speaking: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -212,7 +216,7 @@ func (h *server) PostSpeakingsIdFlush(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -222,14 +226,14 @@ func (h *server) PostSpeakingsIdFlush(c *gin.Context, id string) {
 	speakingID := uuid.FromStringOrNil(id)
 	if speakingID == uuid.Nil {
 		log.Errorf("Invalid speaking id")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	speaking, err := h.serviceHandler.SpeakingFlush(c.Request.Context(), a, speakingID)
 	if err != nil {
 		log.Errorf("Could not flush speaking: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -246,7 +250,7 @@ func (h *server) PostSpeakingsIdSay(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -256,33 +260,33 @@ func (h *server) PostSpeakingsIdSay(c *gin.Context, id string) {
 	speakingID := uuid.FromStringOrNil(id)
 	if speakingID == uuid.Nil {
 		log.Errorf("Invalid speaking id")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PostSpeakingsIdSayJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	if req.Text == "" {
 		log.Errorf("Text is empty")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The text field must not be empty."))
 		return
 	}
 
 	if len(req.Text) > 5000 {
 		log.Errorf("Text too long: %d characters (max 5000)", len(req.Text))
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The text field exceeds the 5000 character limit."))
 		return
 	}
 
 	speaking, err := h.serviceHandler.SpeakingSay(c.Request.Context(), a, speakingID, req.Text)
 	if err != nil {
 		log.Errorf("Could not say text: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -299,7 +303,7 @@ func (h *server) PostSpeakingsIdStop(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -309,14 +313,14 @@ func (h *server) PostSpeakingsIdStop(c *gin.Context, id string) {
 	speakingID := uuid.FromStringOrNil(id)
 	if speakingID == uuid.Nil {
 		log.Errorf("Invalid speaking id")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	speaking, err := h.serviceHandler.SpeakingStop(c.Request.Context(), a, speakingID)
 	if err != nil {
 		log.Errorf("Could not stop speaking: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 

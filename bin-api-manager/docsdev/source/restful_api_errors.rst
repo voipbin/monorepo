@@ -159,7 +159,7 @@ billing-manager
      - Cause → Fix
    * - ``INSUFFICIENT_BALANCE``
      - 402
-     - Customer balance is below the minimum required for a chargeable operation. Currently fired by ``POST /numbers`` (number purchase), ``POST /numbers/renew`` (number renewal), ``POST /messages`` (SMS send), and ``POST /emails`` (email send). **Fix:** Top up the customer balance via ``POST /billing-accounts/{id}/balance-add`` (admin) or have the customer add credit, then retry. Future endpoints (deferred): ``POST /aimessages``, ``POST /conversations/{id}/messages``, ``POST /service-agents/conversations/{id}/messages`` — pending balance pre-check wiring in ai-manager and conversation-manager.
+     - Customer balance is below the minimum required for a chargeable operation. Currently fired by ``POST /numbers`` (number purchase), ``POST /numbers/renew`` (number renewal), ``POST /messages`` (SMS send), and ``POST /emails`` (email send). **Fix:** Top up the customer balance via ``POST /billing-accounts/{id}/balance-add`` (admin) or have the customer add credit, then retry. Future endpoints (deferred): ``POST /aimessages``, ``POST /conversations/{id}/messages``, ``POST /service-agents/conversations/{id}/messages``, ``POST /speakings`` (TTS character cost), ``POST /transcribes`` (STT second cost) — pending balance pre-check wiring in ai-manager, conversation-manager, tts-manager, and transcribe-manager.
    * - ``BILLING_NOT_FOUND``
      - 404
      - Billing record ID does not exist or belongs to another customer. Fired by ``GET /billings/{billing_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /billings`` list call.
@@ -343,7 +343,47 @@ rag-manager
      - 404
      - RAG knowledge-base ID does not exist or belongs to another customer. Fired by ``GET /rags/{id}``, ``PUT /rags/{id}``, ``DELETE /rags/{id}``, ``POST /rags/{id}/sources``, and ``DELETE /rags/{id}/sources/{source_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /rags`` list call.
 
+tts-manager
+-----------
+
+.. note::
+
+   ``SPEAKING_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the tts-manager typed-error migration ships.
+   ``POST /speakings/{id}/stop`` is **idempotent** in tts-manager today — stopping an already-stopped speaking session returns success (no-op). The session-state-restriction reason ``SPEAKING_STATE_INVALID`` (409) is **not declared** on ``/speakings/{id}/stop`` because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
+   ``POST /speakings`` is conceptually billing-sensitive (TTS character cost) but tts-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for speaking-session creation. Wiring the pre-check is deferred to a follow-up PR; see the ``billing-manager`` section above for the deferred list.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``SPEAKING_NOT_FOUND``
+     - 404
+     - Speaking session ID does not exist or belongs to another customer. Fired by ``GET /speakings/{id}``, ``DELETE /speakings/{id}``, ``POST /speakings/{id}/flush``, ``POST /speakings/{id}/say``, and ``POST /speakings/{id}/stop``. **Fix:** Verify the ID was obtained from a recent ``GET /speakings`` list call or from the response of ``POST /speakings``.
+
+transcribe-manager
+------------------
+
+.. note::
+
+   ``TRANSCRIBE_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the transcribe-manager typed-error migration ships.
+   ``POST /transcribes/{id}/stop`` is **idempotent** in transcribe-manager today — stopping an already-stopped transcription returns success (no-op). The session-state-restriction reason ``TRANSCRIBE_STATE_INVALID`` (409) is **not declared** on ``/transcribes/{id}/stop`` because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
+   ``POST /transcribes`` is conceptually billing-sensitive (STT second cost) but transcribe-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for transcription creation. Wiring the pre-check is deferred to a follow-up PR; see the ``billing-manager`` section above for the deferred list.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 10 55
+
+   * - Reason
+     - HTTP
+     - Cause → Fix
+   * - ``TRANSCRIBE_NOT_FOUND``
+     - 404
+     - Transcribe ID does not exist or belongs to another customer. Fired by ``GET /transcribes/{id}``, ``DELETE /transcribes/{id}``, and ``POST /transcribes/{id}/stop``. **Fix:** Verify the ID was obtained from a recent ``GET /transcribes`` list call or from the response of ``POST /transcribes``.
+
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``transcribe-manager``, ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
+Reason code sections for the remaining manager services — ``talk-manager``, ``agent-manager``, ``queue-manager``, ``conference-manager``, ``campaign-manager``, ``tag-manager``, ``team-manager``, ``timeline-manager``, ``contact-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
