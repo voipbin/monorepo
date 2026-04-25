@@ -16,6 +16,16 @@ get:
         application/json:
           schema:
             $ref: '#/components/schemas/TtsManagerSpeaking'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 delete:
   summary: Delete a speaking session
@@ -35,3 +45,13 @@ delete:
         application/json:
           schema:
             $ref: '#/components/schemas/TtsManagerSpeaking'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
