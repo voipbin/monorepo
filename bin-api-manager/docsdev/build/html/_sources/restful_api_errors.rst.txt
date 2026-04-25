@@ -114,8 +114,12 @@ flow-manager
    The reasons in this section define the platform's planned typed-error contract.
    Reasons reachable today via the translator's case-insensitive substring fallback:
    ``FLOW_NOT_FOUND`` and ``ACTIVEFLOW_NOT_FOUND`` (via ``"not found"`` pattern → currently surface as ``RESOURCE_NOT_FOUND`` in the api-manager domain),
-   ``FLOW_STATE_INVALID`` and ``ACTIVEFLOW_ALREADY_STOPPED`` (via ``"already"`` / ``"deleted"`` / ``"not active"`` patterns added in PR 2 → currently surface as ``STATE_INVALID`` in the api-manager domain).
+   ``ACTIVEFLOW_ALREADY_STOPPED`` (via ``"already"`` pattern added in PR 2 → currently surfaces as ``STATE_INVALID`` in the api-manager domain).
+   ``FLOW_STATE_INVALID`` (the generic state-restriction reason) is not currently reachable via fallback — it requires the typed-error migration to emit directly.
    Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships.
+
+   Note: ``POST /activeflows/{id}/stop`` is idempotent in production today — stopping an already-stopped activeflow returns 200 (no-op).
+   The 409 ``ACTIVEFLOW_ALREADY_STOPPED`` response declared in the OpenAPI spec is forward-compatible for clients that prefer opt-in idempotency-aware semantics; it will be emitted once the typed-error migration ships.
 
 .. list-table::
    :header-rows: 1
