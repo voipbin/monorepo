@@ -105,6 +105,7 @@ call-manager
    The reasons in this section define the platform's planned typed-error contract.
    Reasons that match the translator's case-insensitive substring fallback (``CALL_NOT_FOUND``, ``RECORDING_NOT_FOUND``, ``GROUPCALL_NOT_FOUND``, ``CALL_ALREADY_HANGUP``, ``RECORDING_ALREADY_ACTIVE``, ``RECORDING_NOT_ACTIVE``, ``INSUFFICIENT_BALANCE`` via ``"already"`` / ``"deleted"`` / ``"not active"`` / ``"insufficient"`` / ``"not found"`` patterns) surface today.
    Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships; until then, the translator routes the underlying ``fmt.Errorf`` strings through the substring fallback to the closest canonical reason (typically the api-manager generic equivalent, e.g., ``RESOURCE_NOT_FOUND`` rather than ``CALL_NOT_FOUND``).
+   PR 13 added the agent-surface read endpoints (``GET /service_agents/calls`` and ``GET /service_agents/calls/{id}``); these reuse ``CALL_NOT_FOUND`` for not-found semantics on the by-ID read.
 
 flow-manager
 ------------
@@ -222,8 +223,9 @@ storage-manager
 
 .. note::
 
-   ``STORAGE_ACCOUNT_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the storage-manager typed-error migration ships.
+   ``STORAGE_ACCOUNT_NOT_FOUND`` and ``STORAGE_FILE_NOT_FOUND`` are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the storage-manager typed-error migration ships.
    The admin-gated ``POST /storage-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
+   PR 13 added the agent-surface file endpoints (``/service_agents/files`` and ``/service_agents/files/{id}*``); these reuse ``STORAGE_FILE_NOT_FOUND`` for not-found semantics on agent-scoped reads, deletes, and downloads.
 
 .. list-table::
    :header-rows: 1
@@ -235,6 +237,9 @@ storage-manager
    * - ``STORAGE_ACCOUNT_NOT_FOUND``
      - 404
      - Storage account ID does not exist or belongs to another customer. Fired by ``GET /storage-accounts/{id}`` and ``DELETE /storage-accounts/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /storage-accounts`` list call.
+   * - ``STORAGE_FILE_NOT_FOUND``
+     - 404
+     - Storage file ID does not exist or belongs to another customer. Fired by ``GET /storage_files/{id}``, ``DELETE /storage_files/{id}``, ``GET /storage_files/{id}/file``, and the agent-surface counterparts ``GET /service_agents/files/{id}``, ``DELETE /service_agents/files/{id}``, and ``GET /service_agents/files/{id}/file``. **Fix:** Verify the ID was obtained from a recent ``GET /storage_files`` (admin) or ``GET /service_agents/files`` (agent) list call.
 
 conversation-manager
 --------------------
@@ -395,6 +400,7 @@ agent-manager
    PR 9 introduced this section for the agent resource (``/agents``).
    ``AGENT_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the agent-manager typed-error migration ships.
    Agent write surfaces (``POST /agents``, ``PUT /agents/{id}``, ``PUT /agents/{id}/permission``, ``PUT /agents/{id}/password``, ``PUT /agents/{id}/addresses``, ``PUT /agents/{id}/tag_ids``, ``PUT /agents/{id}/status``, ``DELETE /agents/{id}``, ``POST /agents/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+   PR 13 added the agent-surface read endpoints (``GET /service_agents/agents`` and ``GET /service_agents/agents/{id}``); these reuse ``AGENT_NOT_FOUND`` for not-found semantics on the by-ID read.
 
 .. list-table::
    :header-rows: 1
@@ -415,6 +421,7 @@ tag-manager
    PR 9 introduced this section for the tag resource (``/tags``).
    ``TAG_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the tag-manager typed-error migration ships.
    Tag write surfaces (``POST /tags``, ``PUT /tags/{id}``, ``DELETE /tags/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+   PR 13 added the agent-surface read endpoints (``GET /service_agents/tags`` and ``GET /service_agents/tags/{id}``); these reuse ``TAG_NOT_FOUND`` for not-found semantics on the by-ID read.
 
 .. list-table::
    :header-rows: 1
@@ -553,6 +560,7 @@ contact-manager
    PR 12 introduced this section for the contact (``/contacts``) resource and its nested phone-number, email, and tag sub-resources.
    The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the contact-manager typed-error migration ships.
    ``POST /contacts``, ``POST /contacts/{id}/phone-numbers``, ``POST /contacts/{id}/emails``, and ``POST /contacts/{id}/tags`` are not billing-sensitive — contact records and their sub-resources are stored without per-operation charges. No 402 declarations apply to contact resource creation.
+   PR 13 added the agent-surface counterparts under ``/service_agents/contacts*`` (full read/write parity, including dual-ID nested phone-number, email, and tag sub-paths). These endpoints reuse the same ``CONTACT_NOT_FOUND``, ``CONTACT_PHONE_NUMBER_NOT_FOUND``, ``CONTACT_EMAIL_NOT_FOUND``, and ``CONTACT_TAG_NOT_FOUND`` reasons listed below.
 
 .. list-table::
    :header-rows: 1
@@ -582,6 +590,7 @@ registrar-manager
    PR 12 introduced this section for the extension (``/extensions``) resource.
    ``EXTENSION_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the registrar-manager typed-error migration ships.
    ``POST /extensions`` is not billing-sensitive — extension records are stored without per-operation charges. No 402 declarations apply to extension creation.
+   PR 13 added the agent-surface read endpoints (``GET /service_agents/extensions`` and ``GET /service_agents/extensions/{id}``); these reuse ``EXTENSION_NOT_FOUND`` for not-found semantics on the by-ID read.
 
 .. list-table::
    :header-rows: 1
