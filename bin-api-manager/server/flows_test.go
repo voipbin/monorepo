@@ -2,16 +2,21 @@ package server
 
 import (
 	"bytes"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	fmaction "monorepo/bin-flow-manager/models/action"
-	fmflow "monorepo/bin-flow-manager/models/flow"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	fmaction "monorepo/bin-flow-manager/models/action"
+	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -345,6 +350,122 @@ func Test_PutFlowsId(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test_flowsPOST_MissingAuthIdentity verifies PostFlows emits the
+// canonical UNAUTHENTICATED / AUTHENTICATION_REQUIRED envelope when
+// auth_identity is missing from the gin context.
+func Test_flowsPOST_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost, "/flows",
+		[]byte(`{"name":"test name","detail":"test detail","actions":[{"type":"answer"}]}`))
+}
+
+// Test_flowsPOST_InvalidJSONBody verifies PostFlows rejects malformed
+// JSON with INVALID_ARGUMENT / INVALID_JSON_BODY.
+func Test_flowsPOST_InvalidJSONBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodPost, "/flows", bytes.NewBufferString("{not json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_flowsIDGet_InvalidID verifies that a malformed UUID in the path
+// triggers INVALID_ARGUMENT / INVALID_ID before the servicehandler is
+// consulted.
+func Test_flowsIDGet_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// "not-a-uuid" passes the path-shape check but uuid.FromStringOrNil
+	// returns uuid.Nil, so the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodGet, "/flows/not-a-uuid", nil)
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_flowsIDGet_ServiceError exercises the servicehandler-failure path
+// through abortWithServiceError. The translator's substring fallback maps
+// "flow not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
+func Test_flowsIDGet_ServiceError(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+	flowID := uuid.FromStringOrNil("2375219e-0b87-11eb-90f9-036ec16f126b")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodGet, "/flows/2375219e-0b87-11eb-90f9-036ec16f126b", nil)
+	// The RequestID middleware augments the context, so match with gomock.Any().
+	mockSvc.EXPECT().FlowGet(gomock.Any(), agent, flowID).Return(nil, fmt.Errorf("flow not found"))
+
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_flowsIDDelete_MissingAuthIdentity exercises the
+// auth-identity-missing branch of DeleteFlowsId.
+func Test_flowsIDDelete_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodDelete, "/flows/d466f900-67cb-11eb-b2ff-1f9adc48f842", nil)
 }
 
 func Test_DeleteFlowsId(t *testing.T) {
