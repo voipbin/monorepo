@@ -468,6 +468,49 @@ func Test_flowsIDDelete_MissingAuthIdentity(t *testing.T) {
 	assertMissingAuthIdentity(t, http.MethodDelete, "/flows/d466f900-67cb-11eb-b2ff-1f9adc48f842", nil)
 }
 
+// Test_flowsIDPut_InvalidJSONBody verifies PutFlowsId rejects malformed
+// JSON with INVALID_ARGUMENT / INVALID_JSON_BODY before the
+// servicehandler is consulted.
+func Test_flowsIDPut_InvalidJSONBody(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest(http.MethodPut, "/flows/d213a09e-6790-11eb-8cea-bb3b333200ed", bytes.NewBufferString("{not json"))
+	req.Header.Set("Content-Type", "application/json")
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_flowsIDDirectHashRegeneratePost_MissingAuthIdentity exercises the
+// auth-identity-missing branch of PostFlowsIdDirectHashRegenerate. The
+// handler signature uses openapi_types.UUID for the id parameter, so the
+// path must contain a syntactically valid UUID; otherwise oapi-codegen
+// middleware rejects it before the handler runs (different error path).
+func Test_flowsIDDirectHashRegeneratePost_MissingAuthIdentity(t *testing.T) {
+	assertMissingAuthIdentity(t, http.MethodPost,
+		"/flows/a1b2c3d4-e5f6-7890-abcd-ef1234567890/direct-hash-regenerate", nil)
+}
+
 func Test_DeleteFlowsId(t *testing.T) {
 
 	tests := []struct {
