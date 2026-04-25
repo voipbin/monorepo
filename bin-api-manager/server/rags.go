@@ -2,6 +2,8 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	rmrag "monorepo/bin-rag-manager/models/rag"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +21,7 @@ func (h *server) PostRags(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -27,7 +29,7 @@ func (h *server) PostRags(c *gin.Context) {
 	var req openapi_server.PostRagsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -42,7 +44,7 @@ func (h *server) PostRags(c *gin.Context) {
 			uid, err := uuid.FromString(id.String())
 			if err != nil {
 				log.Errorf("Invalid storage_file_id format. err: %v", err)
-				c.AbortWithStatus(400)
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 				return
 			}
 			storageFileIDs = append(storageFileIDs, uid)
@@ -57,7 +59,7 @@ func (h *server) PostRags(c *gin.Context) {
 	res, err := h.serviceHandler.RagCreate(c.Request.Context(), a, req.Name, description, storageFileIDs, sourceURLs)
 	if err != nil {
 		log.Errorf("Could not create data. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -73,7 +75,7 @@ func (h *server) GetRags(c *gin.Context, params openapi_server.GetRagsParams) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -95,7 +97,7 @@ func (h *server) GetRags(c *gin.Context, params openapi_server.GetRagsParams) {
 	tmps, err := h.serviceHandler.RagGets(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get data list. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -120,7 +122,7 @@ func (h *server) GetRagsId(c *gin.Context, id openapi_types.UUID) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -128,14 +130,14 @@ func (h *server) GetRagsId(c *gin.Context, id openapi_types.UUID) {
 	target, err := uuid.FromString(id.String())
 	if err != nil {
 		log.Errorf("Invalid ID format. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.RagGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get data. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -152,7 +154,7 @@ func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -160,14 +162,14 @@ func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
 	target, err := uuid.FromString(id.String())
 	if err != nil {
 		log.Errorf("Invalid ID format. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	var req openapi_server.PutRagsIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -181,14 +183,14 @@ func (h *server) PutRagsId(c *gin.Context, id openapi_types.UUID) {
 
 	if len(fields) == 0 {
 		log.Errorf("No fields to update.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "No fields to update."))
 		return
 	}
 
 	res, err := h.serviceHandler.RagUpdate(c.Request.Context(), a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update data. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -205,7 +207,7 @@ func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -213,14 +215,14 @@ func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
 	target, err := uuid.FromString(id.String())
 	if err != nil {
 		log.Errorf("Invalid ID format. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	var req openapi_server.PostRagsIdSourcesJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
@@ -230,7 +232,7 @@ func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
 			uid, err := uuid.FromString(fid.String())
 			if err != nil {
 				log.Errorf("Invalid storage_file_id format. err: %v", err)
-				c.AbortWithStatus(400)
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 				return
 			}
 			storageFileIDs = append(storageFileIDs, uid)
@@ -245,7 +247,7 @@ func (h *server) PostRagsIdSources(c *gin.Context, id openapi_types.UUID) {
 	res, err := h.serviceHandler.RagAddSources(c.Request.Context(), a, target, storageFileIDs, sourceURLs)
 	if err != nil {
 		log.Errorf("Could not add sources. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -263,7 +265,7 @@ func (h *server) DeleteRagsIdSourcesSourceId(c *gin.Context, id openapi_types.UU
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -271,21 +273,21 @@ func (h *server) DeleteRagsIdSourcesSourceId(c *gin.Context, id openapi_types.UU
 	ragID, err := uuid.FromString(id.String())
 	if err != nil {
 		log.Errorf("Invalid rag ID format. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	sourceID, err := uuid.FromString(sourceId.String())
 	if err != nil {
 		log.Errorf("Invalid source ID format. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.RagRemoveSource(c.Request.Context(), a, ragID, sourceID)
 	if err != nil {
 		log.Errorf("Could not remove source. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -302,7 +304,7 @@ func (h *server) DeleteRagsId(c *gin.Context, id openapi_types.UUID) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -310,14 +312,14 @@ func (h *server) DeleteRagsId(c *gin.Context, id openapi_types.UUID) {
 	target, err := uuid.FromString(id.String())
 	if err != nil {
 		log.Errorf("Invalid ID format. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.RagDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not delete data. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
