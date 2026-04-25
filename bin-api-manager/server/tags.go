@@ -2,6 +2,8 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -17,7 +19,7 @@ func (h *server) PostTags(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -27,14 +29,14 @@ func (h *server) PostTags(c *gin.Context) {
 	var req openapi_server.PostTagsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.TagCreate(c.Request.Context(), a, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not create a new tag. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -51,7 +53,7 @@ func (h *server) DeleteTagsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -61,14 +63,14 @@ func (h *server) DeleteTagsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.TagDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not delete the tag info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -85,7 +87,7 @@ func (h *server) GetTagsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -95,14 +97,14 @@ func (h *server) GetTagsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.TagGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the tag info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -118,7 +120,7 @@ func (h *server) GetTags(c *gin.Context, params openapi_server.GetTagsParams) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -142,13 +144,15 @@ func (h *server) GetTags(c *gin.Context, params openapi_server.GetTagsParams) {
 	tmps, err := h.serviceHandler.TagList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get tags info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -165,7 +169,7 @@ func (h *server) PutTagsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -175,21 +179,21 @@ func (h *server) PutTagsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutTagsIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.TagUpdate(c.Request.Context(), a, target, req.Name, req.Detail)
 	if err != nil {
 		log.Errorf("Could not update the tag. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
