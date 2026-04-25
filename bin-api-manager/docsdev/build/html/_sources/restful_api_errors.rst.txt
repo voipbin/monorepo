@@ -9,6 +9,10 @@ Error Reason Codes
 
    Reason codes are append-only once published. Adding a new reason does not require a schema version bump; removing or renaming one does and triggers a deprecation window.
 
+.. note:: **Rollout status (PR 15 / 2026-04-26)**
+
+   All ``bin-api-manager/server/*.go`` files now uniformly emit the canonical error envelope — including the timeline gateway endpoints (``/aggregated-events``, ``/timelines/{resource_type}/{resource_id}/events``, ``/timelines/calls/{call_id}/sip-analysis``, ``/timelines/calls/{call_id}/pcap``) which were finalized in this PR. Every 4xx/5xx response from the API gateway carries the ``status`` / ``reason`` / ``domain`` / ``message`` / ``request_id`` fields documented on this page. Reasons currently surface via the translator's substring-fallback patterns (e.g., ``"not found"`` → ``RESOURCE_NOT_FOUND``); future migration PRs will introduce typed errors in the manager services so that domain-specific reasons (``CALL_NOT_FOUND``, ``STORAGE_FILE_NOT_FOUND``, etc.) can route directly without depending on string matching.
+
 api-manager
 -----------
 
@@ -226,6 +230,7 @@ storage-manager
    ``STORAGE_ACCOUNT_NOT_FOUND`` and ``STORAGE_FILE_NOT_FOUND`` are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the storage-manager typed-error migration ships.
    The admin-gated ``POST /storage-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
    PR 13 added the agent-surface file endpoints (``/service_agents/files`` and ``/service_agents/files/{id}*``); these reuse ``STORAGE_FILE_NOT_FOUND`` for not-found semantics on agent-scoped reads, deletes, and downloads.
+   PR 15 added the remaining public file endpoints (``/storage_files``, ``/storage_files/{id}``, and ``/storage_files/{id}/file``) under the same ``STORAGE_FILE_NOT_FOUND`` semantics for not-found cases on the customer-scoped read, delete, and download surfaces.
 
 .. list-table::
    :header-rows: 1
@@ -630,7 +635,16 @@ talk-manager
      - 404
      - Participant ID is not currently associated with the supplied chat. Fired by ``DELETE /service_agents/talk_chats/{id}/participants/{participant_id}``. **Fix:** Verify the participant ID was obtained from a recent ``GET /service_agents/talk_chats/{id}/participants`` response against the same chat.
 
+timeline-manager
+----------------
+
+.. note::
+
+   PR 15 finalized the canonical error envelope on the timeline gateway endpoints: ``GET /aggregated-events``, ``GET /timelines/{resource_type}/{resource_id}/events``, ``GET /timelines/calls/{call_id}/sip-analysis``, and ``GET /timelines/calls/{call_id}/pcap``.
+   These endpoints do **not** yet emit typed timeline-specific reasons of their own. All 4xx/5xx responses route through the translator's substring-fallback patterns and surface as the api-manager generic reasons (``RESOURCE_NOT_FOUND`` for "not found", ``PERMISSION_DENIED`` for "no permission", ``INVALID_ARGUMENT`` for "is required" / "only one of" parameter validation, ``INTERNAL`` for unmatched errors). The aggregated-events endpoint additionally returns ``INVALID_ARGUMENT`` with the reasons ``INVALID_ACTIVEFLOW_ID`` and ``INVALID_CALL_ID`` for syntactically invalid query-param UUIDs, and the resource-events endpoint returns ``INVALID_ARGUMENT`` with reason ``INVALID_RESOURCE_TYPE`` when the path enum is rejected.
+   Domain-specific reasons such as ``TIMELINE_NOT_FOUND``, ``SIP_ANALYSIS_NOT_AVAILABLE``, or ``PCAP_NOT_AVAILABLE`` will be appended here once the timeline-manager service-side typed-error migration ships.
+
 Other Domains
 -------------
 
-Reason code sections for the remaining manager services — ``timeline-manager`` — will be added as future migration PRs ship. See the design doc for the PR rollout.
+The PR 4-15 rollout has now landed the canonical error envelope across every ``bin-api-manager/server/*.go`` file. The reason-code catalog above covers the published reasons that surface today via the translator's substring-fallback patterns. As of PR 15 the broader-sweep grep (matching ``c.AbortWithStatus(JSON)?(...)`` and ``c.JSON(http.Status...)`` in non-test ``server/*.go`` files) returns zero matches — the migration is structurally complete. Remaining manager services (e.g., ``timeline-manager`` listed above) do not yet emit typed reasons of their own; those will be appended here as the corresponding service-side typed-error migrations ship. See the design doc for the next planned rollout.

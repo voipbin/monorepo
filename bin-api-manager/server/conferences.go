@@ -1,6 +1,8 @@
 package server
 
 import (
+	"net/http"
+
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -405,7 +407,7 @@ func (h *server) GetConferencesIdMediaStream(c *gin.Context, id string, params o
 		return
 	}
 
-	c.AbortWithStatus(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *server) PostConferencesIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID) {

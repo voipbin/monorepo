@@ -21,12 +21,12 @@ get:
             type: string
             example: "https://storage.googleapis.com/bucket/storage/550e8400-e29b-41d4-a716-446655440000?X-Goog-Signature=abc123"
     '400':
-      description: Bad request. Could not find agent information or storage file.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-                example: "Could not get storage file."
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

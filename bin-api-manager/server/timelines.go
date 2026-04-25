@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -23,7 +25,7 @@ func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resour
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "authentication required"})
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("customer_id", a.CustomerID)
@@ -37,7 +39,7 @@ func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resour
 	}
 	if !validTypes[resourceType] {
 		log.Info("Invalid resource type")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid resource type"})
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_RESOURCE_TYPE", "The provided resource_type is not supported."))
 		return
 	}
 
@@ -45,7 +47,7 @@ func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resour
 	resourceUUID, err := uuid.FromString(resourceId.String())
 	if err != nil {
 		log.Infof("Invalid resource id: %v", err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid resource id"})
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
 		return
 	}
 
@@ -67,11 +69,7 @@ func (h *server) GetTimelinesResourceTypeResourceIdEvents(c *gin.Context, resour
 	events, nextPageToken, err := h.serviceHandler.TimelineEventList(c.Request.Context(), a, string(resourceType), resourceUUID, pageSize, pageToken)
 	if err != nil {
 		log.Infof("Failed to get timeline events: %v", err)
-		if err.Error() == "user has no permission" || err.Error() == "not found" {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "resource not found"})
-			return
-		}
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "internal error"})
+		abortWithServiceError(c, err)
 		return
 	}
 

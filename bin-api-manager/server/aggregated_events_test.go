@@ -7,10 +7,13 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -150,44 +153,11 @@ func Test_GetAggregatedEvents(t *testing.T) {
 }
 
 func Test_GetAggregatedEvents_missing_agent(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		reqQuery string
-	}{
-		{
-			name:     "missing agent returns 400",
-			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{
-				serviceHandler: mockSvc,
-			}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			// Note: No agent middleware added
-			openapi_server.RegisterHandlers(r, h)
-
-			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-			}
-		})
-	}
+	assertMissingAuthIdentity(t, http.MethodGet,
+		"/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a", nil)
 }
 
-func Test_GetAggregatedEvents_not_found(t *testing.T) {
+func Test_GetAggregatedEvents_servicehandler_errors(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -201,9 +171,12 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 		expectCallID       uuid.UUID
 		expectPageSize     int
 		expectPageToken    string
+
+		expectStatus cerrors.Status
+		expectReason string
 	}{
 		{
-			name: "not found returns 404",
+			name: "not found returns 404 RESOURCE_NOT_FOUND",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
@@ -219,9 +192,12 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 			expectCallID:       uuid.Nil,
 			expectPageSize:     100,
 			expectPageToken:    "",
+
+			expectStatus: cerrors.StatusNotFound,
+			expectReason: "RESOURCE_NOT_FOUND",
 		},
 		{
-			name: "permission denied returns 404",
+			name: "permission denied returns 403 PERMISSION_DENIED",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
@@ -237,6 +213,9 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 			expectCallID:       uuid.Nil,
 			expectPageSize:     100,
 			expectPageToken:    "",
+
+			expectStatus: cerrors.StatusPermissionDenied,
+			expectReason: "PERMISSION_DENIED",
 		},
 	}
 
@@ -253,6 +232,7 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
+			r.Use(middleware.RequestID())
 			r.Use(func(c *gin.Context) {
 				c.Set("auth_identity", tt.agent)
 			})
@@ -261,7 +241,7 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			mockSvc.EXPECT().AggregatedEventList(
-				req.Context(),
+				gomock.Any(),
 				tt.agent,
 				tt.expectActiveflowID,
 				tt.expectCallID,
@@ -270,9 +250,7 @@ func Test_GetAggregatedEvents_not_found(t *testing.T) {
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusNotFound {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusNotFound, w.Code)
-			}
+			assertErrorResponse(t, w, tt.expectStatus, tt.expectReason, commonoutline.ServiceNameAPIManager)
 		})
 	}
 }
@@ -343,6 +321,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
+			r.Use(middleware.RequestID())
 			r.Use(func(c *gin.Context) {
 				c.Set("auth_identity", tt.agent)
 			})
@@ -351,7 +330,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			mockSvc.EXPECT().AggregatedEventList(
-				req.Context(),
+				gomock.Any(),
 				tt.agent,
 				tt.expectActiveflowID,
 				tt.expectCallID,
@@ -360,9 +339,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-			}
+			assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ARGUMENT", commonoutline.ServiceNameAPIManager)
 		})
 	}
 }
@@ -415,6 +392,7 @@ func Test_GetAggregatedEvents_internal_error(t *testing.T) {
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
+			r.Use(middleware.RequestID())
 			r.Use(func(c *gin.Context) {
 				c.Set("auth_identity", tt.agent)
 			})
@@ -423,7 +401,7 @@ func Test_GetAggregatedEvents_internal_error(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			mockSvc.EXPECT().AggregatedEventList(
-				req.Context(),
+				gomock.Any(),
 				tt.agent,
 				tt.expectActiveflowID,
 				tt.expectCallID,
@@ -432,9 +410,7 @@ func Test_GetAggregatedEvents_internal_error(t *testing.T) {
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusInternalServerError {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusInternalServerError, w.Code)
-			}
+			assertErrorResponse(t, w, cerrors.StatusInternal, "INTERNAL", commonoutline.ServiceNameAPIManager)
 		})
 	}
 }

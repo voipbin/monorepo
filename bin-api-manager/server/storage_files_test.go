@@ -4,15 +4,19 @@ import (
 	"bytes"
 	"fmt"
 	"mime/multipart"
-	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
-	"monorepo/bin-api-manager/gens/openapi_server"
-	"monorepo/bin-api-manager/pkg/servicehandler"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	smfile "monorepo/bin-storage-manager/models/file"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	smfile "monorepo/bin-storage-manager/models/file"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -506,6 +510,7 @@ func Test_GetStorageFilesIdFile_NoAgent(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
+			r.Use(middleware.RequestID())
 
 			// No agent middleware - agent not set in context
 			openapi_server.RegisterHandlers(r, h)
@@ -513,9 +518,7 @@ func Test_GetStorageFilesIdFile_NoAgent(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-			}
+			assertErrorResponse(t, w, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED", commonoutline.ServiceNameAPIManager)
 		})
 	}
 }
@@ -559,6 +562,9 @@ func Test_GetStorageFilesIdFile_InvalidUUID(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
+			// The openapi runtime rejects malformed openapi_types.UUID
+			// path params with a 400 response BEFORE our handler runs,
+			// so we cannot wrap this site in the canonical envelope.
 			if w.Code != http.StatusBadRequest {
 				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
 			}
@@ -602,6 +608,7 @@ func Test_GetStorageFilesIdFile_ServiceError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
+			r.Use(middleware.RequestID())
 
 			r.Use(func(c *gin.Context) {
 				c.Set("auth_identity", tt.agent)
@@ -609,12 +616,80 @@ func Test_GetStorageFilesIdFile_ServiceError(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileDownloadRedirect(req.Context(), tt.agent, tt.expectFileID).Return("", fmt.Errorf("file not found"))
+			mockSvc.EXPECT().StorageFileDownloadRedirect(gomock.Any(), tt.agent, tt.expectFileID).Return("", fmt.Errorf("file not found"))
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-			}
+			// The legacy "file not found" message routes through the
+			// translator's substring matcher to NOT_FOUND / 404.
+			assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
 		})
 	}
+}
+
+// Test_storageFilesPost_MissingAuthIdentity verifies PostStorageFiles
+// emits the canonical UNAUTHENTICATED / AUTHENTICATION_REQUIRED envelope
+// when auth_identity is missing from the gin context.
+func Test_storageFilesPost_MissingAuthIdentity(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	// Intentionally do not set auth_identity.
+	openapi_server.RegisterHandlers(r, h)
+
+	// Build a multipart body so the request shape matches a real upload,
+	// even though auth check should reject before parsing.
+	body := &bytes.Buffer{}
+	mw := multipart.NewWriter(body)
+	fw, _ := mw.CreateFormFile("file", "sample.txt")
+	_, _ = fw.Write([]byte("hello"))
+	_ = mw.WriteField("type", "rag")
+	_ = mw.Close()
+
+	req, _ := http.NewRequest(http.MethodPost, "/storage_files", body)
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED", commonoutline.ServiceNameAPIManager)
+}
+
+// Test_storageFilesIDDelete_InvalidID verifies that a malformed UUID in
+// the path triggers INVALID_ARGUMENT / INVALID_ID before the
+// servicehandler is consulted.
+func Test_storageFilesIDDelete_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+		},
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{serviceHandler: mockSvc}
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+	r.Use(middleware.RequestID())
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	// "not-a-uuid" passes the path-shape check but uuid.FromStringOrNil
+	// returns uuid.Nil, so the handler rejects with INVALID_ID.
+	req, _ := http.NewRequest(http.MethodDelete, "/storage_files/not-a-uuid", nil)
+	r.ServeHTTP(w, req)
+
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
 }

@@ -22,10 +22,12 @@ get:
             type: string
             format: binary
     '400':
-      description: Invalid request parameters
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
     '403':
-      description: Permission denied
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Call not found or no SIP data available
-    '502':
-      description: Upstream service unavailable
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

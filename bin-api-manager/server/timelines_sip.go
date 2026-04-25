@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -23,7 +25,7 @@ func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callId opena
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "authentication required"})
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("customer_id", a.CustomerID)
@@ -32,23 +34,14 @@ func (h *server) GetTimelinesCallsCallIdSipAnalysis(c *gin.Context, callId opena
 	callUUID, err := uuid.FromString(callId.String())
 	if err != nil {
 		log.Infof("Invalid call id: %v", err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid call id"})
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CALL_ID", "The provided call_id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.TimelineSIPAnalysisGet(c.Request.Context(), a, callUUID)
 	if err != nil {
 		log.Infof("Could not get SIP analysis: %v", err)
-		switch err.Error() {
-		case "call not found":
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-		case "permission denied":
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": err.Error()})
-		case "no SIP data available for this call":
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-		default:
-			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": "upstream service unavailable"})
-		}
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -67,7 +60,7 @@ func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_type
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "authentication required"})
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("customer_id", a.CustomerID)
@@ -76,23 +69,14 @@ func (h *server) GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_type
 	callUUID, err := uuid.FromString(callId.String())
 	if err != nil {
 		log.Infof("Invalid call id: %v", err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid call id"})
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CALL_ID", "The provided call_id is not a valid UUID.").Wrap(err))
 		return
 	}
 
 	pcapData, err := h.serviceHandler.TimelineSIPPcapGet(c.Request.Context(), a, callUUID)
 	if err != nil {
 		log.Infof("Could not get PCAP data: %v", err)
-		switch err.Error() {
-		case "call not found":
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-		case "permission denied":
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": err.Error()})
-		case "no SIP data available for this call":
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-		default:
-			c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{"message": "upstream service unavailable"})
-		}
+		abortWithServiceError(c, err)
 		return
 	}
 

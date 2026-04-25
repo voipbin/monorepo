@@ -7,10 +7,13 @@ import (
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/lib/middleware"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -176,41 +179,8 @@ func Test_GetTimelinesResourceTypeResourceIdEvents(t *testing.T) {
 }
 
 func Test_GetTimelinesResourceTypeResourceIdEvents_missing_agent(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		reqQuery string
-	}{
-		{
-			name:     "missing agent returns 400",
-			reqQuery: "/timelines/calls/fe003a08-8f36-11ed-a01a-efb53befe93a/events",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{
-				serviceHandler: mockSvc,
-			}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			// Note: No agent middleware added
-			openapi_server.RegisterHandlers(r, h)
-
-			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-			}
-		})
-	}
+	assertMissingAuthIdentity(t, http.MethodGet,
+		"/timelines/calls/fe003a08-8f36-11ed-a01a-efb53befe93a/events", nil)
 }
 
 func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_type(t *testing.T) {
@@ -247,6 +217,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_type(t *test
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
+			r.Use(middleware.RequestID())
 			r.Use(func(c *gin.Context) {
 				c.Set("auth_identity", tt.agent)
 			})
@@ -255,9 +226,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_type(t *test
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusBadRequest, w.Code)
-			}
+			assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_RESOURCE_TYPE", commonoutline.ServiceNameAPIManager)
 		})
 	}
 }
@@ -296,6 +265,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_id(t *testin
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
+			r.Use(middleware.RequestID())
 			r.Use(func(c *gin.Context) {
 				c.Set("auth_identity", tt.agent)
 			})
@@ -311,7 +281,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_id(t *testin
 	}
 }
 
-func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing.T) {
+func Test_GetTimelinesResourceTypeResourceIdEvents_servicehandler_errors(t *testing.T) {
 
 	tests := []struct {
 		name  string
@@ -325,9 +295,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 		expectResourceID   uuid.UUID
 		expectPageSize     int
 		expectPageToken    string
+
+		expectStatus cerrors.Status
+		expectReason string
 	}{
 		{
-			name: "resource not found returns 404",
+			name: "resource not found returns 404 RESOURCE_NOT_FOUND",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
@@ -343,9 +316,12 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 			expectResourceID:   uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
 			expectPageSize:     100,
 			expectPageToken:    "",
+
+			expectStatus: cerrors.StatusNotFound,
+			expectReason: "RESOURCE_NOT_FOUND",
 		},
 		{
-			name: "permission denied returns 404",
+			name: "permission denied returns 403 PERMISSION_DENIED",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
@@ -361,6 +337,9 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 			expectResourceID:   uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
 			expectPageSize:     100,
 			expectPageToken:    "",
+
+			expectStatus: cerrors.StatusPermissionDenied,
+			expectReason: "PERMISSION_DENIED",
 		},
 	}
 
@@ -377,6 +356,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
+			r.Use(middleware.RequestID())
 			r.Use(func(c *gin.Context) {
 				c.Set("auth_identity", tt.agent)
 			})
@@ -385,7 +365,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			mockSvc.EXPECT().TimelineEventList(
-				req.Context(),
+				gomock.Any(),
 				tt.agent,
 				tt.expectResourceType,
 				tt.expectResourceID,
@@ -394,9 +374,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_resource_not_found(t *testing
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusNotFound {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusNotFound, w.Code)
-			}
+			assertErrorResponse(t, w, tt.expectStatus, tt.expectReason, commonoutline.ServiceNameAPIManager)
 		})
 	}
 }
@@ -449,6 +427,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_internal_error(t *testing.T) 
 			w := httptest.NewRecorder()
 			_, r := gin.CreateTestContext(w)
 
+			r.Use(middleware.RequestID())
 			r.Use(func(c *gin.Context) {
 				c.Set("auth_identity", tt.agent)
 			})
@@ -457,7 +436,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_internal_error(t *testing.T) 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			mockSvc.EXPECT().TimelineEventList(
-				req.Context(),
+				gomock.Any(),
 				tt.agent,
 				tt.expectResourceType,
 				tt.expectResourceID,
@@ -466,9 +445,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_internal_error(t *testing.T) 
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			if w.Code != http.StatusInternalServerError {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusInternalServerError, w.Code)
-			}
+			assertErrorResponse(t, w, cerrors.StatusInternal, "INTERNAL", commonoutline.ServiceNameAPIManager)
 		})
 	}
 }
