@@ -32,6 +32,10 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/AgentManagerAgent'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 post:
   summary: Create a new agent
@@ -83,4 +87,8 @@ post:
           schema:
             $ref: '#/components/schemas/AgentManagerAgent'
     '400':
-      description: Invalid input.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
