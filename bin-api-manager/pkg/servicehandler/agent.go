@@ -2,9 +2,9 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
@@ -48,7 +48,7 @@ func (h *serviceHandler) AgentCreate(
 	addresses []commonaddress.Address,
 ) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -58,7 +58,7 @@ func (h *serviceHandler) AgentCreate(
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -78,7 +78,7 @@ func (h *serviceHandler) AgentCreate(
 // to getting an agent.
 func (h *serviceHandler) AgentGet(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -95,7 +95,7 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *auth.AuthIdentity, age
 	}
 
 	if a.AgentID() != agentID && !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -107,7 +107,7 @@ func (h *serviceHandler) AgentGet(ctx context.Context, a *auth.AuthIdentity, age
 // it returns list of agents if it succeed.
 func (h *serviceHandler) AgentList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -123,7 +123,7 @@ func (h *serviceHandler) AgentList(ctx context.Context, a *auth.AuthIdentity, si
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Convert string filters to typed filters
@@ -177,7 +177,7 @@ func (h *serviceHandler) agentList(ctx context.Context, size uint64, token strin
 // to delete the agent.
 func (h *serviceHandler) AgentDelete(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -194,7 +194,7 @@ func (h *serviceHandler) AgentDelete(ctx context.Context, a *auth.AuthIdentity, 
 	}
 
 	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -212,7 +212,7 @@ func (h *serviceHandler) AgentDelete(ctx context.Context, a *auth.AuthIdentity, 
 // to update the agent info.
 func (h *serviceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, name, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -229,7 +229,7 @@ func (h *serviceHandler) AgentUpdate(ctx context.Context, a *auth.AuthIdentity, 
 	}
 
 	if a.AgentID() != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -256,7 +256,7 @@ func (h *serviceHandler) agentUpdate(ctx context.Context, agentID uuid.UUID, nam
 // to update the agent's addresses info.
 func (h *serviceHandler) AgentUpdateAddresses(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, addresses []commonaddress.Address) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -273,7 +273,7 @@ func (h *serviceHandler) AgentUpdateAddresses(ctx context.Context, a *auth.AuthI
 	}
 
 	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -300,7 +300,7 @@ func (h *serviceHandler) agentUpdateAddresses(ctx context.Context, agentID uuid.
 // to update the agent's tag_ids info.
 func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, tagIDs []uuid.UUID) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -317,7 +317,7 @@ func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, a *auth.AuthIden
 	}
 
 	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -335,7 +335,7 @@ func (h *serviceHandler) AgentUpdateTagIDs(ctx context.Context, a *auth.AuthIden
 // to update the agent status info.
 func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, status amagent.Status) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -352,7 +352,7 @@ func (h *serviceHandler) AgentUpdateStatus(ctx context.Context, a *auth.AuthIden
 	}
 
 	if a.AgentID() != agentID && !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -379,7 +379,7 @@ func (h *serviceHandler) agentUpdateStatus(ctx context.Context, agentID uuid.UUI
 // to update the agent permission info.
 func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, permission amagent.Permission) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -401,13 +401,13 @@ func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *auth.Auth
 		// the only project level permission owned agent can set the project level permission.
 		if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionNone) {
 			log.Debugf("The agent has no project level permission.")
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	} else {
 		// customer level permission set.
 		if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 			log.Debugf("The agent has no customer level permission.")
-			return nil, fmt.Errorf("user has no permission")
+			return nil, serviceerrors.ErrPermissionDenied
 		}
 	}
 
@@ -426,7 +426,7 @@ func (h *serviceHandler) AgentUpdatePermission(ctx context.Context, a *auth.Auth
 // to update the agent password.
 func (h *serviceHandler) AgentUpdatePassword(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID, password string) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -444,7 +444,7 @@ func (h *serviceHandler) AgentUpdatePassword(ctx context.Context, a *auth.AuthId
 
 	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Debugf("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -470,7 +470,7 @@ func (h *serviceHandler) agentUpdatePassword(ctx context.Context, agentID uuid.U
 // AgentDirectHashRegenerate regenerates the direct hash for the agent.
 func (h *serviceHandler) AgentDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, agentID uuid.UUID) (*amagent.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -488,7 +488,7 @@ func (h *serviceHandler) AgentDirectHashRegenerate(ctx context.Context, a *auth.
 
 	if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AgentV1AgentDirectHashRegenerate(ctx, agentID)

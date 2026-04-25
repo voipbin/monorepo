@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -21,7 +22,7 @@ func (h *serviceHandler) RecordingfileGet(ctx context.Context, a *auth.AuthIdent
 	})
 
 	if a.IsDirect() {
-		return "", fmt.Errorf("direct access not supported")
+		return "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get r info from call-manager

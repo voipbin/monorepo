@@ -25,7 +25,7 @@ func Test_StorageFileGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent  *auth.AuthIdentity
 		fileID uuid.UUID
 
 		responseStorageFile *smfile.File
@@ -99,7 +99,7 @@ func Test_StorageFileDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent  *auth.AuthIdentity
 		fileID uuid.UUID
 
 		responseStorageFile *smfile.File
@@ -177,16 +177,16 @@ func Test_StorageFileDownloadRedirect(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent  *auth.AuthIdentity
 		fileID uuid.UUID
 
-		responseStorageFile  *smfile.File
-		responseStorageErr   error
-		responseRefreshURI   string
-		responseRefreshErr   error
-		expectRefreshCalled  bool
-		expectRes            string
-		expectErr            bool
+		responseStorageFile *smfile.File
+		responseStorageErr  error
+		responseRefreshURI  string
+		responseRefreshErr  error
+		expectRefreshCalled bool
+		expectRes           string
+		expectErr           bool
 	}{
 		{
 			name: "valid URL not expired",

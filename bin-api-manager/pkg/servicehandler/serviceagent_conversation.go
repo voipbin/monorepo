@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	"github.com/gofrs/uuid"
@@ -14,7 +15,7 @@ import (
 // It returns conversation if it succeed.
 func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	// get
@@ -36,7 +37,7 @@ func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *aut
 // it returns list of chatroom messages if it succeed.
 func (h *serviceHandler) ServiceAgentConversationList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	if token == "" {

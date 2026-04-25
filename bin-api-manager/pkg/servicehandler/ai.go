@@ -8,6 +8,7 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 	amtool "monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -49,7 +50,7 @@ func (h *serviceHandler) AICreate(
 	toolNames []amtool.ToolName,
 ) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -71,7 +72,7 @@ func (h *serviceHandler) AICreate(
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// validate RAG ownership if ragID is provided
@@ -85,7 +86,7 @@ func (h *serviceHandler) AICreate(
 
 		if rag.CustomerID != a.CustomerID {
 			log.Infof("RAG customer_id mismatch. rag_customer_id: %s, agent_customer_id: %s", rag.CustomerID, a.CustomerID)
-			return nil, fmt.Errorf("knowledge base does not belong to this customer")
+			return nil, fmt.Errorf("%w: knowledge base does not belong to this customer", serviceerrors.ErrPermissionDenied)
 		}
 	}
 
@@ -118,7 +119,7 @@ func (h *serviceHandler) AICreate(
 // AIDirectHashRegenerate regenerates the direct hash for the AI.
 func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -136,7 +137,7 @@ func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *auth.Aut
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AIV1AIDirectHashRegenerate(ctx, aiID)
@@ -153,7 +154,7 @@ func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *auth.Aut
 // It returns list of AIs if it succeed.
 func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amai.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -170,7 +171,7 @@ func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *auth.AuthIde
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -229,7 +230,7 @@ func (h *serviceHandler) convertAIFilters(filters map[string]string) (map[amai.F
 // It returns AI if it succeed.
 func (h *serviceHandler) AIGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -247,7 +248,7 @@ func (h *serviceHandler) AIGet(ctx context.Context, a *auth.AuthIdentity, id uui
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -257,7 +258,7 @@ func (h *serviceHandler) AIGet(ctx context.Context, a *auth.AuthIdentity, id uui
 // AIDelete deletes the ai.
 func (h *serviceHandler) AIDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -277,7 +278,7 @@ func (h *serviceHandler) AIDelete(ctx context.Context, a *auth.AuthIdentity, id 
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AIV1AIDelete(ctx, id)
@@ -309,7 +310,7 @@ func (h *serviceHandler) AIUpdate(
 	toolNames []amtool.ToolName,
 ) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -339,7 +340,7 @@ func (h *serviceHandler) AIUpdate(
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// validate RAG ownership if ragID is provided
@@ -353,7 +354,7 @@ func (h *serviceHandler) AIUpdate(
 
 		if rag.CustomerID != a.CustomerID {
 			log.Infof("RAG customer_id mismatch. rag_customer_id: %s, agent_customer_id: %s", rag.CustomerID, a.CustomerID)
-			return nil, fmt.Errorf("knowledge base does not belong to this customer")
+			return nil, fmt.Errorf("%w: knowledge base does not belong to this customer", serviceerrors.ErrPermissionDenied)
 		}
 	}
 

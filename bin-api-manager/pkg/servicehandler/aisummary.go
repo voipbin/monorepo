@@ -6,6 +6,7 @@ import (
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
 	"github.com/gofrs/uuid"
@@ -22,7 +23,7 @@ func (h *serviceHandler) AISummaryCreate(
 	language string,
 ) (*amsummary.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	var tmpCustomerID uuid.UUID
@@ -61,7 +62,7 @@ func (h *serviceHandler) AISummaryCreate(
 	}
 
 	if !h.hasPermission(ctx, a, tmpCustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AIV1SummaryCreate(
@@ -97,7 +98,7 @@ func (h *serviceHandler) aisummaryGet(ctx context.Context, id uuid.UUID) (*amsum
 // It returns list of aisummaries if it succeed.
 func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amsummary.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -105,7 +106,7 @@ func (h *serviceHandler) AISummaryGetsByCustomerID(ctx context.Context, a *auth.
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -162,7 +163,7 @@ func (h *serviceHandler) convertAISummaryFilters(filters map[string]string) (map
 // It returns ai summary if it succeed.
 func (h *serviceHandler) AISummaryGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amsummary.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.aisummaryGet(ctx, id)
@@ -171,7 +172,7 @@ func (h *serviceHandler) AISummaryGet(ctx context.Context, a *auth.AuthIdentity,
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -181,7 +182,7 @@ func (h *serviceHandler) AISummaryGet(ctx context.Context, a *auth.AuthIdentity,
 // AISummaryDelete deletes the ai summary.
 func (h *serviceHandler) AISummaryDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amsummary.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.aisummaryGet(ctx, id)
@@ -190,7 +191,7 @@ func (h *serviceHandler) AISummaryDelete(ctx context.Context, a *auth.AuthIdenti
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.AIV1SummaryDelete(ctx, id)

@@ -6,6 +6,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
@@ -27,7 +28,7 @@ func (h *serviceHandler) transcribeGet(ctx context.Context, transcribeID uuid.UU
 // to getting the transcribe.
 func (h *serviceHandler) TranscribeGet(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -57,7 +58,7 @@ func (h *serviceHandler) TranscribeGet(ctx context.Context, a *auth.AuthIdentity
 // it returns list of transcribe info if it succeed.
 func (h *serviceHandler) TranscribeList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*tmtranscribe.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -117,7 +118,7 @@ func (h *serviceHandler) TranscribeStart(
 	provider tmtranscribe.Provider,
 ) (*tmtranscribe.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -232,7 +233,7 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *auth.
 // it returns transcribe if it succeed.
 func (h *serviceHandler) TranscribeStop(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -268,7 +269,7 @@ func (h *serviceHandler) TranscribeStop(ctx context.Context, a *auth.AuthIdentit
 // it returns transcribe info if it succeed.
 func (h *serviceHandler) TranscribeDelete(ctx context.Context, a *auth.AuthIdentity, transcribeID uuid.UUID) (*tmtranscribe.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{

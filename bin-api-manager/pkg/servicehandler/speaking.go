@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"monorepo/bin-api-manager/models/auth"
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	tmspeaking "monorepo/bin-tts-manager/models/speaking"
 	tmstreaming "monorepo/bin-tts-manager/models/streaming"
 
@@ -32,7 +33,7 @@ func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *auth.AuthIdentit
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -60,7 +61,7 @@ func (h *serviceHandler) SpeakingGet(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.speakingGet(ctx, speakingID)
@@ -86,7 +87,7 @@ func (h *serviceHandler) SpeakingList(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -126,7 +127,7 @@ func (h *serviceHandler) SpeakingSay(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	s, err := h.speakingGet(ctx, speakingID)
@@ -160,7 +161,7 @@ func (h *serviceHandler) SpeakingFlush(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	s, err := h.speakingGet(ctx, speakingID)
@@ -194,7 +195,7 @@ func (h *serviceHandler) SpeakingStop(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	s, err := h.speakingGet(ctx, speakingID)
@@ -229,7 +230,7 @@ func (h *serviceHandler) SpeakingDelete(ctx context.Context, a *auth.AuthIdentit
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	s, err := h.speakingGet(ctx, speakingID)

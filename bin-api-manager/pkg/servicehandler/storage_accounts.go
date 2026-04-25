@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"monorepo/bin-api-manager/models/auth"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	smaccount "monorepo/bin-storage-manager/models/account"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	smaccount "monorepo/bin-storage-manager/models/account"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -39,7 +40,7 @@ func (h *serviceHandler) StorageAccountGet(ctx context.Context, a *auth.AuthIden
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get storage account
@@ -50,7 +51,7 @@ func (h *serviceHandler) StorageAccountGet(ctx context.Context, a *auth.AuthIden
 	}
 
 	if !h.hasPermission(ctx, a, sa.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// convert
@@ -69,7 +70,7 @@ func (h *serviceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *a
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	filters := map[string]string{
@@ -93,7 +94,7 @@ func (h *serviceHandler) StorageAccountGetByCustomerID(ctx context.Context, a *a
 	res := tmps[0].ConvertWebhookMessage()
 
 	if !h.hasPermission(ctx, a, res.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	return res, nil
@@ -111,7 +112,7 @@ func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *auth.AuthI
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get storage account
@@ -122,7 +123,7 @@ func (h *serviceHandler) StorageAccountDelete(ctx context.Context, a *auth.AuthI
 	}
 
 	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res, err := h.reqHandler.StorageV1AccountDelete(ctx, storageAccountID, 60000)
@@ -146,7 +147,7 @@ func (h *serviceHandler) StorageAccountList(ctx context.Context, a *auth.AuthIde
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -154,7 +155,7 @@ func (h *serviceHandler) StorageAccountList(ctx context.Context, a *auth.AuthIde
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -195,11 +196,11 @@ func (h *serviceHandler) StorageAccountCreate(ctx context.Context, a *auth.AuthI
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// create storage accounts

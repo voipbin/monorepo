@@ -324,7 +324,7 @@ func Test_RouteDelete(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent   *auth.AuthIdentity
 		routeID uuid.UUID
 
 		responseRoute *rmroute.Route

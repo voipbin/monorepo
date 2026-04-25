@@ -124,7 +124,7 @@ func Test_RecordingDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent       *auth.AuthIdentity
 		recordingID uuid.UUID
 
 		responseRecording *cmrecording.Recording

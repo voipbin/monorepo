@@ -9,6 +9,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	rmrag "monorepo/bin-rag-manager/models/rag"
 )
 
@@ -31,7 +32,7 @@ func (h *serviceHandler) ragGet(ctx context.Context, id uuid.UUID) (*rmrag.Rag, 
 
 func (h *serviceHandler) RagCreate(ctx context.Context, a *auth.AuthIdentity, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -41,7 +42,7 @@ func (h *serviceHandler) RagCreate(ctx context.Context, a *auth.AuthIdentity, na
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	log.Debug("Creating a new rag.")
@@ -57,7 +58,7 @@ func (h *serviceHandler) RagCreate(ctx context.Context, a *auth.AuthIdentity, na
 
 func (h *serviceHandler) RagGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmrag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -74,7 +75,7 @@ func (h *serviceHandler) RagGet(ctx context.Context, a *auth.AuthIdentity, id uu
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -83,7 +84,7 @@ func (h *serviceHandler) RagGet(ctx context.Context, a *auth.AuthIdentity, id uu
 
 func (h *serviceHandler) RagGets(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*rmrag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -99,7 +100,7 @@ func (h *serviceHandler) RagGets(ctx context.Context, a *auth.AuthIdentity, size
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[rmrag.Field]any{
@@ -122,7 +123,7 @@ func (h *serviceHandler) RagGets(ctx context.Context, a *auth.AuthIdentity, size
 
 func (h *serviceHandler) RagUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, fields map[rmrag.Field]any) (*rmrag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -139,7 +140,7 @@ func (h *serviceHandler) RagUpdate(ctx context.Context, a *auth.AuthIdentity, id
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	updated, err := h.reqHandler.RagV1RagUpdate(ctx, id, fields)
@@ -154,7 +155,7 @@ func (h *serviceHandler) RagUpdate(ctx context.Context, a *auth.AuthIdentity, id
 
 func (h *serviceHandler) RagDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmrag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -171,7 +172,7 @@ func (h *serviceHandler) RagDelete(ctx context.Context, a *auth.AuthIdentity, id
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if err := h.reqHandler.RagV1RagDelete(ctx, id); err != nil {
@@ -185,7 +186,7 @@ func (h *serviceHandler) RagDelete(ctx context.Context, a *auth.AuthIdentity, id
 
 func (h *serviceHandler) RagAddSources(ctx context.Context, a *auth.AuthIdentity, ragID uuid.UUID, storageFileIDs []uuid.UUID, sourceURLs []string) (*rmrag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -203,7 +204,7 @@ func (h *serviceHandler) RagAddSources(ctx context.Context, a *auth.AuthIdentity
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	r, err := h.reqHandler.RagV1RagAddSources(ctx, ragID, storageFileIDs, sourceURLs)
@@ -218,7 +219,7 @@ func (h *serviceHandler) RagAddSources(ctx context.Context, a *auth.AuthIdentity
 
 func (h *serviceHandler) RagRemoveSource(ctx context.Context, a *auth.AuthIdentity, ragID, sourceID uuid.UUID) (*rmrag.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -237,7 +238,7 @@ func (h *serviceHandler) RagRemoveSource(ctx context.Context, a *auth.AuthIdenti
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	r, err := h.reqHandler.RagV1RagRemoveSource(ctx, ragID, sourceID)

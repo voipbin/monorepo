@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	mmmessage "monorepo/bin-message-manager/models/message"
@@ -47,7 +48,7 @@ func (h *serviceHandler) MessageList(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -56,7 +57,7 @@ func (h *serviceHandler) MessageList(ctx context.Context, a *auth.AuthIdentity, 
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get messages
@@ -90,7 +91,7 @@ func (h *serviceHandler) MessageSend(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if len(destinations) <= 0 {
@@ -100,7 +101,7 @@ func (h *serviceHandler) MessageSend(ctx context.Context, a *auth.AuthIdentity, 
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send message
@@ -126,7 +127,7 @@ func (h *serviceHandler) MessageGet(ctx context.Context, a *auth.AuthIdentity, i
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get message info
@@ -138,7 +139,7 @@ func (h *serviceHandler) MessageGet(ctx context.Context, a *auth.AuthIdentity, i
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if tmp.TMDelete != nil {
@@ -163,7 +164,7 @@ func (h *serviceHandler) MessageDelete(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get message info
@@ -175,7 +176,7 @@ func (h *serviceHandler) MessageDelete(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, m.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// delete message info

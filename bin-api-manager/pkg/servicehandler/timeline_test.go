@@ -456,9 +456,9 @@ func Test_TimelineEventList_timeline_service_error(t *testing.T) {
 		pageSize     int
 		pageToken    string
 
-		responseCall         *cmcall.Call
-		responseTimelineErr  error
-		expectEventRequest   *tmevent.EventListRequest
+		responseCall        *cmcall.Call
+		responseTimelineErr error
+		expectEventRequest  *tmevent.EventListRequest
 	}{
 		{
 			name: "timeline service error",

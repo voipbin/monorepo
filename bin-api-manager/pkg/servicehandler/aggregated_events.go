@@ -8,11 +8,12 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	amai "monorepo/bin-ai-manager/models/ai"
-	"monorepo/bin-api-manager/models/auth"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amteam "monorepo/bin-ai-manager/models/team"
+	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	cmcall "monorepo/bin-call-manager/models/call"
@@ -70,7 +71,7 @@ func (h *serviceHandler) AggregatedEventList(
 	pageToken string,
 ) ([]*TimelineEvent, string, error) {
 	if a.IsDirect() {
-		return nil, "", fmt.Errorf("direct access not supported")
+		return nil, "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -83,11 +84,11 @@ func (h *serviceHandler) AggregatedEventList(
 	// Validate: exactly one of activeflow_id or call_id must be provided
 	if activeflowID == uuid.Nil && callID == uuid.Nil {
 		log.Info("Neither activeflow_id nor call_id provided")
-		return nil, "", fmt.Errorf("either activeflow_id or call_id is required")
+		return nil, "", fmt.Errorf("%w: either activeflow_id or call_id is required", serviceerrors.ErrInvalidArgument)
 	}
 	if activeflowID != uuid.Nil && callID != uuid.Nil {
 		log.Info("Both activeflow_id and call_id provided")
-		return nil, "", fmt.Errorf("only one of activeflow_id or call_id is allowed")
+		return nil, "", fmt.Errorf("%w: only one of activeflow_id or call_id is allowed", serviceerrors.ErrInvalidArgument)
 	}
 
 	// Resolve to activeflow_id
@@ -103,7 +104,7 @@ func (h *serviceHandler) AggregatedEventList(
 
 		if !h.hasPermission(ctx, a, af.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 			log.Info("Agent has no permission")
-			return nil, "", fmt.Errorf("user has no permission")
+			return nil, "", serviceerrors.ErrPermissionDenied
 		}
 		resolvedActiveflowID = af.ID
 	} else {
@@ -117,7 +118,7 @@ func (h *serviceHandler) AggregatedEventList(
 
 		if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 			log.Info("Agent has no permission")
-			return nil, "", fmt.Errorf("user has no permission")
+			return nil, "", serviceerrors.ErrPermissionDenied
 		}
 
 		if c.ActiveflowID == uuid.Nil {
@@ -213,14 +214,14 @@ var eventConverters = map[string]eventConverter{
 	"speaking_":             newEventConverter(func(v *ttspeaking.Speaking) any { return v.ConvertWebhookMessage() }),
 	// NOTE: "streaming_" events (streaming_started/stopped) carry a Streaming struct which lacks
 	// ConvertWebhookMessage, so they cannot be converted. Only "transcribe_speech_" events use Speech.
-	"summary_":              newEventConverter(func(v *amsummary.Summary) any { return v.ConvertWebhookMessage() }),
-	"tag_":                  newEventConverter(func(v *tgtag.Tag) any { return v.ConvertWebhookMessage() }),
-	"team_":                 newEventConverter(func(v *amteam.Team) any { return v.ConvertWebhookMessage() }),
-	"transcript_":           newEventConverter(func(v *tmtranscript.Transcript) any { return v.ConvertWebhookMessage() }),
-	"transcribe_":           newEventConverter(func(v *tmtranscribe.Transcribe) any { return v.ConvertWebhookMessage() }),
-	"transcribe_speech_":    newEventConverter(func(v *tmstreaming.Speech) any { return v.ConvertWebhookMessage() }),
-	"transfer_":             newEventConverter(func(v *tftransfer.Transfer) any { return v.ConvertWebhookMessage() }),
-	"trunk_":                newEventConverter(func(v *rmtrunk.Trunk) any { return v.ConvertWebhookMessage() }),
+	"summary_":           newEventConverter(func(v *amsummary.Summary) any { return v.ConvertWebhookMessage() }),
+	"tag_":               newEventConverter(func(v *tgtag.Tag) any { return v.ConvertWebhookMessage() }),
+	"team_":              newEventConverter(func(v *amteam.Team) any { return v.ConvertWebhookMessage() }),
+	"transcript_":        newEventConverter(func(v *tmtranscript.Transcript) any { return v.ConvertWebhookMessage() }),
+	"transcribe_":        newEventConverter(func(v *tmtranscribe.Transcribe) any { return v.ConvertWebhookMessage() }),
+	"transcribe_speech_": newEventConverter(func(v *tmstreaming.Speech) any { return v.ConvertWebhookMessage() }),
+	"transfer_":          newEventConverter(func(v *tftransfer.Transfer) any { return v.ConvertWebhookMessage() }),
+	"trunk_":             newEventConverter(func(v *rmtrunk.Trunk) any { return v.ConvertWebhookMessage() }),
 }
 
 // convertAggregatedEventData converts a timeline event's raw data to WebhookMessage format.

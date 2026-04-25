@@ -24,12 +24,12 @@ func Test_QueuecallList(t *testing.T) {
 
 	type test struct {
 		name      string
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
 		responseQueuecalls []qmqueuecall.Queuecall
-		expectFilters map[qmqueuecall.Field]any
+		expectFilters      map[qmqueuecall.Field]any
 		expectRes          []*qmqueuecall.WebhookMessage
 	}
 
@@ -232,7 +232,7 @@ func Test_QueuecallKick(t *testing.T) {
 
 	type test struct {
 		name        string
-		agent *auth.AuthIdentity
+		agent       *auth.AuthIdentity
 		queuecallID uuid.UUID
 
 		responseQueuecall *qmqueuecall.Queuecall
@@ -300,7 +300,7 @@ func Test_QueuecallKickByReferenceID(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent       *auth.AuthIdentity
 		referenceID uuid.UUID
 
 		responseQueuecall *qmqueuecall.Queuecall

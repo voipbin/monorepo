@@ -2,9 +2,9 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	qmqueuecall "monorepo/bin-queue-manager/models/queuecall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -43,7 +43,7 @@ func (h *serviceHandler) queuecallGetByReferenceID(ctx context.Context, a *auth.
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -68,7 +68,7 @@ func (h *serviceHandler) QueuecallGet(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.queuecallGet(ctx, queueID)
@@ -80,7 +80,7 @@ func (h *serviceHandler) QueuecallGet(ctx context.Context, a *auth.AuthIdentity,
 	// permission check
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -100,7 +100,7 @@ func (h *serviceHandler) QueuecallList(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -110,7 +110,7 @@ func (h *serviceHandler) QueuecallList(ctx context.Context, a *auth.AuthIdentity
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -150,7 +150,7 @@ func (h *serviceHandler) QueuecallDelete(ctx context.Context, a *auth.AuthIdenti
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	qc, err := h.queuecallGet(ctx, queuecallID)
@@ -162,7 +162,7 @@ func (h *serviceHandler) QueuecallDelete(ctx context.Context, a *auth.AuthIdenti
 	// permission check
 	if !h.hasPermission(ctx, a, qc.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueuecallDelete(ctx, queuecallID)
@@ -186,7 +186,7 @@ func (h *serviceHandler) QueuecallKick(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	qc, err := h.queuecallGet(ctx, queuecallID)
@@ -198,7 +198,7 @@ func (h *serviceHandler) QueuecallKick(ctx context.Context, a *auth.AuthIdentity
 	// permission check
 	if !h.hasPermission(ctx, a, qc.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueuecallKick(ctx, queuecallID)
@@ -222,7 +222,7 @@ func (h *serviceHandler) QueuecallKickByReferenceID(ctx context.Context, a *auth
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	qc, err := h.queuecallGetByReferenceID(ctx, a, referenceID)
@@ -234,7 +234,7 @@ func (h *serviceHandler) QueuecallKickByReferenceID(ctx context.Context, a *auth
 	// permission check
 	if !h.hasPermission(ctx, a, qc.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueuecallKick(ctx, qc.ID)

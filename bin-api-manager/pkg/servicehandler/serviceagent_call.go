@@ -5,6 +5,7 @@ import (
 	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmcall "monorepo/bin-call-manager/models/call"
 
 	"github.com/gofrs/uuid"
@@ -16,7 +17,7 @@ import (
 // it returns list of calls if it succeed.
 func (h *serviceHandler) ServiceAgentCallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmcall.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -57,7 +58,7 @@ func (h *serviceHandler) ServiceAgentCallList(ctx context.Context, a *auth.AuthI
 // it returns call if it succeed.
 func (h *serviceHandler) ServiceAgentCallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -75,7 +76,7 @@ func (h *serviceHandler) ServiceAgentCallGet(ctx context.Context, a *auth.AuthId
 	}
 
 	if a.AgentID() != c.OwnerID {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// convert
@@ -88,7 +89,7 @@ func (h *serviceHandler) ServiceAgentCallGet(ctx context.Context, a *auth.AuthId
 // it returns deleted call if it succeed.
 func (h *serviceHandler) ServiceAgentCallDelete(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -106,7 +107,7 @@ func (h *serviceHandler) ServiceAgentCallDelete(ctx context.Context, a *auth.Aut
 	}
 
 	if a.AgentID() != c.OwnerID {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res, err := h.callDelete(ctx, callID)

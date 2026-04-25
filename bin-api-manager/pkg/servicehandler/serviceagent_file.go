@@ -9,6 +9,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 	smfile "monorepo/bin-storage-manager/models/file"
 
@@ -21,7 +22,7 @@ import (
 // it returns created file info if it succeed.
 func (h *serviceHandler) ServiceAgentFileCreate(ctx context.Context, a *auth.AuthIdentity, f multipart.File, fileType smfile.Type, name string, detail string, filename string) (*smfile.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -34,7 +35,7 @@ func (h *serviceHandler) ServiceAgentFileCreate(ctx context.Context, a *auth.Aut
 	log.Debug("Creating a new file.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// open file writer
@@ -72,7 +73,7 @@ func (h *serviceHandler) ServiceAgentFileCreate(ctx context.Context, a *auth.Aut
 // It returns list of files if it succeed.
 func (h *serviceHandler) ServiceAgentFileList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*smfile.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -122,7 +123,7 @@ func (h *serviceHandler) ServiceAgentFileList(ctx context.Context, a *auth.AuthI
 // It returns file if it succeed.
 func (h *serviceHandler) ServiceAgentFileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*smfile.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -143,7 +144,7 @@ func (h *serviceHandler) ServiceAgentFileGet(ctx context.Context, a *auth.AuthId
 	// Check permission - file must belong to the same customer
 	if f.CustomerID != a.CustomerID {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := f.ConvertWebhookMessage()
@@ -153,7 +154,7 @@ func (h *serviceHandler) ServiceAgentFileGet(ctx context.Context, a *auth.AuthId
 // ServiceAgentFileDelete deletes the file of the given id.
 func (h *serviceHandler) ServiceAgentFileDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*smfile.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -173,7 +174,7 @@ func (h *serviceHandler) ServiceAgentFileDelete(ctx context.Context, a *auth.Aut
 
 	if f.OwnerID != a.AgentID() {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.storageFileDelete(ctx, id)
@@ -189,7 +190,7 @@ func (h *serviceHandler) ServiceAgentFileDelete(ctx context.Context, a *auth.Aut
 // If the stored URL has expired, it refreshes via storage-manager RPC.
 func (h *serviceHandler) ServiceAgentFileDownloadRedirect(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error) {
 	if !a.IsAgent() {
-		return "", fmt.Errorf("agent authentication required")
+		return "", serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -211,7 +212,7 @@ func (h *serviceHandler) ServiceAgentFileDownloadRedirect(ctx context.Context, a
 	// Check permission - file must belong to the same customer
 	if f.CustomerID != a.CustomerID {
 		log.Info("The user has no permission.")
-		return "", fmt.Errorf("user has no permission")
+		return "", serviceerrors.ErrPermissionDenied
 	}
 
 	// check if download URL is still valid

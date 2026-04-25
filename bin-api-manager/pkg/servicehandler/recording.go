@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -46,7 +47,7 @@ func (h *serviceHandler) RecordingGet(ctx context.Context, a *auth.AuthIdentity,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get recording info from call-manager
@@ -79,7 +80,7 @@ func (h *serviceHandler) RecordingList(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -130,7 +131,7 @@ func (h *serviceHandler) RecordingDelete(ctx context.Context, a *auth.AuthIdenti
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	r, err := h.recordingGet(ctx, id)

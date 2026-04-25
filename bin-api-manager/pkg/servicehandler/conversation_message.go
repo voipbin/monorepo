@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
 
@@ -35,7 +36,7 @@ func (h *serviceHandler) ConversationMessageGetsByConversationID(
 	log.Debug("Getting a conversation messages.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conversation to check the permission
@@ -118,7 +119,7 @@ func (h *serviceHandler) ConversationMessageSend(
 	log.Debugf("Sending a message. conversation_id: %s", conversationID)
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get conversation to check the permission

@@ -172,12 +172,12 @@ func Test_ConversationAccountCreate(t *testing.T) {
 		name  string
 		agent *auth.AuthIdentity
 
-		accountType    cvaccount.Type
-		accountName    string
-		detail         string
-		secret         string
-		token          string
-		messageFlowID  uuid.UUID
+		accountType   cvaccount.Type
+		accountName   string
+		detail        string
+		secret        string
+		token         string
+		messageFlowID uuid.UUID
 
 		response  *cvaccount.Account
 		expectRes *cvaccount.WebhookMessage
@@ -192,12 +192,12 @@ func Test_ConversationAccountCreate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 
-			accountType:    cvaccount.TypeLine,
-			accountName:    "test name",
-			detail:         "test detail",
-			secret:         "test secret",
-			token:          "test token",
-			messageFlowID:  uuid.Nil,
+			accountType:   cvaccount.TypeLine,
+			accountName:   "test name",
+			detail:        "test detail",
+			secret:        "test secret",
+			token:         "test token",
+			messageFlowID: uuid.Nil,
 
 			response: &cvaccount.Account{
 				Identity: commonidentity.Identity{

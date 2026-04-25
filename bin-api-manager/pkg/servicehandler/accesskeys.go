@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	csaccesskey "monorepo/bin-customer-manager/models/accesskey"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -36,7 +37,7 @@ func (h *serviceHandler) accesskeyGet(ctx context.Context, a *auth.AuthIdentity,
 // it returns created accesskey info if it succeed.
 func (h *serviceHandler) AccesskeyCreate(ctx context.Context, a *auth.AuthIdentity, name string, detail string, expire int32) (*csaccesskey.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -49,7 +50,7 @@ func (h *serviceHandler) AccesskeyCreate(ctx context.Context, a *auth.AuthIdenti
 	log.Debug("Creating a new accesskey.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if expire < 86400 {
@@ -72,7 +73,7 @@ func (h *serviceHandler) AccesskeyCreate(ctx context.Context, a *auth.AuthIdenti
 // it returns accesskey if it succeed.
 func (h *serviceHandler) AccesskeyGet(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -88,7 +89,7 @@ func (h *serviceHandler) AccesskeyGet(ctx context.Context, a *auth.AuthIdentity,
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -135,7 +136,7 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 // it returns list of accesskeys if it succeed.
 func (h *serviceHandler) AccesskeyList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*csaccesskey.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -150,7 +151,7 @@ func (h *serviceHandler) AccesskeyList(ctx context.Context, a *auth.AuthIdentity
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -180,7 +181,7 @@ func (h *serviceHandler) AccesskeyList(ctx context.Context, a *auth.AuthIdentity
 // it returns accesskey if it succeed.
 func (h *serviceHandler) AccesskeyDelete(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID) (*csaccesskey.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -197,7 +198,7 @@ func (h *serviceHandler) AccesskeyDelete(ctx context.Context, a *auth.AuthIdenti
 	}
 
 	if !h.hasPermission(ctx, a, ak.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -216,7 +217,7 @@ func (h *serviceHandler) AccesskeyDelete(ctx context.Context, a *auth.AuthIdenti
 // to update the accesskey info.
 func (h *serviceHandler) AccesskeyUpdate(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -232,7 +233,7 @@ func (h *serviceHandler) AccesskeyUpdate(ctx context.Context, a *auth.AuthIdenti
 	}
 
 	if !h.hasPermission(ctx, a, ak.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CustomerV1AccesskeyUpdate(ctx, accesskeyID, name, detail)

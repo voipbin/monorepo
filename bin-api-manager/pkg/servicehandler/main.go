@@ -70,9 +70,9 @@ import (
 
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 
+	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
-	tkchat "monorepo/bin-talk-manager/models/chat"
 
 	rmrag "monorepo/bin-rag-manager/models/rag"
 

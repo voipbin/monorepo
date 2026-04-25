@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
 
@@ -50,11 +51,11 @@ func (h *serviceHandler) BillingAccountGet(ctx context.Context, a *auth.AuthIden
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get billing account
@@ -78,11 +79,11 @@ func (h *serviceHandler) BillingAccountUpdateBasicInfo(ctx context.Context, a *a
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// update billing account
@@ -106,11 +107,11 @@ func (h *serviceHandler) BillingAccountUpdatePaymentInfo(ctx context.Context, a 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// update billing account payment info
@@ -136,12 +137,12 @@ func (h *serviceHandler) BillingAccountAddBalanceForce(ctx context.Context, a *a
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// need a project super admin permission
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	b, err := h.reqHandler.BillingV1AccountAddBalanceForce(ctx, billingAccountID, balance)
@@ -166,12 +167,12 @@ func (h *serviceHandler) BillingAccountSubtractBalanceForce(ctx context.Context,
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// need a project super admin permission
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	b, err := h.reqHandler.BillingV1AccountSubtractBalanceForce(ctx, billingAccountID, balance)
@@ -191,7 +192,7 @@ func (h *serviceHandler) BillingAccountSelfGet(ctx context.Context, a *auth.Auth
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -230,7 +231,7 @@ func (h *serviceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -267,7 +268,7 @@ func (h *serviceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -305,12 +306,12 @@ func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context
 	})
 
 	if a.IsDirect() {
-		return "", fmt.Errorf("direct access not supported")
+		return "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Infof("User has no permission.")
-		return "", fmt.Errorf("user has no permission")
+		return "", serviceerrors.ErrPermissionDenied
 	}
 
 	c, err := h.customerGet(ctx, a.CustomerID)
@@ -347,11 +348,11 @@ func (h *serviceHandler) BillingAccountList(ctx context.Context, a *auth.AuthIde
 	log.Debug("Received request detail.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if size <= 0 {
@@ -400,4 +401,3 @@ func (h *serviceHandler) convertBillingAccountFilters(filters map[string]string)
 
 	return result, nil
 }
-

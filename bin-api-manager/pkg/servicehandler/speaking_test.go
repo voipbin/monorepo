@@ -28,7 +28,7 @@ func Test_SpeakingCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent         *auth.AuthIdentity
 		referenceType tmstreaming.ReferenceType
 		referenceID   uuid.UUID
 		language      string
@@ -147,7 +147,7 @@ func Test_SpeakingGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent      *auth.AuthIdentity
 		speakingID uuid.UUID
 
 		responseSpeaking *tmspeaking.Speaking
@@ -247,7 +247,7 @@ func Test_SpeakingList(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -368,7 +368,7 @@ func Test_SpeakingSay(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent      *auth.AuthIdentity
 		speakingID uuid.UUID
 		text       string
 
@@ -486,7 +486,7 @@ func Test_SpeakingFlush(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent      *auth.AuthIdentity
 		speakingID uuid.UUID
 
 		responseSpeakingGet   *tmspeaking.Speaking
@@ -601,7 +601,7 @@ func Test_SpeakingStop(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent      *auth.AuthIdentity
 		speakingID uuid.UUID
 
 		responseSpeakingGet  *tmspeaking.Speaking
@@ -716,7 +716,7 @@ func Test_SpeakingDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent      *auth.AuthIdentity
 		speakingID uuid.UUID
 
 		responseSpeakingGet    *tmspeaking.Speaking

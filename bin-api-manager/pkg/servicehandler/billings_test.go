@@ -29,7 +29,7 @@ func Test_BillingList(t *testing.T) {
 		token string
 
 		responseBillingAcounts []bmbilling.Billing
-		expectFilters map[bmbilling.Field]any
+		expectFilters          map[bmbilling.Field]any
 		expectRes              []*bmbilling.WebhookMessage
 	}{
 		{

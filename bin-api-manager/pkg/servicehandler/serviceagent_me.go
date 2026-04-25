@@ -2,9 +2,9 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	"github.com/sirupsen/logrus"
@@ -14,7 +14,7 @@ import (
 // It returns updated agent info.
 func (h *serviceHandler) ServiceAgentMeGet(ctx context.Context, a *auth.AuthIdentity) (*amagent.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -36,7 +36,7 @@ func (h *serviceHandler) ServiceAgentMeGet(ctx context.Context, a *auth.AuthIden
 // It returns updated agent info.
 func (h *serviceHandler) ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthIdentity, name string, detail string, ringMethod amagent.RingMethod) (*amagent.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -59,7 +59,7 @@ func (h *serviceHandler) ServiceAgentMeUpdate(ctx context.Context, a *auth.AuthI
 // It returns updated agent info.
 func (h *serviceHandler) ServiceAgentMeUpdateAddresses(ctx context.Context, a *auth.AuthIdentity, addresses []commonaddress.Address) (*amagent.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -82,7 +82,7 @@ func (h *serviceHandler) ServiceAgentMeUpdateAddresses(ctx context.Context, a *a
 // It returns updated agent info.
 func (h *serviceHandler) ServiceAgentMeUpdateStatus(ctx context.Context, a *auth.AuthIdentity, status amagent.Status) (*amagent.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -105,7 +105,7 @@ func (h *serviceHandler) ServiceAgentMeUpdateStatus(ctx context.Context, a *auth
 // It returns updated agent info.
 func (h *serviceHandler) ServiceAgentMeUpdatePassword(ctx context.Context, a *auth.AuthIdentity, password string) (*amagent.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{

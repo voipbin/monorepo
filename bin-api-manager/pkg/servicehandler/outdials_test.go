@@ -25,7 +25,7 @@ func Test_OutdialCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent       *auth.AuthIdentity
 		campaignID  uuid.UUID
 		outdialName string
 		detail      string
@@ -100,7 +100,7 @@ func Test_OutdialList(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
 
@@ -177,7 +177,7 @@ func Test_OutdialDelete(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		outdialID uuid.UUID
 
 		response  *omoutdial.Outdial
@@ -242,7 +242,7 @@ func Test_OutdialUpdate(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		agent *auth.AuthIdentity
+		agent       *auth.AuthIdentity
 		outdialID   uuid.UUID
 		outdialName string
 		detail      string
@@ -311,7 +311,7 @@ func Test_OutdialUpdateCampaignID(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		agent *auth.AuthIdentity
+		agent      *auth.AuthIdentity
 		outdialID  uuid.UUID
 		campaignID uuid.UUID
 
@@ -377,7 +377,7 @@ func Test_OutdialUpdateData(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		outdialID uuid.UUID
 		data      string
 

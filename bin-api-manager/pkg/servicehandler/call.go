@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
@@ -55,11 +56,11 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, f
 	log.Debug("Creating a new call.")
 
 	if a.IsDirect() {
-		return nil, nil, fmt.Errorf("direct access not supported")
+		return nil, nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, nil, fmt.Errorf("user has no permission")
+		return nil, nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// check identity verification for PSTN outbound calls
@@ -141,7 +142,7 @@ func (h *serviceHandler) CallGet(ctx context.Context, a *auth.AuthIdentity, call
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get call
@@ -153,7 +154,7 @@ func (h *serviceHandler) CallGet(ctx context.Context, a *auth.AuthIdentity, call
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// convert
@@ -174,7 +175,7 @@ func (h *serviceHandler) CallList(ctx context.Context, a *auth.AuthIdentity, siz
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -275,7 +276,7 @@ func (h *serviceHandler) CallDelete(ctx context.Context, a *auth.AuthIdentity, c
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -334,7 +335,7 @@ func (h *serviceHandler) CallHangup(ctx context.Context, a *auth.AuthIdentity, c
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -375,7 +376,7 @@ func (h *serviceHandler) CallTalk(ctx context.Context, a *auth.AuthIdentity, cal
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -411,7 +412,7 @@ func (h *serviceHandler) CallHoldOn(ctx context.Context, a *auth.AuthIdentity, c
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -447,7 +448,7 @@ func (h *serviceHandler) CallHoldOff(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -483,7 +484,7 @@ func (h *serviceHandler) CallMuteOn(ctx context.Context, a *auth.AuthIdentity, c
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -519,7 +520,7 @@ func (h *serviceHandler) CallMuteOff(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -555,7 +556,7 @@ func (h *serviceHandler) CallMOHOn(ctx context.Context, a *auth.AuthIdentity, ca
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -591,7 +592,7 @@ func (h *serviceHandler) CallMOHOff(ctx context.Context, a *auth.AuthIdentity, c
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -627,7 +628,7 @@ func (h *serviceHandler) CallSilenceOn(ctx context.Context, a *auth.AuthIdentity
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -663,7 +664,7 @@ func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *auth.AuthIdentit
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -699,7 +700,7 @@ func (h *serviceHandler) CallMediaStreamStart(ctx context.Context, a *auth.AuthI
 	})
 
 	if a.IsDirect() {
-		return fmt.Errorf("direct access not supported")
+		return serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -737,7 +738,7 @@ func (h *serviceHandler) CallRecordingStart(
 ) (*cmcall.WebhookMessage, error) {
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)
@@ -774,7 +775,7 @@ func (h *serviceHandler) CallRecordingStart(
 func (h *serviceHandler) CallRecordingStop(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error) {
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	c, err := h.callGet(ctx, callID)

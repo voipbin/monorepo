@@ -164,7 +164,7 @@ func Test_OutdialtargetGet(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		agent *auth.AuthIdentity
+		agent           *auth.AuthIdentity
 		outdialID       uuid.UUID
 		outdialtargetID uuid.UUID
 
@@ -233,7 +233,7 @@ func Test_OutdialtargetListByOutdialID(t *testing.T) {
 
 	type test struct {
 		name      string
-		agent *auth.AuthIdentity
+		agent     *auth.AuthIdentity
 		outdialID uuid.UUID
 		pageToken string
 		pageSize  uint64
@@ -315,7 +315,7 @@ func Test_OutdialtargetDelete(t *testing.T) {
 
 	tests := []struct {
 		name            string
-		agent *auth.AuthIdentity
+		agent           *auth.AuthIdentity
 		outdialID       uuid.UUID
 		outdialtargetID uuid.UUID
 

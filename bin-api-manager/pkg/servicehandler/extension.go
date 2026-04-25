@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -45,12 +46,12 @@ func (h *serviceHandler) ExtensionCreate(ctx context.Context, a *auth.AuthIdenti
 	log.Debug("Creating a new extension.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RegistrarV1ExtensionCreate(ctx, a.CustomerID, ext, password, name, detail)
@@ -73,7 +74,7 @@ func (h *serviceHandler) ExtensionDelete(ctx context.Context, a *auth.AuthIdenti
 	log.Debug("Deleting a extension.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	e, err := h.extensionGet(ctx, id)
@@ -84,7 +85,7 @@ func (h *serviceHandler) ExtensionDelete(ctx context.Context, a *auth.AuthIdenti
 
 	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RegistrarV1ExtensionDelete(ctx, id)
@@ -108,7 +109,7 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, a *auth.AuthIdentity,
 	log.Debug("Getting a extension.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.extensionGet(ctx, id)
@@ -119,7 +120,7 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, a *auth.AuthIdentity,
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -138,7 +139,7 @@ func (h *serviceHandler) ExtensionList(ctx context.Context, a *auth.AuthIdentity
 	log.Debug("Getting a extensions.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -147,7 +148,7 @@ func (h *serviceHandler) ExtensionList(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[string]string{
@@ -188,7 +189,7 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdenti
 	log.Debug("Updating an extension.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	e, err := h.extensionGet(ctx, id)
@@ -199,7 +200,7 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdenti
 
 	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RegistrarV1ExtensionUpdate(ctx, id, name, detail, password)
@@ -222,7 +223,7 @@ func (h *serviceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *a
 	log.Debug("Regenerating extension direct hash.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	e, err := h.extensionGet(ctx, extensionID)
@@ -233,7 +234,7 @@ func (h *serviceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *a
 
 	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RegistrarV1ExtensionDirectHashRegenerate(ctx, extensionID)

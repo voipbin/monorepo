@@ -343,7 +343,7 @@ func Test_NumberDelete(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete: nil,
+				TMDelete:            nil,
 			},
 			&nmnumber.Number{
 				Identity: commonidentity.Identity{
@@ -438,7 +438,7 @@ func Test_NumberUpdate(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete: nil,
+				TMDelete:            nil,
 			},
 			&fmflow.Flow{
 				Identity: commonidentity.Identity{
@@ -466,7 +466,7 @@ func Test_NumberUpdate(t *testing.T) {
 				Status:              nmnumber.StatusActive,
 				T38Enabled:          false,
 				EmergencyEnabled:    false,
-				TMDelete: nil,
+				TMDelete:            nil,
 			},
 		},
 	}
@@ -659,7 +659,7 @@ func Test_numberVerifyFlow(t *testing.T) {
 	type test struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent  *auth.AuthIdentity
 		flowID uuid.UUID
 
 		responseFlow *fmflow.Flow

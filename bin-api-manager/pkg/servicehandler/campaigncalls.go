@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -44,7 +45,7 @@ func (h *serviceHandler) CampaigncallList(ctx context.Context, a *auth.AuthIdent
 	log.Debug("Getting campaigncalls.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -52,7 +53,7 @@ func (h *serviceHandler) CampaigncallList(ctx context.Context, a *auth.AuthIdent
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get campaigncalls
@@ -88,7 +89,7 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *au
 	log.Debug("Getting campaigncalls.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -103,7 +104,7 @@ func (h *serviceHandler) CampaigncallGetsByCampaignID(ctx context.Context, a *au
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get campaigncalls
@@ -138,7 +139,7 @@ func (h *serviceHandler) CampaigncallGet(ctx context.Context, a *auth.AuthIdenti
 	log.Debug("Getting campaigncall.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.campaigncallGet(ctx, campaigncallID)
@@ -148,7 +149,7 @@ func (h *serviceHandler) CampaigncallGet(ctx context.Context, a *auth.AuthIdenti
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -165,7 +166,7 @@ func (h *serviceHandler) CampaigncallDelete(ctx context.Context, a *auth.AuthIde
 	log.Debug("Deleting a campaigncall.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -176,7 +177,7 @@ func (h *serviceHandler) CampaigncallDelete(ctx context.Context, a *auth.AuthIde
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1CampaigncallDelete(ctx, campaigncallID)

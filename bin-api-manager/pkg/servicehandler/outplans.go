@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	caoutplan "monorepo/bin-campaign-manager/models/outplan"
@@ -55,7 +56,7 @@ func (h *serviceHandler) OutplanCreate(
 		"name":        name,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Creating a new outplan.")
@@ -63,7 +64,7 @@ func (h *serviceHandler) OutplanCreate(
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission for this agent.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1OutplanCreate(ctx, a.CustomerID, name, detail, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)
@@ -85,7 +86,7 @@ func (h *serviceHandler) OutplanDelete(ctx context.Context, a *auth.AuthIdentity
 		"outplan_id":  id,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Deleting a outplan.")
@@ -121,7 +122,7 @@ func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, a *auth.Au
 		"token":       token,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Getting a outplans.")
@@ -165,7 +166,7 @@ func (h *serviceHandler) OutplanGet(ctx context.Context, a *auth.AuthIdentity, i
 		"outplan_id":  id,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Getting an outplan.")
@@ -196,7 +197,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *auth.Aut
 		"outplan_id":  id,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Updating an outplan.")
@@ -245,7 +246,7 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 		"outplan_id":  id,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Updating an outplan.")

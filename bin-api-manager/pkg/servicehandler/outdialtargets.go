@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 
 	omoutdialtarget "monorepo/bin-outdial-manager/models/outdialtarget"
@@ -38,7 +39,7 @@ func (h *serviceHandler) OutdialtargetCreate(
 		"data":        data,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Executing OutdialUpdateData.")
@@ -87,7 +88,7 @@ func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *auth.AuthIdent
 		"outdial_id":  outdialID,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Executing OutdialtargetGet.")
@@ -132,7 +133,7 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *au
 		"token":       token,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Getting a outdials.")
@@ -180,7 +181,7 @@ func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, a *auth.AuthId
 		"outdial_id":  outdialID,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Executing OutdialtargetDelete.")

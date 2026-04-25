@@ -24,7 +24,7 @@ func Test_storageAccountGet(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent            *auth.AuthIdentity
 		storageAccountID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
@@ -42,7 +42,7 @@ func Test_storageAccountGet(t *testing.T) {
 			&smaccount.Account{
 				ID:         uuid.FromStringOrNil("b87c0fc8-1bd7-11ef-84a7-3b073405f0cd"),
 				CustomerID: uuid.FromStringOrNil("b83e3c98-1bd7-11ef-8f14-9f07e5f6c56b"),
-				TMDelete: nil,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -80,7 +80,7 @@ func Test_StorageAccountDelete(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent            *auth.AuthIdentity
 		storageAccountID uuid.UUID
 
 		responseStorageAccount *smaccount.Account
@@ -101,12 +101,12 @@ func Test_StorageAccountDelete(t *testing.T) {
 			responseStorageAccount: &smaccount.Account{
 				ID:         uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
 				CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
-				TMDelete: nil,
+				TMDelete:   nil,
 			},
 			expectRes: &smaccount.Account{
 				ID:         uuid.FromStringOrNil("1aa43522-1bd8-11ef-870e-4f7d5cfff4f5"),
 				CustomerID: uuid.FromStringOrNil("1a73a632-1bd8-11ef-8c46-4fdca968dac2"),
-				TMDelete: nil,
+				TMDelete:   nil,
 			},
 		},
 	}
@@ -221,7 +221,7 @@ func Test_StorageAccountCreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent *auth.AuthIdentity
+		agent      *auth.AuthIdentity
 		customerID uuid.UUID
 
 		responseStorageAccount *smaccount.Account

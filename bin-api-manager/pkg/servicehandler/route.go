@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	rmroute "monorepo/bin-route-manager/models/route"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -43,7 +44,7 @@ func (h *serviceHandler) RouteGet(ctx context.Context, a *auth.AuthIdentity, rou
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// permission check
@@ -74,7 +75,7 @@ func (h *serviceHandler) RouteList(ctx context.Context, a *auth.AuthIdentity, si
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -117,7 +118,7 @@ func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *auth.Auth
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -169,7 +170,7 @@ func (h *serviceHandler) RouteCreate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// permission check
@@ -209,7 +210,7 @@ func (h *serviceHandler) RouteDelete(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// permission check
@@ -255,7 +256,7 @@ func (h *serviceHandler) RouteUpdate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// permission check

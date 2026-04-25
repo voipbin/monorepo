@@ -6,6 +6,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -31,7 +32,7 @@ func (h *serviceHandler) ServiceAgentContactCreate(
 	tagIDs []uuid.UUID,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -73,7 +74,7 @@ func (h *serviceHandler) ServiceAgentContactCreate(
 // to get a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -101,7 +102,7 @@ func (h *serviceHandler) ServiceAgentContactGet(ctx context.Context, a *auth.Aut
 // to get a list of contacts for the service agent's customer.
 func (h *serviceHandler) ServiceAgentContactList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, filters map[string]string) ([]*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -157,7 +158,7 @@ func (h *serviceHandler) ServiceAgentContactUpdate(
 	notes *string,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -201,7 +202,7 @@ func (h *serviceHandler) ServiceAgentContactUpdate(
 // to delete a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -235,7 +236,7 @@ func (h *serviceHandler) ServiceAgentContactDelete(ctx context.Context, a *auth.
 // to lookup a contact by phone or email for the service agent.
 func (h *serviceHandler) ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -272,7 +273,7 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberCreate(
 	isPrimary bool,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -312,7 +313,7 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberUpdate(
 	fields map[string]any,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -347,7 +348,7 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberUpdate(
 // to remove a phone number from a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -389,7 +390,7 @@ func (h *serviceHandler) ServiceAgentContactEmailCreate(
 	isPrimary bool,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -429,7 +430,7 @@ func (h *serviceHandler) ServiceAgentContactEmailUpdate(
 	fields map[string]any,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -464,7 +465,7 @@ func (h *serviceHandler) ServiceAgentContactEmailUpdate(
 // to remove an email from a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -499,7 +500,7 @@ func (h *serviceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *
 // to add a tag to a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -534,7 +535,7 @@ func (h *serviceHandler) ServiceAgentContactTagAdd(ctx context.Context, a *auth.
 // to remove a tag from a contact for the service agent.
 func (h *serviceHandler) ServiceAgentContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{

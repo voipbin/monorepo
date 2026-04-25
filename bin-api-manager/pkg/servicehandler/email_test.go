@@ -105,7 +105,7 @@ func Test_EmailList(t *testing.T) {
 		pageSize  uint64
 
 		responseEmails []ememail.Email
-		expectFilters map[ememail.Field]any
+		expectFilters  map[ememail.Field]any
 		expectRes      []*ememail.WebhookMessage
 	}{
 		{

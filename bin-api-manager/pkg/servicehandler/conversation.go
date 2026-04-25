@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -45,7 +46,7 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *au
 	log.Debug("Getting a conversations.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -115,7 +116,7 @@ func (h *serviceHandler) ConversationGet(ctx context.Context, a *auth.AuthIdenti
 	log.Debug("Getting an conversation.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign
@@ -146,7 +147,7 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIde
 	log.Debug("Updating the conversation.")
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// get campaign

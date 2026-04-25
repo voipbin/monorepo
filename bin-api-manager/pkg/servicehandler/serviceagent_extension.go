@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	rmextension "monorepo/bin-registrar-manager/models/extension"
 
@@ -13,7 +14,7 @@ import (
 
 func (h *serviceHandler) ServiceAgentExtensionList(ctx context.Context, a *auth.AuthIdentity) ([]*rmextension.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -42,7 +43,7 @@ func (h *serviceHandler) ServiceAgentExtensionList(ctx context.Context, a *auth.
 
 func (h *serviceHandler) ServiceAgentExtensionGet(ctx context.Context, a *auth.AuthIdentity, extensionID uuid.UUID) (*rmextension.WebhookMessage, error) {
 	if !a.IsAgent() {
-		return nil, fmt.Errorf("agent authentication required")
+		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{

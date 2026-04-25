@@ -9,6 +9,7 @@ import (
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	"github.com/gofrs/uuid"
@@ -30,7 +31,7 @@ func (h *serviceHandler) storageFileGet(ctx context.Context, fileID uuid.UUID) (
 
 func (h *serviceHandler) StorageFileGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*smfile.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -49,7 +50,7 @@ func (h *serviceHandler) StorageFileGet(ctx context.Context, a *auth.AuthIdentit
 	log.WithField("file", f).Debugf("Found file info. file_id: %s", f.ID)
 
 	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAll) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := f.ConvertWebhookMessage()
@@ -60,7 +61,7 @@ func (h *serviceHandler) StorageFileGet(ctx context.Context, a *auth.AuthIdentit
 // If the stored URL has expired, it refreshes via storage-manager RPC.
 func (h *serviceHandler) StorageFileDownloadRedirect(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (string, error) {
 	if a.IsDirect() {
-		return "", fmt.Errorf("direct access not supported")
+		return "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -81,7 +82,7 @@ func (h *serviceHandler) StorageFileDownloadRedirect(ctx context.Context, a *aut
 
 	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return "", fmt.Errorf("user has no permission")
+		return "", serviceerrors.ErrPermissionDenied
 	}
 
 	// check if download URL is still valid
@@ -104,7 +105,7 @@ func (h *serviceHandler) StorageFileDownloadRedirect(ctx context.Context, a *aut
 // StorageFileDelete deletes the file of the given id.
 func (h *serviceHandler) StorageFileDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*smfile.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -124,7 +125,7 @@ func (h *serviceHandler) StorageFileDelete(ctx context.Context, a *auth.AuthIden
 
 	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.storageFileDelete(ctx, id)
@@ -150,7 +151,7 @@ func (h *serviceHandler) storageFileDelete(ctx context.Context, id uuid.UUID) (*
 // it returns created file info if it succeed.
 func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *auth.AuthIdentity, f multipart.File, fileType smfile.Type, name string, detail string, filename string) (*smfile.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -163,7 +164,7 @@ func (h *serviceHandler) StorageFileCreate(ctx context.Context, a *auth.AuthIden
 	log.Debug("Creating a new file.")
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// open file writer
@@ -228,7 +229,7 @@ func (h *serviceHandler) storageFileCreate(
 // It returns list of files if it succeed.
 func (h *serviceHandler) StorageFileList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*smfile.WebhookMessage, error) {
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
@@ -272,4 +273,3 @@ func (h *serviceHandler) StorageFileList(ctx context.Context, a *auth.AuthIdenti
 
 	return res, nil
 }
-

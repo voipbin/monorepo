@@ -2,9 +2,9 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	qmqueue "monorepo/bin-queue-manager/models/queue"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -43,7 +43,7 @@ func (h *serviceHandler) QueueGet(ctx context.Context, a *auth.AuthIdentity, que
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	tmp, err := h.queueGet(ctx, queueID)
@@ -55,7 +55,7 @@ func (h *serviceHandler) QueueGet(ctx context.Context, a *auth.AuthIdentity, que
 	// permission check
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -75,7 +75,7 @@ func (h *serviceHandler) QueueList(ctx context.Context, a *auth.AuthIdentity, si
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if token == "" {
@@ -85,7 +85,7 @@ func (h *serviceHandler) QueueList(ctx context.Context, a *auth.AuthIdentity, si
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -136,13 +136,13 @@ func (h *serviceHandler) QueueCreate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueueCreate(
@@ -177,7 +177,7 @@ func (h *serviceHandler) QueueDelete(ctx context.Context, a *auth.AuthIdentity, 
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	q, err := h.queueGet(ctx, queueID)
@@ -189,7 +189,7 @@ func (h *serviceHandler) QueueDelete(ctx context.Context, a *auth.AuthIdentity, 
 	// permission check
 	if !h.hasPermission(ctx, a, q.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueueDelete(ctx, queueID)
@@ -231,7 +231,7 @@ func (h *serviceHandler) QueueUpdate(
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	q, err := h.queueGet(ctx, queueID)
@@ -243,7 +243,7 @@ func (h *serviceHandler) QueueUpdate(
 	// permission check
 	if !h.hasPermission(ctx, a, q.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueueUpdate(ctx, queueID, name, detail, routingMethod, tagIDs, waitFlowID, timeoutWait, serviceTimeout)
@@ -268,7 +268,7 @@ func (h *serviceHandler) QueueUpdateTagIDs(ctx context.Context, a *auth.AuthIden
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	q, err := h.queueGet(ctx, queueID)
@@ -280,7 +280,7 @@ func (h *serviceHandler) QueueUpdateTagIDs(ctx context.Context, a *auth.AuthIden
 	// permission check
 	if !h.hasPermission(ctx, a, q.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueueUpdateTagIDs(ctx, queueID, tagIDs)
@@ -305,7 +305,7 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *auth.A
 	})
 
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	q, err := h.queueGet(ctx, queueID)
@@ -317,7 +317,7 @@ func (h *serviceHandler) QueueUpdateRoutingMethod(ctx context.Context, a *auth.A
 	// permission check
 	if !h.hasPermission(ctx, a, q.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueueUpdateRoutingMethod(ctx, queueID, routingMethod)
@@ -339,7 +339,7 @@ func (h *serviceHandler) QueueDirectHashRegenerate(ctx context.Context, a *auth.
 		"queue_id":    queueID,
 	})
 	if a.IsDirect() {
-		return nil, fmt.Errorf("direct access not supported")
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log.Debug("Regenerating queue direct hash.")
@@ -352,7 +352,7 @@ func (h *serviceHandler) QueueDirectHashRegenerate(ctx context.Context, a *auth.
 
 	if !h.hasPermission(ctx, a, q.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The user has no permission.")
-		return nil, fmt.Errorf("user has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.QueueV1QueueDirectHashRegenerate(ctx, queueID)
