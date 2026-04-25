@@ -10,3 +10,7 @@ get:
         application/json:
           schema:
             $ref: '#/components/schemas/StorageManagerAccount'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
