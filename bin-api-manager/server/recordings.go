@@ -2,6 +2,8 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -27,7 +29,11 @@ func (h *server) GetRecordings(c *gin.Context, params openapi_server.GetRecordin
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -48,14 +54,16 @@ func (h *server) GetRecordings(c *gin.Context, params openapi_server.GetRecordin
 
 	tmps, err := h.serviceHandler.RecordingList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
-		logrus.Errorf("Could not get a recordings. err: %v", err)
-		c.AbortWithStatus(400)
+		log.Errorf("Could not get a recordings. err: %v", err)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -72,7 +80,11 @@ func (h *server) GetRecordingsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -80,14 +92,18 @@ func (h *server) GetRecordingsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
 		return
 	}
 
 	res, err := h.serviceHandler.RecordingGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a recording info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -104,7 +120,11 @@ func (h *server) DeleteRecordingsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -112,14 +132,18 @@ func (h *server) DeleteRecordingsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
 		return
 	}
 
 	res, err := h.serviceHandler.RecordingDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a recording info. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 

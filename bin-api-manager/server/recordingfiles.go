@@ -3,6 +3,9 @@ package server
 import (
 	"net/http"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -18,7 +21,11 @@ func (h *server) GetRecordingfilesId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(
+			commonoutline.ServiceNameAPIManager,
+			"AUTHENTICATION_REQUIRED",
+			"Authentication is required.",
+		))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -26,14 +33,18 @@ func (h *server) GetRecordingfilesId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAPIManager,
+			"INVALID_ID",
+			"The provided id is not a valid UUID.",
+		))
 		return
 	}
 
 	downloadURI, err := h.serviceHandler.RecordingfileGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a recordingfile. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
