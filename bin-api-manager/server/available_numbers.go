@@ -1,9 +1,10 @@
 package server
 
 import (
-	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
-
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	nmavailablenumber "monorepo/bin-number-manager/models/availablenumber"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -18,7 +19,7 @@ func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAv
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -47,14 +48,14 @@ func (h *server) GetAvailableNumbers(c *gin.Context, params openapi_server.GetAv
 	// country_code is required for non-virtual number queries
 	if numType != "virtual" && countryCode == "" {
 		log.Infof("Not acceptable country code. country_code: %s", countryCode)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "country_code is required for non-virtual number queries."))
 		return
 	}
 
 	tmps, err := h.serviceHandler.AvailableNumberList(c.Request.Context(), a, pageSize, countryCode, numType)
 	if err != nil {
 		log.Errorf("Could not get available numbers. err: %v", err)
-		c.AbortWithStatus(500)
+		abortWithServiceError(c, err)
 		return
 	}
 

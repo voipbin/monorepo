@@ -1,10 +1,10 @@
 package server
 
 import (
-	"strings"
-
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gin-gonic/gin"
@@ -12,23 +12,6 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
-
-// providercallErrorStatus maps a servicehandler error message to an HTTP
-// status code. New convention for providercall endpoints: 403 on permission
-// failures, 404 on not-found, 400 for everything else. (The rest of
-// bin-api-manager uses 400 for all errors — this endpoint sets the pattern
-// future handlers should mirror when refactored.)
-func providercallErrorStatus(err error) int {
-	msg := err.Error()
-	switch {
-	case strings.Contains(msg, "no permission"), strings.Contains(msg, "direct access not supported"):
-		return 403
-	case strings.Contains(msg, "not found"):
-		return 404
-	default:
-		return 400
-	}
-}
 
 // GetProvidercalls handles GET /v1/providercalls — list providercall audit records.
 // Gated by PermissionProjectSuperAdmin; because that role is platform-level,
@@ -43,7 +26,7 @@ func (h *server) GetProvidercalls(c *gin.Context, params openapi_server.GetProvi
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -69,7 +52,7 @@ func (h *server) GetProvidercalls(c *gin.Context, params openapi_server.GetProvi
 	tmps, err := h.serviceHandler.ProviderCallGets(c.Request.Context(), a, pageSize, pageToken, providerID)
 	if err != nil {
 		log.Errorf("Could not get providercalls. err: %v", err)
-		c.AbortWithStatus(providercallErrorStatus(err))
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -94,7 +77,7 @@ func (h *server) PostProvidercalls(c *gin.Context) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -102,14 +85,14 @@ func (h *server) PostProvidercalls(c *gin.Context) {
 	var req openapi_server.PostProvidercallsJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON."))
 		return
 	}
 
 	providerID := uuid.FromStringOrNil(req.ProviderId.String())
 	if providerID == uuid.Nil {
 		log.Error("provider_id is required.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "provider_id is required."))
 		return
 	}
 
@@ -142,7 +125,7 @@ func (h *server) PostProvidercalls(c *gin.Context) {
 	// ProviderCall record with empty call_ids.
 	if len(destinations) == 0 {
 		log.Error("destinations is required and must not be empty.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "destinations is required and must not be empty."))
 		return
 	}
 
@@ -157,7 +140,7 @@ func (h *server) PostProvidercalls(c *gin.Context) {
 	res, err := h.serviceHandler.ProviderCallCreate(c.Request.Context(), a, providerID, flowID, actions, source, destinations, anonymous)
 	if err != nil {
 		log.Errorf("Could not create the providercall. err: %v", err)
-		c.AbortWithStatus(providercallErrorStatus(err))
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -175,7 +158,7 @@ func (h *server) GetProvidercallsId(c *gin.Context, id openapi_types.UUID) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -183,14 +166,14 @@ func (h *server) GetProvidercallsId(c *gin.Context, id openapi_types.UUID) {
 	target := uuid.FromStringOrNil(id.String())
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ProviderCallGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not get the providercall. err: %v", err)
-		c.AbortWithStatus(providercallErrorStatus(err))
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -208,7 +191,7 @@ func (h *server) DeleteProvidercallsId(c *gin.Context, id openapi_types.UUID) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("agent", a)
@@ -216,14 +199,14 @@ func (h *server) DeleteProvidercallsId(c *gin.Context, id openapi_types.UUID) {
 	target := uuid.FromStringOrNil(id.String())
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ProviderCallDelete(c.Request.Context(), a, target)
 	if err != nil {
 		log.Infof("Could not delete the providercall. err: %v", err)
-		c.AbortWithStatus(providercallErrorStatus(err))
+		abortWithServiceError(c, err)
 		return
 	}
 

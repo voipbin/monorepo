@@ -380,10 +380,102 @@ The 409 <code class="docutils literal notranslate"><span class="pre">ACTIVEFLOW_
 </section>
 <section id="billing-manager">
 <h2>billing-manager<a class="headerlink" href="#billing-manager" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code> is reachable today via the translator’s case-insensitive <code class="docutils literal notranslate"><span class="pre">&quot;insufficient&quot;</span></code> substring fallback — billing-manager surfaces credit-shortfall errors as <code class="docutils literal notranslate"><span class="pre">fmt.Errorf(&quot;insufficient</span> <span class="pre">balance&quot;)</span></code> (or similar) and the api-manager translator maps that to <strong>402 PAYMENT_REQUIRED</strong> with reason <code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code> in the api-manager domain.
+The full billing-manager typed-error contract (deeper reasons such as <code class="docutils literal notranslate"><span class="pre">BILLING_ACCOUNT_NOT_FOUND</span></code>, <code class="docutils literal notranslate"><span class="pre">ACCOUNT_SUSPENDED</span></code>) is scheduled for migration PR 5.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 10.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">INSUFFICIENT_BALANCE</span></code></p></td>
+<td><p>402</p></td>
+<td><p>Customer balance is below the minimum required for a chargeable operation. Currently fired by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> (number purchase) and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers/renew</span></code> (number renewal); migration PR 6 will extend the list to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/messages</span></code> and <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/emails</span></code>. <strong>Fix:</strong> Top up the customer balance via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/billing-accounts/{id}/balance-add</span></code> (admin) or have the customer add credit, then retry.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="number-manager">
+<h2>number-manager<a class="headerlink" href="#number-manager" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">NUMBER_NOT_FOUND</span></code> is reachable today via the translator’s <code class="docutils literal notranslate"><span class="pre">&quot;not</span> <span class="pre">found&quot;</span></code> substring fallback (currently surfacing as the api-manager generic <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code>); the typed reason will be emitted directly once the number-manager typed-error migration ships.
+<code class="docutils literal notranslate"><span class="pre">IDENTITY_VERIFICATION_REQUIRED</span></code> is wired in PR 4 via the dedicated <code class="docutils literal notranslate"><span class="pre">&quot;identity</span> <span class="pre">verification</span> <span class="pre">required&quot;</span></code> translator pattern and is reachable today.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 35.0%" />
+<col style="width: 10.0%" />
+<col style="width: 55.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NUMBER_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Number ID does not exist or belongs to another customer. Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code> list call.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">IDENTITY_VERIFICATION_REQUIRED</span></code></p></td>
+<td><p>403</p></td>
+<td><p>Customer identity verification is required for this operation. Fired by <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> for non-virtual purchases when the customer’s <code class="docutils literal notranslate"><span class="pre">identity_verification_status</span></code> is not <code class="docutils literal notranslate"><span class="pre">verified</span></code>. <strong>Fix:</strong> Complete the customer identity verification flow (see Customer overview), then retry the purchase. Virtual numbers do not require verification.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="provisioning-admin">
+<h2>provisioning-admin<a class="headerlink" href="#provisioning-admin" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">provider</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk</span></code>, and <code class="docutils literal notranslate"><span class="pre">route</span></code> resources are admin-gated and share a common reason-code pattern. Listed together to avoid repetition.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">*_NOT_FOUND</span></code> reasons in this section are reachable today via the translator’s <code class="docutils literal notranslate"><span class="pre">&quot;not</span> <span class="pre">found&quot;</span></code> substring fallback (currently surfacing as the api-manager generic <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code>); the typed reasons will be emitted directly once the corresponding manager’s typed-error migration ships.
+These resources are admin-gated. Non-admin callers receive <strong>403 PERMISSION_DENIED</strong> via the standard <code class="docutils literal notranslate"><span class="pre">&quot;no</span> <span class="pre">permission&quot;</span></code> translator pattern (the call site falls back to the api-manager generic <code class="docutils literal notranslate"><span class="pre">PERMISSION_DENIED</span></code> reason — there is no resource-specific permission reason for these admin endpoints).
+Admin-gated endpoints (<code class="docutils literal notranslate"><span class="pre">/providers</span></code>, <code class="docutils literal notranslate"><span class="pre">/providers/setup</span></code>, <code class="docutils literal notranslate"><span class="pre">/providercalls</span></code>, <code class="docutils literal notranslate"><span class="pre">/trunks</span></code>, <code class="docutils literal notranslate"><span class="pre">/routes</span></code> and their sub-paths) return 403 <code class="docutils literal notranslate"><span class="pre">PERMISSION_DENIED</span></code> for non-admin callers via the standard <code class="docutils literal notranslate"><span class="pre">&quot;no</span> <span class="pre">permission&quot;</span></code> translator pattern. The OpenAPI spec declares 403 on these paths to reflect this runtime behavior.</p>
+</div>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 10.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>HTTP</p></th>
+<th class="head"><p>Cause → Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PROVIDER_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Provider ID does not exist. Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/providers</span></code> list call. Admin-only resource.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">TRUNK_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Trunk ID does not exist. Verify via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/trunks</span></code>. Admin-only resource.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ROUTE_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Route ID does not exist. Verify via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/routes</span></code>. Admin-only resource.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="other-domains">
 <h2>Other Domains<a class="headerlink" href="#other-domains" title="Link to this heading"></a></h2>
-<p>Reason code sections for the remaining manager services — <code class="docutils literal notranslate"><span class="pre">number-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">talk-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">agent-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">queue-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conference-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">campaign-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">tag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">team-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">timeline-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">contact-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">provider-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">route-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk-manager</span></code> — will be added as migration PRs 3–9 ship. See the design doc for the PR rollout.</p>
+<p>Reason code sections for the remaining manager services — <code class="docutils literal notranslate"><span class="pre">conversation-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">email-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">ai-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">talk-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">agent-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">queue-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">conference-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">campaign-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">tag-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">team-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">timeline-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">contact-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">rag-manager</span></code> — will be added as migration PRs 5–9 ship. See the design doc for the PR rollout.</p>
 </section>
 </section>
 
@@ -407,6 +499,8 @@ The 409 <code class="docutils literal notranslate"><span class="pre">ACTIVEFLOW_
 <li><a class="reference internal" href="#call-manager">call-manager</a></li>
 <li><a class="reference internal" href="#flow-manager">flow-manager</a></li>
 <li><a class="reference internal" href="#billing-manager">billing-manager</a></li>
+<li><a class="reference internal" href="#number-manager">number-manager</a></li>
+<li><a class="reference internal" href="#provisioning-admin">provisioning-admin</a></li>
 <li><a class="reference internal" href="#other-domains">Other Domains</a></li>
 </ul>
 </li>

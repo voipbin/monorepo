@@ -29,4 +29,8 @@ get:
                     items:
                       $ref: '#/components/schemas/NumberManagerAvailableNumber'
     '400':
-      description: Bad Request. The request is invalid or cannot be processed.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

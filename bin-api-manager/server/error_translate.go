@@ -74,6 +74,8 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		strings.Contains(lowered, "direct access"),
 		strings.Contains(lowered, "does not belong"):
 		return cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "PERMISSION_DENIED", "You do not have permission to access this resource.").Wrap(err)
+	case strings.Contains(lowered, "identity verification required"):
+		return cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "IDENTITY_VERIFICATION_REQUIRED", "Customer identity verification is required for this operation.").Wrap(err)
 	case strings.Contains(lowered, "authentication required"), strings.Contains(lowered, "unauthorized"):
 		return cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required.").Wrap(err)
 	case strings.Contains(lowered, "not found"):

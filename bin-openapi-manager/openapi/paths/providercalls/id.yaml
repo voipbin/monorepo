@@ -21,10 +21,16 @@ get:
         application/json:
           schema:
             $ref: '#/components/schemas/RouteManagerProviderCall'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
     '403':
-      description: Forbidden. Caller is not a project super-admin.
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Providercall not found (or soft-deleted).
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 delete:
   summary: Delete providercall by ID
@@ -50,7 +56,13 @@ delete:
         application/json:
           schema:
             $ref: '#/components/schemas/RouteManagerProviderCall'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
     '403':
-      description: Forbidden. Caller is not a project super-admin.
+      $ref: '#/components/responses/PermissionDenied'
     '404':
-      description: Providercall not found (already soft-deleted or unknown id).
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

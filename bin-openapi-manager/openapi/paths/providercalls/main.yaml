@@ -33,10 +33,12 @@ get:
                     type: array
                     items:
                       $ref: '#/components/schemas/RouteManagerProviderCall'
-    '400':
-      description: Bad request. Query params malformed.
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
     '403':
-      description: Forbidden. Caller is not a project super-admin.
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'
 
 post:
   summary: Create a provider call
@@ -97,6 +99,10 @@ post:
           schema:
             $ref: '#/components/schemas/RouteManagerProviderCall'
     '400':
-      description: Bad request. Required fields missing (`provider_id`, `destinations`), malformed body, unknown `provider_id`, or invalid addresses.
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
     '403':
-      description: Forbidden. Caller is not a project super-admin.
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'
