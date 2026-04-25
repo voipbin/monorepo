@@ -2,6 +2,8 @@ package server
 
 import (
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 
@@ -19,7 +21,7 @@ func (h *server) GetConversations(c *gin.Context, params openapi_server.GetConve
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -43,13 +45,15 @@ func (h *server) GetConversations(c *gin.Context, params openapi_server.GetConve
 	tmps, err := h.serviceHandler.ConversationGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a conversation list. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -66,7 +70,7 @@ func (h *server) GetConversationsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -76,14 +80,14 @@ func (h *server) GetConversationsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	res, err := h.serviceHandler.ConversationGet(c.Request.Context(), a, target)
 	if err != nil {
 		log.Errorf("Could not get a customer. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -100,7 +104,7 @@ func (h *server) PutConversationsId(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -110,35 +114,35 @@ func (h *server) PutConversationsId(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PutConversationsIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	raw, err := structToFilteredMap(req)
 	if err != nil {
 		log.Errorf("Could not convert fields. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "Could not convert request fields.").Wrap(err))
 		return
 	}
 
 	fields, err := cvconversation.ConvertStringMapToFieldMap(raw)
 	if err != nil {
 		log.Errorf("Could not convert fields. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "Could not convert request fields.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.ConversationUpdate(c.Request.Context(), a, target, fields)
 	if err != nil {
 		log.Errorf("Could not update the conversation. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
@@ -155,7 +159,7 @@ func (h *server) GetConversationsIdMessages(c *gin.Context, id string, params op
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -165,7 +169,7 @@ func (h *server) GetConversationsIdMessages(c *gin.Context, id string, params op
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
@@ -186,13 +190,15 @@ func (h *server) GetConversationsIdMessages(c *gin.Context, id string, params op
 	tmps, err := h.serviceHandler.ConversationMessageGetsByConversationID(c.Request.Context(), a, target, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get a conversation message list. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
 	nextToken := ""
 	if len(tmps) > 0 {
-		if tmps[len(tmps)-1].TMCreate != nil { nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z") }
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
 	}
 
 	res := GenerateListResponse(tmps, nextToken)
@@ -209,7 +215,7 @@ func (h *server) PostConversationsIdMessages(c *gin.Context, id string) {
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Errorf("Could not find auth identity.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithFields(logrus.Fields{
@@ -219,21 +225,21 @@ func (h *server) PostConversationsIdMessages(c *gin.Context, id string) {
 	target := uuid.FromStringOrNil(id)
 	if target == uuid.Nil {
 		log.Error("Could not parse the id.")
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
 		return
 	}
 
 	var req openapi_server.PostConversationsIdMessagesJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
 	}
 
 	res, err := h.serviceHandler.ConversationMessageSend(c.Request.Context(), a, target, req.Text, []cvmedia.Media{})
 	if err != nil {
 		log.Errorf("Could not create a customer. err: %v", err)
-		c.AbortWithStatus(400)
+		abortWithServiceError(c, err)
 		return
 	}
 
