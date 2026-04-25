@@ -159,7 +159,7 @@ billing-manager
      - Cause → Fix
    * - ``INSUFFICIENT_BALANCE``
      - 402
-     - Customer balance is below the minimum required for a chargeable operation. Currently fired by ``POST /numbers`` (number purchase), ``POST /numbers/renew`` (number renewal), ``POST /messages`` (SMS send), ``POST /emails`` (email send), ``POST /aimessages`` (AI message creation), ``POST /conversations/{id}/messages`` (conversation message send), and ``POST /service-agents/conversations/{id}/messages`` (agent-surface conversation message send). **Fix:** Top up the customer balance via ``POST /billing-accounts/{id}/balance-add`` (admin) or have the customer add credit, then retry.
+     - Customer balance is below the minimum required for a chargeable operation. Currently fired by ``POST /numbers`` (number purchase), ``POST /numbers/renew`` (number renewal), ``POST /messages`` (SMS send), and ``POST /emails`` (email send). **Fix:** Top up the customer balance via ``POST /billing-accounts/{id}/balance-add`` (admin) or have the customer add credit, then retry. Future endpoints (deferred): ``POST /aimessages``, ``POST /conversations/{id}/messages``, ``POST /service-agents/conversations/{id}/messages`` — pending balance pre-check wiring in ai-manager and conversation-manager.
    * - ``BILLING_NOT_FOUND``
      - 404
      - Billing record ID does not exist or belongs to another customer. Fired by ``GET /billings/{billing_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /billings`` list call.
@@ -303,7 +303,7 @@ ai-manager
 
    PR 6 migrates only the AI-message resource (``/aimessages``); broader AI resources (``/aicalls``, ``/aisummaries``, ``/ais``) are deferred to follow-up PRs.
    ``AIMESSAGE_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the ai-manager typed-error migration ships.
-   ``POST /aimessages`` is billing-sensitive (LLM token cost) — see the ``billing-manager`` section above for the ``INSUFFICIENT_BALANCE`` (402) contract that applies to AI message creation.
+   ``POST /aimessages`` is conceptually billing-sensitive (LLM token cost), but bin-ai-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for AI message creation. Wiring the pre-check in ai-manager is deferred to a follow-up PR; the OpenAPI 402 declaration was removed in this PR to match runtime behavior.
 
 .. list-table::
    :header-rows: 1
