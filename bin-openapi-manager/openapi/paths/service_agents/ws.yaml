@@ -3,3 +3,10 @@ get:
   description: Creates a new WebSocket connection for the authenticated agent.
   tags:
     - Service Agent
+  responses:
+    '101':
+      description: Switching Protocols. WebSocket handshake successful.
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
