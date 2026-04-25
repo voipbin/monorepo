@@ -1431,9 +1431,6 @@
           "401": {
             "$ref": "#/components/responses/Unauthenticated"
           },
-          "402": {
-            "$ref": "#/components/responses/PaymentRequired"
-          },
           "500": {
             "$ref": "#/components/responses/InternalError"
           }
@@ -6607,9 +6604,6 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthenticated"
-          },
-          "402": {
-            "$ref": "#/components/responses/PaymentRequired"
           },
           "403": {
             "$ref": "#/components/responses/PermissionDenied"
@@ -12561,9 +12555,6 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthenticated"
-          },
-          "402": {
-            "$ref": "#/components/responses/PaymentRequired"
           },
           "403": {
             "$ref": "#/components/responses/PermissionDenied"

@@ -17184,15 +17184,6 @@ func (response PostAimessages401JSONResponse) VisitPostAimessagesResponse(w http
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostAimessages402JSONResponse struct{ PaymentRequiredJSONResponse }
-
-func (response PostAimessages402JSONResponse) VisitPostAimessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(402)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type PostAimessages500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostAimessages500JSONResponse) VisitPostAimessagesResponse(w http.ResponseWriter) error {
@@ -20890,15 +20881,6 @@ type PostConversationsIdMessages401JSONResponse struct{ UnauthenticatedJSONRespo
 func (response PostConversationsIdMessages401JSONResponse) VisitPostConversationsIdMessagesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostConversationsIdMessages402JSONResponse struct{ PaymentRequiredJSONResponse }
-
-func (response PostConversationsIdMessages402JSONResponse) VisitPostConversationsIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(402)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -25789,15 +25771,6 @@ type PostServiceAgentsConversationsIdMessages401JSONResponse struct{ Unauthentic
 func (response PostServiceAgentsConversationsIdMessages401JSONResponse) VisitPostServiceAgentsConversationsIdMessagesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PostServiceAgentsConversationsIdMessages402JSONResponse struct{ PaymentRequiredJSONResponse }
-
-func (response PostServiceAgentsConversationsIdMessages402JSONResponse) VisitPostServiceAgentsConversationsIdMessagesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(402)
 
 	return json.NewEncoder(w).Encode(response)
 }

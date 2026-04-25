@@ -75,8 +75,6 @@ post:
       $ref: '#/components/responses/BadRequest'
     '401':
       $ref: '#/components/responses/Unauthenticated'
-    '402':
-      $ref: '#/components/responses/PaymentRequired'
     '403':
       $ref: '#/components/responses/PermissionDenied'
     '404':
