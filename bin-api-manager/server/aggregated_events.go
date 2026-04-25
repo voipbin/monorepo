@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"monorepo/bin-api-manager/gens/openapi_server"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -20,7 +22,7 @@ func (h *server) GetAggregatedEvents(c *gin.Context, params openapi_server.GetAg
 	a, ok := getAuthIdentity(c)
 	if !ok {
 		log.Error("Could not find auth identity")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "authentication required"})
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
 	log = log.WithField("customer_id", a.CustomerID)
@@ -31,7 +33,7 @@ func (h *server) GetAggregatedEvents(c *gin.Context, params openapi_server.GetAg
 		parsed, err := uuid.FromString(params.ActiveflowId.String())
 		if err != nil {
 			log.Infof("Invalid activeflow_id: %v", err)
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid activeflow_id"})
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ACTIVEFLOW_ID", "The provided activeflow_id is not a valid UUID.").Wrap(err))
 			return
 		}
 		activeflowID = parsed
@@ -40,7 +42,7 @@ func (h *server) GetAggregatedEvents(c *gin.Context, params openapi_server.GetAg
 		parsed, err := uuid.FromString(params.CallId.String())
 		if err != nil {
 			log.Infof("Invalid call_id: %v", err)
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid call_id"})
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_CALL_ID", "The provided call_id is not a valid UUID.").Wrap(err))
 			return
 		}
 		callID = parsed
@@ -64,15 +66,7 @@ func (h *server) GetAggregatedEvents(c *gin.Context, params openapi_server.GetAg
 	events, nextPageToken, err := h.serviceHandler.AggregatedEventList(c.Request.Context(), a, activeflowID, callID, pageSize, pageToken)
 	if err != nil {
 		log.Infof("Failed to get aggregated events: %v", err)
-		if err.Error() == "user has no permission" || err.Error() == "not found" {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "resource not found"})
-			return
-		}
-		if err.Error() == "either activeflow_id or call_id is required" || err.Error() == "only one of activeflow_id or call_id is allowed" {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
-			return
-		}
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "internal error"})
+		abortWithServiceError(c, err)
 		return
 	}
 

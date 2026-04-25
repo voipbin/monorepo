@@ -90,6 +90,9 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.FailedPrecondition(commonoutline.ServiceNameAPIManager, "STATE_INVALID", "The operation is invalid for the current resource state.").Wrap(err)
 	case strings.Contains(lowered, "unavailable"):
 		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE", "An upstream service is temporarily unavailable.").Wrap(err)
+	case strings.Contains(lowered, "is required"),
+		strings.Contains(lowered, "only one of"):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request is invalid.").Wrap(err)
 	}
 
 	// 5. Default.
