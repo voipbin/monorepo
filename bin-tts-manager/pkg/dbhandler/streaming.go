@@ -2,9 +2,12 @@ package dbhandler
 
 import (
 	"context"
+	stderrors "errors"
+
 	"monorepo/bin-tts-manager/models/streaming"
 
 	"github.com/gofrs/uuid"
+	"github.com/redis/go-redis/v9"
 )
 
 // StreamingCreate creates a new variable.
@@ -27,6 +30,9 @@ func (h *dbHandler) streamingGetFromCache(ctx context.Context, id uuid.UUID) (*s
 	// get from cache
 	res, err := h.cache.StreamingGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, redis.Nil) {
+			return nil, ErrNotFound
+		}
 		return nil, err
 	}
 
