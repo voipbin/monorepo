@@ -2,15 +2,19 @@ package flowhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
 // maxFlowCount is the hard limit on persisted flows per customer.
@@ -32,7 +36,11 @@ import (
 // are excluded because they auto-expire from Redis.
 const maxFlowCount = 10000
 
-// Get returns flow
+// Get returns flow.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *flowHandler) Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Get",
@@ -42,6 +50,13 @@ func (h *flowHandler) Get(ctx context.Context, id uuid.UUID) (*flow.Flow, error)
 	res, err := h.db.FlowGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get flow. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameFlowManager,
+				"FLOW_NOT_FOUND",
+				"The flow was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
