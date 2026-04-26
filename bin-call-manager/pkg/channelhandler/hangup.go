@@ -2,12 +2,14 @@ package channelhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/pkg/errors"
 
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/channel"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
@@ -43,6 +45,16 @@ func (h *channelHandler) HangingUp(ctx context.Context, id string, cause ari.Cha
 // HangingUpWithAsteriskID starts the hangup process
 func (h *channelHandler) HangingUpWithAsteriskID(ctx context.Context, asteriskID string, id string, cause ari.ChannelCause) error {
 	if errHangup := h.reqHandler.AstChannelHangup(ctx, asteriskID, id, cause, 0); errHangup != nil {
+		// Typed-error path (post-migration upstream): a 404 from a manager
+		// that emits *VoipbinError surfaces here as a typed error rather
+		// than the legacy http.StatusText sentinel.
+		var ve *cerrors.VoipbinError
+		if stderrors.As(errHangup, &ve) && ve.Status == cerrors.StatusNotFound {
+			// channel doesn't exist. consider it hungup already.
+			return nil
+		}
+		// Legacy path (pre-migration upstream): canned ErrNotFound from
+		// requesthandler.parseResponse via http.StatusText.
 		if errors.Cause(errHangup) == requesthandler.ErrNotFound {
 			// channel doesn't exist. consider it hungup already.
 			return nil

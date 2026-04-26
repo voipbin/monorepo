@@ -7,6 +7,7 @@ import (
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonrequesthandler "monorepo/bin-common-handler/pkg/requesthandler"
 	rmprovider "monorepo/bin-route-manager/models/provider"
 
@@ -209,6 +210,19 @@ func (h *serviceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity
 	tmp, err := h.reqHandler.RouteV1ProviderSetup(ctx, carrier, name, detail, apiKey)
 	if err != nil {
 		log.Infof("Could not set up provider. err: %v", err)
+		// Typed-error path (post-migration upstream): any typed error
+		// from route-manager passes through unwrapped so the HTTP boundary
+		// in server/providers.go can detect it via errors.As and emit
+		// route-manager's domain/reason directly. We deliberately do not
+		// re-classify here — the design intent is that upstream domains
+		// are visible to clients post-migration. The legacy ErrUnprocessableEntity
+		// branch below stays as a hand-rolled CARRIER_CREDENTIALS_REJECTED
+		// re-wrap because the legacy path has no typed payload to forward.
+		var ve *cerrors.VoipbinError
+		if errors.As(err, &ve) {
+			return nil, err
+		}
+		// Legacy path (pre-migration upstream): canned ErrUnprocessableEntity.
 		if errors.Is(err, commonrequesthandler.ErrUnprocessableEntity) {
 			return nil, err
 		}
