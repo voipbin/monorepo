@@ -6,7 +6,9 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-transcribe-manager/models/streaming"
 	"monorepo/bin-transcribe-manager/models/transcript"
 )
@@ -44,7 +46,11 @@ func (h *streamingHandler) Get(ctx context.Context, streamingID uuid.UUID) (*str
 
 	res, ok := h.mapStreaming[streamingID]
 	if !ok {
-		return nil, fmt.Errorf("streaming not found. streaming_id: %s", streamingID)
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameTranscribeManager,
+			"STREAMING_NOT_FOUND",
+			"The streaming was not found.",
+		)
 	}
 
 	return res, nil

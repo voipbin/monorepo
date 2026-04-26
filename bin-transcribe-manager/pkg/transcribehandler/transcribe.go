@@ -2,20 +2,31 @@ package transcribehandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-transcribe-manager/models/transcribe"
 	"monorepo/bin-transcribe-manager/models/transcript"
+	"monorepo/bin-transcribe-manager/pkg/dbhandler"
 )
 
 // Get returns transcribe
 func (h *transcribeHandler) Get(ctx context.Context, id uuid.UUID) (*transcribe.Transcribe, error) {
 	res, err := h.db.TranscribeGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTranscribeManager,
+				"TRANSCRIBE_NOT_FOUND",
+				"The transcribe was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get transcribe info. transcribe_id: %s", id)
 	}
 
@@ -26,6 +37,13 @@ func (h *transcribeHandler) Get(ctx context.Context, id uuid.UUID) (*transcribe.
 func (h *transcribeHandler) GetByReferenceIDAndLanguage(ctx context.Context, referenceID uuid.UUID, language string) (*transcribe.Transcribe, error) {
 	res, err := h.db.TranscribeGetByReferenceIDAndLanguage(ctx, referenceID, language)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTranscribeManager,
+				"TRANSCRIBE_NOT_FOUND",
+				"The transcribe was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get transcribe info. reference_id: %s, language: %s", referenceID, language)
 	}
 
