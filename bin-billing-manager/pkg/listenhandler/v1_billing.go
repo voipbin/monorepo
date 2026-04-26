@@ -43,7 +43,7 @@ func (h *listenHandler) processV1BillingGet(ctx context.Context, m *sock.Request
 	billing, err := h.billingHandler.Get(ctx, billingID)
 	if err != nil {
 		log.Errorf("Could not get billing. billing_id: %s, err: %v", billingID, err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(billing)

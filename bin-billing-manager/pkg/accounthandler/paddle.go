@@ -2,6 +2,7 @@ package accounthandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -25,7 +26,7 @@ func (h *accountHandler) checkPaddleIdempotency(ctx context.Context, eventID str
 	if err == nil {
 		return true, nil // Already processed
 	}
-	if err == dbhandler.ErrNotFound {
+	if stderrors.Is(err, dbhandler.ErrNotFound) {
 		return false, nil // Not processed yet
 	}
 	return false, fmt.Errorf("could not check idempotency: %w", err)

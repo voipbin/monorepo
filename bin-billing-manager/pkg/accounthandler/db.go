@@ -2,13 +2,17 @@ package accounthandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/account"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // dbCreate creates a new account and return the created account.
@@ -47,6 +51,11 @@ func (h *accountHandler) dbCreate(ctx context.Context, customerID uuid.UUID, nam
 }
 
 // Get returns a account.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As. Other DB errors flow
+// through as plain wrapped errors and become INTERNAL via the default path.
 func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Get",
@@ -56,6 +65,13 @@ func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Accoun
 	res, err := h.db.AccountGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get account. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameBillingManager,
+				"BILLING_ACCOUNT_NOT_FOUND",
+				"The billing account was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get account info")
 	}
 
@@ -275,7 +291,20 @@ func (h *accountHandler) Delete(ctx context.Context, id uuid.UUID) (*account.Acc
 
 	res, err := h.Get(ctx, id)
 	if err != nil {
+		// h.Get() now emits cerrors.NotFound on dbhandler.ErrNotFound. The
+		// soft-delete preserves the row, so a not-found here means a transient
+		// cache/DB hiccup, NOT that the delete failed. Re-classify as INTERNAL
+		// so the caller doesn't receive a misleading 404 after a successful
+		// delete — the delete itself succeeded.
 		log.Errorf("Could not get deleted account. err: %v", err)
+		var ve *cerrors.VoipbinError
+		if stderrors.As(err, &ve) && ve.Status == cerrors.StatusNotFound {
+			return nil, cerrors.Internal(
+				commonoutline.ServiceNameBillingManager,
+				"POST_DELETE_LOOKUP_FAILED",
+				"The account was deleted but a transient lookup failed when re-fetching it.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get deleted account")
 	}
 

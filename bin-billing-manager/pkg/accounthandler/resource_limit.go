@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/account"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // IsValidResourceLimitByCustomerID checks if the given customer has not exceeded its plan limit for the given resource type.
@@ -58,8 +60,15 @@ func (h *accountHandler) IsValidResourceLimit(ctx context.Context, accountID uui
 
 	planLimits, ok := account.PlanLimitMap[a.PlanType]
 	if !ok {
+		// a.PlanType is loaded from the DB. An unrecognized value here means
+		// the database has a corrupt or out-of-date enum — not user input.
+		// Classify as INTERNAL so operations sees it, not as a 400 to the caller.
 		log.Errorf("Unknown plan type. plan_type: %s", a.PlanType)
-		return false, fmt.Errorf("unknown plan type: %s", a.PlanType)
+		return false, cerrors.Internal(
+			commonoutline.ServiceNameBillingManager,
+			"UNKNOWN_PLAN_TYPE",
+			fmt.Sprintf("The account plan type %q is not recognized.", string(a.PlanType)),
+		)
 	}
 
 	limit := planLimits.GetLimit(resourceType)
@@ -102,6 +111,10 @@ func (h *accountHandler) getResourceCount(ctx context.Context, customerID uuid.U
 	case account.ResourceTypeVirtualNumber:
 		return h.reqHandler.NumberV1VirtualNumberCountByCustomerID(ctx, customerID)
 	default:
-		return 0, fmt.Errorf("unsupported resource type: %s", resourceType)
+		return 0, cerrors.InvalidArgument(
+			commonoutline.ServiceNameBillingManager,
+			"UNSUPPORTED_RESOURCE_TYPE",
+			fmt.Sprintf("The resource type %q is not supported.", string(resourceType)),
+		)
 	}
 }

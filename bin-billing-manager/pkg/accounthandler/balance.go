@@ -10,6 +10,8 @@ import (
 
 	"monorepo/bin-billing-manager/models/account"
 	"monorepo/bin-billing-manager/models/billing"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 )
 
@@ -127,7 +129,11 @@ func (h *accountHandler) IsValidBalance(ctx context.Context, accountID uuid.UUID
 
 	default:
 		log.Errorf("Unsupported billing type. billing_type: %s", billingType)
-		return false, fmt.Errorf("unsupported billing type")
+		return false, cerrors.InvalidArgument(
+			commonoutline.ServiceNameBillingManager,
+			"UNSUPPORTED_BILLING_TYPE",
+			fmt.Sprintf("The billing type %q is not supported.", string(billingType)),
+		)
 	}
 
 	log.Infof("The account has not enough balance or tokens. balance_credit: %d, balance_token: %d", a.BalanceCredit, a.BalanceToken)

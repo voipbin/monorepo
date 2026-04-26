@@ -2,10 +2,13 @@ package billinghandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"time"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
@@ -44,7 +47,7 @@ func (h *billingHandler) BillingStart(
 
 	// idempotency check — return early if billing already exists for this reference
 	existing, err := h.db.BillingGetByReferenceTypeAndID(ctx, referenceType, referenceID)
-	if err != nil && err != dbhandler.ErrNotFound {
+	if err != nil && !stderrors.Is(err, dbhandler.ErrNotFound) {
 		// real DB error (connection timeout, etc.) — do NOT fall through to create
 		return errors.Wrap(err, "could not check for existing billing")
 	}
@@ -81,8 +84,15 @@ func (h *billingHandler) BillingStart(
 	case billing.ReferenceTypeNumber, billing.ReferenceTypeNumberRenew:
 		flagEnd = true
 	default:
+		// Reached only for an unrecognized internal enum (BillingStart is invoked
+		// by the event subscriber, not by an external caller). Classify as
+		// INTERNAL — the API caller did not supply this value.
 		log.Errorf("Unsupported reference type. reference_type: %s", referenceType)
-		return fmt.Errorf("unsupported reference type")
+		return cerrors.Internal(
+			commonoutline.ServiceNameBillingManager,
+			"UNSUPPORTED_REFERENCE_TYPE",
+			fmt.Sprintf("The billing reference type %q is not supported.", string(referenceType)),
+		)
 	}
 
 	tmp, err := h.Create(ctx, a.CustomerID, a.ID, referenceType, referenceID, costType, tmBillingStart)
@@ -154,8 +164,15 @@ func (h *billingHandler) BillingEnd(
 		usageDuration = 0
 		billableUnits = 1
 	default:
+		// Reached only for an unrecognized internal enum (BillingEnd is invoked
+		// by the event subscriber on a billing record we constructed). Classify
+		// as INTERNAL — this is not user input.
 		log.Errorf("Unsupported billing reference type. reference_type: %s", bill.ReferenceType)
-		return fmt.Errorf("unsupported billing reference type. reference_type: %s", bill.ReferenceType)
+		return cerrors.Internal(
+			commonoutline.ServiceNameBillingManager,
+			"UNSUPPORTED_REFERENCE_TYPE",
+			fmt.Sprintf("The billing reference type %q is not supported.", string(bill.ReferenceType)),
+		)
 	}
 
 	// Use atomic consume-and-record transaction
