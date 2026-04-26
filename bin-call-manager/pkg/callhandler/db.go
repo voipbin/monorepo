@@ -2,11 +2,14 @@ package callhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"time"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
 
@@ -17,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/call"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // Create creates a call record.
@@ -148,9 +152,20 @@ func (h *callHandler) List(ctx context.Context, size uint64, token string, filte
 }
 
 // Get returns call.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *callHandler) Get(ctx context.Context, id uuid.UUID) (*call.Call, error) {
 	res, err := h.db.CallGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCallManager,
+				"CALL_NOT_FOUND",
+				"The call was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "Could not get call.")
 	}
 

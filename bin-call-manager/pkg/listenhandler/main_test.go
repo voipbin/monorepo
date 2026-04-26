@@ -5,7 +5,9 @@ import (
 	"reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -768,16 +770,34 @@ func Test_processRequest_errorPaths(t *testing.T) {
 		expectCode int
 	}{
 		{
-			name: "GET /v1/calls/<id> returns 404 on error",
+			// callHandler.Get now emits typed *VoipbinError (Status=NotFound)
+			// when the underlying DB returns ErrNotFound. The listenHandler's
+			// errorResponse helper detects the typed error and emits a 404.
+			name: "GET /v1/calls/<id> returns 404 on typed NotFound error",
 			request: &sock.Request{
 				URI:    "/v1/calls/638769c2-620d-11eb-bd1f-6b576e26b4e6",
 				Method: sock.RequestMethodGet,
 			},
 			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
 				mockCall := h.callHandler.(*callhandler.MockCallHandler)
-				mockCall.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("638769c2-620d-11eb-bd1f-6b576e26b4e6")).Return(nil, fmt.Errorf("not found"))
+				typedErr := cerrors.NotFound(commonoutline.ServiceNameCallManager, "CALL_NOT_FOUND", "The call was not found.")
+				mockCall.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("638769c2-620d-11eb-bd1f-6b576e26b4e6")).Return(nil, typedErr)
 			},
 			expectCode: 404,
+		},
+		{
+			// Generic (non-typed, non-ErrNotFound) errors now correctly become 500
+			// instead of being mis-classified as 404.
+			name: "GET /v1/calls/<id> returns 500 on generic error",
+			request: &sock.Request{
+				URI:    "/v1/calls/638769c2-620d-11eb-bd1f-6b576e26b4e6",
+				Method: sock.RequestMethodGet,
+			},
+			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
+				mockCall := h.callHandler.(*callhandler.MockCallHandler)
+				mockCall.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("638769c2-620d-11eb-bd1f-6b576e26b4e6")).Return(nil, fmt.Errorf("connection refused"))
+			},
+			expectCode: 500,
 		},
 		{
 			name: "GET /v1/confbridges/<id> returns 400 on error",
@@ -792,28 +812,29 @@ func Test_processRequest_errorPaths(t *testing.T) {
 			expectCode: 400,
 		},
 		{
-			name: "GET /v1/recordings/<id> returns 404 on error",
+			name: "GET /v1/recordings/<id> returns 404 on typed NotFound error",
 			request: &sock.Request{
 				URI:    "/v1/recordings/68e9edd8-3609-11ec-ad76-b72fa8f57f23",
 				Method: sock.RequestMethodGet,
 			},
 			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
 				mockRecording := h.recordingHandler.(*recordinghandler.MockRecordingHandler)
-				mockRecording.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("not found"))
+				typedErr := cerrors.NotFound(commonoutline.ServiceNameCallManager, "RECORDING_NOT_FOUND", "The recording was not found.")
+				mockRecording.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, typedErr)
 			},
 			expectCode: 404,
 		},
 		{
-			name: "GET /v1/external-medias/<id> returns 404 on error",
+			name: "GET /v1/external-medias/<id> returns 500 on generic error",
 			request: &sock.Request{
 				URI:    "/v1/external-medias/68e9edd8-3609-11ec-ad76-b72fa8f57f23",
 				Method: sock.RequestMethodGet,
 			},
 			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
 				mockExternalMedia := h.externalMediaHandler.(*externalmediahandler.MockExternalMediaHandler)
-				mockExternalMedia.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("not found"))
+				mockExternalMedia.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("connection refused"))
 			},
-			expectCode: 404,
+			expectCode: 500,
 		},
 		{
 			name: "GET /v1/groupcalls/<id> returns 500 on error",
@@ -824,6 +845,42 @@ func Test_processRequest_errorPaths(t *testing.T) {
 			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
 				mockGroupcall := h.groupcallHandler.(*groupcallhandler.MockGroupcallHandler)
 				mockGroupcall.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("not found"))
+			},
+			expectCode: 500,
+		},
+		{
+			name: "DELETE /v1/recordings/<id> returns 500 on generic error",
+			request: &sock.Request{
+				URI:    "/v1/recordings/68e9edd8-3609-11ec-ad76-b72fa8f57f23",
+				Method: sock.RequestMethodDelete,
+			},
+			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
+				mockRecording := h.recordingHandler.(*recordinghandler.MockRecordingHandler)
+				mockRecording.EXPECT().Delete(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("delete error"))
+			},
+			expectCode: 500,
+		},
+		{
+			name: "DELETE /v1/external-medias/<id> returns 500 on generic error",
+			request: &sock.Request{
+				URI:    "/v1/external-medias/68e9edd8-3609-11ec-ad76-b72fa8f57f23",
+				Method: sock.RequestMethodDelete,
+			},
+			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
+				mockExternalMedia := h.externalMediaHandler.(*externalmediahandler.MockExternalMediaHandler)
+				mockExternalMedia.EXPECT().Stop(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("stop error"))
+			},
+			expectCode: 500,
+		},
+		{
+			name: "POST /v1/recordings/<id>/stop returns 500 on generic error",
+			request: &sock.Request{
+				URI:    "/v1/recordings/68e9edd8-3609-11ec-ad76-b72fa8f57f23/stop",
+				Method: sock.RequestMethodPost,
+			},
+			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
+				mockRecording := h.recordingHandler.(*recordinghandler.MockRecordingHandler)
+				mockRecording.EXPECT().Stop(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("stop error"))
 			},
 			expectCode: 500,
 		},

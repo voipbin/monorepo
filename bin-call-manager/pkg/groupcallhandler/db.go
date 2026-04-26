@@ -2,15 +2,19 @@ package groupcallhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/groupcall"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 )
 
 // Create creates a new groupcall.
@@ -99,9 +103,20 @@ func (h *groupcallHandler) Create(
 }
 
 // Get returns a groupcall of the given id.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *groupcallHandler) Get(ctx context.Context, id uuid.UUID) (*groupcall.Groupcall, error) {
 	res, err := h.db.GroupcallGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCallManager,
+				"GROUPCALL_NOT_FOUND",
+				"The group call was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "Could not get groupcall.")
 	}
 

@@ -6,6 +6,9 @@ import (
 	"strconv"
 	"time"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -96,6 +99,12 @@ func (h *channelHandler) get(ctx context.Context, id string) (*channel.Channel, 
 }
 
 // Get returns call.
+//
+// When `getWithTimeout` exhausts `defaultExistTimeout` without the channel
+// appearing, Get returns a typed *cerrors.VoipbinError (Status=NotFound).
+// From the caller's perspective the channel is not present — Asterisk has
+// not announced it within the retry window — and the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Get",
@@ -109,7 +118,11 @@ func (h *channelHandler) Get(ctx context.Context, id string) (*channel.Channel, 
 	res, err := h.getWithTimeout(ctx, id, defaultExistTimeout)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
-		return nil, err
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameCallManager,
+			"CHANNEL_NOT_FOUND",
+			"The channel was not found.",
+		).Wrap(err)
 	}
 
 	return res, nil

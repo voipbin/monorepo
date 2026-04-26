@@ -2,13 +2,17 @@ package recordinghandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/recording"
+	"monorepo/bin-call-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	smfile "monorepo/bin-storage-manager/models/file"
 )
 
@@ -96,7 +100,11 @@ func (h *recordingHandler) List(ctx context.Context, size uint64, token string, 
 	return res, nil
 }
 
-// Get returns the recording info
+// Get returns the recording info.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *recordingHandler) Get(ctx context.Context, id uuid.UUID) (*recording.Recording, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":         "Get",
@@ -106,6 +114,13 @@ func (h *recordingHandler) Get(ctx context.Context, id uuid.UUID) (*recording.Re
 	res, err := h.db.RecordingGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get recording info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCallManager,
+				"RECORDING_NOT_FOUND",
+				"The recording was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 

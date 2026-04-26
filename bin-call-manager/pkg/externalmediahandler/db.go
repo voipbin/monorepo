@@ -2,11 +2,15 @@ package externalmediahandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	"monorepo/bin-call-manager/models/externalmedia"
+	"monorepo/bin-call-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // Create creates a new external media
@@ -67,10 +71,21 @@ func (h *externalMediaHandler) Create(
 	return extMedia, nil
 }
 
-// Get returns external media info
+// Get returns external media info.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *externalMediaHandler) Get(ctx context.Context, id uuid.UUID) (*externalmedia.ExternalMedia, error) {
 	res, err := h.db.ExternalMediaGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCallManager,
+				"EXTERNAL_MEDIA_NOT_FOUND",
+				"The external media was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get external media with id: %s", id)
 	}
 
