@@ -1092,8 +1092,11 @@ func TestProcessV1ContactsIDGet_GetError(t *testing.T) {
 	if err != nil {
 		t.Errorf("processRequest() error = %v", err)
 	}
-	if res.StatusCode != 500 {
-		t.Errorf("processRequest() StatusCode = %v, want 500", res.StatusCode)
+	// Unclassified errors propagate to the dispatcher and are mapped to the
+	// legacy 400 (typed errors and dbhandler.ErrNotFound get 404 via
+	// errorResponse; everything else stays on the legacy 400 path).
+	if res.StatusCode != 400 {
+		t.Errorf("processRequest() StatusCode = %v, want 400", res.StatusCode)
 	}
 }
 
@@ -1262,8 +1265,11 @@ func TestProcessV1ContactsLookupGet_LookupError(t *testing.T) {
 	if err != nil {
 		t.Errorf("processRequest() error = %v", err)
 	}
-	if res.StatusCode != 404 {
-		t.Errorf("processRequest() StatusCode = %v, want 404", res.StatusCode)
+	// Unclassified lookup errors propagate to the dispatcher and are mapped
+	// to the legacy 400. A typed CONTACT_NOT_FOUND (from contactHandler
+	// wrapping dbhandler.ErrNotFound) would map to 404 instead.
+	if res.StatusCode != 400 {
+		t.Errorf("processRequest() StatusCode = %v, want 400", res.StatusCode)
 	}
 }
 
@@ -2002,8 +2008,11 @@ func TestProcessV1ContactsLookupGet_ByEmail_Error(t *testing.T) {
 	if err != nil {
 		t.Errorf("processRequest() error = %v", err)
 	}
-	if res.StatusCode != 404 {
-		t.Errorf("processRequest() StatusCode = %v, want 404", res.StatusCode)
+	// Unclassified lookup errors propagate to the dispatcher and are mapped
+	// to the legacy 400. A typed CONTACT_NOT_FOUND (from contactHandler
+	// wrapping dbhandler.ErrNotFound) would map to 404 instead.
+	if res.StatusCode != 400 {
+		t.Errorf("processRequest() StatusCode = %v, want 400", res.StatusCode)
 	}
 }
 

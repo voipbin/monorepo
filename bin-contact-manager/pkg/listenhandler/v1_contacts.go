@@ -162,7 +162,10 @@ func (h *listenHandler) processV1ContactsIDGet(ctx context.Context, m *sock.Requ
 	tmp, err := h.contactHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get a contact info. err: %v", err)
-		return simpleResponse(500), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed CONTACT_NOT_FOUND surfaces to the caller.
+		// Other errors fall back to the legacy 400.
+		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)
@@ -318,7 +321,10 @@ func (h *listenHandler) processV1ContactsLookupGet(ctx context.Context, req *soc
 
 	if err != nil {
 		log.Errorf("Could not lookup contact. err: %v", err)
-		return simpleResponse(404), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed CONTACT_NOT_FOUND surfaces to the caller.
+		// Other errors fall back to the legacy 400.
+		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)
