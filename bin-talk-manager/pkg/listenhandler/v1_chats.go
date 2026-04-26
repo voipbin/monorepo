@@ -106,7 +106,9 @@ func (h *listenHandler) v1ChatsIDGet(ctx context.Context, m commonsock.Request) 
 
 	t, err := h.chatHandler.ChatGet(ctx, chatID)
 	if err != nil {
-		return simpleResponse(404), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed CHAT_NOT_FOUND surfaces to the caller.
+		return nil, err
 	}
 
 	data, _ := json.Marshal(t)

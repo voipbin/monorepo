@@ -2,7 +2,6 @@ package dbhandler
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 
 	sq "github.com/Masterminds/squirrel"
@@ -85,7 +84,7 @@ func (h *dbHandler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Mess
 	}()
 
 	if !rows.Next() {
-		return nil, sql.ErrNoRows
+		return nil, ErrNotFound
 	}
 
 	var m message.Message

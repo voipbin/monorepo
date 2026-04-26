@@ -59,7 +59,9 @@ func (h *listenHandler) v1ChatsIDParticipantsGet(ctx context.Context, m commonso
 	chat, err := h.chatHandler.ChatGet(ctx, chatID)
 	if err != nil {
 		logrus.Errorf("Failed to get chat: %v", err)
-		return simpleResponse(404), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed CHAT_NOT_FOUND surfaces to the caller.
+		return nil, err
 	}
 
 	participants, err := h.participantHandler.ParticipantList(ctx, chat.CustomerID, chatID)
@@ -89,7 +91,9 @@ func (h *listenHandler) v1ChatsIDParticipantsIDDelete(ctx context.Context, m com
 	chat, err := h.chatHandler.ChatGet(ctx, chatID)
 	if err != nil {
 		logrus.Errorf("Failed to get chat: %v", err)
-		return simpleResponse(404), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed CHAT_NOT_FOUND surfaces to the caller.
+		return nil, err
 	}
 
 	err = h.participantHandler.ParticipantRemove(ctx, chat.CustomerID, participantID)

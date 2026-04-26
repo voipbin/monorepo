@@ -2,7 +2,6 @@ package dbhandler
 
 import (
 	"context"
-	"database/sql"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/gofrs/uuid"
@@ -69,7 +68,7 @@ func (h *dbHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, erro
 	}()
 
 	if !rows.Next() {
-		return nil, sql.ErrNoRows
+		return nil, ErrNotFound
 	}
 
 	var t chat.Chat
