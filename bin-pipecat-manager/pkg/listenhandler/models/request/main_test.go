@@ -34,12 +34,10 @@ func TestPagination_Struct(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.p.PageSize != tt.p.PageSize {
-				t.Errorf("PageSize mismatch")
-			}
-			if tt.p.PageToken != tt.p.PageToken {
-				t.Errorf("PageToken mismatch")
-			}
+			// Ensure the Pagination struct is constructable with the given
+			// fields. The struct has no behavior to validate beyond field
+			// presence, so just round-trip the value.
+			_ = tt.p
 		})
 	}
 }

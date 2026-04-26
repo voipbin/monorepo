@@ -36,21 +36,10 @@ func TestV1DataMessagesPost_Struct(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.req.PipecatcallID != tt.req.PipecatcallID {
-				t.Errorf("PipecatcallID mismatch")
-			}
-			if tt.req.MessageID != tt.req.MessageID {
-				t.Errorf("MessageID mismatch")
-			}
-			if tt.req.MessageText != tt.req.MessageText {
-				t.Errorf("MessageText mismatch")
-			}
-			if tt.req.RunImmediately != tt.req.RunImmediately {
-				t.Errorf("RunImmediately mismatch")
-			}
-			if tt.req.AudioResponse != tt.req.AudioResponse {
-				t.Errorf("AudioResponse mismatch")
-			}
+			// Ensure the V1DataMessagesPost struct is constructable with the
+			// given fields. The struct has no behavior to validate beyond
+			// field presence, so just round-trip the value.
+			_ = tt.req
 		})
 	}
 }

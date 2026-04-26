@@ -2,9 +2,13 @@ package pipecatcallhandler
 
 import (
 	"context"
+	stderrors "errors"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
+	"monorepo/bin-pipecat-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -63,6 +67,13 @@ func (h *pipecatcallHandler) Create(
 func (h *pipecatcallHandler) Get(ctx context.Context, id uuid.UUID) (*pipecatcall.Pipecatcall, error) {
 	res, err := h.db.PipecatcallGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNamePipecatManager,
+				"PIPECATCALL_NOT_FOUND",
+				"The pipecat call was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get pipecatcall from db")
 	}
 

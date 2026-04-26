@@ -35,12 +35,10 @@ func TestMessage_Struct(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.msg.ID != tt.msg.ID {
-				t.Errorf("ID mismatch")
-			}
-			if tt.msg.Text != tt.msg.Text {
-				t.Errorf("Text mismatch")
-			}
+			// Ensure the Message struct is constructable with the given fields.
+			// The struct has no behavior to validate beyond field presence, so
+			// just round-trip the value to confirm the test compiles and runs.
+			_ = tt.msg
 		})
 	}
 }
