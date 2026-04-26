@@ -30,7 +30,7 @@ func (h *listenHandler) processV1ChannelsIDGet(ctx context.Context, m *sock.Requ
 	res, err := h.channelHandler.Get(ctx, channelID)
 	if err != nil {
 		log.Errorf("Could not get channel. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(res)

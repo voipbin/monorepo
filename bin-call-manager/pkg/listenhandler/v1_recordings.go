@@ -120,12 +120,13 @@ func (h *listenHandler) processV1RecordingsIDGet(ctx context.Context, m *sock.Re
 	tmp, err := h.recordingHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get recording. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal recording response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -154,12 +155,13 @@ func (h *listenHandler) processV1RecordingsIDDelete(ctx context.Context, m *sock
 	tmp, err := h.recordingHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the recording. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal recording response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -188,12 +190,13 @@ func (h *listenHandler) processV1RecordingsIDStopPost(ctx context.Context, m *so
 	tmp, err := h.recordingHandler.Stop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not stop the recording: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal recording response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{

@@ -4,12 +4,15 @@ package listenhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
+	"net/http"
 	"regexp"
 	"time"
 
 	"monorepo/bin-call-manager/models/common"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -21,6 +24,7 @@ import (
 	"monorepo/bin-call-manager/pkg/callhandler"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/confbridgehandler"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
@@ -145,6 +149,45 @@ func simpleResponse(code int) *sock.Response {
 	return &sock.Response{
 		StatusCode: code,
 	}
+}
+
+// errorResponse maps a business-handler error to the appropriate sock.Response.
+// Resolution order:
+//  1. Typed *cerrors.VoipbinError → encoded via cerrors.ToResponse so the
+//     api-manager edge recovers domain/reason/message via errors.As over RPC.
+//  2. Legacy dbhandler.ErrNotFound (wrapped via pkg/errors) → simpleResponse(404)
+//     so resource-not-found behavior is preserved for not-yet-migrated paths.
+//  3. Anything else → simpleResponse(500). Plain DB/marshal errors become
+//     INTERNAL via the api-manager translator's default branch.
+//
+// errorResponse should never be called with a nil error — every call site
+// gates on `if err != nil`. If nil is passed defensively log a loud warning
+// so the misuse is visible, then return 500.
+func errorResponse(err error) *sock.Response {
+	if err == nil {
+		logrus.WithField("func", "errorResponse").Warn("errorResponse called with nil error — likely a caller bug; returning 500")
+		return simpleResponse(http.StatusInternalServerError)
+	}
+
+	var ve *cerrors.VoipbinError
+	if stderrors.As(err, &ve) {
+		resp, e := cerrors.ToResponse(ve)
+		if e == nil {
+			return resp
+		}
+		// ToResponse should not fail for a well-formed VoipbinError (no
+		// channels, funcs, or cycles in the struct). If it ever does,
+		// fall to a clean 500 — silently legacy-pathing here would mask
+		// the issue and mis-report the wire status.
+		logrus.WithField("func", "errorResponse").Errorf("cerrors.ToResponse failed for typed VoipbinError: %v", e)
+		return simpleResponse(http.StatusInternalServerError)
+	}
+
+	if stderrors.Is(err, dbhandler.ErrNotFound) {
+		return simpleResponse(http.StatusNotFound)
+	}
+
+	return simpleResponse(http.StatusInternalServerError)
 }
 
 // NewListenHandler return ListenHandler interface

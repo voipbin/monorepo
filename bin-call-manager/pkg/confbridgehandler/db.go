@@ -2,6 +2,7 @@ package confbridgehandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"time"
 
@@ -10,7 +11,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/confbridge"
+	"monorepo/bin-call-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // Create is handy function for creating a confbridge.
@@ -63,10 +67,21 @@ func (h *confbridgeHandler) Create(
 	return res, nil
 }
 
-// Get returns confbridge
+// Get returns confbridge.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *confbridgeHandler) Get(ctx context.Context, id uuid.UUID) (*confbridge.Confbridge, error) {
 	res, err := h.db.ConfbridgeGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCallManager,
+				"CONFBRIDGE_NOT_FOUND",
+				"The conference was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get the confbridge. id: %s", id)
 	}
 

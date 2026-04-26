@@ -92,12 +92,13 @@ func (h *listenHandler) processV1CallsIDGet(ctx context.Context, m *sock.Request
 	c, err := h.callHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get call info. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal call response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -350,7 +351,7 @@ func (h *listenHandler) processV1CallsIDActionTimeoutPost(ctx context.Context, m
 
 	if err := h.callHandler.ActionTimeout(ctx, id, action); err != nil {
 		log.Debugf("Could not handle the action timeout request. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	res := &sock.Response{
@@ -381,7 +382,7 @@ func (h *listenHandler) processV1CallsIDActionNextPost(ctx context.Context, m *s
 	c, err := h.callHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get call info from the database. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	// we run the go runc() here.

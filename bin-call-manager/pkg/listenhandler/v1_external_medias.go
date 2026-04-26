@@ -133,12 +133,13 @@ func (h *listenHandler) processV1ExternalMediasIDGet(ctx context.Context, m *soc
 	tmp, err := h.externalMediaHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get external media. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal external media response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -167,12 +168,13 @@ func (h *listenHandler) processV1ExternalMediasIDDelete(ctx context.Context, m *
 	tmp, err := h.externalMediaHandler.Stop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not stop the extneral media. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal external media response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
