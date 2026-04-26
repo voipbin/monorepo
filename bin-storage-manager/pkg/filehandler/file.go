@@ -2,10 +2,15 @@ package filehandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
-	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-storage-manager/models/file"
 	"time"
+
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-storage-manager/models/file"
+	"monorepo/bin-storage-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -133,6 +138,13 @@ func (h *fileHandler) Create(
 func (h *fileHandler) Get(ctx context.Context, id uuid.UUID) (*file.File, error) {
 	res, err := h.db.FileGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameStorageManager,
+				"FILE_NOT_FOUND",
+				"The file was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get file info")
 	}
 

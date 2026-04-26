@@ -2,10 +2,13 @@ package listenhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
+	"net/http"
 	"regexp"
 	"time"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -14,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-storage-manager/pkg/accounthandler"
+	"monorepo/bin-storage-manager/pkg/dbhandler"
 	"monorepo/bin-storage-manager/pkg/storagehandler"
 )
 
@@ -83,6 +87,32 @@ func simpleResponse(code int) *sock.Response {
 	return &sock.Response{
 		StatusCode: code,
 	}
+}
+
+// errorResponse maps a business-handler error to the appropriate sock.Response.
+// Resolution order: typed *cerrors.VoipbinError → ToResponse; legacy
+// dbhandler.ErrNotFound → 404; else → 500.
+func errorResponse(err error) *sock.Response {
+	if err == nil {
+		logrus.WithField("func", "errorResponse").Warn("errorResponse called with nil error — likely a caller bug; returning 500")
+		return simpleResponse(http.StatusInternalServerError)
+	}
+
+	var ve *cerrors.VoipbinError
+	if stderrors.As(err, &ve) {
+		resp, e := cerrors.ToResponse(ve)
+		if e == nil {
+			return resp
+		}
+		logrus.WithField("func", "errorResponse").Errorf("cerrors.ToResponse failed for typed VoipbinError: %v", e)
+		return simpleResponse(http.StatusInternalServerError)
+	}
+
+	if stderrors.Is(err, dbhandler.ErrNotFound) {
+		return simpleResponse(http.StatusNotFound)
+	}
+
+	return simpleResponse(http.StatusInternalServerError)
 }
 
 // NewListenHandler return ListenHandler interface
@@ -198,6 +228,20 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	}
 	elapsed := time.Since(start)
 	promReceivedRequestProcessTime.WithLabelValues(requestType, string(m.Method)).Observe(float64(elapsed.Milliseconds()))
+
+	// default error handler — typed errors and ErrNotFound flow through
+	// errorResponse; other errors propagate to the sock layer unchanged.
+	if err != nil {
+		var ve *cerrors.VoipbinError
+		switch {
+		case stderrors.As(err, &ve):
+			response = errorResponse(err)
+			err = nil
+		case stderrors.Is(err, dbhandler.ErrNotFound):
+			response = errorResponse(err)
+			err = nil
+		}
+	}
 
 	return response, err
 }

@@ -2,8 +2,13 @@ package accounthandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
+
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-storage-manager/models/account"
+	"monorepo/bin-storage-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -53,6 +58,13 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID) (*acc
 func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Account, error) {
 	res, err := h.db.AccountGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameStorageManager,
+				"ACCOUNT_NOT_FOUND",
+				"The account was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get file info")
 	}
 
