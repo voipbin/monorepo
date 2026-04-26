@@ -2,14 +2,18 @@ package accounthandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-conversation-manager/models/account"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
 )
 
 // Create is handy function for creating a confbridge.
@@ -74,6 +78,13 @@ func (h *accountHandler) Get(ctx context.Context, id uuid.UUID) (*account.Accoun
 	res, err := h.db.AccountGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get account info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameConversationManager,
+				"CONVERSATION_ACCOUNT_NOT_FOUND",
+				"The conversation account was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get account info")
 	}
 	log.WithField("account", res).Debugf("Retrieved account info. account_id: %s", id)

@@ -2,8 +2,11 @@ package messagehandler
 
 import (
 	"context"
+	stderrors "errors"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -11,6 +14,7 @@ import (
 
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
 )
 
 // Create creates a message and returns a created message.
@@ -118,10 +122,21 @@ func (h *messageHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status 
 	return res, nil
 }
 
-// Get returns message by id
+// Get returns message by id.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	res, err := h.db.MessageGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameConversationManager,
+				"CONVERSATION_MESSAGE_NOT_FOUND",
+				"The conversation message was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "Could not get message.")
 	}
 

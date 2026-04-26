@@ -1,7 +1,6 @@
 package listenhandler
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 
@@ -16,6 +15,7 @@ import (
 
 	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
 )
 
 func Test_processV1AccountsGet(t *testing.T) {
@@ -332,7 +332,7 @@ func Test_processV1AccountsIDGet(t *testing.T) {
 			if tt.responseAccount != nil {
 				mockAccount.EXPECT().Get(gomock.Any(), tt.expectID).Return(tt.responseAccount, nil)
 			} else {
-				mockAccount.EXPECT().Get(gomock.Any(), tt.expectID).Return(nil, fmt.Errorf("not found"))
+				mockAccount.EXPECT().Get(gomock.Any(), tt.expectID).Return(nil, dbhandler.ErrNotFound)
 			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -482,7 +482,7 @@ func Test_processV1AccountsIDDelete(t *testing.T) {
 			if tt.responseAccount != nil {
 				mockAccount.EXPECT().Delete(gomock.Any(), tt.expectID).Return(tt.responseAccount, nil)
 			} else {
-				mockAccount.EXPECT().Delete(gomock.Any(), tt.expectID).Return(nil, fmt.Errorf("not found"))
+				mockAccount.EXPECT().Delete(gomock.Any(), tt.expectID).Return(nil, dbhandler.ErrNotFound) // was: fmt.Errorf("not found"))
 			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
