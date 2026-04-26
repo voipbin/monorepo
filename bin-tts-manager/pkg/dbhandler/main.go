@@ -5,6 +5,8 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"errors"
+
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-tts-manager/models/speaking"
 	"monorepo/bin-tts-manager/models/streaming"
@@ -12,6 +14,11 @@ import (
 
 	"github.com/gofrs/uuid"
 )
+
+// ErrNotFound is returned when a requested record does not exist.
+// Translated from sql.ErrNoRows / redis.Nil by single-row Get methods so
+// callers can match with errors.Is regardless of the underlying driver detail.
+var ErrNotFound = errors.New("record not found")
 
 type DBHandler interface {
 	StreamingCreate(ctx context.Context, s *streaming.Streaming) error

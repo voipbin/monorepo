@@ -2,10 +2,14 @@ package speakinghandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-tts-manager/models/speaking"
 	"monorepo/bin-tts-manager/models/streaming"
+	"monorepo/bin-tts-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -141,6 +145,13 @@ func (h *speakingHandler) Get(ctx context.Context, id uuid.UUID) (*speaking.Spea
 	res, err := h.db.SpeakingGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get speaking. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTTSManager,
+				"SPEAKING_NOT_FOUND",
+				"The speaking was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 	log.WithField("speaking", res).Debugf("Retrieved speaking. speaking_id: %s", id)

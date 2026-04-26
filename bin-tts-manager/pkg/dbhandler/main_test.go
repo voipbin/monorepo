@@ -3,7 +3,6 @@ package dbhandler
 import (
 	"testing"
 
-	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-tts-manager/pkg/cachehandler"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -41,10 +40,5 @@ func Test_NewDBHandler(t *testing.T) {
 	}
 	if dbh.util == nil {
 		t.Error("util should not be nil")
-	}
-
-	// verify util is correctly initialized
-	if _, ok := dbh.util.(utilhandler.UtilHandler); !ok {
-		t.Error("util should be UtilHandler type")
 	}
 }

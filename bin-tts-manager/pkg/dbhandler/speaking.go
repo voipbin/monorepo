@@ -71,7 +71,7 @@ func (h *dbHandler) SpeakingGet(ctx context.Context, id uuid.UUID) (*speaking.Sp
 		if err := rows.Err(); err != nil {
 			return nil, fmt.Errorf("row error. SpeakingGet. err: %v", err)
 		}
-		return nil, fmt.Errorf("not found")
+		return nil, ErrNotFound
 	}
 
 	return h.speakingGetFromRow(rows)
