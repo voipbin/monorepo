@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -36,7 +35,7 @@ func (h *serviceHandler) RecordingfileGet(ctx context.Context, a *auth.AuthIdent
 
 	if !h.hasPermission(ctx, a, r.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return "", fmt.Errorf("agent has no permission")
+		return "", serviceerrors.ErrPermissionDenied
 	}
 
 	// get download url from storage-manager

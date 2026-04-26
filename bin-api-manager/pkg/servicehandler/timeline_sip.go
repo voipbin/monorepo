@@ -41,7 +41,7 @@ func (h *serviceHandler) TimelineSIPAnalysisGet(
 	// Check permission
 	if !h.hasPermission(ctx, a, call.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("Agent has no permission")
-		return nil, fmt.Errorf("permission denied")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Get channel to retrieve SIP Call-ID
@@ -114,7 +114,7 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 	// Check permission
 	if !h.hasPermission(ctx, a, call.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("Agent has no permission")
-		return nil, fmt.Errorf("permission denied")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Get channel to retrieve SIP Call-ID

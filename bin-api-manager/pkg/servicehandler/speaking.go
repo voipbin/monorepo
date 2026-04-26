@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -38,7 +37,7 @@ func (h *serviceHandler) SpeakingCreate(ctx context.Context, a *auth.AuthIdentit
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.TTSV1SpeakingCreate(ctx, a.CustomerID, referenceType, referenceID, language, provider, voiceID, direction)
@@ -72,7 +71,7 @@ func (h *serviceHandler) SpeakingGet(ctx context.Context, a *auth.AuthIdentity, 
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	return tmp.ConvertWebhookMessage(), nil
@@ -96,7 +95,7 @@ func (h *serviceHandler) SpeakingList(ctx context.Context, a *auth.AuthIdentity,
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[tmspeaking.Field]any{
@@ -139,7 +138,7 @@ func (h *serviceHandler) SpeakingSay(ctx context.Context, a *auth.AuthIdentity, 
 
 	if !h.hasPermission(ctx, a, s.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.TTSV1SpeakingSay(ctx, s.PodID, speakingID, text)
@@ -173,7 +172,7 @@ func (h *serviceHandler) SpeakingFlush(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, s.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.TTSV1SpeakingFlush(ctx, s.PodID, speakingID)
@@ -207,7 +206,7 @@ func (h *serviceHandler) SpeakingStop(ctx context.Context, a *auth.AuthIdentity,
 
 	if !h.hasPermission(ctx, a, s.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.TTSV1SpeakingStop(ctx, s.PodID, speakingID)
@@ -241,7 +240,7 @@ func (h *serviceHandler) SpeakingDelete(ctx context.Context, a *auth.AuthIdentit
 
 	if !h.hasPermission(ctx, a, s.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Stop the streaming session first (pod-targeted) to ensure proper cleanup

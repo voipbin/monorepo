@@ -184,7 +184,7 @@ func (h *serviceHandler) CallList(ctx context.Context, a *auth.AuthIdentity, siz
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -288,7 +288,7 @@ func (h *serviceHandler) CallDelete(ctx context.Context, a *auth.AuthIdentity, c
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res, err := h.callDelete(ctx, callID)
@@ -347,7 +347,7 @@ func (h *serviceHandler) CallHangup(ctx context.Context, a *auth.AuthIdentity, c
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -388,7 +388,7 @@ func (h *serviceHandler) CallTalk(ctx context.Context, a *auth.AuthIdentity, cal
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -424,7 +424,7 @@ func (h *serviceHandler) CallHoldOn(ctx context.Context, a *auth.AuthIdentity, c
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -460,7 +460,7 @@ func (h *serviceHandler) CallHoldOff(ctx context.Context, a *auth.AuthIdentity, 
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -496,7 +496,7 @@ func (h *serviceHandler) CallMuteOn(ctx context.Context, a *auth.AuthIdentity, c
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -532,7 +532,7 @@ func (h *serviceHandler) CallMuteOff(ctx context.Context, a *auth.AuthIdentity, 
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -568,7 +568,7 @@ func (h *serviceHandler) CallMOHOn(ctx context.Context, a *auth.AuthIdentity, ca
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -604,7 +604,7 @@ func (h *serviceHandler) CallMOHOff(ctx context.Context, a *auth.AuthIdentity, c
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -640,7 +640,7 @@ func (h *serviceHandler) CallSilenceOn(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -676,7 +676,7 @@ func (h *serviceHandler) CallSilenceOff(ctx context.Context, a *auth.AuthIdentit
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -712,7 +712,7 @@ func (h *serviceHandler) CallMediaStreamStart(ctx context.Context, a *auth.AuthI
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	if errRun := h.websockHandler.RunMediaStream(ctx, w, r, cmexternalmedia.ReferenceTypeCall, callID, encapsulation); errRun != nil {
@@ -747,7 +747,7 @@ func (h *serviceHandler) CallRecordingStart(
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request
@@ -784,7 +784,7 @@ func (h *serviceHandler) CallRecordingStop(ctx context.Context, a *auth.AuthIden
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request

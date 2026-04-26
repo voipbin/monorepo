@@ -99,7 +99,7 @@ func (h *serviceHandler) OutplanDelete(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1OutplanDelete(ctx, id)
@@ -133,7 +133,7 @@ func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, a *auth.Au
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get outplans
@@ -180,7 +180,7 @@ func (h *serviceHandler) OutplanGet(ctx context.Context, a *auth.AuthIdentity, i
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -211,7 +211,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *auth.Aut
 
 	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1OutplanUpdateBasicInfo(ctx, id, name, detail)
@@ -260,7 +260,7 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 
 	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CampaignV1OutplanUpdateDialInfo(ctx, id, source, dialTimeout, tryInterval, maxTryCount0, maxTryCount1, maxTryCount2, maxTryCount3, maxTryCount4)

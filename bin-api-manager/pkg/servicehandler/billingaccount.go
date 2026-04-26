@@ -197,7 +197,7 @@ func (h *serviceHandler) BillingAccountSelfGet(ctx context.Context, a *auth.Auth
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get customer to resolve billing account ID
@@ -236,7 +236,7 @@ func (h *serviceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, 
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	c, err := h.customerGet(ctx, a.CustomerID)
@@ -273,7 +273,7 @@ func (h *serviceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	c, err := h.customerGet(ctx, a.CustomerID)

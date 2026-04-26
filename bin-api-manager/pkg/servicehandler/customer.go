@@ -85,7 +85,7 @@ func (h *serviceHandler) CustomerGet(ctx context.Context, a *auth.AuthIdentity, 
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.customerGet(ctx, customerID)
@@ -112,7 +112,7 @@ func (h *serviceHandler) CustomerSelfGet(ctx context.Context, a *auth.AuthIdenti
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.customerGet(ctx, a.CustomerID)
@@ -208,7 +208,7 @@ func (h *serviceHandler) CustomerUpdate(
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	c, err := h.customerGet(ctx, id)
@@ -252,7 +252,7 @@ func (h *serviceHandler) CustomerSelfUpdate(
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res, err := h.reqHandler.CustomerV1CustomerUpdate(ctx, a.CustomerID, name, detail, email, phoneNumber, address, webhookMethod, webhookURI)
@@ -281,7 +281,7 @@ func (h *serviceHandler) CustomerDelete(ctx context.Context, a *auth.AuthIdentit
 	// only admin permssion allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.customerGet(ctx, customerID)
@@ -316,7 +316,7 @@ func (h *serviceHandler) CustomerFreeze(ctx context.Context, a *auth.AuthIdentit
 	// only admin permission allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.customerGet(ctx, customerID)
@@ -351,7 +351,7 @@ func (h *serviceHandler) CustomerRecover(ctx context.Context, a *auth.AuthIdenti
 	// only admin permission allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.customerGet(ctx, customerID)
@@ -384,7 +384,7 @@ func (h *serviceHandler) CustomerSelfFreeze(ctx context.Context, a *auth.AuthIde
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.customerGet(ctx, a.CustomerID)
@@ -418,7 +418,7 @@ func (h *serviceHandler) CustomerSelfFreezeAndDelete(ctx context.Context, a *aut
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.customerGet(ctx, a.CustomerID)
@@ -451,7 +451,7 @@ func (h *serviceHandler) CustomerSelfRecover(ctx context.Context, a *auth.AuthId
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.customerGet(ctx, a.CustomerID)
@@ -485,7 +485,7 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.customerGet(ctx, customerID)
@@ -526,7 +526,7 @@ func (h *serviceHandler) CustomerUpdateDefaultOutgoingSourceNumberID(ctx context
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.customerGet(ctx, customerID)
@@ -570,7 +570,7 @@ func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.Aut
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	c, err := h.customerGet(ctx, customerID)
@@ -604,7 +604,7 @@ func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context,
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	ba, err := h.billingAccountGet(ctx, billingAccountID)
@@ -615,7 +615,7 @@ func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context,
 
 	if !h.hasPermission(ctx, a, ba.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res, err := h.reqHandler.CustomerV1CustomerUpdateBillingAccountID(ctx, a.CustomerID, billingAccountID)
@@ -642,7 +642,7 @@ func (h *serviceHandler) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx con
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// validate the number exists and belongs to the agent's customer
@@ -680,7 +680,7 @@ func (h *serviceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *auth
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res, err := h.reqHandler.CustomerV1CustomerUpdateMetadata(ctx, a.CustomerID, metadata)

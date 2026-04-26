@@ -24,7 +24,7 @@ func (h *serviceHandler) ServiceAgentTalkChatGet(ctx context.Context, a *auth.Au
 	// Public "talk" type chats are accessible to all agents in the customer
 	// For group/direct chats, agent must be a participant
 	if !h.canAccessChat(ctx, a.AgentID(), a.CustomerID, chatID) {
-		return nil, fmt.Errorf("agent has no permission to access this chat")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Get chat
@@ -124,7 +124,7 @@ func (h *serviceHandler) ServiceAgentTalkChatUpdate(ctx context.Context, a *auth
 
 	// Check permission - must be a participant to modify
 	if !h.isParticipantOfTalk(ctx, a.AgentID(), chatID) {
-		return nil, fmt.Errorf("agent is not a participant of this chat")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Update chat via RPC
@@ -145,7 +145,7 @@ func (h *serviceHandler) ServiceAgentTalkChatDelete(ctx context.Context, a *auth
 
 	// Check permission - must be a participant to delete
 	if !h.isParticipantOfTalk(ctx, a.AgentID(), chatID) {
-		return nil, fmt.Errorf("agent is not a participant of this chat")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Delete chat via RPC
@@ -172,7 +172,7 @@ func (h *serviceHandler) ServiceAgentTalkChatJoin(ctx context.Context, a *auth.A
 
 	// Only allow joining "talk" type chats (public channels)
 	if chat.Type != tkchat.TypeTalk {
-		return nil, fmt.Errorf("can only join talk-type chats")
+		return nil, fmt.Errorf("%w: only talk-type chats can be joined", serviceerrors.ErrInvalidArgument)
 	}
 
 	// Verify chat belongs to the same customer
@@ -200,7 +200,7 @@ func (h *serviceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a 
 	// Public "talk" type chats are accessible to all agents in the customer
 	// For group/direct chats, agent must be a participant
 	if !h.canAccessChat(ctx, a.AgentID(), a.CustomerID, chatID) {
-		return nil, fmt.Errorf("agent has no permission to access this chat")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Get participants via RPC
@@ -228,7 +228,7 @@ func (h *serviceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, 
 	// For "talk" type chats (public channels): anyone in the customer can add themselves (join)
 	// For group/direct chats: only existing participants can add others
 	if !h.canAddParticipant(ctx, a, chatID, ownerType, ownerID) {
-		return nil, fmt.Errorf("agent is not a participant of this chat")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Add participant via RPC
@@ -249,7 +249,7 @@ func (h *serviceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, 
 
 	// Check permission - must be a participant to remove others
 	if !h.isParticipantOfTalk(ctx, a.AgentID(), chatID) {
-		return nil, fmt.Errorf("agent is not a participant of this chat")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Delete participant via RPC
@@ -278,7 +278,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageGet(ctx context.Context, a *auth
 	// Public "talk" type chats are accessible to all agents in the customer
 	// For group/direct chats, agent must be a participant
 	if !h.canAccessChat(ctx, a.AgentID(), a.CustomerID, tmp.ChatID) {
-		return nil, fmt.Errorf("agent has no permission to access this chat")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Convert to WebhookMessage
@@ -304,7 +304,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageList(ctx context.Context, a *aut
 	// Public "talk" type chats are accessible to all agents in the customer
 	// For group/direct chats, agent must be a participant
 	if !h.canAccessChat(ctx, a.AgentID(), a.CustomerID, chatID) {
-		return nil, fmt.Errorf("agent is not a participant of this chat")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Get messages for this specific chat
@@ -334,7 +334,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageCreate(ctx context.Context, a *a
 
 	// Check permission
 	if !h.isParticipantOfTalk(ctx, a.AgentID(), chatID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Create message via RPC
@@ -366,7 +366,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageDelete(ctx context.Context, a *a
 
 	// Check permission - must own the message
 	if tmp.OwnerID != a.AgentID() {
-		return nil, fmt.Errorf("agent does not own this message")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Delete message via RPC
@@ -398,7 +398,7 @@ func (h *serviceHandler) ServiceAgentTalkMessageReactionCreate(ctx context.Conte
 
 	// Check permission - must be participant of the talk
 	if !h.isParticipantOfTalk(ctx, a.AgentID(), tmp.ChatID) {
-		return nil, fmt.Errorf("agent is not a participant of this talk")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// Add reaction via RPC

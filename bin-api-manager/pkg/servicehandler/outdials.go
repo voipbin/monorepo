@@ -48,7 +48,7 @@ func (h *serviceHandler) OutdialCreate(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.OutdialV1OutdialCreate(ctx, a.CustomerID, campaignID, name, detail, data)
@@ -83,7 +83,7 @@ func (h *serviceHandler) OutdialGetsByCustomerID(ctx context.Context, a *auth.Au
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get outdials
@@ -129,7 +129,7 @@ func (h *serviceHandler) OutdialDelete(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.OutdialV1OutdialDelete(ctx, id)
@@ -166,7 +166,7 @@ func (h *serviceHandler) OutdialGet(ctx context.Context, a *auth.AuthIdentity, i
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -197,7 +197,7 @@ func (h *serviceHandler) OutdialUpdateBasicInfo(ctx context.Context, a *auth.Aut
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.OutdialV1OutdialUpdateBasicInfo(ctx, id, name, detail)
@@ -235,7 +235,7 @@ func (h *serviceHandler) OutdialUpdateCampaignID(ctx context.Context, a *auth.Au
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.OutdialV1OutdialUpdateCampaignID(ctx, id, campaignID)
@@ -273,7 +273,7 @@ func (h *serviceHandler) OutdialUpdateData(ctx context.Context, a *auth.AuthIden
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.OutdialV1OutdialUpdateData(ctx, id, data)

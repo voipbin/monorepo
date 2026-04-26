@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"monorepo/bin-api-manager/models/auth"
@@ -62,7 +61,7 @@ func (h *serviceHandler) ConferenceGet(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -90,7 +89,7 @@ func (h *serviceHandler) ConferenceList(ctx context.Context, a *auth.AuthIdentit
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[string]string{
@@ -154,7 +153,7 @@ func (h *serviceHandler) ConferenceCreate(
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ConferenceV1ConferenceCreate(ctx, conferenceID, a.CustomerID, confType, name, detail, data, timeout, preFlowID, postFlowID)
@@ -188,7 +187,7 @@ func (h *serviceHandler) ConferenceDelete(ctx context.Context, a *auth.AuthIdent
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// destroy
@@ -240,7 +239,7 @@ func (h *serviceHandler) ConferenceUpdate(
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ConferenceV1ConferenceUpdate(
@@ -282,7 +281,7 @@ func (h *serviceHandler) ConferenceRecordingStart(
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// recording
@@ -309,7 +308,7 @@ func (h *serviceHandler) ConferenceRecordingStop(ctx context.Context, a *auth.Au
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// recording
@@ -344,7 +343,7 @@ func (h *serviceHandler) ConferenceTranscribeStart(ctx context.Context, a *auth.
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ConferenceV1ConferenceTranscribeStart(ctx, conferenceID, language)
@@ -379,7 +378,7 @@ func (h *serviceHandler) ConferenceTranscribeStop(ctx context.Context, a *auth.A
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// recording
@@ -414,7 +413,7 @@ func (h *serviceHandler) ConferenceDirectHashRegenerate(ctx context.Context, a *
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ConferenceV1ConferenceDirectHashRegenerate(ctx, conferenceID)
@@ -450,7 +449,7 @@ func (h *serviceHandler) ConferenceMediaStreamStart(ctx context.Context, a *auth
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return fmt.Errorf("agent has no permission")
+		return serviceerrors.ErrPermissionDenied
 	}
 
 	if errRun := h.websockHandler.RunMediaStream(ctx, w, r, cmexternalmedia.ReferenceTypeConfbridge, c.ConfbridgeID, encapsulation); errRun != nil {

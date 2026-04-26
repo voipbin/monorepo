@@ -53,7 +53,7 @@ func (h *serviceHandler) OutdialtargetCreate(
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// create
@@ -102,7 +102,7 @@ func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *auth.AuthIdent
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get outdialtarget
@@ -151,7 +151,7 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *au
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get targets
@@ -195,7 +195,7 @@ func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, a *auth.AuthId
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get outdialtarget

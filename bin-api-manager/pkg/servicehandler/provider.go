@@ -58,7 +58,7 @@ func (h *serviceHandler) ProviderGet(ctx context.Context, a *auth.AuthIdentity, 
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	return tmp.ConvertWebhookMessage(), nil
@@ -88,7 +88,7 @@ func (h *serviceHandler) ProviderList(ctx context.Context, a *auth.AuthIdentity,
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmps, err := h.reqHandler.RouteV1ProviderList(ctx, token, size)
@@ -131,7 +131,7 @@ func (h *serviceHandler) ProviderCreate(
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RouteV1ProviderCreate(
@@ -170,7 +170,7 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentit
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get provider
@@ -204,7 +204,7 @@ func (h *serviceHandler) ProviderSetup(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RouteV1ProviderSetup(ctx, carrier, name, detail, apiKey)
@@ -260,7 +260,7 @@ func (h *serviceHandler) ProviderUpdate(
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.providerGet(ctx, providerID)

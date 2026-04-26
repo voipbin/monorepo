@@ -46,7 +46,7 @@ func (h *serviceHandler) TranscribeGet(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -75,7 +75,7 @@ func (h *serviceHandler) TranscribeList(ctx context.Context, a *auth.AuthIdentit
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[string]string{
@@ -134,7 +134,7 @@ func (h *serviceHandler) TranscribeStart(
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get transcribe resource info
@@ -221,7 +221,7 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *auth.
 	// check the ownership
 	if !h.hasPermission(ctx, a, tmpCustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return "", uuid.Nil, fmt.Errorf("agent has no permission")
+		return "", uuid.Nil, serviceerrors.ErrPermissionDenied
 	}
 
 	return resReferenceType, resReferenceID, nil
@@ -251,7 +251,7 @@ func (h *serviceHandler) TranscribeStop(ctx context.Context, a *auth.AuthIdentit
 
 	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.TranscribeV1TranscribeStop(ctx, transcribeID)
@@ -287,7 +287,7 @@ func (h *serviceHandler) TranscribeDelete(ctx context.Context, a *auth.AuthIdent
 
 	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// send request

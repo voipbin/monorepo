@@ -167,7 +167,7 @@ func (h *serviceHandler) NumberGet(ctx context.Context, a *auth.AuthIdentity, id
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -237,7 +237,7 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity,
 
 	if !h.hasPermission(ctx, a, n.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// check call flow
@@ -286,7 +286,7 @@ func (h *serviceHandler) NumberUpdateFlowIDs(ctx context.Context, a *auth.AuthId
 
 	if !h.hasPermission(ctx, a, n.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// update number
@@ -322,7 +322,7 @@ func (h *serviceHandler) NumberUpdateMetadata(ctx context.Context, a *auth.AuthI
 
 	if !h.hasPermission(ctx, a, n.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// update number metadata

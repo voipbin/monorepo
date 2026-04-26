@@ -78,7 +78,7 @@ func (h *serviceHandler) TrunkDelete(ctx context.Context, a *auth.AuthIdentity, 
 	// permission check
 	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// delete
@@ -116,7 +116,7 @@ func (h *serviceHandler) TrunkGet(ctx context.Context, a *auth.AuthIdentity, id 
 	// permission check
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -146,7 +146,7 @@ func (h *serviceHandler) TrunkList(ctx context.Context, a *auth.AuthIdentity, si
 	// permission check
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[string]string{
@@ -202,7 +202,7 @@ func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthI
 	// permission check
 	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// update

@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -51,7 +50,7 @@ func (h *serviceHandler) RouteGet(ctx context.Context, a *auth.AuthIdentity, rou
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.routeGet(ctx, routeID)
@@ -86,7 +85,7 @@ func (h *serviceHandler) RouteList(ctx context.Context, a *auth.AuthIdentity, si
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// get all routes (no filtering for super admin)
@@ -129,7 +128,7 @@ func (h *serviceHandler) RouteGetsByCustomerID(ctx context.Context, a *auth.Auth
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[rmroute.Field]any{
@@ -177,7 +176,7 @@ func (h *serviceHandler) RouteCreate(
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RouteV1RouteCreate(
@@ -217,7 +216,7 @@ func (h *serviceHandler) RouteDelete(ctx context.Context, a *auth.AuthIdentity, 
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.routeGet(ctx, routeID)
@@ -263,7 +262,7 @@ func (h *serviceHandler) RouteUpdate(
 	// only project admin allowed
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	_, err := h.routeGet(ctx, routeID)
