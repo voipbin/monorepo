@@ -127,7 +127,7 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, req *sock.Re
 	tmp, err := h.accountHandler.Get(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a conversation. conversation_id: %s, err: %v", id, err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp.ConvertWebhookMessage())
@@ -188,7 +188,7 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 	tmp, err := h.accountHandler.Update(ctx, id, tmpFields)
 	if err != nil {
 		log.Debugf("Could not get a conversation. conversation_id: %s, err: %v", id, err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp.ConvertWebhookMessage())
@@ -225,7 +225,7 @@ func (h *listenHandler) processV1AccountsIDDelete(ctx context.Context, m *sock.R
 	tmp, err := h.accountHandler.Delete(ctx, id)
 	if err != nil {
 		log.Debugf("Could not delete the account. account_id: %s, err: %v", id, err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp.ConvertWebhookMessage())

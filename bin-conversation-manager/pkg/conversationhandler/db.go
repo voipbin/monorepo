@@ -2,20 +2,39 @@ package conversationhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
 )
 
-// Get returns conversation
+// Get returns conversation.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *conversationHandler) Get(ctx context.Context, id uuid.UUID) (*conversation.Conversation, error) {
-	return h.db.ConversationGet(ctx, id)
+	res, err := h.db.ConversationGet(ctx, id)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameConversationManager,
+				"CONVERSATION_NOT_FOUND",
+				"The conversation was not found.",
+			).Wrap(err)
+		}
+		return nil, err
+	}
+	return res, nil
 }
 
 // GetBySelfAndPeer returns conversation
