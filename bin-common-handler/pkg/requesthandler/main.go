@@ -1088,6 +1088,9 @@ type RequestHandler interface {
 	PipecatV1PipecatcallTerminate(ctx context.Context, hostID string, pipecatcallID uuid.UUID) (*pmpipecatcall.Pipecatcall, error)
 	PipecatV1PipecatcallTerminateWithDelay(ctx context.Context, hostID string, pipecatcallID uuid.UUID, delay int) error
 
+	// pipecat-manager ping
+	PipecatV1Ping(ctx context.Context, hostID string) error
+
 	// queue-manager queue
 	QueueV1QueueList(ctx context.Context, pageToken string, pageSize uint64, filters map[qmqueue.Field]any) ([]qmqueue.Queue, error)
 	QueueV1QueueGet(ctx context.Context, queueID uuid.UUID) (*qmqueue.Queue, error)

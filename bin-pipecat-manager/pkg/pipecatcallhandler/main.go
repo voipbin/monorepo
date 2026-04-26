@@ -46,6 +46,8 @@ type PipecatcallHandler interface {
 	RunnerWebsocketHandle(id uuid.UUID, c *gin.Context) error
 	RunnerToolHandle(id uuid.UUID, c *gin.Context) error
 	RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Context) error
+
+	Ping(ctx context.Context) (*pipecatcall.PingResult, error)
 }
 
 // list of default external media channel options.
