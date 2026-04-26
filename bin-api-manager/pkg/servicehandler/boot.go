@@ -41,7 +41,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 
 	// validate hash format
 	if !strings.HasPrefix(directHash, dmdirect.DirectPrefix) {
-		return nil, fmt.Errorf("invalid direct hash format")
+		return nil, fmt.Errorf("%w: invalid direct hash format", serviceerrors.ErrInvalidArgument)
 	}
 
 	// resolve hash
@@ -69,7 +69,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 	allowedTypes, ok := directResourceMapping[d.ResourceType]
 	if !ok {
 		log.Infof("Unsupported direct resource type. resource_type: %s", d.ResourceType)
-		return nil, fmt.Errorf("unsupported resource type: %s", d.ResourceType)
+		return nil, fmt.Errorf("%w: unsupported resource type: %s", serviceerrors.ErrInvalidArgument, d.ResourceType)
 	}
 
 	// build direct scope

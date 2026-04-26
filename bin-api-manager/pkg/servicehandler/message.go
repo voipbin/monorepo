@@ -96,7 +96,7 @@ func (h *serviceHandler) MessageSend(ctx context.Context, a *auth.AuthIdentity, 
 
 	if len(destinations) <= 0 {
 		log.Errorf("The destination is empty. destinations: %d", len(destinations))
-		return nil, fmt.Errorf("destination is empty")
+		return nil, fmt.Errorf("%w: destination is empty", serviceerrors.ErrInvalidArgument)
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

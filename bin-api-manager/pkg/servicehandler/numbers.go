@@ -109,7 +109,7 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity,
 
 	if num == "" {
 		log.Errorf("Not acceptable number. num: %s", num)
-		return nil, fmt.Errorf("not acceptable number. num: %s", num)
+		return nil, fmt.Errorf("%w: not acceptable number. num: %s", serviceerrors.ErrInvalidArgument, num)
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

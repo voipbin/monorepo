@@ -24,13 +24,13 @@ import (
 // Migration status (2026-04): Steps 1-3 cover all RPC traffic from
 // upstream managers — every Get-by-ID handler in bin-call-manager,
 // bin-flow-manager, …, bin-registrar-manager now emits typed
-// *cerrors.VoipbinError on miss. Step 4 remains because the api-manager
-// servicehandler layer itself still returns plain fmt.Errorf strings
-// (e.g., authorization checks like `"user has no permission"` and
-// validation errors like `"... is required"`). Migrating servicehandler
-// to typed errors / sentinels is the natural follow-up; once that is
-// done, step 4 can be removed and any unmatched legacy string will
-// correctly degrade to INTERNAL via step 5.
+// *cerrors.VoipbinError on miss. The api-manager servicehandler layer
+// has migrated permission checks (PR-perm) and validation errors
+// (PR-validation) to typed sentinels. Step 4 still covers a few legacy
+// strings (not_found / state / insufficient / unavailable) that remain
+// in servicehandler; those are tracked as follow-up sub-PRs. Once
+// servicehandler is fully migrated, step 4 can be removed and any
+// unmatched legacy string will correctly degrade to INTERNAL via step 5.
 func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -116,9 +116,6 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.FailedPrecondition(commonoutline.ServiceNameAPIManager, "STATE_INVALID", "The operation is invalid for the current resource state.").Wrap(err)
 	case strings.Contains(lowered, "unavailable"):
 		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE", "An upstream service is temporarily unavailable.").Wrap(err)
-	case strings.Contains(lowered, "is required"),
-		strings.Contains(lowered, "only one of"):
-		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request is invalid.").Wrap(err)
 	}
 
 	// 5. Default.

@@ -115,7 +115,7 @@ func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *auth.AuthIdent
 	// check the outdial_id
 	if tmp.OutdialID != outdialID {
 		log.Errorf("The outdial_id is wrong. outdial_id: %s", tmp.OutdialID)
-		return nil, fmt.Errorf("wrong outdial_id. outdial_id: %s", tmp.OutdialID)
+		return nil, fmt.Errorf("%w: wrong outdial_id. outdial_id: %s", serviceerrors.ErrInvalidArgument, tmp.OutdialID)
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -208,7 +208,7 @@ func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, a *auth.AuthId
 	// check the outdial_id
 	if ot.OutdialID != outdialID {
 		log.Errorf("The outdial_id is wrong. outdial_id: %s", ot.OutdialID)
-		return nil, fmt.Errorf("wrong outdial_id. outdial_id: %s", ot.OutdialID)
+		return nil, fmt.Errorf("%w: wrong outdial_id. outdial_id: %s", serviceerrors.ErrInvalidArgument, ot.OutdialID)
 	}
 
 	// delete

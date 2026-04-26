@@ -55,7 +55,7 @@ func (h *serviceHandler) AIcallCreate(
 		}
 		customerID = t.CustomerID
 	default:
-		return nil, fmt.Errorf("unsupported assistance type: %s", assistanceType)
+		return nil, fmt.Errorf("%w: unsupported assistance type: %s", serviceerrors.ErrInvalidArgument, assistanceType)
 	}
 
 	switch {
