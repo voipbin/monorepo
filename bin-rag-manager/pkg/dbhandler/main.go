@@ -5,6 +5,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -15,6 +16,11 @@ import (
 	"monorepo/bin-rag-manager/models/document"
 	"monorepo/bin-rag-manager/models/rag"
 )
+
+// ErrNotFound is returned when a requested record does not exist.
+// Translated from sql.ErrNoRows by single-row Get methods so callers can
+// match with errors.Is regardless of the underlying driver detail.
+var ErrNotFound = errors.New("record not found")
 
 // psql is a squirrel StatementBuilder configured for PostgreSQL dollar placeholders.
 // Shared across all dbhandler files (rag.go, document.go, chunk.go).

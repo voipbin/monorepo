@@ -2,6 +2,7 @@ package raghandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,9 +14,13 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	dbchunk "monorepo/bin-rag-manager/models/chunk"
 	"monorepo/bin-rag-manager/models/document"
 	"monorepo/bin-rag-manager/pkg/chunker"
+	"monorepo/bin-rag-manager/pkg/dbhandler"
 )
 
 const (
@@ -35,6 +40,13 @@ func (h *ragHandler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.D
 	d, err := h.dbHandler.DocumentGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get document. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRagManager,
+				"DOCUMENT_NOT_FOUND",
+				"The document was not found.",
+			).Wrap(err)
+		}
 		return nil, fmt.Errorf("could not get document: %w", err)
 	}
 	log.WithField("document", d).Debugf("Retrieved document. document_id: %s", d.ID)

@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	stderrors "errors"
 	"fmt"
 	"strings"
 	"time"
@@ -193,6 +194,9 @@ func (h *handler) DocumentGet(ctx context.Context, id uuid.UUID) (*document.Docu
 	row := h.db.QueryRowContext(ctx, sqlStr, args...)
 	d, err := scanDocument(row)
 	if err != nil {
+		if stderrors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, fmt.Errorf("could not scan document: %w", err)
 	}
 
@@ -332,6 +336,13 @@ func (h *handler) DocumentDeleteByRagID(ctx context.Context, ragID uuid.UUID) er
 // DocumentClaimForProcessing atomically sets a pending document to processing status.
 // It increments retry_count and sets tm_processing for heartbeat tracking.
 // Returns the updated document or an error if the document is not in pending status.
+//
+// NOTE: this method intentionally does NOT translate sql.ErrNoRows into
+// dbhandler.ErrNotFound. A "no rows" outcome here means the document is not
+// claimable (already claimed, processing, deleted, or never existed) — a race
+// condition signal, not an external "not found" semantic. Callers must not
+// match against ErrNotFound for claim outcomes; treat any error as
+// "could not claim" and fall through to the worker's retry/skip logic.
 func (h *handler) DocumentClaimForProcessing(ctx context.Context, id uuid.UUID) (*document.Document, error) {
 	now := h.utilHandler.TimeNow()
 
