@@ -4,10 +4,13 @@ package listenhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
+	"net/http"
 	"regexp"
 	"time"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -17,6 +20,7 @@ import (
 
 	"monorepo/bin-customer-manager/pkg/accesskeyhandler"
 	"monorepo/bin-customer-manager/pkg/customerhandler"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
 	"monorepo/bin-customer-manager/pkg/metricshandler"
 )
 
@@ -71,6 +75,35 @@ func simpleResponse(code int) *sock.Response {
 	return &sock.Response{
 		StatusCode: code,
 	}
+}
+
+// errorResponse maps a business-handler error to the appropriate sock.Response.
+// Resolution order:
+//  1. Typed *cerrors.VoipbinError → encoded via cerrors.ToResponse so the
+//     api-manager edge recovers domain/reason/message via errors.As over RPC.
+//  2. Legacy dbhandler.ErrNotFound (wrapped via pkg/errors) → simpleResponse(404).
+//  3. Anything else → simpleResponse(500).
+func errorResponse(err error) *sock.Response {
+	if err == nil {
+		logrus.WithField("func", "errorResponse").Warn("errorResponse called with nil error — likely a caller bug; returning 500")
+		return simpleResponse(http.StatusInternalServerError)
+	}
+
+	var ve *cerrors.VoipbinError
+	if stderrors.As(err, &ve) {
+		resp, e := cerrors.ToResponse(ve)
+		if e == nil {
+			return resp
+		}
+		logrus.WithField("func", "errorResponse").Errorf("cerrors.ToResponse failed for typed VoipbinError: %v", e)
+		return simpleResponse(http.StatusInternalServerError)
+	}
+
+	if stderrors.Is(err, dbhandler.ErrNotFound) {
+		return simpleResponse(http.StatusNotFound)
+	}
+
+	return simpleResponse(http.StatusInternalServerError)
 }
 
 // NewListenHandler return ListenHandler interface
@@ -238,7 +271,18 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	if err != nil {
 		log.Errorf("Could not find corresponded message handler. method: %s, uri: %s", m.Method, m.URI)
-		response = simpleResponse(400)
+		// Typed *VoipbinError and dbhandler.ErrNotFound flow through errorResponse
+		// so the api-manager edge sees the right envelope or 404. Other errors
+		// keep the legacy 400.
+		var ve *cerrors.VoipbinError
+		switch {
+		case stderrors.As(err, &ve):
+			response = errorResponse(err)
+		case stderrors.Is(err, dbhandler.ErrNotFound):
+			response = errorResponse(err)
+		default:
+			response = simpleResponse(400)
+		}
 		err = nil
 	} else {
 		log.WithFields(
