@@ -48,7 +48,7 @@ func (h *serviceHandler) OutdialtargetCreate(
 	od, err := h.outdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get outdial info", err)
 	}
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -97,7 +97,7 @@ func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *auth.AuthIdent
 	od, err := h.outdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get outdial info", err)
 	}
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -109,7 +109,7 @@ func (h *serviceHandler) OutdialtargetGet(ctx context.Context, a *auth.AuthIdent
 	tmp, err := h.reqHandler.OutdialV1OutdialtargetGet(ctx, outdialtargetID)
 	if err != nil {
 		log.Errorf("Could not get outdialtarget info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdialtarget info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outdialtarget info", err)
 	}
 
 	// check the outdial_id
@@ -146,7 +146,7 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *au
 	od, err := h.outdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not get outdial info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get outdial info", err)
 	}
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -158,7 +158,7 @@ func (h *serviceHandler) OutdialtargetGetsByOutdialID(ctx context.Context, a *au
 	targets, err := h.reqHandler.OutdialV1OutdialtargetGetsByOutdialID(ctx, outdialID, token, size)
 	if err != nil {
 		log.Errorf("Could not get outdials info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdials info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outdials info", err)
 	}
 
 	// create result
@@ -190,7 +190,7 @@ func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, a *auth.AuthId
 	od, err := h.outdialGet(ctx, outdialID)
 	if err != nil {
 		log.Errorf("Could not get outdial info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdial info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outdial info", err)
 	}
 
 	if !h.hasPermission(ctx, a, od.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -202,7 +202,7 @@ func (h *serviceHandler) OutdialtargetDelete(ctx context.Context, a *auth.AuthId
 	ot, err := h.reqHandler.OutdialV1OutdialtargetGet(ctx, outdialtargetID)
 	if err != nil {
 		log.Errorf("Could not get outdialtarget info from the outdial-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outdialtarget info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outdialtarget info", err)
 	}
 
 	// check the outdial_id

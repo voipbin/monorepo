@@ -80,7 +80,7 @@ func (h *serviceHandler) AICreate(
 		rag, err := h.reqHandler.RagV1RagGet(ctx, ragID)
 		if err != nil {
 			log.Errorf("Could not get RAG. err: %v", err)
-			return nil, fmt.Errorf("could not validate knowledge base")
+			return nil, fmt.Errorf("%w: could not validate knowledge base", serviceerrors.ErrInternal)
 		}
 		log.WithField("rag", rag).Debugf("Retrieved RAG info. rag_id: %s", rag.ID)
 
@@ -132,7 +132,7 @@ func (h *serviceHandler) AIDirectHashRegenerate(ctx context.Context, a *auth.Aut
 	c, err := h.aiGet(ctx, aiID)
 	if err != nil {
 		log.Errorf("Could not get ai info. err: %v", err)
-		return nil, fmt.Errorf("could not find ai info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find ai info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -190,7 +190,7 @@ func (h *serviceHandler) AIGetsByCustomerID(ctx context.Context, a *auth.AuthIde
 	tmps, err := h.reqHandler.AIV1AIList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get AIs info from the chatobt manager. err: %v", err)
-		return nil, fmt.Errorf("could not find chats info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find chats info", err)
 	}
 
 	// create result
@@ -243,7 +243,7 @@ func (h *serviceHandler) AIGet(ctx context.Context, a *auth.AuthIdentity, id uui
 	tmp, err := h.aiGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get ai info from the chatobt manager. err: %v", err)
-		return nil, fmt.Errorf("could not find ai info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find ai info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -273,7 +273,7 @@ func (h *serviceHandler) AIDelete(ctx context.Context, a *auth.AuthIdentity, id 
 	c, err := h.aiGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get ai info from the ai-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find ai info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find ai info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -335,7 +335,7 @@ func (h *serviceHandler) AIUpdate(
 	c, err := h.aiGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get ai info from the ai-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find ai info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find ai info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -348,7 +348,7 @@ func (h *serviceHandler) AIUpdate(
 		rag, err := h.reqHandler.RagV1RagGet(ctx, ragID)
 		if err != nil {
 			log.Errorf("Could not get RAG. err: %v", err)
-			return nil, fmt.Errorf("could not validate knowledge base")
+			return nil, fmt.Errorf("%w: could not validate knowledge base", serviceerrors.ErrInternal)
 		}
 		log.WithField("rag", rag).Debugf("Retrieved RAG info. rag_id: %s", rag.ID)
 

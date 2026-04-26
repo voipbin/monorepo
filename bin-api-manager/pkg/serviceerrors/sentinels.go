@@ -21,4 +21,5 @@ var (
 	ErrIdentityVerificationRequired = stderrors.New("identity verification required")
 	ErrStateInvalid                 = stderrors.New("state invalid")
 	ErrServiceUnavailable           = stderrors.New("service unavailable")
+	ErrInsufficientBalance          = stderrors.New("insufficient balance")
 )

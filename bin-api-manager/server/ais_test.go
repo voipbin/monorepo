@@ -36,7 +36,7 @@ func Test_PostAis(t *testing.T) {
 		expectedName        string
 		expectedDetail      string
 		expectedEngineModel amai.EngineModel
-		expectedParameter  map[string]any
+		expectedParameter   map[string]any
 		expectedEngineKey   string
 		expectedInitPrompt  string
 		expectedTTSType     amai.TTSType
@@ -557,7 +557,7 @@ func Test_PutAisId(t *testing.T) {
 		expectedName        string
 		expectedDetail      string
 		epxectedEngineModel amai.EngineModel
-		expectedParameter  map[string]any
+		expectedParameter   map[string]any
 		expectedEngineKey   string
 		expectedInitPrompt  string
 		expectedTTSType     amai.TTSType

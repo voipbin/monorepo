@@ -72,7 +72,7 @@ func (h *serviceHandler) ServiceAgentConversationMessageSend(
 	c, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		log.Errorf("Could not get conversation info. err: %v", err)
-		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)
+		return nil, fmt.Errorf("%w: could not verify the conversation", err)
 	}
 
 	if c.OwnerID != a.AgentID() {

@@ -177,7 +177,7 @@ func (h *serviceHandler) ProviderDelete(ctx context.Context, a *auth.AuthIdentit
 	_, err := h.reqHandler.RouteV1ProviderGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get provider info from the route-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find provider info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find provider info", err)
 	}
 
 	tmp, err := h.reqHandler.RouteV1ProviderDelete(ctx, id)

@@ -9,9 +9,9 @@ Error Reason Codes
 
    Reason codes are append-only once published. Adding a new reason does not require a schema version bump; removing or renaming one does and triggers a deprecation window.
 
-.. note:: **Rollout status (PR 15 / 2026-04-26)**
+.. note:: **Rollout status (2026-04, complete)**
 
-   All ``bin-api-manager/server/*.go`` files now uniformly emit the canonical error envelope — including the timeline gateway endpoints (``/aggregated-events``, ``/timelines/{resource_type}/{resource_id}/events``, ``/timelines/calls/{call_id}/sip-analysis``, ``/timelines/calls/{call_id}/pcap``) which were finalized in this PR. Every 4xx/5xx response from the API gateway carries the ``status`` / ``reason`` / ``domain`` / ``message`` / ``request_id`` fields documented on this page. Reasons currently surface via the translator's substring-fallback patterns (e.g., ``"not found"`` → ``RESOURCE_NOT_FOUND``); future migration PRs will introduce typed errors in the manager services so that domain-specific reasons (``CALL_NOT_FOUND``, ``STORAGE_FILE_NOT_FOUND``, etc.) can route directly without depending on string matching.
+   All ``bin-api-manager/server/*.go`` files uniformly emit the canonical error envelope. Every 4xx/5xx response from the API gateway carries the ``status`` / ``reason`` / ``domain`` / ``message`` / ``request_id`` fields documented on this page. The api-manager servicehandler layer now emits typed sentinels (``serviceerrors.Err*``) and the legacy substring-fallback translator step has been removed — any unmatched error correctly degrades to ``500 INTERNAL`` via the default branch. Domain-specific reasons (``CALL_NOT_FOUND``, ``STORAGE_FILE_NOT_FOUND``, etc.) require the corresponding manager service to emit ``*cerrors.VoipbinError`` directly; until that migration ships per service, generic api-manager reasons (``RESOURCE_NOT_FOUND``, ``STATE_INVALID``, ``INSUFFICIENT_BALANCE``, etc.) surface instead.
 
 api-manager
 -----------
@@ -106,9 +106,8 @@ call-manager
 
 .. note::
 
-   The reasons in this section define the platform's planned typed-error contract.
-   Reasons that match the translator's case-insensitive substring fallback (``CALL_NOT_FOUND``, ``RECORDING_NOT_FOUND``, ``GROUPCALL_NOT_FOUND``, ``CALL_ALREADY_HANGUP``, ``RECORDING_ALREADY_ACTIVE``, ``RECORDING_NOT_ACTIVE``, ``INSUFFICIENT_BALANCE`` via ``"already"`` / ``"deleted"`` / ``"not active"`` / ``"insufficient"`` / ``"not found"`` patterns) surface today.
-   Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships; until then, the translator routes the underlying ``fmt.Errorf`` strings through the substring fallback to the closest canonical reason (typically the api-manager generic equivalent, e.g., ``RESOURCE_NOT_FOUND`` rather than ``CALL_NOT_FOUND``).
+   The reasons in this section define the platform's planned typed-error contract for call-manager.
+   These domain-specific reasons (``CALL_NOT_FOUND``, ``RECORDING_NOT_FOUND``, ``GROUPCALL_NOT_FOUND``, ``CALL_ALREADY_HANGUP``, ``RECORDING_ALREADY_ACTIVE``, ``RECORDING_NOT_ACTIVE``, ``INSUFFICIENT_BALANCE``) are **not yet emitted directly** — they require call-manager to surface ``*cerrors.VoipbinError`` over RPC. Until that migration ships, the api-manager servicehandler wraps call-manager RPC errors with typed sentinels (``serviceerrors.ErrNotFound``, ``serviceerrors.ErrStateInvalid``, ``serviceerrors.ErrInsufficientBalance``) and the translator surfaces them as the api-manager generic equivalents (``RESOURCE_NOT_FOUND``, ``STATE_INVALID``, ``INSUFFICIENT_BALANCE`` in the ``api-manager`` domain).
    PR 13 added the agent-surface read endpoints (``GET /service_agents/calls`` and ``GET /service_agents/calls/{id}``); these reuse ``CALL_NOT_FOUND`` for not-found semantics on the by-ID read.
 
 flow-manager
@@ -116,12 +115,8 @@ flow-manager
 
 .. note::
 
-   The reasons in this section define the platform's planned typed-error contract.
-   Reasons reachable today via the translator's case-insensitive substring fallback:
-   ``FLOW_NOT_FOUND`` and ``ACTIVEFLOW_NOT_FOUND`` (via ``"not found"`` pattern → currently surface as ``RESOURCE_NOT_FOUND`` in the api-manager domain),
-   ``ACTIVEFLOW_ALREADY_STOPPED`` (via ``"already"`` pattern added in PR 2 → currently surfaces as ``STATE_INVALID`` in the api-manager domain).
-   ``FLOW_STATE_INVALID`` (the generic state-restriction reason) is not currently reachable via fallback — it requires the typed-error migration to emit directly.
-   Domain-specific reason codes will be emitted directly once the servicehandler typed-error migration ships.
+   The reasons in this section define the platform's planned typed-error contract for flow-manager.
+   These domain-specific reasons (``FLOW_NOT_FOUND``, ``ACTIVEFLOW_NOT_FOUND``, ``ACTIVEFLOW_ALREADY_STOPPED``, ``FLOW_STATE_INVALID``) are **not yet emitted directly** — they require flow-manager to surface ``*cerrors.VoipbinError`` over RPC. Until that migration ships, the api-manager servicehandler wraps flow-manager RPC errors with typed sentinels and the translator surfaces them as the api-manager generic equivalents (``RESOURCE_NOT_FOUND``, ``STATE_INVALID``).
 
    Note: ``POST /activeflows/{id}/stop`` is idempotent in production today — stopping an already-stopped activeflow returns 200 (no-op).
    The 409 ``ACTIVEFLOW_ALREADY_STOPPED`` response declared in the OpenAPI spec is forward-compatible for clients that prefer opt-in idempotency-aware semantics; it will be emitted once the typed-error migration ships.
@@ -151,8 +146,8 @@ billing-manager
 
 .. note::
 
-   ``INSUFFICIENT_BALANCE`` is reachable today via the translator's case-insensitive ``"insufficient"`` substring fallback — billing-manager surfaces credit-shortfall errors as ``fmt.Errorf("insufficient balance")`` (or similar) and the api-manager translator maps that to **402 PAYMENT_REQUIRED** with reason ``INSUFFICIENT_BALANCE`` in the api-manager domain.
-   ``BILLING_NOT_FOUND`` and ``BILLING_ACCOUNT_NOT_FOUND`` are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the billing-manager typed-error migration ships.
+   ``INSUFFICIENT_BALANCE`` is reachable today as **402 PAYMENT_REQUIRED** with reason ``INSUFFICIENT_BALANCE`` in the api-manager domain.
+   ``BILLING_NOT_FOUND`` and ``BILLING_ACCOUNT_NOT_FOUND`` are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the billing-manager typed-error migration ships.
    The full billing-manager typed-error contract (deeper reasons such as ``ACCOUNT_SUSPENDED``) remains scheduled for a future migration.
 
 .. list-table::
@@ -177,7 +172,7 @@ number-manager
 
 .. note::
 
-   ``NUMBER_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the number-manager typed-error migration ships.
+   ``NUMBER_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the number-manager typed-error migration ships.
    ``IDENTITY_VERIFICATION_REQUIRED`` is wired in PR 4 via the dedicated ``"identity verification required"`` translator pattern and is reachable today.
 
 .. list-table::
@@ -201,7 +196,7 @@ The ``provider``, ``trunk``, and ``route`` resources are admin-gated and share a
 
 .. note::
 
-   The ``*_NOT_FOUND`` reasons in this section are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the corresponding manager's typed-error migration ships.
+   The ``*_NOT_FOUND`` reasons in this section are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the corresponding manager's typed-error migration ships.
    These resources are admin-gated. Non-admin callers receive **403 PERMISSION_DENIED** via the standard ``"no permission"`` translator pattern (the call site falls back to the api-manager generic ``PERMISSION_DENIED`` reason — there is no resource-specific permission reason for these admin endpoints).
    Admin-gated endpoints (``/providers``, ``/providers/setup``, ``/providercalls``, ``/trunks``, ``/routes`` and their sub-paths) return 403 ``PERMISSION_DENIED`` for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on these paths to reflect this runtime behavior.
 
@@ -227,7 +222,7 @@ storage-manager
 
 .. note::
 
-   ``STORAGE_ACCOUNT_NOT_FOUND`` and ``STORAGE_FILE_NOT_FOUND`` are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the storage-manager typed-error migration ships.
+   ``STORAGE_ACCOUNT_NOT_FOUND`` and ``STORAGE_FILE_NOT_FOUND`` are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the storage-manager typed-error migration ships.
    The admin-gated ``POST /storage-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
    PR 13 added the agent-surface file endpoints (``/service_agents/files`` and ``/service_agents/files/{id}*``); these reuse ``STORAGE_FILE_NOT_FOUND`` for not-found semantics on agent-scoped reads, deletes, and downloads.
    PR 15 added the remaining public file endpoints (``/storage_files``, ``/storage_files/{id}``, and ``/storage_files/{id}/file``) under the same ``STORAGE_FILE_NOT_FOUND`` semantics for not-found cases on the customer-scoped read, delete, and download surfaces.
@@ -251,7 +246,7 @@ conversation-manager
 
 .. note::
 
-   ``CONVERSATION_ACCOUNT_NOT_FOUND`` and ``CONVERSATION_NOT_FOUND`` are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the conversation-manager typed-error migration ships.
+   ``CONVERSATION_ACCOUNT_NOT_FOUND`` and ``CONVERSATION_NOT_FOUND`` are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the conversation-manager typed-error migration ships.
    The admin-gated ``POST /conversation-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
 
 .. list-table::
@@ -273,7 +268,7 @@ message-manager
 
 .. note::
 
-   ``MESSAGE_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the message-manager typed-error migration ships.
+   ``MESSAGE_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the message-manager typed-error migration ships.
    ``POST /messages`` is billing-sensitive — see the ``billing-manager`` section above for the ``INSUFFICIENT_BALANCE`` (402) contract that applies to SMS send.
 
 .. list-table::
@@ -292,7 +287,7 @@ email-manager
 
 .. note::
 
-   ``EMAIL_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the email-manager typed-error migration ships.
+   ``EMAIL_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the email-manager typed-error migration ships.
    ``POST /emails`` is billing-sensitive — see the ``billing-manager`` section above for the ``INSUFFICIENT_BALANCE`` (402) contract that applies to email send.
 
 .. list-table::
@@ -312,9 +307,9 @@ ai-manager
 .. note::
 
    PR 6 introduced this section for the AI-message resource (``/aimessages``); PR 7 extended it with the AI configuration (``/ais``), AI calls (``/aicalls``), and AI summaries (``/aisummaries``) resources; PR 9 extends it with the AI team resource (``/teams``).
-   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the ai-manager typed-error migration ships.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the ai-manager typed-error migration ships.
    ``POST /aimessages``, ``POST /aicalls``, and ``POST /aisummaries`` are conceptually billing-sensitive (LLM token cost, voice AI minutes, summary generation cost), but bin-ai-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for AI resource creation. Wiring the pre-check in ai-manager is deferred to a follow-up PR; no 402 declarations were added in PR 7 to match runtime behavior.
-   Team write surfaces (``POST /teams``, ``PUT /teams/{id}``, ``DELETE /teams/{id}``, ``POST /teams/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+   Team write surfaces (``POST /teams``, ``PUT /teams/{id}``, ``DELETE /teams/{id}``, ``POST /teams/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
 
 .. list-table::
    :header-rows: 1
@@ -344,7 +339,7 @@ rag-manager
 
 .. note::
 
-   ``RAG_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the rag-manager typed-error migration ships.
+   ``RAG_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the rag-manager typed-error migration ships.
 
 .. list-table::
    :header-rows: 1
@@ -362,7 +357,7 @@ tts-manager
 
 .. note::
 
-   ``SPEAKING_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the tts-manager typed-error migration ships.
+   ``SPEAKING_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the tts-manager typed-error migration ships.
    ``POST /speakings/{id}/stop`` is **idempotent** in tts-manager today — stopping an already-stopped speaking session returns success (no-op). The session-state-restriction reason ``SPEAKING_STATE_INVALID`` (409) is **not declared** on ``/speakings/{id}/stop`` because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
    ``POST /speakings`` is conceptually billing-sensitive (TTS character cost) but tts-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for speaking-session creation. Wiring the pre-check is deferred to a follow-up PR; see the ``billing-manager`` section above for the deferred list.
 
@@ -382,7 +377,7 @@ transcribe-manager
 
 .. note::
 
-   ``TRANSCRIBE_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the transcribe-manager typed-error migration ships.
+   ``TRANSCRIBE_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the transcribe-manager typed-error migration ships.
    ``POST /transcribes/{id}/stop`` is **idempotent** in transcribe-manager today — stopping an already-stopped transcription returns success (no-op). The session-state-restriction reason ``TRANSCRIBE_STATE_INVALID`` (409) is **not declared** on ``/transcribes/{id}/stop`` because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
    ``POST /transcribes`` is conceptually billing-sensitive (STT second cost) but transcribe-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for transcription creation. Wiring the pre-check is deferred to a follow-up PR; see the ``billing-manager`` section above for the deferred list.
 
@@ -403,8 +398,8 @@ agent-manager
 .. note::
 
    PR 9 introduced this section for the agent resource (``/agents``).
-   ``AGENT_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the agent-manager typed-error migration ships.
-   Agent write surfaces (``POST /agents``, ``PUT /agents/{id}``, ``PUT /agents/{id}/permission``, ``PUT /agents/{id}/password``, ``PUT /agents/{id}/addresses``, ``PUT /agents/{id}/tag_ids``, ``PUT /agents/{id}/status``, ``DELETE /agents/{id}``, ``POST /agents/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+   ``AGENT_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the agent-manager typed-error migration ships.
+   Agent write surfaces (``POST /agents``, ``PUT /agents/{id}``, ``PUT /agents/{id}/permission``, ``PUT /agents/{id}/password``, ``PUT /agents/{id}/addresses``, ``PUT /agents/{id}/tag_ids``, ``PUT /agents/{id}/status``, ``DELETE /agents/{id}``, ``POST /agents/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
    PR 13 added the agent-surface read endpoints (``GET /service_agents/agents`` and ``GET /service_agents/agents/{id}``); these reuse ``AGENT_NOT_FOUND`` for not-found semantics on the by-ID read.
 
 .. list-table::
@@ -424,8 +419,8 @@ tag-manager
 .. note::
 
    PR 9 introduced this section for the tag resource (``/tags``).
-   ``TAG_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the tag-manager typed-error migration ships.
-   Tag write surfaces (``POST /tags``, ``PUT /tags/{id}``, ``DELETE /tags/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+   ``TAG_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the tag-manager typed-error migration ships.
+   Tag write surfaces (``POST /tags``, ``PUT /tags/{id}``, ``DELETE /tags/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
    PR 13 added the agent-surface read endpoints (``GET /service_agents/tags`` and ``GET /service_agents/tags/{id}``); these reuse ``TAG_NOT_FOUND`` for not-found semantics on the by-ID read.
 
 .. list-table::
@@ -445,8 +440,8 @@ customer-manager
 .. note::
 
    PR 9 introduced this section for the access-key resource (``/accesskeys``).
-   ``ACCESSKEY_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the customer-manager typed-error migration ships.
-   Access-key write surfaces (``POST /accesskeys``, ``PUT /accesskeys/{id}``, ``DELETE /accesskeys/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via the translator's ``"no permission"`` substring fallback.
+   ``ACCESSKEY_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the customer-manager typed-error migration ships.
+   Access-key write surfaces (``POST /accesskeys``, ``PUT /accesskeys/{id}``, ``DELETE /accesskeys/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
 
 .. list-table::
    :header-rows: 1
@@ -465,7 +460,7 @@ campaign-manager
 .. note::
 
    PR 10 introduced this section for the campaign (``/campaigns``), campaign-call (``/campaigncalls``), and outplan (``/outplans``) resources. The outplan resource is owned by ``bin-campaign-manager`` (alongside campaigns and campaigncalls), so it lives in this section rather than under outdial-manager.
-   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the campaign-manager typed-error migration ships.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the campaign-manager typed-error migration ships.
    Campaign state-transition operations (``PUT /campaigns/{id}/status``) are **idempotent** in bin-campaign-manager today — for example, stopping an already-stopped campaign returns success (no-op). The state-restriction reason ``CAMPAIGN_STATE_INVALID`` (409) is **not declared** on these endpoints because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
    ``POST /campaigns`` and ``POST /outplans`` are not directly billing-sensitive — per-call charges happen downstream when individual outbound calls are dialed. No 402 declarations apply to campaign or outplan creation.
 
@@ -492,7 +487,7 @@ outdial-manager
 .. note::
 
    PR 10 introduced this section for the outdial (``/outdials``) and outdial-target (``/outdials/{id}/targets``) resources.
-   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the outdial-manager typed-error migration ships.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the outdial-manager typed-error migration ships.
    ``POST /outdials`` and ``POST /outdials/{id}/targets`` are not directly billing-sensitive — per-call charges happen downstream when individual outbound calls are dialed. No 402 declarations apply to outdial or outdial-target creation.
 
 .. list-table::
@@ -515,7 +510,7 @@ conference-manager
 .. note::
 
    PR 11 introduced this section for the conference (``/conferences``) and conference-call (``/conferencecalls``) resources.
-   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the conference-manager typed-error migration ships.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the conference-manager typed-error migration ships.
    Conference state-mutation operations (``POST /conferences/{id}/recording_stop``, ``POST /conferences/{id}/transcribe_stop``, etc.) are **idempotent** in bin-conference-manager today — stopping an already-stopped recording or transcription returns success (no-op). The state-restriction reason ``CONFERENCE_STATE_INVALID`` (409) is **not declared** on these endpoints because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
    ``POST /conferences`` is not directly billing-sensitive — per-call charges happen downstream when individual participants join. No 402 declarations apply to conference creation.
 
@@ -539,7 +534,7 @@ queue-manager
 .. note::
 
    PR 11 introduced this section for the queue (``/queues``) and queue-call (``/queuecalls``) resources.
-   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the queue-manager typed-error migration ships.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the queue-manager typed-error migration ships.
    Queue-call kick operations (``POST /queuecalls/{id}/kick``, ``POST /queuecalls/reference_id/{id}/kick``, ``DELETE /queuecalls/{id}``) are **idempotent** in bin-queue-manager today — kicking an already-ended queue-call returns success (no-op). The state-restriction reason ``QUEUECALL_STATE_INVALID`` (409) is **not declared** on these endpoints because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
    ``POST /queues`` is not directly billing-sensitive — per-call charges happen downstream when individual calls enter the queue. No 402 declarations apply to queue creation.
 
@@ -563,7 +558,7 @@ contact-manager
 .. note::
 
    PR 12 introduced this section for the contact (``/contacts``) resource and its nested phone-number, email, and tag sub-resources.
-   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the contact-manager typed-error migration ships.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the contact-manager typed-error migration ships.
    ``POST /contacts``, ``POST /contacts/{id}/phone-numbers``, ``POST /contacts/{id}/emails``, and ``POST /contacts/{id}/tags`` are not billing-sensitive — contact records and their sub-resources are stored without per-operation charges. No 402 declarations apply to contact resource creation.
    PR 13 added the agent-surface counterparts under ``/service_agents/contacts*`` (full read/write parity, including dual-ID nested phone-number, email, and tag sub-paths). These endpoints reuse the same ``CONTACT_NOT_FOUND``, ``CONTACT_PHONE_NUMBER_NOT_FOUND``, ``CONTACT_EMAIL_NOT_FOUND``, and ``CONTACT_TAG_NOT_FOUND`` reasons listed below.
 
@@ -593,7 +588,7 @@ registrar-manager
 .. note::
 
    PR 12 introduced this section for the extension (``/extensions``) resource.
-   ``EXTENSION_NOT_FOUND`` is reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reason will be emitted directly once the registrar-manager typed-error migration ships.
+   ``EXTENSION_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the registrar-manager typed-error migration ships.
    ``POST /extensions`` is not billing-sensitive — extension records are stored without per-operation charges. No 402 declarations apply to extension creation.
    PR 13 added the agent-surface read endpoints (``GET /service_agents/extensions`` and ``GET /service_agents/extensions/{id}``); these reuse ``EXTENSION_NOT_FOUND`` for not-found semantics on the by-ID read.
 
@@ -614,7 +609,7 @@ talk-manager
 .. note::
 
    PR 14 introduced this section for the agent-scoped talk surface (chats, channels, messages, participants, reactions) under ``/service_agents/talk_chats*``, ``/service_agents/talk_channels``, and ``/service_agents/talk_messages*``.
-   The ``*_NOT_FOUND`` reasons listed below are reachable today via the translator's ``"not found"`` substring fallback (currently surfacing as the api-manager generic ``RESOURCE_NOT_FOUND``); the typed reasons will be emitted directly once the talk-manager typed-error migration ships.
+   The ``*_NOT_FOUND`` reasons listed below are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the talk-manager typed-error migration ships.
    The talk surface is internal agent collaboration only — it does not deduct balance and has no idempotent state-transition contracts. No 402 or 409 declarations apply to talk endpoints.
    ``TALK_MESSAGE_NOT_FOUND`` is intentionally distinct from PR 6's ``MESSAGE_NOT_FOUND`` reason in the message-manager (which covers SMS messages under ``/messages``); the two share no code path despite the similar shape.
 
@@ -641,10 +636,10 @@ timeline-manager
 .. note::
 
    PR 15 finalized the canonical error envelope on the timeline gateway endpoints: ``GET /aggregated-events``, ``GET /timelines/{resource_type}/{resource_id}/events``, ``GET /timelines/calls/{call_id}/sip-analysis``, and ``GET /timelines/calls/{call_id}/pcap``.
-   These endpoints do **not** yet emit typed timeline-specific reasons of their own. All 4xx/5xx responses route through the translator's typed-sentinel and substring-fallback paths and surface as the api-manager generic reasons (``RESOURCE_NOT_FOUND`` for "not found", ``PERMISSION_DENIED`` for "no permission", ``INVALID_ARGUMENT`` for parameter validation failures emitted via ``serviceerrors.ErrInvalidArgument``, ``INTERNAL`` for unmatched errors). The aggregated-events endpoint additionally returns ``INVALID_ARGUMENT`` with the reasons ``INVALID_ACTIVEFLOW_ID`` and ``INVALID_CALL_ID`` for syntactically invalid query-param UUIDs, and the resource-events endpoint returns ``INVALID_ARGUMENT`` with reason ``INVALID_RESOURCE_TYPE`` when the path enum is rejected.
+   These endpoints do **not** yet emit typed timeline-specific reasons of their own. All 4xx/5xx responses route through the translator's typed-sentinel path and surface as the api-manager generic reasons (``RESOURCE_NOT_FOUND`` via ``serviceerrors.ErrNotFound``, ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``, ``INVALID_ARGUMENT`` via ``serviceerrors.ErrInvalidArgument``, ``INTERNAL`` for unmatched errors). The aggregated-events endpoint additionally returns ``INVALID_ARGUMENT`` with the reasons ``INVALID_ACTIVEFLOW_ID`` and ``INVALID_CALL_ID`` for syntactically invalid query-param UUIDs, and the resource-events endpoint returns ``INVALID_ARGUMENT`` with reason ``INVALID_RESOURCE_TYPE`` when the path enum is rejected.
    Domain-specific reasons such as ``TIMELINE_NOT_FOUND``, ``SIP_ANALYSIS_NOT_AVAILABLE``, or ``PCAP_NOT_AVAILABLE`` will be appended here once the timeline-manager service-side typed-error migration ships.
 
 Other Domains
 -------------
 
-The PR 4-15 rollout has now landed the canonical error envelope across every ``bin-api-manager/server/*.go`` file. The reason-code catalog above covers the published reasons that surface today via the translator's substring-fallback patterns. As of PR 15 the broader-sweep grep (matching ``c.AbortWithStatus(JSON)?(...)`` and ``c.JSON(http.Status...)`` in non-test ``server/*.go`` files) returns zero matches — the migration is structurally complete. Remaining manager services (e.g., ``timeline-manager`` listed above) do not yet emit typed reasons of their own; those will be appended here as the corresponding service-side typed-error migrations ship. See the design doc for the next planned rollout.
+The PR 4-15 rollout landed the canonical error envelope across every ``bin-api-manager/server/*.go`` file. The reason-code catalog above covers the published reasons emitted today via the api-manager servicehandler typed sentinels. As of PR 15 the broader-sweep grep (matching ``c.AbortWithStatus(JSON)?(...)`` and ``c.JSON(http.Status...)`` in non-test ``server/*.go`` files) returns zero matches — the migration is structurally complete. Remaining manager services (e.g., ``timeline-manager`` listed above) do not yet emit typed reasons of their own; those will be appended here as the corresponding service-side typed-error migrations ship. See the design doc for the next planned rollout.

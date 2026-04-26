@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -372,7 +373,7 @@ func Test_customerGET_ServiceError(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/customer", nil)
 	// The RequestID middleware augments the context, so match with gomock.Any().
-	mockSvc.EXPECT().CustomerSelfGet(gomock.Any(), agent).Return(nil, fmt.Errorf("customer not found"))
+	mockSvc.EXPECT().CustomerSelfGet(gomock.Any(), agent).Return(nil, fmt.Errorf("%w: customer not found", serviceerrors.ErrNotFound))
 
 	r.ServeHTTP(w, req)
 

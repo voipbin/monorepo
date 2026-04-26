@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -699,7 +700,7 @@ func Test_customersIDMetadataPut_ServiceError(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	// The RequestID middleware augments the context, so match with gomock.Any().
-	mockSvc.EXPECT().CustomerUpdateMetadata(gomock.Any(), agent, customerID, metadata).Return(nil, fmt.Errorf("permission denied"))
+	mockSvc.EXPECT().CustomerUpdateMetadata(gomock.Any(), agent, customerID, metadata).Return(nil, fmt.Errorf("%w: permission denied", serviceerrors.ErrPermissionDenied))
 
 	r.ServeHTTP(w, req)
 
@@ -821,7 +822,7 @@ func Test_customersIDGet_ServiceError(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/customers/d98ed7ec-83f7-11ec-8b43-e7de0184974f", nil)
 	// The RequestID middleware augments the context, so match with gomock.Any().
-	mockSvc.EXPECT().CustomerGet(gomock.Any(), agent, customerID).Return(nil, fmt.Errorf("customer not found"))
+	mockSvc.EXPECT().CustomerGet(gomock.Any(), agent, customerID).Return(nil, fmt.Errorf("%w: customer not found", serviceerrors.ErrNotFound))
 
 	r.ServeHTTP(w, req)
 

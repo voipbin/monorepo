@@ -6,6 +6,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -85,7 +86,7 @@ func Test_meGET(t *testing.T) {
 }
 
 // Test_meGET_ServiceError exercises the failure path through abortWithServiceError.
-// The servicehandler returns a plain fmt.Errorf("agent not found") which the
+// The servicehandler returns a plain fmt.Errorf("%w: agent not found", serviceerrors.ErrNotFound) which the
 // translator's substring fallback maps to NOT_FOUND / RESOURCE_NOT_FOUND /
 // api-manager. This confirms the translator runs and the canonical envelope
 // is emitted with a request_id (via the RequestID middleware).
@@ -116,7 +117,7 @@ func Test_meGET_ServiceError(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/me", nil)
 	// The RequestID middleware augments the context, so match it with gomock.Any().
-	mockSvc.EXPECT().AgentGet(gomock.Any(), agent, agent.Agent.ID).Return(nil, fmt.Errorf("agent not found"))
+	mockSvc.EXPECT().AgentGet(gomock.Any(), agent, agent.Agent.ID).Return(nil, fmt.Errorf("%w: agent not found", serviceerrors.ErrNotFound))
 
 	r.ServeHTTP(w, req)
 

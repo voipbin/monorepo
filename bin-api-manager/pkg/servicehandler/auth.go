@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/sirupsen/logrus"
@@ -33,7 +34,7 @@ func (h *serviceHandler) AuthLogin(ctx context.Context, username string, passwor
 	res, err := h.AuthJWTGenerate(data)
 	if err != nil {
 		log.Errorf("Could not create a jwt token. err: %v", err)
-		return "", fmt.Errorf("could not create a jwt token. err: %v", err)
+		return "", fmt.Errorf("%w: could not create a jwt token", err)
 	}
 
 	return res, nil
@@ -51,7 +52,7 @@ func (h *serviceHandler) AuthJWTParse(ctx context.Context, tokenString string) (
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// don't forget to validate the alg is what you expect
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("%w: unexpected signing method: %v", serviceerrors.ErrInvalidArgument, token.Header["alg"])
 		}
 
 		return h.jwtKey, nil
@@ -100,7 +101,7 @@ func (h *serviceHandler) AuthPasswordReset(ctx context.Context, token string, pa
 
 	if err := h.reqHandler.AgentV1PasswordReset(ctx, 30000, token, password); err != nil {
 		log.Errorf("Could not reset password. err: %v", err)
-		return fmt.Errorf("could not reset password")
+		return fmt.Errorf("%w: password reset failed", serviceerrors.ErrInternal)
 	}
 
 	return nil

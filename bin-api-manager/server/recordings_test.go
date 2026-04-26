@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -228,7 +229,7 @@ func Test_recordingsIDGet_ServiceError(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/recordings/31982926-61e3-11eb-a373-37c520973929", nil)
 	// The RequestID middleware augments the context, so match with gomock.Any().
-	mockSvc.EXPECT().RecordingGet(gomock.Any(), agent, recordingID).Return(nil, fmt.Errorf("recording not found"))
+	mockSvc.EXPECT().RecordingGet(gomock.Any(), agent, recordingID).Return(nil, fmt.Errorf("%w: recording not found", serviceerrors.ErrNotFound))
 
 	r.ServeHTTP(w, req)
 

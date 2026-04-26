@@ -40,6 +40,10 @@ func TestTranslateSentinels(t *testing.T) {
 		{"direct_access", serviceerrors.ErrDirectAccessNotSupported, cerrors.StatusPermissionDenied, "DIRECT_ACCESS_NOT_SUPPORTED"},
 		{"invalid_argument", serviceerrors.ErrInvalidArgument, cerrors.StatusInvalidArgument, "INVALID_ARGUMENT"},
 		{"internal", serviceerrors.ErrInternal, cerrors.StatusInternal, "INTERNAL"},
+		{"identity_verification_required", serviceerrors.ErrIdentityVerificationRequired, cerrors.StatusPermissionDenied, "IDENTITY_VERIFICATION_REQUIRED"},
+		{"state_invalid", serviceerrors.ErrStateInvalid, cerrors.StatusFailedPrecondition, "STATE_INVALID"},
+		{"service_unavailable", serviceerrors.ErrServiceUnavailable, cerrors.StatusUnavailable, "SERVICE_UNAVAILABLE"},
+		{"insufficient_balance", serviceerrors.ErrInsufficientBalance, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -73,58 +77,24 @@ func TestTranslateTransportErrors(t *testing.T) {
 	}
 }
 
-func TestTranslateSubstringFallback(t *testing.T) {
-	tests := []struct {
-		err        error
-		wantStatus cerrors.Status
-	}{
-		{stderrors.New("user has no permission"), cerrors.StatusPermissionDenied},
-		{stderrors.New("agent has no permission"), cerrors.StatusPermissionDenied},
-		{stderrors.New("permission denied"), cerrors.StatusPermissionDenied},
-		{stderrors.New("Forbidden"), cerrors.StatusPermissionDenied},
-		{stderrors.New("direct access not supported"), cerrors.StatusPermissionDenied},
-		{stderrors.New("the number does not belong to this customer"), cerrors.StatusPermissionDenied},
-		{stderrors.New("agent authentication required"), cerrors.StatusUnauthenticated},
-		{stderrors.New("Unauthorized"), cerrors.StatusUnauthenticated},
-		{stderrors.New("call not found"), cerrors.StatusNotFound},
-		{stderrors.New("Not Found"), cerrors.StatusNotFound},
-		{stderrors.New("upstream service unavailable"), cerrors.StatusUnavailable},
-		{stderrors.New("Service Unavailable"), cerrors.StatusUnavailable},
-		{stderrors.New("call already hangup"), cerrors.StatusFailedPrecondition},
-		{stderrors.New("recording already active"), cerrors.StatusFailedPrecondition},
-		{stderrors.New("recording not active"), cerrors.StatusFailedPrecondition},
-		{stderrors.New("deleted call"), cerrors.StatusFailedPrecondition},
-		{stderrors.New("Insufficient balance"), cerrors.StatusPaymentRequired},
-		{stderrors.New("insufficient funds for this operation"), cerrors.StatusPaymentRequired},
+// TestTranslateLegacyStringFallsThroughToInternal verifies that bare
+// fmt.Errorf strings (which the previous translator caught via section 4
+// substring fallback) now correctly degrade to INTERNAL. Servicehandler
+// must emit typed sentinels for any meaningful status code; unmatched
+// legacy strings represent a bug to be fixed at the emission site.
+func TestTranslateLegacyStringFallsThroughToInternal(t *testing.T) {
+	legacy := []string{
+		"user has no permission",
+		"call not found",
+		"agent already hangup",
+		"insufficient balance",
+		"upstream service unavailable",
 	}
-	for _, tt := range tests {
-		t.Run(tt.err.Error(), func(t *testing.T) {
-			got := translateToVoipbinError(tt.err)
-			if got.Status != tt.wantStatus {
-				t.Errorf("got %q want %q", got.Status, tt.wantStatus)
-			}
-		})
-	}
-}
-
-// TestTranslateIdentityVerificationRequired verifies that error messages
-// containing "identity verification required" map to PERMISSION_DENIED with
-// the distinct reason IDENTITY_VERIFICATION_REQUIRED — not to the generic
-// PERMISSION_DENIED reason. The pattern lands in PR 4 to surface number-
-// purchase identity gates as user-actionable 403s instead of opaque 500s.
-func TestTranslateIdentityVerificationRequired(t *testing.T) {
-	tests := []error{
-		stderrors.New("customer identity verification required for number purchase"),
-		stderrors.New("identity verification required"),
-	}
-	for _, in := range tests {
-		t.Run(in.Error(), func(t *testing.T) {
-			got := translateToVoipbinError(in)
-			if got.Status != cerrors.StatusPermissionDenied {
-				t.Errorf("got status %q want %q", got.Status, cerrors.StatusPermissionDenied)
-			}
-			if got.Reason != "IDENTITY_VERIFICATION_REQUIRED" {
-				t.Errorf("got reason %q want IDENTITY_VERIFICATION_REQUIRED", got.Reason)
+	for _, msg := range legacy {
+		t.Run(msg, func(t *testing.T) {
+			got := translateToVoipbinError(stderrors.New(msg))
+			if got.Status != cerrors.StatusInternal {
+				t.Errorf("legacy bare string should fall through to INTERNAL, got %q for %q", got.Status, msg)
 			}
 		})
 	}

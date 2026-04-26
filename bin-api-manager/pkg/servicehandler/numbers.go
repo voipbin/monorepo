@@ -122,7 +122,7 @@ func (h *serviceHandler) NumberCreate(ctx context.Context, a *auth.AuthIdentity,
 		cu, err := h.customerGet(ctx, a.CustomerID)
 		if err != nil {
 			log.Errorf("Could not get customer info for verification check. err: %v", err)
-			return nil, fmt.Errorf("could not verify customer identity status")
+			return nil, fmt.Errorf("%w: could not verify customer identity status", serviceerrors.ErrInternal)
 		}
 		log.WithField("customer", cu).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
 
@@ -243,13 +243,13 @@ func (h *serviceHandler) NumberUpdate(ctx context.Context, a *auth.AuthIdentity,
 	// check call flow
 	if callFlowID != uuid.Nil && !h.numberVerifyFlow(ctx, a, callFlowID) {
 		log.Errorf("Could not verify call flow")
-		return nil, fmt.Errorf("could not verify call flow")
+		return nil, fmt.Errorf("%w: could not verify call flow", serviceerrors.ErrInternal)
 	}
 
 	// check message flow
 	if messageFlowID != uuid.Nil && !h.numberVerifyFlow(ctx, a, messageFlowID) {
 		log.Errorf("Could not verify message flow")
-		return nil, fmt.Errorf("could not verify message flow")
+		return nil, fmt.Errorf("%w: could not verify message flow", serviceerrors.ErrInternal)
 	}
 
 	// update number

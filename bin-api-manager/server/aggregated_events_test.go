@@ -187,7 +187,7 @@ func Test_GetAggregatedEvents_servicehandler_errors(t *testing.T) {
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a",
 
-			responseErr: fmt.Errorf("not found"),
+			responseErr: fmt.Errorf("%w: not found", serviceerrors.ErrNotFound),
 
 			expectActiveflowID: uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a"),
 			expectCallID:       uuid.Nil,
@@ -208,7 +208,7 @@ func Test_GetAggregatedEvents_servicehandler_errors(t *testing.T) {
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a",
 
-			responseErr: fmt.Errorf("user has no permission"),
+			responseErr: fmt.Errorf("%w: user has no permission", serviceerrors.ErrPermissionDenied),
 
 			expectActiveflowID: uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a"),
 			expectCallID:       uuid.Nil,

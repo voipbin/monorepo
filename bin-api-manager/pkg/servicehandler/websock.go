@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 
 	"github.com/sirupsen/logrus"
 )
@@ -19,7 +20,7 @@ func (h *serviceHandler) WebsockCreate(ctx context.Context, a *auth.AuthIdentity
 
 	if !a.IsDirect() && !a.IsAccesskey() && (!a.IsAgent() || a.Agent == nil) {
 		log.Info("WebSocket requires agent, accesskey, or direct authentication.")
-		return fmt.Errorf("websocket requires agent, accesskey, or direct authentication")
+		return fmt.Errorf("%w: websocket requires agent, accesskey, or direct authentication", serviceerrors.ErrAuthenticationRequired)
 	}
 
 	if errRun := h.websockHandler.RunSubscription(ctx, w, r, a); errRun != nil {

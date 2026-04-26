@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -510,11 +511,9 @@ func Test_activeflowsIDStopPost_MissingAuthIdentity(t *testing.T) {
 }
 
 // Test_activeflowsIDStopPost_StateInvalid exercises the state-transition
-// failure path of PostActiveflowsIdStop. The translator's "already"
-// substring fallback maps "activeflow already stopped" to
-// FAILED_PRECONDITION / STATE_INVALID (HTTP 409). This validates the
-// state-transition routing introduced in PR 2 Round 1 without requiring
-// typed-error migration in the servicehandler layer.
+// failure path of PostActiveflowsIdStop. The servicehandler emits
+// `serviceerrors.ErrStateInvalid` and the translator's sentinel match
+// returns FAILED_PRECONDITION / STATE_INVALID (HTTP 409).
 func Test_activeflowsIDStopPost_StateInvalid(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
@@ -543,7 +542,7 @@ func Test_activeflowsIDStopPost_StateInvalid(t *testing.T) {
 		"/activeflows/da10d24c-cb2c-11ed-be08-1fca5d4747f4/stop", nil)
 	// The RequestID middleware augments the context, so match with gomock.Any().
 	mockSvc.EXPECT().ActiveflowStop(gomock.Any(), agent, activeflowID).
-		Return(nil, fmt.Errorf("activeflow already stopped"))
+		Return(nil, fmt.Errorf("%w: activeflow already stopped", serviceerrors.ErrStateInvalid))
 
 	r.ServeHTTP(w, req)
 

@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -527,7 +528,7 @@ func Test_GetStorageFilesIdFile_InvalidUUID(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		agent *auth.AuthIdentity
+		agent    *auth.AuthIdentity
 		reqQuery string
 	}{
 		{
@@ -616,7 +617,7 @@ func Test_GetStorageFilesIdFile_ServiceError(t *testing.T) {
 			openapi_server.RegisterHandlers(r, h)
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
-			mockSvc.EXPECT().StorageFileDownloadRedirect(gomock.Any(), tt.agent, tt.expectFileID).Return("", fmt.Errorf("file not found"))
+			mockSvc.EXPECT().StorageFileDownloadRedirect(gomock.Any(), tt.agent, tt.expectFileID).Return("", fmt.Errorf("%w: file not found", serviceerrors.ErrNotFound))
 
 			r.ServeHTTP(w, req)
 			// The legacy "file not found" message routes through the

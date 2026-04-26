@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
@@ -1322,7 +1323,7 @@ func Test_callsIDGet_ServiceError(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/calls/395518ca-830a-11eb-badc-b3582bc51917", nil)
 	// The RequestID middleware augments the context, so match with gomock.Any().
-	mockSvc.EXPECT().CallGet(gomock.Any(), agent, callID).Return(nil, fmt.Errorf("call not found"))
+	mockSvc.EXPECT().CallGet(gomock.Any(), agent, callID).Return(nil, fmt.Errorf("%w: call not found", serviceerrors.ErrNotFound))
 
 	r.ServeHTTP(w, req)
 

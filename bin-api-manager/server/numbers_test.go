@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -757,7 +758,7 @@ func Test_numbersPost_InsufficientBalance(t *testing.T) {
 	// The RequestID middleware augments the context, so match with gomock.Any().
 	mockSvc.EXPECT().
 		NumberCreate(gomock.Any(), agent, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(nil, fmt.Errorf("insufficient balance"))
+		Return(nil, fmt.Errorf("%w: insufficient balance", serviceerrors.ErrInsufficientBalance))
 
 	r.ServeHTTP(w, req)
 
@@ -797,7 +798,7 @@ func Test_numbersPost_IdentityVerificationRequired(t *testing.T) {
 	// The RequestID middleware augments the context, so match with gomock.Any().
 	mockSvc.EXPECT().
 		NumberCreate(gomock.Any(), agent, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(nil, fmt.Errorf("customer identity verification required for number purchase"))
+		Return(nil, fmt.Errorf("%w: identity verification required for number purchase", serviceerrors.ErrIdentityVerificationRequired))
 
 	r.ServeHTTP(w, req)
 

@@ -93,7 +93,7 @@ func (h *serviceHandler) TimelineEventList(
 	resp, err := h.reqHandler.TimelineV1EventList(ctx, req)
 	if err != nil {
 		log.Errorf("Failed to query timeline: %v", err)
-		return nil, "", fmt.Errorf("internal error")
+		return nil, "", fmt.Errorf("%w: timeline query failed", serviceerrors.ErrInternal)
 	}
 
 	// Convert events to WebhookMessage format

@@ -71,7 +71,7 @@ func (h *serviceHandler) RagGet(ctx context.Context, a *auth.AuthIdentity, id uu
 	tmp, err := h.ragGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get rag info. err: %v", err)
-		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find rag info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -109,7 +109,7 @@ func (h *serviceHandler) RagGets(ctx context.Context, a *auth.AuthIdentity, size
 	rags, err := h.reqHandler.RagV1RagGets(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get rags info. err: %v", err)
-		return nil, fmt.Errorf("could not find rags info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find rags info", err)
 	}
 
 	res := []*rmrag.WebhookMessage{}
@@ -136,7 +136,7 @@ func (h *serviceHandler) RagUpdate(ctx context.Context, a *auth.AuthIdentity, id
 	tmp, err := h.ragGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get rag info. err: %v", err)
-		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find rag info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -168,7 +168,7 @@ func (h *serviceHandler) RagDelete(ctx context.Context, a *auth.AuthIdentity, id
 	tmp, err := h.ragGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get rag info. err: %v", err)
-		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find rag info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -200,7 +200,7 @@ func (h *serviceHandler) RagAddSources(ctx context.Context, a *auth.AuthIdentity
 	tmp, err := h.ragGet(ctx, ragID)
 	if err != nil {
 		log.Errorf("Could not get rag info. err: %v", err)
-		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find rag info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {
@@ -234,7 +234,7 @@ func (h *serviceHandler) RagRemoveSource(ctx context.Context, a *auth.AuthIdenti
 	tmp, err := h.ragGet(ctx, ragID)
 	if err != nil {
 		log.Errorf("Could not get rag info. err: %v", err)
-		return nil, fmt.Errorf("could not find rag info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find rag info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin) {

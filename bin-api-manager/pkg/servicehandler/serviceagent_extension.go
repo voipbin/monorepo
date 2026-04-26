@@ -69,5 +69,5 @@ func (h *serviceHandler) ServiceAgentExtensionGet(ctx context.Context, a *auth.A
 		}
 	}
 
-	return nil, fmt.Errorf("could not find the extension")
+	return nil, fmt.Errorf("%w: extension not found", serviceerrors.ErrNotFound)
 }

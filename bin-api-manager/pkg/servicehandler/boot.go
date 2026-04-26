@@ -88,7 +88,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 	token, expire, err := h.authJWTGenerateWithExpiration(data, BootExpiration)
 	if err != nil {
 		log.Errorf("Could not generate boot JWT. err: %v", err)
-		return nil, fmt.Errorf("could not generate token")
+		return nil, fmt.Errorf("%w: token generation failed", serviceerrors.ErrInternal)
 	}
 
 	res := &BootResponse{

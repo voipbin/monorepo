@@ -69,12 +69,12 @@ func (h *serviceHandler) AImessageGetsByAIcallID(ctx context.Context, a *auth.Au
 	// Convert string filters to typed filters
 	typedFilters, err := h.convertAImessageFilters(filters)
 	if err != nil {
-		return nil, fmt.Errorf("could not convert filters. err: %v", err)
+		return nil, fmt.Errorf("%w: could not convert filters", err)
 	}
 
 	tmps, err := h.reqHandler.AIV1MessageGetsByAIcallID(ctx, aicallID, token, size, typedFilters)
 	if err != nil {
-		return nil, fmt.Errorf("could not find ai messages info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find ai messages info", err)
 	}
 
 	res := []*ammessage.WebhookMessage{}
@@ -114,7 +114,7 @@ func (h *serviceHandler) convertAImessageFilters(filters map[string]string) (map
 func (h *serviceHandler) AImessageGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*ammessage.WebhookMessage, error) {
 	tmp, err := h.aimessageGet(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not find ai message info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find ai message info", err)
 	}
 
 	switch {
@@ -124,10 +124,10 @@ func (h *serviceHandler) AImessageGet(ctx context.Context, a *auth.AuthIdentity,
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {
-			return nil, fmt.Errorf("resource type not allowed")
+			return nil, fmt.Errorf("%w: direct token does not allow this resource type", serviceerrors.ErrPermissionDenied)
 		}
 		if tmp.CustomerID != a.CustomerID {
-			return nil, fmt.Errorf("resource not in scope")
+			return nil, fmt.Errorf("%w: resource not in token scope", serviceerrors.ErrPermissionDenied)
 		}
 	}
 
@@ -140,7 +140,7 @@ func (h *serviceHandler) AImessageDelete(ctx context.Context, a *auth.AuthIdenti
 	// AImessageGet already handles direct token authorization
 	_, err := h.AImessageGet(ctx, a, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not find aimessage info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find aimessage info", err)
 	}
 
 	tmp, err := h.reqHandler.AIV1MessageDelete(ctx, id)

@@ -67,7 +67,7 @@ func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context
 	tmp, err := h.reqHandler.ConversationV1AccountList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get conversation account infos from the conversation-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find conversation accounts info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find conversation accounts info", err)
 	}
 
 	// create result
@@ -99,7 +99,7 @@ func (h *serviceHandler) ConversationAccountGet(ctx context.Context, a *auth.Aut
 	tmp, err := h.conversationAccountGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get conversation account info from the conversation-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find conversation account info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find conversation account info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -165,7 +165,7 @@ func (h *serviceHandler) ConversationAccountUpdate(ctx context.Context, a *auth.
 	ca, err := h.conversationAccountGet(ctx, accountID)
 	if err != nil {
 		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find conversation info", err)
 	}
 
 	if !h.hasPermission(ctx, a, ca.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -200,7 +200,7 @@ func (h *serviceHandler) ConversationAccountDelete(ctx context.Context, a *auth.
 	ca, err := h.conversationAccountGet(ctx, accountID)
 	if err != nil {
 		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find conversation info", err)
 	}
 
 	if !h.hasPermission(ctx, a, ca.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

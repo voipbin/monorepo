@@ -85,7 +85,7 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdent
 	}
 	if f.CustomerID != a.CustomerID {
 		log.WithField("flow", f).Errorf("The flow has wrong customer id")
-		return nil, fmt.Errorf("the flow has wrong customer id")
+		return nil, fmt.Errorf("%w: flow does not belong to this customer", serviceerrors.ErrPermissionDenied)
 	}
 
 	// create activeflow

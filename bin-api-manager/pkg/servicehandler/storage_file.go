@@ -45,7 +45,7 @@ func (h *serviceHandler) StorageFileGet(ctx context.Context, a *auth.AuthIdentit
 	// get file
 	f, err := h.storageFileGet(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not find file info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find file info", err)
 	}
 	log.WithField("file", f).Debugf("Found file info. file_id: %s", f.ID)
 
@@ -76,7 +76,7 @@ func (h *serviceHandler) StorageFileDownloadRedirect(ctx context.Context, a *aut
 	f, err := h.storageFileGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get file info. err: %v", err)
-		return "", fmt.Errorf("could not find file info. err: %v", err)
+		return "", fmt.Errorf("%w: could not find file info", err)
 	}
 	log.WithField("file", f).Debugf("Retrieved file info. file_id: %s", f.ID)
 
@@ -96,7 +96,7 @@ func (h *serviceHandler) StorageFileDownloadRedirect(ctx context.Context, a *aut
 	downloadURI, err := h.reqHandler.StorageV1FileDownloadURIRefresh(ctx, id)
 	if err != nil {
 		log.Errorf("Could not refresh download URI. err: %v", err)
-		return "", fmt.Errorf("could not refresh download URI. err: %v", err)
+		return "", fmt.Errorf("%w: could not refresh download URI", err)
 	}
 
 	return downloadURI, nil
@@ -120,7 +120,7 @@ func (h *serviceHandler) StorageFileDelete(ctx context.Context, a *auth.AuthIden
 	f, err := h.storageFileGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get file info from the storage-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find file info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find file info", err)
 	}
 
 	if !h.hasPermission(ctx, a, f.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -261,7 +261,7 @@ func (h *serviceHandler) StorageFileList(ctx context.Context, a *auth.AuthIdenti
 	files, err := h.reqHandler.StorageV1FileList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get files info from the storage-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find files info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find files info", err)
 	}
 
 	// create result

@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -27,7 +28,7 @@ func Test_MessagesGET(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		agent *auth.AuthIdentity
+		agent    *auth.AuthIdentity
 		reqQuery string
 
 		responseGets []*mmmessage.WebhookMessage
@@ -423,7 +424,7 @@ func Test_messagesPost_InsufficientBalance(t *testing.T) {
 	// The RequestID middleware augments the context, so match with gomock.Any().
 	mockSvc.EXPECT().
 		MessageSend(gomock.Any(), agent, gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(nil, fmt.Errorf("insufficient balance"))
+		Return(nil, fmt.Errorf("%w: insufficient balance", serviceerrors.ErrInsufficientBalance))
 
 	r.ServeHTTP(w, req)
 
