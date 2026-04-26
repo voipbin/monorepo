@@ -59,6 +59,21 @@ func (mr *MockPipecatcallHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockPipecatcallHandler)(nil).Get), ctx, id)
 }
 
+// Ping mocks base method.
+func (m *MockPipecatcallHandler) Ping(ctx context.Context) (*pipecatcall.PingResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Ping", ctx)
+	ret0, _ := ret[0].(*pipecatcall.PingResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Ping indicates an expected call of Ping.
+func (mr *MockPipecatcallHandlerMockRecorder) Ping(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockPipecatcallHandler)(nil).Ping), ctx)
+}
+
 // RunnerMemberSwitchedHandle mocks base method.
 func (m *MockPipecatcallHandler) RunnerMemberSwitchedHandle(id uuid.UUID, c *gin.Context) error {
 	m.ctrl.T.Helper()

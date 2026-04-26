@@ -48,6 +48,9 @@ var (
 
 	// messages
 	regV1Messages = regexp.MustCompile(`/v1/messages$`)
+
+	// ping
+	regV1Ping = regexp.MustCompile(`/v1/ping$`)
 )
 
 var (
@@ -202,6 +205,14 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Messages.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1MessagesPost(ctx, m)
 		requestType = "/v1/messages"
+
+	////////////////////
+	// ping
+	////////////////////
+	// GET /v1/ping
+	case regV1Ping.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1PingGet(ctx, m)
+		requestType = "/v1/ping"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
