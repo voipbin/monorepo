@@ -3,6 +3,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	stderrors "errors"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
@@ -132,6 +133,9 @@ func (h *handler) RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error) {
 
 	r, err := ragScanRow(row)
 	if err != nil {
+		if stderrors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNotFound
+		}
 		return nil, fmt.Errorf("could not scan rag row: %w", err)
 	}
 

@@ -2,14 +2,19 @@ package raghandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"monorepo/bin-rag-manager/models/document"
 	"monorepo/bin-rag-manager/models/rag"
+	"monorepo/bin-rag-manager/pkg/dbhandler"
 )
 
 func (h *ragHandler) RagCreate(ctx context.Context, customerID uuid.UUID, name, description string, storageFileIDs []uuid.UUID, sourceURLs []string) (*rag.Rag, error) {
@@ -60,6 +65,13 @@ func (h *ragHandler) RagGet(ctx context.Context, id uuid.UUID) (*rag.Rag, error)
 	r, err := h.dbHandler.RagGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get rag. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRagManager,
+				"RAG_NOT_FOUND",
+				"The RAG was not found.",
+			).Wrap(err)
+		}
 		return nil, fmt.Errorf("could not get rag: %w", err)
 	}
 	log.WithField("rag", r).Debugf("Retrieved rag. rag_id: %s", r.ID)
