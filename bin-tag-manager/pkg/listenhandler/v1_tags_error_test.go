@@ -158,6 +158,17 @@ func TestProcessV1TagsIDGet_Error(t *testing.T) {
 			}
 
 			res, err := h.processV1TagsIDGet(context.Background(), tt.request)
+
+			// "handler_error" propagates the underlying error so the dispatcher
+			// can route typed errors / ErrNotFound through errorResponse.
+			// "invalid_uri" is a request-shape problem and returns a 400 inline.
+			if tt.name == "handler_error" {
+				if err == nil {
+					t.Errorf("processV1TagsIDGet should propagate handler error, got nil")
+				}
+				return
+			}
+
 			if err != nil {
 				t.Errorf("processV1TagsIDGet should not return error, got: %v", err)
 			}

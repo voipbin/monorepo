@@ -2,12 +2,16 @@ package taghandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-tag-manager/models/tag"
+	"monorepo/bin-tag-manager/pkg/dbhandler"
 )
 
 // List returns tags
@@ -38,6 +42,13 @@ func (h *tagHandler) Get(ctx context.Context, id uuid.UUID) (*tag.Tag, error) {
 	res, err := h.dbGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get tag info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTagManager,
+				"TAG_NOT_FOUND",
+				"The tag was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
