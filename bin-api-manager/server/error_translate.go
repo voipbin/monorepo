@@ -20,6 +20,17 @@ import (
 //
 // The whole function is wrapped in defer recover() so a panic inside
 // any branch degrades to INTERNAL rather than dropping the response.
+//
+// Migration status (2026-04): Steps 1-3 cover all RPC traffic from
+// upstream managers — every Get-by-ID handler in bin-call-manager,
+// bin-flow-manager, …, bin-registrar-manager now emits typed
+// *cerrors.VoipbinError on miss. Step 4 remains because the api-manager
+// servicehandler layer itself still returns plain fmt.Errorf strings
+// (e.g., authorization checks like `"user has no permission"` and
+// validation errors like `"... is required"`). Migrating servicehandler
+// to typed errors / sentinels is the natural follow-up; once that is
+// done, step 4 can be removed and any unmatched legacy string will
+// correctly degrade to INTERNAL via step 5.
 func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -75,6 +86,12 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	// http.StatusText) are caught alongside lowercase servicehandler
 	// strings. This set is intentionally small — each pattern is a
 	// migration target for a sentinel in subsequent PRs.
+	//
+	// As of the typed-RPC migration (PR2-PR29), upstream managers no
+	// longer emit these strings — only api-manager's own servicehandler
+	// does (authorization checks, validation, etc.). Removing this branch
+	// requires migrating servicehandler to typed errors / sentinels,
+	// which is tracked as follow-up work.
 	lowered := strings.ToLower(err.Error())
 	switch {
 	case strings.Contains(lowered, "no permission"),
