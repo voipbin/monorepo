@@ -2,12 +2,15 @@ package conferencehandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"fmt"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"github.com/gofrs/uuid"
@@ -15,6 +18,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-conference-manager/models/conference"
+	"monorepo/bin-conference-manager/pkg/dbhandler"
 )
 
 const defaultConferenceTimeout = 86400
@@ -156,9 +160,20 @@ func (h *conferenceHandler) List(ctx context.Context, size uint64, token string,
 }
 
 // Get returns conference.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *conferenceHandler) Get(ctx context.Context, id uuid.UUID) (*conference.Conference, error) {
 	res, err := h.db.ConferenceGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameConferenceManager,
+				"CONFERENCE_NOT_FOUND",
+				"The conference was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "Could not get conference.")
 	}
 
