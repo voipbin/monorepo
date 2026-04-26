@@ -2,13 +2,17 @@ package conferencecallhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-conference-manager/models/conferencecall"
+	"monorepo/bin-conference-manager/pkg/dbhandler"
 )
 
 // Create is handy function for creating a conference.
@@ -81,6 +85,10 @@ func (h *conferencecallHandler) List(ctx context.Context, size uint64, token str
 }
 
 // Get is handy function for getting a conferencecall.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *conferencecallHandler) Get(ctx context.Context, id uuid.UUID) (*conferencecall.Conferencecall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":              "Get",
@@ -90,6 +98,13 @@ func (h *conferencecallHandler) Get(ctx context.Context, id uuid.UUID) (*confere
 	res, err := h.db.ConferencecallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get conferencecall info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameConferenceManager,
+				"CONFERENCECALL_NOT_FOUND",
+				"The conference call was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
