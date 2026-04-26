@@ -514,25 +514,27 @@ func Test_SendReferenceTypeCall(t *testing.T) {
 			// 1. PipecatV1PipecatcallGet
 			mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.aicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
 
-			// 2. messageHandler.Create — always called BEFORE ping
-			mockMessage.EXPECT().Create(
-				ctx,
-				uuid.Nil,
-				tt.aicall.CustomerID,
-				tt.aicall.ID,
-				tt.aicall.ActiveflowID,
-				message.DirectionOutgoing,
-				message.RoleUser,
-				tt.messageText,
-				nil,
-				"",
-			).Return(tt.responseMessage, nil)
-
-			// 3. PipecatV1Ping preflight
+			// 2. PipecatV1Ping preflight (always runs after Get, before Create)
 			mockReq.EXPECT().PipecatV1Ping(gomock.Any(), tt.expectPingHostID).Return(tt.pingErr)
 
-			// 4. PipecatV1MessageSend — only if ping succeeded
+			// 3. messageHandler.Create — only called if ping succeeded; gating
+			//    ping before Create avoids orphaning a user-message row when
+			//    the pipecat pod is unreachable.
 			if tt.expectMessageSend {
+				mockMessage.EXPECT().Create(
+					ctx,
+					uuid.Nil,
+					tt.aicall.CustomerID,
+					tt.aicall.ID,
+					tt.aicall.ActiveflowID,
+					message.DirectionOutgoing,
+					message.RoleUser,
+					tt.messageText,
+					nil,
+					"",
+				).Return(tt.responseMessage, nil)
+
+				// 4. PipecatV1MessageSend — only if ping succeeded
 				mockReq.EXPECT().PipecatV1MessageSend(
 					ctx,
 					tt.responsePipecatcall.HostID,

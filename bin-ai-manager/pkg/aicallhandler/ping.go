@@ -26,6 +26,9 @@ func (h *aicallHandler) pingPipecatHost(ctx context.Context, hostID string) bool
 	if hostID == "" {
 		return false
 	}
+	// PipecatV1Ping enforces its own 1s hard timeout inside sendRequest; this
+	// outer 1.1s context provides a slightly wider cancellation safety net so
+	// the helper still returns even if upstream contexts are uncancellable.
 	cctx, cancel := context.WithTimeout(ctx, 1100*time.Millisecond)
 	defer cancel()
 	err := h.reqHandler.PipecatV1Ping(cctx, hostID)

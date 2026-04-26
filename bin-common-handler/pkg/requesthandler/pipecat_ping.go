@@ -17,10 +17,11 @@ const requestTimeoutPipecatPing = 1000 // pipecat ping timeout(1 sec)
 // live case), or an error otherwise (timeout, circuit open, mismatched
 // host_id from a queue-name collision, etc.).
 //
-// IMPORTANT: do not add status-code checks here. A 404 from an old pipecat
-// pod that predates this route is a valid "alive" signal — the pod responded.
-// The only "dead" signal is err != nil, including ctx.DeadlineExceeded and
-// circuitbreakerhandler.ErrCircuitOpen.
+// IMPORTANT: do not add status-code checks here. ANY response from the per-pod
+// queue (200, 404 from old pods, even 5xx) means the pod is up and consuming
+// — that is the only liveness signal we want. The only "dead" signal is
+// err != nil, including ctx.DeadlineExceeded and circuitbreakerhandler.ErrCircuitOpen.
+// Adding 5xx-as-error logic would defeat the purpose of the probe.
 func (r *requestHandler) PipecatV1Ping(ctx context.Context, hostID string) error {
 	queueName := fmt.Sprintf("%s.%s", outline.QueueNamePipecatRequest, hostID)
 	res, err := r.sendRequest(

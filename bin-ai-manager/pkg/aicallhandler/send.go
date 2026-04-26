@@ -37,15 +37,18 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	}
 	log.WithField("pipecatcall", pc).Debugf("Found the pipecatcall.")
 
+	// Preflight ping before persisting the message so a dead-pod failure does not
+	// orphan a user-message row in the database. The remaining failure path
+	// (PipecatV1MessageSend after a successful ping) preserves existing behavior.
+	if !h.pingPipecatHost(ctx, pc.HostID) {
+		return nil, errors.Errorf("pipecat pod for this aicall is no longer reachable. host_id: %s, pipecatcall_id: %s", pc.HostID, pc.ID)
+	}
+
 	res, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", c.ID)
 	}
 	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", c.ID, res.ID)
-
-	if !h.pingPipecatHost(ctx, pc.HostID) {
-		return nil, errors.Errorf("pipecat pod for this aicall is no longer reachable. host_id: %s, pipecatcall_id: %s", pc.HostID, pc.ID)
-	}
 
 	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, res.ID.String(), messageText, runImmediately, audioResponse)
 	if err != nil {
