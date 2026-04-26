@@ -2,9 +2,12 @@ package providercallhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
@@ -13,6 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-route-manager/models/providercall"
+	"monorepo/bin-route-manager/pkg/dbhandler"
 )
 
 // Create orchestrates an admin-triggered provider call end-to-end inside
@@ -155,6 +159,13 @@ func (h *providerCallHandler) Get(ctx context.Context, id uuid.UUID) (*providerc
 	res, err := h.db.ProviderCallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get providercall. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRouteManager,
+				"PROVIDERCALL_NOT_FOUND",
+				"The provider call was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 	log.WithField("providercall", res).Debugf("Retrieved providercall. id: %s", res.ID)

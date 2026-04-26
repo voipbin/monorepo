@@ -2,12 +2,16 @@ package providerhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-route-manager/models/provider"
+	"monorepo/bin-route-manager/pkg/dbhandler"
 )
 
 // Get returns provider
@@ -20,6 +24,13 @@ func (h *providerHandler) Get(ctx context.Context, id uuid.UUID) (*provider.Prov
 	res, err := h.db.ProviderGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get provider. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRouteManager,
+				"PROVIDER_NOT_FOUND",
+				"The provider was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 

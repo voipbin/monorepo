@@ -2,12 +2,16 @@ package routehandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-route-manager/models/route"
+	"monorepo/bin-route-manager/pkg/dbhandler"
 )
 
 // Get returns route
@@ -20,6 +24,13 @@ func (h *routeHandler) Get(ctx context.Context, id uuid.UUID) (*route.Route, err
 	res, err := h.db.RouteGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get route. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRouteManager,
+				"ROUTE_NOT_FOUND",
+				"The route was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
