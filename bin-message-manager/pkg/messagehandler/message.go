@@ -2,15 +2,19 @@ package messagehandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-message-manager/models/message"
 	"monorepo/bin-message-manager/models/target"
+	"monorepo/bin-message-manager/pkg/dbhandler"
 )
 
 // Create creates a new message.
@@ -89,7 +93,11 @@ func (h *messageHandler) Delete(ctx context.Context, id uuid.UUID) (*message.Mes
 	return res, nil
 }
 
-// Get returns message info of the given id
+// Get returns message info of the given id.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Get",
@@ -99,6 +107,13 @@ func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Messag
 	res, err := h.dbGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get message info. message: %s, err:%v", id, err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameMessageManager,
+				"MESSAGE_NOT_FOUND",
+				"The message was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
