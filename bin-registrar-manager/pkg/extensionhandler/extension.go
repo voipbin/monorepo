@@ -2,13 +2,16 @@ package extensionhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 	"monorepo/bin-registrar-manager/models/astaor"
 	"monorepo/bin-registrar-manager/models/astauth"
@@ -16,6 +19,7 @@ import (
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/extension"
 	"monorepo/bin-registrar-manager/models/sipauth"
+	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
 // Create creates a new extension
@@ -159,6 +163,13 @@ func (h *extensionHandler) Create(
 func (h *extensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Extension, error) {
 	res, err := h.dbBin.ExtensionGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRegistrarManager,
+				"EXTENSION_NOT_FOUND",
+				"The extension was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
@@ -167,7 +178,18 @@ func (h *extensionHandler) Get(ctx context.Context, id uuid.UUID) (*extension.Ex
 
 // GetByExtension gets a exists extension of the given endpoint
 func (h *extensionHandler) GetByExtension(ctx context.Context, customerID uuid.UUID, ext string) (*extension.Extension, error) {
-	return h.dbBin.ExtensionGetByExtension(ctx, customerID, ext)
+	res, err := h.dbBin.ExtensionGetByExtension(ctx, customerID, ext)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRegistrarManager,
+				"EXTENSION_NOT_FOUND",
+				"The extension was not found.",
+			).Wrap(err)
+		}
+		return nil, err
+	}
+	return res, nil
 }
 
 // List returns list of extensions

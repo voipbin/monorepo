@@ -2,6 +2,7 @@ package trunkhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -9,10 +10,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-registrar-manager/models/common"
 	"monorepo/bin-registrar-manager/models/sipauth"
 	"monorepo/bin-registrar-manager/models/trunk"
+	"monorepo/bin-registrar-manager/pkg/dbhandler"
 )
 
 // Create creates a new trunk and returns a created trunk info
@@ -108,6 +112,13 @@ func (h *trunkHandler) Create(
 func (h *trunkHandler) Get(ctx context.Context, id uuid.UUID) (*trunk.Trunk, error) {
 	res, err := h.db.TrunkGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRegistrarManager,
+				"TRUNK_NOT_FOUND",
+				"The trunk was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
@@ -124,6 +135,13 @@ func (h *trunkHandler) GetByDomainName(ctx context.Context, domainName string) (
 	res, err := h.db.TrunkGetByDomainName(ctx, domainName)
 	if err != nil {
 		log.Errorf("Could not get trunk info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameRegistrarManager,
+				"TRUNK_NOT_FOUND",
+				"The trunk was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "Could not get trunk info")
 	}
 
