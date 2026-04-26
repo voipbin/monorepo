@@ -48,7 +48,7 @@ func (h *serviceHandler) ConversationMessageGetsByConversationID(
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmps, err := h.conversationMessageGetsByConversationID(ctx, a, conversationID, size, token)
@@ -131,7 +131,7 @@ func (h *serviceHandler) ConversationMessageSend(
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.conversationMessageSend(ctx, a, conversationID, text, medias)

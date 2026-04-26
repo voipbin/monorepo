@@ -55,7 +55,7 @@ func (h *serviceHandler) ConversationAccountGetsByCustomerID(ctx context.Context
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[cvaccount.Field]any{
@@ -104,7 +104,7 @@ func (h *serviceHandler) ConversationAccountGet(ctx context.Context, a *auth.Aut
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -135,7 +135,7 @@ func (h *serviceHandler) ConversationAccountCreate(
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ConversationV1AccountCreate(ctx, a.CustomerID, accountType, name, detail, secret, token, messageFlowID)
@@ -170,7 +170,7 @@ func (h *serviceHandler) ConversationAccountUpdate(ctx context.Context, a *auth.
 
 	if !h.hasPermission(ctx, a, ca.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ConversationV1AccountUpdate(ctx, accountID, fields)
@@ -205,7 +205,7 @@ func (h *serviceHandler) ConversationAccountDelete(ctx context.Context, a *auth.
 
 	if !h.hasPermission(ctx, a, ca.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ConversationV1AccountDelete(ctx, accountID)

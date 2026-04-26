@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -56,7 +55,7 @@ func (h *serviceHandler) ConferencecallGet(ctx context.Context, a *auth.AuthIden
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -84,7 +83,7 @@ func (h *serviceHandler) ConferencecallList(ctx context.Context, a *auth.AuthIde
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[string]string{
@@ -137,7 +136,7 @@ func (h *serviceHandler) ConferencecallKick(ctx context.Context, a *auth.AuthIde
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission for this agent.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// kick the conferencecall from the conference

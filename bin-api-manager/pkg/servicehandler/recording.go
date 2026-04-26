@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -60,7 +59,7 @@ func (h *serviceHandler) RecordingGet(ctx context.Context, a *auth.AuthIdentity,
 
 	if !h.hasPermission(ctx, a, rec.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := rec.ConvertWebhookMessage()
@@ -89,7 +88,7 @@ func (h *serviceHandler) RecordingList(ctx context.Context, a *auth.AuthIdentity
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters
@@ -143,7 +142,7 @@ func (h *serviceHandler) RecordingDelete(ctx context.Context, a *auth.AuthIdenti
 
 	if !h.hasPermission(ctx, a, r.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.CallV1RecordingDelete(ctx, id)

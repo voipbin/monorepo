@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -33,7 +32,7 @@ func (h *serviceHandler) ServiceAgentTagList(ctx context.Context, a *auth.AuthId
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	filters := map[tmtag.Field]any{
@@ -76,7 +75,7 @@ func (h *serviceHandler) ServiceAgentTagGet(ctx context.Context, a *auth.AuthIde
 
 	if !h.hasPermission(ctx, a, t.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := t.ConvertWebhookMessage()

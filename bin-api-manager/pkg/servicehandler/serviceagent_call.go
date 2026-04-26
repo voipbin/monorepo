@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -34,7 +33,7 @@ func (h *serviceHandler) ServiceAgentCallList(ctx context.Context, a *auth.AuthI
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// filters

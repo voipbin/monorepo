@@ -27,7 +27,7 @@ func (h *serviceHandler) ServiceAgentConversationMessageList(ctx context.Context
 	}
 
 	if cv.OwnerID != a.AgentID() {
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if token == "" {
@@ -76,7 +76,7 @@ func (h *serviceHandler) ServiceAgentConversationMessageSend(
 	}
 
 	if c.OwnerID != a.AgentID() {
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.conversationMessageSend(ctx, a, conversationID, text, medias)

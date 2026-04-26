@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
@@ -25,7 +24,7 @@ func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *aut
 	}
 
 	if tmp.OwnerID != a.AgentID() {
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()

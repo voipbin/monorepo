@@ -54,7 +54,7 @@ func (h *serviceHandler) ProviderCallCreate(
 	// permission — project admin only
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	// fail-fast provider existence check — avoids asking route-manager to
@@ -98,7 +98,7 @@ func (h *serviceHandler) ProviderCallGet(ctx context.Context, a *auth.AuthIdenti
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RouteV1ProviderCallGet(ctx, id)
@@ -131,7 +131,7 @@ func (h *serviceHandler) ProviderCallGets(ctx context.Context, a *auth.AuthIdent
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	if token == "" {
@@ -172,7 +172,7 @@ func (h *serviceHandler) ProviderCallDelete(ctx context.Context, a *auth.AuthIde
 
 	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.RouteV1ProviderCallDelete(ctx, id)

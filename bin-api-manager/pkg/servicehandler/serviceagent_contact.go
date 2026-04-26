@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -42,7 +41,7 @@ func (h *serviceHandler) ServiceAgentContactCreate(
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1ContactCreate(
@@ -91,7 +90,7 @@ func (h *serviceHandler) ServiceAgentContactGet(ctx context.Context, a *auth.Aut
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	res := tmp.ConvertWebhookMessage()
@@ -119,7 +118,7 @@ func (h *serviceHandler) ServiceAgentContactList(ctx context.Context, a *auth.Au
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	typedFilters, err := h.convertContactFilters(filters)
@@ -175,7 +174,7 @@ func (h *serviceHandler) ServiceAgentContactUpdate(
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1ContactUpdate(
@@ -219,7 +218,7 @@ func (h *serviceHandler) ServiceAgentContactDelete(ctx context.Context, a *auth.
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1ContactDelete(ctx, contactID)
@@ -248,7 +247,7 @@ func (h *serviceHandler) ServiceAgentContactLookup(ctx context.Context, a *auth.
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1ContactLookup(ctx, a.CustomerID, phoneE164, email)
@@ -290,7 +289,7 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberCreate(
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1PhoneNumberCreate(ctx, contactID, number, numberE164, phoneType, isPrimary)
@@ -331,7 +330,7 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberUpdate(
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1PhoneNumberUpdate(ctx, contactID, phoneNumberID, fields)
@@ -366,7 +365,7 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberDelete(ctx context.Contex
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1PhoneNumberDelete(ctx, contactID, phoneNumberID)
@@ -407,7 +406,7 @@ func (h *serviceHandler) ServiceAgentContactEmailCreate(
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1EmailCreate(ctx, contactID, address, emailType, isPrimary)
@@ -448,7 +447,7 @@ func (h *serviceHandler) ServiceAgentContactEmailUpdate(
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1EmailUpdate(ctx, contactID, emailID, fields)
@@ -483,7 +482,7 @@ func (h *serviceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1EmailDelete(ctx, contactID, emailID)
@@ -518,7 +517,7 @@ func (h *serviceHandler) ServiceAgentContactTagAdd(ctx context.Context, a *auth.
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1TagAdd(ctx, contactID, tagID)
@@ -553,7 +552,7 @@ func (h *serviceHandler) ServiceAgentContactTagRemove(ctx context.Context, a *au
 
 	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
 		log.Info("The agent has no permission.")
-		return nil, fmt.Errorf("agent has no permission")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ContactV1TagRemove(ctx, contactID, tagID)
