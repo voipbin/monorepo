@@ -77,7 +77,10 @@ func (h *listenHandler) processV1PipecatcallsIDGet(ctx context.Context, m *sock.
 	c, err := h.pipecatcallHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get resource. err: %v", err)
-		return simpleResponse(404), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed PIPECATCALL_NOT_FOUND surfaces to the
+		// caller. Other errors fall back to the legacy 400.
+		return nil, err
 	}
 
 	data, err := json.Marshal(c)
