@@ -2,13 +2,17 @@ package accesskeyhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-customer-manager/models/accesskey"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
 // List returns list of accesskeys
@@ -42,12 +46,23 @@ func (h *accesskeyHandler) GetsByCustomerID(ctx context.Context, size uint64, to
 }
 
 // Get returns accesskey info.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *accesskeyHandler) Get(ctx context.Context, id uuid.UUID) (*accesskey.Accesskey, error) {
 	log := logrus.WithField("func", "Get")
 
 	res, err := h.db.AccesskeyGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get accesskey info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCustomerManager,
+				"ACCESSKEY_NOT_FOUND",
+				"The access key was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 

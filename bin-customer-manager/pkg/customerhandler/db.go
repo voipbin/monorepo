@@ -2,12 +2,16 @@ package customerhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-customer-manager/models/customer"
+	"monorepo/bin-customer-manager/pkg/dbhandler"
 )
 
 // List returns list of customers
@@ -24,12 +28,23 @@ func (h *customerHandler) List(ctx context.Context, size uint64, token string, f
 }
 
 // Get returns customer info.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *customerHandler) Get(ctx context.Context, id uuid.UUID) (*customer.Customer, error) {
 	log := logrus.WithField("func", "Get")
 
 	res, err := h.db.CustomerGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get customer info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCustomerManager,
+				"CUSTOMER_NOT_FOUND",
+				"The customer was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
