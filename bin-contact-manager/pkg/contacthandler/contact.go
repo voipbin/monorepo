@@ -2,6 +2,7 @@ package contacthandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"strings"
 	"unicode"
@@ -9,7 +10,10 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-contact-manager/models/contact"
+	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
 // normalizeE164 normalizes a phone number to E.164 format by stripping
@@ -128,6 +132,13 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 func (h *contactHandler) Get(ctx context.Context, id uuid.UUID) (*contact.Contact, error) {
 	res, err := h.db.ContactGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
@@ -199,14 +210,36 @@ func (h *contactHandler) Delete(ctx context.Context, id uuid.UUID) (*contact.Con
 
 // LookupByPhone finds a contact by phone number (E.164 format)
 func (h *contactHandler) LookupByPhone(ctx context.Context, customerID uuid.UUID, phoneE164 string) (*contact.Contact, error) {
-	return h.db.ContactLookupByPhone(ctx, customerID, phoneE164)
+	res, err := h.db.ContactLookupByPhone(ctx, customerID, phoneE164)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			).Wrap(err)
+		}
+		return nil, err
+	}
+	return res, nil
 }
 
 // LookupByEmail finds a contact by email address
 func (h *contactHandler) LookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error) {
 	// Normalize email to lowercase
 	email = strings.ToLower(strings.TrimSpace(email))
-	return h.db.ContactLookupByEmail(ctx, customerID, email)
+	res, err := h.db.ContactLookupByEmail(ctx, customerID, email)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			).Wrap(err)
+		}
+		return nil, err
+	}
+	return res, nil
 }
 
 // AddPhoneNumber adds a phone number to a contact
