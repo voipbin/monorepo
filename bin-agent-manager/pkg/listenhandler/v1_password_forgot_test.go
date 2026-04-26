@@ -1,7 +1,6 @@
 package listenhandler
 
 import (
-	"fmt"
 	reflect "reflect"
 	"testing"
 
@@ -11,6 +10,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-agent-manager/pkg/agenthandler"
+	"monorepo/bin-agent-manager/pkg/dbhandler"
 )
 
 func Test_ProcessV1PasswordForgotPost(t *testing.T) {
@@ -86,7 +86,7 @@ func Test_ProcessV1PasswordForgotPost_AgentNotFound(t *testing.T) {
 		Data:     []byte(`{"username":"unknown@voipbin.net"}`),
 	}
 
-	mockAgent.EXPECT().PasswordForgot(gomock.Any(), "unknown@voipbin.net", agenthandler.PasswordResetEmailTypeForgot).Return(fmt.Errorf("agent not found"))
+	mockAgent.EXPECT().PasswordForgot(gomock.Any(), "unknown@voipbin.net", agenthandler.PasswordResetEmailTypeForgot).Return(dbhandler.ErrNotFound)
 
 	res, err := h.processRequest(req)
 	if err != nil {

@@ -27,7 +27,7 @@ func (h *listenHandler) processV1PasswordForgotPost(ctx context.Context, m *sock
 
 	if err := h.agentHandler.PasswordForgot(ctx, reqData.Username, agenthandler.PasswordResetEmailTypeForgot); err != nil {
 		log.Infof("Could not process password forgot. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	return simpleResponse(200), nil

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	stderrors "errors"
 	"fmt"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 	"monorepo/bin-agent-manager/pkg/metricshandler"
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
@@ -72,12 +75,23 @@ func (h *agentHandler) GetByCustomerIDAndAddress(ctx context.Context, customerID
 }
 
 // Get returns agent info.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *agentHandler) Get(ctx context.Context, id uuid.UUID) (*agent.Agent, error) {
 	log := logrus.WithField("func", "Get")
 
 	res, err := h.dbGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get agent info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAgentManager,
+				"AGENT_NOT_FOUND",
+				"The agent was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
