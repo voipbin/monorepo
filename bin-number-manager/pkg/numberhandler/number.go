@@ -2,17 +2,21 @@ package numberhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"strings"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	bmbilling "monorepo/bin-billing-manager/models/billing"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/dbhandler"
 )
 
 // Create creates a new order numbers of given numbers
@@ -257,6 +261,13 @@ func (h *numberHandler) Get(ctx context.Context, id uuid.UUID) (*number.Number, 
 	res, err := h.dbGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get number info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameNumberManager,
+				"NUMBER_NOT_FOUND",
+				"The phone number was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get number info")
 	}
 
