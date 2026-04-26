@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -10,7 +11,10 @@ import (
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // Create is creating a new aicall.
@@ -163,6 +167,13 @@ func (h *aicallHandler) Get(ctx context.Context, id uuid.UUID) (*aicall.AIcall, 
 	res, err := h.db.AIcallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get aicall info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"AICALL_NOT_FOUND",
+				"The AI call was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 

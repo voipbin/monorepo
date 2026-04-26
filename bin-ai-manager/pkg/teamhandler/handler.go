@@ -2,17 +2,21 @@ package teamhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"monorepo/bin-ai-manager/models/team"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
 // Create creates a new team record.
@@ -85,6 +89,13 @@ func (h *teamHandler) Get(ctx context.Context, id uuid.UUID) (*team.Team, error)
 
 	res, err := h.db.TeamGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"TEAM_NOT_FOUND",
+				"The team was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get team")
 	}
 	log.WithField("team", res).Debugf("Retrieved team info. team_id: %s", res.ID)

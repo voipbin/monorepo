@@ -2,18 +2,22 @@ package aihandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/tool"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 )
 
 // Create creates a new ai record.
@@ -101,6 +105,13 @@ func (h *aiHandler) dbCreate(
 func (h *aiHandler) Get(ctx context.Context, id uuid.UUID) (*ai.AI, error) {
 	res, err := h.db.AIGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"AI_NOT_FOUND",
+				"The AI was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get ai")
 	}
 
