@@ -2,9 +2,12 @@ package queuecallhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -12,6 +15,7 @@ import (
 
 	"monorepo/bin-queue-manager/models/queue"
 	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/pkg/dbhandler"
 )
 
 // List returns queuecalls of the given customer_id
@@ -34,6 +38,13 @@ func (h *queuecallHandler) List(ctx context.Context, size uint64, token string, 
 func (h *queuecallHandler) Get(ctx context.Context, id uuid.UUID) (*queuecall.Queuecall, error) {
 	res, err := h.db.QueuecallGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameQueueManager,
+				"QUEUECALL_NOT_FOUND",
+				"The queuecall was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "Could not get queuecall info.")
 	}
 

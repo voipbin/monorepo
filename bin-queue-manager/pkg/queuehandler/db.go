@@ -2,12 +2,17 @@ package queuehandler
 
 import (
 	"context"
+	stderrors "errors"
+
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/pkg/dbhandler"
 )
 
 // List returns queues
@@ -30,6 +35,13 @@ func (h *queueHandler) Get(ctx context.Context, id uuid.UUID) (*queue.Queue, err
 	res, err := h.db.QueueGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get queue info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameQueueManager,
+				"QUEUE_NOT_FOUND",
+				"The queue was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
