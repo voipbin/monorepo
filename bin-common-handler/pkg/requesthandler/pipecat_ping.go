@@ -10,7 +10,7 @@ import (
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 )
 
-const requestTimeoutPipecatPing = 1000 // 1s — sub-second decisive liveness probe
+const requestTimeoutPipecatPing = 1000 // pipecat ping timeout(1 sec)
 
 // PipecatV1Ping issues a sub-second liveness probe against the per-pod queue
 // for hostID. Returns nil if the pod responded with a matching host_id (the

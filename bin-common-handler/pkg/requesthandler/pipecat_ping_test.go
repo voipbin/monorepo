@@ -2,11 +2,13 @@ package requesthandler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
 	"go.uber.org/mock/gomock"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 )
@@ -32,7 +34,7 @@ func Test_PipecatV1Ping(t *testing.T) {
 
 			hostID: "10.4.2.18",
 
-			expectTarget: "bin-manager.pipecat-manager.request.10.4.2.18",
+			expectTarget: fmt.Sprintf("%s.%s", commonoutline.QueueNamePipecatRequest, "10.4.2.18"),
 			expectRequest: &sock.Request{
 				URI:      "/v1/ping",
 				Method:   sock.RequestMethodGet,
@@ -54,7 +56,7 @@ func Test_PipecatV1Ping(t *testing.T) {
 
 			hostID: "10.4.2.18",
 
-			expectTarget: "bin-manager.pipecat-manager.request.10.4.2.18",
+			expectTarget: fmt.Sprintf("%s.%s", commonoutline.QueueNamePipecatRequest, "10.4.2.18"),
 			expectRequest: &sock.Request{
 				URI:      "/v1/ping",
 				Method:   sock.RequestMethodGet,
@@ -77,7 +79,7 @@ func Test_PipecatV1Ping(t *testing.T) {
 
 			hostID: "10.4.2.18",
 
-			expectTarget: "bin-manager.pipecat-manager.request.10.4.2.18",
+			expectTarget: fmt.Sprintf("%s.%s", commonoutline.QueueNamePipecatRequest, "10.4.2.18"),
 			expectRequest: &sock.Request{
 				URI:      "/v1/ping",
 				Method:   sock.RequestMethodGet,
@@ -97,7 +99,7 @@ func Test_PipecatV1Ping(t *testing.T) {
 
 			hostID: "10.4.2.18",
 
-			expectTarget: "bin-manager.pipecat-manager.request.10.4.2.18",
+			expectTarget: fmt.Sprintf("%s.%s", commonoutline.QueueNamePipecatRequest, "10.4.2.18"),
 			expectRequest: &sock.Request{
 				URI:      "/v1/ping",
 				Method:   sock.RequestMethodGet,
@@ -117,7 +119,7 @@ func Test_PipecatV1Ping(t *testing.T) {
 
 			hostID: "10.4.2.18",
 
-			expectTarget: "bin-manager.pipecat-manager.request.10.4.2.18",
+			expectTarget: fmt.Sprintf("%s.%s", commonoutline.QueueNamePipecatRequest, "10.4.2.18"),
 			expectRequest: &sock.Request{
 				URI:      "/v1/ping",
 				Method:   sock.RequestMethodGet,
