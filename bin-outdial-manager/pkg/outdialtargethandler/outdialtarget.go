@@ -2,14 +2,18 @@ package outdialtargethandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-outdial-manager/models/outdialtarget"
+	"monorepo/bin-outdial-manager/pkg/dbhandler"
 )
 
 // Create creates a new outdial
@@ -86,6 +90,13 @@ func (h *outdialTargetHandler) Get(ctx context.Context, id uuid.UUID) (*outdialt
 	res, err := h.db.OutdialTargetGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not create the outdial. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameOutdialManager,
+				"OUTDIAL_TARGET_NOT_FOUND",
+				"The outdial target was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
