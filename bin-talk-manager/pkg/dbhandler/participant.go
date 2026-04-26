@@ -2,7 +2,6 @@ package dbhandler
 
 import (
 	"context"
-	"database/sql"
 	"strings"
 
 	sq "github.com/Masterminds/squirrel"
@@ -116,7 +115,7 @@ func (h *dbHandler) ParticipantGet(ctx context.Context, id uuid.UUID) (*particip
 	}()
 
 	if !rows.Next() {
-		return nil, sql.ErrNoRows
+		return nil, ErrNotFound
 	}
 
 	var p participant.Participant

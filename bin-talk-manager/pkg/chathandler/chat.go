@@ -2,15 +2,19 @@ package chathandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/models/participant"
+	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
 
 // ChatCreate creates a new talk
@@ -174,6 +178,13 @@ func (h *chatHandler) ChatGet(ctx context.Context, id uuid.UUID) (*chat.Chat, er
 	t, err := h.dbHandler.ChatGet(ctx, id)
 	if err != nil {
 		log.Errorf("Failed to get talk. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTalkManager,
+				"CHAT_NOT_FOUND",
+				"The chat was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "failed to get talk")
 	}
 

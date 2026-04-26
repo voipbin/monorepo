@@ -2,7 +2,7 @@ package participanthandler
 
 import (
 	"context"
-	"database/sql"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
@@ -10,6 +10,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-talk-manager/models/participant"
+	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
 
 // ParticipantAdd adds a participant to a talk
@@ -180,7 +181,7 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	p, err := h.dbHandler.ParticipantGet(ctx, participantID)
 	if err != nil {
 		// If participant doesn't exist, treat as successful deletion (idempotent)
-		if err == sql.ErrNoRows {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
 			log.Infof("Participant already removed (not found). participant_id: %s", participantID)
 			return nil
 		}
@@ -192,7 +193,7 @@ func (h *participantHandler) ParticipantRemove(ctx context.Context, customerID, 
 	err = h.dbHandler.ParticipantDelete(ctx, participantID)
 	if err != nil {
 		// If already deleted, treat as success (idempotent)
-		if err == sql.ErrNoRows {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
 			log.Infof("Participant already removed (delete). participant_id: %s", participantID)
 			return nil
 		}

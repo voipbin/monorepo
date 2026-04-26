@@ -2,7 +2,6 @@ package participanthandler
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"reflect"
 	"testing"
@@ -791,7 +790,7 @@ func Test_ParticipantRemove_idempotent(t *testing.T) {
 			customerID:    uuid.FromStringOrNil("809656e2-305e-43cd-8d7b-ccb44373dddb"),
 			participantID: uuid.FromStringOrNil("af243cbc-de04-4705-ad2b-78350d0a4fba"),
 
-			getError: sql.ErrNoRows,
+			getError: dbhandler.ErrNotFound,
 		},
 	}
 
@@ -860,7 +859,7 @@ func Test_ParticipantRemove_idempotent_delete(t *testing.T) {
 	mockDB.EXPECT().ParticipantGet(ctx, participantID).Return(testParticipant, nil)
 
 	// Mock delete returning ErrNoRows (already deleted by another process)
-	mockDB.EXPECT().ParticipantDelete(ctx, participantID).Return(sql.ErrNoRows)
+	mockDB.EXPECT().ParticipantDelete(ctx, participantID).Return(dbhandler.ErrNotFound)
 
 	// Should succeed idempotently
 	err := h.ParticipantRemove(ctx, customerID, participantID)

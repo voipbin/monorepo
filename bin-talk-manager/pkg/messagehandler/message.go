@@ -2,13 +2,17 @@ package messagehandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-talk-manager/models/message"
+	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
 
 // MessageCreate creates a new message with threading validation
@@ -141,7 +145,18 @@ func (h *messageHandler) MessageCreate(ctx context.Context, req MessageCreateReq
 
 // MessageGet retrieves a message by ID
 func (h *messageHandler) MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error) {
-	return h.dbHandler.MessageGet(ctx, id)
+	res, err := h.dbHandler.MessageGet(ctx, id)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTalkManager,
+				"MESSAGE_NOT_FOUND",
+				"The message was not found.",
+			).Wrap(err)
+		}
+		return nil, err
+	}
+	return res, nil
 }
 
 // MessageList retrieves messages with filters and pagination

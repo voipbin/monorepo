@@ -5,6 +5,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
@@ -14,6 +15,11 @@ import (
 	"monorepo/bin-talk-manager/models/chat"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 )
+
+// ErrNotFound is returned when a requested record does not exist.
+// Translated from sql.ErrNoRows by single-row Get methods so callers can
+// match with errors.Is regardless of the underlying driver detail.
+var ErrNotFound = errors.New("record not found")
 
 // DBHandler defines database operations interface
 type DBHandler interface {

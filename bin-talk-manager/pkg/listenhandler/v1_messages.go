@@ -115,7 +115,9 @@ func (h *listenHandler) v1MessagesIDGet(ctx context.Context, m commonsock.Reques
 	msg, err := h.messageHandler.MessageGet(ctx, messageID)
 	if err != nil {
 		log.Errorf("Could not get the message. err: %v", err)
-		return simpleResponse(404), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed MESSAGE_NOT_FOUND surfaces to the caller.
+		return nil, err
 	}
 
 	data, _ := json.Marshal(msg)
