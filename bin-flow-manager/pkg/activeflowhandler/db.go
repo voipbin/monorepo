@@ -2,16 +2,20 @@ package activeflowhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-flow-manager/models/action"
 	"monorepo/bin-flow-manager/models/activeflow"
 	"monorepo/bin-flow-manager/models/stack"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
 )
 
 // Create creates a new activeflow
@@ -377,11 +381,22 @@ func (h *activeflowHandler) delete(ctx context.Context, id uuid.UUID) (*activefl
 	return res, nil
 }
 
-// Get returns activeflow
+// Get returns activeflow.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *activeflowHandler) Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error) {
 
 	res, err := h.db.ActiveflowGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameFlowManager,
+				"ACTIVEFLOW_NOT_FOUND",
+				"The active flow was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get activeflow. activeflow_id: %s", id)
 	}
 
