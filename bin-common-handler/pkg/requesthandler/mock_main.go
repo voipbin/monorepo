@@ -4804,6 +4804,20 @@ func (mr *MockRequestHandlerMockRecorder) PipecatV1MessageSend(ctx, hostID, pipe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1MessageSend", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1MessageSend), ctx, hostID, pipecatcallID, messageID, messageText, runImmediately, audioResponse)
 }
 
+// PipecatV1Ping mocks base method.
+func (m *MockRequestHandler) PipecatV1Ping(ctx context.Context, hostID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PipecatV1Ping", ctx, hostID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PipecatV1Ping indicates an expected call of PipecatV1Ping.
+func (mr *MockRequestHandlerMockRecorder) PipecatV1Ping(ctx, hostID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PipecatV1Ping", reflect.TypeOf((*MockRequestHandler)(nil).PipecatV1Ping), ctx, hostID)
+}
+
 // PipecatV1PipecatcallGet mocks base method.
 func (m *MockRequestHandler) PipecatV1PipecatcallGet(ctx context.Context, pipecatcallID uuid.UUID) (*pipecatcall.Pipecatcall, error) {
 	m.ctrl.T.Helper()
