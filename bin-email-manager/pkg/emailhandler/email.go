@@ -2,10 +2,15 @@ package emailhandler
 
 import (
 	"context"
+	stderrors "errors"
+
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-email-manager/models/email"
+	"monorepo/bin-email-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -80,9 +85,21 @@ func (h *emailHandler) Delete(ctx context.Context, id uuid.UUID) (*email.Email, 
 	return res, nil
 }
 
+// Get returns email info.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *emailHandler) Get(ctx context.Context, id uuid.UUID) (*email.Email, error) {
 	res, err := h.db.EmailGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameEmailManager,
+				"EMAIL_NOT_FOUND",
+				"The email was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get email")
 	}
 
