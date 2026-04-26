@@ -2,9 +2,14 @@ package summaryhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
+
 	"monorepo/bin-ai-manager/models/summary"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -66,6 +71,13 @@ func (h *summaryHandler) Get(ctx context.Context, id uuid.UUID) (*summary.Summar
 
 	res, err := h.db.SummaryGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"SUMMARY_NOT_FOUND",
+				"The summary was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get data")
 	}
 

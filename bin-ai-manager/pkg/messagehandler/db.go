@@ -2,8 +2,13 @@ package messagehandler
 
 import (
 	"context"
+	stderrors "errors"
+
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -63,6 +68,13 @@ func (h *messageHandler) Create(
 func (h *messageHandler) Get(ctx context.Context, id uuid.UUID) (*message.Message, error) {
 	res, err := h.db.MessageGet(ctx, id)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameAIManager,
+				"MESSAGE_NOT_FOUND",
+				"The message was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrapf(err, "could not get data")
 	}
 
