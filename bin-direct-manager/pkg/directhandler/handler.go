@@ -4,15 +4,19 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"monorepo/bin-direct-manager/models/direct"
+	"monorepo/bin-direct-manager/pkg/dbhandler"
 )
 
 // generateHash generates a unique direct hash using crypto/rand.
@@ -86,6 +90,13 @@ func (h *directHandler) Get(ctx context.Context, id uuid.UUID) (*direct.Direct, 
 	res, err := h.dbGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get direct info. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameDirectManager,
+				"DIRECT_NOT_FOUND",
+				"The direct was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
@@ -110,6 +121,13 @@ func (h *directHandler) GetByHash(ctx context.Context, hash string) (*direct.Dir
 	res, err = h.dbGetByHash(ctx, hash)
 	if err != nil {
 		log.Errorf("Could not get direct by hash. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameDirectManager,
+				"DIRECT_NOT_FOUND",
+				"The direct was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 

@@ -90,7 +90,9 @@ func (h *listenHandler) processV1DirectsIDGet(ctx context.Context, m *sock.Reque
 	tmp, err := h.directHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get a direct info. err: %v", err)
-		return simpleResponse(500), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed DIRECT_NOT_FOUND surfaces to the caller.
+		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)
@@ -126,7 +128,9 @@ func (h *listenHandler) processV1DirectsByHashGet(ctx context.Context, m *sock.R
 	tmp, err := h.directHandler.GetByHash(ctx, hash)
 	if err != nil {
 		log.Errorf("Could not get a direct by hash. err: %v", err)
-		return simpleResponse(500), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed DIRECT_NOT_FOUND surfaces to the caller.
+		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)
