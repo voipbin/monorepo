@@ -48,7 +48,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 	d, err := h.reqHandler.DirectV1DirectGetByHash(ctx, directHash)
 	if err != nil {
 		log.Infof("Could not get direct by hash. err: %v", err)
-		return nil, fmt.Errorf("direct hash not found")
+		return nil, fmt.Errorf("%w: direct hash not found", serviceerrors.ErrNotFound)
 	}
 	log.WithField("direct", d).Debugf("Retrieved direct info. direct_id: %s", d.ID)
 
@@ -56,7 +56,7 @@ func (h *serviceHandler) AuthBoot(ctx context.Context, directHash string) (*Boot
 	cu, err := h.reqHandler.CustomerV1CustomerGet(ctx, d.CustomerID)
 	if err != nil {
 		log.Infof("Could not get customer. err: %v", err)
-		return nil, fmt.Errorf("customer not found")
+		return nil, fmt.Errorf("%w: customer not found", serviceerrors.ErrNotFound)
 	}
 	log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 

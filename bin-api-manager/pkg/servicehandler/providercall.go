@@ -61,7 +61,7 @@ func (h *serviceHandler) ProviderCallCreate(
 	// create a Call record that would immediately fail at DialrouteList.
 	if _, err := h.reqHandler.RouteV1ProviderGet(ctx, providerID); err != nil {
 		log.Errorf("Could not find the provider. err: %v", err)
-		return nil, fmt.Errorf("provider not found. err: %v", err)
+		return nil, fmt.Errorf("%w: provider not found", serviceerrors.ErrNotFound)
 	}
 
 	// forward to route-manager for orchestration
