@@ -34,7 +34,7 @@ func (h *serviceHandler) TimelineSIPAnalysisGet(
 	call, err := h.callGet(ctx, callID)
 	if err != nil {
 		log.Infof("Could not get call: %v", err)
-		return nil, fmt.Errorf("call not found")
+		return nil, fmt.Errorf("%w: call not found", serviceerrors.ErrNotFound)
 	}
 	log.WithField("call", call).Debugf("Retrieved call info. call_id: %s", call.ID)
 
@@ -47,26 +47,26 @@ func (h *serviceHandler) TimelineSIPAnalysisGet(
 	// Get channel to retrieve SIP Call-ID
 	if call.ChannelID == "" {
 		log.Info("Call has no channel ID")
-		return nil, fmt.Errorf("no SIP data available for this call")
+		return nil, fmt.Errorf("%w: no SIP data available for this call", serviceerrors.ErrNotFound)
 	}
 
 	ch, err := h.reqHandler.CallV1ChannelGet(ctx, call.ChannelID)
 	if err != nil {
 		log.Errorf("Could not get channel: %v", err)
-		return nil, fmt.Errorf("no SIP data available for this call")
+		return nil, fmt.Errorf("%w: no SIP data available for this call", serviceerrors.ErrNotFound)
 	}
 	log.WithField("channel", ch).Debugf("Retrieved channel info. channel_id: %s", ch.ID)
 
 	if ch.SIPCallID == "" {
 		log.Info("Channel has no SIP Call-ID")
-		return nil, fmt.Errorf("no SIP data available for this call")
+		return nil, fmt.Errorf("%w: no SIP data available for this call", serviceerrors.ErrNotFound)
 	}
 
 	// Determine time range from call timestamps
 	fromTime := call.TMCreate
 	if fromTime == nil {
 		log.Info("Call has no create timestamp")
-		return nil, fmt.Errorf("no SIP data available for this call")
+		return nil, fmt.Errorf("%w: no SIP data available for this call", serviceerrors.ErrNotFound)
 	}
 	toTime := call.TMHangup
 	if toTime == nil {
@@ -107,7 +107,7 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 	call, err := h.callGet(ctx, callID)
 	if err != nil {
 		log.Infof("Could not get call: %v", err)
-		return nil, fmt.Errorf("call not found")
+		return nil, fmt.Errorf("%w: call not found", serviceerrors.ErrNotFound)
 	}
 	log.WithField("call", call).Debugf("Retrieved call info. call_id: %s", call.ID)
 
@@ -120,26 +120,26 @@ func (h *serviceHandler) TimelineSIPPcapGet(
 	// Get channel to retrieve SIP Call-ID
 	if call.ChannelID == "" {
 		log.Info("Call has no channel ID")
-		return nil, fmt.Errorf("no SIP data available for this call")
+		return nil, fmt.Errorf("%w: no SIP data available for this call", serviceerrors.ErrNotFound)
 	}
 
 	ch, err := h.reqHandler.CallV1ChannelGet(ctx, call.ChannelID)
 	if err != nil {
 		log.Errorf("Could not get channel: %v", err)
-		return nil, fmt.Errorf("no SIP data available for this call")
+		return nil, fmt.Errorf("%w: no SIP data available for this call", serviceerrors.ErrNotFound)
 	}
 	log.WithField("channel", ch).Debugf("Retrieved channel info. channel_id: %s", ch.ID)
 
 	if ch.SIPCallID == "" {
 		log.Info("Channel has no SIP Call-ID")
-		return nil, fmt.Errorf("no SIP data available for this call")
+		return nil, fmt.Errorf("%w: no SIP data available for this call", serviceerrors.ErrNotFound)
 	}
 
 	// Determine time range from call timestamps
 	fromTime := call.TMCreate
 	if fromTime == nil {
 		log.Info("Call has no create timestamp")
-		return nil, fmt.Errorf("no SIP data available for this call")
+		return nil, fmt.Errorf("%w: no SIP data available for this call", serviceerrors.ErrNotFound)
 	}
 	toTime := call.TMHangup
 	if toTime == nil {

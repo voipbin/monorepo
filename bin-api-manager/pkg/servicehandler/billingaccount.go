@@ -210,7 +210,7 @@ func (h *serviceHandler) BillingAccountSelfGet(ctx context.Context, a *auth.Auth
 
 	if c.BillingAccountID == uuid.Nil {
 		log.Info("Customer has no billing account.")
-		return nil, fmt.Errorf("no billing account")
+		return nil, fmt.Errorf("%w: customer has no billing account configured", serviceerrors.ErrStateInvalid)
 	}
 
 	ba, err := h.billingAccountGet(ctx, c.BillingAccountID)
@@ -248,7 +248,7 @@ func (h *serviceHandler) BillingAccountSelfUpdateBasicInfo(ctx context.Context, 
 
 	if c.BillingAccountID == uuid.Nil {
 		log.Info("Customer has no billing account.")
-		return nil, fmt.Errorf("no billing account")
+		return nil, fmt.Errorf("%w: customer has no billing account configured", serviceerrors.ErrStateInvalid)
 	}
 
 	tmp, err := h.reqHandler.BillingV1AccountUpdateBasicInfo(ctx, c.BillingAccountID, name, detail)
@@ -285,7 +285,7 @@ func (h *serviceHandler) BillingAccountSelfUpdatePaymentInfo(ctx context.Context
 
 	if c.BillingAccountID == uuid.Nil {
 		log.Info("Customer has no billing account.")
-		return nil, fmt.Errorf("no billing account")
+		return nil, fmt.Errorf("%w: customer has no billing account configured", serviceerrors.ErrStateInvalid)
 	}
 
 	tmp, err := h.reqHandler.BillingV1AccountUpdatePaymentInfo(ctx, c.BillingAccountID, paymentType, paymentMethod)
@@ -323,7 +323,7 @@ func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context
 
 	if c.BillingAccountID == uuid.Nil {
 		log.Infof("Customer has no billing account. customer_id: %s", c.ID)
-		return "", fmt.Errorf("no billing account")
+		return "", fmt.Errorf("%w: customer has no billing account configured", serviceerrors.ErrStateInvalid)
 	}
 
 	url, err := h.reqHandler.BillingV1AccountPaddlePortalSession(ctx, c.BillingAccountID)
