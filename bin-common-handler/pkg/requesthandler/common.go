@@ -3,11 +3,14 @@ package requesthandler
 import (
 	"encoding/json"
 	"fmt"
-	"monorepo/bin-common-handler/models/sock"
 	"net/http"
 	"reflect"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	"monorepo/bin-common-handler/models/sock"
+
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -119,6 +122,32 @@ func parseResponse(resp *sock.Response, out any) error {
 	if resp == nil {
 		// nothing to parse.
 		return nil
+	}
+
+	// Typed VoipbinError takes precedence over the canned status-code
+	// sentinel. Upstream managers that have migrated to the typed-error
+	// envelope set DataType=DataTypeVoipbinError and put a JSON-encoded
+	// VoipbinError in resp.Data; cerrors.FromResponse returns the typed
+	// error so it can flow up through fmt.Errorf("%w") wraps and be
+	// recovered by errors.As at the api-manager edge. Non-migrated
+	// managers don't set DataType, FromResponse returns nil, and the
+	// legacy HttpStatusErrorMap path below fires unchanged.
+	if ve := cerrors.FromResponse(resp); ve != nil {
+		return ve
+	}
+
+	// Observability for the migration window: if a manager set DataType to
+	// DataTypeVoipbinError but FromResponse rejected the payload (malformed
+	// JSON, mismatched shape), the legacy fallback below masks the bug.
+	// Without this warning a buggy migrated manager looks identical to a
+	// non-migrated one in production logs. Removable once the migration
+	// concludes.
+	if resp.DataType == cerrors.DataTypeVoipbinError && resp.StatusCode >= 400 && len(resp.Data) > 0 {
+		logrus.WithFields(logrus.Fields{
+			"func":        "parseResponse",
+			"status_code": resp.StatusCode,
+			"data_len":    len(resp.Data),
+		}).Warn("DataType=DataTypeVoipbinError but FromResponse returned nil; falling through to legacy sentinel. Likely malformed JSON in upstream manager.")
 	}
 
 	if errStatus := getResponseStatusCodeError(resp.StatusCode); errStatus != nil {

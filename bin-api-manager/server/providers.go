@@ -210,6 +210,24 @@ func (h *server) PostProvidersSetup(c *gin.Context) {
 		req.Credentials.ApiKey,
 	)
 	if err != nil {
+		// Typed-error path (post-migration upstream): pass the upstream
+		// VoipbinError through directly so the client sees route-manager's
+		// domain/reason/message verbatim. This is the design intent of the
+		// typed-error migration — once an upstream emits typed errors, the
+		// api-manager edge stops re-labeling them. Mis-classification risk
+		// in the legacy gate (re-labeling any 422 as CARRIER_CREDENTIALS_REJECTED)
+		// disappears in this branch because route-manager's reason is now
+		// authoritative.
+		var ve *cerrors.VoipbinError
+		if errors.As(err, &ve) {
+			log.Infof("Provider setup returned typed error from upstream. err: %v", err)
+			abortWithError(c, ve)
+			return
+		}
+		// Legacy path (pre-migration upstream): canned ErrUnprocessableEntity.
+		// No typed payload to forward, so we hand-roll the envelope. Removable
+		// once route-manager migrates and the typed branch above covers all
+		// credential-rejection cases.
 		if errors.Is(err, commonrequesthandler.ErrUnprocessableEntity) {
 			log.Infof("Carrier API key rejected. err: %v", err)
 			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "CARRIER_CREDENTIALS_REJECTED", "The carrier rejected the supplied credentials.").Wrap(err))
