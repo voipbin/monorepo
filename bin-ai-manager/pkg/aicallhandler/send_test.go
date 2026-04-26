@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -388,6 +389,179 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			// Verify CurrentMemberID was updated in-place on the updated aicall (for team cases with fallback)
 			if tt.expectCurrentMemberIDAfter != uuid.Nil && tt.responseUpdatedAIcall.CurrentMemberID != tt.expectCurrentMemberIDAfter {
 				t.Errorf("expected CurrentMemberID after: %v, got: %v", tt.expectCurrentMemberIDAfter, tt.responseUpdatedAIcall.CurrentMemberID)
+			}
+		})
+	}
+}
+
+func Test_SendReferenceTypeCall(t *testing.T) {
+	tests := []struct {
+		name string
+
+		aicall      *aicall.AIcall
+		messageText string
+
+		responsePipecatcall *pmpipecatcall.Pipecatcall
+		responseMessage     *message.Message
+
+		pingErr error
+
+		expectPingHostID    string
+		expectMessageSend   bool
+		expectErr           bool
+		expectErrSubstring  string
+		expectRes           *message.Message
+	}{
+		{
+			name: "alive pod sends message",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000010"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000020"),
+				ReferenceType: aicall.ReferenceTypeCall,
+				PipecatcallID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000050"),
+			},
+			messageText: "hello pipecat",
+
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "10.4.2.18",
+			},
+			responseMessage: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+
+			pingErr: nil,
+
+			expectPingHostID:  "10.4.2.18",
+			expectMessageSend: true,
+			expectErr:         false,
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+		},
+		{
+			name: "dead pod (ping deadline) returns error and skips MessageSend",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000010"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000020"),
+				ReferenceType: aicall.ReferenceTypeCall,
+				PipecatcallID: uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000050"),
+			},
+			messageText: "hello dead pod",
+
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "10.4.2.99",
+			},
+			responseMessage: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+
+			pingErr: context.DeadlineExceeded,
+
+			expectPingHostID:   "10.4.2.99",
+			expectMessageSend:  false,
+			expectErr:          true,
+			expectErrSubstring: "no longer reachable",
+			expectRes:          nil,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:    mockUtil,
+				reqHandler:     mockReq,
+				notifyHandler:  mockNotify,
+				db:             mockDB,
+				aiHandler:      mockAI,
+				teamHandler:    mockTeam,
+				messageHandler: mockMessage,
+			}
+			ctx := context.Background()
+
+			// 1. PipecatV1PipecatcallGet
+			mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.aicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
+
+			// 2. messageHandler.Create — always called BEFORE ping
+			mockMessage.EXPECT().Create(
+				ctx,
+				uuid.Nil,
+				tt.aicall.CustomerID,
+				tt.aicall.ID,
+				tt.aicall.ActiveflowID,
+				message.DirectionOutgoing,
+				message.RoleUser,
+				tt.messageText,
+				nil,
+				"",
+			).Return(tt.responseMessage, nil)
+
+			// 3. PipecatV1Ping preflight
+			mockReq.EXPECT().PipecatV1Ping(gomock.Any(), tt.expectPingHostID).Return(tt.pingErr)
+
+			// 4. PipecatV1MessageSend — only if ping succeeded
+			if tt.expectMessageSend {
+				mockReq.EXPECT().PipecatV1MessageSend(
+					ctx,
+					tt.responsePipecatcall.HostID,
+					tt.responsePipecatcall.ID,
+					tt.responseMessage.ID.String(),
+					tt.messageText,
+					true,
+					true,
+				).Return(nil, nil)
+			}
+
+			res, err := h.SendReferenceTypeCall(ctx, tt.aicall, message.RoleUser, tt.messageText, true, true)
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected error, got nil")
+				}
+				if tt.expectErrSubstring != "" && !strings.Contains(err.Error(), tt.expectErrSubstring) {
+					t.Errorf("expected error containing %q, got: %v", tt.expectErrSubstring, err)
+				}
+				if res != nil {
+					t.Errorf("expected nil res on error, got: %v", res)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
 			}
 		})
 	}

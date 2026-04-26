@@ -43,6 +43,10 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 	}
 	log.WithField("message", res).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", c.ID, res.ID)
 
+	if !h.pingPipecatHost(ctx, pc.HostID) {
+		return nil, errors.Errorf("pipecat pod for this aicall is no longer reachable. host_id: %s, pipecatcall_id: %s", pc.HostID, pc.ID)
+	}
+
 	tmp, err := h.reqHandler.PipecatV1MessageSend(ctx, pc.HostID, pc.ID, res.ID.String(), messageText, runImmediately, audioResponse)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not send the message to the pipecatcall correctly")
