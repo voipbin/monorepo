@@ -105,7 +105,7 @@ func TestCreate(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if result == nil {
-					t.Error("Expected transfer but got nil")
+					t.Fatal("Expected transfer but got nil")
 				}
 				if result.CustomerID != tt.customerID {
 					t.Errorf("Wrong CustomerID. expect: %s, got: %s", tt.customerID, result.CustomerID)
@@ -188,7 +188,7 @@ func TestGet(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if result == nil {
-					t.Error("Expected transfer but got nil")
+					t.Fatal("Expected transfer but got nil")
 				}
 				if result.ID != tt.dbTransfer.ID {
 					t.Errorf("Wrong ID. expect: %s, got: %s", tt.dbTransfer.ID, result.ID)
@@ -259,7 +259,7 @@ func TestGetByGroupcallID(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if result == nil {
-					t.Error("Expected transfer but got nil")
+					t.Fatal("Expected transfer but got nil")
 				}
 			}
 		})
@@ -327,7 +327,7 @@ func TestGetByTransfererCallID(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if result == nil {
-					t.Error("Expected transfer but got nil")
+					t.Fatal("Expected transfer but got nil")
 				}
 			}
 		})
@@ -436,7 +436,7 @@ func Test_updateTransfereeCallID(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if result == nil {
-					t.Error("Expected transfer but got nil")
+					t.Fatal("Expected transfer but got nil")
 				}
 				if result.TransfereeCallID != tt.transfereeCallID {
 					t.Errorf("Wrong TransfereeCallID. expect: %s, got: %s", tt.transfereeCallID, result.TransfereeCallID)

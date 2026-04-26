@@ -159,7 +159,7 @@ func TestTransferGet(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if result == nil {
-					t.Error("Expected transfer but got nil")
+					t.Fatal("Expected transfer but got nil")
 				}
 				if result.ID != tt.expectedTransfer.ID {
 					t.Errorf("Wrong ID. expect: %s, got: %s", tt.expectedTransfer.ID, result.ID)
@@ -225,7 +225,7 @@ func TestTransferGetByTransfererCallID(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if result == nil {
-					t.Error("Expected transfer but got nil")
+					t.Fatal("Expected transfer but got nil")
 				}
 				if result.ID != tt.expectedTransferID {
 					t.Errorf("Wrong ID. expect: %s, got: %s", tt.expectedTransferID, result.ID)
@@ -291,7 +291,7 @@ func TestTransferGetByGroupcallID(t *testing.T) {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				if result == nil {
-					t.Error("Expected transfer but got nil")
+					t.Fatal("Expected transfer but got nil")
 				}
 				if result.ID != tt.expectedTransferID {
 					t.Errorf("Wrong ID. expect: %s, got: %s", tt.expectedTransferID, result.ID)
