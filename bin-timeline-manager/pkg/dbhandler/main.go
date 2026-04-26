@@ -4,6 +4,7 @@ package dbhandler
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -14,6 +15,13 @@ import (
 )
 
 const clickhouseRetryInterval = 30 * time.Second
+
+// ErrNotFound is returned when a requested record does not exist.
+// Currently unused — timeline-manager has no single-row Get methods —
+// but exported to keep the listenhandler errorResponse pattern consistent
+// with the rest of the monorepo so future Get methods can wire ErrNotFound
+// translation and have it route to 404 automatically.
+var ErrNotFound = errors.New("record not found")
 
 // EventRow represents a single event row for batch insert.
 type EventRow struct {
