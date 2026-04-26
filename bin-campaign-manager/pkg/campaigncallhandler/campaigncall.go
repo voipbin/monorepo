@@ -2,14 +2,18 @@ package campaigncallhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-campaign-manager/models/campaigncall"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 // Create creates a new campaigncall
@@ -100,6 +104,13 @@ func (h *campaigncallHandler) Get(ctx context.Context, id uuid.UUID) (*campaignc
 	res, err := h.db.CampaigncallGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaigncall. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCampaignManager,
+				"CAMPAIGNCALL_NOT_FOUND",
+				"The campaign call was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 

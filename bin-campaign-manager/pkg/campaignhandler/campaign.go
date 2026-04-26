@@ -2,9 +2,12 @@ package campaignhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
@@ -12,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-campaign-manager/models/campaign"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 // Create creates a new campaign
@@ -153,7 +157,11 @@ func (h *campaignHandler) Delete(ctx context.Context, id uuid.UUID) (*campaign.C
 	return res, nil
 }
 
-// Get returns campaign
+// Get returns campaign.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *campaignHandler) Get(ctx context.Context, id uuid.UUID) (*campaign.Campaign, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Get",
@@ -162,6 +170,13 @@ func (h *campaignHandler) Get(ctx context.Context, id uuid.UUID) (*campaign.Camp
 	res, err := h.db.CampaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCampaignManager,
+				"CAMPAIGN_NOT_FOUND",
+				"The campaign was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 

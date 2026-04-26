@@ -2,14 +2,18 @@ package outplanhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-campaign-manager/models/outplan"
+	"monorepo/bin-campaign-manager/pkg/dbhandler"
 )
 
 // Create creates a new outplan
@@ -81,6 +85,13 @@ func (h *outplanHandler) Get(ctx context.Context, id uuid.UUID) (*outplan.Outpla
 	res, err := h.db.OutplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameCampaignManager,
+				"OUTPLAN_NOT_FOUND",
+				"The outplan was not found.",
+			).Wrap(err)
+		}
 		return nil, err
 	}
 
