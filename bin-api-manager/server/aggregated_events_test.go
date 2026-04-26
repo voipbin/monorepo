@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -281,7 +282,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 
 			reqQuery: "/aggregated-events",
 
-			responseErr: fmt.Errorf("either activeflow_id or call_id is required"),
+			responseErr: fmt.Errorf("%w: either activeflow_id or call_id is required", serviceerrors.ErrInvalidArgument),
 
 			expectActiveflowID: uuid.Nil,
 			expectCallID:       uuid.Nil,
@@ -299,7 +300,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 
 			reqQuery: "/aggregated-events?activeflow_id=c3d4e5f6-8f36-11ed-a01a-efb53befe93a&call_id=fe003a08-8f36-11ed-a01a-efb53befe93a",
 
-			responseErr: fmt.Errorf("only one of activeflow_id or call_id is allowed"),
+			responseErr: fmt.Errorf("%w: only one of activeflow_id or call_id is allowed", serviceerrors.ErrInvalidArgument),
 
 			expectActiveflowID: uuid.FromStringOrNil("c3d4e5f6-8f36-11ed-a01a-efb53befe93a"),
 			expectCallID:       uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),

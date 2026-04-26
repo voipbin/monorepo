@@ -58,7 +58,7 @@ func (h *serviceHandler) AISummaryCreate(
 		tmpCustomerID = tmp.CustomerID
 
 	default:
-		return nil, fmt.Errorf("unsupported reference type")
+		return nil, fmt.Errorf("%w: unsupported reference type", serviceerrors.ErrInvalidArgument)
 	}
 
 	if !h.hasPermission(ctx, a, tmpCustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

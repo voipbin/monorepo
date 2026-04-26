@@ -54,7 +54,7 @@ func (h *serviceHandler) AccesskeyCreate(ctx context.Context, a *auth.AuthIdenti
 	}
 
 	if expire < 86400 {
-		return nil, fmt.Errorf("wrong expiration")
+		return nil, fmt.Errorf("%w: wrong expiration", serviceerrors.ErrInvalidArgument)
 	}
 
 	tmp, err := h.reqHandler.CustomerV1AccesskeyCreate(ctx, a.CustomerID, name, detail, expire)

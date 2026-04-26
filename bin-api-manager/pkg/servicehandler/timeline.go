@@ -65,7 +65,7 @@ func (h *serviceHandler) TimelineEventList(
 	config, ok := resourceTypeConfigs[resourceType]
 	if !ok {
 		log.Info("Invalid resource type")
-		return nil, "", fmt.Errorf("invalid resource type")
+		return nil, "", fmt.Errorf("%w: invalid resource type", serviceerrors.ErrInvalidArgument)
 	}
 
 	// Validate resource ownership
@@ -142,7 +142,7 @@ func (h *serviceHandler) validateResourceOwnership(ctx context.Context, resource
 		return af.CustomerID, nil
 
 	default:
-		return uuid.Nil, fmt.Errorf("unsupported resource type")
+		return uuid.Nil, fmt.Errorf("%w: unsupported resource type", serviceerrors.ErrInvalidArgument)
 	}
 }
 
@@ -180,7 +180,7 @@ func (h *serviceHandler) convertEventToWebhookMessage(resourceType string, event
 		data = af.ConvertWebhookMessage()
 
 	default:
-		return nil, fmt.Errorf("unsupported resource type for conversion")
+		return nil, fmt.Errorf("%w: unsupported resource type for conversion", serviceerrors.ErrInvalidArgument)
 	}
 
 	return &TimelineEvent{

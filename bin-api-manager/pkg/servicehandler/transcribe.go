@@ -211,11 +211,11 @@ func (h *serviceHandler) transcribeGetResourceInfo(ctx context.Context, a *auth.
 		resReferenceID = tmpResource.ID
 
 	default:
-		err = fmt.Errorf("unsupported reference type")
+		err = fmt.Errorf("%w: unsupported reference type", serviceerrors.ErrInvalidArgument)
 	}
 	if err != nil {
 		log.Errorf("Could not pass the reference validation. err: %v", err)
-		return "", uuid.Nil, fmt.Errorf("could not pass the reference validation. err: %v", err)
+		return "", uuid.Nil, fmt.Errorf("could not pass the reference validation: %w", err)
 	}
 
 	// check the ownership
