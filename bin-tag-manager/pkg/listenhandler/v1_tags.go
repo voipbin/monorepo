@@ -90,7 +90,10 @@ func (h *listenHandler) processV1TagsIDGet(ctx context.Context, m *sock.Request)
 	tmp, err := h.tagHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get an tag info. err: %v", err)
-		return simpleResponse(500), nil
+		// Let the dispatcher route typed errors and ErrNotFound through
+		// errorResponse so the typed TAG_NOT_FOUND surfaces to the caller.
+		// Other errors fall back to the legacy 400.
+		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)
