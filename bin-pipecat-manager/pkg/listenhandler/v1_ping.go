@@ -19,13 +19,13 @@ func (h *listenHandler) processV1PingGet(ctx context.Context, m *sock.Request) (
 
 	res, err := h.pipecatcallHandler.Ping(ctx)
 	if err != nil {
-		log.Errorf("Could not get ping result. err: %v", err)
+		log.Debugf("Could not get ping result. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		log.Errorf("Could not marshal ping result. err: %v", err)
+		log.Debugf("Could not marshal ping result. err: %v", err)
 		return simpleResponse(500), nil
 	}
 
