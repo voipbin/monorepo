@@ -53,12 +53,13 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 	as, err := h.accountHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get accounts info. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(as)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal accounts response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -87,12 +88,13 @@ func (h *listenHandler) processV1AccountsIDGet(ctx context.Context, m *sock.Requ
 	c, err := h.accountHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get account info. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal account response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -125,13 +127,14 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 
 	c, err := h.accountHandler.UpdateBasicInfo(ctx, id, req.Name, req.Detail)
 	if err != nil {
-		log.Errorf("Could not get account info. err: %v", err)
-		return simpleResponse(404), nil
+		log.Errorf("Could not update account basic info. err: %v", err)
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal account response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -165,12 +168,13 @@ func (h *listenHandler) processV1AccountsIDBalanceAddForcePost(ctx context.Conte
 	c, err := h.accountHandler.AddBalance(ctx, id, req.Balance)
 	if err != nil {
 		log.Errorf("Could not add the balance. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal account response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -203,13 +207,14 @@ func (h *listenHandler) processV1AccountsIDBalanceSubtractForcePost(ctx context.
 
 	c, err := h.accountHandler.SubtractBalance(ctx, id, req.Balance)
 	if err != nil {
-		log.Errorf("Could not get call info. err: %v", err)
-		return simpleResponse(404), nil
+		log.Errorf("Could not subtract the balance. err: %v", err)
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal account response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -243,7 +248,7 @@ func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Contex
 	valid, err := h.accountHandler.IsValidBalance(ctx, accountID, billing.ReferenceType(req.BillingType), req.Country, req.Count)
 	if err != nil {
 		log.Errorf("Could not validate the account's balance info. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	tmp := &response.V1ResponseAccountsIDIsValidBalance{
@@ -252,7 +257,8 @@ func (h *listenHandler) processV1AccountsIDIsValidBalancePost(ctx context.Contex
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal balance validation response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -286,7 +292,7 @@ func (h *listenHandler) processV1AccountsIDIsValidResourceLimitPost(ctx context.
 	valid, err := h.accountHandler.IsValidResourceLimit(ctx, accountID, account.ResourceType(req.ResourceType))
 	if err != nil {
 		log.Errorf("Could not validate the account's resource limit. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	tmp := &response.V1ResponseAccountsIDIsValidResourceLimit{
@@ -295,7 +301,8 @@ func (h *listenHandler) processV1AccountsIDIsValidResourceLimitPost(ctx context.
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal resource limit validation response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -324,7 +331,7 @@ func (h *listenHandler) processV1AccountsIsValidBalanceByCustomerIDPost(ctx cont
 	valid, err := h.accountHandler.IsValidBalanceByCustomerID(ctx, customerID, billing.ReferenceType(req.BillingType), req.Country, req.Count)
 	if err != nil {
 		log.Errorf("Could not validate the account's balance info. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	tmp := &response.V1ResponseAccountsIDIsValidBalance{
@@ -333,7 +340,8 @@ func (h *listenHandler) processV1AccountsIsValidBalanceByCustomerIDPost(ctx cont
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal balance validation response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -362,7 +370,7 @@ func (h *listenHandler) processV1AccountsIsValidResourceLimitByCustomerIDPost(ct
 	valid, err := h.accountHandler.IsValidResourceLimitByCustomerID(ctx, customerID, account.ResourceType(req.ResourceType))
 	if err != nil {
 		log.Errorf("Could not validate the account's resource limit. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	tmp := &response.V1ResponseAccountsIDIsValidResourceLimit{
@@ -371,7 +379,8 @@ func (h *listenHandler) processV1AccountsIsValidResourceLimitByCustomerIDPost(ct
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal resource limit validation response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -405,12 +414,13 @@ func (h *listenHandler) processV1AccountsIDPaymentInfoPut(ctx context.Context, m
 	tmp, err := h.accountHandler.UpdatePaymentInfo(ctx, accountID, req.PaymentType, req.PaymentMethod)
 	if err != nil {
 		log.Errorf("Could not update the account's payment info. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal payment info response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{

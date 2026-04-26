@@ -48,12 +48,13 @@ func (h *listenHandler) processV1BillingsGet(ctx context.Context, m *sock.Reques
 	as, err := h.billingHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get billings info. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(as)
 	if err != nil {
-		return simpleResponse(404), nil
+		log.Errorf("Could not marshal billings response. err: %v", err)
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{

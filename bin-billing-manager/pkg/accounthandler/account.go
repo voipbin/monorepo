@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/account"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // Create creates a new account and return the created account.
@@ -94,7 +96,14 @@ func (h *accountHandler) SetStatus(ctx context.Context, id uuid.UUID, status acc
 	case account.StatusActive, account.StatusFrozen, account.StatusDeleted:
 		// valid
 	default:
-		return nil, fmt.Errorf("invalid status: %s", status)
+		// SetStatus is only invoked from the billing-control CLI and from internal
+		// paddle webhook handlers — the public API never reaches this code path.
+		// An unrecognized value here is a programmer error, not user input.
+		return nil, cerrors.Internal(
+			commonoutline.ServiceNameBillingManager,
+			"INVALID_ACCOUNT_STATUS",
+			fmt.Sprintf("The account status %q is not valid. Allowed: active, frozen, deleted.", string(status)),
+		)
 	}
 
 	if err := h.db.AccountSetStatus(ctx, id, status); err != nil {

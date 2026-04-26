@@ -2,6 +2,7 @@ package billinghandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	"time"
 
@@ -10,7 +11,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-billing-manager/models/billing"
+	"monorepo/bin-billing-manager/pkg/dbhandler"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // Create creates a new billing and return the created billing.
@@ -70,6 +74,10 @@ func (h *billingHandler) Create(
 }
 
 // Get returns a billing.
+//
+// When the underlying DB layer returns dbhandler.ErrNotFound, Get returns a
+// typed *cerrors.VoipbinError (Status=NotFound) so the api-manager edge can
+// recover the upstream domain/reason via errors.As.
 func (h *billingHandler) Get(ctx context.Context, id uuid.UUID) (*billing.Billing, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "Get",
@@ -79,6 +87,13 @@ func (h *billingHandler) Get(ctx context.Context, id uuid.UUID) (*billing.Billin
 	res, err := h.db.BillingGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get billing. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameBillingManager,
+				"BILLING_NOT_FOUND",
+				"The billing record was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get billing")
 	}
 
