@@ -2,15 +2,19 @@ package transferhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-transfer-manager/models/transfer"
+	"monorepo/bin-transfer-manager/pkg/dbhandler"
 )
 
 // Create is handy function for creating a transfer.
@@ -65,6 +69,13 @@ func (h *transferHandler) Get(ctx context.Context, id uuid.UUID) (*transfer.Tran
 	res, err := h.db.TransferGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get transfer. err: %v", err)
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTransferManager,
+				"TRANSFER_NOT_FOUND",
+				"The transfer was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get transfer")
 	}
 
@@ -75,6 +86,13 @@ func (h *transferHandler) Get(ctx context.Context, id uuid.UUID) (*transfer.Tran
 func (h *transferHandler) GetByGroupcallID(ctx context.Context, groupcallID uuid.UUID) (*transfer.Transfer, error) {
 	res, err := h.db.TransferGetByGroupcallID(ctx, groupcallID)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTransferManager,
+				"TRANSFER_NOT_FOUND",
+				"The transfer was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get transfer")
 	}
 
@@ -85,6 +103,13 @@ func (h *transferHandler) GetByGroupcallID(ctx context.Context, groupcallID uuid
 func (h *transferHandler) GetByTransfererCallID(ctx context.Context, transfererCallID uuid.UUID) (*transfer.Transfer, error) {
 	res, err := h.db.TransferGetByTransfererCallID(ctx, transfererCallID)
 	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameTransferManager,
+				"TRANSFER_NOT_FOUND",
+				"The transfer was not found.",
+			).Wrap(err)
+		}
 		return nil, errors.Wrap(err, "could not get transfer")
 	}
 
