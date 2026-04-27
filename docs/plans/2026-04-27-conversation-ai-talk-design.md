@@ -137,7 +137,7 @@ The interrupt is best-effort. The decisive correctness mechanism is the response
 
 | File | Change |
 |---|---|
-| `pkg/aicallhandler/start.go` | Replace reuse branch (lines ~187–194) with status+idle reusability check; call `interruptPreviousPipecatcall`; `UpdatePipecatcallID` + `UpdateActiveflowID`; on create-new path, `UpdateStatus(Progressing)`; apply `FilterToolsForConversation` before pipecat payload assembly |
+| `pkg/aicallhandler/start.go` | Replace reuse branch (lines ~187–194) with status+idle reusability check; call `interruptPreviousPipecatcall`; `UpdatePipecatcallID` + `UpdateActiveflowID`; on create-new path, `UpdateStatus(Progressing)`; add deferred-whitelist NOTE comment before pipecat payload assembly (Path A — see plan Slice 0 decision) |
 | `pkg/aicallhandler/send.go` | Same interrupt + `UpdateActiveflowID` pattern in `SendReferenceTypeOthers` |
 | `pkg/aicallhandler/helpers.go` (new) | `interruptPreviousPipecatcall(ctx, pcID)` (1.5s `Get` timeout, then ping, then terminate-if-alive); `isAIcallIdleExpired(ac)`; `isAIcallReusable(ac)` |
 | `pkg/aicallhandler/db.go` | New `UpdateActiveflowID(ctx, id, activeflowID)` |
@@ -284,7 +284,7 @@ In `~/gitvoipbin/monorepo-monitoring/api-validator/`:
 
 ## 13. Verification items (must check during implementation)
 
-1. **`startPipecatcall` payload assembly is the right site for `FilterToolsForConversation`.** Verify by tracing `tool_names` flow from AI config → start payload → pipecat session.
+1. **`FilterToolsForConversation` wiring site (DEFERRED — Path A).** Slice 0 chose Path A: ship the utility unwired and document the deferred enforcement. See `docs/plans/2026-04-27-conversation-ai-talk-plan.md` Slice 0. The utility lives at `pkg/toolhandler/whitelist.go`; the deferred-wiring comment in `pkg/aicallhandler/start.go` documents the future hook site. Verification of the actual wiring is a v2 follow-up if Path B is later adopted.
 2. **Voice paths are byte-for-byte unchanged.** Confirm by running existing test suite before adding new tests; all pass.
 3. **`evt.PipecatcallID` populated** — confirmed already in `bin-pipecat-manager/pkg/pipecatcallhandler/runner.go:454,670,691`. Belt-and-suspenders: assert non-nil in unit tests of `EventPMMessageBotLLM`.
 4. **`UpdateActiveflowID` is needed in dbhandler** — verify whether an `Update` helper accepts a single field generically; if not, add the explicit method.

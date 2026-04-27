@@ -1396,3 +1396,31 @@ Plan complete and saved to `docs/plans/2026-04-27-conversation-ai-talk-plan.md`.
 **2. Parallel Session (separate)** — open new session with executing-plans, batch execution with checkpoints.
 
 Which approach?
+
+---
+
+## Appendix B — Review-and-fix loop log (post-merge addendum)
+
+After Slices 0–9 completed, a 10-iteration review-and-fix loop ran against PR #865. Each iteration reviewed the merged feature through a different lens; all substantive findings were either addressed by a follow-up commit or accepted as v1 limits.
+
+| Iter | Focus | Outcome |
+|---|---|---|
+| 1 | Cross-slice integration | APPROVED, 1 LOW (cosmetic var name) |
+| 2 | Concurrency / multi-pod hazards | Fixed: combined `UpdatePipecatcallIDAndActiveflowID` for atomicity. Accepted: stop_service stale-goodbye edge case; RabbitMQ redelivery dedup deferred to v2 |
+| 3 | Failure modes / partial recovery | Fixed: `UpdateStatus(Progressing)` failure now warn-and-continue; added no-retry NOTE near `ConversationV1MessageSend` |
+| 4 | AIcall lifecycle / state machine | APPROVED, 30s pipecat auto-terminate upper-bounds orphan scenarios |
+| 5 | Test coverage gaps | Fixed: added 4 HIGH-priority error-path tests + 3 MEDIUM cases |
+| 6 | Observability completeness | Fixed: Grafana CB panel now covers BOTH pipecat and conversation-manager queues; enriched conversation-send logs with `aicall_id`, `conversation_id`, `event_id` |
+| 7 | Teams (`AssistanceTypeTeam`) edge cases | Fixed: `startReferenceTypeConversation` reuse branch now calls `resolveTeamMemberForSend` for symmetry with Send path |
+| 8 | Security / data integrity | Fixed: explicit `ReferenceType` guard added to `toolHandleConnect` rejecting non-call invocations |
+| 9 | Logging quality / debuggability | Fixed: added reuse-branch entry log + `aicall_id` field on event.go fetch-failure logs |
+| 10 | Documentation accuracy / final sweep | Doc-only fixes to design doc §5.1/§13 reconciling with Path A; this appendix |
+
+### Accepted v1 limits added during review-and-fix
+
+In addition to the v1 limits documented in the design §11, the following are accepted:
+
+- **RabbitMQ event redelivery dedup**: After `ConversationV1MessageSend` succeeds but consumer ack fails, redelivery would resend the same reply. The `ai_messages` table primary key on event ID prevents duplicate persistence; conversation-manager handles its own dedup or accepts the duplicate. Mitigation deferred (Redis SETNX or similar) to v2.
+- **stop_service stale-goodbye edge case**: If user re-messages mid-LLM-final-reply after `stop_service`, the old AIcall's PipecatcallID still matches and the closing message is delivered after the new turn starts. Fix would require dropping on `Status==Terminated` which would also lose legitimate closing messages. Deferred.
+- **Voice-only tool execute counter**: `ai_manager_aicall_tool_execute_total{tool_name}` counts invocations regardless of outcome. Adding an `outcome` label would touch voice path and is a separate ticket.
+- **Silent message-1 loss on `messageHandler.Create` failure**: If user-message persistence fails after `UpdatePipecatcallIDAndActiveflowID` succeeds, message-1 is lost from LLM context. Recovery on next turn picks up the user's subsequent message; the lost message context is silent data. Mitigation cost (saga/outbox) too high for v1.
