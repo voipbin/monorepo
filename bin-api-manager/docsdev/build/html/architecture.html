@@ -279,7 +279,7 @@
 <li><p><strong>Response Aggregation</strong>: Collects responses from backend services and returns to clients</p></li>
 </ul>
 <p><strong>2. Microservices Layer</strong></p>
-<p>VoIPBIN consists of 30+ specialized Go microservices, organized by domain:</p>
+<p>VoIPBIN consists of 34 specialized Go microservices, organized by domain:</p>
 <p><strong>Communication Services:</strong>
 * bin-call-manager: Call lifecycle and routing
 * bin-conference-manager: Conference bridge management
@@ -1364,7 +1364,7 @@ Client                    API Gateway              Backend Service
 <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>  <span class="n">Replicas</span><span class="p">:</span> <span class="mi">3</span>    <span class="n">HPA</span><span class="p">:</span> <span class="mi">3</span><span class="o">-</span><span class="mi">20</span>                   <span class="o">|</span>  <span class="o">|</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="o">+---------------------------------------------+</span>  <span class="o">|</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>                                                   <span class="o">|</span>  <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="o">...</span> <span class="mi">30</span><span class="o">+</span> <span class="n">more</span> <span class="n">deployments</span>                         <span class="o">|</span>  <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="o">...</span> <span class="mi">34</span> <span class="n">deployments</span> <span class="n">total</span>                         <span class="o">|</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>                                                   <span class="o">|</span>  <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+---------------------------------------------------+</span>  <span class="o">|</span>
 <span class="o">|</span>                                                         <span class="o">|</span>
@@ -2427,7 +2427,7 @@ Max: 7 attempts, ~1 minute total
 
 <span class="o">+---------------------------------------------------------+</span>
 <span class="o">|</span>                   <span class="n">Application</span> <span class="n">Layer</span>                     <span class="o">|</span>
-<span class="o">|</span>            <span class="p">(</span><span class="mi">30</span><span class="o">+</span> <span class="n">Microservices</span><span class="p">)</span>                          <span class="o">|</span>
+<span class="o">|</span>            <span class="p">(</span><span class="mi">34</span> <span class="n">Microservices</span><span class="p">)</span>                           <span class="o">|</span>
 <span class="o">+--------------------+-------------------+----------------+</span>
                      <span class="o">|</span>                   <span class="o">|</span>
                      <span class="o">|</span>                   <span class="o">|</span>
@@ -5774,7 +5774,7 @@ API Request    campaign-mgr    outdial-mgr    call-manager    flow-manager
 <span class="o">|</span>  <span class="o">|</span>   <span class="n">GKE</span> <span class="n">Cluster</span>          <span class="o">|</span>    <span class="o">|</span>   <span class="n">Cloud</span> <span class="n">SQL</span> <span class="p">(</span><span class="n">MySQL</span><span class="p">)</span>   <span class="o">|</span>         <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>   <span class="p">(</span><span class="n">Kubernetes</span><span class="p">)</span>         <span class="o">|</span>    <span class="o">|</span>   <span class="o">-</span> <span class="n">Primary</span>           <span class="o">|</span>         <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>                        <span class="o">|</span>    <span class="o">|</span>   <span class="o">-</span> <span class="n">Read</span> <span class="n">Replicas</span> <span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">|</span>         <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="mi">30</span><span class="o">+</span> <span class="n">Microservices</span>     <span class="o">|</span>    <span class="o">+------------------------+</span>         <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="mi">34</span> <span class="n">Microservices</span>      <span class="o">|</span>    <span class="o">+------------------------+</span>         <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="mi">2</span> <span class="n">replicas</span> <span class="n">each</span>       <span class="o">|</span>                                       <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+------------------------+</span>    <span class="o">+------------------------+</span>         <span class="o">|</span>
 <span class="o">|</span>                                <span class="o">|</span>   <span class="n">Memorystore</span> <span class="p">(</span><span class="n">Redis</span><span class="p">)</span> <span class="o">|</span>         <span class="o">|</span>

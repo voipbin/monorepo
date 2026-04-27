@@ -785,7 +785,7 @@ Services deploy to Kubernetes on Google Cloud Platform:
     |  |  |  Replicas: 3    HPA: 3-20                   |  |  |
     |  |  +---------------------------------------------+  |  |
     |  |                                                   |  |
-    |  |  ... 30+ more deployments                         |  |
+    |  |  ... 34 deployments total                         |  |
     |  |                                                   |  |
     |  +---------------------------------------------------+  |
     |                                                         |

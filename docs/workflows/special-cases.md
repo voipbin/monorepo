@@ -82,7 +82,7 @@ git commit -m "chore: update dependencies after bin-common-handler changes"
 
 ### Projects Affected
 
-**All services depend on bin-common-handler** (30+ projects):
+**All services depend on bin-common-handler** (all 34 projects):
 - bin-api-manager (REST API gateway)
 - bin-call-manager (Call routing)
 - bin-flow-manager (Flow execution)
@@ -91,7 +91,7 @@ git commit -m "chore: update dependencies after bin-common-handler changes"
 - bin-webhook-manager (Webhooks)
 - bin-agent-manager (Agent management)
 - bin-customer-manager (Customer data)
-- And 22+ other services...
+- And 26+ other services...
 
 ### Why This Is Critical
 

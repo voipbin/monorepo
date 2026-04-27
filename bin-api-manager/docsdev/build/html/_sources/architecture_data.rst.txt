@@ -20,7 +20,7 @@ VoIPBIN's data architecture consists of three layers:
 
     +---------------------------------------------------------+
     |                   Application Layer                     |
-    |            (30+ Microservices)                          |
+    |            (34 Microservices)                           |
     +--------------------+-------------------+----------------+
                          |                   |
                          |                   |

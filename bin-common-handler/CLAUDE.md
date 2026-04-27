@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `bin-common-handler` is a shared Go library used by every other manager service in this monorepo. It provides reusable handlers, models, and utilities for inter-service RPC, event publishing, RabbitMQ plumbing, database helpers, and shared identity types.
 
 **Key Concepts:**
-- **Shared library, not a service.** No `cmd/` entrypoint, no listen queue, no subscriptions of its own. Every change here ripples to 30+ consumers, so the [admission rule](../CLAUDE.md#critical-bin-common-handler-admission-rule) (3+ consumers required) is strict.
+- **Shared library, not a service.** No `cmd/` entrypoint, no listen queue, no subscriptions of its own. Every change here ripples to all 34 consumers, so the [admission rule](../CLAUDE.md#critical-bin-common-handler-admission-rule) (3+ consumers required) is strict.
 - **Inter-service contract.** `requesthandler` is the canonical RPC fan-out — every service-to-service RPC in VoIPbin goes through it.
 - **Event publishing.** `notifyhandler` publishes events and webhooks for all services.
 - **Cross-cutting infrastructure.** `circuitbreakerhandler`, `sockhandler`, and `rabbitmqhandler` provide the shared transport and resilience layer that consumer services get for free.
