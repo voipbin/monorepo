@@ -59,3 +59,21 @@ golangci-lint run -v --timeout 5m
 - For regular code changes, only update dependencies if needed
 
 **Both workflows are MANDATORY before committing** - Do not skip any step. The monorepo's interdependencies require this to maintain consistency and catch issues early.
+
+## Documentation checks
+
+Repo-wide doc structure (root `CLAUDE.md` line cap, per-category README presence) is enforced by `scripts/check-docs.sh`. Three invocation points:
+
+```bash
+# Manual
+make lint-docs
+
+# Hook (automatic during AI work sessions)
+# Wired in .claude/settings.json → PostToolUse → check-docs-size.sh; fires on
+# Write|Edit of root CLAUDE.md or root docs/* and runs the script in advisory
+# mode (warns rather than blocking).
+
+# CI (follow-up enhancement, not yet wired)
+```
+
+Run `make lint-docs` after any edit to root `CLAUDE.md` or any file under root `docs/` to confirm the cap and per-category README invariants still hold.

@@ -5,6 +5,8 @@
 # This Makefile is reserved for repo-wide checks that don't belong in any one
 # service.
 
+.DEFAULT_GOAL := lint-docs
+
 .PHONY: lint-docs
 
 lint-docs:

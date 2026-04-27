@@ -17,9 +17,16 @@ if [[ -z "$FILE_PATH" ]]; then
     exit 0
 fi
 
-# Only run when root CLAUDE.md or any docs/ file is edited
+# Only run when ROOT CLAUDE.md or root docs/* is edited. Service-level
+# CLAUDE.md (e.g., bin-pipecat-manager/CLAUDE.md) and service-level docs are
+# explicitly out of scope — the cap applies to root CLAUDE.md only, and the
+# README check only reads root docs/<category>/README.md. Match both
+# absolute paths (Write tool) and repo-relative paths.
 case "$FILE_PATH" in
-    */CLAUDE.md|CLAUDE.md|*/docs/*|docs/*) ;;
+    # Reject service-level paths first
+    bin-*/CLAUDE.md|*/bin-*/CLAUDE.md|bin-*/docs/*|*/bin-*/docs/*) exit 0 ;;
+    # Accept root-level paths
+    CLAUDE.md|*/CLAUDE.md|docs/*|*/docs/*) ;;
     *) exit 0 ;;
 esac
 
