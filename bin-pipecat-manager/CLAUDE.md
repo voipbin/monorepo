@@ -174,7 +174,7 @@ python main.py
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-> The full pre-commit verification workflow (`go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`) and its rationale live in the root [CLAUDE.md](../CLAUDE.md#critical-verification-before-commit) and [docs/workflows/verification-workflows.md](../docs/workflows/verification-workflows.md).
+> The pre-commit verification workflow and its rationale live in the root [CLAUDE.md](../CLAUDE.md#critical-verification-before-commit) and [docs/workflows/verification-workflows.md](../docs/workflows/verification-workflows.md).
 
 ## Monorepo Context
 
