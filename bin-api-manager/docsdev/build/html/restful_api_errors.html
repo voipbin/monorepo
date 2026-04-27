@@ -449,7 +449,7 @@ The full billing-manager typed-error contract (deeper reasons such as <code clas
 <p>The <code class="docutils literal notranslate"><span class="pre">provider</span></code>, <code class="docutils literal notranslate"><span class="pre">trunk</span></code>, and <code class="docutils literal notranslate"><span class="pre">route</span></code> resources are admin-gated and share a common reason-code pattern. Listed together to avoid repetition.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">ROUTE_NOT_FOUND</span></code> and <code class="docutils literal notranslate"><span class="pre">PROVIDER_NOT_FOUND</span></code> are emitted today by route-manager, and <code class="docutils literal notranslate"><span class="pre">TRUNK_NOT_FOUND</span></code> is emitted today by registrar-manager (via <code class="docutils literal notranslate"><span class="pre">cerrors.NotFound(&quot;&lt;service&gt;&quot;,</span> <span class="pre">...)</span></code>); all surface end-to-end on Get-by-ID lookups for non-existent resources.
+<p><code class="docutils literal notranslate"><span class="pre">ROUTE_NOT_FOUND</span></code>, <code class="docutils literal notranslate"><span class="pre">PROVIDER_NOT_FOUND</span></code>, and <code class="docutils literal notranslate"><span class="pre">PROVIDERCALL_NOT_FOUND</span></code> are emitted today by route-manager, and <code class="docutils literal notranslate"><span class="pre">TRUNK_NOT_FOUND</span></code> is emitted today by registrar-manager (via <code class="docutils literal notranslate"><span class="pre">cerrors.NotFound(&quot;&lt;service&gt;&quot;,</span> <span class="pre">...)</span></code>); all surface end-to-end on Get-by-ID lookups for non-existent resources.
 These resources are admin-gated. Non-admin callers receive <strong>403 PERMISSION_DENIED</strong> via <code class="docutils literal notranslate"><span class="pre">serviceerrors.ErrPermissionDenied</span></code>.
 Admin-gated endpoints (<code class="docutils literal notranslate"><span class="pre">/providers</span></code>, <code class="docutils literal notranslate"><span class="pre">/providers/setup</span></code>, <code class="docutils literal notranslate"><span class="pre">/providercalls</span></code>, <code class="docutils literal notranslate"><span class="pre">/trunks</span></code>, <code class="docutils literal notranslate"><span class="pre">/routes</span></code> and their sub-paths) return 403 <code class="docutils literal notranslate"><span class="pre">PERMISSION_DENIED</span></code> for non-admin callers. The OpenAPI spec declares 403 on these paths to reflect this runtime behavior.</p>
 </div>
@@ -477,6 +477,10 @@ Admin-gated endpoints (<code class="docutils literal notranslate"><span class="p
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ROUTE_NOT_FOUND</span></code></p></td>
 <td><p>404</p></td>
 <td><p>Route ID does not exist. Verify via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/routes</span></code>. Admin-only resource.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">PROVIDERCALL_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Provider-call ID does not exist. Verify via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/providercalls</span></code>. Admin-only resource.</p></td>
 </tr>
 </tbody>
 </table>
@@ -648,7 +652,7 @@ Team write surfaces (<code class="docutils literal notranslate"><span class="pre
 <h2>rag-manager<a class="headerlink" href="#rag-manager" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">RAG_NOT_FOUND</span></code> is emitted today by rag-manager (via <code class="docutils literal notranslate"><span class="pre">cerrors.NotFound(&quot;rag-manager&quot;,</span> <span class="pre">...)</span></code>) and surfaces end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).</p>
+<p><code class="docutils literal notranslate"><span class="pre">RAG_NOT_FOUND</span></code> and <code class="docutils literal notranslate"><span class="pre">DOCUMENT_NOT_FOUND</span></code> are emitted today by rag-manager (via <code class="docutils literal notranslate"><span class="pre">cerrors.NotFound(&quot;rag-manager&quot;,</span> <span class="pre">...)</span></code>) and surface end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).</p>
 </div>
 <table class="docutils align-default">
 <colgroup>
@@ -666,6 +670,10 @@ Team write surfaces (<code class="docutils literal notranslate"><span class="pre
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">RAG_NOT_FOUND</span></code></p></td>
 <td><p>404</p></td>
 <td><p>RAG knowledge-base ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/rags/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/rags/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/rags/{id}/sources</span></code>, and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/rags/{id}/sources/{source_id}</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags</span></code> list call.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DOCUMENT_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>RAG document/source ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/rags/{id}/sources/{source_id}</span></code> when the source is missing. <strong>Fix:</strong> Verify the source ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/rags/{id}</span></code> response.</p></td>
 </tr>
 </tbody>
 </table>
@@ -789,7 +797,7 @@ PR 13 added the agent-surface read endpoints (<code class="docutils literal notr
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>PR 9 introduced this section for the access-key resource (<code class="docutils literal notranslate"><span class="pre">/accesskeys</span></code>).
-<code class="docutils literal notranslate"><span class="pre">ACCESSKEY_NOT_FOUND</span></code> is emitted today by customer-manager (via <code class="docutils literal notranslate"><span class="pre">cerrors.NotFound(&quot;customer-manager&quot;,</span> <span class="pre">...)</span></code>) and surfaces end-to-end on Get-by-ID lookups for non-existent accesskeys. For soft-deleted accesskeys, the api-manager servicehandler intercepts via a post-fetch <code class="docutils literal notranslate"><span class="pre">TMDelete</span></code> check (<code class="docutils literal notranslate"><span class="pre">pkg/servicehandler/accesskeys.go</span></code>) and re-emits <code class="docutils literal notranslate"><span class="pre">serviceerrors.ErrStateInvalid</span></code>, which surfaces as 409 <code class="docutils literal notranslate"><span class="pre">STATE_INVALID</span></code> in the api-manager domain.
+<code class="docutils literal notranslate"><span class="pre">ACCESSKEY_NOT_FOUND</span></code> and <code class="docutils literal notranslate"><span class="pre">CUSTOMER_NOT_FOUND</span></code> are emitted today by customer-manager (via <code class="docutils literal notranslate"><span class="pre">cerrors.NotFound(&quot;customer-manager&quot;,</span> <span class="pre">...)</span></code>) and surface end-to-end on Get-by-ID lookups for non-existent resources. For soft-deleted accesskeys, the api-manager servicehandler intercepts via a post-fetch <code class="docutils literal notranslate"><span class="pre">TMDelete</span></code> check (<code class="docutils literal notranslate"><span class="pre">pkg/servicehandler/accesskeys.go</span></code>) and re-emits <code class="docutils literal notranslate"><span class="pre">serviceerrors.ErrStateInvalid</span></code>, which surfaces as 409 <code class="docutils literal notranslate"><span class="pre">STATE_INVALID</span></code> in the api-manager domain.
 Access-key write surfaces (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/accesskeys</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/accesskeys/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/accesskeys/{id}</span></code>) are admin-gated; non-admin callers receive 403 <code class="docutils literal notranslate"><span class="pre">PERMISSION_DENIED</span></code> via <code class="docutils literal notranslate"><span class="pre">serviceerrors.ErrPermissionDenied</span></code>.</p>
 </div>
 <table class="docutils align-default">
@@ -808,6 +816,10 @@ Access-key write surfaces (<code class="docutils literal notranslate"><span clas
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ACCESSKEY_NOT_FOUND</span></code></p></td>
 <td><p>404</p></td>
 <td><p>Access-key ID does not exist or belongs to another customer. Fired by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/accesskeys/{id}</span></code>, and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/accesskeys/{id}</span></code>. <strong>Fix:</strong> Verify the ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code> list call.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">CUSTOMER_NOT_FOUND</span></code></p></td>
+<td><p>404</p></td>
+<td><p>Customer ID does not exist. Fired by admin endpoints <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/customers/{id}</span></code>, and <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/customers/{id}</span></code>. <strong>Fix:</strong> Verify the customer ID was obtained from a recent <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code> list call. (Note: the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/boot</span></code> direct-hash flow currently re-wraps a missing-customer condition with the api-manager generic <code class="docutils literal notranslate"><span class="pre">RESOURCE_NOT_FOUND</span></code> rather than passing through <code class="docutils literal notranslate"><span class="pre">CUSTOMER_NOT_FOUND</span></code>; that is tracked as a follow-up to preserve the typed reason end-to-end.)</p></td>
 </tr>
 </tbody>
 </table>
