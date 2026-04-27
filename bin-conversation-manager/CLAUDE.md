@@ -53,7 +53,7 @@ cmd/conversation-manager/main.go
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths)
 - `pkg/subscribehandler/`: Event consumption from message-manager
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 
@@ -82,12 +82,12 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `POST /v1/hooks` - Generic webhook endpoint
 - `POST /v1/setup` - Setup/configuration webhook
 
-### Event Subscriptions
+## Event Subscriptions
 
 SubscribeHandler processes events from:
 - **message-manager**: `message_created` - Creates conversation and message records when SMS/MMS received
 
-### Webhook Processing
+## Webhook Processing
 
 The service receives webhooks from external platforms:
 - **LINE**: Incoming messages via LINE Bot SDK webhook (parsed in `pkg/linehandler/hook.go`)
@@ -96,7 +96,7 @@ The service receives webhooks from external platforms:
   - Publishes conversation/message events
 - Hook URI pattern: `/v1.0/conversation/accounts/<account_id>`
 
-### Configuration
+## Configuration
 
 Uses **Viper + pflag** pattern (see `cmd/conversation-manager/init.go`):
 - Command-line flags and environment variables (e.g., `--rabbitmq_address` or `RABBITMQ_ADDRESS`)

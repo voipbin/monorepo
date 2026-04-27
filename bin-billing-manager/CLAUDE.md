@@ -181,7 +181,7 @@ cmd/billing-manager/main.go
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths: `/v1/accounts`, `/v1/billings`)
 - `pkg/subscribehandler/`: Event consumption from other services for billing triggers
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 
@@ -199,7 +199,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 **Billings:**
 - `GET /v1/billings?<filters>` - List billing records (pagination via page_size/page_token)
 
-### Event Subscriptions
+## Event Subscriptions
 
 SubscribeHandler processes events from:
 - **call-manager**: `call_progressing`, `call_hangup` - Creates/updates billing for calls
@@ -207,7 +207,7 @@ SubscribeHandler processes events from:
 - **customer-manager**: `customer_created`, `customer_deleted` - Creates/deletes billing accounts
 - **number-manager**: `number_created`, `number_renewed` - Creates billing for number purchases/renewals
 
-### Configuration
+## Configuration
 
 Uses **Viper + pflag** pattern (see `cmd/billing-manager/init.go`):
 - Command-line flags and environment variables (e.g., `--database_dsn` or `DATABASE_DSN`)

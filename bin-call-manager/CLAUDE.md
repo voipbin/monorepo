@@ -56,7 +56,7 @@ cmd/call-manager/main.go
 - `pkg/subscribehandler/`: Event consumption and processing
 - `pkg/arieventhandler/`: Asterisk ARI event processing (channel/bridge state changes)
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 
@@ -118,7 +118,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 **Recovery API**:
 - `POST /v1/recovery` - Recover call state from Homer SIP capture
 
-### Event Subscriptions
+## Event Subscriptions
 
 SubscribeHandler subscribes to these RabbitMQ queues:
 - **asterisk.all.event**: All Asterisk ARI events (channel/bridge state changes, DTMF, playback, recording)
@@ -133,7 +133,7 @@ Processes events including:
 - **Playback Events**: PlaybackStarted, PlaybackFinished
 - **Contact Events**: ContactStatusChange (SIP registration changes)
 
-### Configuration
+## Configuration
 
 Uses **Viper + pflag** pattern (see `cmd/call-manager/init.go:47-180`):
 - Command-line flags and environment variables (e.g., `--rabbitmq_address` or `RABBITMQ_ADDRESS`)

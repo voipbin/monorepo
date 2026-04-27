@@ -46,7 +46,7 @@ cmd/email-manager/main.go
 - `pkg/cachehandler/`: Redis caching
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths: `/v1/emails`, `/v1/hooks`)
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `POST /v1/emails` - Create and send email
@@ -55,7 +55,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `DELETE /v1/emails/<uuid>` - Delete email
 - `POST /v1/hooks` - Process webhook events from providers (query param: `?uri=/v1/hooks/sendgrid` or `?uri=/v1/hooks/mailgun`)
 
-### Provider Integration
+## Provider Integration
 
 **Multi-Provider Strategy:**
 - Emails attempt delivery via SendGrid first, then Mailgun if SendGrid fails
@@ -69,7 +69,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - Also handles: `bounce`, `dropped`, `deferred`, `unsubscribe`, `spamreport`
 - See `pkg/emailhandler/hook.go` for webhook routing logic
 
-### Email Attachments
+## Email Attachments
 
 Attachments reference files via `AttachmentReferenceType`:
 - `recording`: Links to call recordings via `storage-manager` service

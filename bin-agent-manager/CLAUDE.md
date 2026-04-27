@@ -42,7 +42,7 @@ cmd/agent-manager/main.go
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths: `/v1/agents`, `/v1/login`)
 - `pkg/subscribehandler/`: Event consumption from other services
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `POST /v1/agents` - Create agent
@@ -55,13 +55,13 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `PUT /v1/agents/<uuid>/tag_ids` - Update agent skill tags
 - `POST /v1/login` - Authenticate agent
 
-### Event Subscriptions
+## Event Subscriptions
 
 SubscribeHandler processes events from:
 - **call-manager**: `groupcall_created`, `groupcall_progressing` - Updates agent status when calls are routed
 - **customer-manager**: `customer_created`, `customer_deleted` - Creates/deletes guest agent on customer lifecycle
 
-### Configuration
+## Configuration
 
 Uses **Cobra + Viper** pattern (see `internal/config/`):
 - Command-line flags and environment variables (e.g., `--rabbitmq_address` or `RABBITMQ_ADDRESS`)

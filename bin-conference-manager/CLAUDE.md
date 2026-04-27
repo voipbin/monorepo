@@ -50,7 +50,7 @@ cmd/conference-manager/main.go
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths)
 - `pkg/subscribehandler/`: Event consumption from call-manager
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 
@@ -76,7 +76,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 **Services API**:
 - `POST /v1/services/type/conferencecall` - Create conferencecall service (used by flow-manager)
 
-### Event Subscriptions
+## Event Subscriptions
 
 SubscribeHandler subscribes to these RabbitMQ queues:
 - **bin-manager.call-manager.event**: Conference bridge join/leave events
@@ -85,7 +85,7 @@ Processes events including:
 - **confbridge_joined**: When a call joins a confbridge, updates conferencecall status to `joined`
 - **confbridge_leaved**: When a call leaves a confbridge, terminates the conferencecall
 
-### Conference-Call Relationship
+## Conference-Call Relationship
 
 The service manages a two-layer architecture:
 1. **Conference layer** (`pkg/conferencehandler`): High-level conference coordination
@@ -100,7 +100,7 @@ The service manages a two-layer architecture:
    - Performs health checks on participants
    - Auto-terminates based on conference type rules
 
-### Configuration
+## Configuration
 
 Uses **Viper + pflag** pattern (see `cmd/conference-manager/init.go`):
 - Command-line flags and environment variables (e.g., `--rabbitmq_address` or `RABBITMQ_ADDRESS`)

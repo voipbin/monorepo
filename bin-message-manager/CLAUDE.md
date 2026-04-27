@@ -46,7 +46,7 @@ cmd/message-manager/main.go
 - `pkg/requestexternal/`: HTTP clients for provider APIs (Telnyx, MessageBird)
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths: `/v1/messages`, `/v1/hooks`)
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `POST /v1/messages` - Send message (checks billing balance, creates message, dispatches to provider)
@@ -55,7 +55,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `DELETE /v1/messages/<uuid>` - Delete message
 - `POST /v1/hooks` - Process provider webhook (delivery status updates)
 
-### Provider Architecture
+## Provider Architecture
 
 Messages are sent asynchronously via goroutine after creation:
 1. Balance validation via `billing-manager` RPC call

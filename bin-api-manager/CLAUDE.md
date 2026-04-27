@@ -499,10 +499,14 @@ Runtime configuration via CLI flags (defined in `main.go`):
 - Middleware validates tokens on protected endpoints
 - Login endpoint: `/auth/login` generates JWT tokens
 
-### Testing Patterns
-- Mock generation using `go:generate` with `mockgen`
+## Testing Patterns
+
+- Mock generation using `go:generate` with `mockgen` (`gomock` / `go.uber.org/mock`)
 - Tests co-located with source files (`*_test.go`)
 - Mock files: `mock_*.go` in respective packages
+- Service handlers (`pkg/servicehandler/*`) use mocked `requesthandler` interfaces from `bin-common-handler` to assert RPC fan-out without real RabbitMQ
+- HTTP layer is generated from `bin-openapi-manager`'s OpenAPI spec via `oapi-codegen` (see `gens/openapi_server/gen.go`); tests target the service handlers, not the generated server bindings
+- Table-driven tests with struct slices are the dominant pattern; see [docs/conventions/testing.md](../docs/conventions/testing.md) for the canonical shape
 
 ## Authentication & Authorization
 

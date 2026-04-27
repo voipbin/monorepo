@@ -288,6 +288,7 @@ Tests use **gomock** (go.uber.org/mock):
 - Generate mocks via `go generate ./...` before running tests
 - Tests should not require external services (use mocks)
 - Event handling tests verify proper event routing and handler invocation
+- Database tests use in-memory SQLite when possible (see `pkg/dbhandler/main_test.go`, which loads `github.com/mattn/go-sqlite3` and `file::memory:` to exercise dbhandler logic without a live MySQL)
 
 ```go
 tests := []struct {

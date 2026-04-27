@@ -44,7 +44,7 @@ cmd/customer-manager/main.go
 - `pkg/cachehandler/`: Redis caching for customer/accesskey lookups (cache-first pattern)
 - `pkg/listenhandler/`: RabbitMQ RPC request routing with REST-like path patterns
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 
@@ -63,7 +63,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `PUT /v1/accesskeys/<id>` - Update access key basic info
 - `DELETE /v1/accesskeys/<id>` - Delete access key
 
-### Event Publishing
+## Event Publishing
 
 Customer operations publish events to `bin-manager.customer-manager.event`:
 - `customer_created`, `customer_updated`, `customer_deleted`
