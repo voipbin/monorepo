@@ -22,7 +22,7 @@ VoIPBin uses a **monorepo** to manage all backend services in a single codebase.
 
 VoIPbin is a **VoIP backend platform** designed to help teams quickly deploy and operate communication workflows — from simple call routing to AI-assisted conversation flows.
 
-Think of it as **Twilio meets self-hosting**, with a focus on flexibility, modularity, and full control over your stack.
+It is the only production-grade open-source CPaaS platform that you can fully self-host, with a focus on flexibility, modularity, and full control over your stack.
 
 ### Use cases include:
 
@@ -62,35 +62,45 @@ Think of it as **Twilio meets self-hosting**, with a focus on flexibility, modul
 
 The monorepo includes many backend services under separate directories:
 
-| Directory                 | Purpose                                   |
-|--------------------------|-------------------------------------------|
-| `bin-api-manager`        | External API gateway for VoIPbin          |
-| `bin-agent-manager`      | Manages agent presence and actions        |
-| `bin-ai-manager`         | AI chatbot integrations                   |
-| `bin-billing-manager`    | Billing and subscription tracking         |
-| `bin-call-manager`       | Inbound/outbound call routing and control |
-| `bin-campaign-manager`   | Outbound dialing campaigns                |
-| `bin-conference-manager` | Audio conferencing features               |
-| `bin-customer-manager`   | Customer accounts and relationships       |
-| `bin-dbscheme-bin-manager` | Database schemas and migrations        |
-| `bin-email-manager`      | Email sending and inbox parsing           |
-| `bin-flow-manager`       | Flow execution engine                     |
-| `bin-hook-manager`       | Webhook receivers                         |
-| `bin-message-manager`    | SMS and messaging                         |
-| `bin-number-manager`     | DID and number provisioning               |
-| `bin-openapi-manager`    | Shared OpenAPI specs                      |
-| `bin-outdial-manager`    | Outbound call dialer                      |
-| `bin-queue-manager`      | Call queueing and routing logic           |
-| `bin-registrar-manager`  | SIP registrar (UDP/TCP/WebRTC)            |
-| `bin-route-manager`      | Routing logic and policies                |
-| `bin-storage-manager`    | File storage backend                      |
-| `bin-tag-manager`        | Labeling and tagging                      |
-| `bin-transfer-manager`   | Call transfer logic                       |
-| `bin-transcribe-manager` | Audio transcription                       |
-| `bin-tts-manager`        | Text-to-Speech integration                |
-| `bin-webhook-manager`    | Webhook sender                            |
-| `voip-asterisk-proxy`    | Integration proxy for Asterisk            |
-| `bin-common-handler`     | Shared logic across services              |
+| Directory                  | Purpose                                       |
+|----------------------------|-----------------------------------------------|
+| `bin-agent-manager`        | Manages agent presence and actions            |
+| `bin-ai-manager`           | AI chatbot and LLM orchestration              |
+| `bin-api-manager`          | External API gateway for VoIPbin              |
+| `bin-billing-manager`      | Billing and subscription tracking             |
+| `bin-call-manager`         | Inbound/outbound call routing and control     |
+| `bin-campaign-manager`     | Outbound dialing campaigns                    |
+| `bin-common-handler`       | Shared logic and RPC layer across services    |
+| `bin-conference-manager`   | Audio conferencing features                   |
+| `bin-contact-manager`      | Customer contact records and lookup           |
+| `bin-conversation-manager` | Multi-channel conversation tracking           |
+| `bin-customer-manager`     | Customer accounts and relationships           |
+| `bin-dbscheme-manager`     | Database schemas and migrations               |
+| `bin-direct-manager`       | SIP URI hash routing and direct dial logic    |
+| `bin-email-manager`        | Email sending and inbox parsing               |
+| `bin-flow-manager`         | Flow execution engine                         |
+| `bin-hook-manager`         | Webhook receivers                             |
+| `bin-message-manager`      | SMS and messaging                             |
+| `bin-number-manager`       | DID and number provisioning                   |
+| `bin-openapi-manager`      | Shared OpenAPI specs                          |
+| `bin-outdial-manager`      | Outbound call dialer                          |
+| `bin-pipecat-manager`      | Realtime AI voice pipeline (Go/Python hybrid) |
+| `bin-queue-manager`        | Call queueing and routing logic               |
+| `bin-rag-manager`          | Retrieval-augmented generation backend        |
+| `bin-registrar-manager`    | SIP registrar (UDP/TCP/WebRTC)                |
+| `bin-route-manager`        | Routing logic and policies                    |
+| `bin-sentinel-manager`     | Kubernetes-aware health/monitoring sentinel   |
+| `bin-storage-manager`      | File storage backend                          |
+| `bin-tag-manager`          | Labeling and tagging                          |
+| `bin-talk-manager`         | Talk/agent realtime backend                   |
+| `bin-timeline-manager`     | Per-resource timeline events                  |
+| `bin-transcribe-manager`   | Audio transcription                           |
+| `bin-transfer-manager`     | Call transfer logic                           |
+| `bin-tts-manager`          | Text-to-Speech integration                    |
+| `bin-webhook-manager`      | Webhook sender                                |
+| `voip-asterisk-proxy`      | Integration proxy for Asterisk                |
+| `voip-kamailio-proxy`      | Kamailio SIP proxy integration                |
+| `voip-rtpengine-proxy`     | RTPEngine media proxy integration             |
 
 ---
 
@@ -99,7 +109,7 @@ The monorepo includes many backend services under separate directories:
 
 > ⚠️ VoIPbin is not a plug-and-play application.
 > 
-> It's a platform composed of multiple microservices, SIP/media infrastructure (e.g., Asterisk, RTPEngine), Kubernetes-based deployments, and cloud integrations (e.g., Twilio, OpenAI). You don't just "run it" — you assemble and deploy it based on your architecture.
+> It's a platform composed of multiple microservices, SIP/media infrastructure (e.g., Asterisk, RTPEngine), Kubernetes-based deployments, and pluggable third-party integrations for telephony, AI, and other backends. You don't just "run it" — you assemble and deploy it based on your architecture.
 
 This monorepo handles only part of voipbin services.
 
@@ -130,8 +140,7 @@ We recommend reading the platform architecture guide (coming soon) before setup.
 ### Configure Your Secrets
 
 ```
-export CC_AUTHTOKEN_OPENAI=xxx
-export CC_TWILIO_TOKEN=xxx
+export CC_AUTHTOKEN_<PROVIDER>=***
 export CC_SSL_CERT_API_BASE64=xxx
 ...
 ```

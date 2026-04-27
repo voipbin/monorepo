@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 `bin-common-handler` is a shared Go library used by every other manager service in this monorepo. It provides reusable handlers, models, and utilities for inter-service RPC, event publishing, RabbitMQ plumbing, database helpers, and shared identity types.
 
 **Key Concepts:**
-- **Shared library, not a service.** No `cmd/` entrypoint, no listen queue, no subscriptions of its own. Every change here ripples to 30+ consumers, so the [admission rule](../CLAUDE.md#critical-bin-common-handler-admission-rule) (3+ consumers required) is strict.
+- **Shared library, not a service.** No `cmd/` entrypoint, no listen queue, no subscriptions of its own. Every change here ripples to all 34 consumers, so the [admission rule](../CLAUDE.md#critical-bin-common-handler-admission-rule) (3+ consumers required) is strict.
 - **Inter-service contract.** `requesthandler` is the canonical RPC fan-out — every service-to-service RPC in VoIPbin goes through it.
 - **Event publishing.** `notifyhandler` publishes events and webhooks for all services.
 - **Cross-cutting infrastructure.** `circuitbreakerhandler`, `sockhandler`, and `rabbitmqhandler` provide the shared transport and resilience layer that consumer services get for free.
@@ -108,7 +108,7 @@ go generate ./pkg/notifyhandler
 golangci-lint run -v --timeout 5m
 ```
 
-> The pre-commit verification workflow and its rationale live in the root [CLAUDE.md](../CLAUDE.md#critical-verification-before-commit) and [docs/workflows/verification-workflows.md](../docs/workflows/verification-workflows.md). Because this library is consumed by 30+ services, changes here may require running verification in every consuming service — see [docs/workflows/special-cases.md](../docs/workflows/special-cases.md) for the cross-service workflow.
+> The pre-commit verification workflow and its rationale live in the root [CLAUDE.md](../CLAUDE.md#critical-verification-before-commit) and [docs/workflows/verification-workflows.md](../docs/workflows/verification-workflows.md). Because this library is consumed by all 34 services, changes here may require running verification in every consuming service — see [docs/workflows/special-cases.md](../docs/workflows/special-cases.md) for the cross-service workflow.
 
 ## Monorepo Context
 

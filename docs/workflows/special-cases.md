@@ -6,7 +6,7 @@ This document covers special scenarios that require updating multiple services a
 
 ## Changes to bin-common-handler
 
-**🚨 CRITICAL: If you make ANY changes to `bin-common-handler`, you MUST update ALL 30+ services in the monorepo.**
+**🚨 CRITICAL: If you make ANY changes to `bin-common-handler`, you MUST update ALL 34 services in the monorepo.**
 
 The `bin-common-handler` is a shared library used by ALL other services. Changes to it require updating every service to maintain consistency across the entire monorepo.
 
@@ -35,7 +35,7 @@ golangci-lint run -v --timeout 5m
 
 **Step 2: Update ALL services in monorepo**
 ```bash
-# From monorepo root, update all 30+ services
+# From monorepo root, update all 34 services
 cd /home/pchero/gitvoipbin/monorepo
 
 find . -maxdepth 2 -name "go.mod" -execdir bash -c \
@@ -82,7 +82,7 @@ git commit -m "chore: update dependencies after bin-common-handler changes"
 
 ### Projects Affected
 
-**All services depend on bin-common-handler** (30+ projects):
+**All services depend on bin-common-handler** (all 34 projects):
 - bin-api-manager (REST API gateway)
 - bin-call-manager (Call routing)
 - bin-flow-manager (Flow execution)
@@ -91,7 +91,7 @@ git commit -m "chore: update dependencies after bin-common-handler changes"
 - bin-webhook-manager (Webhooks)
 - bin-agent-manager (Agent management)
 - bin-customer-manager (Customer data)
-- And 22+ other services...
+- And 26+ other services...
 
 ### Why This Is Critical
 
