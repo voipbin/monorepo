@@ -197,19 +197,16 @@ func (h *aicallHandler) startReferenceTypeConversation(
 			return nil, errors.Wrapf(err, "could not update status to Progressing. aicall_id: %s", res.ID)
 		}
 	} else {
-		// reuse: interrupt previous pipecat session (best-effort), then update IDs
+		// reuse: interrupt previous pipecat session (best-effort), then atomically
+		// update both PipecatcallID and ActiveflowID so concurrent readers cannot
+		// observe a half-applied state.
 		h.interruptPreviousPipecatcall(ctx, res.PipecatcallID)
 		newPipecatcallID := h.utilHandler.UUIDCreate()
-		tmp, errUpdate := h.UpdatePipecatcallID(ctx, res.ID, newPipecatcallID)
+		tmp, errUpdate := h.UpdatePipecatcallIDAndActiveflowID(ctx, res.ID, newPipecatcallID, activeflowID)
 		if errUpdate != nil {
-			return nil, errors.Wrapf(errUpdate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", res.ID)
+			return nil, errors.Wrapf(errUpdate, "could not update pipecatcall_id+activeflow_id for existing aicall. aicall_id: %s", res.ID)
 		}
 		res = tmp
-		tmp2, errAF := h.UpdateActiveflowID(ctx, res.ID, activeflowID)
-		if errAF != nil {
-			return nil, errors.Wrapf(errAF, "could not update the activeflow id for existing aicall. aicall_id: %s", res.ID)
-		}
-		res = tmp2
 	}
 	log.WithField("aicall", res).Debugf("AIcall ready. aicall_id: %s", res.ID)
 

@@ -427,13 +427,12 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.req.EXPECT().PipecatV1Ping(gomock.Any(), "host1").Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminate(gomock.Any(), "host1", oldPCC).Return(nil, nil)
 
-				// new pipecatcall ID + UpdatePipecatcallID
+				// new pipecatcall ID + atomic UpdatePipecatcallIDAndActiveflowID
 				m.util.EXPECT().UUIDCreate().Return(newPCC)
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, gomock.Any()).Return(nil)
-				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
-
-				// UpdateActiveflowID rebind
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, map[aicall.Field]any{
+					aicall.FieldPipecatcallID: newPCC,
+					aicall.FieldActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
+				}).Return(nil)
 				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
 
 				// conversation message create
@@ -515,13 +514,12 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.req.EXPECT().PipecatV1Ping(gomock.Any(), "host2").Return(context.DeadlineExceeded)
 				// no PipecatV1PipecatcallTerminate expectation
 
-				// new pipecatcall ID + UpdatePipecatcallID
+				// new pipecatcall ID + atomic UpdatePipecatcallIDAndActiveflowID
 				m.util.EXPECT().UUIDCreate().Return(newPCC)
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, gomock.Any()).Return(nil)
-				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
-
-				// UpdateActiveflowID rebind
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, map[aicall.Field]any{
+					aicall.FieldPipecatcallID: newPCC,
+					aicall.FieldActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
+				}).Return(nil)
 				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
 
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "another user message.", nil, "").Return(&message.Message{}, nil)
@@ -911,10 +909,12 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.req.EXPECT().PipecatV1Ping(gomock.Any(), "host-team").Return(nil)
 				m.req.EXPECT().PipecatV1PipecatcallTerminate(gomock.Any(), "host-team", oldPCC).Return(nil, nil)
 
+				// new pipecatcall ID + atomic UpdatePipecatcallIDAndActiveflowID
 				m.util.EXPECT().UUIDCreate().Return(newPCC)
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, gomock.Any()).Return(nil)
-				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
-				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallUpdate(ctx, existingAIcallID, map[aicall.Field]any{
+					aicall.FieldPipecatcallID: newPCC,
+					aicall.FieldActiveflowID:  uuid.FromStringOrNil("d15ae476-30dd-11f0-87af-67d3c47111a7"),
+				}).Return(nil)
 				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
 
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "team user message.", nil, "").Return(&message.Message{}, nil)
