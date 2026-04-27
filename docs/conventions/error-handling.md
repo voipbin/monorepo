@@ -1,6 +1,6 @@
 # Error Handling
 
-### 4.1 Sentinel Errors
+## 4.1 Sentinel Errors
 
 Define sentinel errors as package-level variables in `dbhandler/main.go`:
 
@@ -23,7 +23,7 @@ var (
 var ErrNotFound = errors.New("not found")  // Should be in dbhandler
 ```
 
-### 4.2 Error Wrapping
+## 4.2 Error Wrapping
 
 Use `fmt.Errorf` with `%w` or `errors.Wrap`/`errors.Wrapf` from `github.com/pkg/errors`:
 
@@ -41,7 +41,7 @@ return nil, fmt.Errorf("resource limit exceeded")
 return nil, err  // No context about where or why it failed
 ```
 
-### 4.3 Checking Sentinel Errors
+## 4.3 Checking Sentinel Errors
 
 Compare sentinel errors directly (not with `errors.Is` unless wrapping is involved):
 
@@ -58,7 +58,7 @@ if errors.Is(err, dbhandler.ErrNotFound) {
 }
 ```
 
-### 4.4 Error Propagation Pattern
+## 4.4 Error Propagation Pattern
 
 Wrap and propagate errors up the call stack. Log at a reasonable level where you have meaningful context — not at every layer.
 

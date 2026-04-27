@@ -1,6 +1,6 @@
 # Testing
 
-### 13.1 Table-Driven Tests
+## 13.1 Table-Driven Tests
 
 All tests use anonymous struct slices with `name` as the first field:
 
@@ -61,7 +61,7 @@ func Test_Create(t *testing.T) {
 }
 ```
 
-### 13.2 Mock Generation
+## 13.2 Mock Generation
 
 Mocks are generated via `//go:generate` and live in the same package as the interface:
 
@@ -74,7 +74,7 @@ Mocks are generated via `//go:generate` and live in the same package as the inte
 
 Run `go generate ./...` to regenerate all mocks.
 
-### 13.3 Test Structure Conventions
+## 13.3 Test Structure Conventions
 
 Tests instantiate the private struct directly, not via the public constructor:
 
@@ -90,7 +90,7 @@ h := &flowHandler{
 h := NewFlowHandler(mockDB, mockReq, mockNotify)
 ```
 
-### 13.4 UUID Values in Tests
+## 13.4 UUID Values in Tests
 
 Use hardcoded real-looking UUID strings:
 
@@ -104,7 +104,7 @@ customerID := uuid.Nil
 agentID := uuid.Must(uuid.NewV4())  // non-deterministic
 ```
 
-### 13.5 Assertion Pattern
+## 13.5 Assertion Pattern
 
 Use `t.Errorf` with the consistent format "Wrong match":
 
@@ -123,7 +123,7 @@ if err != nil {
 }
 ```
 
-### 13.6 Test Function Naming
+## 13.6 Test Function Naming
 
 Use `Test_<MethodName>`:
 
@@ -138,7 +138,7 @@ func TestCreate(t *testing.T) { ... }  // Missing underscore
 func TestHandler_Create(t *testing.T) { ... }  // Extra prefix
 ```
 
-### 13.7 gomock.Any() Usage
+## 13.7 gomock.Any() Usage
 
 `gomock.Any()` is a MATCHER — it can only be used in `EXPECT()`, never in `Return()`:
 

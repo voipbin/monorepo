@@ -1,6 +1,6 @@
 # Database Patterns
 
-### 7.1 Squirrel Query Builder (Mandatory)
+## 7.1 Squirrel Query Builder (Mandatory)
 
 All SQL queries MUST use the squirrel query builder. Raw SQL strings are forbidden.
 
@@ -18,7 +18,7 @@ query := "SELECT * FROM agent_agents WHERE id = ?"
 
 **Exception:** Computed expressions that squirrel cannot express (e.g., `cost_per_unit * ?`). Document WHY with a comment.
 
-### 7.2 CRUD Operations
+## 7.2 CRUD Operations
 
 **INSERT:**
 ```go
@@ -64,7 +64,7 @@ return h.agentUpdate(ctx, id, map[agent.Field]any{
 })
 ```
 
-### 7.3 Empty Slice Initialization
+## 7.3 Empty Slice Initialization
 
 **MANDATORY:** List functions must initialize result slices as empty, never nil:
 
@@ -76,7 +76,7 @@ res := []*agent.Agent{}
 var res []*agent.Agent
 ```
 
-### 7.4 Cache-Aside Pattern
+## 7.4 Cache-Aside Pattern
 
 DB reads: cache-first, fallback to DB. Mutations: write-through.
 
@@ -97,7 +97,7 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 }
 ```
 
-### 7.5 Cursor-Based Pagination
+## 7.5 Cursor-Based Pagination
 
 Pagination uses `TMCreate` timestamp as cursor token:
 
@@ -112,7 +112,7 @@ sb := squirrel.Select(fields...).From(agentTable).
     Limit(size)
 ```
 
-### 7.6 Filter Application
+## 7.6 Filter Application
 
 Use `commondatabasehandler.ApplyFields()` for type-safe filter maps:
 
@@ -122,7 +122,7 @@ sb, _ = commondatabasehandler.ApplyFields(sb, filters)
 // Handles: uuid → bytes, "deleted: false" → tm_delete IS NULL, etc.
 ```
 
-### 7.7 DB Operations Location
+## 7.7 DB Operations Location
 
 All database operations MUST live in `pkg/dbhandler/`. Business logic handlers receive `DBHandler` interface only.
 
