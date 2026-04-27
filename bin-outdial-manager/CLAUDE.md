@@ -4,9 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-outdial-manager is a Go microservice for managing outbound dialing campaigns in a VoIP system. It manages outdials (campaign containers), outdial targets (individual call targets), and target call tracking.
+`bin-outdial-manager` is a Go microservice for managing outbound dialing campaigns in a VoIP system. It manages outdials (campaign containers), outdial targets (individual call targets), and target call tracking.
 
-## Build and Test Commands
+**Key Concepts:**
+- **Outdial**: Container for an outbound dialing campaign — belongs to a customer and a campaign, holds custom JSON data.
+- **OutdialTarget**: Individual call target within an outdial; up to 5 destination numbers with independent try counts; status `idle` / `processing` / `done`.
+- **OutdialTargetCall**: Call attempt tracking for a single target.
+- Used by `bin-campaign-manager` to fetch available targets and update target status during campaign execution.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-outdial-manager`.
+
+## Common Commands
 
 ```bash
 # Build the daemon
@@ -111,27 +119,31 @@ RabbitMQ Request → listenhandler (regex routing) → outdial/target handlers �
                                                                         webhook event published
 ```
 
-### API Structure
+## Request Routing
 
-The listenhandler uses regex-based routing to handle REST-like RPC requests:
+ListenHandler uses regex-based routing to handle REST-like RPC requests:
 
-**Outdials:**
-- `POST /v1/outdials` - Create outdial
-- `GET /v1/outdials?customer_id=<uuid>` - List outdials by customer
-- `GET /v1/outdials/<outdial-id>` - Get outdial
-- `PUT /v1/outdials/<outdial-id>` - Update outdial basic info
-- `DELETE /v1/outdials/<outdial-id>` - Delete outdial
-- `PUT /v1/outdials/<outdial-id>/campaign_id` - Update campaign ID
-- `PUT /v1/outdials/<outdial-id>/data` - Update custom data
-- `GET /v1/outdials/<outdial-id>/available?try_count_0=N&...&limit=N` - Get available targets
-- `POST /v1/outdials/<outdial-id>/targets` - Create target
-- `GET /v1/outdials/<outdial-id>/targets?page_size=N&page_token=T` - List targets
+**Outdials API (`/v1/outdials/*`):**
+- `POST /v1/outdials` — Create outdial
+- `GET /v1/outdials?customer_id=<uuid>` — List outdials by customer
+- `GET /v1/outdials/<outdial-id>` — Get outdial
+- `PUT /v1/outdials/<outdial-id>` — Update outdial basic info
+- `DELETE /v1/outdials/<outdial-id>` — Delete outdial
+- `PUT /v1/outdials/<outdial-id>/campaign_id` — Update campaign ID
+- `PUT /v1/outdials/<outdial-id>/data` — Update custom data
+- `GET /v1/outdials/<outdial-id>/available?try_count_0=N&...&limit=N` — Get available targets
+- `POST /v1/outdials/<outdial-id>/targets` — Create target
+- `GET /v1/outdials/<outdial-id>/targets?page_size=N&page_token=T` — List targets
 
-**Outdial Targets:**
-- `GET /v1/outdialtargets/<target-id>` - Get target
-- `DELETE /v1/outdialtargets/<target-id>` - Delete target
-- `POST /v1/outdialtargets/<target-id>/progressing` - Mark target as in progress
-- `PUT /v1/outdialtargets/<target-id>/status` - Update target status
+**Outdial Targets API (`/v1/outdialtargets/*`):**
+- `GET /v1/outdialtargets/<target-id>` — Get target
+- `DELETE /v1/outdialtargets/<target-id>` — Delete target
+- `POST /v1/outdialtargets/<target-id>/progressing` — Mark target as in progress
+- `PUT /v1/outdialtargets/<target-id>/status` — Update target status
+
+## Event Subscriptions
+
+This service does not subscribe to external events. There is no SubscribeHandler.
 
 ### Data Models
 
@@ -147,14 +159,62 @@ The listenhandler uses regex-based routing to handle REST-like RPC requests:
 
 **OutdialTargetCall** - Call attempt tracking for a target
 
-### Configuration
+## Monorepo Context
 
-Environment variables / flags:
-- `DATABASE_DSN` - MySQL connection string
-- `RABBITMQ_ADDRESS` - RabbitMQ connection (amqp://user:pass@host:port)
-- `REDIS_ADDRESS`, `REDIS_PASSWORD`, `REDIS_DATABASE` - Redis cache
-- `PROMETHEUS_ENDPOINT`, `PROMETHEUS_LISTEN_ADDRESS` - Metrics endpoint
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared handlers (sockhandler, requesthandler, notifyhandler, databasehandler, utilhandler)
+- `monorepo/bin-campaign-manager`: Campaign event models (consumed via the campaign manager's reverse direction)
 
-### Testing
+Always run `go mod vendor` after changing dependencies.
 
-Tests use SQLite in-memory databases with schema loaded from `scripts/database_scripts/*.sql`. The `TestMain` function in `pkg/dbhandler/main_test.go` sets up the shared test database using `github.com/smotes/purse` to load SQL files.
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock) plus SQLite in-memory databases:
+- Mock interfaces co-located with handlers
+- The `TestMain` in `pkg/dbhandler/main_test.go` sets up a shared SQLite test DB using `github.com/smotes/purse` to load schema from `scripts/database_scripts/*.sql`
+- Table-driven tests with struct slices
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
+
+### Multi-Destination Retry Tracking
+Each `OutdialTarget` carries 5 destination addresses (`destination_0` through `destination_4`) with independent try-count tracking. The `available` endpoint allows the campaign manager to filter targets by retry count thresholds.
+
+### Soft Deletes
+Records use the `tm_delete` timestamp (`"9999-01-01 00:00:00.000000"` for active records).
+
+## Configuration
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server (`amqp://user:pass@host:port`) | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `outdial_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)

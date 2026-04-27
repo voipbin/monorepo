@@ -4,9 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-`bin-campaign-manager` is a Go microservice that manages outbound calling campaigns within a VoIP platform. It orchestrates campaign execution, manages individual calls, and coordinates with other microservices via RabbitMQ message broker.
+`bin-campaign-manager` is a Go microservice that manages outbound calling campaigns within a VoIP platform. It orchestrates campaign execution, manages individual calls, and coordinates with other microservices via the RabbitMQ message broker.
 
-## Development Commands
+**Key Concepts:**
+- **Campaign**: An outbound campaign linking an outplan (dial config), an outdial (target list), and optionally a queue, with status `stop`/`run`/`stopping`.
+- **Campaigncall**: A single call attempt within a campaign with up to 5 destination addresses and independent retry counts; references either a Call or an Activeflow.
+- **Outplan**: Dialing configuration (timeouts, retry intervals, max try counts, source address) shared across multiple campaigns.
+- **Service Level**: Percentage-based throttle on concurrent dialing based on queue agent availability.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-campaign-manager`.
+
+## Common Commands
 
 ### Build
 ```bash
@@ -150,12 +158,40 @@ All business logic is organized into handler packages with interface-first desig
 **ListenHandler** (`pkg/listenhandler/`): RabbitMQ RPC server
 - Processes incoming API requests from "campaign_request" queue
 - Routes to appropriate handler based on URI pattern and HTTP method
-- Endpoints: `/v1/campaigns`, `/v1/campaigncalls`, `/v1/outplans`
 
 **SubscribeHandler** (`pkg/subscribehandler/`): Event subscriber
 - Listens to events from call-manager and flow-manager
-- Processes: `call_hungup` and `activeflow_deleted` events
 - Updates campaigncall status and triggers campaign state changes
+
+## Request Routing
+
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
+
+**Campaigns API (`/v1/campaigns/*`):**
+- `POST /v1/campaigns` — Create campaign
+- `GET /v1/campaigns?<filters>` — List campaigns (pagination)
+- `GET /v1/campaigns/<uuid>` — Get campaign
+- `PUT /v1/campaigns/<uuid>` — Update campaign basic info
+- `PUT /v1/campaigns/<uuid>/status` — Update status (`run`/`stop`/`stopping`)
+- `DELETE /v1/campaigns/<uuid>` — Delete campaign
+
+**Campaigncalls API (`/v1/campaigncalls/*`):**
+- `GET /v1/campaigncalls?<filters>` — List campaigncalls
+- `GET /v1/campaigncalls/<uuid>` — Get campaigncall
+- `DELETE /v1/campaigncalls/<uuid>` — Delete campaigncall
+
+**Outplans API (`/v1/outplans/*`):**
+- `POST /v1/outplans` — Create outplan
+- `GET /v1/outplans?<filters>` — List outplans
+- `GET /v1/outplans/<uuid>` — Get outplan
+- `PUT /v1/outplans/<uuid>` — Update outplan
+- `DELETE /v1/outplans/<uuid>` — Delete outplan
+
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.call-manager.event**: `call_hangup` → marks campaigncall as done; drives campaign `run` → `stop` transitions when no more targets remain.
+- **bin-manager.flow-manager.event**: `activeflow_deleted` → marks campaigncall as done (for `TypeFlow` campaigns).
 
 ### Event-Driven Communication
 
@@ -199,21 +235,26 @@ All business logic is organized into handler packages with interface-first desig
 5. If no more targets or manual stop → Campaign transitions to Stop
 ```
 
-### Key Design Patterns
+## Key Implementation Details
 
-**Interface-Based Design**: All handlers are interfaces with mock implementations for testing (generated via `go generate`)
+### Interface-Based Design
+All handlers are interfaces with mock implementations for testing (generated via `go generate`).
 
-**Soft Deletes**: All models use `tm_delete` timestamp (default: "9999-01-01 00:00:000"). Deleted records are marked with actual deletion time.
+### Soft Deletes
+All models use `tm_delete` timestamp (default: `"9999-01-01 00:00:000"`). Deleted records are marked with actual deletion time.
 
-**Service Level Queuing**: Campaigns can limit concurrent dialing based on queue agent availability:
+### Service Level Queuing
+Campaigns can limit concurrent dialing based on queue agent availability:
 ```
 agent_capacity = (available_agents × service_level) / 100
 dialing_allowed = current_dialing_count < agent_capacity
 ```
 
-**Recursive Execution**: Campaign execute uses goroutine-based recursive scheduling rather than persistent job queue
+### Recursive Execution
+Campaign `Execute()` uses goroutine-based recursive scheduling (500 ms delay between iterations) rather than a persistent job queue.
 
-**Multi-Destination Retry Logic**: Each campaigncall supports 5 destination addresses with independent retry tracking (destination_0 through destination_4, try_count_0 through try_count_4)
+### Multi-Destination Retry Logic
+Each campaigncall supports 5 destination addresses with independent retry tracking (`destination_0` through `destination_4`, `try_count_0` through `try_count_4`).
 
 ## Configuration
 
@@ -240,13 +281,39 @@ When making changes that affect other services, coordinate changes across:
 - `bin-queue-manager`: Queue and agent tracking
 - `bin-common-handler`: Shared models and utilities
 
-## Testing Considerations
+## Testing Patterns
 
+Tests use **gomock** (go.uber.org/mock):
 - All handlers have interface definitions for mockability
 - Generate mocks via `go generate ./...` before running tests
 - Tests should not require external services (use mocks)
-- Database tests use in-memory SQLite when possible (see `dbhandler/main_test.go`)
 - Event handling tests verify proper event routing and handler invocation
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `campaign_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `campaign_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)
 
 ## Important Files
 
