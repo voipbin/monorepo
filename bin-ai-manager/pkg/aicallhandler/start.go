@@ -175,24 +175,42 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		return nil, errors.New("could not get the conversation message text from the activeflow variables")
 	}
 
-	// get existing aicall info
+	// get existing aicall info — decide reuse or create fresh
 	res, err := h.GetByReferenceID(ctx, referenceID)
-	if err != nil {
-		log.Debugf("Could not get the aicall by reference id. Start a new aicall. reference_id: %s. err: %v", referenceID, err)
+	reusable := err == nil && h.isAIcallReusable(res)
+
+	if !reusable {
+		// mark idle-expired AIcalls as Terminated for hygiene before recreating
+		if err == nil && res.Status != aicall.StatusTerminated && res.Status != aicall.StatusTerminating && h.isAIcallIdleExpired(res) {
+			log.Infof("Existing AIcall idle-expired — terminating and starting fresh. aicall_id: %s", res.ID)
+			if _, errEnd := h.UpdateStatus(ctx, res.ID, aicall.StatusTerminated); errEnd != nil {
+				log.Warnf("Could not terminate idle AIcall: %v", errEnd)
+			}
+		}
 		res, err = h.startAIcallByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, aicall.ReferenceTypeConversation, referenceID, false, teamParameter, currentMemberID)
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
+		res, err = h.UpdateStatus(ctx, res.ID, aicall.StatusProgressing)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not update status to Progressing. aicall_id: %s", res.ID)
+		}
 	} else {
-		// update the pipecatcall id to a new one
+		// reuse: interrupt previous pipecat session (best-effort), then update IDs
+		h.interruptPreviousPipecatcall(ctx, res.PipecatcallID)
 		newPipecatcallID := h.utilHandler.UUIDCreate()
 		tmp, errUpdate := h.UpdatePipecatcallID(ctx, res.ID, newPipecatcallID)
 		if errUpdate != nil {
 			return nil, errors.Wrapf(errUpdate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", res.ID)
 		}
 		res = tmp
+		tmp2, errAF := h.UpdateActiveflowID(ctx, res.ID, activeflowID)
+		if errAF != nil {
+			return nil, errors.Wrapf(errAF, "could not update the activeflow id for existing aicall. aicall_id: %s", res.ID)
+		}
+		res = tmp2
 	}
-	log.WithField("aicall", res).Debugf("Found the aicall. aicall_id: %s", res.ID)
+	log.WithField("aicall", res).Debugf("AIcall ready. aicall_id: %s", res.ID)
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
 	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, res.CustomerID, res.ID, res.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
@@ -201,6 +219,11 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	}
 	log.WithField("message", tmp).Debugf("Created the message to the ai. aicall_id: %s, message_id: %s", res.ID, res.ID)
 
+	// NOTE: Tool whitelist for conversation-typed AIcalls is deferred to v2 — see
+	// docs/plans/2026-04-27-conversation-ai-talk-design.md §13 and the Slice 0
+	// decision in 2026-04-27-conversation-ai-talk-plan.md. The LLM may invoke
+	// connect_call / stop_media / stop_flow in a chat context; each fails at
+	// execute time and is observable via ai_manager_aicall_tool_execute_total.
 	pc, err := h.startPipecatcall(ctx, res)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not start pipecatcall for aicall. aicall_id: %s", res.ID)
