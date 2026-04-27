@@ -50,7 +50,7 @@ VoIPBIN consists of three major architectural layers:
     |  +--------------+  +--------------+  +--------------+                |
     |  |Agent Manager |  | Billing Mgr  |  |Webhook Mgr   |                |
     |  +--------------+  +--------------+  +--------------+                |
-    |                    ... 30+ services                                  |
+    |                    ... 34 services                                   |
     +------------------------+---------------------------------------------+
                              |
                              v

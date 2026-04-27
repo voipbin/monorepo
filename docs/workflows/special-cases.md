@@ -6,7 +6,7 @@ This document covers special scenarios that require updating multiple services a
 
 ## Changes to bin-common-handler
 
-**🚨 CRITICAL: If you make ANY changes to `bin-common-handler`, you MUST update ALL 30+ services in the monorepo.**
+**🚨 CRITICAL: If you make ANY changes to `bin-common-handler`, you MUST update ALL 34 services in the monorepo.**
 
 The `bin-common-handler` is a shared library used by ALL other services. Changes to it require updating every service to maintain consistency across the entire monorepo.
 
@@ -35,7 +35,7 @@ golangci-lint run -v --timeout 5m
 
 **Step 2: Update ALL services in monorepo**
 ```bash
-# From monorepo root, update all 30+ services
+# From monorepo root, update all 34 services
 cd /home/pchero/gitvoipbin/monorepo
 
 find . -maxdepth 2 -name "go.mod" -execdir bash -c \

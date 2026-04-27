@@ -2,7 +2,7 @@
 
 > **Quick Reference:** For architecture summary, see [CLAUDE.md](../CLAUDE.md)
 
-This document provides detailed architectural information about the VoIPbin monorepo's 30+ microservices, their communication patterns, and system design.
+This document provides detailed architectural information about the VoIPbin monorepo's 34 microservices, their communication patterns, and system design.
 
 ## Service Categories
 
@@ -25,18 +25,21 @@ This document provides detailed architectural information about the VoIPbin mono
 
 - `bin-ai-manager` - AI chatbot integrations, summarization, task extraction
 - `bin-pipecat-manager` - AI voice assistant pipeline management
+- `bin-rag-manager` - Retrieval-augmented generation backend (knowledge bases, embeddings)
 
 ### Queue & Routing
 
 - `bin-queue-manager` - Call queueing and distribution logic
 - `bin-route-manager` - Routing policies and rules
 - `bin-transfer-manager` - Call transfer logic
+- `bin-direct-manager` - SIP URI hash routing and direct dial logic
 
 ### Customer & Agent Management
 
 - `bin-customer-manager` - Customer accounts and relationships
 - `bin-agent-manager` - Agent presence, status, permissions, addresses
 - `bin-billing-manager` - Billing accounts, balance tracking, subscription management
+- `bin-contact-manager` - Customer contact records and lookup
 
 ### Campaign & Outbound
 
@@ -60,6 +63,7 @@ This document provides detailed architectural information about the VoIPbin mono
 - `bin-tag-manager` - Resource labeling and tagging
 - `bin-dbscheme-manager` - Database schemas and migrations
 - `bin-sentinel-manager` - Monitoring and health checks
+- `bin-timeline-manager` - Per-resource timeline events
 
 ## Inter-Service Communication
 

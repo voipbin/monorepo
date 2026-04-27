@@ -15,7 +15,7 @@ Update all services in monorepo after bin-common-handler changes.
 
 ## What This Does
 
-Updates all 30+ services in the monorepo with the standard workflow:
+Updates all 34 services in the monorepo with the standard workflow:
 
 **For each service:**
 1. Navigate to service directory
@@ -138,7 +138,7 @@ Next steps:
 ## Why This Command Exists
 
 - CRITICAL operation after bin-common-handler changes (mandatory)
-- Affects all 30+ services in monorepo
+- Affects all 34 services in monorepo
 - Takes 10-20+ minutes to complete
 - Currently requires complex find command from CLAUDE.md
 - Easy to lose track of progress

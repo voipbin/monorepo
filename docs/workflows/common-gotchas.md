@@ -40,7 +40,7 @@ commonnotify.NewNotifyHandler(
 )
 ```
 
-**Safe approach:** After any bin-common-handler signature change, run the full verification workflow on ALL 30+ services to catch any missed updates.
+**Safe approach:** After any bin-common-handler signature change, run the full verification workflow on ALL 34 services to catch any missed updates.
 
 ## Prometheus Metric Name Conflicts
 

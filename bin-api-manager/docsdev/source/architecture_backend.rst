@@ -5,9 +5,9 @@ Backend Microservices
 
 .. note:: **AI Context**
 
-   This page describes VoIPBIN's 30+ Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.
+   This page describes VoIPBIN's 34 Go microservices, their organization by domain, the API gateway (bin-api-manager), and special service architectures (pipecat hybrid Go/Python, sentinel Kubernetes monitoring). Relevant when an AI agent needs to understand which service handles a specific domain, the routing table from HTTP endpoints to backend services, or the authentication/authorization flow.
 
-VoIPBIN's backend consists of 30+ specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.
+VoIPBIN's backend consists of 34 specialized Go microservices organized into functional domains. Each service owns its specific business logic and communicates with others through a message queue, enabling independent scaling, deployment, and development.
 
 Microservices Organization
 ---------------------------
@@ -36,6 +36,7 @@ Services are organized by functional domain:
     |  bin-transcribe-manager  |  Speech-to-text transcription    |
     |  bin-tts-manager         |  Text-to-speech synthesis        |
     |  bin-pipecat-manager     |  Real-time AI voice (Go/Python)  |
+    |  bin-rag-manager         |  Retrieval-augmented generation  |
     +-------------------------------------------------------------+
 
     +-------------------------------------------------------------+
@@ -54,10 +55,12 @@ Services are organized by functional domain:
     |  bin-agent-manager       |  Agent state and presence        |
     |  bin-billing-manager     |  Usage tracking and billing      |
     |  bin-customer-manager    |  Customer and API key management |
+    |  bin-contact-manager     |  Customer contact records        |
     |  bin-webhook-manager     |  Webhook delivery                |
     |  bin-storage-manager     |  File, media, and recordings     |
     |  bin-number-manager      |  Phone number management         |
     |  bin-tag-manager         |  Customer tag management         |
+    |  bin-timeline-manager    |  Per-resource timeline events    |
     +-------------------------------------------------------------+
 
     +-------------------------------------------------------------+
@@ -68,6 +71,7 @@ Services are organized by functional domain:
     |  bin-sentinel-manager    |  Kubernetes pod monitoring       |
     |  bin-route-manager       |  Call routing and providers      |
     |  bin-registrar-manager   |  SIP registration management     |
+    |  bin-direct-manager      |  SIP URI hash routing / direct   |
     +-------------------------------------------------------------+
 
 Service Characteristics
@@ -815,7 +819,7 @@ Comprehensive monitoring across all services:
     Metrics Pipeline:
 
     Services                Prometheus              Grafana
-    (30+ services)              |                      |
+    (34 services)               |                      |
          |                      |                      |
          |  Expose /metrics     |                      |
          |  endpoint            |                      |

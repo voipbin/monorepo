@@ -108,7 +108,7 @@ go generate ./pkg/notifyhandler
 golangci-lint run -v --timeout 5m
 ```
 
-> The pre-commit verification workflow and its rationale live in the root [CLAUDE.md](../CLAUDE.md#critical-verification-before-commit) and [docs/workflows/verification-workflows.md](../docs/workflows/verification-workflows.md). Because this library is consumed by 30+ services, changes here may require running verification in every consuming service — see [docs/workflows/special-cases.md](../docs/workflows/special-cases.md) for the cross-service workflow.
+> The pre-commit verification workflow and its rationale live in the root [CLAUDE.md](../CLAUDE.md#critical-verification-before-commit) and [docs/workflows/verification-workflows.md](../docs/workflows/verification-workflows.md). Because this library is consumed by all 34 services, changes here may require running verification in every consuming service — see [docs/workflows/special-cases.md](../docs/workflows/special-cases.md) for the cross-service workflow.
 
 ## Monorepo Context
 

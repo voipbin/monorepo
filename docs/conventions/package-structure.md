@@ -39,7 +39,7 @@ bin-<service-name>/
   CLAUDE.md                             # Service-specific conventions
 ```
 
-**Rationale:** Uniform layout across 30+ services makes navigation predictable and enables cross-service tooling.
+**Rationale:** Uniform layout across all 34 services makes navigation predictable and enables cross-service tooling.
 
 ### 1.2 Two Binaries Per Service
 
