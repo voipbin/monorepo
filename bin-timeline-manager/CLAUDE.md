@@ -6,7 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `bin-timeline-manager` is a Go service within the VoIPbin monorepo that manages timeline events stored in ClickHouse. It provides event querying capabilities for tracking the history of resources across the platform (calls, flows, conversations, etc.).
 
-This service operates as an event-driven microservice using RabbitMQ for RPC-style communication.
+**Key Concepts:**
+- **Event**: A timeline record with publisher (service name), type, resource ID, timestamp, and JSON payload.
+- **ClickHouse storage**: Unlike most services (MySQL), this one uses ClickHouse for high-volume time-series queries.
+- **Query-only API**: This service does not write events itself — it reads from ClickHouse, which is populated by a separate ingestion path.
+- **Pattern matching**: Event-type filters support wildcards like `activeflow_*`.
+
+This service operates as an RPC service using RabbitMQ.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-timeline-manager`.
 
 ## Architecture
 
@@ -33,26 +41,29 @@ cmd/timeline-manager/main.go
 - `pkg/dbhandler/`: ClickHouse database operations
 - `pkg/listenhandler/`: RabbitMQ RPC request routing
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns:
-- `POST /v1/events` - List events with filters (publisher, resource ID, event patterns)
+- `POST /v1/events` — List events with filters (publisher, resource ID, event-type patterns with wildcards), cursor-paginated.
 
-### Configuration
+## Event Subscriptions
+
+This service does not subscribe to RabbitMQ events. There is no SubscribeHandler — events arrive in ClickHouse via a separate ingestion path (not part of this service).
+
+## Configuration
 
 Uses **Cobra + Viper** pattern (see `internal/config/`):
-- Command-line flags and environment variables
-- Required: `rabbitmq_address`, `clickhouse_address`
-- Optional: `clickhouse_database` (default: `default`), `prometheus_endpoint`, `prometheus_listen_address`, `migrations_path`
 
-Default values:
-- `clickhouse_database`: `default`
-- `migrations_path`: `./migrations`
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `clickhouse_address` / `CLICKHOUSE_ADDRESS` | ClickHouse server (e.g., `clickhouse.infrastructure:9000`) | required |
+| `clickhouse_database` / `CLICKHOUSE_DATABASE` | ClickHouse database | `default` |
+| `migrations_path` / `MIGRATIONS_PATH` | Path to ClickHouse migration files | `./migrations` |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
 
-Production values (set in k8s deployment):
-- `clickhouse_address`: `clickhouse.infrastructure:9000`
-
-## Development Commands
+## Common Commands
 
 ### Build
 ```bash
@@ -220,9 +231,9 @@ for _, tt := range tests {
 ## Prometheus Metrics
 
 Service exposes metrics on configured endpoint (default `:2112/metrics`):
-- `receive_request_process_time` - Histogram of RPC request processing time (labels: type, method)
+- `timeline_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
 
-## Common Gotchas
+## Key Implementation Details
 
 ### ClickHouse Type Conversion
 

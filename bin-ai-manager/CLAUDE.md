@@ -2,13 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Overview
 
-`bin-ai-manager` is a Go service within the VoipBin monorepo that manages AI-powered voice conversations. It orchestrates AI calls, processes messages through various LLM engines (OpenAI, Dialogflow, etc.), handles speech-to-text/text-to-speech operations, and integrates with the broader VoipBin telephony platform.
+`bin-ai-manager` is a Go service within the VoIPbin monorepo that manages AI-powered voice conversations. It orchestrates AI calls, processes messages through various LLM engines (OpenAI, Dialogflow, etc.), handles speech-to-text/text-to-speech operations, and integrates with the broader VoIPbin telephony platform.
+
+**Key Concepts:**
+- **AI**: Per-customer AI configuration (engine type, model, init prompt, TTS/STT settings).
+- **AIcall**: Active conversation session linking an AI configuration to a reference (call/conversation/task) with lifecycle status.
+- **Engine**: LLM provider integration (OpenAI, Dialogflow, Grok, Gemini, etc.); messages are routed to the configured engine handler.
+- **Tool**: Function-calling capability exposed to the LLM (`connect_call`, `send_email`, `set_variables`, etc.).
+- **Pipecat integration**: Real-time audio (STT → LLM → TTS) is delegated to `bin-pipecat-manager`; this service owns orchestration and persistence.
 
 This service operates as an event-driven microservice using RabbitMQ for message passing and Redis for caching.
 
-## Development Commands
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-ai-manager`.
+
+## Common Commands
 
 ### Testing
 ```bash
@@ -94,6 +103,13 @@ Uses same environment variables as ai-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS
 
 ## Architecture
 
+### Service Communication Pattern
+
+This service uses **RabbitMQ for event-driven RPC communication**:
+- **ListenHandler** (`pkg/listenhandler/`): Consumes RPC requests from queue `bin-manager.ai-manager.request` (routes: `/v1/ais`, `/v1/aicalls`, `/v1/messages`, `/v1/summaries`, `/v1/services`)
+- **SubscribeHandler** (`pkg/subscribehandler/`): Subscribes to call/transcribe/tts/pipecat events
+- **NotifyHandler**: Publishes AI lifecycle events to exchange `bin-manager.ai-manager.event`
+
 ### Core Components
 
 **Main Entry Point** (`cmd/ai-manager/main.go:30-178`)
@@ -159,17 +175,6 @@ Uses same environment variables as ai-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS
 - Individual message in a conversation
 - Supports tool calls for function calling capabilities
 - Direction: inbound/outbound, Role: system/user/assistant/tool
-
-### Integration Points
-
-**Monorepo Dependencies**
-This service depends on several sibling services in the monorepo:
-- `bin-common-handler`: Shared utilities (database, request/notify handlers, socket handling)
-- `bin-call-manager`: Telephony call management
-- `bin-pipecat-manager`: Real-time audio streaming with Pipecat framework
-- `bin-flow-manager`: Conversation flow orchestration
-
-All monorepo dependencies use `replace` directives in `go.mod` pointing to `../<service-name>`
 
 ### AI Manager and Pipecat Manager Relationship
 
@@ -273,6 +278,45 @@ Available tools:
 - Google Cloud Dialogflow API
 - OpenAI API (and other LLM providers)
 
+## Request Routing
+
+ListenHandler routes requests using regex patterns matching REST-like URIs (see `pkg/listenhandler/`):
+
+**AIs API (`/v1/ais/*`):**
+- `POST /v1/ais` — Create AI configuration
+- `GET /v1/ais?<filters>` — List AIs (pagination)
+- `GET /v1/ais/<uuid>` — Get AI configuration
+- `PUT /v1/ais/<uuid>` — Update AI configuration
+- `DELETE /v1/ais/<uuid>` — Delete AI configuration
+
+**AIcalls API (`/v1/aicalls/*`):**
+- `POST /v1/aicalls` — Start AI call session
+- `GET /v1/aicalls?<filters>` — List AI calls
+- `GET /v1/aicalls/<uuid>` — Get AI call
+- `POST /v1/aicalls/<uuid>/terminate` — Terminate AI call
+- `POST /v1/aicalls/<uuid>/pause` / `POST /v1/aicalls/<uuid>/resume` — Pause/resume
+
+**Messages API (`/v1/messages/*`):**
+- `POST /v1/messages` — Create message
+- `GET /v1/messages?<filters>` — List messages
+- `GET /v1/messages/<uuid>` — Get message
+
+**Summaries API (`/v1/summaries/*`):**
+- `POST /v1/summaries` — Create summary (async LLM)
+- `GET /v1/summaries/<uuid>` — Get summary
+- `GET /v1/summaries?<filters>` — List summaries
+
+**Services API (`/v1/services/*`):**
+- `POST /v1/services/type/aicall` — Create AI call service (used by flow-manager)
+
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.call-manager.event**: Call lifecycle events (hangup, conference join/leave) to drive AIcall state.
+- **bin-manager.transcribe-manager.event**: Transcription events for non-realtime AI flows.
+- **bin-manager.tts-manager.event**: TTS lifecycle events.
+- **bin-manager.pipecat-manager.event**: Pipecat session events (initialized, message arrived) — drives realtime conversation state.
+
 ### Event Flow Examples
 
 **Inbound AI Call Flow**
@@ -292,43 +336,49 @@ Available tools:
 4. Sends to OpenAI for summarization
 5. Updates summary record with result
 
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared utilities (database, request/notify handlers, socket handling)
+- `monorepo/bin-call-manager`: Telephony call management
+- `monorepo/bin-pipecat-manager`: Real-time audio streaming with Pipecat framework
+- `monorepo/bin-flow-manager`: Conversation flow orchestration
+
+`bin-ai-manager` is a per-pod-routing client of `bin-pipecat-manager`: follow-up RPCs target the Pipecat pod that owns the in-memory session via the per-pod queue convention. See `bin-pipecat-manager/CLAUDE.md` and [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md).
+
+Always run `go mod vendor` after changing dependencies.
+
 ## Testing Patterns
 
-- Tests use mockgen-generated mocks for dependencies
+Tests use **gomock** (go.uber.org/mock):
+- Mockgen-generated mocks for handler dependencies
 - Test files co-located with implementation: `<package>/<feature>_test.go`
 - Database operations tested with mock DBHandler
 - Example: `pkg/aicallhandler/start_test.go` tests AIcall creation with various scenarios
 
-## Configuration
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
 
-The service reads configuration from environment variables (though not explicitly shown in code, this is typical for the monorepo pattern):
-- Database DSN (MySQL connection string)
-- Redis address, password, database number
-- RabbitMQ address
-- Engine API keys (e.g., ChatGPT key)
-- Prometheus metrics endpoint
+## Key Implementation Details
 
-## Prometheus Metrics
-
-The service exports metrics on:
-- `ai_manager_aicall_create_total`: AIcalls created (by reference_type)
-- `ai_manager_aicall_end_total`: AIcalls ended (by reference_type)
-- `ai_manager_aicall_duration_seconds`: AIcall duration histogram (by reference_type)
-- `ai_manager_aicall_tool_execute_total`: Tool executions (by tool_name)
-- `ai_manager_message_create_total`: Messages created (by role)
-- `ai_manager_subscribe_event_process_time`: Event processing latency (by publisher and type)
-
-## CI/CD Pipeline
-
-See `.gitlab-ci.yml` for the full pipeline:
-- **ensure**: Download and vendor dependencies
-- **test**: Run linting (golint, golangci-lint), vet, and tests with coverage
-- **build**: Build Docker image and push to registry
-- **release**: Deploy to GKE using kustomize (manual trigger)
-
-## Common Patterns
-
-**Handler Pattern**
+### Handler Pattern
 All domain handlers follow this structure:
 ```go
 type FooHandler interface {
@@ -336,9 +386,8 @@ type FooHandler interface {
 }
 
 type fooHandler struct {
-    // dependencies injected
-    db DBHandler
-    reqHandler RequestHandler
+    db            DBHandler
+    reqHandler    RequestHandler
     notifyHandler NotifyHandler
 }
 
@@ -347,16 +396,53 @@ func NewFooHandler(...) FooHandler {
 }
 ```
 
-**Error Handling**
-- Errors are logged with logrus at the point of occurrence
-- Errors propagate up to the handler layer
-- HTTP-style status codes used in request/response even though transport is RabbitMQ
+### AIcall Lifecycle
+Status flow: `initiating` → `progressing` → (`pausing`/`resuming`) → `terminating` → `terminated`. Lifecycle is driven by RPC entrypoints and external events from `bin-pipecat-manager` and `bin-call-manager`.
 
-**Context Usage**
-- All public handler methods accept `context.Context` as first parameter
-- Used for cancellation and timeout propagation
-- Database and external API calls respect context
+### Engine Routing
+`MessageHandler` selects an engine handler based on the AI's `engine_type`:
+- `engine_openai_handler/`: OpenAI-compatible chat completions API (also used for Grok via base URL override).
+- `engine_dialogflow_handler/`: Google Dialogflow CX/ES.
 
-**UUID Usage**
-- All IDs are UUID v4 using `github.com/gofrs/uuid` package
-- Identity model from common-handler provides base ID/CustomerID fields
+### Tool Execution
+Tool definitions live in `pkg/toolhandler/definitions.go`; only tools enabled in the AI's `tool_names` field are exposed to the LLM. Pipecat invokes tools via HTTP POST to `AIcallHandler.ToolHandle()`, which dispatches to the appropriate manager.
+
+### Error Handling & Context
+- Errors are logged with logrus and propagated up to the handler layer
+- All public handler methods accept `context.Context` as the first parameter
+- IDs are UUID v4 (`github.com/gofrs/uuid`); identity model from `bin-common-handler` provides base `ID`/`CustomerID` fields
+
+## Configuration
+
+Uses **Viper + pflag** pattern (see `cmd/ai-manager/init.go`):
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
+| `chatgpt_key` / `CHATGPT_KEY` | OpenAI API key | required |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+Engine-specific keys (Dialogflow service account, Grok/Gemini/Anthropic keys, etc.) are configured via the same env-var pattern.
+
+## Prometheus Metrics
+
+Service exports metrics on the configured endpoint (default `:2112/metrics`):
+- `ai_manager_aicall_create_total` — counter of AIcalls created (label `reference_type`)
+- `ai_manager_aicall_end_total` — counter of AIcalls ended (label `reference_type`)
+- `ai_manager_aicall_duration_seconds` — histogram of AIcall duration (label `reference_type`)
+- `ai_manager_aicall_tool_execute_total` — counter of tool executions (label `tool_name`)
+- `ai_manager_message_create_total` — counter of messages created (label `role`)
+- `ai_manager_subscribe_event_process_time` — histogram of event processing latency (labels `publisher`, `type`)
+
+## CI/CD Pipeline
+
+See `.gitlab-ci.yml` for the full pipeline:
+- **ensure**: Download and vendor dependencies
+- **test**: Run linting (golint, golangci-lint), vet, and tests with coverage
+- **build**: Build Docker image and push to registry
+- **release**: Deploy to GKE using kustomize (manual trigger)

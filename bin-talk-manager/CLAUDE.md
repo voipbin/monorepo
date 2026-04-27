@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-talk-manager is a microservice within a larger VoIP monorepo that manages chat functionality with threading and reactions. It handles:
+`bin-talk-manager` is a microservice within the VoIPbin monorepo that manages chat functionality with threading and reactions. It handles:
 - **Chats**: Chat sessions (direct 1:1, group, and public talk channels)
 - **Messages**: Text messages with threading support (replies to messages)
 - **Participants**: Chat membership management with re-join support
@@ -12,7 +12,9 @@ bin-talk-manager is a microservice within a larger VoIP monorepo that manages ch
 
 The service operates as a RabbitMQ-based RPC server, listening for requests and processing chat-related operations.
 
-## Build and Run Commands
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-talk-manager`.
+
+## Common Commands
 
 ### Build
 ```bash
@@ -105,26 +107,6 @@ This service uses a **RabbitMQ RPC pattern** for all external communication:
 - Uses regex-based URI routing (e.g., `/v1/chats`, `/v1/messages`)
 - Request/response via `sock.Request` and `sock.Response` types from `bin-common-handler`
 
-### API Endpoints
-
-| Method | URI | Description |
-|--------|-----|-------------|
-| POST | `/v1/chats` | Create a new chat |
-| GET | `/v1/chats` | List chats |
-| GET | `/v1/chats/{id}` | Get chat by ID |
-| PUT | `/v1/chats/{id}` | Update chat |
-| DELETE | `/v1/chats/{id}` | Delete chat |
-| POST | `/v1/chats/{id}/participants` | Add participant to chat |
-| GET | `/v1/chats/{id}/participants` | List chat participants |
-| DELETE | `/v1/chats/{id}/participants/{pid}` | Remove participant |
-| GET | `/v1/participants` | List participants (filtered) |
-| POST | `/v1/messages` | Create a message |
-| GET | `/v1/messages` | List messages |
-| GET | `/v1/messages/{id}` | Get message by ID |
-| DELETE | `/v1/messages/{id}` | Delete message |
-| POST | `/v1/messages/{id}/reactions` | Add reaction to message |
-| DELETE | `/v1/messages/{id}/reactions` | Remove reaction from message |
-
 ### Core Data Model
 
 The chat system has a three-table structure:
@@ -200,18 +182,52 @@ All tables use:
 - JSON columns for `metadata` (reactions) and `medias` arrays
 - Timestamp fields: `tm_create`, `tm_update`, `tm_delete`
 
-### Configuration
+## Request Routing
+
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
+
+| Method | URI | Description |
+|--------|-----|-------------|
+| POST | `/v1/chats` | Create a new chat |
+| GET | `/v1/chats` | List chats |
+| GET | `/v1/chats/{id}` | Get chat by ID |
+| PUT | `/v1/chats/{id}` | Update chat |
+| DELETE | `/v1/chats/{id}` | Delete chat |
+| POST | `/v1/chats/{id}/participants` | Add participant to chat |
+| GET | `/v1/chats/{id}/participants` | List chat participants |
+| DELETE | `/v1/chats/{id}/participants/{pid}` | Remove participant |
+| GET | `/v1/participants` | List participants (filtered) |
+| POST | `/v1/messages` | Create a message |
+| GET | `/v1/messages` | List messages |
+| GET | `/v1/messages/{id}` | Get message by ID |
+| DELETE | `/v1/messages/{id}` | Delete message |
+| POST | `/v1/messages/{id}/reactions` | Add reaction to message |
+| DELETE | `/v1/messages/{id}/reactions` | Remove reaction from message |
+
+## Event Subscriptions
+
+This service does not subscribe to external events. There is no SubscribeHandler — chat state is driven entirely by inbound RPC.
+
+## Configuration
 
 Runtime configuration via environment variables (see `k8s/deployment.yml`):
-- `DATABASE_DSN`: MySQL connection string
-- `RABBITMQ_ADDRESS`: RabbitMQ server address
-- `REDIS_ADDRESS`: Redis cache server address (optional)
-- `REDIS_PASSWORD`: Redis authentication (optional)
-- `REDIS_DATABASE`: Redis database number (default: 1)
-- `PROMETHEUS_ENDPOINT`: Metrics endpoint path
-- `PROMETHEUS_LISTEN_ADDRESS`: Metrics server address
 
-## Critical Features
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | optional |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | `1` |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `talk_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+
+## Key Implementation Details
 
 ### Threading Validation Policy
 
@@ -423,7 +439,7 @@ log := logrus.WithFields(logrus.Fields{
 })
 ```
 
-## Testing Approach
+## Testing Patterns
 
 ### Test File Organization
 

@@ -12,6 +12,8 @@ This is the `bin-email-manager` service, part of the VoIPBin monorepo. It manage
 - **Webhook Integration**: Processes delivery status callbacks from providers to update email states
 - **Attachment Support**: Links to storage-manager for including recordings/files in emails
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-email-manager`.
+
 ## Architecture
 
 ### Service Communication Pattern
@@ -44,7 +46,7 @@ cmd/email-manager/main.go
 - `pkg/cachehandler/`: Redis caching
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths: `/v1/emails`, `/v1/hooks`)
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `POST /v1/emails` - Create and send email
@@ -53,7 +55,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `DELETE /v1/emails/<uuid>` - Delete email
 - `POST /v1/hooks` - Process webhook events from providers (query param: `?uri=/v1/hooks/sendgrid` or `?uri=/v1/hooks/mailgun`)
 
-### Provider Integration
+## Provider Integration
 
 **Multi-Provider Strategy:**
 - Emails attempt delivery via SendGrid first, then Mailgun if SendGrid fails
@@ -67,19 +69,30 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - Also handles: `bounce`, `dropped`, `deferred`, `unsubscribe`, `spamreport`
 - See `pkg/emailhandler/hook.go` for webhook routing logic
 
-### Email Attachments
+## Email Attachments
 
 Attachments reference files via `AttachmentReferenceType`:
 - `recording`: Links to call recordings via `storage-manager` service
 - Uses `requesthandler` to fetch file URLs from storage service
 - Attachments fetched and attached before sending via provider
 
-### Configuration
+## Event Subscriptions
+
+This service does not subscribe to external events. There is no SubscribeHandler — provider delivery status is received via inbound `POST /v1/hooks` webhooks (proxied through `bin-hook-manager`).
+
+## Configuration
 
 Uses **pflag + Viper** pattern (see `cmd/email-manager/init.go`):
-- Command-line flags and environment variables (e.g., `--sendgrid_api_key` or `SENDGRID_API_KEY`)
-- Required: `database_dsn`, `rabbitmq_address`, `redis_address`, `prometheus_endpoint`
-- Provider-specific: `sendgrid_api_key`, `mailgun_api_key`
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `sendgrid_api_key` / `SENDGRID_API_KEY` | SendGrid API key | required |
+| `mailgun_api_key` / `MAILGUN_API_KEY` | Mailgun API key | required |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
 
 ## Common Commands
 

@@ -4,9 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-storage-manager is a Go microservice for managing file and media storage in a VoIP system. It handles file uploads, downloads, recordings, and compression operations using Google Cloud Storage (GCS). The service manages customer storage accounts with quota enforcement (10GB per customer) and integrates with other microservices via RabbitMQ.
+`bin-storage-manager` is a Go microservice for managing file and media storage in a VoIP system. It handles file uploads, downloads, recordings, and compression operations using Google Cloud Storage (GCS). The service manages customer storage accounts with quota enforcement (10 GB per customer) and integrates with other microservices via RabbitMQ.
 
-## Build and Test Commands
+**Key Concepts:**
+- **Storage Account**: Per-customer storage record with a 10 GB quota.
+- **File**: An object stored in GCS with reference type (`normal` or `recording`) and metadata.
+- **Compressfile**: A zip archive built on-demand from multiple files (typically all recordings with the same `reference_id`).
+- **Two GCS buckets**: `gcp_bucket_name_media` (persistent recordings/files) and `gcp_bucket_name_tmp` (transient compressed archives).
+- **Signed URLs**: Downloads use GCS signed URLs (default 24 h expiration) with either local-key signing or IAM Credentials API signing.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-storage-manager`.
+
+## Common Commands
 
 ```bash
 # Build the daemon
@@ -132,45 +141,106 @@ RabbitMQ Request → listenhandler (regex routing) → storagehandler → fileha
    - Uses GCS signed URLs with configurable expiration (default 24 hours)
    - Supports local signing (with private key) or IAM Credentials API
 
-### API Endpoints (via RabbitMQ RPC)
+## Request Routing
 
 The service exposes REST-like endpoints through RabbitMQ:
 
-**Accounts**:
-- `POST /v1/accounts` - Create storage account
-- `GET /v1/accounts?page_size=X&page_token=Y` - List accounts
-- `GET /v1/accounts/<id>` - Get account details
-- `DELETE /v1/accounts/<id>` - Delete account
+**Accounts API (`/v1/accounts/*`):**
+- `POST /v1/accounts` — Create storage account
+- `GET /v1/accounts?page_size=X&page_token=Y` — List accounts
+- `GET /v1/accounts/<id>` — Get account details
+- `DELETE /v1/accounts/<id>` — Delete account
 
-**Files**:
-- `POST /v1/files` - Create file record
-- `GET /v1/files?page_size=X&page_token=Y` - List files
-- `GET /v1/files/<id>` - Get file with download URL
-- `DELETE /v1/files/<id>` - Delete file
+**Files API (`/v1/files/*`):**
+- `POST /v1/files` — Create file record
+- `GET /v1/files?page_size=X&page_token=Y` — List files
+- `GET /v1/files/<id>` — Get file with download URL
+- `DELETE /v1/files/<id>` — Delete file
 
-**Recordings**:
-- `GET /v1/recordings/<reference_id>` - Get compressed recording (creates zip of all files with reference_id)
-- `DELETE /v1/recordings/<reference_id>` - Delete all files for a recording
+**Recordings API (`/v1/recordings/*`):**
+- `GET /v1/recordings/<reference_id>` — Get compressed recording (creates zip of all files with `reference_id`)
+- `DELETE /v1/recordings/<reference_id>` — Delete all files for a recording
 
-**Compress Files**:
-- `POST /v1/compressfiles` - Create compressed archive from multiple files
+**Compressfiles API (`/v1/compressfiles/*`):**
+- `POST /v1/compressfiles` — Create compressed archive from multiple files
 
-### Configuration
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.customer-manager.event**: `customer_deleted` → cascading deletion of all storage accounts and files for the deleted customer.
+
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared handlers (sockhandler, requesthandler, notifyhandler, databasehandler)
+- `monorepo/bin-customer-manager`: Customer event models for cascading deletes
+
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock):
+- Mock interfaces co-located with handlers (`mock_*.go`)
+- Table-driven tests with struct slices
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
+
+### Storage Quota
+Each customer account has a 10 GB storage limit (enforced in `accounthandler`).
+
+### Recording Compression
+Recordings sharing the same `reference_id` are automatically compressed into a single zip on download via `GET /v1/recordings/<reference_id>`. The zip lands in the tmp bucket; signed-URL expiration limits how long it stays accessible.
+
+### Cascading Deletions
+When `bin-customer-manager` publishes `customer_deleted`, all associated storage accounts and files are removed.
+
+### Cache Coordination
+File and account operations update both MySQL and Redis to keep cache consistent. Mutations invalidate the corresponding Redis keys.
+
+### Joonix Logging
+Uses logrus with the joonix formatter for Stackdriver-compatible JSON logs.
+
+## Configuration
 
 Environment variables / flags (via Viper binding):
-- `DATABASE_DSN` - MySQL connection string (format: `user:password@tcp(host:port)/dbname`)
-- `RABBITMQ_ADDRESS` - RabbitMQ connection (format: `amqp://user:pass@host:port`)
-- `REDIS_ADDRESS`, `REDIS_PASSWORD`, `REDIS_DATABASE` - Redis cache configuration
-- `GCP_PROJECT_ID` - Google Cloud project ID
-- `GCP_BUCKET_NAME_MEDIA` - GCS bucket for persistent media storage
-- `GCP_BUCKET_NAME_TMP` - GCS bucket for temporary files
-- `GOOGLE_APPLICATION_CREDENTIALS` - (optional) Path to service account JSON for local GCS authentication
-- `GOOGLE_SERVICE_ACCOUNT_EMAIL` - (optional) Service account email when not running on GCE
-- `PROMETHEUS_ENDPOINT`, `PROMETHEUS_LISTEN_ADDRESS` - Metrics endpoint configuration
 
-### Important Constraints
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
+| `gcp_project_id` / `GCP_PROJECT_ID` | Google Cloud project ID | required |
+| `gcp_bucket_name_media` / `GCP_BUCKET_NAME_MEDIA` | GCS bucket for persistent media | required |
+| `gcp_bucket_name_tmp` / `GCP_BUCKET_NAME_TMP` | GCS bucket for temporary files | required |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Path to service account JSON for local GCS auth | optional |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Service account email when not running on GCE | optional |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
 
-- **Storage Quota**: Each customer account has a 10GB storage limit (enforced in accounthandler:17)
-- **Recording Compression**: Recordings with the same reference_id are automatically compressed into a single zip file on download
-- **Cascading Deletions**: When a customer is deleted, all associated accounts and files are automatically removed
-- **Cache Coordination**: File and account operations update both MySQL and Redis for consistency
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `storage_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `storage_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)

@@ -15,6 +15,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **External Media**: WebRTC or external media streams integrated into calls/conferences
 - **Group Call**: Multi-party call group managing multiple simultaneous calls
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-call-manager`.
+
 ## Architecture
 
 ### Service Communication Pattern
@@ -54,7 +56,7 @@ cmd/call-manager/main.go
 - `pkg/subscribehandler/`: Event consumption and processing
 - `pkg/arieventhandler/`: Asterisk ARI event processing (channel/bridge state changes)
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 
@@ -116,7 +118,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 **Recovery API**:
 - `POST /v1/recovery` - Recover call state from Homer SIP capture
 
-### Event Subscriptions
+## Event Subscriptions
 
 SubscribeHandler subscribes to these RabbitMQ queues:
 - **asterisk.all.event**: All Asterisk ARI events (channel/bridge state changes, DTMF, playback, recording)
@@ -131,7 +133,7 @@ Processes events including:
 - **Playback Events**: PlaybackStarted, PlaybackFinished
 - **Contact Events**: ContactStatusChange (SIP registration changes)
 
-### Configuration
+## Configuration
 
 Uses **Viper + pflag** pattern (see `cmd/call-manager/init.go:47-180`):
 - Command-line flags and environment variables (e.g., `--rabbitmq_address` or `RABBITMQ_ADDRESS`)

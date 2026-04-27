@@ -4,14 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Database schema management for VoIPBin using Alembic migrations. This repository manages two separate database schemas:
+`bin-dbscheme-manager` is the canonical home for database schema management in VoIPbin using Alembic migrations. This repository manages two separate database schemas:
 
-- **bin-manager** - VoIPBin core database (`voipbin` database)
-- **asterisk_config** - Asterisk-related database (`asterisk` database)
+- **bin-manager** — VoIPbin core database (`voipbin` database)
+- **asterisk_config** — Asterisk-related database (`asterisk` database)
 
 Each directory maintains its own Alembic migration history with separate `alembic.ini` configurations and `versions/` directories.
 
-## Database Architecture
+**Key Concepts:**
+- **Two independent migration streams** — `bin-manager/main/versions/` and `asterisk_config/config/versions/`. Never mix them.
+- **`alembic revision` is the only safe way to create migration files** — handpicked revision IDs collide.
+- **VPN required for production migrations** — staging and production database access is gated by VPN.
+- **Schema dumps baked into Docker image** — the production image has migrations applied during build, not at runtime.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, RST sync, the general "Database via Alembic only" rule) live in the root [CLAUDE.md](../CLAUDE.md). This file is the authoritative reference for Alembic-specific procedures.
+
+## Architecture
+
+### Database Architecture
 
 **Two Independent Migration Streams:**
 - `bin-manager/` → manages `voipbin` MySQL database
@@ -178,10 +188,49 @@ alembic -c alembic.ini revision -m "ai_aicalls add column current_member_id"
 2. Add your SQL to the `upgrade()` and `downgrade()` functions
 3. Verify with `alembic -c alembic.ini heads` — should show exactly one head
 
+## Request Routing
+
+N/A — schema-management tool, not a runtime service. No `cmd/` entrypoint, no listen queue.
+
+## Event Subscriptions
+
+N/A — runs as a Kubernetes Job, not a long-lived service. No SubscribeHandler.
+
+## Monorepo Context
+
+This repository is referenced by other services indirectly: every Go manager service that uses MySQL relies on the schema produced here. Changes to the schema do not require `replace` directives because there is no Go module dependency — the contract is the database itself.
+
+When adding a `db:` tag to a Go model, you MUST also create a corresponding Alembic migration here. Updating the schema in `scripts/database_scripts/table_*.sql` (used in tests) without a migration breaks production.
+
+## Testing Patterns
+
+- Migrations are validated against a temporary local MariaDB during the Docker build (see "Docker Build Process" above). If a migration is malformed or conflicts, the Docker build fails.
+- Verify locally with `alembic -c alembic.ini heads` — expect exactly one head per migration stream.
+- Run `alembic -c alembic.ini upgrade head` against a throwaway local database before pushing to confirm the migration applies cleanly.
+
+## Key Implementation Details
+
+### Migration File Generation
+ALWAYS use `alembic -c alembic.ini revision -m "<message>"` to generate migration files. Hand-picked revision IDs collide with existing migrations. See "CRITICAL: Never Manually Create Migration Files" above for the full rationale.
+
+### Collation Compatibility Patches
+The Docker build exports schema dumps with collation patches (`utf8mb4_uca1400_ai_ci` → `utf8mb4_general_ci`) to keep dumps importable by MySQL 8.0.
+
+### Two-Database Discipline
+Always work within the appropriate subdirectory (`bin-manager/` or `asterisk_config/`) when running Alembic commands. Each directory has its own independent migration chain — never mix them. The `-c alembic.ini` flag is required for all Alembic commands since the config file is in the subdirectory.
+
+## Configuration
+
+Configuration lives in the per-subdirectory `alembic.ini` files. Both files are gitignored — copy from `alembic.ini.sample` and set `sqlalchemy.url` to your database connection string. There are no environment-variable runtime configs because this is a schema tool, not a service.
+
+## Prometheus Metrics
+
+N/A — runs as a Kubernetes Job and exits after completing migrations. No metrics surface.
+
 ## Important Notes
 
 - Always work within the appropriate subdirectory (`bin-manager/` or `asterisk_config/`) when running Alembic commands
-- Each directory has its own independent migration chain - never mix them
+- Each directory has its own independent migration chain — never mix them
 - The `-c alembic.ini` flag is required for all Alembic commands since the config file is in the subdirectory
 - Migration files should include both `upgrade()` and `downgrade()` functions for rollback capability
 - VPN connection is mandatory for running migrations against remote databases

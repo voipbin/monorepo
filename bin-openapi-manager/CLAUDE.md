@@ -11,6 +11,8 @@ This is the `bin-openapi-manager` service, part of the VoIPbin monorepo. It serv
 - Generates Go type definitions and models used by other services for type safety and consistency
 - Provides a modular structure for organizing API paths across multiple manager services
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-openapi-manager`.
+
 ## Architecture
 
 ### OpenAPI Structure
@@ -114,6 +116,14 @@ go mod vendor
 go get -u ./...
 go mod tidy
 ```
+
+## Request Routing
+
+N/A — schema-only library, not a runtime service. No `cmd/` entrypoint, no listen queue.
+
+## Event Subscriptions
+
+N/A — schema-only library, not a runtime service. No SubscribeHandler.
 
 ## Monorepo Context
 
@@ -449,6 +459,23 @@ externalDocs:
 ```
 
 API is documented at: https://api.voipbin.net/docs/
+
+## Testing Patterns
+
+Tests are minimal — this repository contains generated code only. Validation is done via:
+- `oapi-codegen` validating the spec on `go generate ./...`
+- Downstream consumers (`bin-api-manager` and other services) failing to compile if generated types break their code
+- Manual smoke testing of the generated client/server code from `bin-api-manager`
+
+There is no co-located unit test suite; verification happens cross-service after a regen.
+
+## Configuration
+
+N/A — schema-only library, not a runtime service. No environment variables or flags.
+
+## Prometheus Metrics
+
+N/A — schema-only library, no runtime metrics surface.
 
 ## Dependencies
 

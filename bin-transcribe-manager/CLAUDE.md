@@ -4,39 +4,39 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-transcribe-manager is a speech-to-text service that processes real-time audio transcription for VoIP calls and conferences. It integrates with both Google Cloud Speech-to-Text and AWS Transcribe services, using RabbitMQ for messaging and Redis for caching.
+`bin-transcribe-manager` is a speech-to-text service that processes real-time audio transcription for VoIP calls and conferences. It integrates with both Google Cloud Speech-to-Text and AWS Transcribe, using RabbitMQ for messaging and Redis for caching.
 
-## Key Architecture Concepts
+**Key Concepts:**
+- **Transcribe**: A transcription session with reference to a call/conference/recording, language (BCP47), direction (in/out/both), and status (`progressing`/`done`).
+- **Streaming**: An active audio stream connection with provider-specific client configuration; sessions live in memory keyed by UUID and are anchored to one pod.
+- **Transcript**: An individual transcribed text segment with timestamps and confidence scores.
+- **Per-pod queue routing**: Operations targeting an active streaming session are routed via the per-pod queue convention so they reach the pod owning the in-memory state.
+- **Dual provider support**: GCP (`speech.Client`, LINEAR16 8 kHz) and AWS (`transcribestreaming.Client`, PCM 8 kHz). Per-session selection.
 
-### Monorepo Context
-This service is part of a larger monorepo structure (`monorepo/bin-transcribe-manager`). Dependencies use local replace directives in `go.mod` (e.g., `replace monorepo/bin-common-handler => ../bin-common-handler`). When working with shared code, be aware that changes may affect multiple services.
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-transcribe-manager`.
 
-### Message-Based Architecture
-The service operates on a request/response pattern using RabbitMQ queues:
-- **Listen queues**: `bin-manager.transcribe-manager.request` (shared), `bin-manager.transcribe-manager-<uuid>.request` (instance-specific)
-- **Event queue**: `bin-manager.transcribe-manager.event` (outbound notifications)
-- **Subscribe queues**: Listens to `bin-manager.call-manager.event` and `bin-manager.customer-manager.event` for lifecycle events
+## Architecture
 
-### Three Core Handlers
-1. **ListenHandler** (`pkg/listenhandler`): Processes REST-style API requests via RabbitMQ. Routes requests based on URL patterns (e.g., `/v1/transcribes`, `/v1/transcripts`)
-2. **SubscribeHandler** (`pkg/subscribehandler`): Listens to events from other services (call hangups, customer deletions) to trigger cleanup
-3. **StreamingHandler** (`pkg/streaminghandler`): Manages real-time audio streaming connections via WebSocket transport. Dials out to Asterisk's chan_websocket endpoint per-session. Maintains active streaming sessions in memory with mutex-protected map
+### Service Communication Pattern
 
-### Dual STT Provider Support
-The service supports both Google Cloud Platform and AWS transcription:
-- GCP: Uses `speech.Client` with LINEAR16 encoding at 8kHz
-- AWS: Uses `transcribestreaming.Client` with PCM encoding at 8kHz
-- Configuration is per-streaming session based on customer preferences or language requirements
+This service uses **RabbitMQ for RPC-style communication**:
+- **ListenHandler** (`pkg/listenhandler/`): Consumes from two queues:
+  - `bin-manager.transcribe-manager.request` (shared) — RPC requests that don't need to reach a specific pod (`POST /v1/transcribes`, `GET /v1/transcribes/<id>`).
+  - `bin-manager.transcribe-manager.request.<host_id>` (volatile, per-pod) — operations targeting an in-memory streaming session.
+- **SubscribeHandler** (`pkg/subscribehandler/`): Consumes events from `bin-manager.call-manager.event` and `bin-manager.customer-manager.event` for lifecycle cleanup.
+- **StreamingHandler** (`pkg/streaminghandler/`): Manages real-time audio streaming connections via WebSocket transport. Dials out to Asterisk's `chan_websocket` endpoint per session. Maintains active streaming sessions in memory with a mutex-protected map.
+- **NotifyHandler**: Publishes events to `bin-manager.transcribe-manager.event`.
 
-### Data Models
-- **Transcribe** (`models/transcribe`): Represents a transcription session with reference to call/conference/recording, language (BCP47), direction (in/out/both), and status (progressing/done)
-- **Streaming** (`models/streaming`): Represents an active audio stream connection with provider-specific client configuration
-- **Transcript** (`models/transcript`): Individual transcribed text segments with timestamps and confidence scores
+### Per-pod queue routing
+
+Like `bin-pipecat-manager`, this service uses the per-pod RabbitMQ queue convention. The `HostID` is `POD_IP` from the Kubernetes Downward API and is persisted on the streaming session so consumer services can route follow-up RPCs.
+
+See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the canonical pattern (queue naming, identity source, limitations including Calico POD_IP recycle).
 
 ### Database Layer
 `pkg/dbhandler` abstracts database operations with a consistent interface. Uses both MySQL (via `database/sql`) and Redis cache. Always uses context for cancellation support.
 
-## Common Development Commands
+## Common Commands
 
 ### Building
 ```bash
@@ -118,50 +118,113 @@ go generate ./...
 cd pkg/streaminghandler && go generate
 ```
 
-## Working with the Codebase
+## Request Routing
 
-### Configuration via Environment Variables
-The service uses Cobra and Viper for configuration (see `internal/config/main.go`). Key environment variables:
-- `DATABASE_DSN`: MySQL connection string
-- `REDIS_ADDRESS`, `REDIS_DATABASE`, `REDIS_PASSWORD`: Redis configuration
-- `RABBITMQ_ADDRESS`: RabbitMQ connection string
-- `AWS_ACCESS_KEY`, `AWS_SECRET_KEY`: AWS credentials for Transcribe (optional if GCP configured)
-All configuration can also be provided via CLI flags. Run `transcribe-manager --help` for details.
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
 
-**STT Provider Requirements:**
-- At least one STT provider must be configured (GCP or AWS)
-- GCP: Uses Application Default Credentials (ADC) - can be from service account key, gcloud CLI, GKE metadata server, etc.
-- AWS: Requires both `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables
-- Default provider order is hard-coded as GCP → AWS (no env var needed)
-- At startup, all providers with valid credentials are initialized; at least one must be available
-- Per-request provider selection: callers can pass `provider` ("gcp" or "aws") to try a specific provider first, with fallback to the default order
+**Transcribes API (`/v1/transcribes/*`):**
+- `POST /v1/transcribes` — Start a transcription session. Served on the **shared** queue.
+- `GET /v1/transcribes?<filters>` — List transcriptions. Served on the **shared** queue.
+- `GET /v1/transcribes/<uuid>` — Get a transcription session. Served on the **shared** queue.
+- `POST /v1/transcribes/<uuid>/stop` — Stop a session. Served on the **per-pod** queue (operates on in-memory streaming state).
+- `DELETE /v1/transcribes/<uuid>` — Delete a session.
 
-**Configuration Pattern:**
-Uses singleton pattern with `config.Get()` for thread-safe access. Configuration is loaded once at startup in the Cobra `PersistentPreRunE` hook.
+**Transcripts API (`/v1/transcripts/*`):**
+- `GET /v1/transcripts?<filters>` — List transcript segments
+- `GET /v1/transcripts/<uuid>` — Get a transcript segment
+
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.call-manager.event**: `call_hangup` — finalizes any associated transcription session (`EventCMCallHangup`).
+- **bin-manager.customer-manager.event**: `customer_deleted` — cascading cleanup of the customer's transcribes (`EventCUCustomerDeleted`).
+
+## Monorepo Context
+
+This service is part of a larger monorepo. Dependencies use local `replace` directives in `go.mod` (e.g., `replace monorepo/bin-common-handler => ../bin-common-handler`). Key local dependencies:
+- `monorepo/bin-common-handler`: Shared utilities (sockhandler, requesthandler, notifyhandler)
+- `monorepo/bin-call-manager`: External media models for streaming setup
+
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+- Tests use `go.uber.org/mock` for mocking interfaces
+- Database tests may require test database setup (see `scripts/database_scripts_test/`)
+- Mock files follow `mock_*.go` in the same package as the interface
+- Use table-driven tests for multiple scenarios; always test error paths and edge cases (nil contexts, invalid UUIDs, etc.)
+- **Test struct initialization**: Use explicit field names — `{name: "test", input: "value", expectedRes: result}`, not positional.
+- **Test function comments**: Test names should be self-documenting. Use inline comments only where behavior is non-obvious.
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {name: "success case", input: input1, mockSetup: setupMock1, expectRes: expected1, expectErr: false},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
+
+### STT Provider Selection
+At startup, all providers with valid credentials are initialized; at least one must be available. Default order: `gcp` → `aws`. Callers may pass `provider` ("gcp" or "aws") to try a specific provider first, with fallback to the default order.
+
+### Streaming Audio Handling
+The streaming handler maintains active connections in `mapStreaming` (mutex-protected via `muSteaming`):
+- Always lock/unlock when accessing the map
+- Implement proper cleanup in `Stop()` to prevent leaks (WebSocket close + external media stop)
+- Use context cancellation for graceful shutdown
+- WebSocket transport delivers raw 8 kHz, 16-bit mono signed linear PCM (slin) binary frames
+- Service dials out to Asterisk via `MediaURI` returned from `ExternalMediaStart` (connection type `server`, transport `websocket`, encapsulation `none`)
+
+### Language Codes
+Must be valid BCP47 format (e.g., `en-US`, `ko-KR`).
+
+### Status Transitions
+Only allow valid state transitions — see `models/transcribe/transcribe.go:IsUpdatableStatus`.
 
 ### Adding New Transcribe Operations
-When adding new transcribe-related endpoints:
 1. Add URL pattern regex to `pkg/listenhandler/main.go`
 2. Implement handler method in `pkg/listenhandler/v1_transcribes.go`
 3. Add business logic to `pkg/transcribehandler/transcribe.go`
 4. Update database methods in `pkg/dbhandler/transcribe.go` if persistence needed
 5. Send notifications via `notifyhandler` for state changes
 
-### Working with Streaming Audio
-The streaming handler maintains active connections in `mapStreaming` (mutex-protected). When modifying streaming logic:
-- Always lock/unlock `muSteaming` when accessing the map
-- Implement proper cleanup in Stop() to prevent resource leaks (WebSocket close + external media stop)
-- Use context cancellation for graceful shutdown
-- WebSocket transport delivers raw 8kHz, 16-bit mono signed linear PCM (slin) binary frames
-- Service dials out to Asterisk via `MediaURI` returned from ExternalMediaStart (connectionType: "server", transport: "websocket", encapsulation: "none")
+## Configuration
 
-### Event-Driven Cleanup
-Subscribe handler methods (e.g., `EventCMCallHangup`, `EventCUCustomerDeleted`) ensure resources are cleaned up when parent entities are deleted. When adding new reference types, implement corresponding event handlers.
+Service uses Cobra and Viper (see `internal/config/main.go`). Configuration uses singleton pattern with `config.Get()` for thread-safe access; loaded once in the Cobra `PersistentPreRunE` hook.
 
-### Prometheus Metrics
-Metrics are registered in handler init() functions:
-- `transcribe_create_total`: Counter for transcription creation by type
-- `receive_request_process_time`: Histogram for request processing latency
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
+| `aws_access_key` / `AWS_ACCESS_KEY` | AWS Transcribe credentials | optional (if GCP configured) |
+| `aws_secret_key` / `AWS_SECRET_KEY` | AWS Transcribe credentials | optional (if GCP configured) |
+| `POD_IP` | **Required.** Used as `HostID` for per-pod queue routing. Set via K8s Downward API (`status.podIP`). | required |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+GCP authentication uses Application Default Credentials (service account key, `gcloud` CLI, GKE metadata server). At least one STT provider (GCP or AWS) must be configured.
+
+## Prometheus Metrics
+
+Metrics are registered in handler `init()` functions:
+- `transcribe_create_total` — counter for transcription creation (label: `type`)
+- `receive_request_process_time` — histogram for request processing latency
 
 ## CI/CD Pipeline
 
@@ -170,25 +233,3 @@ The GitLab CI pipeline (`.gitlab-ci.yml`) has stages:
 2. **test**: Run golint, go vet, and tests with coverage
 3. **build**: Build Docker image and push to registry
 4. **release**: Deploy to Kubernetes using kustomize (manual trigger)
-
-## Testing Considerations
-
-- Tests use `go.uber.org/mock` for mocking interfaces
-- Database tests may require test database setup (see `scripts/database_scripts_test/`)
-- Mock files follow pattern `mock_*.go` in same package as interface
-- Use table-driven tests for multiple scenarios
-- Always test error paths and edge cases (nil contexts, invalid UUIDs, etc.)
-- **Test struct initialization**: Always use explicit field names in test case structs
-  - Good: `{name: "test", input: "value", expectedRes: result}`
-  - Bad: `{"test", "value", result}`
-- **Test function comments**: Do not add explanatory comments at the top of test functions
-  - Test names should be self-documenting
-  - Use inline comments only where code behavior is non-obvious
-
-## Important Constraints
-
-- **Language codes**: Must be valid BCP47 format (e.g., "en-US", "ko-KR")
-- **Status transitions**: Only allow valid state transitions (see `models/transcribe/transcribe.go:IsUpdatableStatus`)
-- **UUID validation**: All IDs must be valid UUIDs; use `uuid.FromString()` with error checking
-- **Concurrency**: Streaming map requires mutex protection; database operations use transactions where needed
-- **Graceful shutdown**: Use signal handlers and context cancellation to prevent data loss

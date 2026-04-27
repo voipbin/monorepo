@@ -4,7 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-The hook-manager is a webhook gateway service that receives external webhook messages and forwards them to internal VoIPBIN services via RabbitMQ. It acts as a public-facing HTTPS endpoint that routes incoming webhooks to appropriate internal microservices.
+`bin-hook-manager` is a webhook gateway service that receives external webhook messages and forwards them to internal VoIPbin services via RabbitMQ. It acts as a public-facing HTTPS endpoint that routes incoming webhooks to appropriate internal microservices.
+
+**Key Concepts:**
+- **Public-facing HTTPS gateway**: Runs on both ports 80 and 443 with SSL certificates decoded from base64 environment variables.
+- **Thin proxy**: No business logic; transforms inbound HTTP webhook payloads into RabbitMQ messages forwarded to the right internal service.
+- **Routes by path**: URL path (e.g., `/v1.0/emails`, `/v1.0/messages`, `/v1.0/conversation`) determines the destination service.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-hook-manager`.
 
 ## Architecture
 
@@ -48,7 +55,7 @@ This service imports several sibling modules via `replace` directives in go.mod:
 
 When working with shared code, remember that changes to bin-common-handler affect multiple services.
 
-## Development Commands
+## Common Commands
 
 ### Building
 ```bash
@@ -119,6 +126,21 @@ The service runs on both HTTP (:80) and HTTPS (:443) simultaneously. SSL certifi
 - `POST /v1.0/conversation` → forwards to conversation-manager
 - `GET /ping` → health check endpoint
 
+## Request Routing
+
+Unlike most services in the monorepo, `bin-hook-manager` exposes its API over HTTP/HTTPS (Gin), not RabbitMQ RPC. There is no listenhandler. Endpoints are listed under "Webhook Endpoints" above.
+
+## Event Subscriptions
+
+This service does not subscribe to RabbitMQ events. There is no SubscribeHandler — it only publishes messages to other services.
+
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared utilities (RabbitMQ via `requesthandler`, models)
+
+Always run `go mod vendor` after changing dependencies.
+
 ## Testing Patterns
 
 Tests use gomock-generated mocks of ServiceHandler interface:
@@ -126,9 +148,29 @@ Tests use gomock-generated mocks of ServiceHandler interface:
 - Tests verify that incoming HTTP requests correctly call service handler methods
 - Example pattern in `api/v1.0/emails/emails_test.go`
 
-## Important Notes
+## Key Implementation Details
 
-- The service initializes SSL certificates by decoding base64 strings to files in `/tmp/` - ensure proper permissions in containerized environments
-- Prometheus metrics are exposed on port 2112 at `/metrics` by default
-- All endpoints use CORS middleware allowing all origins (`AllowOrigins: ["*"]`)
-- The service uses structured logging with logrus + joonix formatter for Stackdriver compatibility
+### SSL Certificate Bootstrapping
+Certificates are passed in base64-encoded form via `SSL_CERT_BASE64` and `SSL_PRIVKEY_BASE64`, decoded at startup, and written to `/tmp/`. Ensure proper file permissions in containerized environments.
+
+### CORS
+All endpoints use CORS middleware allowing all origins (`AllowOrigins: ["*"]`) — appropriate because this is a public webhook receiver.
+
+### Logging
+The service uses structured logging with logrus + joonix formatter for Stackdriver compatibility.
+
+## Configuration
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string (currently connected but not used) | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server (`amqp://guest:guest@localhost:5672`) | required |
+| `ssl_cert_base64` / `SSL_CERT_BASE64` | Base64-encoded SSL certificate | required |
+| `ssl_privkey_base64` / `SSL_PRIVKEY_BASE64` | Base64-encoded SSL private key | required |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `hook_manager_receive_request_process_time` — histogram of HTTP request processing time (labels: type, method)

@@ -4,9 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-contact-manager is a Go microservice for managing CRM-style contact records in a VoIP system. It provides CRUD operations for contacts with support for multiple phone numbers, emails, and tag assignments. It also supports contact lookup by phone number (E.164) or email for caller ID enrichment.
+`bin-contact-manager` is a Go microservice for managing CRM-style contact records in a VoIP system. It provides CRUD operations for contacts with support for multiple phone numbers, emails, and tag assignments. It also supports contact lookup by phone number (E.164) or email for caller ID enrichment.
 
-## Build and Test Commands
+**Key Concepts:**
+- **Contact**: A CRM record (first/last name, display name, company, job title, source, external_id, notes) belonging to a customer.
+- **PhoneNumber / Email**: 1:N child records on a contact for multi-number / multi-email support.
+- **Tag assignment**: Many-to-many link between contacts and tags managed in `bin-tag-manager`.
+- **Lookup**: O(1) lookup by E.164 phone or email for caller-ID enrichment in inbound flows.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-contact-manager`.
+
+## Common Commands
 
 ```bash
 # Build the service and CLI
@@ -112,63 +120,108 @@ Event Flow:
 RabbitMQ Event → subscribehandler → contacthandler → cleanup operations
 ```
 
-### Configuration
-
-Environment variables / flags:
-- `DATABASE_DSN` - MySQL connection string (default: `testid:testpassword@tcp(127.0.0.1:3306)/test`)
-- `RABBITMQ_ADDRESS` - RabbitMQ connection (default: `amqp://guest:guest@localhost:5672`)
-- `REDIS_ADDRESS` - Redis server address (default: `127.0.0.1:6379`)
-- `REDIS_PASSWORD` - Redis password (default: empty)
-- `REDIS_DATABASE` - Redis database index (default: `1`)
-- `PROMETHEUS_ENDPOINT` - Metrics endpoint path (default: `/metrics`)
-- `PROMETHEUS_LISTEN_ADDRESS` - Metrics server address (default: `:2112`)
-
-### API Endpoints (via RabbitMQ RPC)
+## Request Routing
 
 The service handles REST-like requests through RabbitMQ with URI pattern matching:
 
-**Contacts:**
-- `GET /v1/contacts?<params>` - List contacts with pagination and filters
-- `POST /v1/contacts` - Create new contact (with optional phone numbers, emails, tags)
-- `GET /v1/contacts/{contact-id}` - Get specific contact
-- `PUT /v1/contacts/{contact-id}` - Update contact basic fields
-- `DELETE /v1/contacts/{contact-id}` - Soft delete contact
-- `GET /v1/contacts/lookup?customer_id=<uuid>&phone_e164=<e164>` - Lookup by phone
-- `GET /v1/contacts/lookup?customer_id=<uuid>&email=<email>` - Lookup by email
+**Contacts API (`/v1/contacts/*`):**
+- `GET /v1/contacts?<params>` — List contacts with pagination and filters
+- `POST /v1/contacts` — Create new contact (with optional phone numbers, emails, tags)
+- `GET /v1/contacts/{contact-id}` — Get specific contact
+- `PUT /v1/contacts/{contact-id}` — Update contact basic fields
+- `DELETE /v1/contacts/{contact-id}` — Soft delete contact
+- `GET /v1/contacts/lookup?customer_id=<uuid>&phone_e164=<e164>` — Lookup by phone
+- `GET /v1/contacts/lookup?customer_id=<uuid>&email=<email>` — Lookup by email
 
-**Phone Numbers:**
-- `POST /v1/contacts/{contact-id}/phone-numbers` - Add phone number to contact
-- `DELETE /v1/contacts/{contact-id}/phone-numbers/{phone-id}` - Remove phone number
+**Phone Numbers API:**
+- `POST /v1/contacts/{contact-id}/phone-numbers` — Add phone number to contact
+- `DELETE /v1/contacts/{contact-id}/phone-numbers/{phone-id}` — Remove phone number
 
-**Emails:**
-- `POST /v1/contacts/{contact-id}/emails` - Add email to contact
-- `DELETE /v1/contacts/{contact-id}/emails/{email-id}` - Remove email
+**Emails API:**
+- `POST /v1/contacts/{contact-id}/emails` — Add email to contact
+- `DELETE /v1/contacts/{contact-id}/emails/{email-id}` — Remove email
 
-**Tags:**
-- `POST /v1/contacts/{contact-id}/tags` - Add tag to contact
-- `DELETE /v1/contacts/{contact-id}/tags/{tag-id}` - Remove tag from contact
+**Tags API:**
+- `POST /v1/contacts/{contact-id}/tags` — Add tag to contact
+- `DELETE /v1/contacts/{contact-id}/tags/{tag-id}` — Remove tag from contact
 
-### Event Types Published
+**Events Published:**
+- `contact_created` — when a new contact is created
+- `contact_updated` — when contact information is updated
+- `contact_deleted` — when a contact is deleted
 
-- `contact_created` - When a new contact is created
-- `contact_updated` - When contact information is updated
-- `contact_deleted` - When a contact is deleted
+## Event Subscriptions
 
-### Database Tables
+SubscribeHandler subscribes to:
+- **bin-manager.customer-manager.event**: `customer_deleted` → cascading deletion of contacts owned by the deleted customer.
 
-- `contact_manager_contact` - Main contact records
-- `contact_manager_phone_number` - Phone numbers linked to contacts
-- `contact_manager_email` - Email addresses linked to contacts
-- `contact_manager_tag_assignment` - Tag assignments linking contacts to tags
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared utilities (sockhandler, requesthandler, notifyhandler)
+- `monorepo/bin-customer-manager`: Customer event models (cascading deletes)
+- `monorepo/bin-tag-manager`: Tag definitions used for contact tagging
+
+Contacts can be mapped to `commonaddress.Address` for call routing — mapping is done by consuming services.
+
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock):
+- Mock interfaces co-located with handlers (`mock_*.go`)
+- Table-driven tests with struct slices
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
 
 ### Cache Strategy
+Contacts are cached in Redis for fast lookups; cache is invalidated on updates and deletions. Uses `pkg/cachehandler` for all Redis operations.
 
-- Contacts are cached in Redis for fast lookups
-- Cache is invalidated on updates and deletions
-- Uses `pkg/cachehandler` for all Redis operations
+### Database Tables
+- `contact_manager_contact` — Main contact records
+- `contact_manager_phone_number` — Phone numbers linked to contacts
+- `contact_manager_email` — Email addresses linked to contacts
+- `contact_manager_tag_assignment` — Tag assignments linking contacts to tags
 
-### Integration with Other Services
+### Soft Deletes
+Records use `tm_delete` timestamp (`"9999-01-01 00:00:00.000000"` for active records).
 
-- **bin-tag-manager**: Provides tag definitions used for contact tagging
-- **bin-customer-manager**: Provides customer context; contacts are cleaned up when customers are deleted
-- **commonaddress.Address**: Contacts can be mapped to addresses for call routing (mapping done by consuming services)
+## Configuration
+
+Environment variables / flags:
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | `testid:testpassword@tcp(127.0.0.1:3306)/test` |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | `amqp://guest:guest@localhost:5672` |
+| `redis_address` / `REDIS_ADDRESS` | Redis server | `127.0.0.1:6379` |
+| `redis_password` / `REDIS_PASSWORD` | Redis password | empty |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | `1` |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `contact_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `contact_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)

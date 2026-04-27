@@ -4,13 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-tts-manager is a Go microservice for text-to-speech (TTS) synthesis in a VoIP system. It provides two modes of operation:
-1. **Batch TTS**: Generate and store pre-recorded audio files from text
-2. **Real-time Streaming TTS**: Stream synthesized audio directly to live VoIP calls via AudioSocket protocol
+`bin-tts-manager` is a Go microservice for text-to-speech (TTS) synthesis in a VoIP system. It provides two modes of operation:
+
+1. **Batch TTS**: Generate and store pre-recorded audio files from text.
+2. **Real-time Streaming TTS**: Stream synthesized audio directly to live VoIP calls via the AudioSocket protocol.
 
 The service integrates with multiple TTS providers (Google Cloud TTS, AWS Polly, ElevenLabs) and manages audio delivery through both file storage and real-time streaming.
 
-## Build and Test Commands
+**Key Concepts:**
+- **Batch TTS file**: Audio file generated from text and stored on a shared volume; served by a Python HTTP sidecar on port 80.
+- **Streaming session**: Real-time WebSocket connection to ElevenLabs that pumps audio frames to Asterisk over AudioSocket on port 8080.
+- **Per-pod queue routing**: Streaming control RPCs are routed to the pod owning the in-memory session via `bin-manager.tts-manager.request.<HOSTNAME>`.
+- **Multi-container pod**: Go service + Python HTTP sidecar share `/shared-data` for file delivery.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-tts-manager`.
+
+## Common Commands
 
 ```bash
 # Build the tts-manager daemon
@@ -86,12 +95,14 @@ Asterisk Call → AudioSocket (TCP:8080) → streaminghandler → ElevenLabs Web
                                     RabbitMQ control messages (Start/Say/Stop)
 ```
 
-### Pod-specific Routing
+### Per-pod queue routing
 
-The service supports Kubernetes pod-specific routing:
-- Listens on both a shared queue (`bin-manager.tts-manager.request`) and a pod-specific queue (`bin-manager.tts-manager.request.{HOSTNAME}`)
-- Uses `POD_IP` environment variable to construct the streaming endpoint address
-- Enables direct routing to specific pods for streaming sessions
+This service uses the per-pod RabbitMQ queue convention. The `HostID` is sourced from `HOSTNAME` (rather than `POD_IP` as in `bin-pipecat-manager`):
+- Shared queue: `bin-manager.tts-manager.request` — batch TTS RPCs (`POST /v1/ttses`)
+- Per-pod queue: `bin-manager.tts-manager.request.<HOSTNAME>` — streaming session control (Start/Say/Stop)
+- `POD_IP` is used to advertise the AudioSocket endpoint that callers (Asterisk) dial into
+
+See [docs/patterns/per-pod-queues.md](../docs/patterns/per-pod-queues.md) for the canonical pattern (queue naming, identity source, limitations).
 
 ### TTS Provider Strategy
 
@@ -128,23 +139,99 @@ The streaminghandler maintains concurrent streaming sessions:
 - Vendor-specific handlers (ElevenLabs) manage WebSocket lifecycle
 - Message queuing for say operations (SayInit, SayAdd, SayStop, SayFinish)
 
-### Configuration
+## Request Routing
+
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
+
+**TTSes API (`/v1/ttses/*`):**
+- `POST /v1/ttses` — Generate batch TTS audio file (returns the audio URL). Served on the **shared** queue.
+- `GET /v1/ttses/<uuid>` — Get TTS metadata. Served on the **shared** queue.
+
+**Streaming control (`/v1/streamings/*`):**
+- `POST /v1/streamings/<uuid>/start` — Initialize streaming session.
+- `POST /v1/streamings/<uuid>/say` — Send a text chunk to the session.
+- `POST /v1/streamings/<uuid>/stop` — Stop the streaming session.
+
+Streaming control endpoints are served on the **per-pod** queue.
+
+In addition, the service listens on TCP port 8080 for the AudioSocket protocol — this is how Asterisk delivers media frames to the active streaming session.
+
+## Event Subscriptions
+
+This service does not subscribe to RabbitMQ events. There is no SubscribeHandler — TTS is invoked synchronously via RPC.
+
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared utilities (sockhandler, requesthandler, notifyhandler)
+- `monorepo/bin-call-manager`: External media models (for streaming setup)
+
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock):
+- Mock interfaces co-located with handlers (`mock_*.go`)
+- Table-driven tests with struct slices
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
+
+### Streaming Session Management
+The streaminghandler maintains concurrent streaming sessions:
+- Each connection gets its own goroutine with context cancellation
+- Keep-alive pings sent every 30 seconds via the AudioSocket protocol
+- Sessions identified by UUID extracted from the initial AudioSocket handshake
+- Vendor-specific handlers (ElevenLabs) manage WebSocket lifecycle
+- Message queuing for say operations (`SayInit`, `SayAdd`, `SayStop`, `SayFinish`)
+
+### Multi-Container Deployment
+Pod deployment runs two containers:
+1. **tts-manager** (Go): main service, listens on port 8080 (AudioSocket) and 2112 (metrics)
+2. **http-server** (Python): serves generated audio files from `/shared-data` on port 80
+
+The shared volume `/shared-data` is the bridge between containers — the Go service writes audio files; the Python HTTP server serves them.
+
+### GCP Regional Endpoint
+GCP TTS uses the regional endpoint `eu-texttospeech.googleapis.com:443` for lower latency in the EU region.
+
+## Configuration
 
 Environment variables / flags:
-- `RABBITMQ_ADDRESS` - RabbitMQ connection (default: `amqp://guest:guest@localhost:5672`)
-- `PROMETHEUS_ENDPOINT` - Metrics endpoint (default: `/metrics`)
-- `PROMETHEUS_LISTEN_ADDRESS` - Metrics server address (default: `:2112`)
-- `AWS_ACCESS_KEY`, `AWS_SECRET_KEY` - AWS Polly credentials
-- `ELEVENLABS_API_KEY` - ElevenLabs API key for streaming
-- `POD_IP` - Pod IP address for streaming endpoint (injected by k8s)
-- `HOSTNAME` - Pod hostname for queue routing (injected by k8s)
 
-GCP credentials are managed via Application Default Credentials (ADC) - typically through `GOOGLE_APPLICATION_CREDENTIALS` environment variable or workload identity.
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | `amqp://guest:guest@localhost:5672` |
+| `aws_access_key` / `AWS_ACCESS_KEY` | AWS Polly credentials | required if AWS used |
+| `aws_secret_key` / `AWS_SECRET_KEY` | AWS Polly credentials | required if AWS used |
+| `elevenlabs_api_key` / `ELEVENLABS_API_KEY` | ElevenLabs API key for streaming | required for streaming |
+| `POD_IP` | **Required.** Used to advertise the AudioSocket endpoint. Injected by k8s. | required |
+| `HOSTNAME` | **Required.** Used as `HostID` for per-pod queue routing. Injected by k8s. | required |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
 
-### Deployment Architecture
+GCP credentials are managed via Application Default Credentials (ADC) — typically through `GOOGLE_APPLICATION_CREDENTIALS` or workload identity.
 
-Multi-container pod deployment:
-1. **tts-manager** container: Main Go service listening on port 8080 (AudioSocket) and 2112 (metrics)
-2. **http-server** container: Python HTTP server on port 80 serving audio files from shared volume
+## Prometheus Metrics
 
-Shared volume `/shared-data` acts as a bridge for generated audio files between containers.
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `tts_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)

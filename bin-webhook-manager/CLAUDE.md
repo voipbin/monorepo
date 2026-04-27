@@ -4,9 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-webhook-manager is a Go microservice for managing webhook event notifications in a VoIP system. It receives webhook requests from other services and publishes webhook events for delivery to customer-defined endpoints.
+`bin-webhook-manager` is a Go microservice for managing webhook event notifications in a VoIP system. It receives webhook requests from other services and publishes webhook events for delivery to customer-defined endpoints.
 
-## Build and Test Commands
+**Key Concepts:**
+- **Webhook**: An outbound HTTP notification dispatched to a customer-configured URI when an event of interest occurs.
+- **Customer webhook config**: Each customer has a `webhook_method` and `webhook_uri` set in `bin-customer-manager` — this service reads that config to know where to send.
+- **Two delivery modes**: `SendWebhookToCustomer` uses the customer's saved config; `SendWebhookToURI` lets callers override the destination.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-webhook-manager`.
+
+## Common Commands
 
 ```bash
 # Build the webhook-manager daemon
@@ -109,12 +116,77 @@ The service supports two webhook delivery patterns:
 
 Both methods publish `webhook_published` events to the event queue for asynchronous processing.
 
-### Configuration
+## Request Routing
 
-Environment variables / flags (all have defaults):
-- `DATABASE_DSN` - MySQL connection string (default: `testid:testpassword@tcp(127.0.0.1:3306)/test`)
-- `RABBITMQ_ADDRESS` - RabbitMQ connection (default: `amqp://guest:guest@localhost:5672`)
-- `REDIS_ADDRESS`, `REDIS_PASSWORD`, `REDIS_DATABASE` - Redis cache configuration
-- `PROMETHEUS_ENDPOINT`, `PROMETHEUS_LISTEN_ADDRESS` - Metrics endpoint (default: `/metrics` on `:2112`)
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
+
+**Webhooks API (`/v1/webhooks/*`):**
+- `POST /v1/webhooks/send-to-customer` — Look up the customer's saved webhook config and dispatch
+- `POST /v1/webhooks/send-to-uri` — Dispatch to a caller-specified URI/method
+
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.customer-manager.event**: `customer_updated`, `customer_deleted` — invalidates the local accounthandler cache so subsequent webhook dispatches see the new URI/method.
+
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared handlers (sockhandler, requesthandler, notifyhandler, databasehandler)
+- `monorepo/bin-customer-manager`: Customer event/account models for resolving webhook destinations
+
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock):
+- Mock interfaces co-located with the handler (`mock_*.go`)
+- Table-driven tests with struct slices
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
+
+### Account Cache Invalidation
+Customer webhook configs are cached in Redis via `pkg/accounthandler/`. The cache must be invalidated when `bin-customer-manager` publishes `customer_updated` or `customer_deleted` events, otherwise webhook dispatches will continue using the old URI/method.
+
+### Event Publishing
+Both delivery paths emit a `webhook_published` event to `bin-manager.webhook-manager.event` after queuing the dispatch. Downstream consumers can correlate these to the originating customer/event for analytics or retry coordination.
+
+## Configuration
 
 Configuration is handled via `spf13/viper` and `spf13/pflag`, supporting both command-line flags and environment variables with automatic env binding.
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | `testid:testpassword@tcp(127.0.0.1:3306)/test` |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | `amqp://guest:guest@localhost:5672` |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `webhook_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `webhook_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)

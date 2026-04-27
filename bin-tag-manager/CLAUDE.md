@@ -4,9 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-tag-manager is a Go microservice for managing customer tags in a VoIP system. It provides CRUD operations for tags and handles event-driven cascading deletions when customers are removed.
+`bin-tag-manager` is a Go microservice for managing customer tags in a VoIP system. It provides CRUD operations for tags and handles event-driven cascading deletions when customers are removed.
 
-## Build and Test Commands
+**Key Concepts:**
+- **Tag**: A customer-scoped label (name, optional detail) used by other services (e.g., `bin-contact-manager`, `bin-queue-manager`) to categorize records.
+- **Cascading deletes**: When a customer is deleted, all of that customer's tags are removed automatically.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-tag-manager`.
+
+## Common Commands
 
 ```bash
 # Build the service and CLI
@@ -107,35 +113,85 @@ Event Flow:
 RabbitMQ Event → subscribehandler → taghandler → cleanup operations
 ```
 
-### Configuration
-
-Environment variables / flags:
-- `DATABASE_DSN` - MySQL connection string (default: `testid:testpassword@tcp(127.0.0.1:3306)/test`)
-- `RABBITMQ_ADDRESS` - RabbitMQ connection (default: `amqp://guest:guest@localhost:5672`)
-- `REDIS_ADDRESS` - Redis server address (default: `127.0.0.1:6379`)
-- `REDIS_PASSWORD` - Redis password (default: empty)
-- `REDIS_DATABASE` - Redis database index (default: `1`)
-- `PROMETHEUS_ENDPOINT` - Metrics endpoint path (default: `/metrics`)
-- `PROMETHEUS_LISTEN_ADDRESS` - Metrics server address (default: `:2112`)
-
-### API Endpoints (via RabbitMQ RPC)
+## Request Routing
 
 The service handles REST-like requests through RabbitMQ with URI pattern matching:
 
-- `GET /v1/tags?<params>` - List tags with pagination
-- `POST /v1/tags` - Create new tag
-- `GET /v1/tags/{tag-id}` - Get specific tag
-- `PUT /v1/tags/{tag-id}` - Update tag
-- `DELETE /v1/tags/{tag-id}` - Delete tag
+**Tags API (`/v1/tags/*`):**
+- `GET /v1/tags?<params>` — List tags with pagination
+- `POST /v1/tags` — Create new tag
+- `GET /v1/tags/{tag-id}` — Get specific tag
+- `PUT /v1/tags/{tag-id}` — Update tag
+- `DELETE /v1/tags/{tag-id}` — Delete tag
 
-### Event Types Published
+**Events Published:**
+- `tag_created` — when a new tag is created
+- `tag_updated` — when tag information is updated
+- `tag_deleted` — when a tag is deleted
 
-- `tag_created` - When a new tag is created
-- `tag_updated` - When tag information is updated
-- `tag_deleted` - When a tag is deleted
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.customer-manager.event**: `customer_deleted` → cascading deletion of tags owned by the deleted customer.
+
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared utilities (sockhandler, requesthandler, notifyhandler)
+- `monorepo/bin-customer-manager`: Customer event models for cascading deletes
+
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock):
+- Mock interfaces co-located with handlers (`mock_*.go`)
+- Table-driven tests with struct slices
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
 
 ### Cache Strategy
+Tags are cached in Redis for fast lookups; cache is invalidated on updates and deletions. Uses `pkg/cachehandler` for all Redis operations.
 
-- Tags are cached in Redis for fast lookups
-- Cache is invalidated on updates and deletions
-- Uses `pkg/cachehandler` for all Redis operations
+### Soft Deletes
+Records use `tm_delete` timestamp (`"9999-01-01 00:00:00.000000"` for active records).
+
+## Configuration
+
+Environment variables / flags:
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | `testid:testpassword@tcp(127.0.0.1:3306)/test` |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | `amqp://guest:guest@localhost:5672` |
+| `redis_address` / `REDIS_ADDRESS` | Redis server | `127.0.0.1:6379` |
+| `redis_password` / `REDIS_PASSWORD` | Redis password | empty |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | `1` |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `tag_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `tag_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)

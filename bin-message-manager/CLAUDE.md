@@ -12,6 +12,8 @@ This is the `bin-message-manager` service, part of the VoIPbin monorepo. It hand
 - **Target**: Individual recipient with delivery status (queued/sent/delivered/failed)
 - **Hook**: Webhook endpoint receiving provider delivery status updates
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-message-manager`.
+
 ## Architecture
 
 ### Service Communication Pattern
@@ -44,7 +46,7 @@ cmd/message-manager/main.go
 - `pkg/requestexternal/`: HTTP clients for provider APIs (Telnyx, MessageBird)
 - `pkg/listenhandler/`: RabbitMQ RPC request routing (REST-like paths: `/v1/messages`, `/v1/hooks`)
 
-### Request Routing
+## Request Routing
 
 ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `POST /v1/messages` - Send message (checks billing balance, creates message, dispatches to provider)
@@ -53,7 +55,7 @@ ListenHandler routes requests using regex patterns matching REST-like URIs:
 - `DELETE /v1/messages/<uuid>` - Delete message
 - `POST /v1/hooks` - Process provider webhook (delivery status updates)
 
-### Provider Architecture
+## Provider Architecture
 
 Messages are sent asynchronously via goroutine after creation:
 1. Balance validation via `billing-manager` RPC call
@@ -72,12 +74,23 @@ Messages are sent asynchronously via goroutine after creation:
 - URI suffix determines provider (e.g., `/telnyx` → Telnyx webhook)
 - Payload parsed to extract delivery status and update message targets
 
-### Configuration
+## Event Subscriptions
+
+This service does not subscribe to external events. There is no SubscribeHandler — provider delivery status is received via inbound `POST /v1/hooks` webhooks.
+
+## Configuration
 
 Uses **Cobra + Viper** pattern (`cmd/message-manager/init.go`):
-- Command-line flags and environment variables (e.g., `--rabbitmq_address` or `RABBITMQ_ADDRESS`)
-- Required: `database_dsn`, `rabbitmq_address`, `redis_address`, `authtoken_messagebird`, `authtoken_telnyx`
-- Prometheus metrics endpoint configurable (default `:2112/metrics`)
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `authtoken_messagebird` / `AUTHTOKEN_MESSAGEBIRD` | MessageBird auth token | required |
+| `authtoken_telnyx` / `AUTHTOKEN_TELNYX` | Telnyx auth token | required |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
 
 ## Common Commands
 

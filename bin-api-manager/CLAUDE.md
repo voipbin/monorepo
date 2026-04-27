@@ -4,9 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-`bin-api-manager` is a RESTful API gateway for the VoIPBIN platform that handles authentication, routing, and API requests to various backend managers. It's part of a Go monorepo architecture and serves as the public-facing API for the entire VoIPBIN system.
+`bin-api-manager` is a RESTful API gateway for the VoIPbin platform that handles authentication, routing, and API requests to various backend managers. It is the public-facing entrypoint for the entire VoIPbin system.
 
-## Build & Development Commands
+**Key Concepts:**
+- **API gateway, not a manager**: Owns authentication and authorization but defers all business logic to backend manager services via RabbitMQ RPC.
+- **OpenAPI-driven**: Server code is generated from `bin-openapi-manager/openapi/openapi.yaml`. The OpenAPI spec is the single source of truth for the public contract.
+- **WebhookMessage pattern**: All external responses return the `WebhookMessage` form of internal models (defined in each service's `models/<entity>/webhook.go`) to avoid leaking internal fields. See [docs/patterns/webhook-message.md](../docs/patterns/webhook-message.md) for details.
+- **Two-level handler pattern**: Private helpers (e.g., `callGet`) fetch resources without permission checks; public methods (e.g., `CallGet`) call the helper, run `hasPermission`, and return the converted `WebhookMessage`.
+- **RST docs co-located**: User-facing developer docs (`docsdev/`) are owned by this service. Built HTML is committed to git and served from production.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-api-manager`.
+
+## Common Commands
 
 ### Prerequisites
 The project requires ZMQ libraries for messaging:
@@ -490,10 +499,14 @@ Runtime configuration via CLI flags (defined in `main.go`):
 - Middleware validates tokens on protected endpoints
 - Login endpoint: `/auth/login` generates JWT tokens
 
-### Testing Patterns
-- Mock generation using `go:generate` with `mockgen`
+## Testing Patterns
+
+- Mock generation using `go:generate` with `mockgen` (`gomock` / `go.uber.org/mock`)
 - Tests co-located with source files (`*_test.go`)
 - Mock files: `mock_*.go` in respective packages
+- Service handlers (`pkg/servicehandler/*`) use mocked `requesthandler` interfaces from `bin-common-handler` to assert RPC fan-out without real RabbitMQ
+- HTTP layer is generated from `bin-openapi-manager`'s OpenAPI spec via `oapi-codegen` (see `gens/openapi_server/gen.go`); tests target the service handlers, not the generated server bindings
+- Table-driven tests with struct slices are the dominant pattern; see [docs/conventions/testing.md](../docs/conventions/testing.md) for the canonical shape
 
 ## Authentication & Authorization
 
@@ -622,29 +635,6 @@ if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
 }
 ```
 
-## Git Workflow
-
-### Use Git Worktrees for Feature Development
-
-**CRITICAL: Never edit files directly in the main repository directory for feature work.**
-
-```bash
-# Create a worktree for your feature
-git worktree add ../worktrees/NOJIRA-feature-name -b NOJIRA-feature-name
-
-# Work in the worktree
-cd ../worktrees/NOJIRA-feature-name
-
-# When done, remove the worktree
-git worktree remove ../worktrees/NOJIRA-feature-name
-```
-
-**Why worktrees:**
-- Keeps main repository clean and always on `main` branch
-- Allows parallel work on multiple features
-- Easy to abandon work without affecting main workspace
-- Clear separation between exploration and implementation
-
 ## Common Workflows
 
 ### Adding a New API Endpoint
@@ -730,6 +720,89 @@ res, err := h.reqHandler.TimelineV1EventList(ctx, "call-manager", ...)
 
 ### Working with Database Changes
 Database operations go through `pkg/dbhandler/`. This wraps both MySQL and Redis caching. Don't bypass this abstraction.
+
+## Request Routing
+
+`bin-api-manager` exposes the public REST API. Endpoints are defined in `bin-openapi-manager/openapi/openapi.yaml`; server code is generated under `gens/openapi_server/`. Concrete handlers live in `server/` and delegate to `pkg/servicehandler/`.
+
+Top-level resource groups (each maps to a backend manager via RabbitMQ RPC):
+- `/v1.0/auth/*` — login, JWT issuance
+- `/v1.0/customer`, `/v1.0/customers/*` — customer profile (singular = self, plural = admin)
+- `/v1.0/agents/*`, `/v1.0/calls/*`, `/v1.0/conferences/*`, `/v1.0/flows/*`, `/v1.0/activeflows/*`
+- `/v1.0/recordings/*`, `/v1.0/transcribes/*`, `/v1.0/numbers/*`, `/v1.0/queues/*`
+- `/v1.0/conversations/*`, `/v1.0/messages/*`, `/v1.0/emails/*`
+- `/v1.0/billings/*`, `/v1.0/billing-accounts/*` — Admin only (CustomerAdmin)
+- `/v1.0/ais/*`, `/v1.0/aicalls/*`, `/v1.0/rags/*`
+- WebSocket endpoints: `/ws/*` (real-time event streaming)
+- Audio streaming endpoint on the audiosocket protocol (port 9000)
+
+See `bin-openapi-manager/openapi/openapi.yaml` for the authoritative endpoint list.
+
+## Event Subscriptions
+
+`bin-api-manager` consumes events from backend managers and re-emits them as customer-facing webhooks and WebSocket frames:
+- **Subscriber**: `pkg/subscribehandler/` — subscribes to event queues from call-manager, flow-manager, conversation-manager, message-manager, ai-manager, billing-manager, etc.
+- **WebSocket fan-out**: `pkg/websockhandler/` pushes events to authenticated WebSocket clients filtered by customer.
+- **Webhook delivery**: Events are forwarded to `bin-webhook-manager` for HTTP webhook delivery to customer endpoints.
+- **ZMQ pub/sub**: `pkg/zmqpubhandler/`, `pkg/zmqsubhandler/` for internal pub/sub events.
+
+## Monorepo Context
+
+`bin-api-manager` is the only service that depends on most of the monorepo. `go.mod` contains `replace` directives for ~20 sibling managers (call, flow, ai, storage, webhook, agent, billing, campaign, chat, conference, conversation, customer, email, hook, message, number, outdial, pipecat, queue, registrar, route, sentinel, storage, talk, tag, timeline, transcribe, transfer, tts, webhook).
+
+When models change in any backend service:
+1. Update the corresponding OpenAPI schema in `bin-openapi-manager/openapi/openapi.yaml` (compare against the backend service's `WebhookMessage` struct, not the internal model — see [docs/patterns/webhook-message.md](../docs/patterns/webhook-message.md)).
+2. Regenerate openapi types: `cd ../bin-openapi-manager && go generate ./...`
+3. Regenerate this service's server code: `cd ../bin-api-manager && go generate ./...`
+4. Run the verification workflow.
+
+**RST documentation lives here.** Updates to user-facing API behavior require updating `docsdev/source/*.rst` and rebuilding HTML — see [docs/workflows/special-cases.md](../docs/workflows/special-cases.md) for the full procedure.
+
+## Key Implementation Details
+
+### Two-Level Handler Pattern
+For every resource, define a private helper that fetches without permission checks, then a public method that calls the helper, runs `hasPermission`, and returns the `WebhookMessage`. See [docs/patterns/webhook-message.md](../docs/patterns/webhook-message.md) and the Authorization Check Pattern above.
+
+### OpenAPI-First Workflow
+Never modify api-manager handler code without first updating `bin-openapi-manager/openapi/openapi.yaml`. The generated types are the contract; hand-edited types drift and break clients.
+
+### WebhookMessage Conversion
+External responses MUST go through `.ConvertWebhookMessage()`. Returning the internal struct leaks fields like `PodID`, `Username`, `PermissionIDs`. RST struct docs (`*_struct_*.rst`) MUST match `WebhookMessage` fields, not the internal model.
+
+### Service Name Constants
+Use `commonoutline.ServiceName*` (from `bin-common-handler/models/outline/servicename.go`) instead of string literals. Compile-time checking prevents typos.
+
+### Audio Streaming
+Audio streaming uses the audiosocket protocol on port 9000 (see `pkg/streamhandler/`). Used by AI/Pipecat features.
+
+### SSL Certificates
+SSL certificates are passed as base64-encoded environment variables/flags (`-ssl_cert_base64`, `-ssl_private_base64`) and decoded at startup.
+
+## Configuration
+
+Runtime configuration via CLI flags / environment variables (defined in `cmd/api-manager/main.go`):
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `-dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `-rabbit_addr` / `RABBITMQ_ADDRESS` | RabbitMQ address | required |
+| `-redis_addr` / `REDIS_ADDRESS` | Redis address | required |
+| `-jwt_key` / `JWT_KEY` | JWT signing key | required |
+| `-gcp_project_id` / `GCP_PROJECT_ID` | GCP project for storage integration | optional |
+| `-gcp_bucket_name` / `GCP_BUCKET_NAME` | GCS bucket for media | optional |
+| `-ssl_cert_base64` / `SSL_CERT_BASE64` | Base64-encoded SSL certificate | optional |
+| `-ssl_private_base64` / `SSL_PRIVATE_BASE64` | Base64-encoded SSL private key | optional |
+| `-prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `-prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `api_manager_receive_request_process_time` — histogram of HTTP request processing time (labels: method, path)
+- `api_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)
+- `api_manager_websocket_connections` — gauge of active WebSocket connections
+
+This service also benefits from per-target circuit-breaker metrics that `bin-common-handler/pkg/requesthandler` registers under the `api_manager_*` namespace (see [docs/patterns/circuit-breaker.md](../docs/patterns/circuit-breaker.md)).
 
 ## Key Dependencies
 - **gin-gonic/gin**: HTTP router and middleware
