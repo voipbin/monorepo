@@ -24,7 +24,7 @@ Infrastructure Overview
     |  |   GKE Cluster          |    |   Cloud SQL (MySQL)   |         |
     |  |   (Kubernetes)         |    |   - Primary           |         |
     |  |                        |    |   - Read Replicas (3) |         |
-    |  |  30+ Microservices     |    +------------------------+         |
+    |  |  34 Microservices      |    +------------------------+         |
     |  |  2 replicas each       |                                       |
     |  +------------------------+    +------------------------+         |
     |                                |   Memorystore (Redis) |         |

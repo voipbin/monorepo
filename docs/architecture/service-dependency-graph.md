@@ -4,7 +4,7 @@
 
 ## Overview
 
-The monorepo contains 30+ services organized into layers:
+The monorepo contains 34 services organized into layers:
 - **Core Services** - Depended on by many services
 - **Utility Services** - Medium dependency count
 - **Leaf Services** - Consume but aren't consumed
@@ -193,7 +193,7 @@ asterisk-proxy                call-manager              flow-manager
 **Impact: ALL SERVICES**
 
 ```bash
-# Must update and test all 30 services
+# Must update and test all 34 services
 ls -d bin-*/ | xargs -I {} bash -c "cd '{}' && go mod tidy && go mod vendor && go test ./..."
 ```
 

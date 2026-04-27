@@ -50,7 +50,7 @@ VoIPBIN consists of three major architectural layers:
     |  +--------------+  +--------------+  +--------------+                |
     |  |Agent Manager |  | Billing Mgr  |  |Webhook Mgr   |                |
     |  +--------------+  +--------------+  +--------------+                |
-    |                    ... 30+ services                                  |
+    |                    ... 34 services                                   |
     +------------------------+---------------------------------------------+
                              |
                              v
@@ -82,7 +82,7 @@ The API Gateway (bin-api-manager) serves as the single entry point for all exter
 
 **2. Microservices Layer**
 
-VoIPBIN consists of 30+ specialized Go microservices, organized by domain:
+VoIPBIN consists of 34 specialized Go microservices, organized by domain:
 
 **Communication Services:**
 * bin-call-manager: Call lifecycle and routing
