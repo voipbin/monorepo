@@ -593,7 +593,7 @@ func Test_SendReferenceTypeCall(t *testing.T) {
 
 			aicall: &aicall.AIcall{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("71000001-0000-0000-0000-000000000001"),
+					ID:         uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000001"),
 					CustomerID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000010"),
 				},
 				ActiveflowID:  uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000020"),
