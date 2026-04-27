@@ -28,6 +28,8 @@ type Config struct {
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 	EngineKeyChatGPT        string // EngineKeyChatGPT is the API key for ChatGPT engine.
+
+	AIcallConversationIdleTimeoutHours int // Idle timeout (hours) after which a conversation-typed AIcall is treated as expired and a new one is created on the next inbound message.
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -53,6 +55,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
 	f.String("engine_key_chatgpt", "", "Engine key for chatgpt")
+	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -63,6 +66,8 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
 		"engine_key_chatgpt":        "ENGINE_KEY_CHATGPT",
+
+		"aicall_conversation_idle_timeout_hours": "AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -96,6 +101,8 @@ func LoadGlobalConfig() {
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
 			EngineKeyChatGPT:        viper.GetString("engine_key_chatgpt"),
+
+			AIcallConversationIdleTimeoutHours: viper.GetInt("aicall_conversation_idle_timeout_hours"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})
@@ -104,6 +111,13 @@ func LoadGlobalConfig() {
 func initLog() {
 	logrus.SetFormatter(joonix.NewFormatter())
 	logrus.SetLevel(logrus.DebugLevel)
+}
+
+// SetAIcallConversationIdleTimeoutHoursForTest overrides the idle timeout in
+// the global config without going through the Bootstrap+LoadGlobalConfig path.
+// USE ONLY FROM TESTS.
+func SetAIcallConversationIdleTimeoutHoursForTest(hours int) {
+	globalConfig.AIcallConversationIdleTimeoutHours = hours
 }
 
 // InitPrometheus initializes Prometheus metrics server.

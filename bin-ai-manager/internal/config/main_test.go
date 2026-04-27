@@ -22,14 +22,15 @@ func TestGet(t *testing.T) {
 			name: "returns_configured_values",
 
 			setupConfig: Config{
-				RabbitMQAddress:         "amqp://guest:guest@localhost:5672",
-				PrometheusEndpoint:      "/metrics",
-				PrometheusListenAddress: ":2112",
-				DatabaseDSN:             "user:pass@tcp(127.0.0.1:3306)/db",
-				RedisAddress:            "127.0.0.1:6379",
-				RedisPassword:           "secret",
-				RedisDatabase:           1,
-				EngineKeyChatGPT:        "sk-test-key",
+				RabbitMQAddress:                    "amqp://guest:guest@localhost:5672",
+				PrometheusEndpoint:                 "/metrics",
+				PrometheusListenAddress:            ":2112",
+				DatabaseDSN:                        "user:pass@tcp(127.0.0.1:3306)/db",
+				RedisAddress:                       "127.0.0.1:6379",
+				RedisPassword:                      "secret",
+				RedisDatabase:                      1,
+				EngineKeyChatGPT:                   "sk-test-key",
+				AIcallConversationIdleTimeoutHours: 48,
 			},
 		},
 	}
@@ -63,6 +64,9 @@ func TestGet(t *testing.T) {
 			}
 			if res.EngineKeyChatGPT != tt.setupConfig.EngineKeyChatGPT {
 				t.Errorf("Wrong EngineKeyChatGPT. expect: %s, got: %s", tt.setupConfig.EngineKeyChatGPT, res.EngineKeyChatGPT)
+			}
+			if res.AIcallConversationIdleTimeoutHours != tt.setupConfig.AIcallConversationIdleTimeoutHours {
+				t.Errorf("Wrong AIcallConversationIdleTimeoutHours. expect: %d, got: %d", tt.setupConfig.AIcallConversationIdleTimeoutHours, res.AIcallConversationIdleTimeoutHours)
 			}
 		})
 	}
@@ -123,6 +127,39 @@ func TestBootstrap(t *testing.T) {
 			}
 			if rootCmd.PersistentFlags().Lookup("engine_key_chatgpt") == nil {
 				t.Errorf("Expected engine_key_chatgpt flag to be registered")
+			}
+			flagAIcallIdle := rootCmd.PersistentFlags().Lookup("aicall_conversation_idle_timeout_hours")
+			if flagAIcallIdle == nil {
+				t.Errorf("Expected aicall_conversation_idle_timeout_hours flag to be registered")
+			} else if flagAIcallIdle.DefValue != "24" {
+				t.Errorf("Wrong aicall_conversation_idle_timeout_hours default. expect: 24, got: %s", flagAIcallIdle.DefValue)
+			}
+		})
+	}
+}
+
+func TestSetAIcallConversationIdleTimeoutHoursForTest(t *testing.T) {
+	tests := []struct {
+		name string
+
+		hours int
+	}{
+		{
+			name: "overrides_idle_timeout",
+
+			hours: 72,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			globalConfig = Config{}
+
+			SetAIcallConversationIdleTimeoutHoursForTest(tt.hours)
+
+			res := Get()
+			if res.AIcallConversationIdleTimeoutHours != tt.hours {
+				t.Errorf("Wrong AIcallConversationIdleTimeoutHours. expect: %d, got: %d", tt.hours, res.AIcallConversationIdleTimeoutHours)
 			}
 		})
 	}
