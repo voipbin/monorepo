@@ -27,8 +27,8 @@ This is the VoIPbin monorepo - a unified backend codebase for a cloud-native CPa
 
 **Key Documentation:**
 - **[Coding Conventions](docs/coding-conventions.md)** — Authoritative reference for all coding patterns and rules
-- **[Architecture Deep Dive](docs/architecture-deep-dive.md)** — Service categories, communication, deployment
-- **[Common Workflows](docs/common-workflows.md)** — Step-by-step guides for common tasks
+- **[Architecture Deep Dive](docs/architecture/architecture-deep-dive.md)** — Service categories, communication, deployment
+- **[Common Workflows](docs/workflows/common-workflows.md)** — Step-by-step guides for common tasks
 
 ## CRITICAL: Before Committing Changes
 
@@ -107,8 +107,8 @@ The full verification workflow consists of 5 steps that MUST all be run:
 **Changes to public-facing models:** Update OpenAPI schemas in bin-openapi-manager.
 
 **For complete workflows, troubleshooting, and detailed explanations, see:**
-- [verification-workflows.md](docs/verification-workflows.md) - Complete verification details
-- [special-cases.md](docs/special-cases.md) - bin-common-handler updates, OpenAPI sync
+- [verification-workflows.md](docs/workflows/verification-workflows.md) - Complete verification details
+- [special-cases.md](docs/workflows/special-cases.md) - bin-common-handler updates, OpenAPI sync
 
 ## Git Workflow
 
@@ -206,7 +206,7 @@ across the monorepo.
 6. Add narrative summary for significant changes
 7. Do NOT include "Co-Authored-By" lines in commit messages or PR descriptions
 
-**For extended examples, branch management, and merge rules, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
+**For extended examples, branch management, and merge rules, see [git-workflow-guide.md](docs/workflows/git-workflow-guide.md)**
 
 ### Branch Management
 
@@ -273,7 +273,7 @@ cd ~/gitvoipbin/monorepo && git pull origin main
 
 This keeps the main repository directory in sync with remote so new worktrees start from the latest code.
 
-**For detailed branch strategies and merge workflows, see [git-workflow-guide.md](docs/git-workflow-guide.md)**
+**For detailed branch strategies and merge workflows, see [git-workflow-guide.md](docs/workflows/git-workflow-guide.md)**
 
 ### Design & Implementation Workflow
 
@@ -307,7 +307,7 @@ This applies to: new features, architectural changes, multi-file modifications, 
 
 ## Build & Development
 
-**For complete build commands, testing patterns, code generation, and linting, see [development-guide.md](docs/development-guide.md)**
+**For complete build commands, testing patterns, code generation, and linting, see [development-guide.md](docs/workflows/development-guide.md)**
 
 Quick references:
 - Build: `cd bin-<service-name> && go build ./cmd/...`
@@ -332,11 +332,11 @@ Quick references:
 
 **Why:** Database changes are irreversible and require human authorization, testing, and VPN access.
 
-**For complete migration workflows, patterns, and troubleshooting, see [common-workflows.md#database-migrations-with-alembic](docs/common-workflows.md#database-migrations-with-alembic)**
+**For complete migration workflows, patterns, and troubleshooting, see [common-workflows.md#database-migrations-with-alembic](docs/workflows/common-workflows.md#database-migrations-with-alembic)**
 
 ## Architecture
 
-**For service categories, inter-service communication, configuration, and deployment, see [architecture-deep-dive.md](docs/architecture-deep-dive.md)**
+**For service categories, inter-service communication, configuration, and deployment, see [architecture-deep-dive.md](docs/architecture/architecture-deep-dive.md)**
 
 Key points:
 - 30+ Go microservices for VoIP, messaging, AI, and communication workflows
@@ -386,7 +386,7 @@ Returns: Billing + Account + Reference Resource (Don't include related resources
 
 ## Common Workflows
 
-**For complete workflows and examples, see [common-workflows.md](docs/common-workflows.md)**
+**For complete workflows and examples, see [common-workflows.md](docs/workflows/common-workflows.md)**
 
 Topics covered:
 - Adding a New API Endpoint
@@ -402,7 +402,7 @@ Topics covered:
 
 This covers: package structure, naming, imports, error handling, logging, models, database patterns, handler architecture, inter-service communication, API design, events, configuration, testing, metrics, and security.
 
-**For detailed standards and supplementary examples, see [code-quality-standards.md](docs/code-quality-standards.md)**
+**For detailed standards and supplementary examples, see [code-quality-standards.md](docs/reference/code-quality-standards.md)**
 
 The sections below contain CRITICAL rules that are duplicated here for high visibility. The conventions doc is the source of truth.
 
@@ -670,7 +670,7 @@ TalkManagerMedia:
 - Mismatched specs cause runtime errors or silent data loss
 - API documentation becomes incorrect
 
-**For complete gotcha explanations and troubleshooting, see [code-quality-standards.md#common-gotchas](docs/code-quality-standards.md#common-gotchas)**
+**For complete gotcha explanations and troubleshooting, see [code-quality-standards.md#common-gotchas](docs/reference/code-quality-standards.md#common-gotchas)**
 
 #### Feature Changes Require RST Documentation Updates
 
