@@ -201,7 +201,7 @@ func Test_recordingsIDGet_InvalidID(t *testing.T) {
 }
 
 // Test_recordingsIDGet_ServiceError exercises the servicehandler-failure path
-// through abortWithServiceError. The translator's substring fallback maps
+// through abortWithServiceError. The translator's sentinel match maps
 // "recording not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
 func Test_recordingsIDGet_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)

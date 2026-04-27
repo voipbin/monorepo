@@ -342,7 +342,7 @@ func Test_customerGET_MissingAuthIdentity(t *testing.T) {
 }
 
 // Test_customerGET_ServiceError exercises the servicehandler-failure path
-// through abortWithServiceError. The translator's substring fallback
+// through abortWithServiceError. The translator's sentinel match
 // maps "customer not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
 func Test_customerGET_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)

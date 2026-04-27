@@ -482,7 +482,7 @@ func Test_groupcallsIDGet_InvalidID(t *testing.T) {
 }
 
 // Test_groupcallsIDGet_ServiceError exercises the servicehandler-failure path
-// through abortWithServiceError. The translator's substring fallback maps
+// through abortWithServiceError. The translator's sentinel match maps
 // "groupcall not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
 func Test_groupcallsIDGet_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)

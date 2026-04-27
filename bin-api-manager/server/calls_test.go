@@ -1295,8 +1295,8 @@ func Test_callsIDGet_InvalidID(t *testing.T) {
 }
 
 // Test_callsIDGet_ServiceError exercises the servicehandler-failure path
-// through abortWithServiceError. The translator's substring fallback
-// maps "call not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
+// through abortWithServiceError. The translator's sentinel match maps
+// `serviceerrors.ErrNotFound` to NOT_FOUND / RESOURCE_NOT_FOUND.
 func Test_callsIDGet_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

@@ -667,7 +667,7 @@ func Test_customersIDMetadataPut_InvalidID(t *testing.T) {
 }
 
 // Test_customersIDMetadataPut_ServiceError exercises the servicehandler-failure
-// path through abortWithServiceError. The translator's substring fallback
+// path through abortWithServiceError. The translator's sentinel match
 // maps "permission denied" to PERMISSION_DENIED / PERMISSION_DENIED.
 func Test_customersIDMetadataPut_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -794,7 +794,7 @@ func Test_customersIDGet_InvalidID(t *testing.T) {
 
 // Test_customersIDGet_ServiceError exercises the servicehandler-failure path
 // through abortWithServiceError on GetCustomersId. The translator's
-// substring fallback maps "customer not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
+// sentinel match (`serviceerrors.ErrNotFound`) maps to NOT_FOUND / RESOURCE_NOT_FOUND.
 func Test_customersIDGet_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

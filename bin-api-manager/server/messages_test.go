@@ -394,7 +394,7 @@ func Test_messagesIDDelete_InvalidID(t *testing.T) {
 
 // Test_messagesPost_InsufficientBalance exercises the servicehandler-failure
 // path through abortWithServiceError. The translator's "insufficient"
-// substring fallback maps to PAYMENT_REQUIRED / INSUFFICIENT_BALANCE.
+// sentinel match (`serviceerrors.ErrInsufficientBalance`) maps to PAYMENT_REQUIRED / INSUFFICIENT_BALANCE.
 func Test_messagesPost_InsufficientBalance(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
