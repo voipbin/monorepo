@@ -220,10 +220,10 @@ storage-manager
 
 .. note::
 
-   ``STORAGE_ACCOUNT_NOT_FOUND`` and ``STORAGE_FILE_NOT_FOUND`` are reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reasons will be emitted directly once the storage-manager typed-error migration ships.
-   The admin-gated ``POST /storage-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via the standard ``"no permission"`` translator pattern. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
-   PR 13 added the agent-surface file endpoints (``/service_agents/files`` and ``/service_agents/files/{id}*``); these reuse ``STORAGE_FILE_NOT_FOUND`` for not-found semantics on agent-scoped reads, deletes, and downloads.
-   PR 15 added the remaining public file endpoints (``/storage_files``, ``/storage_files/{id}``, and ``/storage_files/{id}/file``) under the same ``STORAGE_FILE_NOT_FOUND`` semantics for not-found cases on the customer-scoped read, delete, and download surfaces.
+   ``ACCOUNT_NOT_FOUND`` and ``FILE_NOT_FOUND`` are emitted today by storage-manager (via ``cerrors.NotFound("storage-manager", ...)``) and surface end-to-end on Get-by-ID lookups for non-existent resources. For soft-deleted entries, the api-manager servicehandler intercepts via a post-fetch ``TMDelete`` check (``pkg/servicehandler/storage_file.go``) and re-emits ``serviceerrors.ErrNotFound``, which surfaces as the api-manager generic ``RESOURCE_NOT_FOUND`` — the typed ``FILE_NOT_FOUND`` is not reached on that path.
+   The admin-gated ``POST /storage-accounts`` endpoint returns **403 PERMISSION_DENIED** for non-admin callers via ``serviceerrors.ErrPermissionDenied``. The OpenAPI spec declares 403 on this path to reflect runtime behavior.
+   PR 13 added the agent-surface file endpoints (``/service_agents/files`` and ``/service_agents/files/{id}*``); these reuse ``FILE_NOT_FOUND`` for not-found semantics on agent-scoped reads, deletes, and downloads.
+   PR 15 added the remaining public file endpoints (``/storage_files``, ``/storage_files/{id}``, and ``/storage_files/{id}/file``) under the same ``FILE_NOT_FOUND`` semantics for not-found cases on the customer-scoped read, delete, and download surfaces.
 
 .. list-table::
    :header-rows: 1
@@ -232,10 +232,10 @@ storage-manager
    * - Reason
      - HTTP
      - Cause → Fix
-   * - ``STORAGE_ACCOUNT_NOT_FOUND``
+   * - ``ACCOUNT_NOT_FOUND``
      - 404
      - Storage account ID does not exist or belongs to another customer. Fired by ``GET /storage-accounts/{id}`` and ``DELETE /storage-accounts/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /storage-accounts`` list call.
-   * - ``STORAGE_FILE_NOT_FOUND``
+   * - ``FILE_NOT_FOUND``
      - 404
      - Storage file ID does not exist or belongs to another customer. Fired by ``GET /storage_files/{id}``, ``DELETE /storage_files/{id}``, ``GET /storage_files/{id}/file``, and the agent-surface counterparts ``GET /service_agents/files/{id}``, ``DELETE /service_agents/files/{id}``, and ``GET /service_agents/files/{id}/file``. **Fix:** Verify the ID was obtained from a recent ``GET /storage_files`` (admin) or ``GET /service_agents/files`` (agent) list call.
 
