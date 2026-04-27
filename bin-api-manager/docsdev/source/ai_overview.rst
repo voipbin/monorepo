@@ -419,6 +419,105 @@ VoIPBIN allows you to personalize the text-to-speech output by specifying a cust
 
 See how to set the variables :ref:`here <variable_overview>`.
 
+.. _ai-overview-conversation-ai:
+
+Using AI in Conversations (SMS / LINE)
+======================================
+
+VoIPBIN can run an AI agent inside a text conversation channel (SMS or LINE),
+not only inside voice calls. The plumbing is the same ``ai_talk`` flow action
+used for voice; the difference is the reference type the AIcall is bound to.
+
+.. note:: **AI Context**
+
+   * **Complexity:** Medium
+   * **Cost:** Chargeable (LLM token usage; no TTS/STT cost in chat mode)
+   * **Async:** Yes. The flow advances past ``ai_talk`` immediately; the AI's
+     reply is delivered asynchronously via the same channel as the inbound
+     message.
+
+Lifecycle
+---------
+
+* Each inbound message on a number with a ``message_flow`` triggers a fresh
+  per-message activeflow.
+* The activeflow's ``ai_talk`` action invokes ``bin-ai-manager`` with
+  ``reference_type = conversation`` and ``reference_id = conversation_id``.
+* ``bin-ai-manager`` reuses the existing AIcall for the conversation across
+  turns; a new one is created only when:
+
+  * The previous AIcall called the ``stop_service`` tool.
+  * The previous AIcall sat idle for more than
+    ``AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS`` (default 24).
+  * The previous AIcall was explicitly terminated.
+
+* The flow advances past ``ai_talk`` immediately and does not block on the
+  LLM. The AI's reply is delivered asynchronously by ``bin-ai-manager`` via
+  the same channel the inbound message used (SMS or LINE).
+
+.. note:: **AI Implementation Hint**
+
+   Because the per-message activeflow does not block on the LLM, do not chain
+   downstream actions in the message flow that depend on the AI's reply text
+   being available — they will run before the LLM responds. The reply is
+   delivered out-of-band via ``bin-message-manager``.
+
+Tool Availability for Conversation AI
+-------------------------------------
+
+The same tool registry is used for voice and conversation AI sessions today.
+Some voice-only tools may fail at execute time when invoked in a chat
+context (no live phone call exists for ``connect_call`` to operate on, etc.).
+A future release will whitelist conversation-safe tools at session start; for
+now, configure your AI's ``tool_names`` to include only chat-relevant tools.
+
+========================= ============== =========================================
+Tool                      Conversation   Notes
+========================= ============== =========================================
+``send_email``            Supported      Channel-agnostic
+------------------------- -------------- -----------------------------------------
+``send_message``          Supported      Channel-agnostic
+------------------------- -------------- -----------------------------------------
+``set_variables``         Supported      Flow context
+------------------------- -------------- -----------------------------------------
+``get_variables``         Supported      Flow context
+------------------------- -------------- -----------------------------------------
+``stop_service``          Supported      Ends the chat session
+------------------------- -------------- -----------------------------------------
+``get_aicall_messages``   Supported      Context-neutral
+------------------------- -------------- -----------------------------------------
+``search_knowledge``      Supported      Context-neutral
+------------------------- -------------- -----------------------------------------
+``connect_call``          Avoid          Requires a live phone call
+------------------------- -------------- -----------------------------------------
+``stop_media``            Avoid          No media playback in chat
+------------------------- -------------- -----------------------------------------
+``stop_flow``             Avoid          Per-message flow already short
+========================= ============== =========================================
+
+.. note:: **AI Implementation Hint**
+
+   When configuring an AI for use with conversation flows, prefer an explicit
+   ``tool_names`` allowlist (e.g., ``["send_email", "send_message",
+   "set_variables", "get_variables", "stop_service"]``) instead of
+   ``["all"]``. This avoids surprising failures from voice-only tools the LLM
+   may try to call.
+
+Concurrency and Reliability
+---------------------------
+
+* Multiple inbound messages on the same conversation interrupt the previous
+  pipecat session (best-effort) and start a new one. Only the response from
+  the most recent user message reaches the user; superseded responses are
+  dropped by ``bin-ai-manager``'s response guard, which compares
+  ``pipecatcall_id`` between the in-flight session and the LLM response.
+* ``bin-pipecat-manager`` pod restarts do not lose conversation context.
+  Message history is persisted in ``ai_messages`` and the next inbound
+  message picks up on a healthy pod via the shared queue.
+* If a stale or superseded LLM response arrives, it is silently discarded —
+  this is normal during rapid user back-and-forth and does not indicate a
+  fault.
+
 AI Summary
 ==========
 

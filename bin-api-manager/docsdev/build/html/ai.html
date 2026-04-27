@@ -662,6 +662,135 @@
 <p>See how to set the variables <a class="reference internal" href="variable_overview.html#variable-overview"><span class="std std-ref">here</span></a>.</p>
 </section>
 </section>
+<section id="using-ai-in-conversations-sms-line">
+<span id="ai-overview-conversation-ai"></span><h2>Using AI in Conversations (SMS / LINE)<a class="headerlink" href="#using-ai-in-conversations-sms-line" title="Link to this heading"></a></h2>
+<p>VoIPBIN can run an AI agent inside a text conversation channel (SMS or LINE),
+not only inside voice calls. The plumbing is the same <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> flow action
+used for voice; the difference is the reference type the AIcall is bound to.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<ul class="simple">
+<li><p><strong>Complexity:</strong> Medium</p></li>
+<li><p><strong>Cost:</strong> Chargeable (LLM token usage; no TTS/STT cost in chat mode)</p></li>
+<li><p><strong>Async:</strong> Yes. The flow advances past <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> immediately; the AI’s
+reply is delivered asynchronously via the same channel as the inbound
+message.</p></li>
+</ul>
+</div>
+<section id="lifecycle">
+<h3>Lifecycle<a class="headerlink" href="#lifecycle" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Each inbound message on a number with a <code class="docutils literal notranslate"><span class="pre">message_flow</span></code> triggers a fresh
+per-message activeflow.</p></li>
+<li><p>The activeflow’s <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> action invokes <code class="docutils literal notranslate"><span class="pre">bin-ai-manager</span></code> with
+<code class="docutils literal notranslate"><span class="pre">reference_type</span> <span class="pre">=</span> <span class="pre">conversation</span></code> and <code class="docutils literal notranslate"><span class="pre">reference_id</span> <span class="pre">=</span> <span class="pre">conversation_id</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bin-ai-manager</span></code> reuses the existing AIcall for the conversation across
+turns; a new one is created only when:</p>
+<ul>
+<li><p>The previous AIcall called the <code class="docutils literal notranslate"><span class="pre">stop_service</span></code> tool.</p></li>
+<li><p>The previous AIcall sat idle for more than
+<code class="docutils literal notranslate"><span class="pre">AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS</span></code> (default 24).</p></li>
+<li><p>The previous AIcall was explicitly terminated.</p></li>
+</ul>
+</li>
+<li><p>The flow advances past <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code> immediately and does not block on the
+LLM. The AI’s reply is delivered asynchronously by <code class="docutils literal notranslate"><span class="pre">bin-ai-manager</span></code> via
+the same channel the inbound message used (SMS or LINE).</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Because the per-message activeflow does not block on the LLM, do not chain
+downstream actions in the message flow that depend on the AI’s reply text
+being available — they will run before the LLM responds. The reply is
+delivered out-of-band via <code class="docutils literal notranslate"><span class="pre">bin-message-manager</span></code>.</p>
+</div>
+</section>
+<section id="tool-availability-for-conversation-ai">
+<h3>Tool Availability for Conversation AI<a class="headerlink" href="#tool-availability-for-conversation-ai" title="Link to this heading"></a></h3>
+<p>The same tool registry is used for voice and conversation AI sessions today.
+Some voice-only tools may fail at execute time when invoked in a chat
+context (no live phone call exists for <code class="docutils literal notranslate"><span class="pre">connect_call</span></code> to operate on, etc.).
+A future release will whitelist conversation-safe tools at session start; for
+now, configure your AI’s <code class="docutils literal notranslate"><span class="pre">tool_names</span></code> to include only chat-relevant tools.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="head"><p>Conversation</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">send_email</span></code></p></td>
+<td><p>Supported</p></td>
+<td><p>Channel-agnostic</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">send_message</span></code></p></td>
+<td><p>Supported</p></td>
+<td><p>Channel-agnostic</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">set_variables</span></code></p></td>
+<td><p>Supported</p></td>
+<td><p>Flow context</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_variables</span></code></p></td>
+<td><p>Supported</p></td>
+<td><p>Flow context</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stop_service</span></code></p></td>
+<td><p>Supported</p></td>
+<td><p>Ends the chat session</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">get_aicall_messages</span></code></p></td>
+<td><p>Supported</p></td>
+<td><p>Context-neutral</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">search_knowledge</span></code></p></td>
+<td><p>Supported</p></td>
+<td><p>Context-neutral</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">connect_call</span></code></p></td>
+<td><p>Avoid</p></td>
+<td><p>Requires a live phone call</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stop_media</span></code></p></td>
+<td><p>Avoid</p></td>
+<td><p>No media playback in chat</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">stop_flow</span></code></p></td>
+<td><p>Avoid</p></td>
+<td><p>Per-message flow already short</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>When configuring an AI for use with conversation flows, prefer an explicit
+<code class="docutils literal notranslate"><span class="pre">tool_names</span></code> allowlist (e.g., <code class="docutils literal notranslate"><span class="pre">[&quot;send_email&quot;,</span> <span class="pre">&quot;send_message&quot;,</span>
+<span class="pre">&quot;set_variables&quot;,</span> <span class="pre">&quot;get_variables&quot;,</span> <span class="pre">&quot;stop_service&quot;]</span></code>) instead of
+<code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code>. This avoids surprising failures from voice-only tools the LLM
+may try to call.</p>
+</div>
+</section>
+<section id="concurrency-and-reliability">
+<h3>Concurrency and Reliability<a class="headerlink" href="#concurrency-and-reliability" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Multiple inbound messages on the same conversation interrupt the previous
+pipecat session (best-effort) and start a new one. Only the response from
+the most recent user message reaches the user; superseded responses are
+dropped by <code class="docutils literal notranslate"><span class="pre">bin-ai-manager</span></code>’s response guard, which compares
+<code class="docutils literal notranslate"><span class="pre">pipecatcall_id</span></code> between the in-flight session and the LLM response.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bin-pipecat-manager</span></code> pod restarts do not lose conversation context.
+Message history is persisted in <code class="docutils literal notranslate"><span class="pre">ai_messages</span></code> and the next inbound
+message picks up on a healthy pod via the shared queue.</p></li>
+<li><p>If a stale or superseded LLM response arrives, it is silently discarded —
+this is normal during rapid user back-and-forth and does not indicate a
+fault.</p></li>
+</ul>
+</section>
+</section>
 <section id="ai-summary">
 <h2>AI Summary<a class="headerlink" href="#ai-summary" title="Link to this heading"></a></h2>
 <p>The AI Summary feature in VoIPBIN generates structured summaries of call transcriptions, recordings, or conference discussions. It provides a concise summary of key points, decisions, and action items based on the provided transcription source.</p>
@@ -2855,6 +2984,12 @@ It determines whether the LLM generates a response after tool execution:</p>
 <li><a class="reference internal" href="#key-features">Key Features</a></li>
 <li><a class="reference internal" href="#built-in-elevenlabs-voice-ids">Built-in ElevenLabs Voice IDs</a></li>
 <li><a class="reference internal" href="#other-elevenlabs-voice-id-options">Other ElevenLabs Voice ID Options</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-ai-in-conversations-sms-line">Using AI in Conversations (SMS / LINE)</a><ul>
+<li><a class="reference internal" href="#lifecycle">Lifecycle</a></li>
+<li><a class="reference internal" href="#tool-availability-for-conversation-ai">Tool Availability for Conversation AI</a></li>
+<li><a class="reference internal" href="#concurrency-and-reliability">Concurrency and Reliability</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#ai-summary">AI Summary</a><ul>
