@@ -14,7 +14,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -227,7 +226,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_invalid_resource_type(t *test
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
-			assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_RESOURCE_TYPE", commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_RESOURCE_TYPE")
 		})
 	}
 }
@@ -375,7 +374,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_servicehandler_errors(t *test
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			assertErrorResponse(t, w, tt.expectStatus, tt.expectReason, commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, tt.expectStatus, tt.expectReason)
 		})
 	}
 }
@@ -446,7 +445,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_internal_error(t *testing.T) 
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			assertErrorResponse(t, w, cerrors.StatusInternal, "INTERNAL", commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, cerrors.StatusInternal, "INTERNAL")
 		})
 	}
 }

@@ -14,7 +14,6 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	tmtransfer "monorepo/bin-transfer-manager/models/transfer"
 
 	"github.com/gin-gonic/gin"
@@ -141,5 +140,5 @@ func Test_transfersPOST_InvalidJSONBody(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY")
 }

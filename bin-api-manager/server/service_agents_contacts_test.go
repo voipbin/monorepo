@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	cmcontact "monorepo/bin-contact-manager/models/contact"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
@@ -1310,7 +1309,7 @@ func Test_serviceAgentsContactsPost_InvalidJSONBody(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY")
 }
 
 // Test_serviceAgentsContactsIDPut_InvalidID verifies
@@ -1344,7 +1343,7 @@ func Test_serviceAgentsContactsIDPut_InvalidID(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_serviceAgentsContactsIDPhoneNumbersPhoneNumberIDDelete_InvalidPhoneNumberID
@@ -1379,5 +1378,5 @@ func Test_serviceAgentsContactsIDPhoneNumbersPhoneNumberIDDelete_InvalidPhoneNum
 	req, _ := http.NewRequest(http.MethodDelete, "/service_agents/contacts/3147612c-5066-11ec-ab34-23643cfdc1c5/phone_numbers/not-a-uuid", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }

@@ -7,7 +7,6 @@ import (
 
 	"monorepo/bin-api-manager/lib/middleware"
 	cerrors "monorepo/bin-common-handler/models/errors"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +21,7 @@ func TestNoRouteEmitsEnvelope(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/v1.0/definitely-not-a-route", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusNotFound, "ROUTE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "ROUTE_NOT_FOUND")
 }
 
 func TestNoRouteUnknownMethod(t *testing.T) {
@@ -39,5 +38,5 @@ func TestNoRouteUnknownMethod(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/v1.0/definitely-not-a-route", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusNotFound, "ROUTE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "ROUTE_NOT_FOUND")
 }

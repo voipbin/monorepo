@@ -15,7 +15,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
@@ -663,7 +662,7 @@ func Test_customersIDMetadataPut_InvalidID(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_customersIDMetadataPut_ServiceError exercises the servicehandler-failure
@@ -704,7 +703,7 @@ func Test_customersIDMetadataPut_ServiceError(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusPermissionDenied, "PERMISSION_DENIED", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusPermissionDenied, "PERMISSION_DENIED")
 }
 
 // Test_customersGET_MissingAuthIdentity exercises the auth-identity-missing
@@ -757,7 +756,7 @@ func Test_customersPOST_InvalidJSONBody(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY")
 }
 
 // Test_customersIDGet_InvalidID verifies that a malformed UUID in the path
@@ -789,7 +788,7 @@ func Test_customersIDGet_InvalidID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/customers/invalid-uuid", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_customersIDGet_ServiceError exercises the servicehandler-failure path
@@ -826,7 +825,7 @@ func Test_customersIDGet_ServiceError(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND")
 }
 
 // Test_customersIDBillingAccountIDPut_InvalidBodyID verifies the body-UUID
@@ -868,7 +867,7 @@ func Test_customersIDBillingAccountIDPut_InvalidBodyID(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_customersIDDefaultOutgoingSourceNumberIDPut_InvalidBodyID verifies
@@ -910,5 +909,5 @@ func Test_customersIDDefaultOutgoingSourceNumberIDPut_InvalidBodyID(t *testing.T
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }

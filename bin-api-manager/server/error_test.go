@@ -34,7 +34,6 @@ func TestAbortWithErrorSetsStatusAndBody(t *testing.T) {
 		Error struct {
 			Status    string `json:"status"`
 			Reason    string `json:"reason"`
-			Domain    string `json:"domain"`
 			Message   string `json:"message"`
 			RequestID string `json:"request_id"`
 		} `json:"error"`
@@ -48,14 +47,15 @@ func TestAbortWithErrorSetsStatusAndBody(t *testing.T) {
 	if body.Error.Reason != "CALL_NOT_FOUND" {
 		t.Errorf("wrong reason: %q", body.Error.Reason)
 	}
-	if body.Error.Domain != "call-manager" {
-		t.Errorf("wrong domain: %q", body.Error.Domain)
-	}
 	if body.Error.Message != "The call was not found." {
 		t.Errorf("wrong message: %q", body.Error.Message)
 	}
 	if body.Error.RequestID == "" {
 		t.Error("request_id missing from response body")
+	}
+	// domain MUST NOT be present in the external envelope.
+	if strings.Contains(w.Body.String(), `"domain"`) {
+		t.Errorf("domain key MUST be absent from external response; body=%s", w.Body.String())
 	}
 }
 
@@ -118,7 +118,7 @@ func TestAssertErrorResponseHelper(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 func TestAbortWithErrorIncludesDetails(t *testing.T) {
@@ -172,12 +172,13 @@ func TestAbortWithErrorOmitsEmptyDetails(t *testing.T) {
 	}
 }
 
-// assertErrorResponse is a test helper shared across handler tests in
-// subsequent migration PRs. It asserts the HTTP status code matches
-// the canonical Status AND the response body's status/reason/domain
-// fields match the expected values, plus verifies request_id is present
-// so PR 1+ handler tests catch missing RequestID middleware registration.
-func assertErrorResponse(t *testing.T, w *httptest.ResponseRecorder, wantStatus cerrors.Status, wantReason string, wantDomain commonoutline.ServiceName) {
+// assertErrorResponse is a test helper shared across handler tests. It
+// asserts the HTTP status code matches the canonical Status AND the
+// response body's status and reason fields match the expected values,
+// plus verifies request_id is present so handler tests catch missing
+// RequestID middleware registration. The external envelope intentionally
+// does NOT include a "domain" field — see lib/apierror.
+func assertErrorResponse(t *testing.T, w *httptest.ResponseRecorder, wantStatus cerrors.Status, wantReason string) {
 	t.Helper()
 	if got, want := w.Code, cerrors.HTTPStatusFor(wantStatus); got != want {
 		t.Errorf("status code = %d want %d", got, want)
@@ -186,7 +187,6 @@ func assertErrorResponse(t *testing.T, w *httptest.ResponseRecorder, wantStatus 
 		Error struct {
 			Status    string `json:"status"`
 			Reason    string `json:"reason"`
-			Domain    string `json:"domain"`
 			RequestID string `json:"request_id"`
 		} `json:"error"`
 	}
@@ -199,10 +199,10 @@ func assertErrorResponse(t *testing.T, w *httptest.ResponseRecorder, wantStatus 
 	if body.Error.Reason != wantReason {
 		t.Errorf("reason = %q want %q", body.Error.Reason, wantReason)
 	}
-	if body.Error.Domain != string(wantDomain) {
-		t.Errorf("domain = %q want %q", body.Error.Domain, wantDomain)
-	}
 	if body.Error.RequestID == "" {
 		t.Error("request_id missing — RequestID middleware must run before the handler")
+	}
+	if strings.Contains(w.Body.String(), `"domain"`) {
+		t.Errorf("domain key MUST be absent from external response; body=%s", w.Body.String())
 	}
 }

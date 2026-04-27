@@ -14,7 +14,6 @@ import (
 	bmaccount "monorepo/bin-billing-manager/models/account"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -395,7 +394,6 @@ func Test_PostBillingAccountsIdBalanceSubtractForce(t *testing.T) {
 	}
 }
 
-
 // Test_billingAccountsIDPut_InvalidID verifies that a malformed UUID in the
 // path triggers INVALID_ARGUMENT / INVALID_ID before the servicehandler is
 // consulted.
@@ -429,7 +427,7 @@ func Test_billingAccountsIDPut_InvalidID(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_billingAccountsIDBalanceAddForcePost_MissingAuthIdentity exercises the

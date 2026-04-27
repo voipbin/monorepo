@@ -3,8 +3,8 @@ package server
 import (
 	"bytes"
 	amagent "monorepo/bin-agent-manager/models/agent"
-	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/gens/openapi_server"
+	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	rmroute "monorepo/bin-route-manager/models/route"

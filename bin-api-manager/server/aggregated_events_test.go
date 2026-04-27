@@ -14,7 +14,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -251,7 +250,7 @@ func Test_GetAggregatedEvents_servicehandler_errors(t *testing.T) {
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			assertErrorResponse(t, w, tt.expectStatus, tt.expectReason, commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, tt.expectStatus, tt.expectReason)
 		})
 	}
 }
@@ -340,7 +339,7 @@ func Test_GetAggregatedEvents_validation_error(t *testing.T) {
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ARGUMENT", commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ARGUMENT")
 		})
 	}
 }
@@ -411,7 +410,7 @@ func Test_GetAggregatedEvents_internal_error(t *testing.T) {
 			).Return(nil, "", tt.responseErr)
 
 			r.ServeHTTP(w, req)
-			assertErrorResponse(t, w, cerrors.StatusInternal, "INTERNAL", commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, cerrors.StatusInternal, "INTERNAL")
 		})
 	}
 }

@@ -10,7 +10,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -121,5 +120,5 @@ func Test_meGET_ServiceError(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND")
 }

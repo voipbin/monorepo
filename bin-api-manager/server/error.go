@@ -1,9 +1,9 @@
 package server
 
 import (
+	"monorepo/bin-api-manager/lib/apierror"
 	"monorepo/bin-api-manager/lib/middleware"
 	cerrors "monorepo/bin-common-handler/models/errors"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,23 +13,21 @@ import (
 // ID is read from middleware.RequestIDFromContext, so that middleware
 // must run before any handler that calls this.
 //
+// The external envelope omits the internal Domain field — see
+// bin-api-manager/lib/apierror for the boundary.
+//
 // A nil VoipbinError falls back to a StatusInternal response so the
-// helper never panics on a caller oversight.
+// helper never panics on a caller oversight (handled inside
+// apierror.EnvelopeFor).
 func abortWithError(c *gin.Context, e *cerrors.VoipbinError) {
-	if e == nil {
-		e = cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.")
+	status := cerrors.StatusInternal
+	if e != nil {
+		status = e.Status
 	}
-	body := gin.H{
-		"status":     string(e.Status),
-		"reason":     e.Reason,
-		"domain":     e.Domain,
-		"message":    e.Message,
-		"request_id": middleware.RequestIDFromContext(c),
-	}
-	if len(e.Details) > 0 {
-		body["details"] = e.Details
-	}
-	c.AbortWithStatusJSON(cerrors.HTTPStatusFor(e.Status), gin.H{"error": body})
+	c.AbortWithStatusJSON(
+		cerrors.HTTPStatusFor(status),
+		apierror.EnvelopeFor(e, middleware.RequestIDFromContext(c)),
+	)
 }
 
 // abortWithServiceError runs any error returned from servicehandler

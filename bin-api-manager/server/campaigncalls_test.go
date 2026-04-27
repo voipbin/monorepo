@@ -10,7 +10,6 @@ import (
 	cacampaigncall "monorepo/bin-campaign-manager/models/campaigncall"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"net/http"
 	"net/http/httptest"
@@ -295,5 +294,5 @@ func Test_campaigncallsIDDelete_InvalidID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodDelete, "/campaigncalls/not-a-uuid", bytes.NewBufferString(""))
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }

@@ -16,7 +16,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	smfile "monorepo/bin-storage-manager/models/file"
 
 	"github.com/gin-gonic/gin"
@@ -519,7 +518,7 @@ func Test_GetStorageFilesIdFile_NoAgent(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
 			r.ServeHTTP(w, req)
-			assertErrorResponse(t, w, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED", commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED")
 		})
 	}
 }
@@ -622,7 +621,7 @@ func Test_GetStorageFilesIdFile_ServiceError(t *testing.T) {
 			r.ServeHTTP(w, req)
 			// The legacy "file not found" message routes through the
 			// translator's substring matcher to NOT_FOUND / 404.
-			assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND")
 		})
 	}
 }
@@ -658,7 +657,7 @@ func Test_storageFilesPost_MissingAuthIdentity(t *testing.T) {
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED")
 }
 
 // Test_storageFilesIDDelete_InvalidID verifies that a malformed UUID in
@@ -692,5 +691,5 @@ func Test_storageFilesIDDelete_InvalidID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodDelete, "/storage_files/not-a-uuid", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
