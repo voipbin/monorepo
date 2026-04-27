@@ -4,9 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-number-manager is a Go microservice for telephone number management in a VoIP system. It handles purchasing, managing, and releasing phone numbers through external providers (Telnyx, Twilio).
+`bin-number-manager` is a Go microservice for telephone number management in a VoIP system. It handles purchasing, managing, and releasing phone numbers through external providers (Telnyx, Twilio).
 
-## Build and Test Commands
+**Key Concepts:**
+- **Number**: A purchased phone number with assigned call flow and/or message flow IDs.
+- **AvailableNumber**: A number available for purchase from a provider, queried by country code.
+- **ProviderNumber**: Internal mapping between a `Number` and the provider that owns it.
+- **Provider routing**: Both Telnyx and Twilio are supported; provider-specific subhandlers wrap the external APIs.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-number-manager`.
+
+## Common Commands
 
 ```bash
 # Build both number-manager daemon and number-control CLI
@@ -112,35 +120,94 @@ RabbitMQ Request → listenhandler (regex routing) → numberhandler → provide
                                                           dbhandler → MySQL/Redis
 ```
 
-### Configuration
+## Request Routing
 
-Environment variables / flags:
-- `DATABASE_DSN` - MySQL connection string
-- `RABBITMQ_ADDRESS` - RabbitMQ connection
-- `REDIS_ADDRESS`, `REDIS_PASSWORD`, `REDIS_DATABASE` - Redis cache
-- `TELNYX_CONNECTION_ID`, `TELNYX_PROFILE_ID`, `TELNYX_TOKEN` - Telnyx credentials
-- `TWILIO_SID`, `TWILIO_TOKEN` - Twilio credentials
-- `PROMETHEUS_ENDPOINT`, `PROMETHEUS_LISTEN_ADDRESS` - Metrics endpoint
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
 
-### number-control CLI Tool
+**Numbers API (`/v1/numbers/*`):**
+- `POST /v1/numbers` — Create (purchase) number
+- `POST /v1/numbers/register` — Register existing number without going through a provider
+- `GET /v1/numbers?<filters>` — List numbers (pagination)
+- `GET /v1/numbers/<uuid>` — Get number
+- `PUT /v1/numbers/<uuid>` — Update number (call/message flow IDs, status)
+- `DELETE /v1/numbers/<uuid>` — Release number
 
-A command-line tool for managing phone numbers. **All output is JSON format** (stdout), logs go to stderr.
+**Available Numbers API (`/v1/available_numbers/*`):**
+- `GET /v1/available_numbers?country_code=<code>&limit=<n>` — Search provider for purchasable numbers
 
-```bash
-# Create number - returns created number JSON
-./bin/number-control number create --customer_id <uuid> --number "+15551234567" [--call_flow_id <uuid>] [--message_flow_id <uuid>] [--name] [--detail]
+## Event Subscriptions
 
-# Register number (manual registration without provider) - returns registered number JSON
-./bin/number-control number register --customer_id <uuid> --number "+15551234567" [--call_flow_id <uuid>] [--message_flow_id <uuid>] [--name] [--detail]
+SubscribeHandler subscribes to:
+- **bin-manager.customer-manager.event**: `customer_deleted` → release all numbers for the deleted customer.
+- **bin-manager.flow-manager.event**: `flow_deleted` → unset `call_flow_id`/`message_flow_id` references on affected numbers.
 
-# Get number - returns number JSON
-./bin/number-control number get --id <uuid>
+## Monorepo Context
 
-# List numbers - returns JSON array
-./bin/number-control number list --customer_id <uuid> [--limit 100] [--token]
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared utilities (sockhandler, requesthandler, notifyhandler)
+- `monorepo/bin-customer-manager`: Customer event models for cascading deletes
+- `monorepo/bin-flow-manager`: Flow event models for flow-deletion cleanup
 
-# Delete number - returns deleted number JSON
-./bin/number-control number delete --id <uuid>
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock):
+- Mock interfaces co-located with handlers (`mock_*.go`)
+- Table-driven tests with struct slices
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
 ```
 
-Uses same environment variables as number-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
+## Key Implementation Details
+
+### Provider Strategy
+The numberhandler delegates to provider-specific sub-handlers (`numberhandlertelnyx`, `numberhandlertwilio`). Each provider implements the same interface for purchase, release, and listing operations.
+
+### Soft Deletes
+Records use `tm_delete` timestamp (`"9999-01-01 00:00:00.000000"` for active records).
+
+### Cache Strategy
+Redis cache fronts MySQL for number lookups. Mutations invalidate the relevant Redis keys.
+
+## Configuration
+
+Environment variables / flags:
+
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
+| `telnyx_connection_id` / `TELNYX_CONNECTION_ID` | Telnyx connection ID | required if Telnyx used |
+| `telnyx_profile_id` / `TELNYX_PROFILE_ID` | Telnyx messaging profile | required if Telnyx used |
+| `telnyx_token` / `TELNYX_TOKEN` | Telnyx API token | required if Telnyx used |
+| `twilio_sid` / `TWILIO_SID` | Twilio account SID | required if Twilio used |
+| `twilio_token` / `TWILIO_TOKEN` | Twilio auth token | required if Twilio used |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `number_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `number_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)
