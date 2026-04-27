@@ -27,7 +27,7 @@ Updates all 34 services in the monorepo with the standard workflow:
 7. Report progress and timing
 
 **Progress display:**
-- Shows current service being updated (e.g., [3/32])
+- Shows current service being updated (e.g., [3/34])
 - Shows progress for each step with timing
 - Collects failures and continues with remaining services
 - Displays summary at end with pass/fail counts
@@ -54,12 +54,12 @@ Updates all 34 services in the monorepo with the standard workflow:
 
 ```
 Discovering services in monorepo...
-Found 32 services with go.mod files
+Found 34 services with go.mod files
 
 Starting updates (estimated 15-20 minutes)...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[1/32] bin-ai-manager
+[1/34] bin-ai-manager
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ✓ go mod tidy         1.2s
   ✓ go mod vendor       3.4s
@@ -68,7 +68,7 @@ Starting updates (estimated 15-20 minutes)...
   ✓ go test ./...       8.7s (23/23 tests passed)
   ✓ Complete           15.6s total
 
-[2/32] bin-api-manager
+[2/34] bin-api-manager
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ✓ go mod tidy         1.5s
   ✓ go mod vendor       4.2s
@@ -83,7 +83,7 @@ Starting updates (estimated 15-20 minutes)...
 
   ✗ Skipping remaining steps
 
-[3/32] bin-billing-manager
+[3/34] bin-billing-manager
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ✓ go mod tidy         1.3s
   ✓ go mod vendor       3.9s
@@ -92,7 +92,7 @@ Starting updates (estimated 15-20 minutes)...
   ✓ go test ./...       7.2s (18/18 tests passed)
   ✓ Complete           15.2s total
 
-... (continues for all 32 services) ...
+... (continues for all 34 services) ...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Summary
