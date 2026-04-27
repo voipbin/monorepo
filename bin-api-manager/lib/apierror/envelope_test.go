@@ -46,7 +46,10 @@ func TestEnvelopeFor_DetailsIncluded(t *testing.T) {
 
 	body := EnvelopeFor(e, "req-1")
 
-	outer := body["error"].(gin.H)
+	outer, ok := body["error"].(gin.H)
+	if !ok {
+		t.Fatalf("body.error is not gin.H: %+v", body)
+	}
 	details, ok := outer["details"].([]map[string]any)
 	if !ok {
 		t.Fatalf("details key missing or wrong type: %+v", outer)
@@ -65,21 +68,33 @@ func TestEnvelopeFor_NilDetails_OmitsKey(t *testing.T) {
 
 	body := EnvelopeFor(e, "req-1")
 
-	outer := body["error"].(gin.H)
+	outer, ok := body["error"].(gin.H)
+	if !ok {
+		t.Fatalf("body.error is not gin.H: %+v", body)
+	}
 	if _, present := outer["details"]; present {
 		t.Errorf("details key MUST be omitted when nil")
+	}
+	if _, present := outer["domain"]; present {
+		t.Errorf("domain key MUST be absent")
 	}
 }
 
 func TestEnvelopeFor_NilVoipbinError_FallsBackToInternal(t *testing.T) {
 	body := EnvelopeFor(nil, "req-fallback")
 
-	outer := body["error"].(gin.H)
+	outer, ok := body["error"].(gin.H)
+	if !ok {
+		t.Fatalf("body.error is not gin.H: %+v", body)
+	}
 	if outer["status"] != "INTERNAL" {
 		t.Errorf("fallback status = %v, want INTERNAL", outer["status"])
 	}
 	if outer["reason"] != "INTERNAL" {
 		t.Errorf("fallback reason = %v, want INTERNAL", outer["reason"])
+	}
+	if outer["message"] != "An internal error occurred." {
+		t.Errorf("fallback message = %v, want %q", outer["message"], "An internal error occurred.")
 	}
 	if outer["request_id"] != "req-fallback" {
 		t.Errorf("request_id not preserved: %v", outer["request_id"])
@@ -94,8 +109,29 @@ func TestEnvelopeFor_EmptyRequestID(t *testing.T) {
 
 	body := EnvelopeFor(e, "")
 
-	outer := body["error"].(gin.H)
+	outer, ok := body["error"].(gin.H)
+	if !ok {
+		t.Fatalf("body.error is not gin.H: %+v", body)
+	}
 	if outer["request_id"] != "" {
 		t.Errorf("expected empty request_id, got %v", outer["request_id"])
+	}
+}
+
+func TestEnvelopeFor_EmptyNonNilDetails_OmitsKey(t *testing.T) {
+	e := cerrors.NotFound(commonoutline.ServiceNameCallManager, "CALL_NOT_FOUND", "x")
+	e.Details = []map[string]any{} // empty but non-nil
+
+	body := EnvelopeFor(e, "req-1")
+
+	outer, ok := body["error"].(gin.H)
+	if !ok {
+		t.Fatalf("body.error is not gin.H: %+v", body)
+	}
+	if _, present := outer["details"]; present {
+		t.Errorf("details key MUST be omitted when slice is empty (len==0), even when non-nil")
+	}
+	if _, present := outer["domain"]; present {
+		t.Errorf("domain key MUST be absent")
 	}
 }

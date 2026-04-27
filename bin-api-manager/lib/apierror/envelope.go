@@ -8,7 +8,6 @@ package apierror
 
 import (
 	cerrors "monorepo/bin-common-handler/models/errors"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,11 +18,12 @@ import (
 // missed nil check.
 func EnvelopeFor(e *cerrors.VoipbinError, requestID string) gin.H {
 	if e == nil {
-		e = cerrors.Internal(
-			commonoutline.ServiceNameAPIManager,
-			"INTERNAL",
-			"An internal error occurred.",
-		)
+		return gin.H{"error": gin.H{
+			"status":     "INTERNAL",
+			"reason":     "INTERNAL",
+			"message":    "An internal error occurred.",
+			"request_id": requestID,
+		}}
 	}
 	body := gin.H{
 		"status":     string(e.Status),
