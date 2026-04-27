@@ -1,5 +1,14 @@
 # Inter-Service Communication
 
+## Communication Pattern Rules
+
+These prohibitions and prescriptions apply to every inter-service call in the monorepo. They are explicit because in practice each one has been violated and caused a coupling or operability incident:
+
+1. **Never use HTTP between services** — Always use RabbitMQ RPC. Direct HTTP between `bin-*-manager` services bypasses circuit-breaker protection (see [`../patterns/circuit-breaker.md`](../patterns/circuit-breaker.md)) and the per-target RPC metrics, and creates synchronous coupling that defeats the queue-buffering model.
+2. **Use typed request methods** — Don't construct `sock.Request` manually. Use the `requesthandler` typed methods (e.g., `r.AgentV1AgentGet(...)`); see §9.1 below.
+3. **Handle async responses** — RabbitMQ RPC is asynchronous. Always pass `context.Context` and respect its deadline; don't assume responses are immediate.
+4. **Publish events for notifications** — Use `notifyhandler.PublishEvent()` for pub/sub notifications. Don't fan-out via N RPC calls; that's what the event broker is for.
+
 ### 9.1 RabbitMQ RPC via RequestHandler
 
 All inter-service calls go through `requesthandler.RequestHandler` typed methods. Never call services directly:

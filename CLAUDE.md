@@ -267,3 +267,4 @@ Quick links:
 - Agent Interface: https://talk.voipbin.net/
 - API Documentation: https://api.voipbin.net/docs/
 - Project Site: http://voipbin.net/
+- Architecture diagram: `architecture_overview_all.png` in repo root
