@@ -4,7 +4,7 @@
 > For workflow rules (verification, git, deployment), see [CLAUDE.md](../../CLAUDE.md).
 > For architecture details, see [architecture-deep-dive.md](../architecture/architecture-deep-dive.md).
 
-This directory is the **single source of truth** for VoIPbin coding conventions. It supersedes the previous monolithic `docs/coding-conventions.md`.
+This directory is the **single source of truth** for VoIPbin coding conventions.
 
 Recommended reading order for new engineers:
 

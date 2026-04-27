@@ -16,7 +16,33 @@ func (h *serviceHandler) BillingGet(ctx context.Context, ...) (*BillingWithAccou
 }
 ```
 
-**Exceptions:** Pagination metadata (`next_page_token`) and atomic operations that create multiple resources in one transaction.
+**Exceptions to the atomic-response rule:**
+
+1. **Pagination Metadata** — List responses can include `next_page_token` as it's directly related to the query:
+   ```json
+   {
+     "result": [...],
+     "next_page_token": "2024-01-15T10:30:00"
+   }
+   ```
+
+2. **Atomic Operation Responses** — When a single operation creates multiple related resources, the response can include all created resources:
+   ```
+   POST /v1/calls (with groupcall option)
+   Returns: { "call": {...}, "groupcall": {...} }
+
+   Reason: Call and groupcall are created atomically in one transaction,
+   so returning both is appropriate.
+   ```
+
+**How to fetch related data:** For all other cases, clients make separate requests:
+```
+1. GET /v1/billings/{billing-id}        → Get billing record
+2. GET /v1/billing_accounts/{account-id} → Get account details (if needed)
+3. GET /v1/calls/{call-id}              → Get call details (if needed)
+```
+
+For authentication and authorization patterns, see `bin-api-manager/CLAUDE.md`.
 
 ### 10.2 Two-Level ServiceHandler
 

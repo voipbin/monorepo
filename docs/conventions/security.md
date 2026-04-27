@@ -87,3 +87,12 @@ const apiKey = "sk-1234567890abcdef"
 // CORRECT — use environment variables
 apiKey := viper.GetString("api_key")
 ```
+
+### 15.7 Operational Security Notes
+
+Platform-level security expectations across the monorepo:
+
+1. **JWT authentication** — `bin-api-manager` validates all external requests; internal services trust requests arriving via RabbitMQ RPC after that gateway check.
+2. **No secrets in source** — secrets come from environment variables or CLI flags via Cobra/Viper, never hardcoded constants.
+3. **Base64 for certificates** — SSL certificates passed as base64 strings in service configuration (avoids file-mount complexity in k8s).
+4. **Validate at boundaries** — see §15.5; trust internal callers, validate everything at the API/RPC entry layer.
