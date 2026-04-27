@@ -58,7 +58,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 
 	ac, err := h.reqHandler.AIV1AIcallGet(ctx, evt.PipecatcallReferenceID)
 	if err != nil {
-		log.Errorf("Could not get aicall — skipping conversation delivery. err: %v", err)
+		log.WithField("aicall_id", evt.PipecatcallReferenceID).Errorf("Could not get aicall — skipping conversation delivery. err: %v", err)
 		return
 	}
 	log.WithField("aicall", ac).Debugf("Retrieved aicall info. aicall_id: %s", ac.ID)
@@ -96,7 +96,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	// Guard #2 (secondary) — re-check after persistence to narrow the dual-delivery race window.
 	acFinal, errFinal := h.reqHandler.AIV1AIcallGet(ctx, evt.PipecatcallReferenceID)
 	if errFinal != nil {
-		log.Warnf("Re-check AIcall fetch failed; skipping conversation delivery. err: %v", errFinal)
+		log.WithField("aicall_id", evt.PipecatcallReferenceID).Warnf("Re-check AIcall fetch failed; skipping conversation delivery. err: %v", errFinal)
 		return
 	}
 	if acFinal.PipecatcallID != evt.PipecatcallID {

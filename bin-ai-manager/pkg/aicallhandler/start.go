@@ -201,6 +201,11 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		// reuse: interrupt previous pipecat session (best-effort), then atomically
 		// update both PipecatcallID and ActiveflowID so concurrent readers cannot
 		// observe a half-applied state.
+		log.WithFields(logrus.Fields{
+			"aicall_id":          res.ID,
+			"old_pipecatcall_id": res.PipecatcallID,
+			"new_activeflow_id":  activeflowID,
+		}).Debugf("Reusing existing conversation AIcall.")
 		h.interruptPreviousPipecatcall(ctx, res.PipecatcallID)
 		newPipecatcallID := h.utilHandler.UUIDCreate()
 		tmp, errUpdate := h.UpdatePipecatcallIDAndActiveflowID(ctx, res.ID, newPipecatcallID, activeflowID)
