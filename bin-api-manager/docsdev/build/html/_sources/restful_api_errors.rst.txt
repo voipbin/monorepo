@@ -11,7 +11,7 @@ Error Reason Codes
 
 .. note:: **Rollout status (2026-04, complete)**
 
-   All ``bin-api-manager/server/*.go`` files uniformly emit the canonical error envelope. Every 4xx/5xx response from the API gateway carries the ``status`` / ``reason`` / ``domain`` / ``message`` / ``request_id`` fields documented on this page. The api-manager servicehandler layer now emits typed sentinels (``serviceerrors.Err*``) and the legacy substring-fallback translator step has been removed — any unmatched error correctly degrades to ``500 INTERNAL`` via the default branch. Domain-specific reasons (``CALL_NOT_FOUND``, ``STORAGE_FILE_NOT_FOUND``, etc.) require the corresponding manager service to emit ``*cerrors.VoipbinError`` directly; until that migration ships per service, generic api-manager reasons (``RESOURCE_NOT_FOUND``, ``STATE_INVALID``, ``INSUFFICIENT_BALANCE``, etc.) surface instead.
+   All ``bin-api-manager/server/*.go`` files uniformly emit the canonical error envelope. Every 4xx/5xx response from the API gateway carries the ``status`` / ``reason`` / ``domain`` / ``message`` / ``request_id`` fields documented on this page. The api-manager servicehandler layer emits typed sentinels (``serviceerrors.Err*``) and the legacy substring-fallback translator step has been removed — any unmatched error correctly degrades to ``500 INTERNAL`` via the default branch. Domain-specific reasons (``CALL_NOT_FOUND``, ``FLOW_NOT_FOUND``, etc.) flow through end-to-end when the upstream manager emits ``*cerrors.VoipbinError`` with the domain-specific reason: the api-manager translator's typed-passthrough step (``errors.As``) recovers the upstream typed error even when wrapped by ``pkg/errors.Wrapf``. When the upstream returns a generic / untyped error, the api-manager servicehandler maps it to a sentinel and the translator surfaces the api-manager generic reason (``RESOURCE_NOT_FOUND``, ``STATE_INVALID``, ``INSUFFICIENT_BALANCE``, etc.).
 
 api-manager
 -----------
@@ -106,8 +106,7 @@ call-manager
 
 .. note::
 
-   The reasons in this section define the platform's planned typed-error contract for call-manager.
-   These domain-specific reasons (``CALL_NOT_FOUND``, ``RECORDING_NOT_FOUND``, ``GROUPCALL_NOT_FOUND``, ``CALL_ALREADY_HANGUP``, ``RECORDING_ALREADY_ACTIVE``, ``RECORDING_NOT_ACTIVE``, ``INSUFFICIENT_BALANCE``) are **not yet emitted directly** — they require call-manager to surface ``*cerrors.VoipbinError`` over RPC. Until that migration ships, the api-manager servicehandler wraps call-manager RPC errors with typed sentinels (``serviceerrors.ErrNotFound``, ``serviceerrors.ErrStateInvalid``, ``serviceerrors.ErrInsufficientBalance``) and the translator surfaces them as the api-manager generic equivalents (``RESOURCE_NOT_FOUND``, ``STATE_INVALID``, ``INSUFFICIENT_BALANCE`` in the ``api-manager`` domain).
+   The reasons ``CALL_NOT_FOUND`` and ``RECORDING_NOT_FOUND`` are emitted today by call-manager (via ``cerrors.NotFound("call-manager", ...)``) and flow through end-to-end on Get-by-ID paths. The remaining reasons (``GROUPCALL_NOT_FOUND``, ``CALL_ALREADY_HANGUP``, ``RECORDING_ALREADY_ACTIVE``, ``RECORDING_NOT_ACTIVE``, ``INSUFFICIENT_BALANCE``) define the platform's planned typed-error contract; until call-manager emits them directly, the api-manager servicehandler maps the underlying conditions to sentinels (``serviceerrors.ErrNotFound``, ``serviceerrors.ErrStateInvalid``, ``serviceerrors.ErrInsufficientBalance``) and the translator surfaces them as the api-manager generic equivalents (``RESOURCE_NOT_FOUND``, ``STATE_INVALID``, ``INSUFFICIENT_BALANCE``).
    PR 13 added the agent-surface read endpoints (``GET /service_agents/calls`` and ``GET /service_agents/calls/{id}``); these reuse ``CALL_NOT_FOUND`` for not-found semantics on the by-ID read.
 
 flow-manager
@@ -115,8 +114,7 @@ flow-manager
 
 .. note::
 
-   The reasons in this section define the platform's planned typed-error contract for flow-manager.
-   These domain-specific reasons (``FLOW_NOT_FOUND``, ``ACTIVEFLOW_NOT_FOUND``, ``ACTIVEFLOW_ALREADY_STOPPED``, ``FLOW_STATE_INVALID``) are **not yet emitted directly** — they require flow-manager to surface ``*cerrors.VoipbinError`` over RPC. Until that migration ships, the api-manager servicehandler wraps flow-manager RPC errors with typed sentinels and the translator surfaces them as the api-manager generic equivalents (``RESOURCE_NOT_FOUND``, ``STATE_INVALID``).
+   The reasons ``FLOW_NOT_FOUND`` and ``ACTIVEFLOW_NOT_FOUND`` are emitted today by flow-manager (via ``cerrors.NotFound("flow-manager", ...)``) and flow through end-to-end on Get-by-ID paths. The state-transition reasons ``ACTIVEFLOW_ALREADY_STOPPED`` and ``FLOW_STATE_INVALID`` define the platform's planned typed-error contract; until flow-manager emits them directly, the api-manager servicehandler maps the underlying conditions to ``serviceerrors.ErrStateInvalid`` and the translator surfaces them as the api-manager generic ``STATE_INVALID``.
 
    Note: ``POST /activeflows/{id}/stop`` is idempotent in production today — stopping an already-stopped activeflow returns 200 (no-op).
    The 409 ``ACTIVEFLOW_ALREADY_STOPPED`` response declared in the OpenAPI spec is forward-compatible for clients that prefer opt-in idempotency-aware semantics; it will be emitted once the typed-error migration ships.
@@ -172,7 +170,7 @@ number-manager
 
 .. note::
 
-   ``NUMBER_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the number-manager typed-error migration ships.
+   ``NUMBER_NOT_FOUND`` is emitted today by number-manager (via ``cerrors.NotFound("number-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups for non-existent resources. For soft-deleted entries, the api-manager servicehandler intercepts via a post-fetch ``TMDelete`` check (``pkg/servicehandler/numbers.go``) and re-emits ``serviceerrors.ErrNotFound``, which surfaces as the api-manager generic ``RESOURCE_NOT_FOUND`` — the typed ``NUMBER_NOT_FOUND`` is not reached on that path.
    ``IDENTITY_VERIFICATION_REQUIRED`` is wired in PR 4 via the dedicated ``"identity verification required"`` translator pattern and is reachable today.
 
 .. list-table::
@@ -268,7 +266,7 @@ message-manager
 
 .. note::
 
-   ``MESSAGE_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the message-manager typed-error migration ships.
+   ``MESSAGE_NOT_FOUND`` is emitted today by message-manager (via ``cerrors.NotFound("message-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups for non-existent resources. For soft-deleted entries, the api-manager servicehandler intercepts via a post-fetch ``TMDelete`` check (``pkg/servicehandler/message.go``) and re-emits ``serviceerrors.ErrNotFound``, which surfaces as the api-manager generic ``RESOURCE_NOT_FOUND`` — the typed ``MESSAGE_NOT_FOUND`` is not reached on that path.
    ``POST /messages`` is billing-sensitive — see the ``billing-manager`` section above for the ``INSUFFICIENT_BALANCE`` (402) contract that applies to SMS send.
 
 .. list-table::
@@ -287,7 +285,7 @@ email-manager
 
 .. note::
 
-   ``EMAIL_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the email-manager typed-error migration ships.
+   ``EMAIL_NOT_FOUND`` is emitted today by email-manager (via ``cerrors.NotFound("email-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups for non-existent resources. For soft-deleted entries, the api-manager servicehandler intercepts via a post-fetch ``TMDelete`` check (``pkg/servicehandler/email.go``) and re-emits ``serviceerrors.ErrNotFound``, which surfaces as the api-manager generic ``RESOURCE_NOT_FOUND`` — the typed ``EMAIL_NOT_FOUND`` is not reached on that path.
    ``POST /emails`` is billing-sensitive — see the ``billing-manager`` section above for the ``INSUFFICIENT_BALANCE`` (402) contract that applies to email send.
 
 .. list-table::
@@ -339,7 +337,7 @@ rag-manager
 
 .. note::
 
-   ``RAG_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the rag-manager typed-error migration ships.
+   ``RAG_NOT_FOUND`` is emitted today by rag-manager (via ``cerrors.NotFound("rag-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).
 
 .. list-table::
    :header-rows: 1
@@ -357,7 +355,7 @@ tts-manager
 
 .. note::
 
-   ``SPEAKING_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the tts-manager typed-error migration ships.
+   ``SPEAKING_NOT_FOUND`` is emitted today by tts-manager (via ``cerrors.NotFound("tts-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).
    ``POST /speakings/{id}/stop`` is **idempotent** in tts-manager today — stopping an already-stopped speaking session returns success (no-op). The session-state-restriction reason ``SPEAKING_STATE_INVALID`` (409) is **not declared** on ``/speakings/{id}/stop`` because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
    ``POST /speakings`` is conceptually billing-sensitive (TTS character cost) but tts-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for speaking-session creation. Wiring the pre-check is deferred to a follow-up PR; see the ``billing-manager`` section above for the deferred list.
 
@@ -377,7 +375,7 @@ transcribe-manager
 
 .. note::
 
-   ``TRANSCRIBE_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the transcribe-manager typed-error migration ships.
+   ``TRANSCRIBE_NOT_FOUND`` is emitted today by transcribe-manager (via ``cerrors.NotFound("transcribe-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).
    ``POST /transcribes/{id}/stop`` is **idempotent** in transcribe-manager today — stopping an already-stopped transcription returns success (no-op). The session-state-restriction reason ``TRANSCRIBE_STATE_INVALID`` (409) is **not declared** on ``/transcribes/{id}/stop`` because the underlying handler does not surface a state error. A forward-compatible 409 declaration may be added once the typed-error migration ships and explicit state-transition typing is introduced.
    ``POST /transcribes`` is conceptually billing-sensitive (STT second cost) but transcribe-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for transcription creation. Wiring the pre-check is deferred to a follow-up PR; see the ``billing-manager`` section above for the deferred list.
 
@@ -398,7 +396,7 @@ agent-manager
 .. note::
 
    PR 9 introduced this section for the agent resource (``/agents``).
-   ``AGENT_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the agent-manager typed-error migration ships.
+   ``AGENT_NOT_FOUND`` is emitted today by agent-manager (via ``cerrors.NotFound("agent-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).
    Agent write surfaces (``POST /agents``, ``PUT /agents/{id}``, ``PUT /agents/{id}/permission``, ``PUT /agents/{id}/password``, ``PUT /agents/{id}/addresses``, ``PUT /agents/{id}/tag_ids``, ``PUT /agents/{id}/status``, ``DELETE /agents/{id}``, ``POST /agents/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
    PR 13 added the agent-surface read endpoints (``GET /service_agents/agents`` and ``GET /service_agents/agents/{id}``); these reuse ``AGENT_NOT_FOUND`` for not-found semantics on the by-ID read.
 
@@ -419,7 +417,7 @@ tag-manager
 .. note::
 
    PR 9 introduced this section for the tag resource (``/tags``).
-   ``TAG_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the tag-manager typed-error migration ships.
+   ``TAG_NOT_FOUND`` is emitted today by tag-manager (via ``cerrors.NotFound("tag-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).
    Tag write surfaces (``POST /tags``, ``PUT /tags/{id}``, ``DELETE /tags/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
    PR 13 added the agent-surface read endpoints (``GET /service_agents/tags`` and ``GET /service_agents/tags/{id}``); these reuse ``TAG_NOT_FOUND`` for not-found semantics on the by-ID read.
 
@@ -440,7 +438,7 @@ customer-manager
 .. note::
 
    PR 9 introduced this section for the access-key resource (``/accesskeys``).
-   ``ACCESSKEY_NOT_FOUND`` is reachable today as the api-manager generic ``RESOURCE_NOT_FOUND`` (servicehandler emits ``serviceerrors.ErrNotFound``); the typed reason will be emitted directly once the customer-manager typed-error migration ships.
+   ``ACCESSKEY_NOT_FOUND`` is emitted today by customer-manager (via ``cerrors.NotFound("customer-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups for non-existent accesskeys. For soft-deleted accesskeys, the api-manager servicehandler intercepts via a post-fetch ``TMDelete`` check (``pkg/servicehandler/accesskeys.go``) and re-emits ``serviceerrors.ErrStateInvalid``, which surfaces as 409 ``STATE_INVALID`` in the api-manager domain.
    Access-key write surfaces (``POST /accesskeys``, ``PUT /accesskeys/{id}``, ``DELETE /accesskeys/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
 
 .. list-table::
