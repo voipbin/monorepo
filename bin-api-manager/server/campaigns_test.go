@@ -840,7 +840,7 @@ func Test_campaignsIDCampaigncallsGET(t *testing.T) {
 
 	type test struct {
 		name       string
-		agent *auth.AuthIdentity
+		agent      *auth.AuthIdentity
 		campaignID uuid.UUID
 
 		reqQuery         string

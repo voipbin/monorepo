@@ -65,10 +65,10 @@ func (h *serviceHandler) AIcallCreate(
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {
-			return nil, fmt.Errorf("resource type not allowed")
+			return nil, fmt.Errorf("%w: direct token does not allow this resource type", serviceerrors.ErrPermissionDenied)
 		}
 		if a.DirectScope.ResourceID != assistanceID {
-			return nil, fmt.Errorf("resource not in scope")
+			return nil, fmt.Errorf("%w: resource not in token scope", serviceerrors.ErrPermissionDenied)
 		}
 	}
 
@@ -133,7 +133,7 @@ func (h *serviceHandler) AIcallGetsByCustomerID(ctx context.Context, a *auth.Aut
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {
-			return nil, fmt.Errorf("resource type not allowed")
+			return nil, fmt.Errorf("%w: direct token does not allow this resource type", serviceerrors.ErrPermissionDenied)
 		}
 	}
 
@@ -202,10 +202,10 @@ func (h *serviceHandler) AIcallGet(ctx context.Context, a *auth.AuthIdentity, id
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {
-			return nil, fmt.Errorf("resource type not allowed")
+			return nil, fmt.Errorf("%w: direct token does not allow this resource type", serviceerrors.ErrPermissionDenied)
 		}
 		if tmp.CustomerID != a.CustomerID {
-			return nil, fmt.Errorf("resource not in scope")
+			return nil, fmt.Errorf("%w: resource not in token scope", serviceerrors.ErrPermissionDenied)
 		}
 	}
 
@@ -227,10 +227,10 @@ func (h *serviceHandler) AIcallDelete(ctx context.Context, a *auth.AuthIdentity,
 		}
 	case a.IsDirect():
 		if !a.HasAllowedResourceType("aicall") {
-			return nil, fmt.Errorf("resource type not allowed")
+			return nil, fmt.Errorf("%w: direct token does not allow this resource type", serviceerrors.ErrPermissionDenied)
 		}
 		if c.CustomerID != a.CustomerID {
-			return nil, fmt.Errorf("resource not in scope")
+			return nil, fmt.Errorf("%w: resource not in token scope", serviceerrors.ErrPermissionDenied)
 		}
 	}
 

@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -481,7 +482,7 @@ func Test_groupcallsIDGet_InvalidID(t *testing.T) {
 }
 
 // Test_groupcallsIDGet_ServiceError exercises the servicehandler-failure path
-// through abortWithServiceError. The translator's substring fallback maps
+// through abortWithServiceError. The translator's sentinel match maps
 // "groupcall not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
 func Test_groupcallsIDGet_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -509,7 +510,7 @@ func Test_groupcallsIDGet_ServiceError(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/groupcalls/c1423b7c-bf09-11ed-a3f8-cb3f5a42b528", nil)
 	// The RequestID middleware augments the context, so match with gomock.Any().
-	mockSvc.EXPECT().GroupcallGet(gomock.Any(), agent, groupcallID).Return(nil, fmt.Errorf("groupcall not found"))
+	mockSvc.EXPECT().GroupcallGet(gomock.Any(), agent, groupcallID).Return(nil, fmt.Errorf("%w: groupcall not found", serviceerrors.ErrNotFound))
 
 	r.ServeHTTP(w, req)
 

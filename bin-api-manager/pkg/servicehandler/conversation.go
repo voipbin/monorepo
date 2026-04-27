@@ -98,7 +98,7 @@ func (h *serviceHandler) conversationList(ctx context.Context, a *auth.AuthIdent
 	res, err := h.reqHandler.ConversationV1ConversationList(ctx, token, size, fields)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaigns info", err)
 	}
 
 	return res, nil
@@ -123,7 +123,7 @@ func (h *serviceHandler) ConversationGet(ctx context.Context, a *auth.AuthIdenti
 	tmp, err := h.conversationGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find conversation info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -154,7 +154,7 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIde
 	c, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		log.Errorf("Could not get conversation info from the conversation-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find conversation info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find conversation info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

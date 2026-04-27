@@ -317,7 +317,7 @@ func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context
 	c, err := h.customerGet(ctx, a.CustomerID)
 	if err != nil {
 		log.Infof("Could not get customer info. err: %v", err)
-		return "", fmt.Errorf("could not get customer info")
+		return "", fmt.Errorf("%w: could not get customer info", serviceerrors.ErrInternal)
 	}
 	log.WithField("customer", c).Debugf("Retrieved customer info. customer_id: %s", c.ID)
 
@@ -329,7 +329,7 @@ func (h *serviceHandler) BillingAccountSelfCreatePaddlePortalSession(ctx context
 	url, err := h.reqHandler.BillingV1AccountPaddlePortalSession(ctx, c.BillingAccountID)
 	if err != nil {
 		log.Errorf("Could not create portal session. err: %v", err)
-		return "", fmt.Errorf("could not create portal session")
+		return "", fmt.Errorf("%w: portal session creation failed", serviceerrors.ErrInternal)
 	}
 
 	log.Infof("Portal session created. billing_account_id: %s", c.BillingAccountID)

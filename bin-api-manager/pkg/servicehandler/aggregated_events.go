@@ -138,7 +138,7 @@ func (h *serviceHandler) AggregatedEventList(
 	resp, err := h.reqHandler.TimelineV1AggregatedEventList(ctx, req)
 	if err != nil {
 		log.Errorf("Failed to query aggregated events: %v", err)
-		return nil, "", fmt.Errorf("internal error")
+		return nil, "", fmt.Errorf("%w: timeline query failed", serviceerrors.ErrInternal)
 	}
 
 	// Convert events to WebhookMessage format to strip internal fields
@@ -239,7 +239,7 @@ func convertAggregatedEventData(event *tmevent.Event) (*TimelineEvent, error) {
 		}
 	}
 	if bestConverter == nil {
-		return nil, fmt.Errorf("unsupported event type: %s", event.EventType)
+		return nil, fmt.Errorf("%w: unsupported event type: %s", serviceerrors.ErrInvalidArgument, event.EventType)
 	}
 
 	data, err := bestConverter(event.Data)

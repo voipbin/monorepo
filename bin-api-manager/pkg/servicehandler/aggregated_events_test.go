@@ -472,8 +472,8 @@ func Test_AggregatedEventList_TimelineRPCError(t *testing.T) {
 	if err == nil {
 		t.Error("Wrong match. expect: error, got: nil")
 	}
-	if err.Error() != "internal error" {
-		t.Errorf("Wrong error message. expect: internal error, got: %s", err.Error())
+	if !errors.Is(err, serviceerrors.ErrInternal) {
+		t.Errorf("Wrong error. expect: ErrInternal, got: %v", err)
 	}
 }
 

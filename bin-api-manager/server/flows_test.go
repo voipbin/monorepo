@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -427,7 +428,7 @@ func Test_flowsIDGet_InvalidID(t *testing.T) {
 }
 
 // Test_flowsIDGet_ServiceError exercises the servicehandler-failure path
-// through abortWithServiceError. The translator's substring fallback maps
+// through abortWithServiceError. The translator's sentinel match maps
 // "flow not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
 func Test_flowsIDGet_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -455,7 +456,7 @@ func Test_flowsIDGet_ServiceError(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/flows/2375219e-0b87-11eb-90f9-036ec16f126b", nil)
 	// The RequestID middleware augments the context, so match with gomock.Any().
-	mockSvc.EXPECT().FlowGet(gomock.Any(), agent, flowID).Return(nil, fmt.Errorf("flow not found"))
+	mockSvc.EXPECT().FlowGet(gomock.Any(), agent, flowID).Return(nil, fmt.Errorf("%w: flow not found", serviceerrors.ErrNotFound))
 
 	r.ServeHTTP(w, req)
 

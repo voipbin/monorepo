@@ -80,7 +80,7 @@ func (h *serviceHandler) ExtensionDelete(ctx context.Context, a *auth.AuthIdenti
 	e, err := h.extensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find extension info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find extension info", err)
 	}
 
 	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -115,7 +115,7 @@ func (h *serviceHandler) ExtensionGet(ctx context.Context, a *auth.AuthIdentity,
 	tmp, err := h.extensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find extension info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find extension info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -166,7 +166,7 @@ func (h *serviceHandler) ExtensionList(ctx context.Context, a *auth.AuthIdentity
 	exts, err := h.reqHandler.RegistrarV1ExtensionList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get extensions info from the registrar-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find extensions info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find extensions info", err)
 	}
 
 	res := []*rmextension.WebhookMessage{}
@@ -195,7 +195,7 @@ func (h *serviceHandler) ExtensionUpdate(ctx context.Context, a *auth.AuthIdenti
 	e, err := h.extensionGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get extension info from the registrar-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find extension info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find extension info", err)
 	}
 
 	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -229,7 +229,7 @@ func (h *serviceHandler) ExtensionDirectHashRegenerate(ctx context.Context, a *a
 	e, err := h.extensionGet(ctx, extensionID)
 	if err != nil {
 		log.Errorf("Could not get extension info. err: %v", err)
-		return nil, fmt.Errorf("could not find extension info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find extension info", err)
 	}
 
 	if !h.hasPermission(ctx, a, e.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

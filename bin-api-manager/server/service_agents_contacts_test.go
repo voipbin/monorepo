@@ -614,12 +614,12 @@ func Test_PostServiceAgentsContactsIdPhoneNumbers(t *testing.T) {
 
 		responseContact *cmcontact.WebhookMessage
 
-		expectContactID uuid.UUID
-		expectNumber    string
+		expectContactID  uuid.UUID
+		expectNumber     string
 		expectNumberE164 string
-		expectPhoneType string
-		expectIsPrimary bool
-		expectRes       string
+		expectPhoneType  string
+		expectIsPrimary  bool
+		expectRes        string
 	}{
 		{
 			name: "normal",

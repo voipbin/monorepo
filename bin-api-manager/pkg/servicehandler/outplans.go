@@ -29,7 +29,7 @@ func (h *serviceHandler) outplanGet(ctx context.Context, id uuid.UUID) (*caoutpl
 	res, err := h.reqHandler.CampaignV1OutplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outplan info", err)
 	}
 
 	return res, nil
@@ -94,7 +94,7 @@ func (h *serviceHandler) OutplanDelete(ctx context.Context, a *auth.AuthIdentity
 	op, err := h.outplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info. err: %v", err)
-		return nil, fmt.Errorf("could not get outplan info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get outplan info", err)
 	}
 
 	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -143,7 +143,7 @@ func (h *serviceHandler) OutplanGetsByCustomerID(ctx context.Context, a *auth.Au
 	outplans, err := h.reqHandler.CampaignV1OutplanList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get outplans info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outplans info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outplans info", err)
 	}
 
 	// create result
@@ -175,7 +175,7 @@ func (h *serviceHandler) OutplanGet(ctx context.Context, a *auth.AuthIdentity, i
 	tmp, err := h.outplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outplan info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -206,7 +206,7 @@ func (h *serviceHandler) OutplanUpdateBasicInfo(ctx context.Context, a *auth.Aut
 	op, err := h.outplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outplan info", err)
 	}
 
 	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -255,7 +255,7 @@ func (h *serviceHandler) OutplanUpdateDialInfo(
 	op, err := h.outplanGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get outplan info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find outplan info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find outplan info", err)
 	}
 
 	if !h.hasPermission(ctx, a, op.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

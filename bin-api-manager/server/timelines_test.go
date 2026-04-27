@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -310,7 +311,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_servicehandler_errors(t *test
 
 			reqQuery: "/timelines/calls/fe003a08-8f36-11ed-a01a-efb53befe93a/events",
 
-			responseErr: fmt.Errorf("not found"),
+			responseErr: fmt.Errorf("%w: not found", serviceerrors.ErrNotFound),
 
 			expectResourceType: "calls",
 			expectResourceID:   uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),
@@ -331,7 +332,7 @@ func Test_GetTimelinesResourceTypeResourceIdEvents_servicehandler_errors(t *test
 
 			reqQuery: "/timelines/calls/fe003a08-8f36-11ed-a01a-efb53befe93a/events",
 
-			responseErr: fmt.Errorf("user has no permission"),
+			responseErr: fmt.Errorf("%w: user has no permission", serviceerrors.ErrPermissionDenied),
 
 			expectResourceType: "calls",
 			expectResourceID:   uuid.FromStringOrNil("fe003a08-8f36-11ed-a01a-efb53befe93a"),

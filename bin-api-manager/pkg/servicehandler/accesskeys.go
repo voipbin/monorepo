@@ -26,7 +26,7 @@ func (h *serviceHandler) accesskeyGet(ctx context.Context, a *auth.AuthIdentity,
 	}
 
 	if res.TMDelete != nil {
-		return nil, fmt.Errorf("deleted item")
+		return nil, fmt.Errorf("%w: accesskey is soft-deleted", serviceerrors.ErrStateInvalid)
 	}
 
 	return res, nil
@@ -124,7 +124,7 @@ func (h *serviceHandler) AccesskeyRawGetByToken(ctx context.Context, token strin
 	}
 	if len(tmps) > 1 {
 		log.Errorf("Multiple accesskeys found for token hash, expected exactly one")
-		return nil, fmt.Errorf("ambiguous token")
+		return nil, fmt.Errorf("%w: ambiguous token (multiple matches)", serviceerrors.ErrInternal)
 	}
 
 	res := tmps[0]

@@ -72,7 +72,7 @@ func (h *serviceHandler) TrunkDelete(ctx context.Context, a *auth.AuthIdentity, 
 	t, err := h.trunkGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the domain info. err: %v", err)
-		return nil, fmt.Errorf("could not get domain info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get domain info", err)
 	}
 
 	// permission check
@@ -110,7 +110,7 @@ func (h *serviceHandler) TrunkGet(ctx context.Context, a *auth.AuthIdentity, id 
 	tmp, err := h.trunkGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get trunk info from the registrar-manager. err: %v", err)
-		return nil, fmt.Errorf("could not get trunk info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get trunk info", err)
 	}
 
 	// permission check
@@ -164,7 +164,7 @@ func (h *serviceHandler) TrunkList(ctx context.Context, a *auth.AuthIdentity, si
 	tmps, err := h.reqHandler.RegistrarV1TrunkList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get trunks info from the registrar-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find trunks info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find trunks info", err)
 	}
 
 	// create result
@@ -196,7 +196,7 @@ func (h *serviceHandler) TrunkUpdateBasicInfo(ctx context.Context, a *auth.AuthI
 	t, err := h.trunkGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get trunk info from the registrar-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find domain info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find domain info", err)
 	}
 
 	// permission check

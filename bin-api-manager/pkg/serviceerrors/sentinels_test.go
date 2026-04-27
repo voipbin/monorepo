@@ -17,6 +17,10 @@ func TestSentinelsExist(t *testing.T) {
 		{"direct_access_not_supported", ErrDirectAccessNotSupported, "direct access not supported"},
 		{"invalid_argument", ErrInvalidArgument, "invalid argument"},
 		{"internal_error", ErrInternal, "internal error"},
+		{"identity_verification_required", ErrIdentityVerificationRequired, "identity verification required"},
+		{"state_invalid", ErrStateInvalid, "state invalid"},
+		{"service_unavailable", ErrServiceUnavailable, "service unavailable"},
+		{"insufficient_balance", ErrInsufficientBalance, "insufficient balance"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -41,6 +45,10 @@ func TestSentinelsAreDistinct(t *testing.T) {
 		{"ErrDirectAccessNotSupported", ErrDirectAccessNotSupported},
 		{"ErrInvalidArgument", ErrInvalidArgument},
 		{"ErrInternal", ErrInternal},
+		{"ErrIdentityVerificationRequired", ErrIdentityVerificationRequired},
+		{"ErrStateInvalid", ErrStateInvalid},
+		{"ErrServiceUnavailable", ErrServiceUnavailable},
+		{"ErrInsufficientBalance", ErrInsufficientBalance},
 	}
 	for i, a := range sentinels {
 		for j, b := range sentinels {

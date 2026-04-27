@@ -92,7 +92,7 @@ func (h *serviceHandler) TeamDirectHashRegenerate(ctx context.Context, a *auth.A
 	c, err := h.teamGet(ctx, teamID)
 	if err != nil {
 		log.Errorf("Could not get team info. err: %v", err)
-		return nil, fmt.Errorf("could not find team info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find team info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -148,7 +148,7 @@ func (h *serviceHandler) TeamGetsByCustomerID(ctx context.Context, a *auth.AuthI
 	tmps, err := h.reqHandler.AIV1TeamList(ctx, token, size, typedFilters)
 	if err != nil {
 		log.Errorf("Could not get teams info from the ai manager. err: %v", err)
-		return nil, fmt.Errorf("could not find teams info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find teams info", err)
 	}
 
 	res := []*amteam.WebhookMessage{}
@@ -196,7 +196,7 @@ func (h *serviceHandler) TeamGet(ctx context.Context, a *auth.AuthIdentity, id u
 	tmp, err := h.teamGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get team info from the ai manager. err: %v", err)
-		return nil, fmt.Errorf("could not find team info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find team info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -225,7 +225,7 @@ func (h *serviceHandler) TeamDelete(ctx context.Context, a *auth.AuthIdentity, i
 	c, err := h.teamGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get team info from the ai-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find team info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find team info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -270,7 +270,7 @@ func (h *serviceHandler) TeamUpdate(
 	c, err := h.teamGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get team info from the ai-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find team info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find team info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

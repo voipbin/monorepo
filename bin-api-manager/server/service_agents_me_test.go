@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -418,7 +419,7 @@ func Test_mePUT_InvalidJSONBody(t *testing.T) {
 }
 
 // Test_GetServiceAgentsMe_ServiceError exercises the servicehandler-failure
-// path through abortWithServiceError. The translator's substring fallback
+// path through abortWithServiceError. The translator's sentinel match
 // maps "agent not found" to NOT_FOUND / RESOURCE_NOT_FOUND.
 func Test_GetServiceAgentsMe_ServiceError(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -447,7 +448,7 @@ func Test_GetServiceAgentsMe_ServiceError(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, "/service_agents/me", nil)
 	// The RequestID middleware augments the context, so match with gomock.Any().
-	mockSvc.EXPECT().ServiceAgentMeGet(gomock.Any(), agent).Return(nil, fmt.Errorf("agent not found"))
+	mockSvc.EXPECT().ServiceAgentMeGet(gomock.Any(), agent).Return(nil, fmt.Errorf("%w: agent not found", serviceerrors.ErrNotFound))
 
 	r.ServeHTTP(w, req)
 

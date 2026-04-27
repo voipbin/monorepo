@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	stderrors "errors"
-	"strings"
 
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -15,22 +14,19 @@ import (
 //  1. Typed passthrough (errors.As).
 //  2. Sentinel match (errors.Is against serviceerrors.Err*).
 //  3. Transport-failure detection (context.Canceled / DeadlineExceeded).
-//  4. Substring fallback for legacy fmt.Errorf messages (shrinks over time).
-//  5. Default: Internal with the original error wrapped as Cause.
+//  4. Default: Internal with the original error wrapped as Cause.
 //
 // The whole function is wrapped in defer recover() so a panic inside
 // any branch degrades to INTERNAL rather than dropping the response.
 //
-// Migration status (2026-04): Steps 1-3 cover all RPC traffic from
-// upstream managers — every Get-by-ID handler in bin-call-manager,
-// bin-flow-manager, …, bin-registrar-manager now emits typed
-// *cerrors.VoipbinError on miss. The api-manager servicehandler layer
-// has migrated permission checks (PR-perm) and validation errors
-// (PR-validation) to typed sentinels. Step 4 still covers a few legacy
-// strings (not_found / state / insufficient / unavailable) that remain
-// in servicehandler; those are tracked as follow-up sub-PRs. Once
-// servicehandler is fully migrated, step 4 can be removed and any
-// unmatched legacy string will correctly degrade to INTERNAL via step 5.
+// Migration status (2026-04, complete): All RPC traffic from upstream
+// managers emits typed *cerrors.VoipbinError on miss (PR2-PR29). The
+// api-manager servicehandler layer has been fully migrated to typed
+// sentinels — permission checks (PR-perm), validation errors
+// (PR-validation), not-found errors (PR-notfound), and the remaining
+// state/insufficient/internal/auth strings (PR-final). The legacy
+// substring-fallback step has been removed; any unmatched error
+// correctly degrades to INTERNAL via the default branch.
 func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -71,6 +67,9 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	case stderrors.Is(err, serviceerrors.ErrServiceUnavailable):
 		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE",
 			"An upstream service is temporarily unavailable.").Wrap(err)
+	case stderrors.Is(err, serviceerrors.ErrInsufficientBalance):
+		return cerrors.PaymentRequired(commonoutline.ServiceNameAPIManager, "INSUFFICIENT_BALANCE",
+			"Customer balance is below the minimum required for this operation.").Wrap(err)
 	}
 
 	// 3. Transport failures.
@@ -81,43 +80,6 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "REQUEST_TIMEOUT", "The request timed out.").Wrap(err)
 	}
 
-	// 4. Substring fallback for legacy fmt.Errorf errors. Case-insensitive
-	// match so title-cased requesthandler errors (e.g. "Not Found" from
-	// http.StatusText) are caught alongside lowercase servicehandler
-	// strings. This set is intentionally small — each pattern is a
-	// migration target for a sentinel in subsequent PRs.
-	//
-	// As of the typed-RPC migration (PR2-PR29), upstream managers no
-	// longer emit these strings — only api-manager's own servicehandler
-	// does (authorization checks, validation, etc.). Removing this branch
-	// requires migrating servicehandler to typed errors / sentinels,
-	// which is tracked as follow-up work.
-	lowered := strings.ToLower(err.Error())
-	switch {
-	case strings.Contains(lowered, "no permission"),
-		strings.Contains(lowered, "permission denied"),
-		strings.Contains(lowered, "forbidden"),
-		strings.Contains(lowered, "direct access"),
-		strings.Contains(lowered, "does not belong"):
-		return cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "PERMISSION_DENIED", "You do not have permission to access this resource.").Wrap(err)
-	case strings.Contains(lowered, "identity verification required"):
-		return cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "IDENTITY_VERIFICATION_REQUIRED", "Customer identity verification is required for this operation.").Wrap(err)
-	case strings.Contains(lowered, "authentication required"), strings.Contains(lowered, "unauthorized"):
-		return cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required.").Wrap(err)
-	case strings.Contains(lowered, "not found"):
-		return cerrors.NotFound(commonoutline.ServiceNameAPIManager, "RESOURCE_NOT_FOUND", "The requested resource was not found.").Wrap(err)
-	case strings.Contains(lowered, "insufficient"):
-		return cerrors.PaymentRequired(commonoutline.ServiceNameAPIManager, "INSUFFICIENT_BALANCE", "Customer balance is below the minimum required for this operation.").Wrap(err)
-	case strings.Contains(lowered, "already"),
-		strings.Contains(lowered, "deleted call"),
-		strings.Contains(lowered, "deleted groupcall"),
-		strings.Contains(lowered, "deleted recording"),
-		strings.Contains(lowered, "not active"):
-		return cerrors.FailedPrecondition(commonoutline.ServiceNameAPIManager, "STATE_INVALID", "The operation is invalid for the current resource state.").Wrap(err)
-	case strings.Contains(lowered, "unavailable"):
-		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE", "An upstream service is temporarily unavailable.").Wrap(err)
-	}
-
-	// 5. Default.
+	// 4. Default.
 	return cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.").Wrap(err)
 }

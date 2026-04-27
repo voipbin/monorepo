@@ -119,7 +119,7 @@ func (h *serviceHandler) CampaignGetsByCustomerID(ctx context.Context, a *auth.A
 	campaigns, err := h.reqHandler.CampaignV1CampaignList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get campaigns info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaigns info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaigns info", err)
 	}
 
 	// create result
@@ -151,7 +151,7 @@ func (h *serviceHandler) CampaignGet(ctx context.Context, a *auth.AuthIdentity, 
 	tmp, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaign info", err)
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -180,7 +180,7 @@ func (h *serviceHandler) CampaignDelete(ctx context.Context, a *auth.AuthIdentit
 	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaign info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -230,7 +230,7 @@ func (h *serviceHandler) CampaignUpdateBasicInfo(
 	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaign info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -266,7 +266,7 @@ func (h *serviceHandler) CampaignUpdateStatus(ctx context.Context, a *auth.AuthI
 	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaign info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -302,7 +302,7 @@ func (h *serviceHandler) CampaignUpdateServiceLevel(ctx context.Context, a *auth
 	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaign info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -338,7 +338,7 @@ func (h *serviceHandler) CampaignUpdateActions(ctx context.Context, a *auth.Auth
 	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaign info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -374,7 +374,7 @@ func (h *serviceHandler) CampaignUpdateResourceInfo(ctx context.Context, a *auth
 	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaign info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -410,7 +410,7 @@ func (h *serviceHandler) CampaignUpdateNextCampaignID(ctx context.Context, a *au
 	c, err := h.campaignGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get campaign info from the campaign-manager. err: %v", err)
-		return nil, fmt.Errorf("could not find campaign info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find campaign info", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {

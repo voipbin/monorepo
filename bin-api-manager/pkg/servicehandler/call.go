@@ -75,7 +75,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, f
 		cu, err := h.customerGet(ctx, a.CustomerID)
 		if err != nil {
 			log.Errorf("Could not get customer info for verification check. err: %v", err)
-			return nil, nil, fmt.Errorf("could not verify customer identity status")
+			return nil, nil, fmt.Errorf("%w: could not verify customer identity status", serviceerrors.ErrInternal)
 		}
 		log.WithField("customer", cu).Debugf("Retrieved customer info for verification check. customer_id: %s", cu.ID)
 
@@ -106,7 +106,7 @@ func (h *serviceHandler) CallCreate(ctx context.Context, a *auth.AuthIdentity, f
 	}
 	if f.CustomerID != a.CustomerID {
 		log.WithField("flow", f).Errorf("The flow has wrong customer id")
-		return nil, nil, fmt.Errorf("the flow has wrong customer id")
+		return nil, nil, fmt.Errorf("%w: flow does not belong to this customer", serviceerrors.ErrPermissionDenied)
 	}
 
 	tmpCalls, tmpGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, a.CustomerID, targetFlowID, uuid.Nil, source, destinations, false, false, anonymous, nil)

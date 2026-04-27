@@ -43,7 +43,7 @@ func (h *serviceHandler) ConversationMessageGetsByConversationID(
 	c, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		log.Errorf("Could not get conversation info. err: %v", err)
-		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)
+		return nil, fmt.Errorf("%w: could not verify the conversation", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -97,7 +97,7 @@ func (h *serviceHandler) conversationMessageGetsByConversationID(
 	tmps, err := h.reqHandler.ConversationV1MessageList(ctx, token, size, filters)
 	if err != nil {
 		log.Errorf("Could not get conversation messages info from the conversation-manager. err: %v", err)
-		return nil, fmt.Errorf("could not get conversation messages info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not get conversation messages info", err)
 	}
 
 	return tmps, nil
@@ -126,7 +126,7 @@ func (h *serviceHandler) ConversationMessageSend(
 	c, err := h.conversationGet(ctx, conversationID)
 	if err != nil {
 		log.Errorf("Could not get conversation info. err: %v", err)
-		return nil, fmt.Errorf("could not verify the conversation. err: %v", err)
+		return nil, fmt.Errorf("%w: could not verify the conversation", err)
 	}
 
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -163,7 +163,7 @@ func (h *serviceHandler) conversationMessageSend(
 	res, err := h.reqHandler.ConversationV1MessageSend(ctx, conversationID, text, medias)
 	if err != nil {
 		log.Errorf("Could not send the message correctly. err: %v", err)
-		return nil, fmt.Errorf("could not send the message. err: %v", err)
+		return nil, fmt.Errorf("%w: could not send the message", err)
 	}
 
 	return res, nil

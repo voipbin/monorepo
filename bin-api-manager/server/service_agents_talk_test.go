@@ -607,9 +607,9 @@ func Test_talksIDParticipantsIDDELETE(t *testing.T) {
 
 		reqQuery string
 
-		responseParticipant  *tkparticipant.WebhookMessage
-		expectTalkID         uuid.UUID
-		expectParticipantID  uuid.UUID
+		responseParticipant *tkparticipant.WebhookMessage
+		expectTalkID        uuid.UUID
+		expectParticipantID uuid.UUID
 	}{
 		{
 			name: "normal",
@@ -715,7 +715,7 @@ func Test_talkMessagesGET(t *testing.T) {
 					Text:   "Hello",
 				},
 			},
-		expectChatID:    uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
+			expectChatID: uuid.FromStringOrNil("e66d1da0-3ed7-11ef-9208-4bcc069917a1"),
 
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
 			expectPageSize:  10,
