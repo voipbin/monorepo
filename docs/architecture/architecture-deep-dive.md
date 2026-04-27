@@ -234,3 +234,50 @@ Path filtering enables selective service testing:
 - `.circleci/config.yml` - Path filter setup
 - `.circleci/config_work.yml` - Actual build jobs
 - Only changed services are tested on each commit
+
+## Key Dependencies
+
+### All Services
+
+- `github.com/go-sql-driver/mysql` - MySQL driver
+- `github.com/go-redis/redis/v8` - Redis client
+- `github.com/rabbitmq/amqp091-go` - RabbitMQ client
+- `github.com/sirupsen/logrus` - Structured logging
+- `github.com/prometheus/client_golang` - Prometheus metrics
+- `go.uber.org/mock` - Mock generation for testing
+
+### Common Tools
+
+- `github.com/Masterminds/squirrel` - SQL query builder
+- `github.com/spf13/cobra` - CLI framework
+- `github.com/spf13/viper` - Configuration management
+- `github.com/gofrs/uuid` - UUID generation
+
+### API Gateway Specific
+
+- `github.com/gin-gonic/gin` - HTTP router
+- `github.com/swaggo/swag` - Swagger documentation
+- `github.com/oapi-codegen/oapi-codegen` - OpenAPI code generation
+- `github.com/golang-jwt/jwt` - JWT authentication
+- `github.com/pebbe/zmq4` - ZeroMQ bindings
+
+### Cloud Integration
+
+- `cloud.google.com/go/storage` - GCP Cloud Storage
+
+## Deployment
+
+### Kubernetes
+
+- Each service has `k8s/` directory with manifests
+- Prometheus metrics exposed on configured port (default `:2112` on `/metrics`)
+- Dockerfiles for containerization
+
+### Infrastructure Requirements
+
+- GCP GKE cluster (recommended)
+- MySQL database
+- Redis cluster
+- RabbitMQ cluster
+- Asterisk/RTPEngine for media (external to this repo)
+- Public domain with TLS
