@@ -114,12 +114,20 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	// (Accepted v1 limits) for the dual-delivery race window.
 	sent, errSend := h.reqHandler.ConversationV1MessageSend(ctx, acFinal.ReferenceID, evt.Text, []cvmedia.Media{})
 	if errSend != nil {
-		log.Errorf("Could not send conversation message (silent failure): %v", errSend)
+		log.WithFields(logrus.Fields{
+			"aicall_id":       acFinal.ID,
+			"conversation_id": acFinal.ReferenceID,
+			"event_id":        evt.ID,
+		}).Errorf("Could not send conversation message (silent failure): %v", errSend)
 		promConversationReplySendTotal.WithLabelValues("failure").Inc()
 		return
 	}
 	promConversationReplySendTotal.WithLabelValues("success").Inc()
-	log.WithField("conversation_message", sent).Debugf("Sent conversation reply.")
+	log.WithFields(logrus.Fields{
+		"aicall_id":            acFinal.ID,
+		"conversation_id":      acFinal.ReferenceID,
+		"conversation_message": sent,
+	}).Debugf("Sent conversation reply.")
 }
 
 func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message) {

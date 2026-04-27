@@ -619,11 +619,18 @@
       "targets": [
         {
           "datasource": "${DS_PROMETHEUS}",
-          "expr": "ai_manager_circuitbreaker_state{target=~\".*conversation.*\"}",
-          "legendFormat": "{{target}}"
+          "expr": "ai_manager_circuitbreaker_state{target=~\".*pipecat-manager.*\"}",
+          "legendFormat": "pipecat — {{target}}",
+          "refId": "A"
+        },
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "expr": "ai_manager_circuitbreaker_state{target=~\".*conversation-manager.*\"}",
+          "legendFormat": "conversation — {{target}}",
+          "refId": "B"
         }
       ],
-      "title": "Conversation-Manager Circuit Breaker State",
+      "title": "Downstream CB State (pipecat & conversation)",
       "type": "stat"
     }
   ],
@@ -636,5 +643,5 @@
   "timezone": "browser",
   "title": "AI Manager",
   "uid": "ai-manager",
-  "version": 2
+  "version": 3
 }
