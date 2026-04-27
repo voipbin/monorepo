@@ -15,6 +15,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `queue`: Special conference type for queue operations
 - **Confbridge**: The underlying Asterisk conference bridge managed by call-manager
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-conference-manager`.
+
 ## Architecture
 
 ### Service Communication Pattern

@@ -15,6 +15,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **External Media**: WebRTC or external media streams integrated into calls/conferences
 - **Group Call**: Multi-party call group managing multiple simultaneous calls
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-call-manager`.
+
 ## Architecture
 
 ### Service Communication Pattern

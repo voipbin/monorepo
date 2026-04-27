@@ -2,11 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Overview
 
-flow-manager is a Go microservice that manages call flows in a VoIP system. It orchestrates call actions (e.g., answer, play, talk, record) by coordinating with other microservices (call-manager, agent-manager, ai-manager, etc.) through RabbitMQ RPC.
+`bin-flow-manager` is a Go microservice that manages call flows in a VoIP system. It orchestrates call actions (e.g., answer, play, talk, record) by coordinating with other microservices (call-manager, agent-manager, ai-manager, etc.) through RabbitMQ RPC.
 
-## Development Commands
+**Key Concepts:**
+- **Flow**: A sequence of actions that defines call behavior (e.g., answer → play message → hangup). Flows are templates stored in the database.
+- **Activeflow**: A running instance of a Flow attached to a specific call/reference. Contains execution state (current action, stack, variables).
+- **Action**: An atomic operation in a flow, dispatched to the appropriate manager (call-manager, ai-manager, agent-manager, etc.) by type.
+- **Stack**: Activeflows use a stack structure to handle nested flows (e.g., when branching or calling sub-flows). Each stack contains its own action sequence.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-flow-manager`.
+
+## Common Commands
 
 ### Building
 ```bash
@@ -93,49 +101,16 @@ A command-line tool for managing flows directly via database/cache (bypasses Rab
 
 Uses same environment variables as flow-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
 
-## Configuration
-
-Configuration is managed via the `internal/config` package using Cobra and Viper.
-
-**Configuration precedence (highest to lowest):**
-1. Command-line flags (e.g., `--database_dsn`)
-2. Environment variables (e.g., `DATABASE_DSN`)
-3. Default values
-
-**Available configuration:**
-- `--rabbitmq_address` / `RABBITMQ_ADDRESS`: RabbitMQ server address
-- `--database_dsn` / `DATABASE_DSN`: MySQL connection string
-- `--redis_address` / `REDIS_ADDRESS`: Redis server address
-- `--redis_password` / `REDIS_PASSWORD`: Redis password
-- `--redis_database` / `REDIS_DATABASE`: Redis database index
-- `--prometheus_endpoint` / `PROMETHEUS_ENDPOINT`: Prometheus metrics path
-- `--prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS`: Prometheus server address
-
-**Access config in code:**
-```go
-import "monorepo/bin-flow-manager/internal/config"
-
-// Access configuration
-dbDSN := config.Get().DatabaseDSN
-redisAddr := config.Get().RedisAddress
-```
-
 ## Architecture
 
-### Core Concepts
+### Action Dispatch by Manager
 
-**Flow**: A sequence of actions that defines call behavior (e.g., answer → play message → hangup). Flows are templates stored in the database.
-
-**Activeflow**: A running instance of a Flow attached to a specific call/reference. Contains execution state (current action, stack, variables).
-
-**Action**: An atomic operation in a flow. Actions are executed by different managers based on type:
+Actions are executed by different managers based on type:
 - `call-manager`: answer, play, talk, recording_start, dtmf_receive, hangup, etc.
 - `flow-manager`: connect, goto, branch, call, patch, block, etc.
 - `ai-manager`: ai_talk, ai_summary, ai_task
 - `agent-manager`: agent_call
 - Other managers: conference_join, queue_join, transcribe_start, etc.
-
-**Stack**: Activeflows use a stack structure to handle nested flows (e.g., when branching or calling sub-flows). Each stack contains its own action sequence.
 
 ### Component Structure
 
@@ -167,6 +142,36 @@ pkg/                      # Business logic packages
 - **Event Subscription**: Subscribes to `bin-manager.customer.event` for customer-related events.
 - **Delayed Messages**: Uses `bin-manager.delay` exchange for time-delayed operations.
 
+## Request Routing
+
+ListenHandler routes requests using regex patterns matching REST-like URIs (see `pkg/listenhandler/`):
+
+**Flows API (`/v1/flows/*`):**
+- `POST /v1/flows` — Create flow
+- `GET /v1/flows?<filters>` — List flows (pagination)
+- `GET /v1/flows/<uuid>` — Get flow details
+- `PUT /v1/flows/<uuid>` — Update flow
+- `PUT /v1/flows/<uuid>/actions` — Update flow actions
+- `DELETE /v1/flows/<uuid>` — Delete flow
+
+**Activeflows API (`/v1/activeflows/*`):**
+- `POST /v1/activeflows` — Create activeflow
+- `GET /v1/activeflows?<filters>` — List activeflows
+- `GET /v1/activeflows/<uuid>` — Get activeflow
+- `POST /v1/activeflows/<uuid>/execute` — Execute next action
+- `POST /v1/activeflows/<uuid>/stop` — Stop activeflow
+- `POST /v1/activeflows/<uuid>/push` — Push actions onto stack
+- `POST /v1/activeflows/<uuid>/variables` — Set activeflow variables
+
+**Variables API (`/v1/variables/*`):**
+- `GET /v1/variables/<uuid>` — Get variables for activeflow
+- `POST /v1/variables/<uuid>` — Set variables
+
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.customer-manager.event**: Customer lifecycle events (e.g., customer deletion to clean up flows).
+
 ### Handler Pattern
 
 Each handler follows a consistent pattern:
@@ -184,7 +189,7 @@ Example dependency chain: `listenhandler` → `flowhandler` + `activeflowhandler
 - **Query Builder**: Uses Masterminds/squirrel for SQL query construction
 - DBHandler provides unified interface to both database and cache
 
-## Important Patterns
+## Key Implementation Details
 
 ### Action Execution Flow
 1. Request arrives at listenhandler (e.g., `/v1/activeflows/{id}/execute`)
@@ -211,29 +216,63 @@ Variables follow format: `${variable.key}` or `${voipbin.activeflow.id}`. Built-
 ### Stack Management
 Stacks enable nested flow execution. When pushing actions (e.g., via `patch_flow`), a new stack is created. When a stack completes, it pops back to the parent stack.
 
-## Flow Execution Pattern
+### Variable Substitution
 
-**Key Concepts:**
-1. **Flow** = template with action sequence (stored in database)
-2. **Activeflow** = running instance attached to call (contains execution state)
-3. **Actions dispatched to appropriate managers** via RabbitMQ (call-manager, ai-manager, etc.)
-4. **Stack-based execution** for nested flows (branch, call actions)
+Variable substitution happens automatically before actions are dispatched to target managers. The variablehandler replaces all `${variable.key}` placeholders with actual values from activeflow state and call data.
 
-**Variable Substitution:**
+## Configuration
 
-Variables use format `${variable.key}`:
-- `${voipbin.activeflow.id}` - Built-in activeflow metadata (ID, customer_id, reference_id, etc.)
-- `${voipbin.call.caller_id}` - Call information from call-manager (caller_id, callee_id, status, etc.)
-- Custom variables stored per activeflow (set via action options or external updates)
+Configuration is managed via the `internal/config` package using Cobra and Viper.
 
-**Variable substitution happens automatically** before actions are dispatched to target managers. The variablehandler replaces all `${variable.key}` placeholders with actual values from activeflow state and call data.
+**Configuration precedence (highest to lowest):**
+1. Command-line flags (e.g., `--database_dsn`)
+2. Environment variables (e.g., `DATABASE_DSN`)
+3. Default values
 
-## Testing
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server address | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis server address | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis password | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis database index | optional |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+**Access config in code:**
+```go
+import "monorepo/bin-flow-manager/internal/config"
+
+dbDSN := config.Get().DatabaseDSN
+redisAddr := config.Get().RedisAddress
+```
+
+## Testing Patterns
 
 - Tests use `go.uber.org/mock` for mocking dependencies
-- Most tests follow table-driven pattern with subtests
+- Most tests follow the table-driven pattern with subtests
 - Tests cover: CRUD operations, action execution, variable substitution, stack operations, error handling
 - 34 test files total across the codebase
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
 
 ## Monorepo Context
 
@@ -242,3 +281,9 @@ This service is part of a larger monorepo (`monorepo/bin-*`). It depends on:
 - Other `bin-*-manager` services: Definitions for cross-service communication
 
 All inter-service communication happens via RabbitMQ RPC, not direct HTTP calls.
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `flow_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `flow_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)

@@ -12,6 +12,8 @@ This is the `bin-conversation-manager` service, part of the VoIPbin monorepo. It
 - **Account**: Platform-specific credentials (LINE channel secret/token, SMS provider credentials) for sending messages
 - **Dialog ID**: External platform conversation identifier (LINE chatroom ID, SMS thread ID)
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-conversation-manager`.
+
 ## Architecture
 
 ### Service Communication Pattern
