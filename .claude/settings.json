@@ -23,6 +23,11 @@
             "type": "command",
             "command": "bash .claude/scripts/check-migration-table-names.sh",
             "description": "Verify Alembic migration table names exist in dbhandler code"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-docs-size.sh",
+            "description": "Run scripts/check-docs.sh after edits to root CLAUDE.md or docs/* to catch root CLAUDE.md regrowth and missing category READMEs"
           }
         ]
       }
