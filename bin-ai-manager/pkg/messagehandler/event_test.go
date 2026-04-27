@@ -411,6 +411,86 @@ func TestEventPMMessageBotLLM_conversation_send_failure_silent(t *testing.T) {
 	}
 }
 
+// TestEventPMMessageBotLLM_customer_id_mismatch_proceeds documents that the
+// handler does NOT cross-check evt.CustomerID against ac.CustomerID at
+// runtime — see design doc §11 (Accepted v1 limits): "Customer cross-check
+// between AIcall and conversation skipped at the RPC level. Already enforced
+// upstream; one-time integration test asserts isolation."
+//
+// This test is a safety net: if a future PR adds a cross-check, this test
+// fails and forces conscious review of the design constraint.
+func TestEventPMMessageBotLLM_customer_id_mismatch_proceeds(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	customerA := uuid.Must(uuid.NewV4())
+	customerB := uuid.Must(uuid.NewV4())
+	pccA := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	convID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "hello human",
+	}
+	evt.CustomerID = customerA
+
+	// AIcall belongs to a DIFFERENT customer than the inbound event.
+	freshAIcall := &aicall.AIcall{
+		PipecatcallID: pccA,
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+	freshAIcall.CustomerID = customerB
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	// Both guard fetches return the customer-mismatched AIcall — handler
+	// MUST still proceed (no cross-check at this layer).
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(freshAIcall, nil).Times(2)
+
+	// MessageCreate is invoked with evt.CustomerID (customerA), per current code.
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, m *message.Message) error {
+			if m.CustomerID != customerA {
+				t.Errorf("expected MessageCreate to use evt.CustomerID=%s, got %s", customerA, m.CustomerID)
+			}
+			return nil
+		},
+	).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	// Conversation send proceeds — uses acFinal.ReferenceID (the AIcall's
+	// reference, not the event's). No customer-isolation guard at runtime.
+	mockReq.EXPECT().
+		ConversationV1MessageSend(gomock.Any(), convID, "hello human", []cvmedia.Media{}).
+		Return(&cvmessage.Message{}, nil).
+		Times(1)
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	before := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+	h.EventPMMessageBotLLM(context.Background(), evt)
+	after := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+
+	if after-before != 1 {
+		t.Errorf("expected success counter to increment by 1 (handler proceeds despite customer mismatch), got delta=%f", after-before)
+	}
+}
+
 func TestEventPMMessageBotLLM_forwards_pre_generated_id(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
