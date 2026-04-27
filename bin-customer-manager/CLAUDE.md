@@ -12,6 +12,8 @@ This is the `bin-customer-manager` service, part of the VoIPbin monorepo. It man
 - **Soft Deletes**: Records use `tm_delete` timestamp (default `"9999-01-01 00:00:00.000000"` for active records)
 - **Webhook Events**: Customer changes trigger webhook notifications via RabbitMQ for async delivery
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-customer-manager`.
+
 ## Architecture
 
 ### Service Communication Pattern
@@ -69,7 +71,11 @@ Customer operations publish events to `bin-manager.customer-manager.event`:
 
 Webhook notifications are created and queued for async delivery to customer webhook URIs.
 
-### Configuration
+## Event Subscriptions
+
+This service does not subscribe to external events. There is no SubscribeHandler — customer state is driven entirely by inbound RPC.
+
+## Configuration
 
 Uses **Cobra + Viper** pattern (see `internal/config/`):
 - Command-line flags and environment variables (e.g., `--rabbitmq_address` or `RABBITMQ_ADDRESS`)

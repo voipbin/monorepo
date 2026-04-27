@@ -11,6 +11,8 @@ This is the `bin-agent-manager` service, part of the VoIPbin monorepo. It manage
 - **Ring Method**: Strategy for routing calls to agents - "ringall" (all at once) or "linear" (sequential)
 - **Permission System**: Bitwise permission flags organized in levels (project: super admin; customer: agent/admin/manager)
 
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-agent-manager`.
+
 ## Architecture
 
 ### Service Communication Pattern

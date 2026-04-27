@@ -4,11 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-`bin-billing-manager` is a Go service within the VoIPBin monorepo that manages billing operations for telecommunications services. It tracks account balances, processes billing for calls/SMS/numbers, handles payment information, and publishes billing events to the platform.
+`bin-billing-manager` is a Go service within the VoIPbin monorepo that manages billing operations for telecommunications services. It tracks account balances, processes billing for calls/SMS/numbers, handles payment information (including Paddle webhooks), and publishes billing events to the platform.
+
+**Key Concepts:**
+- **Account**: Billing account per customer with balance, payment type, and plan (e.g., `unlimited` plans bypass balance checks).
+- **Billing**: A record for a billable event (call, SMS, number purchase, number renewal) with cost-per-unit and total cost.
+- **FailedEvent**: Persisted retry queue for billing operations that failed downstream (hard-deleted on success).
+- **Paddle integration**: Subscription and transaction webhooks drive plan upgrades, balance top-ups, and customer state.
 
 This service operates as an event-driven microservice using RabbitMQ for message passing and Redis for caching.
 
-## Development Commands
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-billing-manager`.
+
+## Common Commands
 
 ### Testing
 ```bash
