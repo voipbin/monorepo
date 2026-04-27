@@ -211,6 +211,18 @@ Service exposes metrics on configured endpoint (default `:2112/metrics`):
 
 ## Section Guidelines
 
+### Library packages (e.g., `bin-common-handler`)
+
+Some required sections do not apply to shared libraries that are not standalone services. Specifically `Request Routing` (no listenhandler / cmd entrypoint) and `Event Subscriptions` (no SubscribeHandler) are typically N/A for libraries. When a section is N/A, keep the heading and write a one-line note:
+
+```
+## Request Routing
+
+N/A — shared library, not a service. No `cmd/` entrypoint, no listen queue.
+```
+
+This preserves the navigability of the standard section list while making the omission explicit.
+
 ### Overview
 - 2-3 sentences describing what the service does
 - List 3-5 key concepts/entities the service manages
