@@ -1,6 +1,6 @@
 # Patterns
 
-Applied infrastructure patterns with reference implementations in the VoIPbin codebase. Distinguish from style conventions in [`../conventions/`](../conventions/) — patterns here are about how to combine pieces (queues, breakers, RPCs); conventions are about how to format individual pieces.
+Applied infrastructure patterns with reference implementations in the VoIPbin codebase. Distinguish from style conventions in [conventions/](../conventions/) — patterns here are about how to combine pieces (queues, breakers, RPCs); conventions are about how to format individual pieces.
 
 | File | Description |
 |---|---|
@@ -11,4 +11,4 @@ Applied infrastructure patterns with reference implementations in the VoIPbin co
 
 ## Admission criteria
 
-A pattern belongs here when it has a reference implementation with code, ideally consumed by 2+ services or an obvious candidate for that. Single-service patterns belong inline in that service's `CLAUDE.md`. Style rules (naming, formatting, error wrapping) belong in [`../conventions/`](../conventions/).
+A pattern belongs here when it has a reference implementation with code, ideally consumed by 2+ services or an obvious candidate for that. Single-service patterns belong inline in that service's `CLAUDE.md`. Style rules (naming, formatting, error wrapping) belong in [conventions/](../conventions/).

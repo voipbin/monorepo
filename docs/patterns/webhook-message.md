@@ -49,4 +49,18 @@ Internal model structs intentionally carry fields that must not leak to external
 - **Auth internals** — e.g., `Username`, `PermissionIDs` on agent records.
 - **Implementation hints** — e.g., session keys, internal flags used for cache coherency.
 
-Returning the internal struct directly would expose all of these. `WebhookMessage` is the bottleneck where the API contract is enforced — and it pairs with the RST documentation rule: `*_struct_*.rst` files in `bin-api-manager/docsdev/source/` MUST document `WebhookMessage` fields, not the internal struct, so the public docs match what the API actually returns.
+Returning the internal struct directly would expose all of these. `WebhookMessage` is the bottleneck where the API contract is enforced.
+
+## RST documentation alignment (MANDATORY)
+
+`WebhookMessage` and the customer-facing RST docs are paired contracts. Both must agree on which fields are public.
+
+- `*_struct_*.rst` files in `bin-api-manager/docsdev/source/` MUST document `WebhookMessage` fields, NOT the internal model struct.
+- Do NOT document internal-only fields (e.g., `PodID`, `Username`, `PermissionIDs`) that `ConvertWebhookMessage()` strips. If a field appears in the internal struct but is dropped during conversion, it must NOT appear in the RST.
+- When verifying RST accuracy, always compare against `WebhookMessage` fields in `models/<entity>/webhook.go`, not the internal struct.
+- After changing `WebhookMessage`, rebuild the RST HTML cleanly:
+  ```bash
+  cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build
+  git add -f bin-api-manager/docsdev/build/
+  ```
+  The built HTML is tracked in git (root `.gitignore` excludes `build/`, so `-f` is required) and must stay in sync with the RST sources.

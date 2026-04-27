@@ -64,6 +64,6 @@ If the state is reconstructable from DB or shared cache, use the shared queue an
 
 ## Reference implementations
 
-- `bin-pipecat-manager/cmd/pipecat-manager/main.go:116-120` (HostID = POD_IP wiring)
+- `bin-pipecat-manager/cmd/pipecat-manager/main.go:115-118` (POD_IP read into `listenIP`) and `:167-168` (per-pod queue construction `<QueueNamePipecatRequest>.<host_id>`)
 - `bin-pipecat-manager/pkg/listenhandler/main.go` (volatile per-pod queue declaration)
 - `bin-common-handler/pkg/requesthandler/pipecat_message.go` (per-pod RPC routing)
