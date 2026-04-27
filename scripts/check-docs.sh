@@ -2,11 +2,12 @@
 # scripts/check-docs.sh — guards against root CLAUDE.md regrowth and missing category READMEs.
 # Run from the monorepo root.
 #
-# NOT YET WIRED INTO CI. v1 ships this as an advisory local check; the cap is enforced
-# only when a contributor remembers to run the script. Wiring it into .circleci/config.yml
-# (or a Makefile lint-docs target called from CI) is a follow-up — see the
-# 2026-04-27-claude-md-categorization design doc, "Open questions / future work".
-# Until then, run manually as part of the verification workflow.
+# Invocation points:
+#   - make lint-docs                                  (manual)
+#   - .claude/scripts/check-docs-size.sh              (Claude Code PostToolUse hook,
+#                                                      fires on Write|Edit of CLAUDE.md
+#                                                      or docs/* during AI work sessions)
+#   - CI integration is a follow-up enhancement.
 
 set -euo pipefail
 
