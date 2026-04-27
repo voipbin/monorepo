@@ -79,8 +79,14 @@ Write the decision into the **plan** (this file) by editing this section before 
 Edit this file at the line below and replace `[CHOSEN: A or B]` with the decision and a 1–2 sentence rationale.
 
 ```
-SLICE-0 DECISION: [CHOSEN: A or B]
-Rationale: ...
+SLICE-0 DECISION: A — defer tool whitelist enforcement to v2
+Rationale: Smallest blast radius for v1. Honors design's "no schema, no
+pipecat-manager, no common-handler changes" goal. ConversationSafeTools and
+FilterToolsForConversation still ship as documented utilities (Slice 2.1) so
+a future Path B follow-up has the wiring ready. The accepted gap — LLM may
+invoke connect_call / stop_media / stop_flow in a chat context and observe
+tool-execution failures — is documented in RST docs (Slice 8.2) and surfaced
+via the existing ai_manager_aicall_tool_execute_total counter.
 ```
 
 **Step 2: Commit the decision (no code change).**
