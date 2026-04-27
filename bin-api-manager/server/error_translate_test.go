@@ -8,6 +8,8 @@ import (
 
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cerrors "monorepo/bin-common-handler/models/errors"
+
+	pkgerrors "github.com/pkg/errors"
 )
 
 func TestTranslateTypedPassthrough(t *testing.T) {
@@ -24,6 +26,34 @@ func TestTranslateWrappedTypedError(t *testing.T) {
 	out := translateToVoipbinError(wrapped)
 	if out != in {
 		t.Errorf("wrapped typed error should unwrap to original, got %+v", out)
+	}
+}
+
+// TestTranslatePkgErrorsWrappedTypedError verifies that the pkg/errors v0.9+
+// wrapping path (used widely by api-manager's servicehandler) preserves the
+// upstream typed *cerrors.VoipbinError through `errors.As`.
+//
+// This is the production wrapping pattern — e.g., `serviceHandler.callGet`
+// does `errors.Wrapf(err, "could not get the call info")` over the typed
+// VoipbinError that bin-call-manager emits via `cerrors.NotFound("call-manager",
+// "CALL_NOT_FOUND", ...)`. Without this passthrough, every upstream typed
+// reason would be flattened to the api-manager generic ones.
+//
+// pkg/errors v0.9.0+ implements Unwrap() on its wrapper types, so the stdlib
+// errors.As walks the chain transparently. This test guards against an
+// accidental dependency downgrade or chain-breaking refactor.
+func TestTranslatePkgErrorsWrappedTypedError(t *testing.T) {
+	in := cerrors.NotFound("call-manager", "CALL_NOT_FOUND", "The call was not found.")
+	wrapped := pkgerrors.Wrapf(in, "could not get the call info")
+	out := translateToVoipbinError(wrapped)
+	if out != in {
+		t.Errorf("pkg/errors-wrapped typed error should unwrap to original, got %+v", out)
+	}
+	if out.Reason != "CALL_NOT_FOUND" {
+		t.Errorf("upstream domain reason lost; got %q want CALL_NOT_FOUND", out.Reason)
+	}
+	if out.Domain != "call-manager" {
+		t.Errorf("upstream domain lost; got %q want call-manager", out.Domain)
 	}
 }
 
