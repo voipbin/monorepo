@@ -82,6 +82,11 @@ func Test_FilterToolsForConversation(t *testing.T) {
 				tool.ToolNameSearchKnowledge,
 			},
 		},
+		{
+			name: "all voice-only stripped to empty",
+			in:   []tool.ToolName{tool.ToolNameConnectCall, tool.ToolNameStopMedia, tool.ToolNameStopFlow},
+			want: []tool.ToolName{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

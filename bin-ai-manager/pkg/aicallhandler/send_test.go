@@ -60,6 +60,14 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 		expectPipecatcallMessages  []map[string]any
 		expectCurrentMemberIDAfter uuid.UUID
 		expectRes                  *message.Message
+
+		// updatePipecatcallIDErr — when non-nil, the AIcallUpdate call inside
+		// UpdatePipecatcallID returns this error. Subsequent steps
+		// (team resolve, startPipecatcall, etc.) MUST NOT run.
+		updatePipecatcallIDErr error
+
+		expectErr          bool
+		expectErrSubstring string
 	}{
 		{
 			name: "non_team_aicall_uses_existing_engine_model",
@@ -404,6 +412,63 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			},
 		},
 		{
+			// After a successful interrupt of the previous pipecat session and
+			// a successful messageHandler.Create for the user message, the
+			// UpdatePipecatcallID call (db.AIcallUpdate) fails. The function
+			// MUST return a wrapped error and MUST NOT call startPipecatcall.
+			name: "update_pipecatcall_id_fails_after_interrupt",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000020"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:   uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000030"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000040"),
+				PipecatcallID:  uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000050"),
+			},
+			messageText: "hello before update fails",
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000060"),
+			// responseUpdatedAIcall is unused (UpdatePipecatcallID fails before
+			// the AIcallGet step), but is required by other table-driven mock
+			// expectations that reference it. Kept minimal.
+			responseUpdatedAIcall: nil,
+
+			// interrupt succeeds
+			expectInterruptGet:       true,
+			expectInterruptPing:      true,
+			expectInterruptTerminate: true,
+			responseInterruptPipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "host-a8",
+			},
+			responseInterruptPingErr: nil,
+
+			// AIcallUpdate fails inside UpdatePipecatcallID — no AIcallGet,
+			// no team resolve, no startPipecatcall, no terminate-with-delay.
+			updatePipecatcallIDErr: fmt.Errorf("update failed"),
+			expectTeamGet:          false,
+			expectAIGet:            false,
+			expectUpdateCurrentMember: false,
+			// expectRes is the message returned by messageHandler.Create — that
+			// runs and succeeds; the test asserts the returned error wrap and
+			// nil res from SendReferenceTypeOthers.
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a8000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+			expectErr:          true,
+			expectErrSubstring: "could not update the pipecatcall id for existing aicall",
+		},
+		{
 			name: "nil_previous_pipecatcall_id_skips_interrupt",
 
 			aicall: &aicall.AIcall{
@@ -512,48 +577,67 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 
 			// 4. UpdatePipecatcallID (db.AIcallUpdate + db.AIcallGet)
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseUpdatedAIcall, nil)
-
-			// 5. team resolution (conditional)
-			if tt.expectTeamGet {
-				mockTeam.EXPECT().Get(ctx, tt.aicall.AssistanceID).Return(tt.responseTeam, tt.responseTeamErr)
-			}
-
-			if tt.expectAIGet {
-				mockAI.EXPECT().Get(ctx, tt.responseAI.ID).Return(tt.responseAI, nil)
-			}
-
-			if tt.expectUpdateCurrentMember {
-				// UpdateCurrentMemberID calls AIcallUpdate + AIcallGet
+			//    When updatePipecatcallIDErr is non-nil, AIcallUpdate fails and
+			//    no subsequent expectations (AIcallGet, team resolve, list,
+			//    pipecatStart, terminate-with-delay) should be set.
+			if tt.updatePipecatcallIDErr != nil {
+				mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(tt.updatePipecatcallIDErr)
+			} else {
 				mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
-				mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseFallbackAIcall, nil)
+				mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseUpdatedAIcall, nil)
+
+				// 5. team resolution (conditional)
+				if tt.expectTeamGet {
+					mockTeam.EXPECT().Get(ctx, tt.aicall.AssistanceID).Return(tt.responseTeam, tt.responseTeamErr)
+				}
+
+				if tt.expectAIGet {
+					mockAI.EXPECT().Get(ctx, tt.responseAI.ID).Return(tt.responseAI, nil)
+				}
+
+				if tt.expectUpdateCurrentMember {
+					// UpdateCurrentMemberID calls AIcallUpdate + AIcallGet
+					mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
+					mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseFallbackAIcall, nil)
+				}
+
+				// 6. startPipecatcall: messageHandler.List for getPipecatcallMessages
+				mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+
+				// 7. PipecatV1PipecatcallStart with the expected LLM type
+				mockReq.EXPECT().PipecatV1PipecatcallStart(
+					ctx,
+					tt.responseUpdatedAIcall.PipecatcallID,
+					tt.responseUpdatedAIcall.CustomerID,
+					tt.responseUpdatedAIcall.ActiveflowID,
+					pmpipecatcall.ReferenceTypeAICall,
+					tt.responseUpdatedAIcall.ID,
+					tt.expectLLMType,
+					tt.expectPipecatcallMessages,
+					pmpipecatcall.STTTypeNone,
+					tt.responseUpdatedAIcall.STTLanguage,
+					pmpipecatcall.TTSTypeNone,
+					"",
+					"",
+				).Return(tt.responsePipecatcall, nil)
+
+				// 8. PipecatV1PipecatcallTerminateWithDelay
+				mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 			}
-
-			// 6. startPipecatcall: messageHandler.List for getPipecatcallMessages
-			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
-
-			// 7. PipecatV1PipecatcallStart with the expected LLM type
-			mockReq.EXPECT().PipecatV1PipecatcallStart(
-				ctx,
-				tt.responseUpdatedAIcall.PipecatcallID,
-				tt.responseUpdatedAIcall.CustomerID,
-				tt.responseUpdatedAIcall.ActiveflowID,
-				pmpipecatcall.ReferenceTypeAICall,
-				tt.responseUpdatedAIcall.ID,
-				tt.expectLLMType,
-				tt.expectPipecatcallMessages,
-				pmpipecatcall.STTTypeNone,
-				tt.responseUpdatedAIcall.STTLanguage,
-				pmpipecatcall.TTSTypeNone,
-				"",
-				"",
-			).Return(tt.responsePipecatcall, nil)
-
-			// 8. PipecatV1PipecatcallTerminateWithDelay
-			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
 			res, err := h.SendReferenceTypeOthers(ctx, tt.aicall, message.RoleUser, tt.messageText)
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected error, got nil")
+				}
+				if tt.expectErrSubstring != "" && !strings.Contains(err.Error(), tt.expectErrSubstring) {
+					t.Errorf("expected error containing %q, got: %v", tt.expectErrSubstring, err)
+				}
+				if res != nil {
+					t.Errorf("expected nil res on error, got: %v", res)
+				}
+				return
+			}
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

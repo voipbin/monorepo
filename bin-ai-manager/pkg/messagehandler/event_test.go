@@ -491,6 +491,133 @@ func TestEventPMMessageBotLLM_customer_id_mismatch_proceeds(t *testing.T) {
 	}
 }
 
+func TestEventPMMessageBotLLM_first_aicall_get_error(t *testing.T) {
+	// First AIV1AIcallGet returns an error — handler logs and returns
+	// without persisting the message or sending to conversation. Stale
+	// counters and reply-send counters MUST NOT increment.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pccA := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "should not be persisted",
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	// First AIV1AIcallGet errors. NO MessageCreate, NO MessageGet,
+	// NO ConversationV1MessageSend, NO PublishWebhookEvent.
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(nil, errors.New("aicall rpc error")).Times(1)
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	beforePrimary := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary"))
+	beforeSecondary := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary"))
+	beforeSuccess := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+	beforeFailure := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure"))
+
+	h.EventPMMessageBotLLM(context.Background(), evt)
+
+	if got := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary")); got != beforePrimary {
+		t.Errorf("primary stale counter changed unexpectedly: before=%f after=%f", beforePrimary, got)
+	}
+	if got := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary")); got != beforeSecondary {
+		t.Errorf("secondary stale counter changed unexpectedly: before=%f after=%f", beforeSecondary, got)
+	}
+	if got := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success")); got != beforeSuccess {
+		t.Errorf("reply-send success counter changed unexpectedly: before=%f after=%f", beforeSuccess, got)
+	}
+	if got := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure")); got != beforeFailure {
+		t.Errorf("reply-send failure counter changed unexpectedly: before=%f after=%f", beforeFailure, got)
+	}
+}
+
+func TestEventPMMessageBotLLM_second_aicall_get_error(t *testing.T) {
+	// First AIV1AIcallGet succeeds (matching PCC, conversation reference);
+	// messageHandler.Create persists the assistant message; second
+	// AIV1AIcallGet (the secondary guard re-check) returns an error.
+	// Expected: message IS persisted; ConversationV1MessageSend MUST NOT
+	// be called; no stale or reply-send counters increment.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pccA := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	convID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "assistant reply persisted but not delivered",
+	}
+
+	freshAIcall := &aicall.AIcall{
+		PipecatcallID: pccA,
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	gomock.InOrder(
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(freshAIcall, nil).Times(1),
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(nil, errors.New("rpc transient")).Times(1),
+	)
+
+	// Persistence runs once between the two AIcall fetches.
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	// ConversationV1MessageSend MUST NOT be called.
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	beforePrimary := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary"))
+	beforeSecondary := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary"))
+	beforeSuccess := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+	beforeFailure := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure"))
+
+	h.EventPMMessageBotLLM(context.Background(), evt)
+
+	if got := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary")); got != beforePrimary {
+		t.Errorf("primary stale counter changed unexpectedly: before=%f after=%f", beforePrimary, got)
+	}
+	if got := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary")); got != beforeSecondary {
+		t.Errorf("secondary stale counter changed unexpectedly: before=%f after=%f", beforeSecondary, got)
+	}
+	if got := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success")); got != beforeSuccess {
+		t.Errorf("reply-send success counter changed unexpectedly: before=%f after=%f", beforeSuccess, got)
+	}
+	if got := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure")); got != beforeFailure {
+		t.Errorf("reply-send failure counter changed unexpectedly: before=%f after=%f", beforeFailure, got)
+	}
+}
+
 func TestEventPMMessageBotLLM_forwards_pre_generated_id(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
