@@ -107,6 +107,11 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	}
 
 	// Deliver to conversation — silent failure on error per design.
+	// NOTE: Do not add retry logic here. ConversationV1MessageSend dispatches to
+	// SMS/LINE delivery downstream; a duplicate request would result in a duplicate
+	// user-visible reply. If retry becomes necessary, gate it on an idempotency
+	// key (e.g., evt.ID) honored by conversation-manager — see design doc §11
+	// (Accepted v1 limits) for the dual-delivery race window.
 	sent, errSend := h.reqHandler.ConversationV1MessageSend(ctx, acFinal.ReferenceID, evt.Text, []cvmedia.Media{})
 	if errSend != nil {
 		log.Errorf("Could not send conversation message (silent failure): %v", errSend)

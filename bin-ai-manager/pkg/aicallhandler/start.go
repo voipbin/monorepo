@@ -192,9 +192,10 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		if err != nil {
 			return nil, errors.Wrapf(err, "could not create aicall. activeflow_id: %s", activeflowID)
 		}
-		res, err = h.UpdateStatus(ctx, res.ID, aicall.StatusProgressing)
-		if err != nil {
-			return nil, errors.Wrapf(err, "could not update status to Progressing. aicall_id: %s", res.ID)
+		if updated, errUpdate := h.UpdateStatus(ctx, res.ID, aicall.StatusProgressing); errUpdate != nil {
+			log.Warnf("Could not update status to Progressing — continuing anyway (status field is observability only). aicall_id: %s, err: %v", res.ID, errUpdate)
+		} else {
+			res = updated
 		}
 	} else {
 		// reuse: interrupt previous pipecat session (best-effort), then atomically

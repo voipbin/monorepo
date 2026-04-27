@@ -643,6 +643,100 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			},
 		},
 		{
+			// Verifies that a transient DB failure on UpdateStatus(Progressing)
+			// does NOT drop the user's message: the function logs a warning and
+			// proceeds with messageHandler.Create + startPipecatcall using the
+			// freshly created AIcall (still at StatusInitiating). The status
+			// field is observability-only and AIcall behavior is correct
+			// regardless.
+			name: "fresh path: UpdateStatus fails — proceeds anyway",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+					CustomerID: uuid.FromStringOrNil("cdbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+				STTLanguage: "en-US",
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("c0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+			activeflowID:   uuid.FromStringOrNil("c15ae476-30dd-11f0-87af-67d3c47111a7"),
+			referenceID:    uuid.FromStringOrNil("c184c87c-30dd-11f0-8bbf-d773a2d31d73"),
+
+			mockSetup: func(ctx context.Context, m *mocks) {
+				newPCC := uuid.FromStringOrNil("cccccccc-1001-11f0-cccc-cccccccccccc")
+				newAIcallID := uuid.FromStringOrNil("cccccccc-1002-11f0-cccc-cccccccccccc")
+				createdAIcall := &aicall.AIcall{
+					Identity: commonidentity.Identity{
+						ID:         newAIcallID,
+						CustomerID: uuid.FromStringOrNil("cdbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+					},
+					ActiveflowID:  uuid.FromStringOrNil("c15ae476-30dd-11f0-87af-67d3c47111a7"),
+					AIEngineModel: ai.EngineModelOpenaiGPT5,
+					Status:        aicall.StatusInitiating,
+				}
+				responsePC := &pmpipecatcall.Pipecatcall{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("5f97dd3a-c663-11f0-b2ae-0b46e18cb363"),
+					},
+				}
+
+				m.req.EXPECT().FlowV1VariableGet(ctx, gomock.Any()).Return(&fmvariable.Variable{
+					Variables: map[string]string{
+						"voipbin.conversation_message.text": "fresh user message — update fails.",
+					},
+				}, nil)
+
+				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(nil, errors.New("not found"))
+
+				// startAIcallByMessaging internal calls
+				m.util.EXPECT().UUIDCreate().Return(newPCC)
+				m.util.EXPECT().UUIDCreate().Return(newAIcallID)
+				m.db.EXPECT().AIcallCreate(ctx, gomock.Any()).Return(nil)
+				m.db.EXPECT().AIcallGet(ctx, newAIcallID).Return(createdAIcall, nil)
+				m.notify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+
+				// setActiveflowVariables
+				m.req.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil)
+
+				// startInitMessages — system prompt only (no init prompt set)
+				m.message.EXPECT().Create(ctx, uuid.Nil, createdAIcall.CustomerID, createdAIcall.ID, createdAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, gomock.Any(), nil, "").Return(&message.Message{}, nil)
+
+				// UpdateStatus -> Progressing FAILS at AIcallUpdate (no Get / PublishWebhookEvent follow-up).
+				// Per fix: log warn, do NOT fail the request. Subsequent calls should still happen
+				// against the createdAIcall (still StatusInitiating since update failed).
+				m.db.EXPECT().AIcallUpdate(ctx, newAIcallID, gomock.Any()).Return(errors.New("transient db error"))
+
+				// conversation message create — proceeds despite UpdateStatus failure
+				m.message.EXPECT().Create(ctx, uuid.Nil, createdAIcall.CustomerID, createdAIcall.ID, createdAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "fresh user message — update fails.", nil, "").Return(&message.Message{}, nil)
+
+				// startPipecatcall — proceeds despite UpdateStatus failure
+				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
+				m.req.EXPECT().PipecatV1PipecatcallStart(
+					ctx,
+					createdAIcall.PipecatcallID,
+					createdAIcall.CustomerID,
+					createdAIcall.ActiveflowID,
+					pmpipecatcall.ReferenceTypeAICall,
+					createdAIcall.ID,
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).Return(responsePC, nil)
+				m.req.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, responsePC.HostID, responsePC.ID, defaultAITaskTimeout).Return(nil)
+			},
+			// Returned AIcall is the pre-update copy (StatusInitiating) since UpdateStatus failed
+			// and res was not reassigned.
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("cccccccc-1002-11f0-cccc-cccccccccccc"),
+					CustomerID: uuid.FromStringOrNil("cdbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
+				},
+				ActiveflowID:  uuid.FromStringOrNil("c15ae476-30dd-11f0-87af-67d3c47111a7"),
+				AIEngineModel: ai.EngineModelOpenaiGPT5,
+				Status:        aicall.StatusInitiating,
+			},
+		},
+		{
 			name: "fresh: existing AIcall is StatusTerminated — recreate",
 
 			ai: &ai.AI{
