@@ -139,3 +139,129 @@ type agentHandler struct {
 ```
 
 ---
+
+## Checklist
+
+Use this checklist when adding or modifying database models and operations:
+
+### Model Definition
+
+- [ ] All `uuid.UUID` fields have `,uuid` db tag (see §6.2 in [models.md](models.md))
+- [ ] Slice/map fields stored as JSON have `,json` db tag
+- [ ] Soft-delete field present: `TMDelete *time.Time \`db:"tm_delete"\`` (nil = active)
+- [ ] All persisted fields have appropriate `db:"column_name"` tags
+- [ ] JSON tags match API expectations and the `WebhookMessage` variant
+
+### Database Operations
+
+- [ ] Queries use the squirrel query builder, not raw SQL (§7.1)
+- [ ] INSERT/UPDATE go through `commondatabasehandler.PrepareFields` (§7.2)
+- [ ] SELECT uses `commondatabasehandler.GetDBFields` + `ScanRow` — never manual `rows.Scan` (§7.2)
+- [ ] List/Gets functions initialize `res := []*Type{}` (empty, never nil) (§7.3)
+- [ ] All DB code lives in `pkg/dbhandler/`; business handlers receive the `DBHandler` interface only (§7.7)
+
+## UUID Tag Gotcha
+
+`commondatabasehandler.PrepareFields()` and `ApplyFields()` use the `,uuid` flag on `db:` tags to convert `uuid.UUID` values to MySQL `BINARY(16)`. Without the flag, the UUID is sent as a string and never matches any row.
+
+**Symptoms of a missing `,uuid` tag:**
+
+- `GET` with filters returns `[]` even though data exists
+- `POST` works but `GET` by ID fails
+- No errors in logs — just empty results
+
+```go
+// CORRECT
+type Call struct {
+    ID         uuid.UUID `json:"id" db:"id,uuid"`
+    CustomerID uuid.UUID `json:"customer_id" db:"customer_id,uuid"`
+    // ...
+}
+
+// WRONG — silent failures
+type Call struct {
+    ID         uuid.UUID `json:"id" db:"id"`           // BUG: queries will fail
+    CustomerID uuid.UUID `json:"customer_id" db:"customer_id"` // BUG
+}
+```
+
+## Transaction Pattern
+
+When a multi-step write must be atomic, wrap it in a transaction:
+
+```go
+func (h *dbHandler) CreateWithRelated(ctx context.Context, model *Model) error {
+    tx, err := h.db.BeginTx(ctx, nil)
+    if err != nil {
+        return errors.Wrap(err, "could not begin transaction")
+    }
+    defer tx.Rollback()
+
+    // Insert main record
+    if err := h.insertModel(ctx, tx, model); err != nil {
+        return err
+    }
+
+    // Insert related records
+    if err := h.insertRelated(ctx, tx, model.ID, model.Related); err != nil {
+        return err
+    }
+
+    return tx.Commit()
+}
+```
+
+## Debugging Database Issues
+
+### Log the generated query
+
+```go
+sql, args, _ := query.ToSql()
+log.WithFields(logrus.Fields{
+    "sql":  sql,
+    "args": args,
+}).Debug("Executing query")
+```
+
+### Verify UUID conversion
+
+```go
+id := uuid.FromStringOrNil("...")
+log.Debugf("UUID bytes: %x", id.Bytes())
+```
+
+### Confirm the soft-delete filter is applied
+
+`commondatabasehandler.ApplyFields` adds `tm_delete IS NULL` automatically when the `deleted: false` filter sentinel is present — verify by inspecting the rendered SQL.
+
+## Pagination Defaults
+
+Most services define page-size constants and clamp incoming sizes:
+
+```go
+const (
+    DefaultPageSize = 100
+    MaxPageSize     = 1000
+)
+
+if size <= 0 || size > MaxPageSize {
+    size = DefaultPageSize
+}
+```
+
+The cursor token is the previous page's `tm_create` value (see §7.5).
+
+## Legacy Soft-Delete Variant
+
+A handful of older services still use a sentinel `tm_delete` string instead of a nullable timestamp:
+
+```go
+// Legacy convention — used in a small number of older services
+const DefaultTimeStamp = "9999-01-01 00:00:00.000000"
+
+query := sq.Select("*").
+    From("call_calls").
+    Where(sq.Eq{"tm_delete": databasehandler.DefaultTimeStamp})
+```
+
+New code should follow the canonical `*time.Time` / nil-as-active pattern documented in §6.3 and §7.2. The legacy sentinel pattern is documented here only because some `dbhandler/` packages still use it; do not introduce it in new tables.

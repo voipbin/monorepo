@@ -105,3 +105,136 @@ log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s",
 ```
 
 ---
+
+## Common Error Scenarios
+
+These patterns recur across `listenhandler/` and `subscribehandler/` packages. They translate business-logic errors into the appropriate `sock.Response` status codes (see [rpc.md §9.4](rpc.md) for the full code table).
+
+### Validation Errors (400)
+
+```go
+// Request validation
+if req.Name == "" {
+    return simpleResponse(400), nil
+}
+
+// UUID parsing
+id, err := uuid.FromString(idStr)
+if err != nil {
+    return simpleResponse(400), nil
+}
+```
+
+### Not Found (404)
+
+```go
+res, err := h.dbHandler.Get(ctx, id)
+if err != nil || res == nil {
+    return simpleResponse(404), nil
+}
+```
+
+### Conflict (409)
+
+```go
+// Check for duplicate
+existing, _ := h.dbHandler.GetByName(ctx, req.Name)
+if existing != nil {
+    return simpleResponse(409), nil
+}
+```
+
+### Permission Denied (403)
+
+```go
+// Check ownership
+if res.CustomerID != customerID {
+    return simpleResponse(403), nil
+}
+```
+
+### Internal Error (500)
+
+```go
+res, err := h.callHandler.Create(ctx, &req)
+if err != nil {
+    log.Errorf("Could not create call: %v", err)
+    return simpleResponse(500), nil
+}
+```
+
+## Database Error Handling
+
+```go
+// Check for no rows from raw queries
+res, err := h.db.Query(ctx, query)
+if err == sql.ErrNoRows {
+    return nil, nil  // Not found, not an error
+}
+if err != nil {
+    return nil, errors.Wrapf(err, "database query failed")
+}
+
+// dbhandler functions return ErrNotFound (sentinel) instead of sql.ErrNoRows;
+// see §4.3 for the comparison pattern.
+```
+
+Soft-deleted rows (rows with `tm_delete IS NOT NULL`) are filtered out automatically by `dbhandler` `WHERE` clauses — callers do not need to check `tm_delete` themselves.
+
+## Event Handler Errors
+
+For `subscribehandler` event processing, errors are logged but should never stop processing — return `nil` to acknowledge the message (see also [events.md §11.4](events.md)):
+
+```go
+func (h *subscribeHandler) processEvent(e *sock.Event) error {
+    log := logrus.WithFields(logrus.Fields{
+        "func": "processEvent",
+        "type": e.Type,
+    })
+
+    if err := h.handleEvent(ctx, e); err != nil {
+        log.Errorf("Could not process event: %v", err)
+        // Return nil to acknowledge message (don't requeue)
+        return nil
+    }
+
+    return nil
+}
+```
+
+## Error Message Style
+
+**Do:**
+- Include relevant IDs: `"could not get call. id: %s"`
+- Include status codes: `"wrong status. status: %d"`
+- Use past tense for failures: `"could not create resource"`
+- Match the canonical log format: `"Could not <action>: %v"` (see [logging.md §5.4](logging.md))
+
+**Don't:**
+- Don't expose internal details to API clients (return `simpleResponse(<code>)` rather than echoing the wrapped error)
+- Don't log sensitive data (passwords, tokens, raw request bodies that may contain credentials)
+- Don't use `panic` for expected errors — wrap and return
+
+## Testing Error Paths
+
+Cover error branches with table-driven tests (see [testing.md §13.1](testing.md)):
+
+```go
+func Test_Get_NotFound(t *testing.T) {
+    mc := gomock.NewController(t)
+    defer mc.Finish()
+
+    mockDB := NewMockDBHandler(mc)
+    mockDB.EXPECT().Get(gomock.Any(), testID).Return(nil, dbhandler.ErrNotFound)
+
+    h := &handler{db: mockDB}
+    res, err := h.Get(context.Background(), testID)
+
+    if res != nil {
+        t.Errorf("Wrong match. expect: nil, got: %v", res)
+    }
+    if err == nil {
+        t.Errorf("Wrong match. expect: err, got: ok")
+    }
+}
+```
