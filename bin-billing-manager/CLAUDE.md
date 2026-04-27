@@ -313,7 +313,7 @@ Service exposes metrics on configured endpoint (default `:2112/metrics`):
 
 ## Paddle Webhook Logging
 
-Paddle webhook handlers follow the **External Event & Webhook Processing Logs** convention defined in [coding-conventions.md §5.5](../docs/coding-conventions.md). All Paddle event handlers in `listenhandler/` and `accounthandler/` log at Info level for event receipt, processing start, and success completion with key Paddle identifiers (`event_id`, `transaction_id`, `subscription_id`, `customer_id`, `plan_type`, `amount_micros`, `token_allowance`).
+Paddle webhook handlers follow the **External Event & Webhook Processing Logs** convention defined in [logging.md §5.5](../docs/conventions/logging.md#55-external-event--webhook-processing-logs). All Paddle event handlers in `listenhandler/` and `accounthandler/` log at Info level for event receipt, processing start, and success completion with key Paddle identifiers (`event_id`, `transaction_id`, `subscription_id`, `customer_id`, `plan_type`, `amount_micros`, `token_allowance`).
 
 ## Database Schema
 

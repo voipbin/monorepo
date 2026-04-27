@@ -45,7 +45,7 @@ while IFS= read -r line; do
     if [[ "$PREV_LINE" =~ log\.(Errorf|Error)\( ]] && [[ "$TRIMMED" =~ ^return.*errors\.(Wrap|Wrapf)\( ]]; then
         echo "[Hook] Warning: log-then-return pattern at $FILE_PATH:$PREV_NUM-$LINE_NUM"
         echo "[Hook] Consider: wrap and propagate the error instead of logging at this level."
-        echo "[Hook] See docs/coding-conventions.md §4.4 Error Propagation Pattern."
+        echo "[Hook] See docs/conventions/error-handling.md §4.4 Error Propagation Pattern."
         VIOLATIONS=$((VIOLATIONS + 1))
     fi
 

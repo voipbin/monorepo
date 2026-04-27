@@ -26,7 +26,7 @@ This is the VoIPbin monorepo - a unified backend codebase for a cloud-native CPa
 - **Kubernetes deployment** - Services designed for GCP GKE with Prometheus monitoring
 
 **Key Documentation:**
-- **[Coding Conventions](docs/coding-conventions.md)** — Authoritative reference for all coding patterns and rules
+- **[Coding Conventions](docs/conventions/README.md)** — Authoritative reference for all coding patterns and rules
 - **[Architecture Deep Dive](docs/architecture/architecture-deep-dive.md)** — Service categories, communication, deployment
 - **[Common Workflows](docs/workflows/common-workflows.md)** — Step-by-step guides for common tasks
 
@@ -398,7 +398,7 @@ Topics covered:
 
 ## Code Quality
 
-**For the complete, authoritative coding conventions reference, see [coding-conventions.md](docs/coding-conventions.md).**
+**For the complete, authoritative coding conventions reference, see [conventions/README.md](docs/conventions/README.md).**
 
 This covers: package structure, naming, imports, error handling, logging, models, database patterns, handler architecture, inter-service communication, API design, events, configuration, testing, metrics, and security.
 
@@ -492,7 +492,7 @@ External events are asynchronous, hard to replay, and often involve money or sta
 
 **Required log points:** event receipt, processing start, processing success, skip/no-op (all Info). Failures use Error. Data retrieval uses Debug (per §5.3 above).
 
-**See [coding-conventions.md §5.5](docs/coding-conventions.md) for the full specification, patterns, and examples.**
+**See [logging.md §5.5](docs/conventions/logging.md#55-external-event--webhook-processing-logs) for the full specification, patterns, and examples.**
 
 ### WebhookMessage Pattern for External API Responses (MANDATORY)
 
