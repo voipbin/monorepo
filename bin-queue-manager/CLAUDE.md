@@ -2,7 +2,20 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Build and Development Commands
+## Overview
+
+`bin-queue-manager` is a microservice in the VoIPbin monorepo that manages call queues and queue calls (calls waiting in queues). It routes calls to available agents using configurable routing methods and integrates with other services via RabbitMQ.
+
+**Key Concepts:**
+- **Queue**: A call queue with routing configuration, agent tags, wait/service timeouts, and lists of waiting and serviced queuecalls.
+- **Queuecall**: A single call sitting in a queue. Status flow: `initiating` → `waiting` → `connecting` → `service` → `done`/`abandoned`.
+- **Routing methods**: How callers are matched to agents (e.g., `random`).
+- **Wait timeout**: How long a queuecall may sit in the queue before timing out.
+- **Service timeout**: Maximum agent service duration before forced cleanup.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-queue-manager`.
+
+## Common Commands
 
 ### Building
 ```bash
@@ -84,9 +97,6 @@ Uses same environment variables as queue-manager (`DATABASE_DSN`, `RABBITMQ_ADDR
 
 ## Architecture
 
-### Service Overview
-`bin-queue-manager` is a microservice in a VoIP platform monorepo that manages call queues and queue calls (calls waiting in queues). It handles routing calls to available agents using configurable routing methods and integrates with other services via RabbitMQ.
-
 ### Core Domain Models
 
 - **Queue** (`models/queue/queue.go`): Represents a call queue with routing configuration, agent tags, wait/service timeouts, and lists of waiting/serviced queuecalls
@@ -146,31 +156,103 @@ The service uses a layered handler architecture where handlers are dependency-in
 4. `runListen()`: Starts RPC request listener
 5. `runSubscribe()`: Starts event subscription handlers
 
-### Monorepo Structure
+## Request Routing
 
-This service is part of a Go monorepo with `replace` directives in go.mod for local dependencies:
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
+
+**Queues API (`/v1/queues/*`):**
+- `POST /v1/queues` — Create queue
+- `GET /v1/queues?<filters>` — List queues (pagination)
+- `GET /v1/queues/<uuid>` — Get queue
+- `PUT /v1/queues/<uuid>` — Update queue
+- `PUT /v1/queues/<uuid>/tag_ids` — Update queue tag IDs
+- `PUT /v1/queues/<uuid>/routing_method` — Update routing method
+- `PUT /v1/queues/<uuid>/execute` — Update execute state (`run`/`stop`)
+- `DELETE /v1/queues/<uuid>` — Delete queue
+
+**Queuecalls API (`/v1/queuecalls/*`):**
+- `POST /v1/queuecalls` — Create queuecall (place a call into a queue)
+- `GET /v1/queuecalls?<filters>` — List queuecalls
+- `GET /v1/queuecalls/<uuid>` — Get queuecall
+- `POST /v1/queuecalls/<uuid>/health-check` — Health-check the queuecall
+- `DELETE /v1/queuecalls/<uuid>` — Remove a queuecall
+
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.call-manager.event**: `call_hangup`, `confbridge_joined`, `confbridge_leaved` — drives queuecall state transitions.
+- **bin-manager.agent-manager.event**: agent status changes — re-evaluates queue routing.
+- **bin-manager.conference-manager.event**: confbridge state events for queue-type conferences.
+- **bin-manager.customer-manager.event**: `customer_deleted` — cleans up queues owned by the deleted customer.
+
+## Monorepo Context
+
+This service is part of a Go monorepo with `replace` directives in `go.mod` for local dependencies:
 - `monorepo/bin-common-handler`: Shared utilities (sockhandler, requesthandler, notifyhandler)
 - `monorepo/bin-call-manager`: Call management models/events
 - `monorepo/bin-agent-manager`: Agent models
 - `monorepo/bin-customer-manager`: Customer models/events
-- And many others...
+- `monorepo/bin-conference-manager`: Confbridge models for queue-type conferences
 
 When modifying code that affects other managers, check for cross-service impacts via event contracts.
 
-### Testing Patterns
+## Testing Patterns
 
 - Tests use `go.uber.org/mock` for mocking interfaces
-- Generate mocks with `//go:generate mockgen` directives (see handler main.go files)
+- Generate mocks with `//go:generate mockgen` directives (see handler `main.go` files)
 - Test files follow `*_test.go` naming convention
 - Mock files are named `mock_main.go` in each package
 - Database tests may use `scripts/database_scripts_test/` for test fixtures
 
-### Configuration
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
+
+### Queuecall Status Lifecycle
+`initiating` → `waiting` → `connecting` → `service` → `done` / `abandoned`. Transitions are driven by RPC entrypoints and `bin-call-manager` events.
+
+### Timeouts
+Each queue has a `wait_timeout` (max time waiting before abandonment) and `service_timeout` (max agent service time). Both are enforced by background timer logic in `queuecallhandler`.
+
+### Soft Deletes
+Records use `tm_delete` timestamp (`"9999-01-01 00:00:00.000000"` for active records).
+
+## Configuration
 
 All configuration uses environment variables or flags (via Viper):
-- `DATABASE_DSN`: MySQL connection string
-- `RABBITMQ_ADDRESS`: RabbitMQ connection URL
-- `REDIS_ADDRESS`, `REDIS_PASSWORD`, `REDIS_DATABASE`: Redis connection
-- `PROMETHEUS_ENDPOINT`, `PROMETHEUS_LISTEN_ADDRESS`: Metrics configuration
 
-See `cmd/queue-manager/init.go:42` for all configuration options and defaults.
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+See `cmd/queue-manager/init.go` for the authoritative list and defaults.
+
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `queue_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `queue_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)

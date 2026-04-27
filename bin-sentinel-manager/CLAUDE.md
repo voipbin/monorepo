@@ -4,9 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-sentinel-manager is a Kubernetes pod monitoring service for VoIP infrastructure. It watches pod lifecycle events in Kubernetes namespaces and publishes notifications to RabbitMQ for other services to consume.
+`bin-sentinel-manager` is a Kubernetes pod monitoring service for VoIP infrastructure. It watches pod lifecycle events in Kubernetes namespaces and publishes notifications to RabbitMQ for other services to consume.
 
-## Build and Test Commands
+**Key Concepts:**
+- **Pod informer**: Uses `k8s.io/client-go` with label selectors to watch pods scoped to specific apps (`asterisk-call`, `asterisk-conference`, `asterisk-registrar`).
+- **In-cluster only**: Authenticates via `rest.InClusterConfig()`; cannot run outside a Kubernetes cluster.
+- **Publish, don't react**: Emits `pod_updated` and `pod_deleted` events; downstream services (e.g., `bin-call-manager`) decide what to do with them.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-sentinel-manager`.
+
+## Common Commands
 
 ```bash
 # Build the sentinel-manager daemon
@@ -78,19 +85,71 @@ bin-sentinel-manager runs as an in-cluster Kubernetes service that:
   - `pod.EventTypePodDeleted` - When pod is removed
 - **Monorepo structure**: All sibling services are referenced via `replace` directives in go.mod pointing to `../bin-*-manager` directories
 
-### Prometheus Metrics
+## Request Routing
 
-The service exposes metrics at `/metrics` (port 2112 by default):
-- `sentinel_manager_pod_state_change_total` - Counter with labels: namespace, pod app label, state (updated/deleted)
+N/A — `bin-sentinel-manager` is an event publisher only. It does not process RPC requests. There is no listenhandler.
 
-### Configuration
+## Event Subscriptions
+
+This service does not subscribe to RabbitMQ events. Its inputs come from the Kubernetes API via informers; outputs are published events.
+
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared utilities (RabbitMQ via `notifyhandler`, models)
+
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock):
+- Mock interfaces co-located with handlers (`mock_*.go`)
+- Table-driven tests with struct slices
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
+
+### SharedIndexInformer
+Uses `cache.SharedIndexInformer` from `k8s.io/client-go/tools/cache`. Each (namespace, label-selector) pair runs in its own goroutine. `AddFunc` is intentionally empty (registration events aren't useful here); `UpdateFunc` handles state changes; `DeleteFunc` handles removals. No resync period (set to 0) for efficiency.
+
+### RBAC Requirements
+Requires a `pod-reader` Role with `get`/`list`/`watch` verbs on pods in the target namespace, bound via RoleBinding to the service account.
+
+## Configuration
 
 Environment variables / flags:
-- `RABBITMQ_ADDRESS` - RabbitMQ connection (default: `amqp://guest:guest@localhost:5672`)
-- `PROMETHEUS_ENDPOINT` - Metrics endpoint path (default: `/metrics`)
-- `PROMETHEUS_LISTEN_ADDRESS` - Metrics server address (default: `:2112`)
 
-### Kubernetes Deployment
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | `amqp://guest:guest@localhost:5672` |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
+
+## Prometheus Metrics
+
+Service exposes metrics at `/metrics` (port 2112 by default):
+- `sentinel_manager_pod_state_change_total` — counter (labels: `namespace`, pod `app` label, `state` ∈ `updated`/`deleted`)
+
+## Kubernetes Deployment
 
 The service requires specific RBAC permissions to watch pods:
 - **Role**: `pod-reader` in target namespace (`voip`) with verbs: `get`, `list`, `watch` on pods

@@ -2,11 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Service Overview
+## Overview
 
-**bin-registrar-manager** manages SIP registrations for VoIP extensions and trunks in the voipbin platform. It handles the lifecycle of Asterisk PJSIP endpoints, contacts, authentication, and Address of Record (AOR) configurations.
+`bin-registrar-manager` manages SIP registrations for VoIP extensions and trunks in the VoIPbin platform. It handles the lifecycle of Asterisk PJSIP endpoints, contacts, authentication, and Address of Record (AOR) configurations.
 
-This is part of a Go monorepo where services communicate via RabbitMQ message passing and share database access (both bin-manager and asterisk databases).
+**Key Concepts:**
+- **Extension**: SIP endpoint for an individual user within a customer account; backed by Asterisk `ps_endpoints`/`ps_aors`/`ps_auths` tables.
+- **Trunk**: SIP trunk for carrier/provider connections; supports basic (user/pass) and/or IP-based authentication.
+- **Contact**: An active SIP registration (read from Asterisk `ps_contacts`, cached in Redis).
+- **Two-database architecture**: Service connects to both the Asterisk DB (`ps_*` tables) and the bin-manager DB (extensions, trunks, sip_auth tables).
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-registrar-manager`.
 
 ## Architecture
 
@@ -65,6 +71,33 @@ RabbitMQ Request → ListenHandler.processRequest() → Domain Handler → DBHan
 RabbitMQ Event (e.g., customer.deleted) → SubscribeHandler → Domain Handler → Cleanup Resources
 ```
 
+## Request Routing
+
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs (see `pkg/listenhandler/main.go`):
+
+**Extensions API (`/v1/extensions/*`):**
+- `POST /v1/extensions` — Create extension
+- `GET /v1/extensions?<filters>` — List extensions
+- `GET /v1/extensions/<uuid>` — Get extension
+- `PUT /v1/extensions/<uuid>` — Update extension
+- `DELETE /v1/extensions/<uuid>` — Delete extension
+
+**Trunks API (`/v1/trunks/*`):**
+- `POST /v1/trunks` — Create trunk
+- `GET /v1/trunks?<filters>` — List trunks
+- `GET /v1/trunks/<uuid>` — Get trunk
+- `PUT /v1/trunks/<uuid>` — Update trunk
+- `DELETE /v1/trunks/<uuid>` — Delete trunk
+
+**Contacts API (`/v1/contacts/*`):**
+- `GET /v1/contacts?<filters>` — List active SIP contacts
+- `GET /v1/contacts/<uuid>` — Get contact details
+
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.customer-manager.event**: `customer_deleted` → triggers cleanup of extensions/trunks owned by the deleted customer.
+
 ## Configuration
 
 The service uses **Cobra + Viper** for configuration management (migrated from flag-based config). Configuration is loaded via:
@@ -84,7 +117,7 @@ Key configuration parameters:
 
 Config singleton is accessed via `config.Get()`.
 
-## Development Commands
+## Common Commands
 
 ### Building
 ```bash
@@ -231,58 +264,72 @@ registrar-control trunk delete --id "<trunk-uuid>"
 **Required Flags:**
 All required flags must be provided via command line - no interactive prompts.
 
-## Code Patterns
+## Monorepo Context
 
-### Handler Interface Pattern
-Most business logic is defined as interfaces (e.g., `ExtensionHandler`, `TrunkHandler`) with mock implementations for testing. When adding new functionality:
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-common-handler`: Shared handlers (database, request, notify, socket)
+- `monorepo/bin-customer-manager`: Customer event models
 
-1. Add method to interface in `main.go`
-2. Implement in same package (e.g., `extension.go`)
-3. Regenerate mocks with `go generate`
+When modifying these dependencies, remember that Go modules use `replace` directives in `go.mod` to point to local paths.
 
-### Database Pattern
-All database operations go through `DBHandler` interface. When adding new DB operations:
+## Testing Patterns
 
-1. Add method signature to `pkg/dbhandler/main.go` interface
-2. Implement in appropriate file (e.g., `ast_auth.go` for Asterisk auth, `extension.go` for extensions)
-3. Use `Masterminds/squirrel` for SQL building
-4. Handle `ErrNotFound` for missing records
-
-### Model Pattern
-Models are in `models/` directory with separate packages for each entity type. Each model may include:
-- Struct definition
-- Event types (e.g., `EventExtensionCreated`)
-- Webhook types
-- Helper methods
-
-### Testing Pattern
 Tests use:
 - `go.uber.org/mock` for mocking
 - Table-driven tests with `t.Run(name, func(t *testing.T){})`
 - In-memory SQLite for database tests (see `pkg/dbhandler/main_test.go`)
 
-## Monorepo Dependencies
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
 
-This service imports from sibling packages:
-- `monorepo/bin-common-handler` - Shared handlers (database, request, notify, socket)
-- `monorepo/bin-customer-manager` - Customer models for event handling
+## Key Implementation Details
 
-When modifying these dependencies, remember that Go modules use `replace` directives in `go.mod` to point to local paths.
+### Handler Interface Pattern
+Business logic is defined as interfaces (e.g., `ExtensionHandler`, `TrunkHandler`) with mock implementations. To add functionality: define the method on the interface in `main.go`, implement in the same package, regenerate mocks.
 
-## Observability
+### Database Pattern
+All database operations go through the `DBHandler` interface (defined in `pkg/dbhandler/main.go`). New operations belong in that interface; use `Masterminds/squirrel` for SQL building; handle `ErrNotFound` for missing records.
 
-### Prometheus Metrics
-Metrics are exposed on the configured prometheus endpoint (default `:2112/metrics`):
-- `registrar_manager_extension_create_total` - Total extensions created
-- `registrar_manager_extension_delete_total` - Total extensions deleted
-- `registrar_manager_trunk_create_total` - Total trunks created
-- `registrar_manager_trunk_delete_total` - Total trunks deleted
-- `registrar_manager_receive_request_process_time` - Request processing latency histogram
+### Models
+Models live in `models/` with separate packages per entity. Each model may include the struct definition, event types (e.g., `EventExtensionCreated`), webhook types, and helper methods.
+
+### Multi-Resource Atomicity
+Creating an Extension touches three Asterisk tables (`ps_endpoints`, `ps_aors`, `ps_auths`). Deletes must clean up all three. Wrap in a transaction where possible.
+
+### Domain Names
+Extensions and trunks must have valid domain names set via `common.SetBaseDomainNames()` during startup.
+
+### Contact Caching
+Asterisk contacts are cached in Redis for performance; always invalidate the cache when modifying endpoints.
 
 ### Logging
-- Uses `logrus` with structured fields
-- Joonix formatter for stackdriver-compatible JSON logs
-- Log level: Debug (configured in `config.initLog()`)
+Uses `logrus` with structured fields and the Joonix formatter for Stackdriver-compatible JSON logs. Log level: Debug (configured in `config.initLog()`).
+
+## Prometheus Metrics
+
+Metrics are exposed on the configured Prometheus endpoint (default `:2112/metrics`):
+- `registrar_manager_extension_create_total` — counter of extensions created
+- `registrar_manager_extension_delete_total` — counter of extensions deleted
+- `registrar_manager_trunk_create_total` — counter of trunks created
+- `registrar_manager_trunk_delete_total` — counter of trunks deleted
+- `registrar_manager_receive_request_process_time` — histogram of request processing latency
 
 ## Common Tasks
 

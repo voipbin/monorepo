@@ -4,9 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-bin-transfer-manager is a Go microservice that handles call transfer operations in a VoIP system. It manages both attended transfers (where the transferer can speak to the transferee before completing the transfer) and blind transfers (immediate transfer without consultation).
+`bin-transfer-manager` is a Go microservice that handles call transfer operations in a VoIP system. It manages both attended transfers (where the transferer can speak to the transferee before completing the transfer) and blind transfers (immediate transfer without consultation).
 
-## Build and Test Commands
+**Key Concepts:**
+- **Attended Transfer**: Transferer speaks to the transferee first; existing bridge participants are placed on MOH and muted while the consult call happens.
+- **Blind Transfer**: Immediate handoff — transferer hangs up as soon as the transferee answers.
+- **Block / Execute / Unblock phases**: Each transfer type has a block-state setup, an execute step that creates the groupcall to the transferee, and an unblock/rollback step if the transfer fails.
+
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-transfer-manager`.
+
+## Common Commands
 
 ```bash
 # Build the transfer-manager daemon
@@ -108,16 +115,84 @@ RabbitMQ Request → listenhandler (regex routing) → transferhandler → call-
 Call Events → subscribehandler → transferhandler → state transitions
 ```
 
-### Configuration
+## Request Routing
+
+ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
+
+**Transfers API (`/v1/transfers/*`):**
+- `POST /v1/transfers` — Start transfer service (`attended` or `blind`)
+- `GET /v1/transfers/<uuid>` — Get transfer
+- `GET /v1/transfers?<filters>` — List transfers
+- `DELETE /v1/transfers/<uuid>` — Cancel transfer / rollback
+
+## Event Subscriptions
+
+SubscribeHandler subscribes to:
+- **bin-manager.call-manager.event**: `groupcall_progressing` (transferee answered → bridge parties), `groupcall_hangup` and `call_hangup` (rollback or finalize transfer state).
+
+## Monorepo Context
+
+This service depends on local monorepo packages (see `go.mod` replace directives):
+- `monorepo/bin-call-manager`: Call, groupcall, and confbridge operations (creating groupcalls, managing confbridge flags, call muting/MOH)
+- `monorepo/bin-flow-manager`: Flow information used in outbound call routing
+- `monorepo/bin-common-handler`: Shared models (address, identity, outline) and handlers (requesthandler, notifyhandler, sockhandler)
+
+Always run `go mod vendor` after changing dependencies.
+
+## Testing Patterns
+
+Tests use **gomock** (go.uber.org/mock):
+- Mock interfaces co-located with handlers (`mock_*.go`)
+- Table-driven tests with struct slices
+- Tests cover attended/blind transfer state transitions, rollback paths, and error handling
+
+```go
+tests := []struct {
+    name      string
+    input     InputType
+    mockSetup func(*MockHandler)
+    expectRes ResultType
+    expectErr bool
+}{
+    {"success case", input1, setupMock1, expected1, false},
+    {"error case", input2, setupMock2, nil, true},
+}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) {
+        mc := gomock.NewController(t)
+        defer mc.Finish()
+        // test implementation
+    })
+}
+```
+
+## Key Implementation Details
+
+### Attended Transfer Block/Unblock
+`attendedBlock` places existing bridge participants on hold (MOH) and mutes their input; `attendedUnblock` reverses this on rollback. Failing to unblock leaves the original parties stuck on hold.
+
+### Blind Transfer ConfBridge Flag
+`blindBlock` sets `FlagNoAutoLeave` on the confbridge so the bridge survives the transferer hangup. `blindUnblock` clears the flag if the transfer fails.
+
+### Soft Deletes
+Records use `tm_delete` timestamp (`"9999-01-01 00:00:00.000000"` for active records).
+
+## Configuration
 
 Environment variables / flags:
-- `DATABASE_DSN` - MySQL connection string
-- `RABBITMQ_ADDRESS` - RabbitMQ connection (e.g., `amqp://guest:guest@localhost:5672`)
-- `REDIS_ADDRESS`, `REDIS_PASSWORD`, `REDIS_DATABASE` - Redis cache
-- `PROMETHEUS_ENDPOINT`, `PROMETHEUS_LISTEN_ADDRESS` - Metrics endpoint
 
-### Dependencies on Other Services
+| Flag / Env | Description | Default |
+|------------|-------------|---------|
+| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
+| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
+| `redis_address` / `REDIS_ADDRESS` | Redis cache | required |
+| `redis_password` / `REDIS_PASSWORD` | Redis auth | optional |
+| `redis_database` / `REDIS_DATABASE` | Redis DB index | optional |
+| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
+| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
 
-- **bin-call-manager**: For call, groupcall, and confbridge operations (creating groupcalls, managing confbridge flags, call muting/MOH)
-- **bin-flow-manager**: For flow information used in outbound call routing
-- **bin-common-handler**: Shared models (address, identity, outline) and handlers (requesthandler, notifyhandler, sockhandler)
+## Prometheus Metrics
+
+Service exposes metrics on the configured endpoint (default `:2112/metrics`):
+- `transfer_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
+- `transfer_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)
