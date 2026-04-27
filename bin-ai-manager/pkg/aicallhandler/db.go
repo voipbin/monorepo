@@ -247,6 +247,46 @@ func (h *aicallHandler) UpdatePipecatcallID(ctx context.Context, id uuid.UUID, p
 	return res, nil
 }
 
+// UpdateActiveflowID updates the activeflow_id for the aicall. Used when a
+// long-lived AIcall is reused across multiple per-message activeflows
+// (conversation chat) so tools that read flow variables target the current flow.
+func (h *aicallHandler) UpdateActiveflowID(ctx context.Context, id uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error) {
+	fields := map[aicall.Field]any{
+		aicall.FieldActiveflowID: activeflowID,
+	}
+	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update the activeflow id for aicall. aicall_id: %s", id)
+	}
+
+	res, err := h.db.AIcallGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+
+	return res, nil
+}
+
+// UpdatePipecatcallIDAndActiveflowID atomically updates both PipecatcallID and
+// ActiveflowID in a single DB write. Used in the conversation reuse branch to
+// avoid the race where a concurrent reader observes the new PipecatcallID
+// alongside a stale ActiveflowID.
+func (h *aicallHandler) UpdatePipecatcallIDAndActiveflowID(ctx context.Context, id uuid.UUID, pipecatcallID uuid.UUID, activeflowID uuid.UUID) (*aicall.AIcall, error) {
+	fields := map[aicall.Field]any{
+		aicall.FieldPipecatcallID: pipecatcallID,
+		aicall.FieldActiveflowID:  activeflowID,
+	}
+	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
+		return nil, errors.Wrapf(errUpdate, "could not update pipecatcall_id+activeflow_id for aicall. aicall_id: %s", id)
+	}
+
+	res, err := h.db.AIcallGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get updated aicall info. aicall_id: %s", id)
+	}
+
+	return res, nil
+}
+
 // UpdateCurrentMemberID updates the current member id for the aicall
 func (h *aicallHandler) UpdateCurrentMemberID(ctx context.Context, id uuid.UUID, currentMemberID uuid.UUID) (*aicall.AIcall, error) {
 	fields := map[aicall.Field]any{

@@ -500,4 +500,5 @@ Related Documentation
 - :ref:`Email Overview <email-overview>` - Email integration
 - :ref:`Talk Overview <talk-overview>` - Internal team messaging
 - :ref:`Webhook Overview <webhook-overview>` - Webhook configuration
+- :ref:`Using AI in Conversations <ai-overview-conversation-ai>` - Run an AI agent inside an SMS or LINE conversation via the ``ai_talk`` flow action
 

@@ -139,6 +139,10 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 	log.Debugf("handling tool connect.")
 
 	res := newToolResult(tool.ID)
+	if c.ReferenceType != aicall.ReferenceTypeCall {
+		fillFailed(res, fmt.Errorf("connect_call is only supported for call reference type"))
+		return res
+	}
 
 	var tmpOpt fmaction.OptionConnect
 	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &tmpOpt); errUnmarshal != nil {

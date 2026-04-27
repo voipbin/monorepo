@@ -72,11 +72,22 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 		return nil, errors.Wrapf(errTerminate, "could not create the message. aicall_id: %s", aicallID)
 	}
 
+	// Interrupt any previous pipecat session before allocating a new one.
+	// Best-effort, ping-gated; correctness is provided by the response guard
+	// (PipecatcallID match check) at delivery time in messagehandler.EventPMMessageBotLLM.
+	h.interruptPreviousPipecatcall(ctx, c.PipecatcallID)
+
 	newPipecatcallID := h.utilHandler.UUIDCreate()
 	c, errTerminate = h.UpdatePipecatcallID(ctx, aicallID, newPipecatcallID)
 	if errTerminate != nil {
 		return nil, errors.Wrapf(errTerminate, "could not update the pipecatcall id for existing aicall. aicall_id: %s", aicallID)
 	}
+
+	// NOTE: Send does not call UpdateActiveflowID. The Send entrypoint is invoked
+	// by external senders pushing a message into an existing AIcall and does not
+	// receive a fresh activeflow_id. The AIcall's existing ActiveflowID remains
+	// bound to whatever the last flow-driven turn set. See plan
+	// docs/plans/2026-04-27-conversation-ai-talk-plan.md Slice 4 reviewer note.
 
 	// resolve current team member's AI config for team-based aicalls
 	if c.AssistanceType == aicall.AssistanceTypeTeam {

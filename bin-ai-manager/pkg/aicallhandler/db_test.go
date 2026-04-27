@@ -592,3 +592,238 @@ func Test_UpdateCurrentMemberID(t *testing.T) {
 		})
 	}
 }
+
+func Test_UpdateActiveflowID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		activeflowID uuid.UUID
+
+		responseUpdateErr error
+		responseAIcall    *aicall.AIcall
+		responseGetErr    error
+
+		expectFields map[aicall.Field]any
+		expectRes    *aicall.AIcall
+		expectErr    bool
+	}{
+		{
+			name: "normal",
+
+			id:           uuid.FromStringOrNil("21a4d6f0-2342-11ef-9f0a-cb0d8f0c3a01"),
+			activeflowID: uuid.FromStringOrNil("21d6f3aa-2342-11ef-bd13-7b3a4f7c2d11"),
+
+			responseUpdateErr: nil,
+			responseAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("21a4d6f0-2342-11ef-9f0a-cb0d8f0c3a01"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("21d6f3aa-2342-11ef-bd13-7b3a4f7c2d11"),
+			},
+			responseGetErr: nil,
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldActiveflowID: uuid.FromStringOrNil("21d6f3aa-2342-11ef-bd13-7b3a4f7c2d11"),
+			},
+			expectRes: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("21a4d6f0-2342-11ef-9f0a-cb0d8f0c3a01"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("21d6f3aa-2342-11ef-bd13-7b3a4f7c2d11"),
+			},
+			expectErr: false,
+		},
+		{
+			name: "update error",
+
+			id:           uuid.FromStringOrNil("220f1c2c-2342-11ef-bf21-3f7d2a4b5e22"),
+			activeflowID: uuid.FromStringOrNil("2243b15e-2342-11ef-9c3a-bb6e9d8f2c33"),
+
+			responseUpdateErr: fmt.Errorf("update failed"),
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldActiveflowID: uuid.FromStringOrNil("2243b15e-2342-11ef-9c3a-bb6e9d8f2c33"),
+			},
+			expectErr: true,
+		},
+		{
+			name: "get error after update",
+
+			id:           uuid.FromStringOrNil("22725c4a-2342-11ef-aebc-7f4c9d0e3a44"),
+			activeflowID: uuid.FromStringOrNil("22a3f0d2-2342-11ef-b6c4-cb1d2e3f4a55"),
+
+			responseUpdateErr: nil,
+			responseAIcall:    nil,
+			responseGetErr:    fmt.Errorf("get failed"),
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldActiveflowID: uuid.FromStringOrNil("22a3f0d2-2342-11ef-b6c4-cb1d2e3f4a55"),
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &aicallHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.id, tt.expectFields).Return(tt.responseUpdateErr)
+			if tt.responseUpdateErr == nil {
+				mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, tt.responseGetErr)
+			}
+
+			res, err := h.UpdateActiveflowID(ctx, tt.id, tt.activeflowID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_UpdatePipecatcallIDAndActiveflowID(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id            uuid.UUID
+		pipecatcallID uuid.UUID
+		activeflowID  uuid.UUID
+
+		responseUpdateErr error
+		responseAIcall    *aicall.AIcall
+		responseGetErr    error
+
+		expectFields map[aicall.Field]any
+		expectRes    *aicall.AIcall
+		expectErr    bool
+	}{
+		{
+			name: "normal",
+
+			id:            uuid.FromStringOrNil("3a01b6c0-2342-11ef-9f0a-cb0d8f0c3a01"),
+			pipecatcallID: uuid.FromStringOrNil("3a3454ce-2342-11ef-bd13-7b3a4f7c2d11"),
+			activeflowID:  uuid.FromStringOrNil("3a6660d4-2342-11ef-9c3a-bb6e9d8f2c33"),
+
+			responseUpdateErr: nil,
+			responseAIcall: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("3a01b6c0-2342-11ef-9f0a-cb0d8f0c3a01"),
+				},
+				PipecatcallID: uuid.FromStringOrNil("3a3454ce-2342-11ef-bd13-7b3a4f7c2d11"),
+				ActiveflowID:  uuid.FromStringOrNil("3a6660d4-2342-11ef-9c3a-bb6e9d8f2c33"),
+			},
+			responseGetErr: nil,
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldPipecatcallID: uuid.FromStringOrNil("3a3454ce-2342-11ef-bd13-7b3a4f7c2d11"),
+				aicall.FieldActiveflowID:  uuid.FromStringOrNil("3a6660d4-2342-11ef-9c3a-bb6e9d8f2c33"),
+			},
+			expectRes: &aicall.AIcall{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("3a01b6c0-2342-11ef-9f0a-cb0d8f0c3a01"),
+				},
+				PipecatcallID: uuid.FromStringOrNil("3a3454ce-2342-11ef-bd13-7b3a4f7c2d11"),
+				ActiveflowID:  uuid.FromStringOrNil("3a6660d4-2342-11ef-9c3a-bb6e9d8f2c33"),
+			},
+			expectErr: false,
+		},
+		{
+			name: "update error",
+
+			id:            uuid.FromStringOrNil("3aa3a8a4-2342-11ef-bf21-3f7d2a4b5e22"),
+			pipecatcallID: uuid.FromStringOrNil("3ad5d6dc-2342-11ef-9c3a-bb6e9d8f2c33"),
+			activeflowID:  uuid.FromStringOrNil("3b07ce28-2342-11ef-aebc-7f4c9d0e3a44"),
+
+			responseUpdateErr: fmt.Errorf("update failed"),
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldPipecatcallID: uuid.FromStringOrNil("3ad5d6dc-2342-11ef-9c3a-bb6e9d8f2c33"),
+				aicall.FieldActiveflowID:  uuid.FromStringOrNil("3b07ce28-2342-11ef-aebc-7f4c9d0e3a44"),
+			},
+			expectErr: true,
+		},
+		{
+			name: "get error after update",
+
+			id:            uuid.FromStringOrNil("3b3a82a8-2342-11ef-aebc-7f4c9d0e3a44"),
+			pipecatcallID: uuid.FromStringOrNil("3b6dadea-2342-11ef-b6c4-cb1d2e3f4a55"),
+			activeflowID:  uuid.FromStringOrNil("3b9f9c5c-2342-11ef-b6c4-cb1d2e3f4a55"),
+
+			responseUpdateErr: nil,
+			responseAIcall:    nil,
+			responseGetErr:    fmt.Errorf("get failed"),
+
+			expectFields: map[aicall.Field]any{
+				aicall.FieldPipecatcallID: uuid.FromStringOrNil("3b6dadea-2342-11ef-b6c4-cb1d2e3f4a55"),
+				aicall.FieldActiveflowID:  uuid.FromStringOrNil("3b9f9c5c-2342-11ef-b6c4-cb1d2e3f4a55"),
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &aicallHandler{
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+			}
+
+			ctx := context.Background()
+
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.id, tt.expectFields).Return(tt.responseUpdateErr)
+			if tt.responseUpdateErr == nil {
+				mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAIcall, tt.responseGetErr)
+			}
+
+			res, err := h.UpdatePipecatcallIDAndActiveflowID(ctx, tt.id, tt.pipecatcallID, tt.activeflowID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}

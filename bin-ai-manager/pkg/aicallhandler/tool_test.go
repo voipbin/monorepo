@@ -34,10 +34,9 @@ func Test_toolHandleConnect(t *testing.T) {
 		aicall *aicall.AIcall
 		tool   *message.ToolCall
 
-		responseActiveflow *fmactiveflow.Activeflow
+		mockSetup func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall)
 
-		expectActions []fmaction.Action
-		expectRes     *messageContent
+		expectRes *messageContent
 	}{
 		{
 			name: "normal",
@@ -47,7 +46,8 @@ func Test_toolHandleConnect(t *testing.T) {
 					ID:         uuid.FromStringOrNil("092306ea-bba3-11f0-838f-3713971974df"),
 					CustomerID: uuid.FromStringOrNil("09678068-bba3-11f0-9e0d-87fbfeb3be46"),
 				},
-				ActiveflowID: uuid.FromStringOrNil("0990a6f0-bba3-11f0-9abf-a3303095e6e6"),
+				ReferenceType: aicall.ReferenceTypeCall,
+				ActiveflowID:  uuid.FromStringOrNil("0990a6f0-bba3-11f0-9abf-a3303095e6e6"),
 			},
 			tool: &message.ToolCall{
 				ID:   "1a6f5f40-f06f-11ef-8f5e-3f3b1d2e8e2f",
@@ -75,41 +75,75 @@ func Test_toolHandleConnect(t *testing.T) {
 				},
 			},
 
-			responseActiveflow: &fmactiveflow.Activeflow{
-				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("0990a6f0-bba3-11f0-9abf-a3303095e6e6"),
-				},
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
+				expectActions := []fmaction.Action{
+					{
+						Type: fmaction.TypeConnect,
+						Option: map[string]any{
+							"source": map[string]any{
+								"type":   "tel",
+								"target": "+123456789",
+							},
+							"destinations": []any{
+								map[string]any{
+									"type":   "tel",
+									"target": "+11111111",
+								},
+								map[string]any{
+									"type":   "tel",
+									"target": "+22222222",
+								},
+							},
+							"early_media":  true,
+							"relay_reason": true,
+						},
+					},
+				}
+				responseActiveflow := &fmactiveflow.Activeflow{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0990a6f0-bba3-11f0-9abf-a3303095e6e6"),
+					},
+				}
+				mockReq.EXPECT().FlowV1ActiveflowAddActions(gomock.Any(), a.ActiveflowID, expectActions).Return(responseActiveflow, nil)
+				mockReq.EXPECT().AIV1AIcallTerminate(gomock.Any(), a.ID).Return(&aicall.AIcall{}, nil)
 			},
 
-			expectActions: []fmaction.Action{
-				{
-					Type: fmaction.TypeConnect,
-					Option: map[string]any{
-						"source": map[string]any{
-							"type":   "tel",
-							"target": "+123456789",
-						},
-						"destinations": []any{
-							map[string]any{
-								"type":   "tel",
-								"target": "+11111111",
-							},
-							map[string]any{
-								"type":   "tel",
-								"target": "+22222222",
-							},
-						},
-						"early_media":  true,
-						"relay_reason": true,
-					},
-				},
-			},
 			expectRes: &messageContent{
 				Result:       "success",
 				Message:      "Added connect action successfully.",
 				ToolCallID:   "1a6f5f40-f06f-11ef-8f5e-3f3b1d2e8e2f",
 				ResourceType: "activeflow",
 				ResourceID:   "0990a6f0-bba3-11f0-9abf-a3303095e6e6",
+			},
+		},
+		{
+			name: "rejects non-call reference type (conversation)",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a1b2c3d4-1111-4222-8333-444444444444"),
+					CustomerID: uuid.FromStringOrNil("a1b2c3d4-5555-4666-8777-888888888888"),
+				},
+				ReferenceType: aicall.ReferenceTypeConversation,
+				ActiveflowID:  uuid.FromStringOrNil("a1b2c3d4-9999-4aaa-8bbb-cccccccccccc"),
+			},
+			tool: &message.ToolCall{
+				ID:   "a1b2c3d4-dddd-4eee-8fff-000000000000",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name:      message.FunctionCallNameConnectCall,
+					Arguments: `{}`,
+				},
+			},
+
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
+				// no mock calls expected; guard short-circuits before any RPC
+			},
+
+			expectRes: &messageContent{
+				Result:     "failed",
+				Message:    "connect_call is only supported for call reference type",
+				ToolCallID: "a1b2c3d4-dddd-4eee-8fff-000000000000",
 			},
 		},
 	}
@@ -138,8 +172,9 @@ func Test_toolHandleConnect(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowAddActions(ctx, tt.aicall.ActiveflowID, tt.expectActions).Return(tt.responseActiveflow, nil)
-			mockReq.EXPECT().AIV1AIcallTerminate(gomock.Any(), tt.aicall.ID).Return(&aicall.AIcall{}, nil)
+			if tt.mockSetup != nil {
+				tt.mockSetup(mockReq, tt.aicall)
+			}
 
 			res := h.toolHandleConnect(ctx, tt.aicall, tt.tool)
 

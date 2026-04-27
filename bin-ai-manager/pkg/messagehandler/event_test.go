@@ -2,15 +2,21 @@ package messagehandler
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"go.uber.org/mock/gomock"
 
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cvmedia "monorepo/bin-conversation-manager/models/media"
+	cvmessage "monorepo/bin-conversation-manager/models/message"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 )
@@ -71,59 +77,544 @@ func TestEventPMMessageUserTranscription(t *testing.T) {
 	}
 }
 
-func TestEventPMMessageBotLLM(t *testing.T) {
-	tests := []struct {
-		name      string
-		event     *pmmessage.Message
-		setupMock func(*dbhandler.MockDBHandler)
-	}{
-		{
-			name: "creates_message_for_bot_llm",
-			event: &pmmessage.Message{
-				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
-				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
-				ActiveflowID:             uuid.Must(uuid.NewV4()),
-				Text:                     "Bot response text",
-			},
-			setupMock: func(m *dbhandler.MockDBHandler) {
-				testMsg := &message.Message{}
-				testMsg.ID = uuid.Must(uuid.NewV4())
-				m.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				m.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
-			},
-		},
-		{
-			name: "ignores_empty_text",
-			event: &pmmessage.Message{
-				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
-				PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
-				ActiveflowID:             uuid.Must(uuid.NewV4()),
-				Text:                     "",
-			},
-			setupMock: func(m *dbhandler.MockDBHandler) {
-				// Should not create message for empty text
-			},
-		},
+func TestEventPMMessageBotLLM_voice_path(t *testing.T) {
+	// Voice / non-conversation path: persists the message and returns; no AIcall
+	// fetch beyond the single one used to determine reference type, no delivery.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pipecatcallID := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	customerID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pipecatcallID,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             activeflowID,
+		Text:                     "Bot voice response",
+	}
+	evt.CustomerID = customerID
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	// AIcall is a voice (call) reference type — no conversation delivery.
+	voiceAIcall := &aicall.AIcall{
+		PipecatcallID: pipecatcallID,
+		ReferenceType: aicall.ReferenceTypeCall,
+	}
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(voiceAIcall, nil).Times(1)
+
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	// No ConversationV1MessageSend expected.
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+	h.EventPMMessageBotLLM(context.Background(), evt)
+}
 
-			mockDB := dbhandler.NewMockDBHandler(ctrl)
-			mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
-			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-			tt.setupMock(mockDB)
+func TestEventPMMessageBotLLM_non_aicall_reference(t *testing.T) {
+	// Pipecat reference type that isn't AICall (e.g., direct call): legacy path,
+	// persist and return — no AIV1AIcallGet, no delivery.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-			h := &messageHandler{
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				utilHandler:   utilhandler.NewUtilHandler(),
+	evt := &pmmessage.Message{
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeCall,
+		PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "Bot response",
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	// No AIV1AIcallGet expected.
+
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	h.EventPMMessageBotLLM(context.Background(), evt)
+}
+
+func TestEventPMMessageBotLLM_empty_text(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	evt := &pmmessage.Message{
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   uuid.Must(uuid.NewV4()),
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "",
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	// No expectations: empty text returns immediately.
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	h.EventPMMessageBotLLM(context.Background(), evt)
+}
+
+func TestEventPMMessageBotLLM_conversation_guard_primary_drop(t *testing.T) {
+	// Guard #1 miss: AIcall.PipecatcallID != evt.PipecatcallID.
+	// Expected: NO persistence, NO send, primary stale counter += 1.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pccA := uuid.Must(uuid.NewV4())
+	pccB := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	convID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "stale assistant reply",
+	}
+
+	staleAIcall := &aicall.AIcall{
+		PipecatcallID: pccB, // mismatch
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(staleAIcall, nil).Times(1)
+	// No MessageCreate, no second AIV1AIcallGet, no ConversationV1MessageSend.
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	before := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary"))
+	h.EventPMMessageBotLLM(context.Background(), evt)
+	after := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary"))
+
+	if after-before != 1 {
+		t.Errorf("expected primary stale counter to increment by 1, got delta=%f", after-before)
+	}
+}
+
+func TestEventPMMessageBotLLM_conversation_guard_secondary_drop(t *testing.T) {
+	// Guard #1 passes, guard #2 miss after persistence (race).
+	// Expected: persistence happens, NO send, secondary stale counter += 1.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pccA := uuid.Must(uuid.NewV4())
+	pccB := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	convID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "assistant reply",
+	}
+
+	freshAIcall := &aicall.AIcall{
+		PipecatcallID: pccA,
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+	rotatedAIcall := &aicall.AIcall{
+		PipecatcallID: pccB, // mismatch on re-check
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	gomock.InOrder(
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(freshAIcall, nil).Times(1),
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(rotatedAIcall, nil).Times(1),
+	)
+
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+	// No ConversationV1MessageSend.
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	before := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary"))
+	h.EventPMMessageBotLLM(context.Background(), evt)
+	after := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary"))
+
+	if after-before != 1 {
+		t.Errorf("expected secondary stale counter to increment by 1, got delta=%f", after-before)
+	}
+}
+
+func TestEventPMMessageBotLLM_conversation_send_success(t *testing.T) {
+	// Both guards pass; ConversationV1MessageSend called with conv ID and text.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pccA := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	convID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "hello human",
+	}
+
+	freshAIcall := &aicall.AIcall{
+		PipecatcallID: pccA,
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(freshAIcall, nil).Times(2)
+
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	mockReq.EXPECT().
+		ConversationV1MessageSend(gomock.Any(), convID, "hello human", []cvmedia.Media{}).
+		Return(&cvmessage.Message{}, nil).
+		Times(1)
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	before := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+	h.EventPMMessageBotLLM(context.Background(), evt)
+	after := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+
+	if after-before != 1 {
+		t.Errorf("expected success counter to increment by 1, got delta=%f", after-before)
+	}
+}
+
+func TestEventPMMessageBotLLM_conversation_send_failure_silent(t *testing.T) {
+	// Both guards pass; ConversationV1MessageSend errors. No panic, no retry.
+	// failure counter += 1.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pccA := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	convID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "hello human",
+	}
+
+	freshAIcall := &aicall.AIcall{
+		PipecatcallID: pccA,
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(freshAIcall, nil).Times(2)
+
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	mockReq.EXPECT().
+		ConversationV1MessageSend(gomock.Any(), convID, "hello human", []cvmedia.Media{}).
+		Return(nil, errors.New("delivery failed")).
+		Times(1)
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	before := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure"))
+	h.EventPMMessageBotLLM(context.Background(), evt)
+	after := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure"))
+
+	if after-before != 1 {
+		t.Errorf("expected failure counter to increment by 1, got delta=%f", after-before)
+	}
+}
+
+// TestEventPMMessageBotLLM_customer_id_mismatch_proceeds documents that the
+// handler does NOT cross-check evt.CustomerID against ac.CustomerID at
+// runtime — see design doc §11 (Accepted v1 limits): "Customer cross-check
+// between AIcall and conversation skipped at the RPC level. Already enforced
+// upstream; one-time integration test asserts isolation."
+//
+// This test is a safety net: if a future PR adds a cross-check, this test
+// fails and forces conscious review of the design constraint.
+func TestEventPMMessageBotLLM_customer_id_mismatch_proceeds(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	customerA := uuid.Must(uuid.NewV4())
+	customerB := uuid.Must(uuid.NewV4())
+	pccA := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	convID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "hello human",
+	}
+	evt.CustomerID = customerA
+
+	// AIcall belongs to a DIFFERENT customer than the inbound event.
+	freshAIcall := &aicall.AIcall{
+		PipecatcallID: pccA,
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+	freshAIcall.CustomerID = customerB
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	// Both guard fetches return the customer-mismatched AIcall — handler
+	// MUST still proceed (no cross-check at this layer).
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(freshAIcall, nil).Times(2)
+
+	// MessageCreate is invoked with evt.CustomerID (customerA), per current code.
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, m *message.Message) error {
+			if m.CustomerID != customerA {
+				t.Errorf("expected MessageCreate to use evt.CustomerID=%s, got %s", customerA, m.CustomerID)
 			}
+			return nil
+		},
+	).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-			h.EventPMMessageBotLLM(context.Background(), tt.event)
-		})
+	// Conversation send proceeds — uses acFinal.ReferenceID (the AIcall's
+	// reference, not the event's). No customer-isolation guard at runtime.
+	mockReq.EXPECT().
+		ConversationV1MessageSend(gomock.Any(), convID, "hello human", []cvmedia.Media{}).
+		Return(&cvmessage.Message{}, nil).
+		Times(1)
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	before := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+	h.EventPMMessageBotLLM(context.Background(), evt)
+	after := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+
+	if after-before != 1 {
+		t.Errorf("expected success counter to increment by 1 (handler proceeds despite customer mismatch), got delta=%f", after-before)
+	}
+}
+
+func TestEventPMMessageBotLLM_first_aicall_get_error(t *testing.T) {
+	// First AIV1AIcallGet returns an error — handler logs and returns
+	// without persisting the message or sending to conversation. Stale
+	// counters and reply-send counters MUST NOT increment.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pccA := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "should not be persisted",
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	// First AIV1AIcallGet errors. NO MessageCreate, NO MessageGet,
+	// NO ConversationV1MessageSend, NO PublishWebhookEvent.
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(nil, errors.New("aicall rpc error")).Times(1)
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	beforePrimary := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary"))
+	beforeSecondary := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary"))
+	beforeSuccess := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+	beforeFailure := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure"))
+
+	h.EventPMMessageBotLLM(context.Background(), evt)
+
+	if got := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary")); got != beforePrimary {
+		t.Errorf("primary stale counter changed unexpectedly: before=%f after=%f", beforePrimary, got)
+	}
+	if got := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary")); got != beforeSecondary {
+		t.Errorf("secondary stale counter changed unexpectedly: before=%f after=%f", beforeSecondary, got)
+	}
+	if got := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success")); got != beforeSuccess {
+		t.Errorf("reply-send success counter changed unexpectedly: before=%f after=%f", beforeSuccess, got)
+	}
+	if got := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure")); got != beforeFailure {
+		t.Errorf("reply-send failure counter changed unexpectedly: before=%f after=%f", beforeFailure, got)
+	}
+}
+
+func TestEventPMMessageBotLLM_second_aicall_get_error(t *testing.T) {
+	// First AIV1AIcallGet succeeds (matching PCC, conversation reference);
+	// messageHandler.Create persists the assistant message; second
+	// AIV1AIcallGet (the secondary guard re-check) returns an error.
+	// Expected: message IS persisted; ConversationV1MessageSend MUST NOT
+	// be called; no stale or reply-send counters increment.
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	pccA := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	convID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.Message{
+		PipecatcallID:            pccA,
+		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+		PipecatcallReferenceID:   aicallID,
+		ActiveflowID:             uuid.Must(uuid.NewV4()),
+		Text:                     "assistant reply persisted but not delivered",
+	}
+
+	freshAIcall := &aicall.AIcall{
+		PipecatcallID: pccA,
+		ReferenceType: aicall.ReferenceTypeConversation,
+		ReferenceID:   convID,
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	gomock.InOrder(
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(freshAIcall, nil).Times(1),
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(nil, errors.New("rpc transient")).Times(1),
+	)
+
+	// Persistence runs once between the two AIcall fetches.
+	testMsg := &message.Message{}
+	testMsg.ID = uuid.Must(uuid.NewV4())
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	// ConversationV1MessageSend MUST NOT be called.
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	beforePrimary := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary"))
+	beforeSecondary := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary"))
+	beforeSuccess := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+	beforeFailure := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure"))
+
+	h.EventPMMessageBotLLM(context.Background(), evt)
+
+	if got := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("primary")); got != beforePrimary {
+		t.Errorf("primary stale counter changed unexpectedly: before=%f after=%f", beforePrimary, got)
+	}
+	if got := testutil.ToFloat64(promConversationStaleResponseDroppedTotal.WithLabelValues("secondary")); got != beforeSecondary {
+		t.Errorf("secondary stale counter changed unexpectedly: before=%f after=%f", beforeSecondary, got)
+	}
+	if got := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success")); got != beforeSuccess {
+		t.Errorf("reply-send success counter changed unexpectedly: before=%f after=%f", beforeSuccess, got)
+	}
+	if got := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure")); got != beforeFailure {
+		t.Errorf("reply-send failure counter changed unexpectedly: before=%f after=%f", beforeFailure, got)
 	}
 }
 
@@ -135,8 +626,10 @@ func TestEventPMMessageBotLLM_forwards_pre_generated_id(t *testing.T) {
 	customerID := uuid.Must(uuid.NewV4())
 	referenceID := uuid.Must(uuid.NewV4())
 	activeflowID := uuid.Must(uuid.NewV4())
+	pipecatcallID := uuid.Must(uuid.NewV4())
 
 	evt := &pmmessage.Message{
+		PipecatcallID:            pipecatcallID,
 		PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
 		PipecatcallReferenceID:   referenceID,
 		ActiveflowID:             activeflowID,
@@ -147,6 +640,14 @@ func TestEventPMMessageBotLLM_forwards_pre_generated_id(t *testing.T) {
 
 	mockDB := dbhandler.NewMockDBHandler(ctrl)
 	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+	// Voice path — single AIcall fetch returning ReferenceTypeCall.
+	voiceAIcall := &aicall.AIcall{
+		PipecatcallID: pipecatcallID,
+		ReferenceType: aicall.ReferenceTypeCall,
+	}
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), referenceID).Return(voiceAIcall, nil).Times(1)
 
 	// Verify MessageCreate receives the pre-generated ID (not a new one).
 	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).DoAndReturn(
@@ -168,6 +669,7 @@ func TestEventPMMessageBotLLM_forwards_pre_generated_id(t *testing.T) {
 	h := &messageHandler{
 		db:            mockDB,
 		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
 		utilHandler:   utilhandler.NewUtilHandler(),
 	}
 

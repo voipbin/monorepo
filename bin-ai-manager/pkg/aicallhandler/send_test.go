@@ -42,6 +42,17 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 		// for fallback case: UpdateCurrentMemberID response
 		responseFallbackAIcall *aicall.AIcall
 
+		// interrupt-previous-pipecatcall expectations.
+		// expectInterruptGet=true means interruptPreviousPipecatcall calls
+		// PipecatV1PipecatcallGet on the previous PipecatcallID. The Get response
+		// is responseInterruptPipecatcall (HostID drives ping/terminate).
+		// expectInterruptPing/Terminate gate the subsequent calls.
+		expectInterruptGet         bool
+		expectInterruptPing        bool
+		expectInterruptTerminate   bool
+		responseInterruptPipecatcall *pmpipecatcall.Pipecatcall
+		responseInterruptPingErr   error
+
 		expectTeamGet              bool
 		expectAIGet                bool
 		expectUpdateCurrentMember  bool
@@ -49,6 +60,14 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 		expectPipecatcallMessages  []map[string]any
 		expectCurrentMemberIDAfter uuid.UUID
 		expectRes                  *message.Message
+
+		// updatePipecatcallIDErr — when non-nil, the AIcallUpdate call inside
+		// UpdatePipecatcallID returns this error. Subsequent steps
+		// (team resolve, startPipecatcall, etc.) MUST NOT run.
+		updatePipecatcallIDErr error
+
+		expectErr          bool
+		expectErrSubstring string
 	}{
 		{
 			name: "non_team_aicall_uses_existing_engine_model",
@@ -84,6 +103,17 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			},
 			responseMessages:    []*message.Message{},
 			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
+
+			expectInterruptGet:       true,
+			expectInterruptPing:      true,
+			expectInterruptTerminate: true,
+			responseInterruptPipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a0000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "host-a",
+			},
+			responseInterruptPingErr: nil,
 
 			expectTeamGet:             false,
 			expectAIGet:               false,
@@ -154,6 +184,17 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			},
 			responseMessages:    []*message.Message{},
 			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
+
+			expectInterruptGet:       true,
+			expectInterruptPing:      true,
+			expectInterruptTerminate: true,
+			responseInterruptPipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b0000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "host-b",
+			},
+			responseInterruptPingErr: nil,
 
 			expectTeamGet:              true,
 			expectAIGet:                true,
@@ -229,6 +270,17 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			responseMessages:    []*message.Message{},
 			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
 
+			expectInterruptGet:       true,
+			expectInterruptPing:      true,
+			expectInterruptTerminate: true,
+			responseInterruptPipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("c0000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "host-c",
+			},
+			responseInterruptPingErr: nil,
+
 			expectTeamGet:              true,
 			expectAIGet:                true,
 			expectUpdateCurrentMember:  true,
@@ -279,6 +331,17 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			responseMessages:    []*message.Message{},
 			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
 
+			expectInterruptGet:       true,
+			expectInterruptPing:      true,
+			expectInterruptTerminate: true,
+			responseInterruptPipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d0000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "host-d",
+			},
+			responseInterruptPingErr: nil,
+
 			expectTeamGet:             true,
 			expectAIGet:               false,
 			expectUpdateCurrentMember: false,
@@ -287,6 +350,172 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 			expectRes: &message.Message{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("d0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+		},
+		{
+			name: "dead_previous_pipecat_interrupt_skipped",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:   uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000030"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:  uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000050"),
+			},
+			messageText: "hello dead pod",
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000060"),
+			responseUpdatedAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("71000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:   uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000030"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:  uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000060"),
+			},
+			responseMessages:    []*message.Message{},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
+
+			// dead pod: Get succeeds, Ping fails, Terminate is NOT called
+			expectInterruptGet:       true,
+			expectInterruptPing:      true,
+			expectInterruptTerminate: false,
+			responseInterruptPipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "host-e-dead",
+			},
+			responseInterruptPingErr: context.DeadlineExceeded,
+
+			expectTeamGet:             false,
+			expectAIGet:               false,
+			expectUpdateCurrentMember: false,
+			expectLLMType:             pmpipecatcall.LLMType("openai.gpt-5"),
+			expectPipecatcallMessages: []map[string]any{},
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e0000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+		},
+		{
+			// After a successful interrupt of the previous pipecat session and
+			// a successful messageHandler.Create for the user message, the
+			// UpdatePipecatcallID call (db.AIcallUpdate) fails. The function
+			// MUST return a wrapped error and MUST NOT call startPipecatcall.
+			name: "update_pipecatcall_id_fails_after_interrupt",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000020"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:   uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000030"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000040"),
+				PipecatcallID:  uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000050"),
+			},
+			messageText: "hello before update fails",
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000060"),
+			// responseUpdatedAIcall is unused (UpdatePipecatcallID fails before
+			// the AIcallGet step), but is required by other table-driven mock
+			// expectations that reference it. Kept minimal.
+			responseUpdatedAIcall: nil,
+
+			// interrupt succeeds
+			expectInterruptGet:       true,
+			expectInterruptPing:      true,
+			expectInterruptTerminate: true,
+			responseInterruptPipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a8000001-0000-0000-0000-000000000050"),
+				},
+				HostID: "host-a8",
+			},
+			responseInterruptPingErr: nil,
+
+			// AIcallUpdate fails inside UpdatePipecatcallID — no AIcallGet,
+			// no team resolve, no startPipecatcall, no terminate-with-delay.
+			updatePipecatcallIDErr: fmt.Errorf("update failed"),
+			expectTeamGet:          false,
+			expectAIGet:            false,
+			expectUpdateCurrentMember: false,
+			// expectRes is the message returned by messageHandler.Create — that
+			// runs and succeeds; the test asserts the returned error wrap and
+			// nil res from SendReferenceTypeOthers.
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a8000001-0000-0000-0000-0000000000f0"),
+				},
+			},
+			expectErr:          true,
+			expectErrSubstring: "could not update the pipecatcall id for existing aicall",
+		},
+		{
+			name: "nil_previous_pipecatcall_id_skips_interrupt",
+
+			aicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:   uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000030"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:  uuid.Nil, // no previous pipecat session
+			},
+			messageText: "first message",
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000060"),
+			responseUpdatedAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000010"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000020"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				ActiveflowID:   uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000030"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000040"),
+				PipecatcallID:  uuid.FromStringOrNil("f0000001-0000-0000-0000-000000000060"),
+			},
+			responseMessages:    []*message.Message{},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{},
+
+			// nil previous PipecatcallID: NO interrupt mocks at all (early return inside helper)
+			expectInterruptGet:       false,
+			expectInterruptPing:      false,
+			expectInterruptTerminate: false,
+
+			expectTeamGet:             false,
+			expectAIGet:               false,
+			expectUpdateCurrentMember: false,
+			expectLLMType:             pmpipecatcall.LLMType("openai.gpt-5"),
+			expectPipecatcallMessages: []map[string]any{},
+			expectRes: &message.Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0000001-0000-0000-0000-0000000000f0"),
 				},
 			},
 		},
@@ -332,52 +561,83 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 				"",
 			).Return(tt.expectRes, nil)
 
-			// 2. utilHandler.UUIDCreate for new pipecatcallID
+			// 2. interruptPreviousPipecatcall: ping-gated termination of previous pipecat session.
+			//    Skipped entirely when PipecatcallID is uuid.Nil.
+			if tt.expectInterruptGet {
+				mockReq.EXPECT().PipecatV1PipecatcallGet(gomock.Any(), tt.aicall.PipecatcallID).Return(tt.responseInterruptPipecatcall, nil)
+			}
+			if tt.expectInterruptPing {
+				mockReq.EXPECT().PipecatV1Ping(gomock.Any(), tt.responseInterruptPipecatcall.HostID).Return(tt.responseInterruptPingErr)
+			}
+			if tt.expectInterruptTerminate {
+				mockReq.EXPECT().PipecatV1PipecatcallTerminate(gomock.Any(), tt.responseInterruptPipecatcall.HostID, tt.aicall.PipecatcallID).Return(nil, nil)
+			}
+
+			// 3. utilHandler.UUIDCreate for new pipecatcallID
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 
-			// 3. UpdatePipecatcallID (db.AIcallUpdate + db.AIcallGet)
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseUpdatedAIcall, nil)
-
-			// 4. team resolution (conditional)
-			if tt.expectTeamGet {
-				mockTeam.EXPECT().Get(ctx, tt.aicall.AssistanceID).Return(tt.responseTeam, tt.responseTeamErr)
-			}
-
-			if tt.expectAIGet {
-				mockAI.EXPECT().Get(ctx, tt.responseAI.ID).Return(tt.responseAI, nil)
-			}
-
-			if tt.expectUpdateCurrentMember {
-				// UpdateCurrentMemberID calls AIcallUpdate + AIcallGet
+			// 4. UpdatePipecatcallID (db.AIcallUpdate + db.AIcallGet)
+			//    When updatePipecatcallIDErr is non-nil, AIcallUpdate fails and
+			//    no subsequent expectations (AIcallGet, team resolve, list,
+			//    pipecatStart, terminate-with-delay) should be set.
+			if tt.updatePipecatcallIDErr != nil {
+				mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(tt.updatePipecatcallIDErr)
+			} else {
 				mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
-				mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseFallbackAIcall, nil)
+				mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseUpdatedAIcall, nil)
+
+				// 5. team resolution (conditional)
+				if tt.expectTeamGet {
+					mockTeam.EXPECT().Get(ctx, tt.aicall.AssistanceID).Return(tt.responseTeam, tt.responseTeamErr)
+				}
+
+				if tt.expectAIGet {
+					mockAI.EXPECT().Get(ctx, tt.responseAI.ID).Return(tt.responseAI, nil)
+				}
+
+				if tt.expectUpdateCurrentMember {
+					// UpdateCurrentMemberID calls AIcallUpdate + AIcallGet
+					mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
+					mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseFallbackAIcall, nil)
+				}
+
+				// 6. startPipecatcall: messageHandler.List for getPipecatcallMessages
+				mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
+
+				// 7. PipecatV1PipecatcallStart with the expected LLM type
+				mockReq.EXPECT().PipecatV1PipecatcallStart(
+					ctx,
+					tt.responseUpdatedAIcall.PipecatcallID,
+					tt.responseUpdatedAIcall.CustomerID,
+					tt.responseUpdatedAIcall.ActiveflowID,
+					pmpipecatcall.ReferenceTypeAICall,
+					tt.responseUpdatedAIcall.ID,
+					tt.expectLLMType,
+					tt.expectPipecatcallMessages,
+					pmpipecatcall.STTTypeNone,
+					tt.responseUpdatedAIcall.STTLanguage,
+					pmpipecatcall.TTSTypeNone,
+					"",
+					"",
+				).Return(tt.responsePipecatcall, nil)
+
+				// 8. PipecatV1PipecatcallTerminateWithDelay
+				mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 			}
-
-			// 5. startPipecatcall: messageHandler.List for getPipecatcallMessages
-			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
-
-			// 6. PipecatV1PipecatcallStart with the expected LLM type
-			mockReq.EXPECT().PipecatV1PipecatcallStart(
-				ctx,
-				tt.responseUpdatedAIcall.PipecatcallID,
-				tt.responseUpdatedAIcall.CustomerID,
-				tt.responseUpdatedAIcall.ActiveflowID,
-				pmpipecatcall.ReferenceTypeAICall,
-				tt.responseUpdatedAIcall.ID,
-				tt.expectLLMType,
-				tt.expectPipecatcallMessages,
-				pmpipecatcall.STTTypeNone,
-				tt.responseUpdatedAIcall.STTLanguage,
-				pmpipecatcall.TTSTypeNone,
-				"",
-				"",
-			).Return(tt.responsePipecatcall, nil)
-
-			// 7. PipecatV1PipecatcallTerminateWithDelay
-			mockReq.EXPECT().PipecatV1PipecatcallTerminateWithDelay(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID, defaultAITaskTimeout).Return(nil)
 
 			res, err := h.SendReferenceTypeOthers(ctx, tt.aicall, message.RoleUser, tt.messageText)
+			if tt.expectErr {
+				if err == nil {
+					t.Fatalf("expected error, got nil")
+				}
+				if tt.expectErrSubstring != "" && !strings.Contains(err.Error(), tt.expectErrSubstring) {
+					t.Errorf("expected error containing %q, got: %v", tt.expectErrSubstring, err)
+				}
+				if res != nil {
+					t.Errorf("expected nil res on error, got: %v", res)
+				}
+				return
+			}
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}

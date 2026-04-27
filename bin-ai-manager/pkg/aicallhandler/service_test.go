@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"fmt"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
@@ -394,8 +395,15 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			mockReq.EXPECT().FlowV1VariableGet(ctx, tt.activeflowID).Return(tt.responseFlowVariable, nil)
 			mockDB.EXPECT().AIcallGetByReferenceID(ctx, tt.referenceID).Return(tt.responseAIcall, nil)
 
+			// interruptPreviousPipecatcall: best-effort. Get fails -> ping/terminate skipped.
+			mockReq.EXPECT().PipecatV1PipecatcallGet(gomock.Any(), tt.responseAIcall.PipecatcallID).Return(nil, fmt.Errorf("not found"))
+
+			// new pipecatcall ID + atomic UpdatePipecatcallIDAndActiveflowID
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAIcall.ID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAIcall.ID, map[aicall.Field]any{
+				aicall.FieldPipecatcallID: tt.responseUUIDPipecatcallID,
+				aicall.FieldActiveflowID:  tt.activeflowID,
+			}).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 
 			mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, tt.responseAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageText, nil, "").Return(&message.Message{}, nil)

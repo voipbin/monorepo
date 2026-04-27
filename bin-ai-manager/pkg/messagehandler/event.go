@@ -3,8 +3,10 @@ package messagehandler
 import (
 	"context"
 	"encoding/json"
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	identity "monorepo/bin-common-handler/models/identity"
+	cvmedia "monorepo/bin-conversation-manager/models/media"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
@@ -41,12 +43,91 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		return
 	}
 
-	tmp, err := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+	// Only AIcall-typed pipecatcalls flow through the conversation-bridge logic.
+	// All other pipecat reference types use the legacy "persist and return" path.
+	if evt.PipecatcallReferenceType != pmpipecatcall.ReferenceTypeAICall {
+		tmp, err := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
+			message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+		if err != nil {
+			log.Errorf("Could not create the message. err: %v", err)
+			return
+		}
+		log.WithField("message", tmp).Debugf("Created message.")
+		return
+	}
+
+	ac, err := h.reqHandler.AIV1AIcallGet(ctx, evt.PipecatcallReferenceID)
+	if err != nil {
+		log.WithField("aicall_id", evt.PipecatcallReferenceID).Errorf("Could not get aicall — skipping conversation delivery. err: %v", err)
+		return
+	}
+	log.WithField("aicall", ac).Debugf("Retrieved aicall info. aicall_id: %s", ac.ID)
+
+	// Voice / task: keep existing behavior — persist, no delivery.
+	if ac.ReferenceType != aicall.ReferenceTypeConversation {
+		tmp, errCreate := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
+			message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+		if errCreate != nil {
+			log.Errorf("Could not create the message. err: %v", errCreate)
+			return
+		}
+		log.WithField("message", tmp).Debugf("Created message.")
+		return
+	}
+
+	// Guard #1 (primary) — drop stale responses BEFORE any DB write.
+	// Per per-pod liveness preflight pattern: preflight before any DB write.
+	if ac.PipecatcallID != evt.PipecatcallID {
+		log.Infof("Dropping stale response (guard primary). aicall_id: %s, current_pcc: %s, event_pcc: %s",
+			ac.ID, ac.PipecatcallID, evt.PipecatcallID)
+		promConversationStaleResponseDroppedTotal.WithLabelValues("primary").Inc()
+		return
+	}
+
+	// Persist the assistant message (only after guard #1 passes).
+	tmp, err := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
+		message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
 	}
 	log.WithField("message", tmp).Debugf("Created message.")
+
+	// Guard #2 (secondary) — re-check after persistence to narrow the dual-delivery race window.
+	acFinal, errFinal := h.reqHandler.AIV1AIcallGet(ctx, evt.PipecatcallReferenceID)
+	if errFinal != nil {
+		log.WithField("aicall_id", evt.PipecatcallReferenceID).Warnf("Re-check AIcall fetch failed; skipping conversation delivery. err: %v", errFinal)
+		return
+	}
+	if acFinal.PipecatcallID != evt.PipecatcallID {
+		log.Infof("Race detected at delivery time (guard secondary). aicall_id: %s, event_pcc: %s",
+			acFinal.ID, evt.PipecatcallID)
+		promConversationStaleResponseDroppedTotal.WithLabelValues("secondary").Inc()
+		return
+	}
+
+	// Deliver to conversation — silent failure on error per design.
+	// NOTE: Do not add retry logic here. ConversationV1MessageSend dispatches to
+	// SMS/LINE delivery downstream; a duplicate request would result in a duplicate
+	// user-visible reply. If retry becomes necessary, gate it on an idempotency
+	// key (e.g., evt.ID) honored by conversation-manager — see design doc §11
+	// (Accepted v1 limits) for the dual-delivery race window.
+	sent, errSend := h.reqHandler.ConversationV1MessageSend(ctx, acFinal.ReferenceID, evt.Text, []cvmedia.Media{})
+	if errSend != nil {
+		log.WithFields(logrus.Fields{
+			"aicall_id":       acFinal.ID,
+			"conversation_id": acFinal.ReferenceID,
+			"event_id":        evt.ID,
+		}).Errorf("Could not send conversation message (silent failure): %v", errSend)
+		promConversationReplySendTotal.WithLabelValues("failure").Inc()
+		return
+	}
+	promConversationReplySendTotal.WithLabelValues("success").Inc()
+	log.WithFields(logrus.Fields{
+		"aicall_id":            acFinal.ID,
+		"conversation_id":      acFinal.ReferenceID,
+		"conversation_message": sent,
+	}).Debugf("Sent conversation reply.")
 }
 
 func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message) {
