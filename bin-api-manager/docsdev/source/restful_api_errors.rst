@@ -194,7 +194,7 @@ The ``provider``, ``trunk``, and ``route`` resources are admin-gated and share a
 
 .. note::
 
-   ``ROUTE_NOT_FOUND`` and ``PROVIDER_NOT_FOUND`` are emitted today by route-manager, and ``TRUNK_NOT_FOUND`` is emitted today by registrar-manager (via ``cerrors.NotFound("<service>", ...)``); all surface end-to-end on Get-by-ID lookups for non-existent resources.
+   ``ROUTE_NOT_FOUND``, ``PROVIDER_NOT_FOUND``, and ``PROVIDERCALL_NOT_FOUND`` are emitted today by route-manager, and ``TRUNK_NOT_FOUND`` is emitted today by registrar-manager (via ``cerrors.NotFound("<service>", ...)``); all surface end-to-end on Get-by-ID lookups for non-existent resources.
    These resources are admin-gated. Non-admin callers receive **403 PERMISSION_DENIED** via ``serviceerrors.ErrPermissionDenied``.
    Admin-gated endpoints (``/providers``, ``/providers/setup``, ``/providercalls``, ``/trunks``, ``/routes`` and their sub-paths) return 403 ``PERMISSION_DENIED`` for non-admin callers. The OpenAPI spec declares 403 on these paths to reflect this runtime behavior.
 
@@ -214,6 +214,9 @@ The ``provider``, ``trunk``, and ``route`` resources are admin-gated and share a
    * - ``ROUTE_NOT_FOUND``
      - 404
      - Route ID does not exist. Verify via ``GET /routes``. Admin-only resource.
+   * - ``PROVIDERCALL_NOT_FOUND``
+     - 404
+     - Provider-call ID does not exist. Verify via ``GET /providercalls``. Admin-only resource.
 
 storage-manager
 ---------------
@@ -337,7 +340,7 @@ rag-manager
 
 .. note::
 
-   ``RAG_NOT_FOUND`` is emitted today by rag-manager (via ``cerrors.NotFound("rag-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).
+   ``RAG_NOT_FOUND`` and ``DOCUMENT_NOT_FOUND`` are emitted today by rag-manager (via ``cerrors.NotFound("rag-manager", ...)``) and surface end-to-end on Get-by-ID lookups (the api-manager servicehandler does not intercept soft-deleted entries for this resource type).
 
 .. list-table::
    :header-rows: 1
@@ -349,6 +352,9 @@ rag-manager
    * - ``RAG_NOT_FOUND``
      - 404
      - RAG knowledge-base ID does not exist or belongs to another customer. Fired by ``GET /rags/{id}``, ``PUT /rags/{id}``, ``DELETE /rags/{id}``, ``POST /rags/{id}/sources``, and ``DELETE /rags/{id}/sources/{source_id}``. **Fix:** Verify the ID was obtained from a recent ``GET /rags`` list call.
+   * - ``DOCUMENT_NOT_FOUND``
+     - 404
+     - RAG document/source ID does not exist or belongs to another customer. Fired by ``DELETE /rags/{id}/sources/{source_id}`` when the source is missing. **Fix:** Verify the source ID was obtained from a recent ``GET /rags/{id}`` response.
 
 tts-manager
 -----------
@@ -438,7 +444,7 @@ customer-manager
 .. note::
 
    PR 9 introduced this section for the access-key resource (``/accesskeys``).
-   ``ACCESSKEY_NOT_FOUND`` is emitted today by customer-manager (via ``cerrors.NotFound("customer-manager", ...)``) and surfaces end-to-end on Get-by-ID lookups for non-existent accesskeys. For soft-deleted accesskeys, the api-manager servicehandler intercepts via a post-fetch ``TMDelete`` check (``pkg/servicehandler/accesskeys.go``) and re-emits ``serviceerrors.ErrStateInvalid``, which surfaces as 409 ``STATE_INVALID`` in the api-manager domain.
+   ``ACCESSKEY_NOT_FOUND`` and ``CUSTOMER_NOT_FOUND`` are emitted today by customer-manager (via ``cerrors.NotFound("customer-manager", ...)``) and surface end-to-end on Get-by-ID lookups for non-existent resources. For soft-deleted accesskeys, the api-manager servicehandler intercepts via a post-fetch ``TMDelete`` check (``pkg/servicehandler/accesskeys.go``) and re-emits ``serviceerrors.ErrStateInvalid``, which surfaces as 409 ``STATE_INVALID`` in the api-manager domain.
    Access-key write surfaces (``POST /accesskeys``, ``PUT /accesskeys/{id}``, ``DELETE /accesskeys/{id}``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
 
 .. list-table::
@@ -451,6 +457,9 @@ customer-manager
    * - ``ACCESSKEY_NOT_FOUND``
      - 404
      - Access-key ID does not exist or belongs to another customer. Fired by ``GET /accesskeys/{id}``, ``PUT /accesskeys/{id}``, and ``DELETE /accesskeys/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /accesskeys`` list call.
+   * - ``CUSTOMER_NOT_FOUND``
+     - 404
+     - Customer ID does not exist. Fired by admin endpoints ``GET /customers/{id}``, ``PUT /customers/{id}``, and ``DELETE /customers/{id}``. **Fix:** Verify the customer ID was obtained from a recent ``GET /customers`` list call. (Note: the ``POST /auth/boot`` direct-hash flow currently re-wraps a missing-customer condition with the api-manager generic ``RESOURCE_NOT_FOUND`` rather than passing through ``CUSTOMER_NOT_FOUND``; that is tracked as a follow-up to preserve the typed reason end-to-end.)
 
 campaign-manager
 ----------------
