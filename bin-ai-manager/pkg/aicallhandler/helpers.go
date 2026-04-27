@@ -45,7 +45,7 @@ func (h *aicallHandler) isAIcallReusable(c *aicall.AIcall) bool {
 //
 // The Get call is bounded by a 1.5s context to avoid blocking the user-facing
 // path on a degraded shared queue. The ping is bounded by 1.1s (inside
-// pingPipecatHost). Total worst case: ~2.6s before this returns.
+// pingPipecatHost). Total worst case: ~4.1s (1.5s Get + 1.1s ping + 1.5s terminate).
 func (h *aicallHandler) interruptPreviousPipecatcall(ctx context.Context, pcID uuid.UUID) {
 	if pcID == uuid.Nil {
 		return
@@ -67,7 +67,9 @@ func (h *aicallHandler) interruptPreviousPipecatcall(ctx context.Context, pcID u
 		log.Debugf("Previous pipecatcall pod unreachable — skipping terminate. host_id: %s", pc.HostID)
 		return
 	}
-	if _, errTerm := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID); errTerm != nil {
+	tctx, tcancel := context.WithTimeout(ctx, 1500*time.Millisecond)
+	defer tcancel()
+	if _, errTerm := h.reqHandler.PipecatV1PipecatcallTerminate(tctx, pc.HostID, pc.ID); errTerm != nil {
 		log.Debugf("Previous pipecatcall terminate failed — response guard will handle. err: %v", errTerm)
 	}
 }
