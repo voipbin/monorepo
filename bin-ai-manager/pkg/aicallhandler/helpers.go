@@ -61,15 +61,20 @@ func (h *aicallHandler) interruptPreviousPipecatcall(ctx context.Context, pcID u
 	pc, errGet := h.reqHandler.PipecatV1PipecatcallGet(gctx, pcID)
 	if errGet != nil {
 		log.Debugf("Could not get previous pipecatcall — assuming gone. err: %v", errGet)
+		promAIcallInterruptAttemptedTotal.WithLabelValues("gone").Inc()
 		return
 	}
 	if !h.pingPipecatHost(ctx, pc.HostID) {
 		log.Debugf("Previous pipecatcall pod unreachable — skipping terminate. host_id: %s", pc.HostID)
+		promAIcallInterruptAttemptedTotal.WithLabelValues("dead").Inc()
 		return
 	}
 	tctx, tcancel := context.WithTimeout(ctx, 1500*time.Millisecond)
 	defer tcancel()
 	if _, errTerm := h.reqHandler.PipecatV1PipecatcallTerminate(tctx, pc.HostID, pc.ID); errTerm != nil {
 		log.Debugf("Previous pipecatcall terminate failed — response guard will handle. err: %v", errTerm)
+		promAIcallInterruptAttemptedTotal.WithLabelValues("error").Inc()
+		return
 	}
+	promAIcallInterruptAttemptedTotal.WithLabelValues("alive").Inc()
 }

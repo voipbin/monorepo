@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/internal/config"
@@ -144,6 +145,10 @@ func Test_aicallHandler_interruptPreviousPipecatcall(t *testing.T) {
 
 		pcID      uuid.UUID
 		mockSetup func(rh *requesthandler.MockRequestHandler)
+
+		// expectLabel — the metric label expected to increment by 1.
+		// Empty string means no metric should increment (e.g. nil pcID short-circuit).
+		expectLabel string
 	}{
 		{
 			name: "nil pcID — no calls made",
@@ -152,6 +157,7 @@ func Test_aicallHandler_interruptPreviousPipecatcall(t *testing.T) {
 			mockSetup: func(rh *requesthandler.MockRequestHandler) {
 				// no expectations — must NOT be called
 			},
+			expectLabel: "",
 		},
 		{
 			name: "Get fails — no Ping or Terminate",
@@ -162,6 +168,7 @@ func Test_aicallHandler_interruptPreviousPipecatcall(t *testing.T) {
 					PipecatV1PipecatcallGet(gomock.Any(), pcID).
 					Return(nil, errors.New("not found"))
 			},
+			expectLabel: "gone",
 		},
 		{
 			name: "ping returns dead — no Terminate",
@@ -179,6 +186,7 @@ func Test_aicallHandler_interruptPreviousPipecatcall(t *testing.T) {
 					PipecatV1Ping(gomock.Any(), "10.0.0.1").
 					Return(context.DeadlineExceeded)
 			},
+			expectLabel: "dead",
 		},
 		{
 			name: "ping ok, terminate succeeds",
@@ -199,6 +207,28 @@ func Test_aicallHandler_interruptPreviousPipecatcall(t *testing.T) {
 					PipecatV1PipecatcallTerminate(gomock.Any(), "10.0.0.2", pcID).
 					Return(nil, nil)
 			},
+			expectLabel: "alive",
+		},
+		{
+			name: "ping ok, terminate fails",
+
+			pcID: pcID,
+			mockSetup: func(rh *requesthandler.MockRequestHandler) {
+				pc := &pmpipecatcall.Pipecatcall{
+					Identity: identity.Identity{ID: pcID},
+					HostID:   "10.0.0.3",
+				}
+				rh.EXPECT().
+					PipecatV1PipecatcallGet(gomock.Any(), pcID).
+					Return(pc, nil)
+				rh.EXPECT().
+					PipecatV1Ping(gomock.Any(), "10.0.0.3").
+					Return(nil)
+				rh.EXPECT().
+					PipecatV1PipecatcallTerminate(gomock.Any(), "10.0.0.3", pcID).
+					Return(nil, errors.New("terminate failed"))
+			},
+			expectLabel: "error",
 		},
 	}
 
@@ -216,8 +246,30 @@ func Test_aicallHandler_interruptPreviousPipecatcall(t *testing.T) {
 			}
 			ctx := context.Background()
 
+			// Snapshot all four labels before the call so we can verify
+			// exactly one was incremented (or none, for the nil-pcID case).
+			labels := []string{"gone", "dead", "alive", "error"}
+			before := make(map[string]float64, len(labels))
+			for _, l := range labels {
+				before[l] = testutil.ToFloat64(promAIcallInterruptAttemptedTotal.WithLabelValues(l))
+			}
+
 			h.interruptPreviousPipecatcall(ctx, tt.pcID)
 			// no return value — gomock EXPECTs enforce correctness
+
+			for _, l := range labels {
+				after := testutil.ToFloat64(promAIcallInterruptAttemptedTotal.WithLabelValues(l))
+				delta := after - before[l]
+				if l == tt.expectLabel {
+					if delta != 1 {
+						t.Errorf("expected label %q to increment by 1, got delta=%f", l, delta)
+					}
+				} else {
+					if delta != 0 {
+						t.Errorf("expected label %q to NOT change, got delta=%f", l, delta)
+					}
+				}
+			}
 		})
 	}
 }

@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -366,6 +367,11 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 		mockSetup func(ctx context.Context, m *mocks)
 
 		expectRes *aicall.AIcall
+
+		// expectIdleExpiredInc — when true, the idle-expired counter
+		// (promAIcallIdleExpiredTotal) MUST increment by exactly 1 across
+		// the call. When false, it MUST NOT change.
+		expectIdleExpiredInc bool
 	}{
 		{
 			name: "reuse: alive previous pipecat — interrupt invoked",
@@ -849,6 +855,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				ActiveflowID: uuid.FromStringOrNil("f15ae476-30dd-11f0-87af-67d3c47111a7"),
 				Status:       aicall.StatusProgressing,
 			},
+			expectIdleExpiredInc: true,
 		},
 		{
 			name: "team smoke: reuse + alive previous pipecat",
@@ -967,6 +974,17 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 
 			tt.mockSetup(ctx, m)
 
+			// Snapshot the idle-expired counter only for the sub-case that
+			// triggers it. Other sub-cases use t.Parallel(), so a strict
+			// "no change" assertion would race against the idle-expired
+			// sub-test's Inc(). Since promAIcallIdleExpiredTotal is uniquely
+			// incremented by the idle-expired branch, we assert delta >= 1
+			// for the expecting sub-case and skip the assertion otherwise.
+			var beforeIdleExpired float64
+			if tt.expectIdleExpiredInc {
+				beforeIdleExpired = testutil.ToFloat64(promAIcallIdleExpiredTotal)
+			}
+
 			res, err := h.startReferenceTypeConversation(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceID, nil, uuid.Nil)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
@@ -974,6 +992,14 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 			time.Sleep(100 * time.Millisecond)
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+
+			if tt.expectIdleExpiredInc {
+				afterIdleExpired := testutil.ToFloat64(promAIcallIdleExpiredTotal)
+				delta := afterIdleExpired - beforeIdleExpired
+				if delta < 1 {
+					t.Errorf("expected idle-expired counter to increment by at least 1, got delta=%f", delta)
+				}
 			}
 		})
 	}

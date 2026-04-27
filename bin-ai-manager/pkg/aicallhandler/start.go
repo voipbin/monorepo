@@ -183,6 +183,7 @@ func (h *aicallHandler) startReferenceTypeConversation(
 		// mark idle-expired AIcalls as Terminated for hygiene before recreating
 		if err == nil && res.Status != aicall.StatusTerminated && res.Status != aicall.StatusTerminating && h.isAIcallIdleExpired(res) {
 			log.Infof("Existing AIcall idle-expired — terminating and starting fresh. aicall_id: %s", res.ID)
+			promAIcallIdleExpiredTotal.Inc()
 			if _, errEnd := h.UpdateStatus(ctx, res.ID, aicall.StatusTerminated); errEnd != nil {
 				log.Warnf("Could not terminate idle AIcall: %v", errEnd)
 			}
