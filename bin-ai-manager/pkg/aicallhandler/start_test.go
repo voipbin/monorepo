@@ -353,6 +353,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 		notify  *notifyhandler.MockNotifyHandler
 		db      *dbhandler.MockDBHandler
 		ai      *aihandler.MockAIHandler
+		team    *teamhandler.MockTeamHandler
 		message *messagehandler.MockMessageHandler
 	}
 
@@ -975,17 +976,21 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				existingAIcallID := uuid.FromStringOrNil("a3333333-0001-11f0-9999-999999999999")
 				oldPCC := uuid.FromStringOrNil("a3333333-0099-11f0-9999-999999999999")
 				newPCC := uuid.FromStringOrNil("a4444444-0001-11f0-9999-999999999999")
+				teamID := uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef")
+				memberID := uuid.FromStringOrNil("a5555555-0001-11f0-9999-999999999999")
+				memberAIID := uuid.FromStringOrNil("a6666666-0001-11f0-9999-999999999999")
 				existing := &aicall.AIcall{
 					Identity: commonidentity.Identity{
 						ID:         existingAIcallID,
 						CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 					},
-					AssistanceType: aicall.AssistanceTypeTeam,
-					AssistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
-					AIEngineModel:  "openai.gpt-5-nano",
-					Status:         aicall.StatusProgressing,
-					TMUpdate:       &freshTM,
-					PipecatcallID:  oldPCC,
+					AssistanceType:  aicall.AssistanceTypeTeam,
+					AssistanceID:    teamID,
+					AIEngineModel:   "openai.gpt-5-nano", // stale snapshot; resolveTeamMemberForSend overrides it
+					Status:          aicall.StatusProgressing,
+					TMUpdate:        &freshTM,
+					PipecatcallID:   oldPCC,
+					CurrentMemberID: memberID,
 				}
 				pipecatcall := &pmpipecatcall.Pipecatcall{
 					Identity: commonidentity.Identity{ID: oldPCC},
@@ -1018,6 +1023,20 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				}).Return(nil)
 				m.db.EXPECT().AIcallGet(ctx, existingAIcallID).Return(existing, nil)
 
+				// resolveTeamMemberForSend: refresh AIEngineModel from current member's AI.
+				// CurrentMemberID matches a team member, so no fallback / no UpdateCurrentMemberID call.
+				m.team.EXPECT().Get(ctx, teamID).Return(&team.Team{
+					Identity: commonidentity.Identity{ID: teamID},
+					StartMemberID: uuid.FromStringOrNil("a7777777-0001-11f0-9999-999999999999"),
+					Members: []team.Member{
+						{ID: memberID, AIID: memberAIID},
+					},
+				}, nil)
+				m.ai.EXPECT().Get(ctx, memberAIID).Return(&ai.AI{
+					Identity: commonidentity.Identity{ID: memberAIID},
+					EngineModel: "grok.grok-3", // resolved engine model overrides the stale snapshot
+				}, nil)
+
 				m.message.EXPECT().Create(ctx, uuid.Nil, existing.CustomerID, existing.ID, existing.ActiveflowID, message.DirectionOutgoing, message.RoleUser, "team user message.", nil, "").Return(&message.Message{}, nil)
 
 				m.message.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return([]*message.Message{}, nil)
@@ -1037,12 +1056,13 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 					ID:         uuid.FromStringOrNil("a3333333-0001-11f0-9999-999999999999"),
 					CustomerID: uuid.FromStringOrNil("1dbecf3a-f06f-11ef-bb0a-bfec64e31a47"),
 				},
-				AssistanceType: aicall.AssistanceTypeTeam,
-				AssistanceID:   uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
-				AIEngineModel:  "openai.gpt-5-nano",
-				Status:         aicall.StatusProgressing,
-				TMUpdate:       &freshTM,
-				PipecatcallID:  uuid.FromStringOrNil("a3333333-0099-11f0-9999-999999999999"),
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    uuid.FromStringOrNil("d0f2a050-30dd-11f0-b9f5-6fd58444fdef"),
+				AIEngineModel:   "grok.grok-3", // overridden by resolveTeamMemberForSend
+				Status:          aicall.StatusProgressing,
+				TMUpdate:        &freshTM,
+				PipecatcallID:   uuid.FromStringOrNil("a3333333-0099-11f0-9999-999999999999"),
+				CurrentMemberID: uuid.FromStringOrNil("a5555555-0001-11f0-9999-999999999999"),
 			},
 		},
 		{
@@ -1232,6 +1252,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				notify:  notifyhandler.NewMockNotifyHandler(mc),
 				db:      dbhandler.NewMockDBHandler(mc),
 				ai:      aihandler.NewMockAIHandler(mc),
+				team:    teamhandler.NewMockTeamHandler(mc),
 				message: messagehandler.NewMockMessageHandler(mc),
 			}
 
@@ -1241,6 +1262,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				notifyHandler:  m.notify,
 				db:             m.db,
 				aiHandler:      m.ai,
+				teamHandler:    m.team,
 				messageHandler: m.message,
 			}
 			ctx := context.Background()

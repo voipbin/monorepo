@@ -208,6 +208,16 @@ func (h *aicallHandler) startReferenceTypeConversation(
 			return nil, errors.Wrapf(errUpdate, "could not update pipecatcall_id+activeflow_id for existing aicall. aicall_id: %s", res.ID)
 		}
 		res = tmp
+
+		// For team-typed AIcalls, refresh the in-memory AIEngineModel so the new
+		// pipecat session uses the current member's engine. Falls back to StartMemberID
+		// if CurrentMemberID is stale (e.g., team config changed). Symmetric with the
+		// Send path (see resolveTeamMemberForSend invocation in send.go).
+		if res.AssistanceType == aicall.AssistanceTypeTeam {
+			if errResolve := h.resolveTeamMemberForSend(ctx, res); errResolve != nil {
+				log.Warnf("Could not resolve team member AI on reuse — using snapshot. err: %v", errResolve)
+			}
+		}
 	}
 	log.WithField("aicall", res).Debugf("AIcall ready. aicall_id: %s", res.ID)
 
