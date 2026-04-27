@@ -101,7 +101,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	}
 	if acFinal.PipecatcallID != evt.PipecatcallID {
 		log.Infof("Race detected at delivery time (guard secondary). aicall_id: %s, event_pcc: %s",
-			ac.ID, evt.PipecatcallID)
+			acFinal.ID, evt.PipecatcallID)
 		promConversationStaleResponseDroppedTotal.WithLabelValues("secondary").Inc()
 		return
 	}
