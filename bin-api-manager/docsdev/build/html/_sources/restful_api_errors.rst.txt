@@ -305,7 +305,7 @@ ai-manager
 .. note::
 
    PR 6 introduced this section for the AI-message resource (``/aimessages``); PR 7 extended it with the AI configuration (``/ais``), AI calls (``/aicalls``), and AI summaries (``/aisummaries``) resources; PR 9 extends it with the AI team resource (``/teams``).
-   ``AI_NOT_FOUND``, ``AICALL_NOT_FOUND``, and ``TEAM_NOT_FOUND`` are emitted today by ai-manager (via ``cerrors.NotFound("ai-manager", ...)``) and surface end-to-end on Get-by-ID lookups for non-existent resources. ``AIMESSAGE_NOT_FOUND`` and ``AISUMMARY_NOT_FOUND`` define the planned typed-error contract for the aimessage / aisummary sub-resources; until ai-manager emits them directly, the api-manager servicehandler maps the underlying not-found conditions to ``serviceerrors.ErrNotFound`` and the translator surfaces the api-manager generic ``RESOURCE_NOT_FOUND``. (Note: ai-manager actually emits the summary reason as ``SUMMARY_NOT_FOUND``, not ``AISUMMARY_NOT_FOUND`` — the RST and code names diverge here; clients receiving 404 on ``/aisummaries/{id}`` see the ``ai-manager`` domain reason ``SUMMARY_NOT_FOUND``.)
+   ``AI_NOT_FOUND``, ``AICALL_NOT_FOUND``, ``SUMMARY_NOT_FOUND``, and ``TEAM_NOT_FOUND`` are emitted today by ai-manager (via ``cerrors.NotFound("ai-manager", ...)``) and surface end-to-end on Get-by-ID lookups for non-existent resources. ``AIMESSAGE_NOT_FOUND`` defines the planned typed-error contract for the aimessage sub-resource; until ai-manager emits it directly, the api-manager servicehandler maps the underlying not-found condition to ``serviceerrors.ErrNotFound`` and the translator surfaces the api-manager generic ``RESOURCE_NOT_FOUND``.
    ``POST /aimessages``, ``POST /aicalls``, and ``POST /aisummaries`` are conceptually billing-sensitive (LLM token cost, voice AI minutes, summary generation cost), but bin-ai-manager has **no balance pre-check today** — the 402 ``INSUFFICIENT_BALANCE`` contract is **not reachable** for AI resource creation. Wiring the pre-check in ai-manager is deferred to a follow-up PR; no 402 declarations were added in PR 7 to match runtime behavior.
    Team write surfaces (``POST /teams``, ``PUT /teams/{id}``, ``DELETE /teams/{id}``, ``POST /teams/{id}/direct_hash_regenerate``) are admin-gated; non-admin callers receive 403 ``PERMISSION_DENIED`` via ``serviceerrors.ErrPermissionDenied``.
 
@@ -325,7 +325,7 @@ ai-manager
    * - ``AICALL_NOT_FOUND``
      - 404
      - AI call ID does not exist or belongs to another customer. Fired by ``GET /aicalls/{id}`` and ``DELETE /aicalls/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /aicalls`` list call.
-   * - ``AISUMMARY_NOT_FOUND``
+   * - ``SUMMARY_NOT_FOUND``
      - 404
      - AI summary ID does not exist or belongs to another customer. Fired by ``GET /aisummaries/{id}`` and ``DELETE /aisummaries/{id}``. **Fix:** Verify the ID was obtained from a recent ``GET /aisummaries`` list call.
    * - ``TEAM_NOT_FOUND``
