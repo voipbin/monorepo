@@ -9,6 +9,7 @@
         <title>Welcome to VoIPBIN’s documentation! &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -351,32 +352,35 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#api-manager">api-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#call-manager">call-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#flow-manager">flow-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#billing-manager">billing-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#number-manager">number-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#provisioning-admin">provisioning-admin</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#storage-manager">storage-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#conversation-manager">conversation-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#message-manager">message-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#email-manager">email-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#ai-manager">ai-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#rag-manager">rag-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#tts-manager">tts-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#transcribe-manager">transcribe-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#agent-manager">agent-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#tag-manager">tag-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#customer-manager">customer-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#campaign-manager">campaign-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#outdial-manager">outdial-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#conference-manager">conference-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#queue-manager">queue-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#contact-manager">contact-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#registrar-manager">registrar-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#talk-manager">talk-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#timeline-manager">timeline-manager</a></li>
-<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#other-domains">Other Domains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#generic-cross-cutting-reasons">Generic / Cross-cutting Reasons</a></li>
+<li class="toctree-l2"><a class="reference internal" href="restful_api_errors.html#resource-prefixed-reasons">Resource-Prefixed Reasons</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#call-reasons">Call Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#recording-reasons">Recording Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#flow-activeflow-reasons">Flow / Activeflow Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#billing-reasons">Billing Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#number-reasons">Number Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#trunk-provider-reasons">Trunk / Provider Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#storage-reasons">Storage Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#conversation-reasons">Conversation Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#message-reasons">Message Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#email-reasons">Email Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#ai-reasons">AI Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#rag-reasons">RAG Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#speaking-reasons">Speaking Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#transcribe-reasons">Transcribe Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#agent-reasons">Agent Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#tag-reasons">Tag Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#customer-accesskey-reasons">Customer / Accesskey Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#campaign-reasons">Campaign Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#outdial-reasons">Outdial Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#conference-reasons">Conference Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#queue-reasons">Queue Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#contact-reasons">Contact Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#extension-reasons">Extension Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#talk-reasons">Talk Reasons</a></li>
+<li class="toctree-l3"><a class="reference internal" href="restful_api_errors.html#timeline-reasons">Timeline Reasons</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -2589,7 +2593,7 @@
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 7.2.6
+                        Sphinx 9.1.0
                     </a>
                 </small>
             </div>
@@ -2597,11 +2601,11 @@
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>
