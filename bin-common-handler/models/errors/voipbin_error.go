@@ -2,13 +2,22 @@ package errors
 
 import "fmt"
 
-// VoipbinError is the canonical error shape returned from the external
-// VoIPbin API and over RPC between internal managers.
+// VoipbinError is the canonical error shape used over RPC between
+// internal managers and (via the api-manager boundary) for external
+// HTTP API error responses.
 //
 // Wire contract:
-//   - Status, Reason, Domain, Message are emitted to clients and to
-//     internal RPC consumers.
-//   - Details is reserved for future structured detail; omitempty.
+//   - Status, Reason, Message are emitted to external HTTP clients
+//     AND to internal RPC consumers.
+//   - Domain is emitted to internal RPC consumers (so a downstream
+//     manager knows which upstream emitted the typed error) but is
+//     INTENTIONALLY STRIPPED from external HTTP responses by
+//     bin-api-manager/lib/apierror.EnvelopeFor — external clients
+//     must not see the originating internal service name. The field
+//     stays on the struct (and in this RPC wire format) so internal
+//     callers and server-side logs can still observe it.
+//   - Details is reserved for structured detail; omitempty. Preserved
+//     across both internal RPC and external HTTP paths.
 //   - Cause is server-side only (json:"-"); it is included by Error()
 //     for server logs but MUST NOT be written into HTTP response
 //     bodies. Call json.Marshal(e) or construct a response envelope
