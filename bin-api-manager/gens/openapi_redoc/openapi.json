@@ -26789,7 +26789,6 @@
         "required": [
           "status",
           "reason",
-          "domain",
           "message",
           "request_id"
         ],
@@ -26814,11 +26813,6 @@
             "type": "string",
             "description": "Specific VoIPbin reason code in UPPER_SNAKE (open-ended).",
             "example": "CALL_NOT_FOUND"
-          },
-          "domain": {
-            "type": "string",
-            "description": "Originating manager service.",
-            "example": "call-manager"
           },
           "message": {
             "type": "string",

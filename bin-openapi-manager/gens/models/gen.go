@@ -4993,9 +4993,6 @@ type ErrorBody struct {
 	// Details Reserved for future per-field or structured error detail. May be omitted.
 	Details *[]map[string]interface{} `json:"details,omitempty"`
 
-	// Domain Originating manager service.
-	Domain string `json:"domain"`
-
 	// Message Human-readable message for debugging.
 	Message string `json:"message"`
 
