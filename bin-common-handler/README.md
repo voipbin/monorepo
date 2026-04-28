@@ -6,4 +6,4 @@ common-handler for bin namespace.
 $ ls -d */ | xargs -I {} bash -c "cd '{}' && go get -u ./... && go mod vendor && go generate ./... && go test ./..."
 ```
 
-<!-- Updated dependencies: 2026-02-20 -->
+<!-- Updated dependencies: 2026-04-28 -->
