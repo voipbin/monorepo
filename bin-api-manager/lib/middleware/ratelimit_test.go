@@ -102,7 +102,6 @@ func TestRateLimit_EnvelopeShape(t *testing.T) {
 		Error struct {
 			Status    string `json:"status"`
 			Reason    string `json:"reason"`
-			Domain    string `json:"domain"`
 			Message   string `json:"message"`
 			RequestID string `json:"request_id"`
 		} `json:"error"`
@@ -116,13 +115,23 @@ func TestRateLimit_EnvelopeShape(t *testing.T) {
 	if body.Error.Reason != "RATE_LIMIT_EXCEEDED" {
 		t.Errorf("wrong reason: %q", body.Error.Reason)
 	}
-	if body.Error.Domain != "api-manager" {
-		t.Errorf("wrong domain: %q", body.Error.Domain)
-	}
 	if body.Error.Message == "" {
 		t.Error("message missing")
 	}
 	if body.Error.RequestID == "" {
 		t.Error("request_id missing")
+	}
+	// Structural check: verify the "domain" key is absent from the
+	// external response (see bin-api-manager/lib/apierror).
+	var full map[string]any
+	if err := json.Unmarshal(w2.Body.Bytes(), &full); err != nil {
+		t.Fatalf("unmarshal full body for domain check: %v; body=%s", err, w2.Body.String())
+	}
+	errObj, ok := full["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("body.error is not an object: %+v", full)
+	}
+	if _, hasDomain := errObj["domain"]; hasDomain {
+		t.Errorf("domain key MUST be absent from external response; body=%s", w2.Body.String())
 	}
 }

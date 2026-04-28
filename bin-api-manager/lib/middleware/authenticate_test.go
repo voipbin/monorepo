@@ -358,13 +358,14 @@ func TestAuthenticate(t *testing.T) {
 
 // assertAuthErrorEnvelope decodes the response body and asserts the
 // standard error envelope fields used by the Authenticate middleware.
+// The external envelope intentionally does NOT include a "domain" field —
+// see bin-api-manager/lib/apierror.
 func assertAuthErrorEnvelope(t *testing.T, body []byte, wantStatus, wantReason string) {
 	t.Helper()
 	var decoded struct {
 		Error struct {
 			Status    string `json:"status"`
 			Reason    string `json:"reason"`
-			Domain    string `json:"domain"`
 			Message   string `json:"message"`
 			RequestID string `json:"request_id"`
 		} `json:"error"`
@@ -378,14 +379,26 @@ func assertAuthErrorEnvelope(t *testing.T, body []byte, wantStatus, wantReason s
 	if decoded.Error.Reason != wantReason {
 		t.Errorf("wrong reason: got %q, want %q", decoded.Error.Reason, wantReason)
 	}
-	if decoded.Error.Domain != "api-manager" {
-		t.Errorf("wrong domain: got %q, want %q", decoded.Error.Domain, "api-manager")
-	}
 	if decoded.Error.Message == "" {
 		t.Error("message missing")
 	}
 	if decoded.Error.RequestID == "" {
 		t.Error("request_id missing")
+	}
+	// Structural check: parse the body and verify the "domain" key is
+	// absent from the error object (not a substring scan, which would
+	// false-positive on a Details payload containing a field named
+	// "domain").
+	var full map[string]any
+	if err := json.Unmarshal(body, &full); err != nil {
+		t.Fatalf("unmarshal full body for domain check: %v; body=%s", err, string(body))
+	}
+	errObj, ok := full["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("body.error is not an object: %+v", full)
+	}
+	if _, hasDomain := errObj["domain"]; hasDomain {
+		t.Errorf("domain key MUST be absent from external response; body=%s", string(body))
 	}
 }
 
@@ -915,6 +928,21 @@ func Test_isFrozenAccountBlocked(t *testing.T) {
 			}
 			if blocked && w.Code != tt.expectStatus {
 				t.Errorf("Wrong status code. expect: %v, got: %v", tt.expectStatus, w.Code)
+			}
+			if blocked {
+				// Structural check: verify the "domain" key is absent
+				// from the error object — see assertAuthErrorEnvelope.
+				var full map[string]any
+				if err := json.Unmarshal(w.Body.Bytes(), &full); err != nil {
+					t.Fatalf("unmarshal full body for domain check: %v; body=%s", err, w.Body.String())
+				}
+				errObj, ok := full["error"].(map[string]any)
+				if !ok {
+					t.Fatalf("body.error is not an object: %+v", full)
+				}
+				if _, hasDomain := errObj["domain"]; hasDomain {
+					t.Errorf("domain key MUST be absent from external response; body=%s", w.Body.String())
+				}
 			}
 		})
 	}

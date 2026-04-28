@@ -8,6 +8,7 @@ import (
 	"time"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	"monorepo/bin-api-manager/lib/apierror"
 	"monorepo/bin-api-manager/models/auth"
 	modelscommon "monorepo/bin-api-manager/models/common"
 	"monorepo/bin-api-manager/pkg/servicehandler"
@@ -199,16 +200,12 @@ func isFrozenAccountBlocked(c *gin.Context, a *auth.AuthIdentity) bool {
 		},
 	}
 
-	c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-		"error": gin.H{
-			"status":     string(cerrors.StatusPermissionDenied),
-			"reason":     "ACCOUNT_FROZEN",
-			"domain":     string(commonoutline.ServiceNameAPIManager),
-			"message":    "This account is frozen. Contact support.",
-			"request_id": RequestIDFromContext(c),
-			"details":    details,
-		},
-	})
+	e := cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "ACCOUNT_FROZEN", "This account is frozen. Contact support.")
+	e.Details = details
+	c.AbortWithStatusJSON(
+		cerrors.HTTPStatusFor(e.Status),
+		apierror.EnvelopeFor(e, RequestIDFromContext(c)),
+	)
 	return true
 }
 
@@ -275,18 +272,13 @@ func getAccesskey(c *gin.Context) string {
 }
 
 // abortUnauthenticated writes the standard UNAUTHENTICATED envelope.
-// lib/middleware cannot import the server package (would create an
-// import cycle), so the envelope is built inline here in the same
-// shape as server.abortWithError.
+// The external envelope omits the internal Domain field — see
+// bin-api-manager/lib/apierror.
 func abortUnauthenticated(c *gin.Context, reason, message string) {
-	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-		"error": gin.H{
-			"status":     string(cerrors.StatusUnauthenticated),
-			"reason":     reason,
-			"domain":     string(commonoutline.ServiceNameAPIManager),
-			"message":    message,
-			"request_id": RequestIDFromContext(c),
-		},
-	})
+	e := cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, reason, message)
+	c.AbortWithStatusJSON(
+		cerrors.HTTPStatusFor(e.Status),
+		apierror.EnvelopeFor(e, RequestIDFromContext(c)),
+	)
 }
 
