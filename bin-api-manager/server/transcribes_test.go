@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	tmtranscribe "monorepo/bin-transcribe-manager/models/transcribe"
 
 	"github.com/gin-gonic/gin"
@@ -437,5 +436,5 @@ func Test_transcribesIDStopPost_InvalidID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodPost, "/transcribes/not-a-uuid/stop", bytes.NewBufferString(""))
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }

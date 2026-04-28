@@ -16,7 +16,6 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	"github.com/gin-gonic/gin"
@@ -355,7 +354,7 @@ func Test_messagesPost_InvalidJSONBody(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY")
 }
 
 // Test_messagesIDDelete_InvalidID verifies that a malformed UUID in the path
@@ -389,7 +388,7 @@ func Test_messagesIDDelete_InvalidID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodDelete, "/messages/not-a-uuid", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_messagesPost_InsufficientBalance exercises the servicehandler-failure
@@ -428,5 +427,5 @@ func Test_messagesPost_InsufficientBalance(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE")
 }

@@ -13,7 +13,6 @@ import (
 	cmcall "monorepo/bin-call-manager/models/call"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -198,5 +197,5 @@ func Test_serviceAgentsCallsIDGet_InvalidID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/service_agents/calls/not-a-uuid", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }

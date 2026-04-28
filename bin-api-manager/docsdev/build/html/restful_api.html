@@ -9,6 +9,7 @@
         <title>RESTful API(Application Programming Interface) &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -333,14 +334,13 @@ envelope shape returned by all <code class="docutils literal notranslate"><span 
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
-<p>Every 4xx/5xx response from the VoIPbin API (v1.0 paths under <code class="docutils literal notranslate"><span class="pre">api.voipbin.net</span></code>) contains a JSON error envelope with a canonical <code class="docutils literal notranslate"><span class="pre">status</span></code>, a specific <code class="docutils literal notranslate"><span class="pre">reason</span></code>, the originating <code class="docutils literal notranslate"><span class="pre">domain</span></code>, a human-readable <code class="docutils literal notranslate"><span class="pre">message</span></code>, and a <code class="docutils literal notranslate"><span class="pre">request_id</span></code> for support correlation. Branch on <code class="docutils literal notranslate"><span class="pre">error.reason</span></code> for debugging; <code class="docutils literal notranslate"><span class="pre">error.status</span></code> maps 1:1 to the HTTP status code.</p>
+<p>Every 4xx/5xx response from the VoIPbin API (v1.0 paths under <code class="docutils literal notranslate"><span class="pre">api.voipbin.net</span></code>) contains a JSON error envelope with a canonical <code class="docutils literal notranslate"><span class="pre">status</span></code>, a specific <code class="docutils literal notranslate"><span class="pre">reason</span></code>, a human-readable <code class="docutils literal notranslate"><span class="pre">message</span></code>, and a <code class="docutils literal notranslate"><span class="pre">request_id</span></code> for support correlation. Branch on <code class="docutils literal notranslate"><span class="pre">error.reason</span></code> for debugging; <code class="docutils literal notranslate"><span class="pre">error.status</span></code> maps 1:1 to the HTTP status code.</p>
 </div>
 <p>All errors emitted by <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/...</span></code> carry the same envelope shape:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;PERMISSION_DENIED&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;BILLING_ACCESS_DENIED&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;domain&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;billing-manager&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You do not have permission to access this billing account.&quot;</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">&quot;request_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;req_01HXYZ...&quot;</span>
 <span class="w">  </span><span class="p">}</span>
@@ -352,8 +352,7 @@ envelope shape returned by all <code class="docutils literal notranslate"><span 
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string, required): Canonical error status. One of:
 <code class="docutils literal notranslate"><span class="pre">INVALID_ARGUMENT</span></code>, <code class="docutils literal notranslate"><span class="pre">UNAUTHENTICATED</span></code>, <code class="docutils literal notranslate"><span class="pre">PAYMENT_REQUIRED</span></code>, <code class="docutils literal notranslate"><span class="pre">PERMISSION_DENIED</span></code>, <code class="docutils literal notranslate"><span class="pre">NOT_FOUND</span></code>, <code class="docutils literal notranslate"><span class="pre">ALREADY_EXISTS</span></code>, <code class="docutils literal notranslate"><span class="pre">FAILED_PRECONDITION</span></code>, <code class="docutils literal notranslate"><span class="pre">RESOURCE_EXHAUSTED</span></code>, <code class="docutils literal notranslate"><span class="pre">UNAVAILABLE</span></code>, <code class="docutils literal notranslate"><span class="pre">INTERNAL</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reason</span></code> (string, required): Specific VoIPbin reason code in <code class="docutils literal notranslate"><span class="pre">UPPER_SNAKE</span></code>. Open-ended — see <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a> for the full list grouped by domain.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">domain</span></code> (string, required): Originating manager service (e.g., <code class="docutils literal notranslate"><span class="pre">call-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">billing-manager</span></code>, <code class="docutils literal notranslate"><span class="pre">api-manager</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reason</span></code> (string, required): Specific VoIPbin reason code in <code class="docutils literal notranslate"><span class="pre">UPPER_SNAKE</span></code>. Open-ended — see <a class="reference internal" href="restful_api_errors.html#error-reason-catalog"><span class="std std-ref">Error Reason Codes</span></a> for the full list.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (string, required): Human-readable message for debugging. Do not parse or display this to end users verbatim — use <code class="docutils literal notranslate"><span class="pre">reason</span></code> for programmatic branching and craft user-facing text based on <code class="docutils literal notranslate"><span class="pre">reason</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">request_id</span></code> (string, required): Request correlation ID. Include this in support tickets so engineers can grep the server logs for the exact request.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">details</span></code> (array of object, optional): Reserved for future per-field or structured error detail (e.g., field violations on <code class="docutils literal notranslate"><span class="pre">INVALID_ARGUMENT</span></code>). May be omitted.</p></li>
@@ -504,7 +503,7 @@ envelope shape returned by all <code class="docutils literal notranslate"><span 
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 7.2.6
+                        Sphinx 9.1.0
                     </a>
                 </small>
             </div>
@@ -512,11 +511,11 @@ envelope shape returned by all <code class="docutils literal notranslate"><span 
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/doctools.js?v=fd6eb6e6"></script>
+        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

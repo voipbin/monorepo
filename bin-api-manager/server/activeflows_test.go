@@ -15,7 +15,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
@@ -500,7 +499,7 @@ func Test_activeflowsIDGet_InvalidID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/activeflows/not-a-uuid", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_activeflowsIDStopPost_MissingAuthIdentity exercises the
@@ -546,5 +545,5 @@ func Test_activeflowsIDStopPost_StateInvalid(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusFailedPrecondition, "STATE_INVALID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusFailedPrecondition, "STATE_INVALID")
 }

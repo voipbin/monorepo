@@ -15,7 +15,6 @@ import (
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -197,7 +196,7 @@ func Test_recordingsIDGet_InvalidID(t *testing.T) {
 	req, _ := http.NewRequest(http.MethodGet, "/recordings/not-a-uuid", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_recordingsIDGet_ServiceError exercises the servicehandler-failure path
@@ -233,7 +232,7 @@ func Test_recordingsIDGet_ServiceError(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND")
 }
 
 // Test_recordingsIDDelete_MissingAuthIdentity exercises the

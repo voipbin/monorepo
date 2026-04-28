@@ -7,7 +7,10 @@
 
 .DEFAULT_GOAL := lint-docs
 
-.PHONY: lint-docs
+.PHONY: lint-docs lint-error-envelope
 
 lint-docs:
 	@./scripts/check-docs.sh
+
+lint-error-envelope:
+	@./scripts/check-error-envelope.sh

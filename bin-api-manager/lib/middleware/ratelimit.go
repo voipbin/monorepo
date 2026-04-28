@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"net/http"
 	"sync"
 	"time"
 
+	"monorepo/bin-api-manager/lib/apierror"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 
@@ -74,18 +74,13 @@ func RateLimit(r float64, burst int) gin.HandlerFunc {
 		limiter := store.getLimiter(ip)
 
 		if !limiter.Allow() {
-			// Inline envelope construction — lib/middleware cannot import
-			// the server package (would create an import cycle), so we
-			// build the same shape as server.abortWithError here.
-			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
-				"error": gin.H{
-					"status":     string(cerrors.StatusResourceExhausted),
-					"reason":     "RATE_LIMIT_EXCEEDED",
-					"domain":     string(commonoutline.ServiceNameAPIManager),
-					"message":    "Too many requests. Please try again later.",
-					"request_id": RequestIDFromContext(c),
-				},
-			})
+			// Build the canonical external envelope. The internal Domain
+			// field is omitted by lib/apierror — see envelope.go.
+			e := cerrors.ResourceExhausted(commonoutline.ServiceNameAPIManager, "RATE_LIMIT_EXCEEDED", "Too many requests. Please try again later.")
+			c.AbortWithStatusJSON(
+				cerrors.HTTPStatusFor(e.Status),
+				apierror.EnvelopeFor(e, RequestIDFromContext(c)),
+			)
 			return
 		}
 

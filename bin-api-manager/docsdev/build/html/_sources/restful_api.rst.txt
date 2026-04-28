@@ -105,7 +105,7 @@ Error Response Envelope
 
 .. note:: **AI Context**
 
-   Every 4xx/5xx response from the VoIPbin API (v1.0 paths under ``api.voipbin.net``) contains a JSON error envelope with a canonical ``status``, a specific ``reason``, the originating ``domain``, a human-readable ``message``, and a ``request_id`` for support correlation. Branch on ``error.reason`` for debugging; ``error.status`` maps 1:1 to the HTTP status code.
+   Every 4xx/5xx response from the VoIPbin API (v1.0 paths under ``api.voipbin.net``) contains a JSON error envelope with a canonical ``status``, a specific ``reason``, a human-readable ``message``, and a ``request_id`` for support correlation. Branch on ``error.reason`` for debugging; ``error.status`` maps 1:1 to the HTTP status code.
 
 All errors emitted by ``https://api.voipbin.net/v1.0/...`` carry the same envelope shape:
 
@@ -115,7 +115,6 @@ All errors emitted by ``https://api.voipbin.net/v1.0/...`` carry the same envelo
      "error": {
        "status": "PERMISSION_DENIED",
        "reason": "BILLING_ACCESS_DENIED",
-       "domain": "billing-manager",
        "message": "You do not have permission to access this billing account.",
        "request_id": "req_01HXYZ..."
      }
@@ -126,8 +125,7 @@ Fields
 
 * ``status`` (enum string, required): Canonical error status. One of:
   ``INVALID_ARGUMENT``, ``UNAUTHENTICATED``, ``PAYMENT_REQUIRED``, ``PERMISSION_DENIED``, ``NOT_FOUND``, ``ALREADY_EXISTS``, ``FAILED_PRECONDITION``, ``RESOURCE_EXHAUSTED``, ``UNAVAILABLE``, ``INTERNAL``.
-* ``reason`` (string, required): Specific VoIPbin reason code in ``UPPER_SNAKE``. Open-ended — see :ref:`error-reason-catalog` for the full list grouped by domain.
-* ``domain`` (string, required): Originating manager service (e.g., ``call-manager``, ``billing-manager``, ``api-manager``).
+* ``reason`` (string, required): Specific VoIPbin reason code in ``UPPER_SNAKE``. Open-ended — see :ref:`error-reason-catalog` for the full list.
 * ``message`` (string, required): Human-readable message for debugging. Do not parse or display this to end users verbatim — use ``reason`` for programmatic branching and craft user-facing text based on ``reason``.
 * ``request_id`` (string, required): Request correlation ID. Include this in support tickets so engineers can grep the server logs for the exact request.
 * ``details`` (array of object, optional): Reserved for future per-field or structured error detail (e.g., field violations on ``INVALID_ARGUMENT``). May be omitted.

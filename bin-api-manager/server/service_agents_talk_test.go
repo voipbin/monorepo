@@ -15,7 +15,6 @@ import (
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
 	tkparticipant "monorepo/bin-talk-manager/models/participant"
@@ -1127,7 +1126,7 @@ func Test_serviceAgentsTalkChatsPost_InvalidJSONBody(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_JSON_BODY")
 }
 
 // Test_serviceAgentsTalkChatsIDPut_InvalidID verifies
@@ -1161,7 +1160,7 @@ func Test_serviceAgentsTalkChatsIDPut_InvalidID(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_serviceAgentsTalkChatsIDParticipantsParticipantIDDelete_InvalidParticipantID
@@ -1196,7 +1195,7 @@ func Test_serviceAgentsTalkChatsIDParticipantsParticipantIDDelete_InvalidPartici
 	req, _ := http.NewRequest(http.MethodDelete, "/service_agents/talk_chats/83d48228-3ed7-11ef-a9ca-070e7ba46a55/participants/not-a-uuid", nil)
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
 }
 
 // Test_serviceAgentsTalkMessagesPost_MissingAuthIdentity verifies

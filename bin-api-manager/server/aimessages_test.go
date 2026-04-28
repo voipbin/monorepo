@@ -348,4 +348,3 @@ func Test_DeleteAimessagesId(t *testing.T) {
 		})
 	}
 }
-

@@ -8,7 +8,6 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	cerrors "monorepo/bin-common-handler/models/errors"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 
 	"github.com/gin-gonic/gin"
 )
@@ -44,7 +43,7 @@ func TestAuthStubs_ReturnRouteNotFound(t *testing.T) {
 			req := httptest.NewRequest(tt.method, tt.path, nil)
 			r.ServeHTTP(w, req)
 
-			assertErrorResponse(t, w, cerrors.StatusNotFound, "ROUTE_NOT_FOUND", commonoutline.ServiceNameAPIManager)
+			assertErrorResponse(t, w, cerrors.StatusNotFound, "ROUTE_NOT_FOUND")
 		})
 	}
 }

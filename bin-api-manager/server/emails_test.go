@@ -16,7 +16,6 @@ import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	commonoutline "monorepo/bin-common-handler/models/outline"
 	ememail "monorepo/bin-email-manager/models/email"
 
 	"github.com/gin-gonic/gin"
@@ -359,5 +358,5 @@ func Test_emailsPost_InsufficientBalance(t *testing.T) {
 
 	r.ServeHTTP(w, req)
 
-	assertErrorResponse(t, w, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE", commonoutline.ServiceNameAPIManager)
+	assertErrorResponse(t, w, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE")
 }
