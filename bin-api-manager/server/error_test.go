@@ -53,8 +53,19 @@ func TestAbortWithErrorSetsStatusAndBody(t *testing.T) {
 	if body.Error.RequestID == "" {
 		t.Error("request_id missing from response body")
 	}
-	// domain MUST NOT be present in the external envelope.
-	if strings.Contains(w.Body.String(), `"domain"`) {
+	// Structural check: parse the body and verify the "domain" key is
+	// absent from the error object (not a substring scan, which would
+	// false-positive on a Details payload containing a field named
+	// "domain").
+	var fullBody map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &fullBody); err != nil {
+		t.Fatalf("unmarshal full body for domain check: %v; body=%s", err, w.Body.String())
+	}
+	errObj, ok := fullBody["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("body.error is not an object: %+v", fullBody)
+	}
+	if _, hasDomain := errObj["domain"]; hasDomain {
 		t.Errorf("domain key MUST be absent from external response; body=%s", w.Body.String())
 	}
 }
@@ -202,7 +213,19 @@ func assertErrorResponse(t *testing.T, w *httptest.ResponseRecorder, wantStatus 
 	if body.Error.RequestID == "" {
 		t.Error("request_id missing — RequestID middleware must run before the handler")
 	}
-	if strings.Contains(w.Body.String(), `"domain"`) {
+	// Structural check: parse the body and verify the "domain" key is
+	// absent from the error object (not a substring scan, which would
+	// false-positive on a Details payload containing a field named
+	// "domain").
+	var full map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &full); err != nil {
+		t.Fatalf("unmarshal full body for domain check: %v; body=%s", err, w.Body.String())
+	}
+	errObj, ok := full["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("body.error is not an object: %+v", full)
+	}
+	if _, hasDomain := errObj["domain"]; hasDomain {
 		t.Errorf("domain key MUST be absent from external response; body=%s", w.Body.String())
 	}
 }
