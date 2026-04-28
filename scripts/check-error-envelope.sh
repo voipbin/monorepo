@@ -25,7 +25,8 @@ MATCHES=0
 
 for scope in "${SCOPES[@]}"; do
   if [[ ! -d "$scope" ]]; then
-    continue
+    echo "ERROR: guard scope '$scope' does not exist — update SCOPES in $0" >&2
+    exit 2
   fi
   while IFS= read -r line; do
     MATCHES=$((MATCHES + 1))
