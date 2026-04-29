@@ -147,9 +147,24 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 	}
 	logrus.WithField("team", team).Debugf("Retrieved team info. team_id: %s", team.ID)
 
+	// Resume the team flow at the AIcall's CurrentMemberID if it's set and valid.
+	// Otherwise fall back to the team's StartMemberID. Without this, every new
+	// pipecatcall (one per user turn) starts at StartMemberID and the LLM has to
+	// re-invoke the transition tool, producing a brief reply from the wrong member
+	// before each turn's intended member responds.
+	startMemberID := team.StartMemberID
+	if c.CurrentMemberID != uuid.Nil {
+		for _, m := range team.Members {
+			if m.ID == c.CurrentMemberID {
+				startMemberID = c.CurrentMemberID
+				break
+			}
+		}
+	}
+
 	resolved := &resolvedTeamData{
 		ID:            team.ID,
-		StartMemberID: team.StartMemberID,
+		StartMemberID: startMemberID,
 		Members:       []resolvedMemberData{},
 	}
 
@@ -202,7 +217,10 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 
 // resolveAIFromAIcall resolves the AI entity from the AIcall's assistance type and ID.
 // For AssistanceTypeAI, AssistanceID is the AI ID directly.
-// For AssistanceTypeTeam, it fetches the team, finds the start member, and returns that member's AI.
+// For AssistanceTypeTeam, it returns the AI of the AIcall's CurrentMemberID when set
+// and present in the team's members; otherwise falls back to the team's StartMemberID.
+// This mirrors the resume-at-current-member logic in resolveTeamForPython so callers
+// (e.g., LLM key derivation in start.go) get the correct member's AI on resume.
 func (h *pipecatcallHandler) resolveAIFromAIcall(ctx context.Context, c *amaicall.AIcall) (*amai.AI, error) {
 	switch c.AssistanceType {
 	case amaicall.AssistanceTypeTeam:
@@ -211,13 +229,23 @@ func (h *pipecatcallHandler) resolveAIFromAIcall(ctx context.Context, c *amaical
 			return nil, err
 		}
 
-		// find the start member's AI ID
+		// Pick the member to resolve: CurrentMemberID if valid, else StartMemberID.
+		targetMemberID := team.StartMemberID
+		if c.CurrentMemberID != uuid.Nil {
+			for _, m := range team.Members {
+				if m.ID == c.CurrentMemberID {
+					targetMemberID = c.CurrentMemberID
+					break
+				}
+			}
+		}
+
 		for _, m := range team.Members {
-			if m.ID == team.StartMemberID {
+			if m.ID == targetMemberID {
 				return h.requestHandler.AIV1AIGet(ctx, m.AIID)
 			}
 		}
-		return nil, fmt.Errorf("could not find start member in team. team_id: %s, start_member_id: %s", c.AssistanceID, team.StartMemberID)
+		return nil, fmt.Errorf("could not find target member in team. team_id: %s, target_member_id: %s", c.AssistanceID, targetMemberID)
 
 	default:
 		// AssistanceTypeAI or any other: AssistanceID is the AI ID
