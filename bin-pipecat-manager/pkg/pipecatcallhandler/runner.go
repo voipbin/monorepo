@@ -22,6 +22,37 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// StopReason identifies why an LLM-related goroutine exited.
+// Stored atomically on Session.LLMStopReason (as int32) and
+// read by the flush goroutine to attribute the exit in metrics.
+type StopReason int32
+
+const (
+	StopReasonUnset StopReason = iota
+	StopReasonNormal
+	StopReasonIdleWatchdog
+	StopReasonTerminateForce
+	StopReasonContextCancel
+)
+
+// reasonLabel returns the Prometheus label associated with a StopReason.
+// Any value not explicitly mapped (including StopReasonUnset and future
+// additions) is returned as "unknown" so metrics never panic on new values.
+func reasonLabel(r StopReason) string {
+	switch r {
+	case StopReasonNormal:
+		return "stopped_normal"
+	case StopReasonIdleWatchdog:
+		return "idle_watchdog"
+	case StopReasonTerminateForce:
+		return "terminate_force"
+	case StopReasonContextCancel:
+		return "context_cancelled"
+	default:
+		return "unknown"
+	}
+}
+
 func (h *pipecatcallHandler) RunnerStart(pc *pipecatcall.Pipecatcall, se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "RunnerStart",

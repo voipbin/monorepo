@@ -333,3 +333,21 @@ func Test_runnerWebsocketHandleAudio(t *testing.T) {
 
 }
 
+func TestReasonLabel(t *testing.T) {
+	cases := []struct {
+		in   StopReason
+		want string
+	}{
+		{StopReasonNormal, "stopped_normal"},
+		{StopReasonIdleWatchdog, "idle_watchdog"},
+		{StopReasonTerminateForce, "terminate_force"},
+		{StopReasonContextCancel, "context_cancelled"},
+		{StopReasonUnset, "unknown"},
+	}
+	for _, c := range cases {
+		if got := reasonLabel(c.in); got != c.want {
+			t.Errorf("reasonLabel(%d) = %q, want %q", c.in, got, c.want)
+		}
+	}
+}
+
