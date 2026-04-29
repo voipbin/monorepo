@@ -5,4 +5,6 @@ const (
 	EventTypeDeleted string = "pipecatcall_deleted"
 
 	EventTypeInitialized string = "pipecatcall_initialized"
+
+	EventTypePipecatcallTerminated string = "pipecatcall_terminated"
 )
