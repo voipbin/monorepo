@@ -102,6 +102,40 @@ func Test_MessageCreate(t *testing.T) {
 				TMDelete:  nil,
 			},
 		},
+		{
+			name: "with pipecatcall id and delivery status pending",
+
+			message: &message.Message{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("4810ed7c-249a-11f1-9c4d-1be83fbb24d9"),
+					CustomerID: uuid.FromStringOrNil("48541f10-249a-11f1-8c25-7763b87b41e2"),
+				},
+				AIcallID:       uuid.FromStringOrNil("48a04e08-249a-11f1-8e9f-1f53f0e2c9bf"),
+				PipecatcallID:  uuid.FromStringOrNil("48ec3a36-249a-11f1-bc6c-2bd6e2e0fa7b"),
+				DeliveryStatus: message.DeliveryStatusPending,
+
+				Role:    message.RoleAssistant,
+				Content: "queued reply",
+			},
+
+			responseCurTime: curTime,
+			expectRes: &message.Message{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("4810ed7c-249a-11f1-9c4d-1be83fbb24d9"),
+					CustomerID: uuid.FromStringOrNil("48541f10-249a-11f1-8c25-7763b87b41e2"),
+				},
+				AIcallID:       uuid.FromStringOrNil("48a04e08-249a-11f1-8e9f-1f53f0e2c9bf"),
+				PipecatcallID:  uuid.FromStringOrNil("48ec3a36-249a-11f1-bc6c-2bd6e2e0fa7b"),
+				DeliveryStatus: message.DeliveryStatusPending,
+
+				Role:    message.RoleAssistant,
+				Content: "queued reply",
+
+				ToolCalls: nil,
+				TMCreate:  curTime,
+				TMDelete:  nil,
+			},
+		},
 	}
 
 	for _, tt := range tests {
