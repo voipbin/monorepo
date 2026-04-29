@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -751,4 +752,133 @@ func TestRunLLMIntermediateFlush_resetsLLMFlushing_onAllExits(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestRunLLMIntermediateFlush_idleWatchdog_fires verifies that the idle
+// watchdog fires after idleWatchdogTimeout of inactivity following at least
+// one received token, sets StopReasonIdleWatchdog atomically, increments the
+// idle-watchdog Prometheus counter, and the flush goroutine exits cleanly via
+// the LLMStopChan branch (the watchdog closes LLMStopChan via LLMFlushOnce).
+func TestRunLLMIntermediateFlush_idleWatchdog_fires(t *testing.T) {
+	// Patch the timeout to a short value so the test runs quickly. Restore on
+	// cleanup so other tests see the production default.
+	origTimeout := idleWatchdogTimeout
+	origTickRate := idleWatchdogTickRate
+	idleWatchdogTimeout = 200 * time.Millisecond
+	idleWatchdogTickRate = 50 * time.Millisecond
+	t.Cleanup(func() {
+		idleWatchdogTimeout = origTimeout
+		idleWatchdogTickRate = origTickRate
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &pipecatcallHandler{
+		notifyHandler: mockNotify,
+	}
+
+	messageID := uuid.FromStringOrNil("aaaa1234-1111-2222-3333-444444444444")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("bbbb1234-1111-2222-3333-444444444444"),
+			CustomerID: uuid.FromStringOrNil("cccc1234-1111-2222-3333-444444444444"),
+		},
+		Ctx:          ctx,
+		Cancel:       cancel,
+		LLMTokenChan: make(chan string, 64),
+		LLMStopChan:  make(chan struct{}),
+		LLMDoneChan:  make(chan struct{}),
+	}
+	se.LLMFlushing.Store(true)
+
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	beforeFired := testutil.ToFloat64(metricsIdleWatchdogFired)
+	beforeExitWatchdog := testutil.ToFloat64(metricsLLMFlushExit.WithLabelValues(reasonLabel(StopReasonIdleWatchdog)))
+
+	go h.runLLMIntermediateFlush(se, messageID)
+
+	// Send one token to arm the watchdog (it only fires after the first token).
+	se.LLMTokenChan <- "first token "
+
+	// Wait long enough for the watchdog to fire and the goroutine to exit.
+	select {
+	case <-se.LLMDoneChan:
+	case <-time.After(idleWatchdogTimeout + 2*time.Second):
+		t.Fatal("flush goroutine did not exit within expected window")
+	}
+
+	if got := StopReason(se.LLMStopReason.Load()); got != StopReasonIdleWatchdog {
+		t.Fatalf("expected StopReasonIdleWatchdog (%d), got %d", StopReasonIdleWatchdog, got)
+	}
+
+	afterFired := testutil.ToFloat64(metricsIdleWatchdogFired)
+	if delta := afterFired - beforeFired; delta < 1 {
+		t.Errorf("expected metricsIdleWatchdogFired to be incremented by at least 1, got delta %v", delta)
+	}
+
+	afterExitWatchdog := testutil.ToFloat64(metricsLLMFlushExit.WithLabelValues(reasonLabel(StopReasonIdleWatchdog)))
+	if delta := afterExitWatchdog - beforeExitWatchdog; delta < 1 {
+		t.Errorf("expected metricsLLMFlushExit{reason=idle_watchdog} to be incremented by at least 1, got delta %v", delta)
+	}
+}
+
+// TestRunLLMIntermediateFlush_idleWatchdog_doesNotFireBeforeFirstToken
+// verifies the watchdog's first-token guard: with no token ever sent,
+// the watchdog must NOT fire even if more than idleWatchdogTimeout elapses.
+func TestRunLLMIntermediateFlush_idleWatchdog_doesNotFireBeforeFirstToken(t *testing.T) {
+	origTimeout := idleWatchdogTimeout
+	origTickRate := idleWatchdogTickRate
+	idleWatchdogTimeout = 200 * time.Millisecond
+	idleWatchdogTickRate = 50 * time.Millisecond
+	t.Cleanup(func() {
+		idleWatchdogTimeout = origTimeout
+		idleWatchdogTickRate = origTickRate
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &pipecatcallHandler{
+		notifyHandler: mockNotify,
+	}
+
+	messageID := uuid.FromStringOrNil("dddd1234-1111-2222-3333-444444444444")
+	ctx, cancel := context.WithCancel(context.Background())
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("eeee1234-1111-2222-3333-444444444444"),
+			CustomerID: uuid.FromStringOrNil("ffff1234-1111-2222-3333-444444444444"),
+		},
+		Ctx:          ctx,
+		Cancel:       cancel,
+		LLMTokenChan: make(chan string, 64),
+		LLMStopChan:  make(chan struct{}),
+		LLMDoneChan:  make(chan struct{}),
+	}
+	se.LLMFlushing.Store(true)
+
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	go h.runLLMIntermediateFlush(se, messageID)
+
+	// Wait > idleWatchdogTimeout. No token was sent, so watchdog must NOT fire.
+	time.Sleep(idleWatchdogTimeout + 500*time.Millisecond)
+
+	if got := StopReason(se.LLMStopReason.Load()); got != StopReasonUnset {
+		t.Fatalf("expected StopReasonUnset (%d) before any token, got %d", StopReasonUnset, got)
+	}
+
+	// Cleanup: cancel context and wait for goroutine to exit.
+	cancel()
+	<-se.LLMDoneChan
 }
