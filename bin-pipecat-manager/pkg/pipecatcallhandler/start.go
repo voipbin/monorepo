@@ -304,6 +304,34 @@ func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipe
 	})
 	log.Infof("Terminating pipecatcall...")
 
+	// If the in-memory session is already gone, a previous terminate has
+	// already run flushAndFinalize, published pipecatcall_terminated, and
+	// torn the session down. Short-circuit so a back-to-back terminate
+	// cannot republish or re-run reference-type cleanup.
+	se, errGet := h.SessionGet(pc.ID)
+	if errGet != nil || se == nil {
+		log.Debugf("Pipecatcall session already stopped; skipping terminate.")
+		return
+	}
+
+	// Drain any in-flight per-generation LLM flush goroutine BEFORE teardown
+	// so partial replies are published as a final message_bot_llm event. Safe
+	// no-op when no flush is armed; safe when a normal-stop closer raced us
+	// (CAS + sync.Once preserve first-writer-wins).
+	h.flushAndFinalize(se)
+
+	// Publish the pipecatcall_terminated event exactly once per pipecatcall.
+	// Use context.Background() because SessionStop below will cancel se.Ctx
+	// and we want the event to leave even when terminate is invoked from a
+	// goroutine whose ctx is already cancelled.
+	if h.markTerminatedOnce(pc.ID) {
+		h.notifyHandler.PublishEvent(
+			context.Background(),
+			pipecatcall.EventTypePipecatcallTerminated,
+			pc,
+		)
+	}
+
 	switch pc.ReferenceType {
 	case pipecatcall.ReferenceTypeCall:
 		if errTerminate := h.terminateReferenceTypeCall(ctx, pc); errTerminate != nil {
