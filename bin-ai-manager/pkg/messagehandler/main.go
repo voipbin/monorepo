@@ -17,6 +17,25 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// CreateOption configures optional parameters for Create.
+type CreateOption func(*createParams)
+
+// createParams holds optional parameters for Create.
+type createParams struct {
+	pipecatcallID  uuid.UUID
+	deliveryStatus message.DeliveryStatus
+}
+
+// WithPipecatcallID sets the pipecatcall ID on createParams.
+func WithPipecatcallID(id uuid.UUID) CreateOption {
+	return func(p *createParams) { p.pipecatcallID = id }
+}
+
+// WithDeliveryStatus sets the delivery status on createParams.
+func WithDeliveryStatus(s message.DeliveryStatus) CreateOption {
+	return func(p *createParams) { p.deliveryStatus = s }
+}
+
 type MessageHandler interface {
 	Create(
 		ctx context.Context,
