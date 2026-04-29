@@ -133,13 +133,18 @@ if err := h.db.ConversationCreate(ctx, tmp); err != nil {
 }
 ```
 
-The rule applies specifically to the **if-init form** where the call and the nil check are on the same line. For multi-return calls split across two lines, the regular `err` is acceptable — the call itself is visible immediately above the check:
+The rule targets the **single-return if-init form** specifically — `if errVerb := call(); errVerb != nil`. The following forms keep the regular `err`:
 
 ```go
-// CORRECT — multi-return splits the variable from the check; generic err is fine
+// CORRECT — multi-return split across two lines; the call is visible immediately above the check
 res, err := h.handler.Create(ctx, ...)
 if err != nil {
     return errors.Wrapf(err, "could not create resource")
+}
+
+// CORRECT — multi-return if-init (the value is bound and used inside the block); generic err is fine
+if t, err := time.Parse(layout, raw); err == nil {
+    return t
 }
 ```
 
@@ -237,8 +242,8 @@ func (h *subscribeHandler) processEvent(e *sock.Event) error {
         "type": e.Type,
     })
 
-    if err := h.handleEvent(ctx, e); err != nil {
-        log.Errorf("Could not process event: %v", err)
+    if errHandle := h.handleEvent(ctx, e); errHandle != nil {
+        log.Errorf("Could not process event: %v", errHandle)
         // Return nil to acknowledge message (don't requeue)
         return nil
     }
