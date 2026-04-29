@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
+	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -1017,3 +1018,259 @@ func TestEventPMMessageBotLLM_conversation(t *testing.T) {
 	}
 }
 
+// TestEventPMPipecatcallTerminated drives the backstop handler through every
+// result-label outcome. Each case asserts the corresponding Prometheus counter
+// increments by exactly 1 and that ConversationV1MessageSend is called only on
+// the paths that should actually deliver.
+func TestEventPMPipecatcallTerminated(t *testing.T) {
+	cases := []struct {
+		name            string
+		evRefType       pmpipecatcall.ReferenceType
+		aicallRefType   aicall.ReferenceType
+		aicallStatus    aicall.Status
+		aicallGetErr    bool
+		replyExistsCall bool   // whether MessageAssistantReplyExists is expected
+		replyExistsErr  bool   // whether the reply-exists call returns an error
+		replyExists     bool   // value returned by MessageAssistantReplyExists
+		messageCreateOK bool   // whether MessageCreate returns nil (only when reached)
+		sendOK          bool   // whether ConversationV1MessageSend returns nil (only when reached)
+		wantResultLabel string // label whose counter must increment by 1
+		wantNoLabel     bool   // when true, no counter must change (RPC error short-circuit)
+		wantSendCalls   int
+		wantErr         bool
+	}{
+		{
+			name:            "skipped_not_aicall",
+			evRefType:       pmpipecatcall.ReferenceTypeCall,
+			wantResultLabel: "skipped_not_aicall",
+		},
+		{
+			name:            "aicall_get_error_no_label",
+			evRefType:       pmpipecatcall.ReferenceTypeAICall,
+			aicallGetErr:    true,
+			wantNoLabel:     true,
+			wantResultLabel: "skipped_voice", // unused (wantNoLabel=true)
+		},
+		{
+			name:            "skipped_voice",
+			evRefType:       pmpipecatcall.ReferenceTypeAICall,
+			aicallRefType:   aicall.ReferenceTypeCall,
+			aicallStatus:    aicall.StatusProgressing,
+			wantResultLabel: "skipped_voice",
+		},
+		{
+			name:            "skipped_terminated",
+			evRefType:       pmpipecatcall.ReferenceTypeAICall,
+			aicallRefType:   aicall.ReferenceTypeConversation,
+			aicallStatus:    aicall.StatusTerminated,
+			wantResultLabel: "skipped_terminated",
+		},
+		{
+			name:            "skipped_seen",
+			evRefType:       pmpipecatcall.ReferenceTypeAICall,
+			aicallRefType:   aicall.ReferenceTypeConversation,
+			aicallStatus:    aicall.StatusProgressing,
+			replyExistsCall: true,
+			replyExists:     true,
+			wantResultLabel: "skipped_seen",
+		},
+		{
+			name:            "sent",
+			evRefType:       pmpipecatcall.ReferenceTypeAICall,
+			aicallRefType:   aicall.ReferenceTypeConversation,
+			aicallStatus:    aicall.StatusProgressing,
+			replyExistsCall: true,
+			replyExists:     false,
+			messageCreateOK: true,
+			sendOK:          true,
+			wantResultLabel: "sent",
+			wantSendCalls:   1,
+		},
+		{
+			name:            "send_failed",
+			evRefType:       pmpipecatcall.ReferenceTypeAICall,
+			aicallRefType:   aicall.ReferenceTypeConversation,
+			aicallStatus:    aicall.StatusProgressing,
+			replyExistsCall: true,
+			replyExists:     false,
+			messageCreateOK: true,
+			sendOK:          false,
+			wantResultLabel: "send_failed",
+			wantSendCalls:   1,
+			wantErr:         true,
+		},
+		{
+			name:            "failed",
+			evRefType:       pmpipecatcall.ReferenceTypeAICall,
+			aicallRefType:   aicall.ReferenceTypeConversation,
+			aicallStatus:    aicall.StatusProgressing,
+			replyExistsCall: true,
+			replyExists:     false,
+			messageCreateOK: false,
+			wantResultLabel: "failed",
+			wantErr:         true,
+		},
+		{
+			name:            "reply_exists_error_returns",
+			evRefType:       pmpipecatcall.ReferenceTypeAICall,
+			aicallRefType:   aicall.ReferenceTypeConversation,
+			aicallStatus:    aicall.StatusProgressing,
+			replyExistsCall: true,
+			replyExistsErr:  true,
+			wantNoLabel:     true,
+			wantResultLabel: "skipped_seen", // unused (wantNoLabel=true)
+			wantErr:         true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			pccID := uuid.Must(uuid.NewV4())
+			aicallID := uuid.Must(uuid.NewV4())
+			convID := uuid.Must(uuid.NewV4())
+			customerID := uuid.Must(uuid.NewV4())
+			activeflowID := uuid.Must(uuid.NewV4())
+
+			ev := &pmpipecatcall.Pipecatcall{
+				ReferenceType: tc.evRefType,
+				ReferenceID:   aicallID,
+			}
+			ev.ID = pccID
+
+			mockDB := dbhandler.NewMockDBHandler(ctrl)
+			mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+			mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+			// AIcallGet expectations: only when ReferenceType is AICall.
+			if tc.evRefType == pmpipecatcall.ReferenceTypeAICall {
+				if tc.aicallGetErr {
+					mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).
+						Return(nil, errors.New("rpc transient")).Times(1)
+				} else {
+					ac := &aicall.AIcall{
+						Identity: identity.Identity{
+							ID:         aicallID,
+							CustomerID: customerID,
+						},
+						ActiveflowID:  activeflowID,
+						ReferenceType: tc.aicallRefType,
+						ReferenceID:   convID,
+						Status:        tc.aicallStatus,
+					}
+					mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil).Times(1)
+				}
+			}
+
+			// MessageAssistantReplyExists expectations.
+			if tc.replyExistsCall {
+				if tc.replyExistsErr {
+					mockDB.EXPECT().MessageAssistantReplyExists(gomock.Any(), pccID).
+						Return(false, errors.New("db transient")).Times(1)
+				} else {
+					mockDB.EXPECT().MessageAssistantReplyExists(gomock.Any(), pccID).
+						Return(tc.replyExists, nil).Times(1)
+				}
+			}
+
+			// MessageCreate / MessageGet only when persistence runs (sent/send_failed/failed).
+			if tc.replyExistsCall && !tc.replyExistsErr && !tc.replyExists {
+				if tc.messageCreateOK {
+					createdMsg := &message.Message{}
+					createdMsg.ID = uuid.Must(uuid.NewV4())
+					mockDB.EXPECT().
+						MessageCreate(gomock.Any(), messageWithPCC(pccID, message.DeliveryStatusDelivered)).
+						Return(nil).Times(1)
+					mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(createdMsg, nil).Times(1)
+					mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+				} else {
+					mockDB.EXPECT().
+						MessageCreate(gomock.Any(), messageWithPCC(pccID, message.DeliveryStatusDelivered)).
+						Return(errors.New("db down")).Times(1)
+				}
+			}
+
+			// ConversationV1MessageSend only when persist succeeded.
+			if tc.wantSendCalls > 0 {
+				if tc.sendOK {
+					mockReq.EXPECT().
+						ConversationV1MessageSend(gomock.Any(), convID, backstopReplyText, []cvmedia.Media{}).
+						Return(&cvmessage.Message{}, nil).Times(tc.wantSendCalls)
+				} else {
+					mockReq.EXPECT().
+						ConversationV1MessageSend(gomock.Any(), convID, backstopReplyText, []cvmedia.Media{}).
+						Return(nil, errors.New("conversation send failed")).Times(tc.wantSendCalls)
+				}
+			}
+
+			// Patch the grace sleep so tests do not pay 3s of wall-clock per case.
+			origSleep := backstopGraceSleep
+			sleepCalled := 0
+			backstopGraceSleep = func(time.Duration) { sleepCalled++ }
+			t.Cleanup(func() { backstopGraceSleep = origSleep })
+
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+				utilHandler:   utilhandler.NewUtilHandler(),
+			}
+
+			// Snapshot all 7 result-label counters so we can assert deltas precisely.
+			labels := []string{
+				"sent", "failed", "send_failed",
+				"skipped_seen", "skipped_voice",
+				"skipped_terminated", "skipped_not_aicall",
+			}
+			before := make(map[string]float64, len(labels))
+			for _, l := range labels {
+				before[l] = testutil.ToFloat64(promBackstopReplyTotal.WithLabelValues(l))
+			}
+
+			err := h.EventPMPipecatcallTerminated(context.Background(), ev)
+
+			if tc.wantErr && err == nil {
+				t.Errorf("expected non-nil error, got nil")
+			}
+			if !tc.wantErr && err != nil {
+				t.Errorf("expected nil error, got %v", err)
+			}
+
+			for _, l := range labels {
+				after := testutil.ToFloat64(promBackstopReplyTotal.WithLabelValues(l))
+				delta := after - before[l]
+
+				switch {
+				case tc.wantNoLabel:
+					if delta != 0 {
+						t.Errorf("label %q: no counter should change (wantNoLabel), got delta=%v", l, delta)
+					}
+				case l == tc.wantResultLabel:
+					if delta != 1 {
+						t.Errorf("label %q: expected delta=1, got %v", l, delta)
+					}
+				default:
+					if delta != 0 {
+						t.Errorf("label %q: expected delta=0, got %v", l, delta)
+					}
+				}
+			}
+
+			// Sleep must run iff the backstop reached the grace window: only
+			// when the AIcall was fetched, was a conversation reference, and
+			// was not already terminated.
+			wantSleep := 0
+			if tc.evRefType == pmpipecatcall.ReferenceTypeAICall &&
+				!tc.aicallGetErr &&
+				tc.aicallRefType == aicall.ReferenceTypeConversation &&
+				tc.aicallStatus != aicall.StatusTerminated {
+				wantSleep = 1
+			}
+			if sleepCalled != wantSleep {
+				t.Errorf("backstopGraceSleep call count: want %d got %d", wantSleep, sleepCalled)
+			}
+		})
+	}
+}

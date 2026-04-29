@@ -3,7 +3,6 @@ package messagehandler
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	identity "monorepo/bin-common-handler/models/identity"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -23,6 +23,20 @@ const deliveryStatusUpdateRetryDelay = 100 * time.Millisecond
 // deliveryStatusUpdateSleep is a package-level indirection for time.Sleep so tests
 // can patch it to avoid real wall-clock waits during the retry-path test case.
 var deliveryStatusUpdateSleep = time.Sleep
+
+// backstopGraceDelay is the grace window between receiving a pipecatcall_terminated
+// event and re-checking whether an assistant reply has already been delivered. It
+// gives any in-flight EventPMMessageBotLLM handler enough time to commit the row so
+// the backstop short-circuits via MessageAssistantReplyExists.
+const backstopGraceDelay = 3 * time.Second
+
+// backstopReplyText is the user-visible fallback text the backstop persists and
+// sends when no assistant reply was delivered before pipecatcall termination.
+const backstopReplyText = "Sorry, I'm having trouble responding right now. Please try again."
+
+// backstopGraceSleep is a package-level indirection for time.Sleep so tests can
+// patch it to a no-op without paying real wall-clock time.
+var backstopGraceSleep = time.Sleep
 
 func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message) {
 	log := logrus.WithFields(logrus.Fields{
@@ -250,12 +264,86 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 	log.WithField("message", tmp).Debugf("Created member-switched notification message.")
 }
 
-// EventPMPipecatcallTerminated is the periodic backstop entrypoint for the
-// pipecatcall_terminated event. The real implementation lands in a follow-up
-// task; this stub ensures the interface contract is in place so the mock
-// regenerates and downstream wiring (subscribe handler) can compile against
-// it. A non-nil error is returned so any accidental invocation surfaces
-// clearly during the interim.
+// EventPMPipecatcallTerminated is the backstop entrypoint for the
+// pipecatcall_terminated event. It guarantees the AIcall+conversation branch
+// always emits an assistant-side reply so the user does not see silence after
+// the pipecatcall ends.
+//
+// Flow (per design doc §5):
+//  1. Skip non-AICall pipecatcalls (label "skipped_not_aicall").
+//  2. Resolve the AIcall. Skip non-conversation references (label "skipped_voice")
+//     and AIcalls already terminated (label "skipped_terminated"). RPC errors
+//     return nil (logged) so the subscribe handler does not requeue forever.
+//  3. Sleep `backstopGraceDelay` to let any in-flight EventPMMessageBotLLM
+//     handler commit its delivered row.
+//  4. Re-check MessageAssistantReplyExists. If a delivered assistant reply
+//     already exists for this pipecatcall, short-circuit (label "skipped_seen").
+//  5. Persist the backstop message with delivery_status='delivered' BEFORE
+//     calling ConversationV1MessageSend. This is intentional: a duplicate event
+//     after retry will short-circuit at MessageAssistantReplyExists rather than
+//     delivering a second reply downstream.
+//  6. Send the backstop reply via the conversation manager. On send failure the
+//     row is left in place (label "send_failed"); on persistence failure the
+//     row never lands (label "failed").
 func (h *messageHandler) EventPMPipecatcallTerminated(ctx context.Context, evt *pmpipecatcall.Pipecatcall) error {
-	return errors.New("not implemented")
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "EventPMPipecatcallTerminated",
+		"pipecatcall_id": evt.ID,
+	})
+
+	if evt.ReferenceType != pmpipecatcall.ReferenceTypeAICall {
+		promBackstopReplyTotal.WithLabelValues("skipped_not_aicall").Inc()
+		return nil
+	}
+
+	ac, err := h.reqHandler.AIV1AIcallGet(ctx, evt.ReferenceID)
+	if err != nil {
+		log.Errorf("Could not get aicall. err: %v", err)
+		return nil
+	}
+
+	if ac.ReferenceType != aicall.ReferenceTypeConversation {
+		promBackstopReplyTotal.WithLabelValues("skipped_voice").Inc()
+		return nil
+	}
+	if ac.Status == aicall.StatusTerminated {
+		promBackstopReplyTotal.WithLabelValues("skipped_terminated").Inc()
+		return nil
+	}
+
+	// Grace window — let any concurrent BotLLM handler commit its delivered row
+	// so the next check short-circuits without persisting/sending a duplicate.
+	backstopGraceSleep(backstopGraceDelay)
+
+	seen, err := h.db.MessageAssistantReplyExists(ctx, evt.ID)
+	if err != nil {
+		return errors.Wrap(err, "could not check assistant reply existence")
+	}
+	if seen {
+		promBackstopReplyTotal.WithLabelValues("skipped_seen").Inc()
+		return nil
+	}
+
+	// Persist BEFORE sending. The row is created with delivery_status='delivered'
+	// on purpose: a duplicated pipecatcall_terminated event after retry will see
+	// the existing row via MessageAssistantReplyExists and short-circuit at the
+	// "skipped_seen" branch above, preventing dual delivery.
+	msg, err := h.Create(ctx, uuid.Nil, ac.CustomerID, ac.ID, ac.ActiveflowID,
+		message.DirectionIncoming, message.RoleAssistant, backstopReplyText, nil, "",
+		WithPipecatcallID(evt.ID),
+		WithDeliveryStatus(message.DeliveryStatusDelivered))
+	if err != nil {
+		promBackstopReplyTotal.WithLabelValues("failed").Inc()
+		return errors.Wrap(err, "could not persist backstop message")
+	}
+
+	if _, errSend := h.reqHandler.ConversationV1MessageSend(ctx, ac.ReferenceID,
+		backstopReplyText, []cvmedia.Media{}); errSend != nil {
+		promBackstopReplyTotal.WithLabelValues("send_failed").Inc()
+		return errors.Wrap(errSend, "could not send backstop conversation reply")
+	}
+
+	promBackstopReplyTotal.WithLabelValues("sent").Inc()
+	log.WithField("message_id", msg.ID).Infof("Backstop reply sent. aicall_id: %s, pipecatcall_id: %s", ac.ID, evt.ID)
+	return nil
 }
