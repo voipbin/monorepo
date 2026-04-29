@@ -644,7 +644,10 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 		case <-ticker.C:
 			if deltaBuffer != "" {
 				sequence++
-				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+				// Use context.Background() so a cancelled session ctx (from
+				// terminate path) does not drop the partial reply event on its
+				// way to ai-manager.
+				h.publishIntermediateEvent(context.Background(), se, messageID, deltaBuffer, sequence)
 				log.Debugf("Published intermediate event. sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
 				deltaBuffer = ""
 			}
@@ -664,12 +667,14 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 			// Flush any remaining delta as the last intermediate event.
 			if deltaBuffer != "" {
 				sequence++
-				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+				h.publishIntermediateEvent(context.Background(), se, messageID, deltaBuffer, sequence)
 				log.Debugf("Published final intermediate event. sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
 			}
 
-			// Publish the final complete bot LLM event.
-			h.publishFinalBotLLMEvent(se.Ctx, se, messageID, fullText)
+			// Publish the final complete bot LLM event. Use context.Background()
+			// because terminate() may have cancelled se.Ctx and we still want
+			// the partial reply to reach ai-manager.
+			h.publishFinalBotLLMEvent(context.Background(), se, messageID, fullText)
 			log.Debugf("Published final bot LLM event. full_text_len: %d", len(fullText))
 			return
 
@@ -698,7 +703,9 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 }
 
 // publishIntermediateEvent publishes a message_bot_llm_intermediate event with the delta text.
-func (h *pipecatcallHandler) publishIntermediateEvent(se *pipecatcall.Session, messageID uuid.UUID, delta string, sequence int) {
+// Accepts an explicit context so callers can use context.Background() when se.Ctx is cancelled
+// (e.g. during the terminate path) and the partial reply must still reach ai-manager.
+func (h *pipecatcallHandler) publishIntermediateEvent(ctx context.Context, se *pipecatcall.Session, messageID uuid.UUID, delta string, sequence int) {
 	evt := message.Message{
 		Identity: commonidentity.Identity{
 			ID:         messageID,
@@ -714,7 +721,7 @@ func (h *pipecatcallHandler) publishIntermediateEvent(se *pipecatcall.Session, m
 		Sequence: sequence,
 	}
 
-	h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLMIntermediate, evt)
+	h.notifyHandler.PublishEvent(ctx, message.EventTypeBotLLMIntermediate, evt)
 }
 
 // publishFinalBotLLMEvent publishes the final message_bot_llm event with the complete text.

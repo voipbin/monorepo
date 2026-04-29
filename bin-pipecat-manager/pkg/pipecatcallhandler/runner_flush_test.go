@@ -579,6 +579,112 @@ func TestBotLLMStopped_doubleStop_noPanic(t *testing.T) {
 	}
 }
 
+// TestRunLLMIntermediateFlush_publishesAfterCtxCancel verifies that the final
+// and intermediate message_bot_llm publishes use a context that is independent
+// of se.Ctx. When terminate() cancels the session context (Task 2.x), in-flight
+// publishes that hand se.Ctx to PublishEvent would be dropped by the
+// notifyHandler's RPC layer, losing the partial bot response in conversation
+// history.
+//
+// This test cancels se.Ctx and then closes LLMStopChan. Whichever select branch
+// wins (LLMStopChan or Ctx.Done), the ctx passed to PublishEvent for both the
+// intermediate and final events must NOT be cancelled.
+func TestRunLLMIntermediateFlush_publishesAfterCtxCancel(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &pipecatcallHandler{
+		notifyHandler: mockNotify,
+	}
+
+	messageID := uuid.FromStringOrNil("aaaa9999-1111-2222-3333-444444444444")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("bbbb9999-1111-2222-3333-444444444444"),
+			CustomerID: uuid.FromStringOrNil("cccc9999-1111-2222-3333-444444444444"),
+		},
+		Ctx:          ctx,
+		Cancel:       cancel,
+		LLMTokenChan: make(chan string, 64),
+		LLMStopChan:  make(chan struct{}),
+		LLMDoneChan:  make(chan struct{}),
+	}
+	se.LLMFlushing.Store(true)
+
+	var (
+		mu                sync.Mutex
+		finalCtx          context.Context
+		finalText         string
+		finalCalled       bool
+		intermediateCtxs  []context.Context
+		intermediateCount int
+	)
+
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).DoAndReturn(
+		func(c context.Context, _ any, _ message.Message) {
+			mu.Lock()
+			defer mu.Unlock()
+			intermediateCtxs = append(intermediateCtxs, c)
+			intermediateCount++
+		},
+	).AnyTimes()
+
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
+		func(c context.Context, _ any, evt message.Message) {
+			mu.Lock()
+			defer mu.Unlock()
+			finalCalled = true
+			finalText = evt.Text
+			finalCtx = c
+		},
+	).Times(1)
+
+	go h.runLLMIntermediateFlush(se, messageID)
+
+	// Send one token, wait for the ticker to publish at least one intermediate
+	// while se.Ctx is still alive (exercises the ticker branch deterministically).
+	se.LLMTokenChan <- "hello "
+	time.Sleep(300 * time.Millisecond)
+
+	// Now simulate the terminate path: cancel se.Ctx then close LLMStopChan.
+	// The final publish must use context.Background() regardless of which
+	// select branch wins (LLMStopChan vs Ctx.Done) — both must be cancellation-
+	// independent so partial replies still reach ai-manager on terminate.
+	se.Cancel()
+	close(se.LLMStopChan)
+
+	<-se.LLMDoneChan
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	if !finalCalled {
+		t.Fatal("expected final bot LLM event to be published")
+	}
+	if finalText != "hello " {
+		t.Errorf("expected final text 'hello ', got '%s'", finalText)
+	}
+
+	bg := context.Background()
+	if finalCtx != bg {
+		t.Errorf("final publish must use context.Background(); got ctx with err=%v", finalCtx.Err())
+	}
+
+	if intermediateCount == 0 {
+		t.Fatal("expected at least one intermediate event from the ticker branch")
+	}
+	for i, c := range intermediateCtxs {
+		if c != bg {
+			t.Errorf("intermediate[%d]: must use context.Background(); got ctx with err=%v", i, c.Err())
+		}
+	}
+}
+
 // TestRunLLMIntermediateFlush_resetsLLMFlushing_onAllExits verifies that
 // runLLMIntermediateFlush always clears Session.LLMFlushing before returning,
 // regardless of which exit path triggered the goroutine to return.
