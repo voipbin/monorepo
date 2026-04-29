@@ -77,6 +77,8 @@ func Test_Create(t *testing.T) {
 					},
 				},
 				ToolCallID: "62ed2280-943b-11f0-b762-4f0b5a0bd115",
+
+				DeliveryStatus: message.DeliveryStatusDelivered,
 			},
 		},
 		{
@@ -88,7 +90,8 @@ func Test_Create(t *testing.T) {
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("0812955a-f262-11ef-a3a2-1bee273dee65"),
 				},
-				ToolCalls: []message.ToolCall{},
+				ToolCalls:      []message.ToolCall{},
+				DeliveryStatus: message.DeliveryStatusDelivered,
 			},
 		},
 	}

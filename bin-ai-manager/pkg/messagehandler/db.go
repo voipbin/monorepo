@@ -25,6 +25,7 @@ func (h *messageHandler) Create(
 	content string,
 	toolCalls []message.ToolCall,
 	toolCallID string,
+	opts ...CreateOption,
 ) (*message.Message, error) {
 	if id == uuid.Nil {
 		id = h.utilHandler.UUIDCreate()
@@ -33,6 +34,17 @@ func (h *messageHandler) Create(
 	tmpToolCalls := toolCalls
 	if tmpToolCalls == nil {
 		tmpToolCalls = []message.ToolCall{}
+	}
+
+	// Apply defaults first, then override with caller-supplied options.
+	// DeliveryStatusDelivered matches the legacy semantics + DB column default,
+	// so existing callers that pass no opts continue to work unchanged.
+	p := createParams{
+		pipecatcallID:  uuid.Nil,
+		deliveryStatus: message.DeliveryStatusDelivered,
+	}
+	for _, opt := range opts {
+		opt(&p)
 	}
 
 	m := &message.Message{
@@ -48,6 +60,9 @@ func (h *messageHandler) Create(
 		Content:    content,
 		ToolCalls:  tmpToolCalls,
 		ToolCallID: toolCallID,
+
+		PipecatcallID:  p.pipecatcallID,
+		DeliveryStatus: p.deliveryStatus,
 	}
 	if err := h.db.MessageCreate(ctx, m); err != nil {
 		return nil, err

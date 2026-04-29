@@ -48,6 +48,7 @@ type MessageHandler interface {
 		content string,
 		toolCalls []message.ToolCall,
 		toolCallID string,
+		opts ...CreateOption,
 	) (*message.Message, error)
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	List(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
