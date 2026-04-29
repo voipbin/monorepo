@@ -291,8 +291,8 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 			LLMTokenChan: make(chan string, 64),
 			LLMStopChan:  make(chan struct{}),
 			LLMDoneChan:  make(chan struct{}),
-			LLMFlushing:  true,
 		}
+		se.LLMFlushing.Store(true)
 
 		var mu sync.Mutex
 		var gen1FinalText string
@@ -315,14 +315,14 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		se.LLMTokenChan <- " gen"
 		close(se.LLMStopChan)
 		<-se.LLMDoneChan
-		se.LLMFlushing = false
+		se.LLMFlushing.Store(false)
 
 		// --- Generation 2: reset channels, new UUID ---
 		messageID2 := uuid.FromStringOrNil("44444444-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
 		se.LLMTokenChan = make(chan string, 64)
 		se.LLMStopChan = make(chan struct{})
 		se.LLMDoneChan = make(chan struct{})
-		se.LLMFlushing = true
+		se.LLMFlushing.Store(true)
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).DoAndReturn(
 			func(_ any, _ any, evt message.Message) {
@@ -472,7 +472,7 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		se.LLMTokenChan = make(chan string, 64)
 		se.LLMStopChan = make(chan struct{})
 		se.LLMDoneChan = make(chan struct{})
-		se.LLMFlushing = true
+		se.LLMFlushing.Store(true)
 
 		mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 

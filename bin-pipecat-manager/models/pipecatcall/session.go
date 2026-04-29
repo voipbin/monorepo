@@ -39,7 +39,7 @@ type Session struct {
 	LLMTokenChan  chan string   `json:"-"` // buffered channel for LLM tokens (cap 64)
 	LLMStopChan   chan struct{} `json:"-"` // signals flush goroutine to stop
 	LLMDoneChan   chan struct{} `json:"-"` // closed when flush goroutine completes
-	LLMFlushing   bool          `json:"-"` // whether flush goroutine is running
+	LLMFlushing   atomic.Bool   `json:"-"` // whether flush goroutine is running
 	LLMMessageID  uuid.UUID     `json:"-"` // pre-generated message UUID for current generation
 	LLMFlushOnce  sync.Once     `json:"-"` // ensures LLMStopChan is closed at most once
 	LLMStopReason atomic.Int32  `json:"-"` // set by closer via CAS; read by flush goroutine for metric attribution

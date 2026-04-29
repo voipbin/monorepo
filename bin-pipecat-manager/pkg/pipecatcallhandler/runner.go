@@ -518,12 +518,12 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-text message")
 		}
 
-		if !se.LLMFlushing {
+		if !se.LLMFlushing.Load() {
 			se.LLMMessageID = h.utilHandler.UUIDCreate()
 			se.LLMTokenChan = make(chan string, 64)
 			se.LLMStopChan = make(chan struct{})
 			se.LLMDoneChan = make(chan struct{})
-			se.LLMFlushing = true
+			se.LLMFlushing.Store(true)
 			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
 		}
 
@@ -545,10 +545,9 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-stopped message")
 		}
 
-		if se.LLMFlushing {
+		if se.LLMFlushing.Load() {
 			close(se.LLMStopChan)
 			<-se.LLMDoneChan
-			se.LLMFlushing = false
 		} else {
 			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
 		}
