@@ -79,10 +79,10 @@ Inbound message handlers load the `Conversation` once at the start of processing
 
 This is intentional. If an admin assigns or unassigns the conversation between the load and the dispatch, the in-flight message uses the snapshot's value; the **next** inbound message picks up the new state. We accept eventual consistency for two reasons:
 
-- The cost of a re-fetch (extra DB / cache hit per inbound message) outweighs the benefit. Assignment is a low-frequency operation; messages are high-frequency.
+- A re-fetch adds extra round-trip latency on the hot path (every inbound message). Assignment is a low-frequency operation; inbound messages are high-frequency. Optimizing for the rare case at the cost of every message is the wrong trade.
 - The behavior is idempotent in the user-visible sense — the conversation continues to receive messages either way; only the activeflow trigger differs, and the next message is at most seconds away.
 
-Implementations MUST NOT add a re-fetch in `getExecuteMode` to chase stronger consistency.
+Implementations MUST NOT add a re-fetch anywhere in the dispatch path — not in `getExecuteMode`, not in `runExecuteModeAgent` / `runExecuteModeFlow`, not in the per-type runners. The rule applies to the entire dispatch chain, not just the mode lookup. A future contributor "being safe" by re-fetching in any of these layers reintroduces the latency cost this section is designed to avoid.
 
 ## 4. Inbound dispatch
 
@@ -222,7 +222,7 @@ api-manager is a thin gateway. The decode pipeline MUST preserve the "field abse
 
 api-manager MUST NOT translate or derive `owner_type` — that is conversation-manager's concern.
 
-**Note on `account_id`:** today's `PutConversationsIdJSONBody` schema (in `bin-api-manager/gens/openapi_server/gen.go`) has only `Detail`, `Name`, `OwnerId`, `OwnerType`. To expose `account_id` updates end-to-end, the OpenAPI schema must be extended to add `account_id?: string` and the codegen rerun. Until that happens, api-manager will not forward `account_id` even though conversation-manager's allowlist accepts it.
+**Note on `account_id`:** today's `PutConversationsIdJSONBody` schema (in `bin-api-manager/gens/openapi_server/gen.go`) has only `Detail`, `Name`, `OwnerId`, `OwnerType`. To expose `account_id` updates end-to-end, the OpenAPI schema must be extended to add `account_id?: string` and the codegen rerun. Until that happens, api-manager will not forward `account_id` even though conversation-manager's allowlist accepts it (`v1_conversations.go:189`).
 
 ### 5.2 Permission gate (api-manager)
 
@@ -258,11 +258,13 @@ Validation runs as a **pre-check** in `Update()` before any DB write. On validat
 
 Failure mapping (returned by conversation-manager; api-manager surfaces matching status codes per the existing pattern in `docs/conventions/error-handling.md` §Common Error Scenarios):
 
-| Failure | conversation-manager returns | api-manager surfaces |
+| Failure | conversation-manager error message | api-manager surfaces |
 |---|---|---|
-| Agent does not exist | wrapped error indicating not found | **400** (validation rejection) |
-| Agent's customer does not match conversation's customer | wrapped error indicating cross-customer | **400** (validation rejection — same path; the message body distinguishes) |
-| RPC call to agent-manager fails (network, timeout, internal error) | wrapped transport error | **500** |
+| Agent does not exist | `"agent not found. owner_id: <uuid>"` | **400** (validation rejection) |
+| Agent's customer does not match conversation's customer | `"agent customer mismatch. owner_id: <uuid>, agent_customer_id: <uuid>, conversation_customer_id: <uuid>"` | **400** (validation rejection — same path; distinct message body) |
+| RPC call to agent-manager fails (network, timeout, internal error) | wrapped transport error from `AgentV1AgentGet` | **500** |
+
+The two 400 cases share a status code but MUST use distinct error message strings (above) so operators reading logs and clients reading 400 response bodies can tell them apart. Implementations should use the canonical wording shown.
 
 400 is preferred over 404 here because the failure is a **request-payload validation** rejection, not a "the resource at this URL does not exist" condition (the conversation itself does exist).
 
@@ -289,6 +291,8 @@ Subscribers (agent UI, webhook customers) learn about assignment changes via `co
 **No `WebhookMessage` change.** `bin-conversation-manager/models/conversation/webhook.go` already embeds `commonidentity.Owner` in `WebhookMessage`, and `ConvertWebhookMessage()` already copies it through unconditionally. Customers receive `owner_type` and `owner_id` in every webhook today; they just always read `""` and `00000000-0000-0000-0000-000000000000`.
 
 When this feature ships, customers will start seeing real values (`"agent"` and a UUID) on conversations that get assigned. **This is additive on existing fields, not a breaking change**, but warrants a one-line note in the RST changelog so customers are not surprised.
+
+For the lifecycle of these payload values across rollback / roll-forward, see §10.
 
 ## 8. RST documentation updates
 
@@ -330,13 +334,13 @@ The rebuilt HTML is force-added because the root `.gitignore` excludes `build/`.
 
 ### conversation-manager listenhandler tests
 
-Add table cases to the existing PUT route tests:
+Extend the existing PUT route test function (`Test_processV1ConversationsIDPut` in `pkg/listenhandler/v1_conversations_test.go`, around line 291) with table cases:
 - partial update with only `owner_id` (non-nil) → server derives `owner_type=agent`.
 - partial update with `owner_id` = nil UUID → server derives `owner_type=""`.
 - partial update with `name=""` → empty string preserved through map decode.
 - partial update with caller-supplied `owner_type` → conversation-manager overrides based on `owner_id` regardless.
 
-Add to the existing GET route tests:
+Extend the existing GET route test function (`Test_processV1ConversationsGet` in the same file, around line 22):
 - list filter with `owner_id=<agent-uuid>` returns only conversations owned by that agent.
 
 ### api-manager tests
@@ -373,6 +377,10 @@ This change introduces no schema migration. Rollback is straightforward:
 - **Revert by `git revert` of the implementation PR(s) and redeploy.** The reverted code stops calling `getExecuteMode` and goes back to the direct `MessageExecuteActiveflow` call.
 - **No data migration is required.** Conversations that were assigned at the time of the rollback simply have `owner_type="agent"` / `owner_id=<uuid>` populated in the DB. After rollback, those values are inert — they sit in the `Owner` columns and webhook payloads but no longer change inbound flow trigger behavior. Customers who built UIs against `owner_id` continue to see it; nothing breaks.
 - **Operational unblocking without rollback.** If the assignment behavior misbehaves on a specific conversation but the broader feature is fine, an admin can call `PUT /v1.0/conversations/<id>` with `{"owner_id": "00000000-0000-0000-0000-000000000000"}` to clear the assignment and restore flow-trigger behavior on that conversation. No deploy needed.
+
+- **Enumerating the affected set.** To find which conversations are currently assigned (e.g. before a planned rollback), use the existing list filter from §5.5: `GET /v1.0/conversations?owner_id=<agent-uuid>` to find a specific agent's set, or query at the DB layer for `owner_type='agent'` to list all assignments across the customer. The set is bounded — only conversations where someone explicitly called the assign endpoint will appear.
+
+- **Roll-forward symmetry.** If the feature is rolled back and later rolled forward again, **assignments persist across the cycle**. Conversations that were assigned before the rollback (and remained `owner_type='agent'` in the DB) become "live" again on roll-forward — inbound messages on those conversations resume being skipped from flow-trigger. If ops wants a clean slate before re-rolling forward, they should bulk-clear `owner_type` / `owner_id` first.
 
 A feature flag is **not proposed** for this change. The dispatch is per-message and per-conversation; the blast radius of a faulty rollout is bounded to conversations that are explicitly assigned (which is opt-in via the new API). If real-world experience shows a flag would help, it can be added in a follow-up without rework.
 
