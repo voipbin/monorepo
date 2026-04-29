@@ -104,7 +104,7 @@ if err != nil {
 log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 ```
 
-## 4.5 Error Variable Naming in If-Init Blocks
+## 4.5 Error Variable Naming in Single-Return If-Init Blocks
 
 When using Go's if-init form for a single-error-returning call, name the error variable after the action being performed (e.g. `errCreate`, `errUpdate`, `errFetch`) — never the generic `err`.
 

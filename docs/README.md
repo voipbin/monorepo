@@ -3,8 +3,8 @@
 This directory holds VoIPbin engineering documentation. The index of categories and the "where to put new docs" decision tree live in [the root CLAUDE.md](../CLAUDE.md).
 
 - `architecture/` — system shape, service interactions
-- `conventions/` — coding standards (16 topic files, source of truth)
+- `conventions/` — coding standards, source of truth (run `ls conventions/` for the current set)
 - `workflows/` — git, verification, deployment, common tasks, gotchas
-- `patterns/` — applied infrastructure patterns (circuit breaker, per-pod liveness, etc.)
-- `reference/` — quick-lookup tables (queues, glossary, templates)
-- `plans/` — feature design docs and implementation plans (existing convention, unchanged)
+- `patterns/` — applied infrastructure patterns with reference implementations (e.g. circuit breaker, WebhookMessage)
+- `reference/` — quick-lookup tables (queue catalog, service CLAUDE.md template, code-quality standards)
+- `plans/` — feature design docs and implementation plans
