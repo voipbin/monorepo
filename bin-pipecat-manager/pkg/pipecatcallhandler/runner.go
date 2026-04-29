@@ -44,10 +44,17 @@ const (
 // idle time. A finer tick rate reduces detection jitter at the cost of slightly
 // more select-loop wakeups.
 //
+// flushFinalizeTimeout is the upper bound flushAndFinalize will wait for the
+// flush goroutine to exit after closing LLMStopChan. If the goroutine has not
+// published its final event and closed LLMDoneChan within this window,
+// flushAndFinalize gives up and lets terminate() proceed to teardown so a
+// stuck flush cannot indefinitely block hangup.
+//
 // These are var (not const) so tests can patch them to short values.
 var (
 	idleWatchdogTimeout  = 8 * time.Second
 	idleWatchdogTickRate = 1 * time.Second
+	flushFinalizeTimeout = 3 * time.Second
 )
 
 // reasonLabel returns the Prometheus label associated with a StopReason.
@@ -737,6 +744,54 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 			metricsLLMFlushExit.WithLabelValues(reasonLabel(StopReason(se.LLMStopReason.Load()))).Inc()
 			return
 		}
+	}
+}
+
+// flushAndFinalize is the synchronous helper that terminate() calls to force
+// the per-generation flush goroutine to publish its final message_bot_llm
+// event before SessionStop tears down the session. It is safe to call when no
+// flush is in progress (it returns immediately as a no-op) and safe to call
+// concurrently with the flush goroutine's normal completion path because the
+// CompareAndSwap on LLMStopReason and sync.Once around close(LLMStopChan)
+// preserve the first-writer-wins invariant.
+//
+// Outcomes (recorded on metricsFlushFinalizeOutcome):
+//   - "noop_never_started": no flush goroutine ever ran for this pipecatcall
+//     (no BotLLMText was received).
+//   - "noop_already_done": the flush goroutine ran and exited cleanly before
+//     terminate() arrived (e.g. BotLLMStopped was received first).
+//   - "done": the flush goroutine was running; we closed LLMStopChan and it
+//     drained, published its final event, and exited within flushFinalizeTimeout.
+//   - "timeout": the flush goroutine was running but did not exit within
+//     flushFinalizeTimeout, so we abandon the wait and let terminate() proceed.
+//     Partial replies may be lost in this rare path; the metric makes that visible.
+func (h *pipecatcallHandler) flushAndFinalize(se *pipecatcall.Session) {
+	if !se.LLMFlushing.Load() {
+		// Distinguish never-started (no generation ever) from already-done
+		// (a generation completed cleanly) using LLMMessageID — set when the
+		// flush goroutine is armed and not cleared on normal exit.
+		if se.LLMMessageID == uuid.Nil {
+			metricsFlushFinalizeOutcome.WithLabelValues("noop_never_started").Inc()
+		} else {
+			metricsFlushFinalizeOutcome.WithLabelValues("noop_already_done").Inc()
+		}
+		return
+	}
+
+	// Attribute this exit to the terminate path (CAS so a concurrent watchdog
+	// or normal-stop closer that already wrote a more specific reason wins),
+	// then close LLMStopChan exactly once across all closers.
+	se.LLMStopReason.CompareAndSwap(int32(StopReasonUnset), int32(StopReasonTerminateForce))
+	se.LLMFlushOnce.Do(func() { close(se.LLMStopChan) })
+
+	timer := time.NewTimer(flushFinalizeTimeout)
+	defer timer.Stop()
+
+	select {
+	case <-se.LLMDoneChan:
+		metricsFlushFinalizeOutcome.WithLabelValues("done").Inc()
+	case <-timer.C:
+		metricsFlushFinalizeOutcome.WithLabelValues("timeout").Inc()
 	}
 }
 

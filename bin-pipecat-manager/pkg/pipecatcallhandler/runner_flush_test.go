@@ -882,3 +882,127 @@ func TestRunLLMIntermediateFlush_idleWatchdog_doesNotFireBeforeFirstToken(t *tes
 	cancel()
 	<-se.LLMDoneChan
 }
+
+// TestFlushAndFinalize_outcomes covers the four observable outcomes of
+// flushAndFinalize, the synchronous helper terminate() will call to
+// deterministically force the flush goroutine to publish its final event
+// before SessionStop tears down the session.
+//
+// Outcome labels (closed set):
+//   - noop_never_started: no flush goroutine ever ran (no BotLLMText was
+//     received). LLMFlushing is false AND LLMMessageID is uuid.Nil.
+//   - noop_already_done: flush goroutine ran and exited cleanly. LLMFlushing
+//     is false but LLMMessageID is non-nil (set when the goroutine was armed).
+//   - done: flush goroutine was running; we closed StopChan and it exited
+//     within timeout.
+//   - timeout: flush goroutine was running but did not return within
+//     flushFinalizeTimeout.
+func TestFlushAndFinalize_outcomes(t *testing.T) {
+	// Patch the timeout to a short value so the timeout case runs quickly.
+	// Restore on cleanup so other tests see the production default.
+	origTimeout := flushFinalizeTimeout
+	flushFinalizeTimeout = 50 * time.Millisecond
+	t.Cleanup(func() { flushFinalizeTimeout = origTimeout })
+
+	// armFlush starts a real flush goroutine on `se` so that flushAndFinalize
+	// must close LLMStopChan and wait for the goroutine to exit via LLMDoneChan.
+	armFlush := func(t *testing.T, h *pipecatcallHandler, se *pipecatcall.Session) {
+		t.Helper()
+		se.LLMMessageID = uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+		se.LLMTokenChan = make(chan string, 64)
+		se.LLMStopChan = make(chan struct{})
+		se.LLMDoneChan = make(chan struct{})
+		se.LLMFlushing.Store(true)
+		go h.runLLMIntermediateFlush(se, se.LLMMessageID)
+	}
+
+	// armAndExitFlush arms a real flush goroutine, then waits for it to drain
+	// and exit cleanly so that by the time flushAndFinalize is called,
+	// LLMFlushing has been reset to false but LLMMessageID is still set.
+	armAndExitFlush := func(t *testing.T, h *pipecatcallHandler, se *pipecatcall.Session) {
+		t.Helper()
+		armFlush(t, h, se)
+		close(se.LLMStopChan)
+		<-se.LLMDoneChan
+		// LLMFlushing is reset to false by the goroutine's defer; LLMMessageID stays set.
+	}
+
+	// armFlushBlocking simulates a flush goroutine that does NOT drain — we
+	// initialize the channels and set the flushing flag, but never start a
+	// goroutine. flushAndFinalize will close LLMStopChan via LLMFlushOnce, then
+	// the timer must fire because LLMDoneChan is never closed.
+	armFlushBlocking := func(t *testing.T, _ *pipecatcallHandler, se *pipecatcall.Session) {
+		t.Helper()
+		se.LLMMessageID = uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+		se.LLMTokenChan = make(chan string, 64)
+		se.LLMStopChan = make(chan struct{})
+		se.LLMDoneChan = make(chan struct{})
+		se.LLMFlushing.Store(true)
+	}
+
+	cases := []struct {
+		name    string
+		setup   func(*testing.T, *pipecatcallHandler, *pipecatcall.Session)
+		outcome string
+	}{
+		{
+			name:    "never_started",
+			setup:   func(_ *testing.T, _ *pipecatcallHandler, _ *pipecatcall.Session) { /* no flush armed */ },
+			outcome: "noop_never_started",
+		},
+		{
+			name:    "already_done",
+			setup:   armAndExitFlush,
+			outcome: "noop_already_done",
+		},
+		{
+			name:    "done",
+			setup:   armFlush,
+			outcome: "done",
+		},
+		{
+			name:    "timeout",
+			setup:   armFlushBlocking,
+			outcome: "timeout",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			// Any PublishEvent calls (final/intermediate) the flush goroutine
+			// emits during the "done" case are not the focus of this test.
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+			h := &pipecatcallHandler{
+				notifyHandler: mockNotify,
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			se := &pipecatcall.Session{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaaaaaa-1111-2222-3333-444444444444"),
+					CustomerID: uuid.FromStringOrNil("bbbbbbbb-1111-2222-3333-444444444444"),
+				},
+				Ctx:    ctx,
+				Cancel: cancel,
+			}
+
+			c.setup(t, h, se)
+
+			before := testutil.ToFloat64(metricsFlushFinalizeOutcome.WithLabelValues(c.outcome))
+
+			h.flushAndFinalize(se)
+
+			after := testutil.ToFloat64(metricsFlushFinalizeOutcome.WithLabelValues(c.outcome))
+			if delta := after - before; delta != 1 {
+				t.Fatalf("expected metricsFlushFinalizeOutcome{outcome=%q} to increment by 1, got delta %v", c.outcome, delta)
+			}
+		})
+	}
+}
