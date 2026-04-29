@@ -104,6 +104,56 @@ if err != nil {
 log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 ```
 
+## 4.5 Error Variable Naming in Single-Return If-Init Blocks
+
+When using Go's if-init form for a single-error-returning call, name the error variable after the action being performed (e.g. `errCreate`, `errUpdate`, `errFetch`) — never the generic `err`.
+
+**Correct:**
+
+```go
+if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {
+    return errors.Wrapf(errCreate, "could not create conversation")
+}
+
+if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
+    return errors.Wrapf(errSet, "could not set variables")
+}
+
+if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
+    return errors.Wrapf(errExecute, "could not execute activeflow")
+}
+```
+
+**Wrong:**
+
+```go
+// generic err in if-init form — disallowed
+if err := h.db.ConversationCreate(ctx, tmp); err != nil {
+    return errors.Wrapf(err, "could not create conversation")
+}
+```
+
+The rule targets the **single-return if-init form** specifically — `if errVerb := call(); errVerb != nil`. The following forms keep the regular `err`:
+
+```go
+// CORRECT — multi-return split across two lines; the call is visible immediately above the check
+res, err := h.handler.Create(ctx, ...)
+if err != nil {
+    return errors.Wrapf(err, "could not create resource")
+}
+
+// CORRECT — multi-return if-init (the value is bound and used inside the block); generic err is fine
+if t, err := time.Parse(layout, raw); err == nil {
+    return t
+}
+```
+
+**Why:** Specific names make the error source obvious at a glance, especially when several if-init blocks appear close together. With `errSet` vs `errExecute`, a single glance at a stack trace, log line, or diff tells you which call failed; with two `err`s in a row, you must read the surrounding context.
+
+**How to apply:**
+- Pick the verb of the call, prefixed with `err`. Common forms: `errGet`, `errCreate`, `errUpdate`, `errDelete`, `errSet`, `errSend`, `errPublish`, `errMarshal`, `errUnmarshal`, `errExecute`, `errValidate`, `errFetch`, `errParse`, `errStart`, `errStop`.
+- Apply repo-wide to **all Go services** in this monorepo. No per-service exceptions.
+
 ---
 
 ## Common Error Scenarios
@@ -192,8 +242,8 @@ func (h *subscribeHandler) processEvent(e *sock.Event) error {
         "type": e.Type,
     })
 
-    if err := h.handleEvent(ctx, e); err != nil {
-        log.Errorf("Could not process event: %v", err)
+    if errHandle := h.handleEvent(ctx, e); errHandle != nil {
+        log.Errorf("Could not process event: %v", errHandle)
         // Return nil to acknowledge message (don't requeue)
         return nil
     }

@@ -216,12 +216,12 @@ The RST documentation at `bin-api-manager/docsdev/source/` is what customers, de
 
 ## Where to find things (index)
 
-- **Architecture** → [docs/architecture/](docs/architecture/) — service categories, inter-service communication, deployment, dependencies
-- **Coding conventions** → [docs/conventions/](docs/conventions/) — package structure, naming, imports, errors, logging, models, database, handlers, RPC, API design, events, configuration, testing, metrics, security
-- **Workflows (git, verification, gotchas, dev)** → [docs/workflows/](docs/workflows/) — git workflow, verification, common workflows, special cases, development guide, common gotchas
-- **Shared patterns (CB, liveness preflight, WebhookMessage, ...)** → [docs/patterns/](docs/patterns/) — applied infrastructure patterns with reference implementations
-- **Reference (queues, glossary, service CLAUDE.md template)** → [docs/reference/](docs/reference/) — RabbitMQ queues, code-quality checklist, service CLAUDE.md template
-- **Plans (designs/plans)** → [docs/plans/](docs/plans/) — dated design documents and implementation plans
+- **Architecture** → [docs/architecture/](docs/architecture/) — service boundaries, inter-service communication, deployment topology, dependency graph
+- **Coding conventions** → [docs/conventions/](docs/conventions/) — Go coding rules (package structure, naming, errors, logging, database, handlers, testing, ...). Run `ls docs/conventions/` for the current set.
+- **Workflows** → [docs/workflows/](docs/workflows/) — git, verification, multi-service feature workflows, common gotchas
+- **Shared patterns** → [docs/patterns/](docs/patterns/) — applied infrastructure patterns with reference implementations (e.g. circuit breaker, WebhookMessage)
+- **Reference** → [docs/reference/](docs/reference/) — queue catalog, service CLAUDE.md template, code-quality standards
+- **Plans** → [docs/plans/](docs/plans/) — dated design documents and implementation plans
 
 ## Grafana Dashboards
 
@@ -233,32 +233,45 @@ The RST documentation at `bin-api-manager/docsdev/source/` is what customers, de
 
 ## Where to Document New Information
 
-Use this decision tree when adding new documentation:
+The `docs/` directory is the **live, authoritative shared documentation** for the monorepo. Subdirectories evolve over time — new categories may be added at any time.
 
-**Does this apply to ALL services in the monorepo?**
-- **YES** → Add to Root CLAUDE.md
-  - Examples:
-    - New verification step required for all services
-    - New git workflow rule
-    - New shared pattern from bin-common-handler
-    - Changes to RabbitMQ communication pattern
+**Before adding new documentation, ALWAYS run `ls docs/` and `ls docs/<subdir>/` to inspect the current state of categories.** Do not rely on a memorized list — the categories listed below are a snapshot, not an exhaustive contract. If a topic clearly fits an existing category, place it there. If no category fits, propose a new `docs/<category>/` subdirectory with a brief `README.md`, and update this decision tree in the same change.
 
-**NO → Does it affect 2+ services?**
-  - **YES → Is it a workflow spanning services?**
-    - **YES** → Add to `docs/workflows/` (or root CLAUDE.md if it's a CRITICAL safety rail)
-      - Example: "Adding a New API Endpoint" (touches openapi-manager + api-manager + target service)
-    - **NO → Is it a shared pattern/gotcha?**
-      - **YES** → Add to `docs/patterns/` (with reference implementation) or `docs/workflows/common-gotchas.md`
-        - Example: "Parsing Filters from Request Body"
-      - **NO** → Add to each affected service's CLAUDE.md
-        - Example: How conference-manager and call-manager handle recordings
+Use this decision tree when adding new documentation, in order:
 
-  - **NO** → Add to Service-Specific CLAUDE.md
-    - Examples:
-      - Service-specific API endpoints
-      - Handler patterns unique to this service
-      - Service-specific testing approaches
-      - Domain-specific implementation details
+**1. Is it a coding/style/language convention or pattern that applies broadly to Go code in this monorepo?**
+- **YES** → Add to `docs/conventions/<topic>.md`
+  - Examples: error-handling rules (e.g. variable naming in if-init blocks), import grouping, naming conventions, package structure, testing patterns, RPC conventions, database patterns
+  - **Run `ls docs/conventions/` to see current files** — the set evolves; do not rely on a memorized list
+
+**2. Is it an architectural detail (service boundaries, inter-service communication, deployment topology, dependency graph)?**
+- **YES** → Add to `docs/architecture/<topic>.md`
+
+**3. Is it a workflow spanning services (git, verification, deployment, multi-service feature work)?**
+- **YES** → Add to `docs/workflows/<topic>.md`
+  - Promote to root CLAUDE.md if it is a CRITICAL safety rail (e.g. mandatory verification step, branch protection rule)
+  - Example: "Adding a New API Endpoint" (touches openapi-manager + api-manager + target service)
+
+**4. Is it a shared infrastructure pattern with a reference implementation (e.g. circuit breaker, WebhookMessage)?**
+- **YES** → Add to `docs/patterns/<topic>.md`
+  - For one-off cross-cutting gotchas without a reference implementation, use `docs/workflows/common-gotchas.md` instead
+  - Example: "Parsing Filters from Request Body"
+
+**5. Is it reference material (queue catalog, service CLAUDE.md template, code-quality standards)?**
+- **YES** → Add to `docs/reference/<topic>.md`
+
+**6. Is it a dated design document or implementation plan for a non-trivial change?**
+- **YES** → Add to `docs/plans/YYYY-MM-DD-<topic>-design.md` (or `-plan.md` for execution plans)
+
+**7. Is it specific to one service?**
+- **YES** → Add to that service's `<service>/CLAUDE.md`
+  - Examples: service-specific API endpoints, handler patterns unique to this service, domain-specific implementation details
+
+**8. Otherwise — does it apply universally to ALL services AND is it a CRITICAL safety rail?**
+- **YES** → Add to root CLAUDE.md
+  - Examples: mandatory verification step required for all services, repo-wide git workflow rule, change to RabbitMQ communication pattern
+
+**Maintenance rule:** Whenever a new `docs/<subdir>/` is introduced or removed, update this decision tree **and** the "Where to find things (index)" section above in the same change. The category descriptions in both sections are intentionally brief — they describe *kinds* of content, not exhaustive file lists, so adding individual files within an existing subdirectory does **not** require updating either section. Stale routing here is the most common failure mode — it sends new content to private memory or service CLAUDE.md files instead of the right shared category.
 
 ## Reference
 
