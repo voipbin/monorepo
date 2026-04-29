@@ -1,10 +1,14 @@
 package conversationhandler
 
 import (
+	"context"
+
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/message"
 )
 
 // getExecuteMode reads the conversation's Owner snapshot and returns the dispatch mode.
@@ -15,4 +19,18 @@ func (h *conversationHandler) getExecuteMode(cv *conversation.Conversation) Exec
 		return ExecuteModeAgent
 	}
 	return ExecuteModeFlow
+}
+
+// runExecuteModeAgent handles inbound messages on conversations owned by an agent.
+// The agent UI learns of new messages via the existing `message_created` event filtered on cv.OwnerID.
+// No new event is published; no flow is triggered. Logging only.
+func (h *conversationHandler) runExecuteModeAgent(ctx context.Context, cv *conversation.Conversation, m *message.Message) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "runExecuteModeAgent",
+		"conversation_id": cv.ID,
+		"message_id":      m.ID,
+		"owner_id":        cv.OwnerID,
+	})
+	log.Infof("Conversation owned by agent. Skipping flow trigger.")
+	return nil
 }

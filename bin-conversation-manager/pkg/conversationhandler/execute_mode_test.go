@@ -1,12 +1,17 @@
 package conversationhandler
 
 import (
+	"context"
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"go.uber.org/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
+
 	"monorepo/bin-conversation-manager/models/conversation"
+	"monorepo/bin-conversation-manager/models/message"
 )
 
 func Test_getExecuteMode(t *testing.T) {
@@ -55,5 +60,32 @@ func Test_getExecuteMode(t *testing.T) {
 				t.Errorf("got %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+func Test_runExecuteModeAgent_isNoop(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &conversationHandler{reqHandler: mockReq}
+
+	cv := &conversation.Conversation{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+			CustomerID: uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+		},
+	}
+	m := &message.Message{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+		},
+	}
+
+	// mockReq.EXPECT() — no expectations: any RPC call will fail the test.
+
+	err := h.runExecuteModeAgent(context.Background(), cv, m)
+	if err != nil {
+		t.Errorf("expected nil error, got: %v", err)
 	}
 }
