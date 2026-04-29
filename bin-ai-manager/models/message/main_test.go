@@ -138,6 +138,33 @@ func TestRoleConstants(t *testing.T) {
 	}
 }
 
+func TestDeliveryStatusConstants(t *testing.T) {
+	tests := []struct {
+		name     string
+		constant DeliveryStatus
+		expected string
+	}{
+		{
+			name:     "delivery_status_pending",
+			constant: DeliveryStatusPending,
+			expected: "pending",
+		},
+		{
+			name:     "delivery_status_delivered",
+			constant: DeliveryStatusDelivered,
+			expected: "delivered",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if string(tt.constant) != tt.expected {
+				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
+			}
+		})
+	}
+}
+
 func TestDirectionConstants(t *testing.T) {
 	tests := []struct {
 		name     string

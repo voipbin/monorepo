@@ -47,3 +47,13 @@ const (
 	DirectionOutgoing Direction = "outgoing"
 	DirectionNone     Direction = ""
 )
+
+// DeliveryStatus tracks whether a message has been successfully delivered
+// to the user (e.g. TTS audio actually played out to the call).
+type DeliveryStatus string
+
+// list of delivery statuses
+const (
+	DeliveryStatusPending   DeliveryStatus = "pending"
+	DeliveryStatusDelivered DeliveryStatus = "delivered"
+)
