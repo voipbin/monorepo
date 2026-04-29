@@ -637,6 +637,109 @@ func Test_resolveTeamForPython(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "current_member_id overrides team start_member_id when valid",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType:  amaicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: member2ID, // not the team's StartMemberID
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity:      commonidentity.Identity{ID: teamID},
+					StartMemberID: member1ID, // team's start
+					Members: []amateam.Member{
+						{ID: member1ID, Name: "greeter", AIID: ai1ID},
+						{ID: member2ID, Name: "support", AIID: ai2ID},
+					},
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai1ID).Return(&amai.AI{
+					Identity:    commonidentity.Identity{ID: ai1ID},
+					EngineModel: amai.EngineModelOpenaiGPT5,
+					EngineKey:   "key-1",
+					InitPrompt:  "You are a greeter",
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai2ID).Return(&amai.AI{
+					Identity:    commonidentity.Identity{ID: ai2ID},
+					EngineModel: amai.EngineModelOpenaiGPT5,
+					EngineKey:   "key-2",
+					InitPrompt:  "You are support",
+				}, nil)
+				mockTool.EXPECT().GetByNames(gomock.Any()).Return([]aitool.Tool{}).Times(2)
+			},
+
+			validate: func(t *testing.T, result *resolvedTeamData) {
+				if result.StartMemberID != member2ID {
+					t.Errorf("Expected StartMemberID to override to current_member_id %s, got %s", member2ID, result.StartMemberID)
+				}
+			},
+		},
+		{
+			name: "current_member_id falls back to team start_member_id when not in team",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType:  amaicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"), // stale id
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity:      commonidentity.Identity{ID: teamID},
+					StartMemberID: member1ID,
+					Members: []amateam.Member{
+						{ID: member1ID, Name: "greeter", AIID: ai1ID},
+					},
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai1ID).Return(&amai.AI{
+					Identity:    commonidentity.Identity{ID: ai1ID},
+					EngineModel: amai.EngineModelOpenaiGPT5,
+					EngineKey:   "key-1",
+					InitPrompt:  "You are a greeter",
+				}, nil)
+				mockTool.EXPECT().GetByNames(gomock.Any()).Return([]aitool.Tool{})
+			},
+
+			validate: func(t *testing.T, result *resolvedTeamData) {
+				if result.StartMemberID != member1ID {
+					t.Errorf("Expected StartMemberID to fall back to team's start %s, got %s", member1ID, result.StartMemberID)
+				}
+			},
+		},
+		{
+			name: "current_member_id zero falls back to team start_member_id",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType: amaicall.AssistanceTypeTeam,
+				AssistanceID:   teamID,
+				// CurrentMemberID intentionally zero
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler, mockTool *toolhandler.MockToolHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity:      commonidentity.Identity{ID: teamID},
+					StartMemberID: member1ID,
+					Members: []amateam.Member{
+						{ID: member1ID, Name: "greeter", AIID: ai1ID},
+					},
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), ai1ID).Return(&amai.AI{
+					Identity:    commonidentity.Identity{ID: ai1ID},
+					EngineModel: amai.EngineModelOpenaiGPT5,
+					EngineKey:   "key-1",
+					InitPrompt:  "You are a greeter",
+				}, nil)
+				mockTool.EXPECT().GetByNames(gomock.Any()).Return([]aitool.Tool{})
+			},
+
+			validate: func(t *testing.T, result *resolvedTeamData) {
+				if result.StartMemberID != member1ID {
+					t.Errorf("Expected StartMemberID to default to team's start %s, got %s", member1ID, result.StartMemberID)
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {

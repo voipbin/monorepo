@@ -147,9 +147,24 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 	}
 	logrus.WithField("team", team).Debugf("Retrieved team info. team_id: %s", team.ID)
 
+	// Resume the team flow at the AIcall's CurrentMemberID if it's set and valid.
+	// Otherwise fall back to the team's StartMemberID. Without this, every new
+	// pipecatcall (one per user turn) starts at StartMemberID and the LLM has to
+	// re-invoke the transition tool, producing a brief reply from the wrong member
+	// before each turn's intended member responds.
+	startMemberID := team.StartMemberID
+	if c.CurrentMemberID != uuid.Nil {
+		for _, m := range team.Members {
+			if m.ID == c.CurrentMemberID {
+				startMemberID = c.CurrentMemberID
+				break
+			}
+		}
+	}
+
 	resolved := &resolvedTeamData{
 		ID:            team.ID,
-		StartMemberID: team.StartMemberID,
+		StartMemberID: startMemberID,
 		Members:       []resolvedMemberData{},
 	}
 
