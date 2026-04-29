@@ -86,11 +86,9 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 			continue
 		}
 
-		af, err := h.MessageExecuteActiveflow(ctx, r.Conversation, r.Message, ac.MessageFlowID)
-		if err != nil {
-			return errors.Wrapf(err, "Could not execute the activeflow. account_id: %s", ac.ID)
+		if errExecute := h.executeActiveflow(ctx, r.Conversation, r.Message, ac.MessageFlowID); errExecute != nil {
+			return errors.Wrapf(errExecute, "Could not execute the activeflow. account_id: %s", ac.ID)
 		}
-		log.WithField("activeflow", af).Debugf("Executed activeflow. activeflow_id: %s", af.ID)
 	}
 
 	return nil

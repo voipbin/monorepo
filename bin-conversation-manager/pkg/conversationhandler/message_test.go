@@ -2,11 +2,13 @@ package conversationhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -17,6 +19,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 	"monorepo/bin-conversation-manager/pkg/linehandler"
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 )
 
 func Test_MessageSend(t *testing.T) {
@@ -82,6 +85,234 @@ func Test_MessageSend(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.responseMessage) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseMessage, res)
+			}
+		})
+	}
+}
+
+func Test_executeActiveflow(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conversation *conversation.Conversation
+		message      *message.Message
+		flowID       uuid.UUID
+
+		responseActiveflow *fmactiveflow.Activeflow
+
+		// failureStage selects which downstream RPC fails ("" = happy path / no-flow)
+		failureStage string
+
+		expectError bool
+	}{
+		{
+			name: "happy path: creates and executes activeflow",
+
+			conversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+					CustomerID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+				},
+			},
+			message: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+					CustomerID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+				},
+				ConversationID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+			},
+			flowID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+				},
+			},
+
+			expectError: false,
+		},
+		{
+			name: "no flow configured: flowID == uuid.Nil returns nil without RPC calls",
+
+			conversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
+					CustomerID: uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+				},
+			},
+			message: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"),
+					CustomerID: uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+				},
+				ConversationID: uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
+			},
+			flowID: uuid.Nil,
+
+			expectError: false,
+		},
+		{
+			name: "FlowV1ActiveflowCreate fails: error is propagated",
+
+			conversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777"),
+					CustomerID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+				},
+			},
+			message: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("88888888-8888-8888-8888-888888888888"),
+					CustomerID: uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+				},
+				ConversationID: uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777"),
+			},
+			flowID: uuid.FromStringOrNil("99999999-9999-9999-9999-999999999999"),
+
+			failureStage: "create",
+			expectError:  true,
+		},
+		{
+			name: "FlowV1VariableSetVariable fails: error is propagated",
+
+			conversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaaaaaa-1111-1111-1111-111111111111"),
+					CustomerID: uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+				},
+			},
+			message: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bbbbbbbb-2222-2222-2222-222222222222"),
+					CustomerID: uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+				},
+				ConversationID: uuid.FromStringOrNil("aaaaaaaa-1111-1111-1111-111111111111"),
+			},
+			flowID: uuid.FromStringOrNil("cccccccc-3333-3333-3333-333333333333"),
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("dddddddd-4444-4444-4444-444444444444"),
+				},
+			},
+
+			failureStage: "variable",
+			expectError:  true,
+		},
+		{
+			name: "FlowV1ActiveflowExecute fails: error is propagated",
+
+			conversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("eeeeeeee-1111-1111-1111-111111111111"),
+					CustomerID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+				},
+			},
+			message: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("eeeeeeee-2222-2222-2222-222222222222"),
+					CustomerID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+				},
+				ConversationID: uuid.FromStringOrNil("eeeeeeee-1111-1111-1111-111111111111"),
+			},
+			flowID: uuid.FromStringOrNil("eeeeeeee-3333-3333-3333-333333333333"),
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("eeeeeeee-4444-4444-4444-444444444444"),
+				},
+			},
+
+			failureStage: "execute",
+			expectError:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			h := &conversationHandler{
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				reqHandler:     mockReq,
+				messageHandler: mockMessage,
+				lineHandler:    mockLine,
+			}
+
+			ctx := context.Background()
+
+			// flowID == uuid.Nil: no expectations at all
+			if tt.flowID != uuid.Nil {
+				switch tt.failureStage {
+				case "create":
+					mockReq.EXPECT().FlowV1ActiveflowCreate(
+						ctx,
+						uuid.Nil,
+						tt.message.CustomerID,
+						tt.flowID,
+						fmactiveflow.ReferenceTypeConversation,
+						tt.message.ConversationID,
+						uuid.Nil,
+					).Return(nil, fmt.Errorf("create failed"))
+
+				case "variable":
+					mockReq.EXPECT().FlowV1ActiveflowCreate(
+						ctx,
+						uuid.Nil,
+						tt.message.CustomerID,
+						tt.flowID,
+						fmactiveflow.ReferenceTypeConversation,
+						tt.message.ConversationID,
+						uuid.Nil,
+					).Return(tt.responseActiveflow, nil)
+					mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, gomock.Any()).Return(fmt.Errorf("variable failed"))
+
+				case "execute":
+					mockReq.EXPECT().FlowV1ActiveflowCreate(
+						ctx,
+						uuid.Nil,
+						tt.message.CustomerID,
+						tt.flowID,
+						fmactiveflow.ReferenceTypeConversation,
+						tt.message.ConversationID,
+						uuid.Nil,
+					).Return(tt.responseActiveflow, nil)
+					mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, gomock.Any()).Return(nil)
+					mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(fmt.Errorf("execute failed"))
+
+				default:
+					// happy path
+					mockReq.EXPECT().FlowV1ActiveflowCreate(
+						ctx,
+						uuid.Nil,
+						tt.message.CustomerID,
+						tt.flowID,
+						fmactiveflow.ReferenceTypeConversation,
+						tt.message.ConversationID,
+						uuid.Nil,
+					).Return(tt.responseActiveflow, nil)
+					mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, gomock.Any()).Return(nil)
+					mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
+				}
+			}
+
+			err := h.executeActiveflow(ctx, tt.conversation, tt.message, tt.flowID)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
 			}
 		})
 	}

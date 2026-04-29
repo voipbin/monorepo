@@ -266,7 +266,7 @@ func Test_hookLine(t *testing.T) {
 			expectError:           false,
 		},
 		{
-			name: "returns error when MessageExecuteActiveflow fails",
+			name: "returns error when executeActiveflow fails",
 
 			account: &account.Account{
 				Identity: commonidentity.Identity{
