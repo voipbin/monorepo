@@ -3,7 +3,7 @@
 **Date:** 2026-04-30
 **Status:** Design — pending implementation plan
 **Author:** brainstormed with Claude Code; owner Sungtae Kim
-**Related:** none yet (parked: flow-decided assignment, push routing — see §9)
+**Related:** none yet (parked: flow-decided assignment, push routing — see §11)
 
 ---
 
@@ -23,7 +23,7 @@ This design adds a **manual takeover** mechanism so that an admin or manager can
 - **Inbound flow-trigger skip** — once assigned, the conversation-manager does **not** create new `activeflow` instances for new inbound messages. Already-running activeflows are not interrupted.
 - **List filter** — agents can list conversations they own via the existing `owner_id` filter.
 
-### Out of scope (parked, see §9)
+### Out of scope (parked, see §11)
 
 - Flow-decided assignment (a flow action that assigns mid-flow, e.g. on VIP detection).
 - Push routing / queue-based distribution.
@@ -62,7 +62,7 @@ const (
 )
 ```
 
-The DB columns `owner_type` and `owner_id` already exist on `conversation_conversations`. They are written today as `("", uuid.Nil)` for every conversation. The pattern of "agent owns this resource" is established elsewhere in the repo (`bin-call-manager`, `bin-storage-manager`).
+The DB columns `owner_type` and `owner_id` already exist on `conversation_conversations` (test schema and production migration `05a3b7905842`). They are written today as `("", uuid.Nil)` for every conversation. The "agent owns this resource" convention is already used in `bin-call-manager` (groupcalls, recordings) and `bin-storage-manager` (files); this design extends the same convention to conversations.
 
 ### State table
 
@@ -72,6 +72,17 @@ The DB columns `owner_type` and `owner_id` already exist on `conversation_conver
 | Assigned to agent | `"agent"` | `<agent-uuid>` | Store the message and publish `message_created`; **do not** create a new activeflow. |
 
 Already-running activeflows are not affected by transitions in either direction. The flow trigger is a per-message decision.
+
+### 3.1 Read consistency of `Owner` during inbound dispatch
+
+Inbound message handlers load the `Conversation` once at the start of processing and operate on the loaded copy. `getExecuteMode` (§4) reads `cv.OwnerType` and `cv.OwnerID` from this snapshot — it does **not** re-fetch the conversation immediately before dispatching.
+
+This is intentional. If an admin assigns or unassigns the conversation between the load and the dispatch, the in-flight message uses the snapshot's value; the **next** inbound message picks up the new state. We accept eventual consistency for two reasons:
+
+- The cost of a re-fetch (extra DB / cache hit per inbound message) outweighs the benefit. Assignment is a low-frequency operation; messages are high-frequency.
+- The behavior is idempotent in the user-visible sense — the conversation continues to receive messages either way; only the activeflow trigger differs, and the next message is at most seconds away.
+
+Implementations MUST NOT add a re-fetch in `getExecuteMode` to chase stronger consistency.
 
 ## 4. Inbound dispatch
 
@@ -167,11 +178,15 @@ func (h *conversationHandler) executeActiveflow(ctx context.Context, cv *convers
 
 ### 4.1 Why `error` only (not `(*Activeflow, error)`)
 
-`MessageExecuteActiveflow` returns `(*activeflow.Activeflow, error)` today, but no caller actually uses the `*activeflow.Activeflow` for anything except logging `af.ID`. Returning `(nil, nil)` to mean "skipped — no flow configured" is ambiguous and easy to misuse. Dropping the return value:
+`MessageExecuteActiveflow` returns `(*activeflow.Activeflow, error)` today, but no caller actually uses the `*activeflow.Activeflow` — both call sites (`hook.go:93`, `message.go:150`) only read `af.ID` for a log line. The combination "skipped — no flow configured" was returned as `(nil, nil)`, which forces callers to check the activeflow pointer separately from the error before doing anything with it.
 
-- Removes the `(nil, nil)` ambiguity at its source.
-- Matches the established pattern in `hookLine()` and `MessageEventReceived()`, which already return `error` only.
-- The `af.ID` log line moves inside `executeActiveflow`. No information loss.
+Dropping the return value:
+
+- Removes the need for callers to special-case a nil activeflow alongside a nil error.
+- Matches the existing pattern in `hookLine()` and `MessageEventReceived()`, which already return `error` only.
+- The `af.ID` log line moves inside `executeActiveflow` — no information is lost.
+
+The new shape's `nil` error still covers two outcomes (flow executed, or no flow configured and skipped), but **callers do not need to distinguish them**: the next thing they do is either return or continue processing other messages. The internal log inside `executeActiveflow` records which path was taken for diagnostics.
 
 If a future caller genuinely needs the `*Activeflow`, the return value can be reintroduced with a clean contract at that point.
 
@@ -183,9 +198,13 @@ If a future caller genuinely needs the `*Activeflow`, the return value can be re
 
 ### conversation-manager RPC — already in place
 
-`PUT /v1/conversations/<id>` is a partial-update endpoint that already accepts `owner_type` and `owner_id` in its allowlist (`bin-conversation-manager/pkg/listenhandler/v1_conversations.go::processV1ConversationsIDPut`). The map-based decode (`GetFilteredItems` + `ConvertStringMapToFieldMap`) already preserves the "field absent vs field present with empty/zero value" distinction needed for partial updates.
+`PUT /v1/conversations/<id>` is a partial-update endpoint that already accepts `owner_type` and `owner_id` in its allowlist (`bin-conversation-manager/pkg/listenhandler/v1_conversations.go::processV1ConversationsIDPut`, lines 184–190 — allowlist is exactly `FieldOwnerType, FieldOwnerID, FieldName, FieldDetail, FieldAccountID`). The map-based decode (`GetFilteredItems` + `ConvertStringMapToFieldMap`) already preserves the "field absent vs field present with empty/zero value" distinction needed for partial updates.
 
-The only behavior change in conversation-manager is **owner_type derivation** (§5.3) and **validation when assigning** (§5.4). The existing PUT route, allowlist, and decode pipeline stay as-is.
+The behavior changes in conversation-manager:
+- **owner_type derivation** (§5.3) — applied inside `Update()` regardless of the caller-supplied value.
+- **validation when assigning** (§5.4).
+
+The existing PUT route, allowlist, and decode pipeline stay as-is. `FieldOwnerType` remains in the allowlist as a forward-compatibility allowance, but conversation-manager **always overrides** any caller-supplied `owner_type` with the value derived from `owner_id` (see §5.3). Internal RPC callers are not expected to set `owner_type` directly today; if they do, the override silently corrects it.
 
 ### 5.1 api-manager surface
 
@@ -199,7 +218,11 @@ PUT /v1.0/conversations/<id>
 {"name": ""}                                              // explicitly clear name
 ```
 
-api-manager is a thin gateway. It MUST decode the JSON body as `map[string]any` (not a typed struct that drops zero values) so that `{"name": ""}` survives forwarding intact. It MUST NOT translate or derive `owner_type` — that is conversation-manager's concern.
+api-manager is a thin gateway. The decode pipeline MUST preserve the "field absent vs field present with empty/zero value" distinction so `{"name": ""}` survives forwarding intact. The current implementation already does this: `bin-api-manager/server/conversations.go` decodes into `PutConversationsIdJSONBody` (a struct with `*string` pointer fields and `omitempty`), then re-marshals through `structToFilteredMap` — pointer-with-omitempty preserves absent-vs-empty correctly (an unset field stays `nil` and is dropped; an explicit `""` becomes a non-nil pointer to `""` and survives). A `map[string]any` decode would also work; the existing pointer-typed approach is acceptable and does not require refactoring.
+
+api-manager MUST NOT translate or derive `owner_type` — that is conversation-manager's concern.
+
+**Note on `account_id`:** today's `PutConversationsIdJSONBody` schema (in `bin-api-manager/gens/openapi_server/gen.go`) has only `Detail`, `Name`, `OwnerId`, `OwnerType`. To expose `account_id` updates end-to-end, the OpenAPI schema must be extended to add `account_id?: string` and the codegen rerun. Until that happens, api-manager will not forward `account_id` even though conversation-manager's allowlist accepts it.
 
 ### 5.2 Permission gate (api-manager)
 
@@ -212,6 +235,8 @@ Per-field check; if **any** field in the payload is denied, the entire request i
 | `name` / `detail` / `account_id` | ✓ | ✗ | ✗ |
 
 Customer scope is enforced as today: api-manager rejects requests for conversations outside the caller's customer.
+
+**Implementation note on agent-level permissions:** today's `bin-api-manager/pkg/servicehandler/conversation.go::ConversationUpdate` checks only `PermissionCustomerAdmin | PermissionCustomerManager`. There is no agent-level permission code path on the conversation update route today. The owning-agent self-unassign rule above is **net-new logic**, not an extension of an existing per-field gate — implementation will need to introduce the new code path and tests.
 
 ### 5.3 owner_type derivation (conversation-manager)
 
@@ -228,7 +253,18 @@ When the resolved `owner_type == "agent"` (i.e. setting a non-nil `owner_id`):
 
 - Validate the `OwnerID` exists as an agent (RPC `AgentV1AgentGet` to agent-manager).
 - Validate the agent's `CustomerID` matches the conversation's `CustomerID`.
-- Reject the update on either failure.
+
+Validation runs as a **pre-check** in `Update()` before any DB write. On validation failure, no DB mutation occurs and no `conversation_updated` event fires.
+
+Failure mapping (returned by conversation-manager; api-manager surfaces matching status codes per the existing pattern in `docs/conventions/error-handling.md` §Common Error Scenarios):
+
+| Failure | conversation-manager returns | api-manager surfaces |
+|---|---|---|
+| Agent does not exist | wrapped error indicating not found | **400** (validation rejection) |
+| Agent's customer does not match conversation's customer | wrapped error indicating cross-customer | **400** (validation rejection — same path; the message body distinguishes) |
+| RPC call to agent-manager fails (network, timeout, internal error) | wrapped transport error | **500** |
+
+400 is preferred over 404 here because the failure is a **request-payload validation** rejection, not a "the resource at this URL does not exist" condition (the conversation itself does exist).
 
 Unassignment (`owner_id = uuid.Nil`) skips agent validation.
 
@@ -244,11 +280,9 @@ No code change required at the conversation-manager layer. api-manager exposes t
 
 ## 6. Events
 
-**No new event types.** The existing `conversation_updated` event already fires whenever a conversation is updated, including changes to `Owner`. The event payload uses `WebhookMessage`, which embeds `commonidentity.Owner`, so `owner_type` and `owner_id` are already in the JSON.
+**No new event types.** The existing `conversation_updated` event already fires whenever a conversation is updated, including changes to `Owner`. The Update path publishes the event at `bin-conversation-manager/pkg/conversationhandler/db.go:161` via `notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationUpdated, res)`. The event payload uses `WebhookMessage`, which embeds `commonidentity.Owner`, so `owner_type` and `owner_id` are already in the JSON.
 
 Subscribers (agent UI, webhook customers) learn about assignment changes via `conversation_updated` and filter on `owner_id`.
-
-The implementation must verify that the existing PUT path actually publishes `conversation_updated`. If for some reason it does not, that is a pre-existing bug to fix as part of this work.
 
 ## 7. WebhookMessage / customer-facing payload
 
@@ -300,6 +334,10 @@ Add table cases to the existing PUT route tests:
 - partial update with only `owner_id` (non-nil) → server derives `owner_type=agent`.
 - partial update with `owner_id` = nil UUID → server derives `owner_type=""`.
 - partial update with `name=""` → empty string preserved through map decode.
+- partial update with caller-supplied `owner_type` → conversation-manager overrides based on `owner_id` regardless.
+
+Add to the existing GET route tests:
+- list filter with `owner_id=<agent-uuid>` returns only conversations owned by that agent.
 
 ### api-manager tests
 
@@ -328,7 +366,17 @@ Per the api-validator workflow, add a read+mutate flow:
 
 80%+ on new code per repo convention. The new surface is small (`getExecuteMode`, three dispatch runners, validation in the update handler) and trivially testable.
 
-## 10. Out of scope (parked)
+## 10. Rollback
+
+This change introduces no schema migration. Rollback is straightforward:
+
+- **Revert by `git revert` of the implementation PR(s) and redeploy.** The reverted code stops calling `getExecuteMode` and goes back to the direct `MessageExecuteActiveflow` call.
+- **No data migration is required.** Conversations that were assigned at the time of the rollback simply have `owner_type="agent"` / `owner_id=<uuid>` populated in the DB. After rollback, those values are inert — they sit in the `Owner` columns and webhook payloads but no longer change inbound flow trigger behavior. Customers who built UIs against `owner_id` continue to see it; nothing breaks.
+- **Operational unblocking without rollback.** If the assignment behavior misbehaves on a specific conversation but the broader feature is fine, an admin can call `PUT /v1.0/conversations/<id>` with `{"owner_id": "00000000-0000-0000-0000-000000000000"}` to clear the assignment and restore flow-trigger behavior on that conversation. No deploy needed.
+
+A feature flag is **not proposed** for this change. The dispatch is per-message and per-conversation; the blast radius of a faulty rollout is bounded to conversations that are explicitly assigned (which is opt-in via the new API). If real-world experience shows a flag would help, it can be added in a follow-up without rework.
+
+## 11. Out of scope (parked)
 
 | Item | Why parked | Re-engagement signal |
 |---|---|---|
