@@ -117,6 +117,49 @@ func Test_startReferenceTypeCall_externalMediaFailure(t *testing.T) {
 	}
 }
 
+func Test_markTerminatedOnce_idempotent(t *testing.T) {
+	h := &pipecatcallHandler{
+		terminatedPublished: make(map[uuid.UUID]struct{}),
+		muTerminated:        sync.Mutex{},
+	}
+
+	id, err := uuid.NewV4()
+	if err != nil {
+		t.Fatalf("could not generate uuid: %v", err)
+	}
+
+	if !h.markTerminatedOnce(id) {
+		t.Fatalf("first call should claim")
+	}
+	if h.markTerminatedOnce(id) {
+		t.Fatalf("second call should not claim")
+	}
+}
+
+func Test_terminatedDeleteEntry(t *testing.T) {
+	h := &pipecatcallHandler{
+		terminatedPublished: make(map[uuid.UUID]struct{}),
+		muTerminated:        sync.Mutex{},
+	}
+
+	id, err := uuid.NewV4()
+	if err != nil {
+		t.Fatalf("could not generate uuid: %v", err)
+	}
+
+	// Deleting a missing entry is a safe no-op.
+	h.terminatedDeleteEntry(id)
+
+	// Claim, delete, then re-claim — second claim should succeed.
+	if !h.markTerminatedOnce(id) {
+		t.Fatalf("first claim should succeed")
+	}
+	h.terminatedDeleteEntry(id)
+	if !h.markTerminatedOnce(id) {
+		t.Fatalf("re-claim after delete should succeed")
+	}
+}
+
 func Test_startReferenceTypeCall_websocketDialFailure(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

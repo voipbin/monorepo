@@ -380,3 +380,24 @@ func (h *pipecatcallHandler) terminateReferenceTypeAICall(ctx context.Context, p
 
 	return nil
 }
+
+// markTerminatedOnce claims responsibility for publishing the
+// pipecatcall_terminated event for the given id. Returns true on the first
+// call (caller should publish), false on subsequent calls (already claimed).
+func (h *pipecatcallHandler) markTerminatedOnce(id uuid.UUID) bool {
+	h.muTerminated.Lock()
+	defer h.muTerminated.Unlock()
+	if _, ok := h.terminatedPublished[id]; ok {
+		return false
+	}
+	h.terminatedPublished[id] = struct{}{}
+	return true
+}
+
+// terminatedDeleteEntry removes the dedupe entry for the given id. Safe to
+// call when the entry is missing — Go's delete is a no-op in that case.
+func (h *pipecatcallHandler) terminatedDeleteEntry(id uuid.UUID) {
+	h.muTerminated.Lock()
+	defer h.muTerminated.Unlock()
+	delete(h.terminatedPublished, id)
+}
