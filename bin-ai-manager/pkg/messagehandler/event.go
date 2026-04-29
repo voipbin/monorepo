@@ -9,10 +9,19 @@ import (
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
+
+// deliveryStatusUpdateRetryDelay is the wait between the first and the (single) retried
+// MessageUpdateDeliveryStatus call after a successful conversation send.
+const deliveryStatusUpdateRetryDelay = 100 * time.Millisecond
+
+// deliveryStatusUpdateSleep is a package-level indirection for time.Sleep so tests
+// can patch it to avoid real wall-clock waits during the retry-path test case.
+var deliveryStatusUpdateSleep = time.Sleep
 
 func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message) {
 	log := logrus.WithFields(logrus.Fields{
@@ -85,8 +94,12 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	}
 
 	// Persist the assistant message (only after guard #1 passes).
+	// Mark delivery_status='pending' so a guard-#2 failure or send failure leaves the
+	// row 'pending' and the periodic backstop can later finalize/cleanup the message.
 	tmp, err := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
-		message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+		message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "",
+		WithPipecatcallID(evt.PipecatcallID),
+		WithDeliveryStatus(message.DeliveryStatusPending))
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -94,6 +107,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	log.WithField("message", tmp).Debugf("Created message.")
 
 	// Guard #2 (secondary) — re-check after persistence to narrow the dual-delivery race window.
+	// On failure here the row stays 'pending' on purpose — the backstop will fire.
 	acFinal, errFinal := h.reqHandler.AIV1AIcallGet(ctx, evt.PipecatcallReferenceID)
 	if errFinal != nil {
 		log.WithField("aicall_id", evt.PipecatcallReferenceID).Warnf("Re-check AIcall fetch failed; skipping conversation delivery. err: %v", errFinal)
@@ -120,6 +134,7 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 			"event_id":        evt.ID,
 		}).Errorf("Could not send conversation message (silent failure): %v", errSend)
 		promConversationReplySendTotal.WithLabelValues("failure").Inc()
+		// Row stays 'pending'; the backstop will fire.
 		return
 	}
 	promConversationReplySendTotal.WithLabelValues("success").Inc()
@@ -128,6 +143,20 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 		"conversation_id":      acFinal.ReferenceID,
 		"conversation_message": sent,
 	}).Debugf("Sent conversation reply.")
+
+	// Mark the row as delivered post-send. A single retry after a short delay is
+	// allowed because the row is now committed and the send already succeeded;
+	// the only remaining work is local DB bookkeeping. If both attempts fail,
+	// we record the failure metric and rely on the backstop to reconcile.
+	errUpd := h.db.MessageUpdateDeliveryStatus(ctx, tmp.ID, message.DeliveryStatusDelivered)
+	if errUpd != nil {
+		deliveryStatusUpdateSleep(deliveryStatusUpdateRetryDelay)
+		errUpd = h.db.MessageUpdateDeliveryStatus(ctx, tmp.ID, message.DeliveryStatusDelivered)
+	}
+	if errUpd != nil {
+		log.Errorf("Could not mark message delivered after retry. msg_id: %s err: %v", tmp.ID, errUpd)
+		promConversationDeliveryStatusUpdateFailedTotal.Inc()
+	}
 }
 
 func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message) {

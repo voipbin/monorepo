@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus/testutil"
@@ -338,6 +339,9 @@ func TestEventPMMessageBotLLM_conversation_send_success(t *testing.T) {
 		Return(&cvmessage.Message{}, nil).
 		Times(1)
 
+	// Post-send: mark delivered (succeeds first try).
+	mockDB.EXPECT().MessageUpdateDeliveryStatus(gomock.Any(), gomock.Any(), message.DeliveryStatusDelivered).Return(nil).Times(1)
+
 	h := &messageHandler{
 		db:            mockDB,
 		notifyHandler: mockNotify,
@@ -474,6 +478,9 @@ func TestEventPMMessageBotLLM_customer_id_mismatch_proceeds(t *testing.T) {
 		ConversationV1MessageSend(gomock.Any(), convID, "hello human", []cvmedia.Media{}).
 		Return(&cvmessage.Message{}, nil).
 		Times(1)
+
+	// Post-send: mark delivered (succeeds first try).
+	mockDB.EXPECT().MessageUpdateDeliveryStatus(gomock.Any(), gomock.Any(), message.DeliveryStatusDelivered).Return(nil).Times(1)
 
 	h := &messageHandler{
 		db:            mockDB,
@@ -840,3 +847,173 @@ func TestEventPMMessageUserLLM(t *testing.T) {
 		})
 	}
 }
+
+// TestEventPMMessageBotLLM_conversation drives the AIcall+conversation branch
+// through the four/five outcomes: happy path, guard #2 fail, send fail,
+// update fails-then-retry-OK, update fails both attempts. In every case the row
+// MUST be persisted with delivery_status='pending'. The number of
+// MessageUpdateDeliveryStatus and ConversationV1MessageSend calls varies.
+func TestEventPMMessageBotLLM_conversation(t *testing.T) {
+	cases := []struct {
+		name              string
+		guard2Pass        bool
+		sendOK            bool
+		updateOK          bool
+		updateRetryOK     bool
+		wantUpdateCalls   int
+		wantConvSendCalls int
+		wantSuccessDelta  float64
+		wantFailureDelta  float64
+		wantUpdateFailed  float64
+	}{
+		{"happy", true, true, true, false, 1, 1, 1, 0, 0},
+		{"guard2_fail", false, false, false, false, 0, 0, 0, 0, 0},
+		{"send_fail", true, false, false, false, 0, 1, 0, 1, 0},
+		{"update_fail_but_retry_ok", true, true, false, true, 2, 1, 1, 0, 0},
+		{"update_fail_both", true, true, false, false, 2, 1, 1, 0, 1},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			pccA := uuid.Must(uuid.NewV4())
+			pccB := uuid.Must(uuid.NewV4())
+			aicallID := uuid.Must(uuid.NewV4())
+			convID := uuid.Must(uuid.NewV4())
+
+			evt := &pmmessage.Message{
+				PipecatcallID:            pccA,
+				PipecatcallReferenceType: pmpipecatcall.ReferenceTypeAICall,
+				PipecatcallReferenceID:   aicallID,
+				ActiveflowID:             uuid.Must(uuid.NewV4()),
+				Text:                     "assistant reply",
+			}
+
+			mockDB := dbhandler.NewMockDBHandler(ctrl)
+			mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+			mockReq := requesthandler.NewMockRequestHandler(ctrl)
+
+			// Guard #1 always passes for these scenarios; guard #2 is varied via
+			// the second AIcallGet response.
+			fresh := &aicall.AIcall{
+				PipecatcallID: pccA,
+				ReferenceType: aicall.ReferenceTypeConversation,
+				ReferenceID:   convID,
+			}
+			second := fresh
+			if !tc.guard2Pass {
+				second = &aicall.AIcall{
+					PipecatcallID: pccB, // mismatch on re-check
+					ReferenceType: aicall.ReferenceTypeConversation,
+					ReferenceID:   convID,
+				}
+			}
+			gomock.InOrder(
+				mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(fresh, nil).Times(1),
+				mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(second, nil).Times(1),
+			)
+
+			// Persistence must always happen (after guard #1) with the pending
+			// status and the event's PipecatcallID stamped on the row.
+			testMsg := &message.Message{}
+			testMsg.ID = uuid.Must(uuid.NewV4())
+			mockDB.EXPECT().
+				MessageCreate(gomock.Any(), messageWithPCC(pccA, message.DeliveryStatusPending)).
+				Return(nil).
+				Times(1)
+			mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(testMsg, nil).Times(1)
+			mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+			// ConversationV1MessageSend expectations.
+			if tc.wantConvSendCalls > 0 {
+				if tc.sendOK {
+					mockReq.EXPECT().
+						ConversationV1MessageSend(gomock.Any(), convID, "assistant reply", []cvmedia.Media{}).
+						Return(&cvmessage.Message{}, nil).
+						Times(tc.wantConvSendCalls)
+				} else {
+					mockReq.EXPECT().
+						ConversationV1MessageSend(gomock.Any(), convID, "assistant reply", []cvmedia.Media{}).
+						Return(nil, errors.New("delivery failed")).
+						Times(tc.wantConvSendCalls)
+				}
+			}
+
+			// MessageUpdateDeliveryStatus expectations.
+			switch tc.wantUpdateCalls {
+			case 0:
+				// no expectation
+			case 1:
+				mockDB.EXPECT().
+					MessageUpdateDeliveryStatus(gomock.Any(), testMsg.ID, message.DeliveryStatusDelivered).
+					Return(nil).
+					Times(1)
+			case 2:
+				// First call fails; second call's outcome depends on tc.updateRetryOK.
+				retryErr := error(nil)
+				if !tc.updateRetryOK {
+					retryErr = errors.New("update retry failed")
+				}
+				gomock.InOrder(
+					mockDB.EXPECT().
+						MessageUpdateDeliveryStatus(gomock.Any(), testMsg.ID, message.DeliveryStatusDelivered).
+						Return(errors.New("update failed")).
+						Times(1),
+					mockDB.EXPECT().
+						MessageUpdateDeliveryStatus(gomock.Any(), testMsg.ID, message.DeliveryStatusDelivered).
+						Return(retryErr).
+						Times(1),
+				)
+			default:
+				t.Fatalf("unsupported wantUpdateCalls=%d", tc.wantUpdateCalls)
+			}
+
+			// Patch the retry sleep so the test does not pay 100ms wall-clock
+			// per retry case.
+			origSleep := deliveryStatusUpdateSleep
+			sleepCalled := 0
+			deliveryStatusUpdateSleep = func(time.Duration) { sleepCalled++ }
+			t.Cleanup(func() { deliveryStatusUpdateSleep = origSleep })
+
+			h := &messageHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+				reqHandler:    mockReq,
+				utilHandler:   utilhandler.NewUtilHandler(),
+			}
+
+			beforeSuccess := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+			beforeFailure := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure"))
+			beforeUpdFailed := testutil.ToFloat64(promConversationDeliveryStatusUpdateFailedTotal)
+
+			h.EventPMMessageBotLLM(context.Background(), evt)
+
+			afterSuccess := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("success"))
+			afterFailure := testutil.ToFloat64(promConversationReplySendTotal.WithLabelValues("failure"))
+			afterUpdFailed := testutil.ToFloat64(promConversationDeliveryStatusUpdateFailedTotal)
+
+			if got := afterSuccess - beforeSuccess; got != tc.wantSuccessDelta {
+				t.Errorf("success counter delta: want %v got %v", tc.wantSuccessDelta, got)
+			}
+			if got := afterFailure - beforeFailure; got != tc.wantFailureDelta {
+				t.Errorf("failure counter delta: want %v got %v", tc.wantFailureDelta, got)
+			}
+			if got := afterUpdFailed - beforeUpdFailed; got != tc.wantUpdateFailed {
+				t.Errorf("delivery-status-update-failed counter delta: want %v got %v", tc.wantUpdateFailed, got)
+			}
+
+			// On the retry case, the sleep must be invoked exactly once between
+			// the first and second update attempts.
+			wantSleep := 0
+			if tc.wantUpdateCalls == 2 {
+				wantSleep = 1
+			}
+			if sleepCalled != wantSleep {
+				t.Errorf("deliveryStatusUpdateSleep call count: want %d got %d", wantSleep, sleepCalled)
+			}
+		})
+	}
+}
+
