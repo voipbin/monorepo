@@ -628,7 +628,8 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 
 	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
-	defer close(se.LLMDoneChan)
+	defer close(se.LLMDoneChan)        // close-broadcasts goroutine exit to readers
+	defer se.LLMFlushing.Store(false)  // LIFO: runs before close(LLMDoneChan), so observers see flushing=false
 
 	var fullText string
 	var deltaBuffer string

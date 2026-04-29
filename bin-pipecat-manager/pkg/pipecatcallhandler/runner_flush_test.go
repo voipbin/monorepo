@@ -578,3 +578,71 @@ func TestBotLLMStopped_doubleStop_noPanic(t *testing.T) {
 		t.Fatalf("expected StopReasonNormal (%d), got %d", StopReasonNormal, got)
 	}
 }
+
+// TestRunLLMIntermediateFlush_resetsLLMFlushing_onAllExits verifies that
+// runLLMIntermediateFlush always clears Session.LLMFlushing before returning,
+// regardless of which exit path triggered the goroutine to return.
+//
+// The reset is owned by a defer at the top of the goroutine (Task 1.7) so it
+// fires on every exit path: normal close (LLMStopChan), context cancel
+// (Ctx.Done), or any future addition.
+func TestRunLLMIntermediateFlush_resetsLLMFlushing_onAllExits(t *testing.T) {
+	cases := []struct {
+		name      string
+		causeExit func(*pipecatcall.Session, context.CancelFunc)
+	}{
+		{
+			name: "stopChan",
+			causeExit: func(s *pipecatcall.Session, _ context.CancelFunc) {
+				close(s.LLMStopChan)
+			},
+		},
+		{
+			name: "ctxDone",
+			causeExit: func(s *pipecatcall.Session, cancel context.CancelFunc) {
+				cancel()
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+			h := &pipecatcallHandler{
+				notifyHandler: mockNotify,
+			}
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			se := &pipecatcall.Session{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaaaaaa-1111-2222-3333-444444444444"),
+					CustomerID: uuid.FromStringOrNil("bbbbbbbb-1111-2222-3333-444444444444"),
+				},
+				Ctx:          ctx,
+				Cancel:       cancel,
+				LLMTokenChan: make(chan string, 64),
+				LLMStopChan:  make(chan struct{}),
+				LLMDoneChan:  make(chan struct{}),
+			}
+			// Arm the flush state to mimic a live generation, then start the goroutine.
+			se.LLMFlushing.Store(true)
+			go h.runLLMIntermediateFlush(se, uuid.FromStringOrNil("cccccccc-1111-2222-3333-444444444444"))
+
+			c.causeExit(se, cancel)
+
+			// Wait for goroutine to exit.
+			<-se.LLMDoneChan
+
+			if se.LLMFlushing.Load() {
+				t.Fatalf("LLMFlushing not reset on %s exit", c.name)
+			}
+		})
+	}
+}
