@@ -3,6 +3,7 @@ package messagehandler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	identity "monorepo/bin-common-handler/models/identity"
@@ -247,4 +248,14 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 		return
 	}
 	log.WithField("message", tmp).Debugf("Created member-switched notification message.")
+}
+
+// EventPMPipecatcallTerminated is the periodic backstop entrypoint for the
+// pipecatcall_terminated event. The real implementation lands in a follow-up
+// task; this stub ensures the interface contract is in place so the mock
+// regenerates and downstream wiring (subscribe handler) can compile against
+// it. A non-nil error is returned so any accidental invocation surfaces
+// clearly during the interim.
+func (h *messageHandler) EventPMPipecatcallTerminated(ctx context.Context, evt *pmpipecatcall.Pipecatcall) error {
+	return errors.New("not implemented")
 }

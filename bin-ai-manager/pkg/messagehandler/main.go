@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -58,6 +59,7 @@ type MessageHandler interface {
 	EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message)
 	EventPMTeamMemberSwitched(ctx context.Context, evt *pmmessage.MemberSwitchedEvent)
+	EventPMPipecatcallTerminated(ctx context.Context, evt *pmpipecatcall.Pipecatcall) error
 }
 
 type messageHandler struct {

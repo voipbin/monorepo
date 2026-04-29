@@ -13,6 +13,7 @@ import (
 	context "context"
 	message "monorepo/bin-ai-manager/models/message"
 	message0 "monorepo/bin-pipecat-manager/models/message"
+	pipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -109,6 +110,20 @@ func (m *MockMessageHandler) EventPMMessageUserTranscription(ctx context.Context
 func (mr *MockMessageHandlerMockRecorder) EventPMMessageUserTranscription(ctx, evt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMMessageUserTranscription", reflect.TypeOf((*MockMessageHandler)(nil).EventPMMessageUserTranscription), ctx, evt)
+}
+
+// EventPMPipecatcallTerminated mocks base method.
+func (m *MockMessageHandler) EventPMPipecatcallTerminated(ctx context.Context, evt *pipecatcall.Pipecatcall) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventPMPipecatcallTerminated", ctx, evt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventPMPipecatcallTerminated indicates an expected call of EventPMPipecatcallTerminated.
+func (mr *MockMessageHandlerMockRecorder) EventPMPipecatcallTerminated(ctx, evt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventPMPipecatcallTerminated", reflect.TypeOf((*MockMessageHandler)(nil).EventPMPipecatcallTerminated), ctx, evt)
 }
 
 // EventPMTeamMemberSwitched mocks base method.

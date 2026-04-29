@@ -9,10 +9,21 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 )
+
+// TestMessageHandler_hasEventPMPipecatcallTerminated asserts the MessageHandler
+// interface declares the EventPMPipecatcallTerminated method with the expected
+// signature. This guards against accidental signature drift between the
+// interface, the mock, and the implementation.
+func TestMessageHandler_hasEventPMPipecatcallTerminated(t *testing.T) {
+	var _ interface {
+		EventPMPipecatcallTerminated(context.Context, *pmpipecatcall.Pipecatcall) error
+	} = (MessageHandler)(nil)
+}
 
 func TestCreateOptions_apply(t *testing.T) {
 	pcID := uuid.Must(uuid.NewV4())
