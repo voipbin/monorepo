@@ -506,3 +506,75 @@ func Test_runLLMIntermediateFlush(t *testing.T) {
 		<-se.LLMDoneChan
 	})
 }
+
+// TestBotLLMStopped_doubleStop_noPanic verifies that the BotLLMStopped handler
+// is idempotent: a second BotLLMStopped frame for the same generation must not
+// panic on a double-close of LLMStopChan, and the StopReason set by the first
+// call (StopReasonNormal) must not be overwritten.
+//
+// The defense relies on Session.LLMFlushOnce wrapping close(LLMStopChan) and
+// CompareAndSwap on LLMStopReason — both are tested together here because
+// a regression in either would cause a real-world race with the watchdog and
+// the flush goroutine that lands in subsequent tasks.
+func TestBotLLMStopped_doubleStop_noPanic(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+	h := &pipecatcallHandler{
+		notifyHandler: mockNotify,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("aaaa1111-bbbb-cccc-dddd-eeeeeeeeeeee"),
+			CustomerID: uuid.FromStringOrNil("bbbb2222-cccc-dddd-eeee-ffffffffffff"),
+		},
+		Ctx:          ctx,
+		LLMTokenChan: make(chan string, 64),
+		LLMStopChan:  make(chan struct{}),
+		LLMDoneChan:  make(chan struct{}),
+	}
+	// Arm the flush goroutine: channels initialized + flushing flag set + goroutine running.
+	se.LLMFlushing.Store(true)
+
+	// Allow any number of intermediate / final events; they are not the focus
+	// of this test — we only assert no panic and StopReason correctness.
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	go h.runLLMIntermediateFlush(se, uuid.FromStringOrNil("cccc3333-dddd-eeee-ffff-000000000000"))
+
+	// Build a valid bot-llm-stopped RTVI frame payload that the handler can unmarshal.
+	stoppedFrame := []byte(`{"label":"rtvi-ai","type":"bot-llm-stopped"}`)
+
+	// First BotLLMStopped: should set StopReasonNormal, close LLMStopChan, and
+	// block on <-LLMDoneChan until the flush goroutine completes.
+	if err := h.receiveMessageFrameTypeMessage(se, stoppedFrame); err != nil {
+		t.Fatalf("first BotLLMStopped returned unexpected error: %v", err)
+	}
+
+	// At this point the first call has unblocked from <-LLMDoneChan, so the
+	// flush goroutine has exited. LLMFlushing is still true (Task 1.7 owns the
+	// reset via defer); the second call's behavior is what this test pins down.
+	//
+	// Without sync.Once, the second close(LLMStopChan) below would panic.
+	// We capture any panic so the test reports a clean assertion failure.
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("second BotLLMStopped panicked: %v", r)
+		}
+	}()
+
+	if err := h.receiveMessageFrameTypeMessage(se, stoppedFrame); err != nil {
+		t.Fatalf("second BotLLMStopped returned unexpected error: %v", err)
+	}
+
+	// First call set StopReasonNormal via CAS; second call's CAS must be a no-op.
+	if got := StopReason(se.LLMStopReason.Load()); got != StopReasonNormal {
+		t.Fatalf("expected StopReasonNormal (%d), got %d", StopReasonNormal, got)
+	}
+}

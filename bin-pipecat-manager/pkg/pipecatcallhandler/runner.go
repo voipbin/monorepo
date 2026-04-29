@@ -576,12 +576,19 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-stopped message")
 		}
 
-		if se.LLMFlushing.Load() {
-			close(se.LLMStopChan)
-			<-se.LLMDoneChan
-		} else {
+		if !se.LLMFlushing.Load() {
 			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
+			break
 		}
+
+		// Attribute this stop to a normal completion (CAS so a competing closer
+		// — watchdog, terminate, context cancel — that already wrote a more
+		// specific reason wins). sync.Once guarantees close(LLMStopChan) runs
+		// at most once across all closers; the goroutine's defer in Task 1.7
+		// will reset LLMFlushing to false after it exits.
+		se.LLMStopReason.CompareAndSwap(int32(StopReasonUnset), int32(StopReasonNormal))
+		se.LLMFlushOnce.Do(func() { close(se.LLMStopChan) })
+		<-se.LLMDoneChan
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
