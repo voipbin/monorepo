@@ -187,3 +187,177 @@ func Test_MessageCreate(t *testing.T) {
 		})
 	}
 }
+
+func Test_MessageAssistantReplyExists(t *testing.T) {
+	curTime := func() *time.Time { t := time.Date(2026, 4, 29, 12, 0, 0, 0, time.UTC); return &t }()
+	deletedTime := func() *time.Time { t := time.Date(2026, 4, 29, 12, 30, 0, 0, time.UTC); return &t }()
+
+	pcA := uuid.FromStringOrNil("a4a4a4a4-2c11-11f1-aaaa-111111111111")
+	pcB := uuid.FromStringOrNil("b5b5b5b5-2c11-11f1-bbbb-222222222222")
+
+	tests := []struct {
+		name string
+
+		seed []*message.Message
+
+		query     uuid.UUID
+		expectRes bool
+	}{
+		{
+			name: "delivered_match",
+			seed: []*message.Message{
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("c0000001-2c11-11f1-9000-000000000001"),
+					},
+					AIcallID:       uuid.FromStringOrNil("d0000001-2c11-11f1-9000-000000000001"),
+					PipecatcallID:  pcA,
+					DeliveryStatus: message.DeliveryStatusDelivered,
+					Direction:      message.DirectionIncoming,
+					Role:           message.RoleAssistant,
+				},
+			},
+			query:     pcA,
+			expectRes: true,
+		},
+		{
+			name: "pending_only",
+			seed: []*message.Message{
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("c0000002-2c11-11f1-9000-000000000002"),
+					},
+					AIcallID:       uuid.FromStringOrNil("d0000002-2c11-11f1-9000-000000000002"),
+					PipecatcallID:  pcA,
+					DeliveryStatus: message.DeliveryStatusPending,
+					Direction:      message.DirectionIncoming,
+					Role:           message.RoleAssistant,
+				},
+			},
+			query:     pcA,
+			expectRes: false,
+		},
+		{
+			name: "different_pcc",
+			seed: []*message.Message{
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("c0000003-2c11-11f1-9000-000000000003"),
+					},
+					AIcallID:       uuid.FromStringOrNil("d0000003-2c11-11f1-9000-000000000003"),
+					PipecatcallID:  pcB,
+					DeliveryStatus: message.DeliveryStatusDelivered,
+					Direction:      message.DirectionIncoming,
+					Role:           message.RoleAssistant,
+				},
+			},
+			query:     pcA,
+			expectRes: false,
+		},
+		{
+			name: "wrong_role",
+			seed: []*message.Message{
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("c0000004-2c11-11f1-9000-000000000004"),
+					},
+					AIcallID:       uuid.FromStringOrNil("d0000004-2c11-11f1-9000-000000000004"),
+					PipecatcallID:  pcA,
+					DeliveryStatus: message.DeliveryStatusDelivered,
+					Direction:      message.DirectionIncoming,
+					Role:           message.RoleUser,
+				},
+			},
+			query:     pcA,
+			expectRes: false,
+		},
+		{
+			name: "wrong_direction",
+			seed: []*message.Message{
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("c0000005-2c11-11f1-9000-000000000005"),
+					},
+					AIcallID:       uuid.FromStringOrNil("d0000005-2c11-11f1-9000-000000000005"),
+					PipecatcallID:  pcA,
+					DeliveryStatus: message.DeliveryStatusDelivered,
+					Direction:      message.DirectionOutgoing,
+					Role:           message.RoleAssistant,
+				},
+			},
+			query:     pcA,
+			expectRes: false,
+		},
+		{
+			name: "deleted_row",
+			seed: []*message.Message{
+				{
+					Identity: identity.Identity{
+						ID: uuid.FromStringOrNil("c0000006-2c11-11f1-9000-000000000006"),
+					},
+					AIcallID:       uuid.FromStringOrNil("d0000006-2c11-11f1-9000-000000000006"),
+					PipecatcallID:  pcA,
+					DeliveryStatus: message.DeliveryStatusDelivered,
+					Direction:      message.DirectionIncoming,
+					Role:           message.RoleAssistant,
+				},
+			},
+			query:     pcA,
+			expectRes: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			// Seed messages via MessageCreate; cache calls are mocked.
+			for _, m := range tt.seed {
+				mockUtil.EXPECT().TimeNow().Return(curTime)
+				mockCache.EXPECT().MessageSet(ctx, gomock.Any())
+				if err := h.MessageCreate(ctx, m); err != nil {
+					t.Fatalf("seed MessageCreate failed. err: %v", err)
+				}
+			}
+
+			// For deleted_row: soft-delete the row after creating it.
+			if tt.name == "deleted_row" {
+				for _, m := range tt.seed {
+					mockUtil.EXPECT().TimeNow().Return(deletedTime)
+					mockCache.EXPECT().MessageSet(ctx, gomock.Any())
+					if err := h.MessageDelete(ctx, m.ID); err != nil {
+						t.Fatalf("seed MessageDelete failed. err: %v", err)
+					}
+				}
+			}
+
+			got, err := h.MessageAssistantReplyExists(ctx, tt.query)
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+
+			if got != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, got)
+			}
+
+			// Cleanup so each subtest's seed doesn't bleed into the next via the shared in-memory DB.
+			for _, m := range tt.seed {
+				if _, err := dbTest.Exec("DELETE FROM ai_messages WHERE id = ?", m.ID.Bytes()); err != nil {
+					t.Fatalf("cleanup failed. err: %v", err)
+				}
+			}
+		})
+	}
+}

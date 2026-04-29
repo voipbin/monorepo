@@ -148,6 +148,35 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// MessageAssistantReplyExists reports whether a delivered, incoming, assistant-role
+// reply exists for the given pipecatcall_id. Returns false (and no error) when no
+// such row is present. Used by the aicall terminate-drop guard to decide whether
+// to wait for the in-flight assistant reply to finalize before terminating.
+func (h *handler) MessageAssistantReplyExists(ctx context.Context, pipecatcallID uuid.UUID) (bool, error) {
+	query, args, err := sq.Select("1").
+		From(messageTable).
+		Where(sq.Eq{
+			"pipecatcall_id":  pipecatcallID.Bytes(),
+			"delivery_status": string(message.DeliveryStatusDelivered),
+			"direction":       string(message.DirectionIncoming),
+			"role":            string(message.RoleAssistant),
+		}).
+		Where(sq.Eq{"tm_delete": nil}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("MessageAssistantReplyExists: could not build query. err: %v", err)
+	}
+
+	rows, err := h.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return false, fmt.Errorf("MessageAssistantReplyExists: could not query. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	return rows.Next(), nil
+}
+
 // MessageGets returns a list of messages.
 func (h *handler) MessageList(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error) {
 	if token == "" {
