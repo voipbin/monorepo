@@ -22,7 +22,7 @@ type Message struct {
 	ToolCalls  []ToolCall `json:"tool_calls,omitempty" db:"tool_calls,json"`
 	ToolCallID string     `json:"tool_call_id,omitempty" db:"tool_call_id"`
 
-	PipecatcallID  uuid.UUID      `json:"-" db:"pipecatcall_id"`
+	PipecatcallID  uuid.UUID      `json:"-" db:"pipecatcall_id,uuid"`
 	DeliveryStatus DeliveryStatus `json:"-" db:"delivery_status"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
