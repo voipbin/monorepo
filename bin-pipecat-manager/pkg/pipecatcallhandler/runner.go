@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -576,6 +577,15 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			se.LLMTokenChan = make(chan string, 64)
 			se.LLMStopChan = make(chan struct{})
 			se.LLMDoneChan = make(chan struct{})
+			// Reset per-generation primitives BEFORE arming the flush flag so the
+			// new generation's machinery is in place before the goroutine launches.
+			// Without this reset, a second generation's LLMFlushOnce.Do(close) is a
+			// no-op (Once already fired in gen 1) — LLMStopChan never closes, the
+			// flush goroutine blocks forever, and the per-generation final event
+			// is never published. Likewise, LLMStopReason still holds gen 1's
+			// value, so the metric label is wrong for gen 2+.
+			se.LLMFlushOnce = sync.Once{}
+			se.LLMStopReason.Store(int32(StopReasonUnset))
 			se.LLMFlushing.Store(true)
 			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
 		}
@@ -610,7 +620,18 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 		// will reset LLMFlushing to false after it exits.
 		se.LLMStopReason.CompareAndSwap(int32(StopReasonUnset), int32(StopReasonNormal))
 		se.LLMFlushOnce.Do(func() { close(se.LLMStopChan) })
-		<-se.LLMDoneChan
+
+		// Bound the wait so a slow RabbitMQ publish in the flush goroutine
+		// cannot stall the WebSocket read loop (which also handles audio
+		// frames). Reuses flushFinalizeTimeout so all "wait for flush
+		// goroutine to exit" paths share the same upper bound.
+		timer := time.NewTimer(flushFinalizeTimeout)
+		select {
+		case <-se.LLMDoneChan:
+		case <-timer.C:
+			log.Warnf("BotLLMStopped: timed out waiting for flush goroutine after %s", flushFinalizeTimeout)
+		}
+		timer.Stop()
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)

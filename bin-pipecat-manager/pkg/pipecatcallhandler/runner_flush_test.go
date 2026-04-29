@@ -1006,3 +1006,184 @@ func TestFlushAndFinalize_outcomes(t *testing.T) {
 		})
 	}
 }
+
+// TestBotLLMText_armNewGeneration_resetsOncePrimitives verifies the
+// arm-new-generation path in the BotLLMText handler resets LLMFlushOnce and
+// LLMStopReason between generations. Without the reset, generation 2's
+// LLMFlushOnce.Do(close) would be a no-op (Once already fired in gen 1), so
+// LLMStopChan would never close, the flush goroutine would block forever, and
+// the per-generation final event would never be published.
+//
+// This test drives the real handler (receiveMessageFrameTypeMessage with a
+// BotLLMText frame, then a BotLLMStopped frame) for two generations and
+// asserts that gen 2's goroutine exits within a deadline AND that a final
+// event is published for both generations.
+func TestBotLLMText_armNewGeneration_resetsOncePrimitives(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	h := &pipecatcallHandler{
+		notifyHandler: mockNotify,
+		utilHandler:   mockUtil,
+	}
+
+	gen1MessageID := uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555")
+	gen2MessageID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+
+	// Each BotLLMText that arms a new generation calls UUIDCreate() once.
+	gomock.InOrder(
+		mockUtil.EXPECT().UUIDCreate().Return(gen1MessageID),
+		mockUtil.EXPECT().UUIDCreate().Return(gen2MessageID),
+	)
+
+	// Allow any number of intermediate publishes; we focus on final events.
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLMIntermediate), gomock.Any()).AnyTimes()
+
+	finalCount := make(chan uuid.UUID, 2)
+	mockNotify.EXPECT().
+		PublishEvent(gomock.Any(), gomock.Eq(message.EventTypeBotLLM), gomock.Any()).
+		DoAndReturn(func(_ any, _ any, evt message.Message) {
+			finalCount <- evt.ID
+		}).
+		Times(2)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("ffffffff-1111-2222-3333-444444444444"),
+			CustomerID: uuid.FromStringOrNil("dddddddd-1111-2222-3333-444444444444"),
+		},
+		Ctx: ctx,
+	}
+
+	textFrame := func(text string) []byte {
+		return []byte(`{"label":"rtvi-ai","type":"bot-llm-text","data":{"text":"` + text + `"}}`)
+	}
+	stoppedFrame := []byte(`{"label":"rtvi-ai","type":"bot-llm-stopped"}`)
+
+	// --- Generation 1 ---
+	if err := h.receiveMessageFrameTypeMessage(se, textFrame("First")); err != nil {
+		t.Fatalf("gen1 BotLLMText returned unexpected error: %v", err)
+	}
+	if se.LLMMessageID != gen1MessageID {
+		t.Fatalf("gen1: expected LLMMessageID %s, got %s", gen1MessageID, se.LLMMessageID)
+	}
+	gen1Done := se.LLMDoneChan
+	// BotLLMStopped uses LLMFlushOnce.Do (the production path). With the bug,
+	// gen 2 would see Once already fired and never close LLMStopChan.
+	if err := h.receiveMessageFrameTypeMessage(se, stoppedFrame); err != nil {
+		t.Fatalf("gen1 BotLLMStopped returned unexpected error: %v", err)
+	}
+	select {
+	case <-gen1Done:
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("gen1 flush goroutine did not exit within 500ms")
+	}
+
+	// --- Generation 2 ---
+	if err := h.receiveMessageFrameTypeMessage(se, textFrame("Second")); err != nil {
+		t.Fatalf("gen2 BotLLMText returned unexpected error: %v", err)
+	}
+	if se.LLMMessageID != gen2MessageID {
+		t.Fatalf("gen2: expected LLMMessageID %s, got %s", gen2MessageID, se.LLMMessageID)
+	}
+	gen2Done := se.LLMDoneChan
+	if gen1Done == gen2Done {
+		t.Fatal("gen2 LLMDoneChan must be a fresh channel, got the gen1 channel")
+	}
+	// Confirm StopReason was reset back to Unset for gen 2.
+	if got := StopReason(se.LLMStopReason.Load()); got != StopReasonUnset {
+		t.Fatalf("gen2: expected LLMStopReason reset to Unset, got %d", got)
+	}
+
+	if err := h.receiveMessageFrameTypeMessage(se, stoppedFrame); err != nil {
+		t.Fatalf("gen2 BotLLMStopped returned unexpected error: %v", err)
+	}
+	select {
+	case <-gen2Done:
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("gen2 flush goroutine did not exit within 500ms — LLMFlushOnce was not reset between generations")
+	}
+
+	// Both generations must have produced a final event.
+	close(finalCount)
+	got := []uuid.UUID{}
+	for id := range finalCount {
+		got = append(got, id)
+	}
+	if len(got) != 2 {
+		t.Fatalf("expected 2 final events (one per generation), got %d", len(got))
+	}
+}
+
+// TestBotLLMStopped_boundedWaitOnLLMDoneChan verifies that the BotLLMStopped
+// handler does not wait indefinitely on LLMDoneChan. A stalled flush goroutine
+// (e.g. RabbitMQ publish wedged) must not stall the WebSocket read loop —
+// otherwise audio frames stop being processed and the WebSocket peer eventually
+// times out.
+//
+// The test arms a "fake" flush by setting LLMFlushing=true with channels but
+// does NOT start the runLLMIntermediateFlush goroutine. As a result, no one
+// will ever close LLMDoneChan. The handler must give up after
+// flushFinalizeTimeout and return.
+func TestBotLLMStopped_boundedWaitOnLLMDoneChan(t *testing.T) {
+	// Patch flushFinalizeTimeout to a short value so the test runs quickly.
+	origTimeout := flushFinalizeTimeout
+	flushFinalizeTimeout = 50 * time.Millisecond
+	t.Cleanup(func() {
+		flushFinalizeTimeout = origTimeout
+	})
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockNotify.EXPECT().PublishEvent(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	h := &pipecatcallHandler{
+		notifyHandler: mockNotify,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("11112222-3333-4444-5555-666666666666"),
+			CustomerID: uuid.FromStringOrNil("99998888-7777-6666-5555-444444444444"),
+		},
+		Ctx:          ctx,
+		LLMTokenChan: make(chan string, 64),
+		LLMStopChan:  make(chan struct{}),
+		LLMDoneChan:  make(chan struct{}),
+	}
+	// Arm the flush state but DO NOT start the goroutine — LLMDoneChan will
+	// never be closed. The handler must time out and return.
+	se.LLMFlushing.Store(true)
+
+	stoppedFrame := []byte(`{"label":"rtvi-ai","type":"bot-llm-stopped"}`)
+
+	done := make(chan error, 1)
+	start := time.Now()
+	go func() {
+		done <- h.receiveMessageFrameTypeMessage(se, stoppedFrame)
+	}()
+
+	deadline := flushFinalizeTimeout + 100*time.Millisecond
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatalf("BotLLMStopped returned unexpected error: %v", err)
+		}
+		if elapsed := time.Since(start); elapsed > deadline {
+			t.Fatalf("BotLLMStopped returned but took %v (>%v) — bound not enforced", elapsed, deadline)
+		}
+	case <-time.After(deadline):
+		t.Fatalf("BotLLMStopped did not return within %v — wait on LLMDoneChan was unbounded", deadline)
+	}
+}
