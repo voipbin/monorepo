@@ -815,7 +815,7 @@ In `Update()`, before the DB call, inspect the `fields` map:
 if v, ok := fields[conversation.FieldOwnerID]; ok {
     ownerID, okType := v.(uuid.UUID)
     if !okType {
-        return nil, commonerrors.InvalidArgument(
+        return nil, cerrors.InvalidArgument(
             commonoutline.ServiceNameConversationManager,
             "INVALID_OWNER_ID_TYPE",
             fmt.Sprintf("invalid owner_id type: %T", v),
@@ -833,7 +833,7 @@ Apply this **before** any validation step (Task A8) and before the DB write.
 
 **Note on type-assertion handling:** `ConvertStringMapToFieldMap` (`models/conversation/convert.go`) already converts string UUIDs to `uuid.UUID` via reflection, so a type-assertion failure should be unreachable in practice. But the explicit type check + typed error rejection is defensive — silently treating a malformed input as `uuid.Nil` would be an unintended unassignment.
 
-**Note on error type:** Use `commonerrors.InvalidArgument(domain, reason, message)` (the constructor lives at `monorepo/bin-common-handler/models/errors/constructors.go:14`) so that api-manager's edge can map this to **400** per the design's contract. Plain `fmt.Errorf` would surface as 500. The constructor takes three parameters: a `commonoutline.ServiceName` (for this service: `commonoutline.ServiceNameConversationManager`), a stable reason code (uppercase snake), and a human-readable message. Choose a consistent local import alias for the package — `commonerrors` is suggested (the package's directory name is `errors`, but bare `errors` collides with the standard library).
+**Note on error type:** Use `cerrors.InvalidArgument(domain, reason, message)` (the constructor lives at `monorepo/bin-common-handler/models/errors/constructors.go:14`) so that api-manager's edge can map this to **400** per the design's contract. Plain `fmt.Errorf` would surface as 500. The constructor takes three parameters: a `commonoutline.ServiceName` (for this service: `commonoutline.ServiceNameConversationManager`), a stable reason code (uppercase snake), and a human-readable message. The codebase convention is to alias the package as `cerrors` (verified in `pkg/conversationhandler/db.go:8` and elsewhere) — bare `errors` collides with the stdlib.
 
 **Step 5: Run the tests to verify they pass**
 
@@ -883,8 +883,8 @@ The supported filter keys (`id`, `customer_id`, `deleted`) are confirmed in `bin
 Add table cases:
 
 - valid agent (list returns one match) → DB write occurs, no error
-- agent doesn't exist or belongs to different customer (list returns empty slice) → reject with `commonerrors.InvalidArgument(...)` carrying message "could not validate agent. owner_id: \<uuid\>"; DB not written; no event fires
-- agent-manager RPC fails (transport error) → wrapped error returned; DB not written; no event fires (api-manager surfaces 500 — note that the agent-manager 500-collapse means a real not-found also lands here, accepted per the implementation note above)
+- agent doesn't exist or belongs to different customer (list returns empty slice) → reject with `cerrors.InvalidArgument(...)` carrying message "could not validate agent. owner_id: \<uuid\>"; DB not written; no event fires
+- agent-manager RPC fails entirely (network outage, response parse failure) → wrapped transport error returned; DB not written; no event fires (api-manager surfaces 500). Note: this is the path for transport failures only; the normal not-found-or-customer-mismatch case is handled by the empty-list 400 branch above. The agent-manager 500-collapse for `dbhandler.ErrNotFound` means the two cases are technically not separable from the caller's view, but in practice an empty list is the dominant signal for "agent invalid for this conversation"
 - unassign (`owner_id=uuid.Nil`) → no agent RPC attempted; DB write occurs
 - `Update` is called for a conversation where the conversation-manager `Get(ctx, id)` (the explicit pre-fetch added in step 3) fails → error wrapped and returned; no agent RPC attempted
 
@@ -902,7 +902,7 @@ After Task A7's derivation block, before the DB write:
 if v, ok := fields[conversation.FieldOwnerID]; ok {
     ownerID, okType := v.(uuid.UUID)
     if !okType {
-        return nil, commonerrors.InvalidArgument(
+        return nil, cerrors.InvalidArgument(
             commonoutline.ServiceNameConversationManager,
             "INVALID_OWNER_ID_TYPE",
             fmt.Sprintf("invalid owner_id type: %T", v),
@@ -925,7 +925,7 @@ if v, ok := fields[conversation.FieldOwnerID]; ok {
             return nil, errors.Wrapf(errList, "could not validate agent. owner_id: %s", ownerID)
         }
         if len(agents) == 0 {
-            return nil, commonerrors.InvalidArgument(
+            return nil, cerrors.InvalidArgument(
                 commonoutline.ServiceNameConversationManager,
                 "AGENT_VALIDATION_FAILED",
                 fmt.Sprintf("could not validate agent. owner_id: %s", ownerID),
@@ -937,7 +937,7 @@ if v, ok := fields[conversation.FieldOwnerID]; ok {
 
 **Implementation hints:**
 - `AgentV1AgentList` returns `[]amagent.Agent` (slice of values, not pointers); the `len(agents) == 0` check is sufficient. `pageToken=""` and `pageSize=1` because we expect at most one match.
-- `commonerrors.InvalidArgument(domain, reason, message)` is the typed envelope from `monorepo/bin-common-handler/models/errors`. The `commonoutline.ServiceName` enum lives in `monorepo/bin-common-handler/pkg/outline` (verify the exact import path before implementing — if the enum lives elsewhere in your branch, adjust accordingly).
+- `cerrors.InvalidArgument(domain, reason, message)` is the typed envelope from `monorepo/bin-common-handler/models/errors`, conventionally aliased as `cerrors` in this codebase (see `pkg/conversationhandler/db.go:8`). The `commonoutline.ServiceName` enum lives in `monorepo/bin-common-handler/models/outline` (under `models/`, not `pkg/`).
 - `h.Get(ctx, id)` already exists on the handler at `db.go:25` and uses cache + DB — it is the correct way to load `cv` here.
 
 **Step 5: Run the tests to verify they pass**
@@ -955,7 +955,7 @@ NOJIRA-Conversation-agent-assignment agent validation on assignment
 
 - bin-conversation-manager: Validate agent existence + same-customer constraint as a pre-check in Update before any DB write; failures abort with no event fired
 - bin-conversation-manager: Use AgentV1AgentList with filter (id+customer_id+deleted=false) to detect existence + customer match in one RPC; bin-agent-manager does not surface a typed 404 today, so the not-found and customer-mismatch cases collapse into a single combined "could not validate agent" rejection — semantic distinction was cosmetic
-- bin-conversation-manager: Use commonerrors.InvalidArgument typed envelope (3-arg form: domain, reason, message) so api-manager surfaces 400 per design §5.4
+- bin-conversation-manager: Use cerrors.InvalidArgument typed envelope (3-arg form: domain, reason, message) so api-manager surfaces 400 per design §5.4
 - bin-conversation-manager: Add explicit cv fetch via h.Get before validation — Update did not previously load the conversation
 - bin-conversation-manager: Unassignment (owner_id=uuid.Nil) skips validation entirely
 - bin-conversation-manager: Add table cases for valid, invalid (combined), RPC-failure, unassign, and conversation-not-found paths
@@ -1011,6 +1011,7 @@ For each row in the design §5.2 permission table, add a test case:
 | owning agent | `{owner_id: <self-uuid>}` (try to assign self) | 403; not forwarded |
 | owning agent | `{name: "x"}` | 403; not forwarded |
 | owning agent | `{owner_id: nil-UUID, name: "x"}` (combined; name is denied) | 403; not forwarded |
+| owning agent | `{owner_id: nil-UUID, owner_type: "agent"}` (OpenAPI-bypass attempt) | 403; not forwarded |
 | non-owning agent | `{owner_id: nil-UUID}` | 403; not forwarded |
 | non-owning agent | `{name: "x"}` | 403; not forwarded |
 
@@ -1050,13 +1051,14 @@ if h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent
 }
 ```
 
-Where `payloadIsExactlySelfUnassign(fields map[cvconversation.Field]any) bool` is true iff:
+Where `payloadIsExactlySelfUnassign(fields map[cvconversation.Field]any) bool` is true iff **all** of the following hold:
 - `len(fields) == 1`, AND
-- `fields[cvconversation.FieldOwnerID]` exists and equals `uuid.Nil` (compare as `uuid.UUID`, not as a string).
+- `fields[cvconversation.FieldOwnerID]` exists and equals `uuid.Nil` (compare as `uuid.UUID`, not as a string), AND
+- `fields[cvconversation.FieldOwnerType]` is **not** present (closes the OpenAPI-bypass attack — see implementation note below).
 
-Any second key in the map (even `name=""`) makes this false → permission denied for the agent. The error symbols `serviceerrors.ErrDirectAccessNotSupported` and `serviceerrors.ErrPermissionDenied` are defined in `bin-api-manager/pkg/serviceerrors/`; the rest of `pkg/servicehandler/` already references them with this qualifier (see `campaigns.go` for an example).
+The last condition is redundant given `len(fields) == 1` if and only if `FieldOwnerID` is the single key, but it's stated explicitly so the regression test can target the specific bypass. Any second key in the map (even `name=""`) makes the function return false → permission denied for the agent. The error symbols `serviceerrors.ErrDirectAccessNotSupported` and `serviceerrors.ErrPermissionDenied` are defined in `bin-api-manager/pkg/serviceerrors/`; the rest of `pkg/servicehandler/` already references them with this qualifier (see `campaigns.go` for an example).
 
-**Implementation note on len-based check:** The `len(fields) == 1` check assumes that an agent caller can only inject `owner_id` into the post-transform map. This holds only if `PutConversationsIdJSONBody` does **not** expose `owner_type` (or any other agent-controllable field) in its OpenAPI schema. As of today, the body schema exposes `Detail`, `Name`, `OwnerId`, `OwnerType` (verified in `bin-api-manager/gens/openapi_server/gen.go`). An agent crafting a payload with both `owner_id` and `owner_type` would defeat the strict-len check. **Therefore: before this gate, additionally reject any payload from an agent caller that contains `owner_type`.** Either remove `OwnerType` from the OpenAPI body schema (cleaner; do this in the same PR if convenient), or expand `payloadIsExactlySelfUnassign` to also reject when `FieldOwnerType` is present.
+**Implementation note on bypass-prevention:** Today's `PutConversationsIdJSONBody` exposes `Detail`, `Name`, `OwnerId`, **and `OwnerType`** (verified in `bin-api-manager/gens/openapi_server/gen.go`). An agent crafting a payload `{owner_id: <nil-UUID>, owner_type: "agent"}` would otherwise satisfy a naïve "owner_id is the nil UUID" check while sneaking an extra field through. The third condition above (`FieldOwnerType` not present) closes that gap inside the gate's helper. We do **not** alter the OpenAPI schema in this plan — the in-helper check has identical security outcome with a smaller blast radius (no codegen, no schema change, contained to `pkg/servicehandler/conversation.go`). If desired, removing `OwnerType` from the OpenAPI body can be a follow-up cleanup; it is not required for the security property.
 
 **Implementation note on AuthIdentity shape:** `IsAgent` / `Agent` on `auth.AuthIdentity` is verified to support `TypeAgent`, `TypeAccesskey`, `TypeDirect`. The guard above prevents an accesskey-only caller (with customer scope but no agent identity) from triggering a nil-pointer panic when the code reads `a.Agent.ID`.
 
