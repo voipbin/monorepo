@@ -37,22 +37,22 @@ All file paths are relative to `bin-conversation-manager/`.
 **Why:** The existing function returns `(*activeflow.Activeflow, error)` but no caller uses the activeflow. Per design §4.1, change the signature to `error` only and rename to `executeActiveflow` (lower-case — internal helper). The existing log-line on `af.ID` moves inside the function.
 
 **Files:**
-- Modify: `pkg/conversationhandler/main.go` (interface declaration)
-- Modify: `pkg/conversationhandler/message.go:44-79` (function body and signature)
+- Modify: `pkg/conversationhandler/message.go:44-79` (function body, signature, rename to lowercase)
 - Modify: `pkg/conversationhandler/hook.go:84-94` (caller updated to use new signature)
-- Modify: `pkg/conversationhandler/message.go:140-150` (caller updated to use new signature)
-- Modify: `pkg/conversationhandler/message_test.go` (update existing test cases)
-- Modify: `pkg/conversationhandler/hook_test.go` (update existing test cases)
-- Regenerate: `pkg/conversationhandler/mock_main.go` via `go generate ./...`
+- Modify: `pkg/conversationhandler/message.go:140-150` (caller updated to use new signature; ALSO fix the existing buggy short-circuit — see Step 5b)
+- Create: `pkg/conversationhandler/message_test.go` test function `Test_executeActiveflow` (no test currently exists for `MessageExecuteActiveflow`)
+- Modify: `pkg/conversationhandler/hook_test.go` (update existing tests that mock the call to `MessageExecuteActiveflow`)
+
+Note: `MessageExecuteActiveflow` is **not** on the `ConversationHandler` interface (only a method on the concrete `conversationHandler` struct). It does not appear in `mock_conversationhandler.go`. No interface modification or mock regeneration is required.
 
 **Step 1: Read the current shape**
 
 Run: `grep -n "MessageExecuteActiveflow" pkg/conversationhandler/*.go`
-Expected: 4 occurrences — interface decl, definition, two call sites (hook.go, message.go).
+Expected: ~6 occurrences — definition (`message.go`), doc comment, log-field constant (if any), two call sites (`hook.go`, `message.go`), and a test name in `hook_test.go`. Mock file (`mock_conversationhandler.go`) does **not** contain it.
 
-**Step 2: Update the existing tests for the new signature**
+**Step 2: Create the new test for the helper**
 
-Open `pkg/conversationhandler/message_test.go` for `Test_MessageExecuteActiveflow`. Rename to `Test_executeActiveflow` (the lower-case helper). Change every test-table case that asserts a returned `*activeflow.Activeflow` to assert no second return value, and rely on the mock expectations for `FlowV1ActiveflowCreate` / `FlowV1ActiveflowExecute` to cover the side effects. Add a new test case:
+There is no existing `Test_MessageExecuteActiveflow`. Create a new `Test_executeActiveflow` table-driven test in `pkg/conversationhandler/message_test.go` (alongside the existing `Test_MessageSend`). Mock `reqHandler.FlowV1ActiveflowCreate`, `reqHandler.FlowV1VariableSetVariable`, `reqHandler.FlowV1ActiveflowExecute` for the happy path. Add the "no flow configured" case:
 
 ```go
 {
@@ -63,10 +63,10 @@ Open `pkg/conversationhandler/message_test.go` for `Test_MessageExecuteActiveflo
 },
 ```
 
-**Step 3: Run the tests — expect FAIL on the new "no flow configured" case**
+**Step 3: Run the tests — expect FAIL**
 
 Run: `cd bin-conversation-manager && go test ./pkg/conversationhandler/ -run Test_executeActiveflow -v`
-Expected: existing cases compile after rename but one or more fail because the new "no flow configured" case has no implementation yet.
+Expected: FAIL — `executeActiveflow` (lowercase) does not yet exist; the existing function is named `MessageExecuteActiveflow` and has a different signature.
 
 **Step 4: Refactor `MessageExecuteActiveflow` body into the new shape**
 
@@ -114,9 +114,7 @@ func (h *conversationHandler) executeActiveflow(ctx context.Context, cv *convers
 }
 ```
 
-Update the interface declaration in `pkg/conversationhandler/main.go` — remove `MessageExecuteActiveflow` from the public interface (it becomes an unexported helper).
-
-**Step 5: Update both call sites to drop the `*Activeflow` discard**
+**Step 5a: Update both call sites to drop the `*Activeflow` discard**
 
 `pkg/conversationhandler/hook.go` — replace lines around 89–94:
 
@@ -134,10 +132,23 @@ if errExecute := h.executeActiveflow(ctx, cv, m, num.MessageFlowID); errExecute 
 }
 ```
 
-**Step 6: Regenerate mocks**
+**Step 5b: Fix the existing multi-target short-circuit bug in `MessageEventReceived`**
+
+The current code at `message.go:140-143` has:
+
+```go
+if num.MessageFlowID == uuid.Nil {
+    // nothing to do. has no message flow id
+    return nil
+}
+```
+
+This `return nil` exits the **entire function**, skipping any remaining targets in the `m.Targets` loop. Since `executeActiveflow` now handles the `flowID == uuid.Nil` case internally (returns nil without side effects), **delete this short-circuit block entirely** so the loop correctly iterates over remaining targets. This is a behavior fix the refactor enables.
+
+**Step 6: Mock regeneration check (no expected changes)**
 
 Run: `cd bin-conversation-manager && go generate ./...`
-Expected: `pkg/conversationhandler/mock_main.go` updates to remove `MessageExecuteActiveflow` from the mock interface. No other changes.
+Expected: no diff in `pkg/conversationhandler/mock_conversationhandler.go` because `MessageExecuteActiveflow` was never on the interface. If `go generate` reports a diff, investigate before continuing.
 
 **Step 7: Run the full test suite**
 
@@ -147,18 +158,17 @@ Expected: all tests pass, including the new "no flow configured" case.
 **Step 8: Commit**
 
 ```bash
-cd bin-conversation-manager/../
-git add bin-conversation-manager/pkg/conversationhandler/main.go \
-        bin-conversation-manager/pkg/conversationhandler/message.go \
+cd <worktree-root>
+git add bin-conversation-manager/pkg/conversationhandler/message.go \
         bin-conversation-manager/pkg/conversationhandler/hook.go \
         bin-conversation-manager/pkg/conversationhandler/message_test.go \
-        bin-conversation-manager/pkg/conversationhandler/hook_test.go \
-        bin-conversation-manager/pkg/conversationhandler/mock_main.go
+        bin-conversation-manager/pkg/conversationhandler/hook_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan executeActiveflow refactor
+NOJIRA-Conversation-agent-assignment executeActiveflow refactor
 
 - bin-conversation-manager: Rename MessageExecuteActiveflow to internal executeActiveflow with error-only signature; the *Activeflow return value was unused at every call site
 - bin-conversation-manager: Move the af.ID log line inside executeActiveflow; flowID == uuid.Nil now returns nil instead of being checked at each caller
+- bin-conversation-manager: Delete the buggy multi-target short-circuit block in MessageEventReceived; the executeActiveflow helper now handles the no-flow-configured case so the loop iterates remaining targets correctly
 - bin-conversation-manager: Update both call sites (hook.go, message.go) to drop the discarded return and use errExecute naming per docs/conventions/error-handling.md §4.5
 EOF
 )"
@@ -298,7 +308,7 @@ git add bin-conversation-manager/pkg/conversationhandler/main.go \
         bin-conversation-manager/pkg/conversationhandler/execute_mode.go \
         bin-conversation-manager/pkg/conversationhandler/execute_mode_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan add ExecuteMode and getExecuteMode
+NOJIRA-Conversation-agent-assignment add ExecuteMode and getExecuteMode
 
 - bin-conversation-manager: Add ExecuteMode type with constants None/Agent/Flow per design §4
 - bin-conversation-manager: Add getExecuteMode helper that branches on cv.OwnerType / cv.OwnerID; reserved no-op None value for future owner types
@@ -390,7 +400,7 @@ Expected: PASS.
 git add bin-conversation-manager/pkg/conversationhandler/execute_mode.go \
         bin-conversation-manager/pkg/conversationhandler/execute_mode_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan add runExecuteModeAgent
+NOJIRA-Conversation-agent-assignment add runExecuteModeAgent
 
 - bin-conversation-manager: Add runExecuteModeAgent — no-op handler that logs and returns nil; the agent UI receives the message via the existing message_created event
 - bin-conversation-manager: Add test asserting no flow RPCs are invoked when the handler runs
@@ -425,7 +435,7 @@ func Test_runExecuteModeFlowLine(t *testing.T) {
         name     string
         cv       *conversation.Conversation
         m        *message.Message
-        setup    func(mockAccount *MockaccountHandler, mockReq *requesthandler.MockRequestHandler)
+        setup    func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler)
         wantErr  bool
     }{
         {
@@ -439,7 +449,7 @@ func Test_runExecuteModeFlowLine(t *testing.T) {
                 Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
                 ConversationID: convID,
             },
-            setup: func(mockAccount *MockaccountHandler, mockReq *requesthandler.MockRequestHandler) {
+            setup: func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {
                 mockAccount.EXPECT().Get(gomock.Any(), accountID).Return(&account.Account{
                     Identity:      commonidentity.Identity{ID: accountID, CustomerID: custID},
                     MessageFlowID: flowID,
@@ -464,7 +474,7 @@ func Test_runExecuteModeFlowLine(t *testing.T) {
                 Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
                 ConversationID: convID,
             },
-            setup:   func(mockAccount *MockaccountHandler, mockReq *requesthandler.MockRequestHandler) {},
+            setup:   func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {},
             wantErr: false,
         },
         {
@@ -478,7 +488,7 @@ func Test_runExecuteModeFlowLine(t *testing.T) {
                 Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
                 ConversationID: convID,
             },
-            setup: func(mockAccount *MockaccountHandler, mockReq *requesthandler.MockRequestHandler) {
+            setup: func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {
                 mockAccount.EXPECT().Get(gomock.Any(), accountID).Return(nil, errors.New("db down"))
             },
             wantErr: true,
@@ -494,7 +504,7 @@ func Test_runExecuteModeFlowLine(t *testing.T) {
                 Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
                 ConversationID: convID,
             },
-            setup: func(mockAccount *MockaccountHandler, mockReq *requesthandler.MockRequestHandler) {
+            setup: func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {
                 mockAccount.EXPECT().Get(gomock.Any(), accountID).Return(&account.Account{
                     Identity:      commonidentity.Identity{ID: accountID, CustomerID: custID},
                     MessageFlowID: uuid.Nil,
@@ -509,7 +519,7 @@ func Test_runExecuteModeFlowLine(t *testing.T) {
             mc := gomock.NewController(t)
             defer mc.Finish()
 
-            mockAccount := NewMockaccountHandler(mc)
+            mockAccount := accounthandler.NewMockAccountHandler(mc)
             mockReq := requesthandler.NewMockRequestHandler(mc)
             h := &conversationHandler{
                 accountHandler: mockAccount,
@@ -625,7 +635,7 @@ Expected: PASS — all three test functions.
 git add bin-conversation-manager/pkg/conversationhandler/execute_mode.go \
         bin-conversation-manager/pkg/conversationhandler/execute_mode_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan add flow-mode dispatchers
+NOJIRA-Conversation-agent-assignment add flow-mode dispatchers
 
 - bin-conversation-manager: Add runExecuteModeFlow that switches on cv.Type and delegates to runExecuteModeFlowLine (account.MessageFlowID) or runExecuteModeFlowMessage (number.MessageFlowID); unsupported types are a logged no-op
 - bin-conversation-manager: Each per-type runner fetches its source and calls the shared executeActiveflow helper; matches the dispatch shape from design §4
@@ -683,7 +693,9 @@ for _, r := range results {
 }
 ```
 
-Remove the now-redundant `if ac.MessageFlowID == uuid.Nil { return nil }` short-circuit at the top of the loop body — `runExecuteModeFlowLine` handles that case internally.
+Remove the now-redundant `if ac.MessageFlowID == uuid.Nil { return nil }` short-circuit that lives **before the `for _, r := range results` loop** in `hookLine` (around lines 79-81 today) — `runExecuteModeFlowLine` handles that case internally.
+
+**Note on per-message account fetch:** the new `runExecuteModeFlowLine` re-fetches the account by `cv.AccountID` even though `hookLine` already has `ac` loaded from the URL. Since `cv.AccountID` is the same account that received the webhook (by construction — the conversation was created with that account), the re-fetch is wasteful but behaviorally equivalent. The cost is one extra cache/db hit per inbound LINE message; the design accepts this as the trade for keeping `runExecuteModeFlowLine`'s signature `(cv, m)` consistent with the SMS runner. If profiling later shows this matters, `ac` can be threaded through; for now, simplicity wins.
 
 **Step 4: Run the tests to verify they pass**
 
@@ -696,7 +708,7 @@ Expected: PASS — both the assigned-conversation case and the unassigned-conver
 git add bin-conversation-manager/pkg/conversationhandler/hook.go \
         bin-conversation-manager/pkg/conversationhandler/hook_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan wire dispatch into hookLine
+NOJIRA-Conversation-agent-assignment wire dispatch into hookLine
 
 - bin-conversation-manager: Replace direct executeActiveflow call in hookLine with the ExecuteMode dispatch; assigned conversations now skip flow trigger as specified in design §4
 - bin-conversation-manager: Add table case for the assigned-conversation path that asserts no flow RPCs are made; existing unassigned-conversation behavior preserved
@@ -758,7 +770,7 @@ Expected: PASS.
 git add bin-conversation-manager/pkg/conversationhandler/message.go \
         bin-conversation-manager/pkg/conversationhandler/message_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan wire dispatch into MessageEventReceived
+NOJIRA-Conversation-agent-assignment wire dispatch into MessageEventReceived
 
 - bin-conversation-manager: Replace direct flow-trigger block in MessageEventReceived with the ExecuteMode dispatch; assigned SMS conversations now skip flow trigger
 - bin-conversation-manager: Move NumberGet + flow id resolution into runExecuteModeFlowMessage; the inbound entry point becomes a thin dispatch
@@ -801,7 +813,10 @@ In `Update()`, before the DB call, inspect the `fields` map:
 
 ```go
 if v, ok := fields[conversation.FieldOwnerID]; ok {
-    ownerID, _ := v.(uuid.UUID)
+    ownerID, okType := v.(uuid.UUID)
+    if !okType {
+        return nil, cerrors.InvalidArgument(fmt.Sprintf("invalid owner_id type: %T", v))
+    }
     if ownerID == uuid.Nil {
         fields[conversation.FieldOwnerType] = commonidentity.OwnerTypeNone
     } else {
@@ -811,6 +826,10 @@ if v, ok := fields[conversation.FieldOwnerID]; ok {
 ```
 
 Apply this **before** any validation step (Task A8) and before the DB write.
+
+**Note on type-assertion handling:** `ConvertStringMapToFieldMap` (`models/conversation/convert.go`) already converts string UUIDs to `uuid.UUID` via reflection, so a type-assertion failure should be unreachable in practice. But the explicit type check + `cerrors.InvalidArgument` rejection is defensive — silently treating a malformed input as `uuid.Nil` would be an unintended unassignment.
+
+**Note on error type:** Use `cerrors.InvalidArgument(...)` (from `bin-common-handler/pkg/cerrors`) so that api-manager's edge can map this to **400** per the design's contract. Plain `fmt.Errorf` would surface as 500. Verify the exact constructor name in the cerrors package before implementing.
 
 **Step 5: Run the tests to verify they pass**
 
@@ -823,7 +842,7 @@ Expected: PASS — all four cases.
 git add bin-conversation-manager/pkg/conversationhandler/db.go \
         bin-conversation-manager/pkg/conversationhandler/db_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan owner_type derivation in Update
+NOJIRA-Conversation-agent-assignment owner_type derivation in Update
 
 - bin-conversation-manager: Derive owner_type from owner_id whenever owner_id is present in the partial-update fields; non-nil uuid yields owner_type=agent, nil uuid yields owner_type=""
 - bin-conversation-manager: Always override caller-supplied owner_type with the derived value, matching design §5.3 — clients never need to send owner_type
@@ -838,67 +857,87 @@ EOF
 
 **Why:** Design §5.4. Reject the update when `owner_type=agent` and the agent doesn't exist or belongs to a different customer.
 
+**Implementation note — divergence from design §5.4 error messages:** The design specified two distinct error strings ("agent not found" vs "agent customer mismatch"). However, `bin-agent-manager`'s current `processV1AgentsIDGet` (`pkg/listenhandler/v1_agents.go`) collapses `dbhandler.ErrNotFound` into HTTP 500 with no typed envelope, so `errors.Is(err, ErrNotFound)` cannot reliably distinguish "not found" from "transport error" across the RPC boundary. Rather than introducing a coupled change in agent-manager's GET path, we use **`AgentV1AgentGets`** (the list endpoint, filterable by `id` + `customer_id`) and infer existence-and-customer-match from the result length: empty list → reject; non-empty list → proceed. This collapses the two cases into a single combined 400 ("could not validate agent. owner_id: <uuid>") with the same canonical-format prefix. The "not found" / "customer mismatch" semantic distinction was always cosmetic; the combined rejection still tells the client their `owner_id` is invalid for this conversation. If a future need requires the distinction, agent-manager can be updated to surface a typed 404 and this validation can be reworked to use `AgentV1AgentGet`.
+
 **Files:**
-- Modify: `pkg/conversationhandler/db.go` (Update function)
+- Modify: `pkg/conversationhandler/db.go` (Update function — adds explicit `cv` fetch + validation)
 - Modify: `pkg/conversationhandler/db_test.go`
 
-**Step 1: Add failing tests**
+**Step 1: Verify `AgentV1AgentGets` (or equivalent list-by-filter RPC) exists**
 
-Add table cases:
-- valid agent (matching customer) → DB write occurs, no error
-- agent does not exist (`AgentV1AgentGet` returns NotFound) → error wrapped with the canonical "agent not found. owner_id: <uuid>" message; DB not written; no event fires
-- agent's `CustomerID != cv.CustomerID` → error wrapped with "agent customer mismatch. owner_id: <uuid>, agent_customer_id: <uuid>, conversation_customer_id: <uuid>"; DB not written; no event fires
-- agent-manager RPC fails (transport error) → error wrapped with the underlying transport error; DB not written; no event fires
-- unassign (`owner_id=uuid.Nil`) → no agent fetch attempted; DB write occurs
+Run: `grep -n "AgentV1AgentGets\|AgentV1AgentList" bin-common-handler/pkg/requesthandler/agent_*.go`
 
-**Step 2: Run the tests to verify they fail**
+Inspect the actual signature and the list filter shape. If only `AgentV1AgentGets` (or an equivalent) accepts a filter map, use it with `id=<owner_id>` AND `customer_id=<cv.CustomerID>` AND `deleted=false`. If the available list endpoint cannot filter by id at the RPC layer, fall back to `AgentV1AgentGet(ctx, ownerID)` followed by `ag.CustomerID != cv.CustomerID` — both cases (RPC error or customer mismatch) reject with the same combined error, which still satisfies the implementation note above.
 
-Expected: FAIL — validation not implemented.
+**Step 2: Add failing tests**
 
-**Step 3: Implement validation in `Update`**
+Add table cases (assumes the chosen RPC is `AgentV1AgentGets` with a filter):
 
-Insert before the DB write, after Task A7's derivation block:
+- valid agent (list returns single match) → DB write occurs, no error
+- agent doesn't exist or belongs to different customer (list returns empty) → reject with `cerrors.InvalidArgument("could not validate agent. owner_id: <uuid>")`; DB not written; no event fires
+- agent-manager RPC fails (transport error) → wrapped error returned; DB not written; no event fires (api-manager surfaces 500)
+- unassign (`owner_id=uuid.Nil`) → no agent RPC attempted; DB write occurs
+- `Update` is called for a conversation where the conversation-manager `Get(ctx, id)` (the explicit pre-fetch added in step 3) fails → error wrapped and returned; no agent RPC attempted
+
+**Step 3: Run the tests to verify they fail**
+
+Expected: FAIL — validation not implemented; `cv` not loaded in `Update`.
+
+**Step 4: Implement validation in `Update`**
+
+The current `Update` signature is `(ctx, id, fields) -> (*conversation.Conversation, error)` and it does **not** load the conversation first. Validation needs `cv.CustomerID`, so add an explicit pre-fetch.
+
+After Task A7's derivation block, before the DB write:
 
 ```go
 if v, ok := fields[conversation.FieldOwnerID]; ok {
-    ownerID, _ := v.(uuid.UUID)
+    ownerID, okType := v.(uuid.UUID)
+    if !okType {
+        return nil, cerrors.InvalidArgument(fmt.Sprintf("invalid owner_id type: %T", v))
+    }
     if ownerID != uuid.Nil {
-        // Validation pre-check: agent must exist and belong to the same customer.
-        ag, errGetAgent := h.reqHandler.AgentV1AgentGet(ctx, ownerID)
-        if errGetAgent != nil {
-            // Distinguish not-found from transport error; agent-manager returns a typed sentinel for not-found.
-            if errors.Is(errGetAgent, /* sentinel */ /* see agent-manager dbhandler */) {
-                return nil, fmt.Errorf("agent not found. owner_id: %s", ownerID)
-            }
-            return nil, errors.Wrapf(errGetAgent, "could not validate agent existence. owner_id: %s", ownerID)
+        // Need cv.CustomerID for the validation filter — fetch the existing conversation.
+        cv, errGet := h.Get(ctx, id)
+        if errGet != nil {
+            return nil, errors.Wrapf(errGet, "could not load conversation for validation. id: %s", id)
         }
-        if ag.CustomerID != cv.CustomerID {
-            return nil, fmt.Errorf("agent customer mismatch. owner_id: %s, agent_customer_id: %s, conversation_customer_id: %s",
-                ownerID, ag.CustomerID, cv.CustomerID)
+
+        // Validate agent existence + same-customer constraint via list filter.
+        agents, errList := h.reqHandler.AgentV1AgentGets(ctx, /* filters: id=ownerID, customer_id=cv.CustomerID, deleted=false */)
+        if errList != nil {
+            return nil, errors.Wrapf(errList, "could not validate agent. owner_id: %s", ownerID)
+        }
+        if len(agents) == 0 {
+            return nil, cerrors.InvalidArgument(fmt.Sprintf("could not validate agent. owner_id: %s", ownerID))
         }
     }
 }
 ```
 
-**Note:** verify the actual sentinel error name in agent-manager's dbhandler before implementing. If agent-manager returns a wrapped error rather than a typed sentinel, the implementation may need to compare the error message — flag this in the PR description.
+**Implementation hints:**
+- Verify the exact `AgentV1AgentGets` signature and filter format before writing the call. The exact filter constants (`id`, `customer_id`, `deleted`) may differ — check `bin-agent-manager/pkg/listenhandler/v1_agents.go::processV1AgentsGet` for the supported filter keys.
+- `cerrors.InvalidArgument` is the typed envelope api-manager uses to surface 400. Double-check the constructor name in `bin-common-handler/pkg/cerrors/`.
+- `h.Get(ctx, id)` already exists on the handler and uses cache + DB — it is the correct way to load `cv` here.
 
-**Step 4: Run the tests to verify they pass**
+**Step 5: Run the tests to verify they pass**
 
 Run: `cd bin-conversation-manager && go test ./pkg/conversationhandler/ -run Test_Update -v`
 Expected: PASS — all five cases.
 
-**Step 5: Commit**
+**Step 6: Commit**
 
 ```bash
 git add bin-conversation-manager/pkg/conversationhandler/db.go \
         bin-conversation-manager/pkg/conversationhandler/db_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan agent validation on assignment
+NOJIRA-Conversation-agent-assignment agent validation on assignment
 
-- bin-conversation-manager: Validate agent existence and same-customer constraint as a pre-check in Update before any DB write; failures abort with no event fired
-- bin-conversation-manager: Use canonical error strings from design §5.4 — agent-not-found and agent-customer-mismatch are distinct messages so operators can tell the two 400 cases apart
+- bin-conversation-manager: Validate agent existence + same-customer constraint as a pre-check in Update before any DB write; failures abort with no event fired
+- bin-conversation-manager: Use AgentV1AgentGets list-with-filter to detect existence + customer match in one RPC; bin-agent-manager does not surface a typed 404 today, so the not-found and customer-mismatch cases collapse into a single combined "could not validate agent" rejection — semantic distinction was cosmetic
+- bin-conversation-manager: Use cerrors.InvalidArgument typed envelope so api-manager surfaces 400 per design §5.4
+- bin-conversation-manager: Add explicit cv fetch via h.Get before validation — Update did not previously load the conversation
 - bin-conversation-manager: Unassignment (owner_id=uuid.Nil) skips validation entirely
-- bin-conversation-manager: Add table cases for valid, not-found, customer-mismatch, RPC-failure, and unassign paths
+- bin-conversation-manager: Add table cases for valid, invalid (combined), RPC-failure, unassign, and conversation-not-found paths
 EOF
 )"
 ```
@@ -961,28 +1000,42 @@ Expected: FAIL — many cases will currently 403 the admin path or 200 the agent
 
 **Step 4: Implement the per-field gate**
 
-The new logic, in pseudocode:
+The new logic. Note that `ConversationUpdate` already loads `c, err := h.conversationGet(ctx, conversationID)` early (around line 154 today) — the gate runs **after** that load so `c.OwnerID` is available, and **before** the call to `reqHandler.ConversationV1ConversationUpdate`. By the time `ConversationUpdate` is reached, `data` has already been transformed from raw JSON into `fields map[cvconversation.Field]any` (server transforms in `bin-api-manager/server/conversations.go`).
 
-```
-permitted := isAdminOrManager(agent)
-if !permitted {
-    // Check owning-agent self-unassign — the only path agents can take
-    if isOwningAgent(agent, conversation) && payloadIsExactlySelfUnassign(payload) {
-        permitted = true
+```go
+// Already-existing guard from today's code; kept explicit here:
+if a.IsDirect() {
+    return ErrDirectAccessNotSupported
+}
+
+// Existing path: admin/manager retains full access.
+if h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+    // proceed with the existing forward to conversation-manager
+} else {
+    // Net-new agent self-unassign path — see design §5.2.
+    // Only an authenticated agent identity can take this path.
+    if !a.IsAgent() || a.Agent == nil {
+        return ErrPermissionDenied
     }
-}
-if !permitted {
-    return 403
+    // Must be the currently-owning agent.
+    if c.OwnerType != commonidentity.OwnerTypeAgent || c.OwnerID != a.Agent.ID {
+        return ErrPermissionDenied
+    }
+    // Payload must be EXACTLY a self-unassign — one key, owner_id, value uuid.Nil.
+    if !payloadIsExactlySelfUnassign(fields) {
+        return ErrPermissionDenied
+    }
+    // Permitted: fall through to forward.
 }
 ```
 
-Where `payloadIsExactlySelfUnassign(payload)` is true iff:
-- the only key in the payload is `owner_id`, AND
-- the value is the nil UUID (`00000000-0000-0000-0000-000000000000`)
+Where `payloadIsExactlySelfUnassign(fields map[cvconversation.Field]any) bool` is true iff:
+- `len(fields) == 1`, AND
+- `fields[cvconversation.FieldOwnerID]` exists and equals `uuid.Nil` (compare as `uuid.UUID`, not as a string).
 
-Any other field in the payload (even valid for admin) makes this false → 403 for the agent.
+Any second key in the map (even `name=""`) makes this false → permission denied for the agent. Use the actual error type the package returns for permission denials (`ErrPermissionDenied` or equivalent — verify the symbol in `bin-api-manager/pkg/servicehandler/`).
 
-Implement this in `ConversationUpdate` before the call to conversation-manager's PUT.
+**Implementation note:** The `IsAgent` / `Agent` shape on `auth.AuthIdentity` is verified to support `TypeAgent`, `TypeAccesskey`, `TypeDirect`. The guard above prevents an accesskey-only caller (with customer scope but no agent identity) from triggering a nil-pointer panic when the code reads `a.Agent.ID`.
 
 **Step 5: Run the tests to verify they pass**
 
@@ -995,7 +1048,7 @@ Expected: PASS — all permission table cases.
 git add bin-api-manager/pkg/servicehandler/conversation.go \
         bin-api-manager/pkg/servicehandler/conversation_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan field-level permission gate
+NOJIRA-Conversation-agent-assignment field-level permission gate
 
 - bin-api-manager: Extend ConversationUpdate to permit owning agents to self-unassign by sending {owner_id: nil-UUID}; admin/manager retain unrestricted access; combined or non-self-unassign payloads from agents are rejected with 403
 - bin-api-manager: Introduce payloadIsExactlySelfUnassign helper; the rule is intentionally strict — any second field in the payload disqualifies the agent path
@@ -1044,7 +1097,7 @@ Expected: PASS — pointer-with-omitempty already preserves the semantic. If it 
 ```bash
 git add bin-api-manager/server/conversations_test.go
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan empty-string round-trip test
+NOJIRA-Conversation-agent-assignment empty-string round-trip test
 
 - bin-api-manager: Add regression test asserting that {"name": ""} survives the PutConversationsIdJSONBody decode + structToFilteredMap pipeline; pointer-with-omitempty preserves the absent-vs-empty distinction
 EOF
@@ -1072,6 +1125,8 @@ All five steps must pass before moving to Phase C.
 
 All paths under `bin-api-manager/docsdev/source/`.
 
+**Important:** Per the root CLAUDE.md "RST docs sync" rule, **RST source and rebuilt HTML must be committed together**. Do **not** commit RST source in C1, C2, or C3 individually. Instead, accumulate the RST source edits across C1–C3 (no commits), then in C4 do a clean HTML rebuild and commit everything (RST + HTML + changelog) in one commit. This is the only way to keep `docsdev/build/` in sync with `docsdev/source/` per repo convention.
+
 ### Task C1: Expand `owner_type` / `owner_id` field descriptions
 
 **File:** `conversation_struct_conversation.rst`
@@ -1080,7 +1135,7 @@ All paths under `bin-api-manager/docsdev/source/`.
 
 **Step 2:** Replace the brief descriptions with expanded versions noting that, when populated, the conversation is currently assigned to that agent and inbound messages skip the registered flow trigger. Cross-reference the assignment overview section that Task C2 will add.
 
-**Step 3:** Commit (HTML rebuild deferred to Task C4).
+**Step 3:** Do NOT commit yet — see the "Important" note at the top of Phase C. Continue to Task C2.
 
 ---
 
@@ -1095,7 +1150,7 @@ All paths under `bin-api-manager/docsdev/source/`.
 - Behavior change: when assigned, the registered flow is not triggered for new inbound messages; already-running activeflows are unaffected.
 - The list filter: `GET /v1.0/conversations?owner_id=<id>`.
 
-**Step 2:** Commit (HTML rebuild deferred to Task C4).
+**Step 2:** Do NOT commit yet — accumulate edits and commit together in Task C4.
 
 ---
 
@@ -1113,7 +1168,7 @@ All paths under `bin-api-manager/docsdev/source/`.
 
 Include curl examples and example webhook payloads.
 
-**Step 2:** Commit (HTML rebuild deferred to Task C4).
+**Step 2:** Do NOT commit yet — accumulate edits and commit together in Task C4.
 
 ---
 
@@ -1141,7 +1196,7 @@ git add bin-api-manager/docsdev/source/conversation_struct_conversation.rst \
         bin-api-manager/docsdev/source/conversation_tutorial.rst
 git add -f bin-api-manager/docsdev/build/
 git commit -m "$(cat <<'EOF'
-NOJIRA-Conversation-agent-assignment-plan RST documentation
+NOJIRA-Conversation-agent-assignment RST documentation
 
 - bin-api-manager: Expand owner_type and owner_id descriptions in conversation_struct_conversation.rst to cover their meaning for agent assignment
 - bin-api-manager: Add Assigning a Conversation to an Agent section to conversation_overview.rst — covers the PUT partial-update, unassign payload, permission semantics, behavior change for inbound messages, and the list filter
@@ -1181,6 +1236,19 @@ EOF
 ---
 
 ## Phase E: PR and merge
+
+**Important — branch and worktree distinction:**
+
+This plan document was committed on the **plan branch** (`NOJIRA-Conversation-agent-assignment`) and merged to `main` separately. The implementation tasks A1–D1 happen on a **separate, new** worktree on branch `NOJIRA-Conversation-agent-assignment` (no `-plan` suffix). Before starting Phase A, create that worktree from `main`:
+
+```bash
+cd ~/gitvoipbin/monorepo
+git fetch origin main && git pull origin main
+git worktree add ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Conversation-agent-assignment -b NOJIRA-Conversation-agent-assignment
+cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Conversation-agent-assignment
+```
+
+All commit messages in Tasks A1–D1 use title `NOJIRA-Conversation-agent-assignment` (matching the branch name per the root CLAUDE.md rule). The plan branch's existing PR is unrelated; do not push implementation commits to the plan branch.
 
 **Step 1: Pre-PR conflict check**
 
