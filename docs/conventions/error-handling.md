@@ -104,6 +104,51 @@ if err != nil {
 log.WithField("customer", cu).Debugf("Retrieved customer info. customer_id: %s", cu.ID)
 ```
 
+## 4.5 Error Variable Naming in If-Init Blocks
+
+When using Go's if-init form for a single-error-returning call, name the error variable after the action being performed (e.g. `errCreate`, `errUpdate`, `errFetch`) — never the generic `err`.
+
+**Correct:**
+
+```go
+if errCreate := h.db.ConversationCreate(ctx, tmp); errCreate != nil {
+    return errors.Wrapf(errCreate, "could not create conversation")
+}
+
+if errSet := h.reqHandler.FlowV1VariableSetVariable(ctx, activeflowID, variables); errSet != nil {
+    return errors.Wrapf(errSet, "could not set variables")
+}
+
+if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
+    return errors.Wrapf(errExecute, "could not execute activeflow")
+}
+```
+
+**Wrong:**
+
+```go
+// generic err in if-init form — disallowed
+if err := h.db.ConversationCreate(ctx, tmp); err != nil {
+    return errors.Wrapf(err, "could not create conversation")
+}
+```
+
+The rule applies specifically to the **if-init form** where the call and the nil check are on the same line. For multi-return calls split across two lines, the regular `err` is acceptable — the call itself is visible immediately above the check:
+
+```go
+// CORRECT — multi-return splits the variable from the check; generic err is fine
+res, err := h.handler.Create(ctx, ...)
+if err != nil {
+    return errors.Wrapf(err, "could not create resource")
+}
+```
+
+**Why:** Specific names make the error source obvious at a glance, especially when several if-init blocks appear close together. With `errSet` vs `errExecute`, a single glance at a stack trace, log line, or diff tells you which call failed; with two `err`s in a row, you must read the surrounding context.
+
+**How to apply:**
+- Pick the verb of the call, prefixed with `err`. Common forms: `errGet`, `errCreate`, `errUpdate`, `errDelete`, `errSet`, `errSend`, `errPublish`, `errMarshal`, `errUnmarshal`, `errExecute`, `errValidate`, `errFetch`, `errParse`, `errStart`, `errStop`.
+- Apply repo-wide to **all Go services** in this monorepo. No per-service exceptions.
+
 ---
 
 ## Common Error Scenarios
