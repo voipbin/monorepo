@@ -311,6 +311,59 @@ func Test_resolveAIFromAIcall(t *testing.T) {
 
 			expectedAIID: aiID,
 		},
+		{
+			name: "assistance type team resolves via current member when set",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType:  amaicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: memberID, // not the team's StartMemberID
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
+				otherStartID := uuid.FromStringOrNil("c5c5c5c5-5555-5555-5555-555555555555")
+				otherAIID := uuid.FromStringOrNil("d5d5d5d5-5555-5555-5555-555555555555")
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity:      commonidentity.Identity{ID: teamID},
+					StartMemberID: otherStartID,
+					Members: []amateam.Member{
+						{ID: otherStartID, AIID: otherAIID},
+						{ID: memberID, AIID: memberAIID},
+					},
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), memberAIID).Return(&amai.AI{
+					Identity:  commonidentity.Identity{ID: memberAIID},
+					EngineKey: "current-member-key",
+				}, nil)
+			},
+
+			expectedAIID: memberAIID,
+		},
+		{
+			name: "assistance type team with stale current_member_id falls back to start member",
+
+			aicall: &amaicall.AIcall{
+				AssistanceType:  amaicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"), // not in team
+			},
+
+			prepareMockFn: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().AIV1TeamGet(gomock.Any(), teamID).Return(&amateam.Team{
+					Identity:      commonidentity.Identity{ID: teamID},
+					StartMemberID: memberID,
+					Members: []amateam.Member{
+						{ID: memberID, AIID: memberAIID},
+					},
+				}, nil)
+				mockReq.EXPECT().AIV1AIGet(gomock.Any(), memberAIID).Return(&amai.AI{
+					Identity:  commonidentity.Identity{ID: memberAIID},
+					EngineKey: "fallback-key",
+				}, nil)
+			},
+
+			expectedAIID: memberAIID,
+		},
 	}
 
 	for _, tt := range tests {

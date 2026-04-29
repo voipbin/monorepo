@@ -217,7 +217,10 @@ func (h *pipecatcallHandler) resolveTeamForPython(
 
 // resolveAIFromAIcall resolves the AI entity from the AIcall's assistance type and ID.
 // For AssistanceTypeAI, AssistanceID is the AI ID directly.
-// For AssistanceTypeTeam, it fetches the team, finds the start member, and returns that member's AI.
+// For AssistanceTypeTeam, it returns the AI of the AIcall's CurrentMemberID when set
+// and present in the team's members; otherwise falls back to the team's StartMemberID.
+// This mirrors the resume-at-current-member logic in resolveTeamForPython so callers
+// (e.g., LLM key derivation in start.go) get the correct member's AI on resume.
 func (h *pipecatcallHandler) resolveAIFromAIcall(ctx context.Context, c *amaicall.AIcall) (*amai.AI, error) {
 	switch c.AssistanceType {
 	case amaicall.AssistanceTypeTeam:
@@ -226,13 +229,23 @@ func (h *pipecatcallHandler) resolveAIFromAIcall(ctx context.Context, c *amaical
 			return nil, err
 		}
 
-		// find the start member's AI ID
+		// Pick the member to resolve: CurrentMemberID if valid, else StartMemberID.
+		targetMemberID := team.StartMemberID
+		if c.CurrentMemberID != uuid.Nil {
+			for _, m := range team.Members {
+				if m.ID == c.CurrentMemberID {
+					targetMemberID = c.CurrentMemberID
+					break
+				}
+			}
+		}
+
 		for _, m := range team.Members {
-			if m.ID == team.StartMemberID {
+			if m.ID == targetMemberID {
 				return h.requestHandler.AIV1AIGet(ctx, m.AIID)
 			}
 		}
-		return nil, fmt.Errorf("could not find start member in team. team_id: %s, start_member_id: %s", c.AssistanceID, team.StartMemberID)
+		return nil, fmt.Errorf("could not find target member in team. team_id: %s, target_member_id: %s", c.AssistanceID, targetMemberID)
 
 	default:
 		// AssistanceTypeAI or any other: AssistanceID is the AI ID
