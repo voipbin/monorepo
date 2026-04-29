@@ -361,3 +361,87 @@ func Test_MessageAssistantReplyExists(t *testing.T) {
 		})
 	}
 }
+
+func Test_MessageUpdateDeliveryStatus(t *testing.T) {
+	curTime := func() *time.Time { t := time.Date(2026, 4, 29, 13, 0, 0, 0, time.UTC); return &t }()
+
+	tests := []struct {
+		name string
+
+		seed *message.Message
+
+		updateID     uuid.UUID
+		updateStatus message.DeliveryStatus
+
+		expectStatus message.DeliveryStatus
+	}{
+		{
+			name: "pending_to_delivered",
+
+			seed: &message.Message{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("e1000001-2c11-11f1-9000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("e1000001-2c11-11f1-9000-000000000002"),
+				},
+				AIcallID:       uuid.FromStringOrNil("e1000001-2c11-11f1-9000-000000000003"),
+				PipecatcallID:  uuid.FromStringOrNil("e1000001-2c11-11f1-9000-000000000004"),
+				DeliveryStatus: message.DeliveryStatusPending,
+				Direction:      message.DirectionIncoming,
+				Role:           message.RoleAssistant,
+				Content:        "queued reply",
+			},
+
+			updateID:     uuid.FromStringOrNil("e1000001-2c11-11f1-9000-000000000001"),
+			updateStatus: message.DeliveryStatusDelivered,
+
+			expectStatus: message.DeliveryStatusDelivered,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+
+			h := handler{
+				utilHandler: mockUtil,
+				db:          dbTest,
+				cache:       mockCache,
+			}
+
+			ctx := context.Background()
+
+			// Seed the message via MessageCreate.
+			mockUtil.EXPECT().TimeNow().Return(curTime)
+			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
+			if err := h.MessageCreate(ctx, tt.seed); err != nil {
+				t.Fatalf("seed MessageCreate failed. err: %v", err)
+			}
+
+			// Update the delivery status. The implementation also refreshes the cache.
+			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
+			if err := h.MessageUpdateDeliveryStatus(ctx, tt.updateID, tt.updateStatus); err != nil {
+				t.Errorf("Unexpected error: %v", err)
+			}
+
+			// Read back via MessageGet (cache miss → DB) and assert delivery_status was updated.
+			mockCache.EXPECT().MessageGet(ctx, tt.updateID).Return(nil, fmt.Errorf(""))
+			mockCache.EXPECT().MessageSet(ctx, gomock.Any())
+			res, err := h.MessageGet(ctx, tt.updateID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.DeliveryStatus != tt.expectStatus {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectStatus, res.DeliveryStatus)
+			}
+
+			// Cleanup so this subtest's seed doesn't bleed into other tests via the shared in-memory DB.
+			if _, err := dbTest.Exec("DELETE FROM ai_messages WHERE id = ?", tt.seed.ID.Bytes()); err != nil {
+				t.Fatalf("cleanup failed. err: %v", err)
+			}
+		})
+	}
+}

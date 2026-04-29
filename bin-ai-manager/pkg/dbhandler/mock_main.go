@@ -278,6 +278,20 @@ func (mr *MockDBHandlerMockRecorder) MessageList(ctx, size, token, filters any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageList", reflect.TypeOf((*MockDBHandler)(nil).MessageList), ctx, size, token, filters)
 }
 
+// MessageUpdateDeliveryStatus mocks base method.
+func (m *MockDBHandler) MessageUpdateDeliveryStatus(ctx context.Context, id uuid.UUID, status message.DeliveryStatus) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageUpdateDeliveryStatus", ctx, id, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageUpdateDeliveryStatus indicates an expected call of MessageUpdateDeliveryStatus.
+func (mr *MockDBHandlerMockRecorder) MessageUpdateDeliveryStatus(ctx, id, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdateDeliveryStatus", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdateDeliveryStatus), ctx, id, status)
+}
+
 // SummaryCreate mocks base method.
 func (m *MockDBHandler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 	m.ctrl.T.Helper()

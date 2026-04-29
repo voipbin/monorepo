@@ -38,6 +38,7 @@ type DBHandler interface {
 	MessageGet(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	MessageList(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
 	MessageDelete(ctx context.Context, id uuid.UUID) error
+	MessageUpdateDeliveryStatus(ctx context.Context, id uuid.UUID, status message.DeliveryStatus) error
 	MessageAssistantReplyExists(ctx context.Context, pipecatcallID uuid.UUID) (bool, error)
 
 	SummaryCreate(ctx context.Context, c *summary.Summary) error

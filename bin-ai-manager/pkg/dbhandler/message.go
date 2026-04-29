@@ -148,6 +148,30 @@ func (h *handler) MessageDelete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// MessageUpdateDeliveryStatus updates the delivery_status of a message. Used by the
+// persist-then-mark-delivered flow: a message is created with status=pending, then
+// flipped to delivered after the conversation send succeeds.
+func (h *handler) MessageUpdateDeliveryStatus(ctx context.Context, id uuid.UUID, status message.DeliveryStatus) error {
+	query, args, err := sq.Update(messageTable).
+		SetMap(map[string]any{
+			"delivery_status": string(status),
+		}).
+		Where(sq.Eq{"id": id.Bytes()}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("MessageUpdateDeliveryStatus: could not build query. err: %v", err)
+	}
+
+	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+		return fmt.Errorf("MessageUpdateDeliveryStatus: could not execute. err: %v", err)
+	}
+
+	// update the cache
+	_ = h.messageUpdateToCache(ctx, id)
+
+	return nil
+}
+
 // MessageAssistantReplyExists reports whether a delivered, incoming, assistant-role
 // reply exists for the given pipecatcall_id. Returns false (and no error) when no
 // such row is present. Used by the aicall terminate-drop guard to decide whether
