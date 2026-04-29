@@ -22,6 +22,9 @@ type Message struct {
 	ToolCalls  []ToolCall `json:"tool_calls,omitempty" db:"tool_calls,json"`
 	ToolCallID string     `json:"tool_call_id,omitempty" db:"tool_call_id"`
 
+	PipecatcallID  uuid.UUID      `json:"-" db:"pipecatcall_id"`
+	DeliveryStatus DeliveryStatus `json:"-" db:"delivery_status"`
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }

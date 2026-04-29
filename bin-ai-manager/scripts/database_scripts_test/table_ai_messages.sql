@@ -13,6 +13,10 @@ create table ai_messages(
   tool_calls    json,
   tool_call_id  varchar(255),
 
+  -- delivery tracking
+  pipecatcall_id  binary(16),
+  delivery_status varchar(16) not null default 'delivered',
+
   -- timestamps
   tm_create datetime(6),  --
   tm_delete datetime(6),
@@ -24,3 +28,4 @@ create index idx_ai_messages_create on ai_messages(tm_create);
 create index idx_ai_messages_customer_id on ai_messages(customer_id);
 create index idx_ai_messages_aicall_id on ai_messages(aicall_id);
 create index idx_ai_messages_activeflow_id on ai_messages(activeflow_id);
+create index idx_ai_messages_pcc_delivery on ai_messages(pipecatcall_id, delivery_status);
