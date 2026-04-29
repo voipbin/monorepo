@@ -205,6 +205,21 @@ func (mr *MockDBHandlerMockRecorder) AIcallUpdate(ctx, id, fields any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallUpdate", reflect.TypeOf((*MockDBHandler)(nil).AIcallUpdate), ctx, id, fields)
 }
 
+// MessageAssistantReplyExists mocks base method.
+func (m *MockDBHandler) MessageAssistantReplyExists(ctx context.Context, pipecatcallID uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageAssistantReplyExists", ctx, pipecatcallID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessageAssistantReplyExists indicates an expected call of MessageAssistantReplyExists.
+func (mr *MockDBHandlerMockRecorder) MessageAssistantReplyExists(ctx, pipecatcallID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageAssistantReplyExists", reflect.TypeOf((*MockDBHandler)(nil).MessageAssistantReplyExists), ctx, pipecatcallID)
+}
+
 // MessageCreate mocks base method.
 func (m *MockDBHandler) MessageCreate(ctx context.Context, c *message.Message) error {
 	m.ctrl.T.Helper()
@@ -261,6 +276,20 @@ func (m *MockDBHandler) MessageList(ctx context.Context, size uint64, token stri
 func (mr *MockDBHandlerMockRecorder) MessageList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageList", reflect.TypeOf((*MockDBHandler)(nil).MessageList), ctx, size, token, filters)
+}
+
+// MessageUpdateDeliveryStatus mocks base method.
+func (m *MockDBHandler) MessageUpdateDeliveryStatus(ctx context.Context, id uuid.UUID, status message.DeliveryStatus) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageUpdateDeliveryStatus", ctx, id, status)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageUpdateDeliveryStatus indicates an expected call of MessageUpdateDeliveryStatus.
+func (mr *MockDBHandlerMockRecorder) MessageUpdateDeliveryStatus(ctx, id, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdateDeliveryStatus", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdateDeliveryStatus), ctx, id, status)
 }
 
 // SummaryCreate mocks base method.

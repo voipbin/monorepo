@@ -19,10 +19,21 @@ var (
 		},
 		[]string{"guard"},
 	)
+	promConversationDeliveryStatusUpdateFailedTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "message_delivery_status_update_failed_total",
+			Help:      "Counter of post-send delivery_status updates that failed even after one retry.",
+		},
+	)
 )
 
 func init() {
-	prometheus.MustRegister(promConversationReplySendTotal, promConversationStaleResponseDroppedTotal)
+	prometheus.MustRegister(
+		promConversationReplySendTotal,
+		promConversationStaleResponseDroppedTotal,
+		promConversationDeliveryStatusUpdateFailedTotal,
+	)
 }
 
 // Test parallelism note:

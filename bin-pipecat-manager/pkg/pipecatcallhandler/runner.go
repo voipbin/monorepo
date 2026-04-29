@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-pipecat-manager/models/pipecatcall"
 	"monorepo/bin-pipecat-manager/models/pipecatframe"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,59 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
 )
+
+// StopReason identifies why an LLM-related goroutine exited.
+// Stored atomically on Session.LLMStopReason (as int32) and
+// read by the flush goroutine to attribute the exit in metrics.
+type StopReason int32
+
+const (
+	StopReasonUnset StopReason = iota
+	StopReasonNormal
+	StopReasonIdleWatchdog
+	StopReasonTerminateForce
+	StopReasonContextCancel
+)
+
+// idleWatchdogTimeout is the duration of inactivity (no tokens received) after
+// which the flush goroutine self-terminates with StopReasonIdleWatchdog. The
+// watchdog only arms after the first token arrives — it never fires on a
+// generation that produced zero tokens.
+//
+// idleWatchdogTickRate is how often the watchdog ticker fires to check elapsed
+// idle time. A finer tick rate reduces detection jitter at the cost of slightly
+// more select-loop wakeups.
+//
+// flushFinalizeTimeout is the upper bound flushAndFinalize will wait for the
+// flush goroutine to exit after closing LLMStopChan. If the goroutine has not
+// published its final event and closed LLMDoneChan within this window,
+// flushAndFinalize gives up and lets terminate() proceed to teardown so a
+// stuck flush cannot indefinitely block hangup.
+//
+// These are var (not const) so tests can patch them to short values.
+var (
+	idleWatchdogTimeout  = 8 * time.Second
+	idleWatchdogTickRate = 1 * time.Second
+	flushFinalizeTimeout = 3 * time.Second
+)
+
+// reasonLabel returns the Prometheus label associated with a StopReason.
+// Any value not explicitly mapped (including StopReasonUnset and future
+// additions) is returned as "unknown" so metrics never panic on new values.
+func reasonLabel(r StopReason) string {
+	switch r {
+	case StopReasonNormal:
+		return "stopped_normal"
+	case StopReasonIdleWatchdog:
+		return "idle_watchdog"
+	case StopReasonTerminateForce:
+		return "terminate_force"
+	case StopReasonContextCancel:
+		return "context_cancelled"
+	default:
+		return "unknown"
+	}
+}
 
 func (h *pipecatcallHandler) RunnerStart(pc *pipecatcall.Pipecatcall, se *pipecatcall.Session) {
 	log := logrus.WithFields(logrus.Fields{
@@ -518,12 +572,21 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-text message")
 		}
 
-		if !se.LLMFlushing {
+		if !se.LLMFlushing.Load() {
 			se.LLMMessageID = h.utilHandler.UUIDCreate()
 			se.LLMTokenChan = make(chan string, 64)
 			se.LLMStopChan = make(chan struct{})
 			se.LLMDoneChan = make(chan struct{})
-			se.LLMFlushing = true
+			// Reset per-generation primitives BEFORE arming the flush flag so the
+			// new generation's machinery is in place before the goroutine launches.
+			// Without this reset, a second generation's LLMFlushOnce.Do(close) is a
+			// no-op (Once already fired in gen 1) — LLMStopChan never closes, the
+			// flush goroutine blocks forever, and the per-generation final event
+			// is never published. Likewise, LLMStopReason still holds gen 1's
+			// value, so the metric label is wrong for gen 2+.
+			se.LLMFlushOnce = sync.Once{}
+			se.LLMStopReason.Store(int32(StopReasonUnset))
+			se.LLMFlushing.Store(true)
 			go h.runLLMIntermediateFlush(se, se.LLMMessageID)
 		}
 
@@ -545,13 +608,30 @@ func (h *pipecatcallHandler) receiveMessageFrameTypeMessage(se *pipecatcall.Sess
 			return errors.Wrapf(errUnmarshal, "could not unmarshal bot-llm-stopped message")
 		}
 
-		if se.LLMFlushing {
-			close(se.LLMStopChan)
-			<-se.LLMDoneChan
-			se.LLMFlushing = false
-		} else {
+		if !se.LLMFlushing.Load() {
 			log.Debugf("BotLLMStopped received but no tokens were received for this generation.")
+			break
 		}
+
+		// Attribute this stop to a normal completion (CAS so a competing closer
+		// — watchdog, terminate, context cancel — that already wrote a more
+		// specific reason wins). sync.Once guarantees close(LLMStopChan) runs
+		// at most once across all closers; the goroutine's defer in Task 1.7
+		// will reset LLMFlushing to false after it exits.
+		se.LLMStopReason.CompareAndSwap(int32(StopReasonUnset), int32(StopReasonNormal))
+		se.LLMFlushOnce.Do(func() { close(se.LLMStopChan) })
+
+		// Bound the wait so a slow RabbitMQ publish in the flush goroutine
+		// cannot stall the WebSocket read loop (which also handles audio
+		// frames). Reuses flushFinalizeTimeout so all "wait for flush
+		// goroutine to exit" paths share the same upper bound.
+		timer := time.NewTimer(flushFinalizeTimeout)
+		select {
+		case <-se.LLMDoneChan:
+		case <-timer.C:
+			log.Warnf("BotLLMStopped: timed out waiting for flush goroutine after %s", flushFinalizeTimeout)
+		}
+		timer.Stop()
 
 	default:
 		log.WithField("frame", frame).Debugf("Unrecognized RTVI message type: %s", frame.Type)
@@ -591,24 +671,44 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 
 	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
-	defer close(se.LLMDoneChan)
+	watchdog := time.NewTicker(idleWatchdogTickRate)
+	defer watchdog.Stop()
+	defer close(se.LLMDoneChan)        // close-broadcasts goroutine exit to readers
+	defer se.LLMFlushing.Store(false)  // LIFO: runs before close(LLMDoneChan), so observers see flushing=false
 
 	var fullText string
 	var deltaBuffer string
 	var sequence int
+	var lastToken time.Time // zero until first token arrives — watchdog uses IsZero() guard
 
 	for {
 		select {
 		case token := <-se.LLMTokenChan:
 			fullText += token
 			deltaBuffer += token
+			lastToken = time.Now()
 
 		case <-ticker.C:
 			if deltaBuffer != "" {
 				sequence++
-				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+				// Use context.Background() so a cancelled session ctx (from
+				// terminate path) does not drop the partial reply event on its
+				// way to ai-manager.
+				h.publishIntermediateEvent(context.Background(), se, messageID, deltaBuffer, sequence)
 				log.Debugf("Published intermediate event. sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
 				deltaBuffer = ""
+			}
+
+		case now := <-watchdog.C:
+			// Watchdog only arms after the first token has arrived. A generation
+			// with zero tokens (Python upstream stalled before producing any
+			// output) is the responsibility of the terminate / context-cancel
+			// paths, not the watchdog.
+			if !lastToken.IsZero() && now.Sub(lastToken) >= idleWatchdogTimeout {
+				if se.LLMStopReason.CompareAndSwap(int32(StopReasonUnset), int32(StopReasonIdleWatchdog)) {
+					metricsIdleWatchdogFired.Inc()
+				}
+				se.LLMFlushOnce.Do(func() { close(se.LLMStopChan) })
 			}
 
 		case <-se.LLMStopChan:
@@ -626,16 +726,24 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 			// Flush any remaining delta as the last intermediate event.
 			if deltaBuffer != "" {
 				sequence++
-				h.publishIntermediateEvent(se, messageID, deltaBuffer, sequence)
+				h.publishIntermediateEvent(context.Background(), se, messageID, deltaBuffer, sequence)
 				log.Debugf("Published final intermediate event. sequence: %d, delta_len: %d", sequence, len(deltaBuffer))
 			}
 
-			// Publish the final complete bot LLM event.
-			h.publishFinalBotLLMEvent(se.Ctx, se, messageID, fullText)
+			// Publish the final complete bot LLM event. Use context.Background()
+			// because terminate() may have cancelled se.Ctx and we still want
+			// the partial reply to reach ai-manager.
+			h.publishFinalBotLLMEvent(context.Background(), se, messageID, fullText)
 			log.Debugf("Published final bot LLM event. full_text_len: %d", len(fullText))
+			metricsLLMFlushExit.WithLabelValues(reasonLabel(StopReason(se.LLMStopReason.Load()))).Inc()
 			return
 
 		case <-se.Ctx.Done():
+			// CAS in StopReasonContextCancel only if no other closer (watchdog,
+			// terminate, normal stop) already attributed the exit. The reason
+			// label on metricsLLMFlushExit reflects whichever reason won.
+			se.LLMStopReason.CompareAndSwap(int32(StopReasonUnset), int32(StopReasonContextCancel))
+
 			// Drain and publish final event to preserve partial LLM response in
 			// conversation history (used by summary handler). Use context.Background()
 			// because the original context is already cancelled.
@@ -654,13 +762,64 @@ func (h *pipecatcallHandler) runLLMIntermediateFlush(se *pipecatcall.Session, me
 			} else {
 				log.Debugf("Context cancelled, no text accumulated.")
 			}
+			metricsLLMFlushExit.WithLabelValues(reasonLabel(StopReason(se.LLMStopReason.Load()))).Inc()
 			return
 		}
 	}
 }
 
+// flushAndFinalize is the synchronous helper that terminate() calls to force
+// the per-generation flush goroutine to publish its final message_bot_llm
+// event before SessionStop tears down the session. It is safe to call when no
+// flush is in progress (it returns immediately as a no-op) and safe to call
+// concurrently with the flush goroutine's normal completion path because the
+// CompareAndSwap on LLMStopReason and sync.Once around close(LLMStopChan)
+// preserve the first-writer-wins invariant.
+//
+// Outcomes (recorded on metricsFlushFinalizeOutcome):
+//   - "noop_never_started": no flush goroutine ever ran for this pipecatcall
+//     (no BotLLMText was received).
+//   - "noop_already_done": the flush goroutine ran and exited cleanly before
+//     terminate() arrived (e.g. BotLLMStopped was received first).
+//   - "done": the flush goroutine was running; we closed LLMStopChan and it
+//     drained, published its final event, and exited within flushFinalizeTimeout.
+//   - "timeout": the flush goroutine was running but did not exit within
+//     flushFinalizeTimeout, so we abandon the wait and let terminate() proceed.
+//     Partial replies may be lost in this rare path; the metric makes that visible.
+func (h *pipecatcallHandler) flushAndFinalize(se *pipecatcall.Session) {
+	if !se.LLMFlushing.Load() {
+		// Distinguish never-started (no generation ever) from already-done
+		// (a generation completed cleanly) using LLMMessageID — set when the
+		// flush goroutine is armed and not cleared on normal exit.
+		if se.LLMMessageID == uuid.Nil {
+			metricsFlushFinalizeOutcome.WithLabelValues("noop_never_started").Inc()
+		} else {
+			metricsFlushFinalizeOutcome.WithLabelValues("noop_already_done").Inc()
+		}
+		return
+	}
+
+	// Attribute this exit to the terminate path (CAS so a concurrent watchdog
+	// or normal-stop closer that already wrote a more specific reason wins),
+	// then close LLMStopChan exactly once across all closers.
+	se.LLMStopReason.CompareAndSwap(int32(StopReasonUnset), int32(StopReasonTerminateForce))
+	se.LLMFlushOnce.Do(func() { close(se.LLMStopChan) })
+
+	timer := time.NewTimer(flushFinalizeTimeout)
+	defer timer.Stop()
+
+	select {
+	case <-se.LLMDoneChan:
+		metricsFlushFinalizeOutcome.WithLabelValues("done").Inc()
+	case <-timer.C:
+		metricsFlushFinalizeOutcome.WithLabelValues("timeout").Inc()
+	}
+}
+
 // publishIntermediateEvent publishes a message_bot_llm_intermediate event with the delta text.
-func (h *pipecatcallHandler) publishIntermediateEvent(se *pipecatcall.Session, messageID uuid.UUID, delta string, sequence int) {
+// Accepts an explicit context so callers can use context.Background() when se.Ctx is cancelled
+// (e.g. during the terminate path) and the partial reply must still reach ai-manager.
+func (h *pipecatcallHandler) publishIntermediateEvent(ctx context.Context, se *pipecatcall.Session, messageID uuid.UUID, delta string, sequence int) {
 	evt := message.Message{
 		Identity: commonidentity.Identity{
 			ID:         messageID,
@@ -676,7 +835,7 @@ func (h *pipecatcallHandler) publishIntermediateEvent(se *pipecatcall.Session, m
 		Sequence: sequence,
 	}
 
-	h.notifyHandler.PublishEvent(se.Ctx, message.EventTypeBotLLMIntermediate, evt)
+	h.notifyHandler.PublishEvent(ctx, message.EventTypeBotLLMIntermediate, evt)
 }
 
 // publishFinalBotLLMEvent publishes the final message_bot_llm event with the complete text.

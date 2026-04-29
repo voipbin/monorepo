@@ -12,10 +12,30 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	pmmessage "monorepo/bin-pipecat-manager/models/message"
+	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 )
+
+// CreateOption configures optional parameters for Create.
+type CreateOption func(*createParams)
+
+// createParams holds optional parameters for Create.
+type createParams struct {
+	pipecatcallID  uuid.UUID
+	deliveryStatus message.DeliveryStatus
+}
+
+// WithPipecatcallID sets the pipecatcall ID on createParams.
+func WithPipecatcallID(id uuid.UUID) CreateOption {
+	return func(p *createParams) { p.pipecatcallID = id }
+}
+
+// WithDeliveryStatus sets the delivery status on createParams.
+func WithDeliveryStatus(s message.DeliveryStatus) CreateOption {
+	return func(p *createParams) { p.deliveryStatus = s }
+}
 
 type MessageHandler interface {
 	Create(
@@ -29,6 +49,7 @@ type MessageHandler interface {
 		content string,
 		toolCalls []message.ToolCall,
 		toolCallID string,
+		opts ...CreateOption,
 	) (*message.Message, error)
 	Get(ctx context.Context, id uuid.UUID) (*message.Message, error)
 	List(ctx context.Context, size uint64, token string, filters map[message.Field]any) ([]*message.Message, error)
@@ -38,6 +59,7 @@ type MessageHandler interface {
 	EventPMMessageBotLLMIntermediate(ctx context.Context, evt *pmmessage.Message)
 	EventPMMessageUserLLM(ctx context.Context, evt *pmmessage.Message)
 	EventPMTeamMemberSwitched(ctx context.Context, evt *pmmessage.MemberSwitchedEvent)
+	EventPMPipecatcallTerminated(ctx context.Context, evt *pmpipecatcall.Pipecatcall) error
 }
 
 type messageHandler struct {

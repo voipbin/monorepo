@@ -1,7 +1,9 @@
 package subscribehandler
 
 import (
+	"context"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -57,6 +59,54 @@ func Test_processEventPMPipecatcallInitialized(t *testing.T) {
 			h.processEvent(tt.event)
 
 			time.Sleep(100 * time.Millisecond)
+		})
+	}
+}
+
+func Test_processEventPMPipecatcallTerminated(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		event *sock.Event
+
+		expectedEvent *pmpipecatcall.Pipecatcall
+	}{
+		{
+			name: "normal",
+
+			event: &sock.Event{
+				Publisher: "pipecat-manager",
+				Type:      pmpipecatcall.EventTypePipecatcallTerminated,
+				DataType:  "application/json",
+				Data:      []byte(`{"id":"d1ea9b4c-cb5c-11f0-b1c4-3744a2c2f8a6"}`),
+			},
+
+			expectedEvent: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1ea9b4c-cb5c-11f0-b1c4-3744a2c2f8a6"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+			h := subscribeHandler{
+				sockHandler:    mockSock,
+				messageHandler: mockMessage,
+			}
+
+			mockMessage.EXPECT().EventPMPipecatcallTerminated(gomock.Any(), tt.expectedEvent).Return(nil)
+
+			if err := h.processEventPMPipecatcallTerminated(context.Background(), tt.event); err != nil {
+				t.Errorf("Wrong match. expected: ok, got: %v", err)
+			}
 		})
 	}
 }

@@ -283,9 +283,15 @@ func TestSessionStop(t *testing.T) {
 				pythonRunner:          mockPythonRunner,
 				mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
 				muPipecatcallSession:  sync.Mutex{},
+				muTerminated:          sync.Mutex{},
+				terminatedPublished:   make(map[uuid.UUID]struct{}),
 			}
 
 			if tt.existingSession != nil {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				tt.existingSession.Ctx = ctx
+				tt.existingSession.Cancel = cancel
 				h.mapPipecatcallSession[tt.existingSession.ID] = tt.existingSession
 				mockPythonRunner.EXPECT().Stop(gomock.Any(), tt.id).Return(tt.pythonRunnerErr)
 			}
@@ -299,6 +305,101 @@ func TestSessionStop(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestSessionStop_cancelsCtx(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockPythonRunner := NewMockPythonRunner(mc)
+
+	id := uuid.FromStringOrNil("9f2cf5ea-c5e0-11f0-aaf6-bb6c8a5b9d2c")
+
+	h := &pipecatcallHandler{
+		pythonRunner:          mockPythonRunner,
+		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
+		muPipecatcallSession:  sync.Mutex{},
+		muTerminated:          sync.Mutex{},
+		terminatedPublished:   make(map[uuid.UUID]struct{}),
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	connAstReady := make(chan struct{})
+	close(connAstReady)
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID: id,
+		},
+		Ctx:          ctx,
+		Cancel:       cancel,
+		ConnAstReady: connAstReady,
+	}
+	h.mapPipecatcallSession[id] = se
+
+	mockPythonRunner.EXPECT().Stop(gomock.Any(), id).Return(nil)
+
+	done := make(chan struct{})
+	go func() {
+		<-se.Ctx.Done()
+		close(done)
+	}()
+
+	h.SessionStop(id)
+
+	select {
+	case <-done:
+	case <-time.After(100 * time.Millisecond):
+		t.Fatalf("Ctx.Done() did not fire after SessionStop")
+	}
+}
+
+func TestSessionStop_prunesTerminatedMap(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockPythonRunner := NewMockPythonRunner(mc)
+
+	id := uuid.FromStringOrNil("af6b8d28-c5e0-11f0-9d31-237aff5b1a23")
+
+	h := &pipecatcallHandler{
+		pythonRunner:          mockPythonRunner,
+		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
+		muPipecatcallSession:  sync.Mutex{},
+		muTerminated:          sync.Mutex{},
+		terminatedPublished:   make(map[uuid.UUID]struct{}),
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	connAstReady := make(chan struct{})
+	close(connAstReady)
+
+	se := &pipecatcall.Session{
+		Identity: commonidentity.Identity{
+			ID: id,
+		},
+		Ctx:          ctx,
+		Cancel:       cancel,
+		ConnAstReady: connAstReady,
+	}
+	h.mapPipecatcallSession[id] = se
+
+	// simulate a prior terminate() publish — first claim succeeds
+	if !h.markTerminatedOnce(se.ID) {
+		t.Fatalf("expected first markTerminatedOnce to succeed")
+	}
+
+	mockPythonRunner.EXPECT().Stop(gomock.Any(), id).Return(nil)
+
+	h.SessionStop(se.ID)
+
+	if h.markTerminatedOnce(se.ID) == false {
+		t.Fatalf("expected map entry pruned; second markTerminatedOnce should claim again")
 	}
 }
 
@@ -337,6 +438,8 @@ func TestSessionStop_closesWebSocket(t *testing.T) {
 		pythonRunner:          mockPythonRunner,
 		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
 		muPipecatcallSession:  sync.Mutex{},
+		muTerminated:          sync.Mutex{},
+		terminatedPublished:   make(map[uuid.UUID]struct{}),
 	}
 
 	connAstReady := make(chan struct{})

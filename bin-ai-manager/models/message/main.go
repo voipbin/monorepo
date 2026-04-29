@@ -22,6 +22,9 @@ type Message struct {
 	ToolCalls  []ToolCall `json:"tool_calls,omitempty" db:"tool_calls,json"`
 	ToolCallID string     `json:"tool_call_id,omitempty" db:"tool_call_id"`
 
+	PipecatcallID  uuid.UUID      `json:"-" db:"pipecatcall_id,uuid"`
+	DeliveryStatus DeliveryStatus `json:"-" db:"delivery_status"`
+
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
@@ -46,4 +49,14 @@ const (
 	DirectionIncoming Direction = "incoming"
 	DirectionOutgoing Direction = "outgoing"
 	DirectionNone     Direction = ""
+)
+
+// DeliveryStatus tracks whether a message has been successfully delivered
+// to the user (e.g. TTS audio actually played out to the call).
+type DeliveryStatus string
+
+// list of delivery statuses
+const (
+	DeliveryStatusPending   DeliveryStatus = "pending"
+	DeliveryStatusDelivered DeliveryStatus = "delivered"
 )

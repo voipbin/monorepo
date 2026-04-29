@@ -82,6 +82,9 @@ type pipecatcallHandler struct {
 
 	mapPipecatcallSession map[uuid.UUID]*pipecatcall.Session
 	muPipecatcallSession  sync.Mutex
+
+	muTerminated        sync.Mutex
+	terminatedPublished map[uuid.UUID]struct{}
 }
 
 func NewPipecatcallHandler(
@@ -108,5 +111,8 @@ func NewPipecatcallHandler(
 
 		mapPipecatcallSession: make(map[uuid.UUID]*pipecatcall.Session),
 		muPipecatcallSession:  sync.Mutex{},
+
+		muTerminated:        sync.Mutex{},
+		terminatedPublished: make(map[uuid.UUID]struct{}),
 	}
 }

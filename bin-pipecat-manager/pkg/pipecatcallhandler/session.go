@@ -104,6 +104,11 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 		}
 	}
 
+	// Cancel the session context so any in-flight goroutines (e.g. the flush
+	// goroutine waiting on pc.Ctx.Done()) unblock before we tear down the
+	// Asterisk connection. Mirrors the deferred cleanup in start.go.
+	pc.Cancel()
+
 	if pc.ConnAst != nil {
 		if errClose := pc.ConnAst.Close(); errClose != nil {
 			log.Errorf("Could not close the asterisk connection. err: %v", errClose)
@@ -116,6 +121,9 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 	if errStop := h.pythonRunner.Stop(context.Background(), id); errStop != nil {
 		log.Errorf("Could not stop the pipecatcall in python runner. err: %v", errStop)
 	}
+
+	// Prune the terminate dedupe entry so the map does not grow unbounded.
+	h.terminatedDeleteEntry(pc.ID)
 
 	log.Debugf("Stopped pipecatcall session. pipecatcall_id: %s", id)
 }

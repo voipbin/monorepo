@@ -1,11 +1,41 @@
 package message
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/gofrs/uuid"
 )
+
+func TestMessage_hasPipecatcallIDAndDeliveryStatus(t *testing.T) {
+	m := Message{
+		PipecatcallID:  uuid.Must(uuid.NewV4()),
+		DeliveryStatus: DeliveryStatusPending,
+	}
+	if m.PipecatcallID == uuid.Nil {
+		t.Fatal("PipecatcallID not set")
+	}
+	if m.DeliveryStatus != DeliveryStatusPending {
+		t.Fatal("DeliveryStatus not set")
+	}
+}
+
+func TestWebhookMessage_omitsInternalFields(t *testing.T) {
+	m := Message{
+		PipecatcallID:  uuid.Must(uuid.NewV4()),
+		DeliveryStatus: DeliveryStatusDelivered,
+	}
+	wm := m.ConvertWebhookMessage()
+	raw, _ := json.Marshal(wm)
+	if strings.Contains(string(raw), "pipecatcall_id") {
+		t.Fatalf("webhook leaks pipecatcall_id: %s", raw)
+	}
+	if strings.Contains(string(raw), "delivery_status") {
+		t.Fatalf("webhook leaks delivery_status: %s", raw)
+	}
+}
 
 func TestMessage(t *testing.T) {
 	tests := []struct {
@@ -126,6 +156,33 @@ func TestRoleConstants(t *testing.T) {
 			name:     "role_notification",
 			constant: RoleNotification,
 			expected: "notification",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if string(tt.constant) != tt.expected {
+				t.Errorf("Wrong constant value. expect: %s, got: %s", tt.expected, tt.constant)
+			}
+		})
+	}
+}
+
+func TestDeliveryStatusConstants(t *testing.T) {
+	tests := []struct {
+		name     string
+		constant DeliveryStatus
+		expected string
+	}{
+		{
+			name:     "delivery_status_pending",
+			constant: DeliveryStatusPending,
+			expected: "pending",
+		},
+		{
+			name:     "delivery_status_delivered",
+			constant: DeliveryStatusDelivered,
+			expected: "delivered",
 		},
 	}
 
