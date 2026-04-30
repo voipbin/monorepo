@@ -46,7 +46,8 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 
 			responseConversation: &cvconversation.Conversation{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
@@ -54,7 +55,8 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 			},
 			expectRes: &cvconversation.WebhookMessage{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
@@ -217,6 +219,7 @@ func Test_ServiceAgentConversationList(t *testing.T) {
 		responseConversations []cvconversation.Conversation
 
 		expectFilters map[cvconversation.Field]any
+		expectErr     error
 		expectRes     []*cvconversation.WebhookMessage
 	}
 
@@ -330,6 +333,13 @@ func Test_ServiceAgentConversationList(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:      "non-agent caller is rejected",
+			agent:     &auth.AuthIdentity{Type: auth.TypeAccesskey},
+			size:      10,
+			token:     "2021-03-01T01:00:00.995000Z",
+			expectErr: serviceerrors.ErrAuthenticationRequired,
+		},
 	}
 
 	for _, tt := range tests {
@@ -346,9 +356,17 @@ func Test_ServiceAgentConversationList(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseConversations, nil)
+			if tt.expectErr == nil {
+				mockReq.EXPECT().ConversationV1ConversationList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseConversations, nil)
+			}
 
 			res, err := h.ServiceAgentConversationList(ctx, tt.agent, tt.size, tt.token)
+			if tt.expectErr != nil {
+				if !errors.Is(err, tt.expectErr) {
+					t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+				}
+				return
+			}
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

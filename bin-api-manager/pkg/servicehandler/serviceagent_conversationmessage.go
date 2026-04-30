@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
@@ -26,7 +27,8 @@ func (h *serviceHandler) ServiceAgentConversationMessageList(ctx context.Context
 		return nil, errors.Wrapf(err, "Could not get conversation.")
 	}
 
-	if cv.OwnerID != a.AgentID() {
+	isAdminOrManager := h.hasPermission(ctx, a, cv.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager)
+	if !isAdminOrManager && cv.OwnerID != a.AgentID() {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
@@ -75,7 +77,8 @@ func (h *serviceHandler) ServiceAgentConversationMessageSend(
 		return nil, fmt.Errorf("%w: could not verify the conversation", err)
 	}
 
-	if c.OwnerID != a.AgentID() {
+	isAdminOrManager := h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager)
+	if !isAdminOrManager && c.OwnerID != a.AgentID() {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
