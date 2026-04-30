@@ -6156,6 +6156,14 @@ type GetServiceAgentsConversationsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// PutServiceAgentsConversationsIdJSONBody defines parameters for PutServiceAgentsConversationsId.
+type PutServiceAgentsConversationsIdJSONBody struct {
+	Detail    *string             `json:"detail,omitempty"`
+	Name      *string             `json:"name,omitempty"`
+	OwnerId   *openapi_types.UUID `json:"owner_id,omitempty"`
+	OwnerType *string             `json:"owner_type,omitempty"`
+}
+
 // GetServiceAgentsConversationsIdMessagesParams defines parameters for GetServiceAgentsConversationsIdMessages.
 type GetServiceAgentsConversationsIdMessagesParams struct {
 	// PageSize Number of results to return per page.
@@ -6856,6 +6864,9 @@ type PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody PutServi
 // PostServiceAgentsContactsIdTagsJSONRequestBody defines body for PostServiceAgentsContactsIdTags for application/json ContentType.
 type PostServiceAgentsContactsIdTagsJSONRequestBody PostServiceAgentsContactsIdTagsJSONBody
 
+// PutServiceAgentsConversationsIdJSONRequestBody defines body for PutServiceAgentsConversationsId for application/json ContentType.
+type PutServiceAgentsConversationsIdJSONRequestBody PutServiceAgentsConversationsIdJSONBody
+
 // PostServiceAgentsConversationsIdMessagesJSONRequestBody defines body for PostServiceAgentsConversationsIdMessages for application/json ContentType.
 type PostServiceAgentsConversationsIdMessagesJSONRequestBody PostServiceAgentsConversationsIdMessagesJSONBody
 
@@ -7308,6 +7319,9 @@ type ServerInterface interface {
 	// Send a message
 	// (POST /conversations/{id}/messages)
 	PostConversationsIdMessages(c *gin.Context, id string)
+	// Unassign the conversation
+	// (POST /conversations/{id}/unassign)
+	PostConversationsIdUnassign(c *gin.Context, id openapi_types.UUID)
 	// Get customer info
 	// (GET /customer)
 	GetCustomer(c *gin.Context)
@@ -7683,12 +7697,18 @@ type ServerInterface interface {
 	// Get detailed conversation info
 	// (GET /service_agents/conversations/{id})
 	GetServiceAgentsConversationsId(c *gin.Context, id string)
+	// Update conversation info
+	// (PUT /service_agents/conversations/{id})
+	PutServiceAgentsConversationsId(c *gin.Context, id openapi_types.UUID)
 	// Get list of conversation messages
 	// (GET /service_agents/conversations/{id}/messages)
 	GetServiceAgentsConversationsIdMessages(c *gin.Context, id string, params GetServiceAgentsConversationsIdMessagesParams)
 	// Send a message to the conversation
 	// (POST /service_agents/conversations/{id}/messages)
 	PostServiceAgentsConversationsIdMessages(c *gin.Context, id string)
+	// Unassign the conversation
+	// (POST /service_agents/conversations/{id}/unassign)
+	PostServiceAgentsConversationsIdUnassign(c *gin.Context, id openapi_types.UUID)
 	// Get customer details
 	// (GET /service_agents/customer)
 	GetServiceAgentsCustomer(c *gin.Context)
@@ -11143,6 +11163,30 @@ func (siw *ServerInterfaceWrapper) PostConversationsIdMessages(c *gin.Context) {
 	siw.Handler.PostConversationsIdMessages(c, id)
 }
 
+// PostConversationsIdUnassign operation middleware
+func (siw *ServerInterfaceWrapper) PostConversationsIdUnassign(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostConversationsIdUnassign(c, id)
+}
+
 // GetCustomer operation middleware
 func (siw *ServerInterfaceWrapper) GetCustomer(c *gin.Context) {
 
@@ -14207,6 +14251,30 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsConversationsId(c *gin.Contex
 	siw.Handler.GetServiceAgentsConversationsId(c, id)
 }
 
+// PutServiceAgentsConversationsId operation middleware
+func (siw *ServerInterfaceWrapper) PutServiceAgentsConversationsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutServiceAgentsConversationsId(c, id)
+}
+
 // GetServiceAgentsConversationsIdMessages operation middleware
 func (siw *ServerInterfaceWrapper) GetServiceAgentsConversationsIdMessages(c *gin.Context) {
 
@@ -14272,6 +14340,30 @@ func (siw *ServerInterfaceWrapper) PostServiceAgentsConversationsIdMessages(c *g
 	}
 
 	siw.Handler.PostServiceAgentsConversationsIdMessages(c, id)
+}
+
+// PostServiceAgentsConversationsIdUnassign operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsConversationsIdUnassign(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsConversationsIdUnassign(c, id)
 }
 
 // GetServiceAgentsCustomer operation middleware
@@ -16215,6 +16307,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/conversations/:id", wrapper.PutConversationsId)
 	router.GET(options.BaseURL+"/conversations/:id/messages", wrapper.GetConversationsIdMessages)
 	router.POST(options.BaseURL+"/conversations/:id/messages", wrapper.PostConversationsIdMessages)
+	router.POST(options.BaseURL+"/conversations/:id/unassign", wrapper.PostConversationsIdUnassign)
 	router.GET(options.BaseURL+"/customer", wrapper.GetCustomer)
 	router.PUT(options.BaseURL+"/customer", wrapper.PutCustomer)
 	router.PUT(options.BaseURL+"/customer/billing_account_id", wrapper.PutCustomerBillingAccountId)
@@ -16340,8 +16433,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/service_agents/contacts/:id/tags/:tag_id", wrapper.DeleteServiceAgentsContactsIdTagsTagId)
 	router.GET(options.BaseURL+"/service_agents/conversations", wrapper.GetServiceAgentsConversations)
 	router.GET(options.BaseURL+"/service_agents/conversations/:id", wrapper.GetServiceAgentsConversationsId)
+	router.PUT(options.BaseURL+"/service_agents/conversations/:id", wrapper.PutServiceAgentsConversationsId)
 	router.GET(options.BaseURL+"/service_agents/conversations/:id/messages", wrapper.GetServiceAgentsConversationsIdMessages)
 	router.POST(options.BaseURL+"/service_agents/conversations/:id/messages", wrapper.PostServiceAgentsConversationsIdMessages)
+	router.POST(options.BaseURL+"/service_agents/conversations/:id/unassign", wrapper.PostServiceAgentsConversationsIdUnassign)
 	router.GET(options.BaseURL+"/service_agents/customer", wrapper.GetServiceAgentsCustomer)
 	router.GET(options.BaseURL+"/service_agents/extensions", wrapper.GetServiceAgentsExtensions)
 	router.GET(options.BaseURL+"/service_agents/extensions/:id", wrapper.GetServiceAgentsExtensionsId)
@@ -23698,6 +23793,68 @@ func (response PostConversationsIdMessages500JSONResponse) VisitPostConversation
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostConversationsIdUnassignRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostConversationsIdUnassignResponseObject interface {
+	VisitPostConversationsIdUnassignResponse(w http.ResponseWriter) error
+}
+
+type PostConversationsIdUnassign200JSONResponse ConversationManagerConversation
+
+func (response PostConversationsIdUnassign200JSONResponse) VisitPostConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostConversationsIdUnassign400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostConversationsIdUnassign400JSONResponse) VisitPostConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostConversationsIdUnassign401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostConversationsIdUnassign401JSONResponse) VisitPostConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostConversationsIdUnassign403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostConversationsIdUnassign403JSONResponse) VisitPostConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostConversationsIdUnassign404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostConversationsIdUnassign404JSONResponse) VisitPostConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostConversationsIdUnassign500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostConversationsIdUnassign500JSONResponse) VisitPostConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetCustomerRequestObject struct {
 }
 
@@ -30793,6 +30950,69 @@ func (response GetServiceAgentsConversationsId500JSONResponse) VisitGetServiceAg
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PutServiceAgentsConversationsIdRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PutServiceAgentsConversationsIdJSONRequestBody
+}
+
+type PutServiceAgentsConversationsIdResponseObject interface {
+	VisitPutServiceAgentsConversationsIdResponse(w http.ResponseWriter) error
+}
+
+type PutServiceAgentsConversationsId200JSONResponse ConversationManagerConversation
+
+func (response PutServiceAgentsConversationsId200JSONResponse) VisitPutServiceAgentsConversationsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsConversationsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutServiceAgentsConversationsId400JSONResponse) VisitPutServiceAgentsConversationsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsConversationsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutServiceAgentsConversationsId401JSONResponse) VisitPutServiceAgentsConversationsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsConversationsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutServiceAgentsConversationsId403JSONResponse) VisitPutServiceAgentsConversationsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsConversationsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutServiceAgentsConversationsId404JSONResponse) VisitPutServiceAgentsConversationsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutServiceAgentsConversationsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutServiceAgentsConversationsId500JSONResponse) VisitPutServiceAgentsConversationsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsConversationsIdMessagesRequestObject struct {
 	Id     string `json:"id"`
 	Params GetServiceAgentsConversationsIdMessagesParams
@@ -30917,6 +31137,68 @@ func (response PostServiceAgentsConversationsIdMessages404JSONResponse) VisitPos
 type PostServiceAgentsConversationsIdMessages500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostServiceAgentsConversationsIdMessages500JSONResponse) VisitPostServiceAgentsConversationsIdMessagesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsConversationsIdUnassignRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostServiceAgentsConversationsIdUnassignResponseObject interface {
+	VisitPostServiceAgentsConversationsIdUnassignResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsConversationsIdUnassign200JSONResponse ConversationManagerConversation
+
+func (response PostServiceAgentsConversationsIdUnassign200JSONResponse) VisitPostServiceAgentsConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsConversationsIdUnassign400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsConversationsIdUnassign400JSONResponse) VisitPostServiceAgentsConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsConversationsIdUnassign401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsConversationsIdUnassign401JSONResponse) VisitPostServiceAgentsConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsConversationsIdUnassign403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsConversationsIdUnassign403JSONResponse) VisitPostServiceAgentsConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsConversationsIdUnassign404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsConversationsIdUnassign404JSONResponse) VisitPostServiceAgentsConversationsIdUnassignResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsConversationsIdUnassign500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsConversationsIdUnassign500JSONResponse) VisitPostServiceAgentsConversationsIdUnassignResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -35339,6 +35621,9 @@ type StrictServerInterface interface {
 	// Send a message
 	// (POST /conversations/{id}/messages)
 	PostConversationsIdMessages(ctx context.Context, request PostConversationsIdMessagesRequestObject) (PostConversationsIdMessagesResponseObject, error)
+	// Unassign the conversation
+	// (POST /conversations/{id}/unassign)
+	PostConversationsIdUnassign(ctx context.Context, request PostConversationsIdUnassignRequestObject) (PostConversationsIdUnassignResponseObject, error)
 	// Get customer info
 	// (GET /customer)
 	GetCustomer(ctx context.Context, request GetCustomerRequestObject) (GetCustomerResponseObject, error)
@@ -35714,12 +35999,18 @@ type StrictServerInterface interface {
 	// Get detailed conversation info
 	// (GET /service_agents/conversations/{id})
 	GetServiceAgentsConversationsId(ctx context.Context, request GetServiceAgentsConversationsIdRequestObject) (GetServiceAgentsConversationsIdResponseObject, error)
+	// Update conversation info
+	// (PUT /service_agents/conversations/{id})
+	PutServiceAgentsConversationsId(ctx context.Context, request PutServiceAgentsConversationsIdRequestObject) (PutServiceAgentsConversationsIdResponseObject, error)
 	// Get list of conversation messages
 	// (GET /service_agents/conversations/{id}/messages)
 	GetServiceAgentsConversationsIdMessages(ctx context.Context, request GetServiceAgentsConversationsIdMessagesRequestObject) (GetServiceAgentsConversationsIdMessagesResponseObject, error)
 	// Send a message to the conversation
 	// (POST /service_agents/conversations/{id}/messages)
 	PostServiceAgentsConversationsIdMessages(ctx context.Context, request PostServiceAgentsConversationsIdMessagesRequestObject) (PostServiceAgentsConversationsIdMessagesResponseObject, error)
+	// Unassign the conversation
+	// (POST /service_agents/conversations/{id}/unassign)
+	PostServiceAgentsConversationsIdUnassign(ctx context.Context, request PostServiceAgentsConversationsIdUnassignRequestObject) (PostServiceAgentsConversationsIdUnassignResponseObject, error)
 	// Get customer details
 	// (GET /service_agents/customer)
 	GetServiceAgentsCustomer(ctx context.Context, request GetServiceAgentsCustomerRequestObject) (GetServiceAgentsCustomerResponseObject, error)
@@ -39783,6 +40074,33 @@ func (sh *strictHandler) PostConversationsIdMessages(ctx *gin.Context, id string
 	}
 }
 
+// PostConversationsIdUnassign operation middleware
+func (sh *strictHandler) PostConversationsIdUnassign(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostConversationsIdUnassignRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostConversationsIdUnassign(ctx, request.(PostConversationsIdUnassignRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostConversationsIdUnassign")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostConversationsIdUnassignResponseObject); ok {
+		if err := validResponse.VisitPostConversationsIdUnassignResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetCustomer operation middleware
 func (sh *strictHandler) GetCustomer(ctx *gin.Context) {
 	var request GetCustomerRequestObject
@@ -43513,6 +43831,41 @@ func (sh *strictHandler) GetServiceAgentsConversationsId(ctx *gin.Context, id st
 	}
 }
 
+// PutServiceAgentsConversationsId operation middleware
+func (sh *strictHandler) PutServiceAgentsConversationsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request PutServiceAgentsConversationsIdRequestObject
+
+	request.Id = id
+
+	var body PutServiceAgentsConversationsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutServiceAgentsConversationsId(ctx, request.(PutServiceAgentsConversationsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutServiceAgentsConversationsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutServiceAgentsConversationsIdResponseObject); ok {
+		if err := validResponse.VisitPutServiceAgentsConversationsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetServiceAgentsConversationsIdMessages operation middleware
 func (sh *strictHandler) GetServiceAgentsConversationsIdMessages(ctx *gin.Context, id string, params GetServiceAgentsConversationsIdMessagesParams) {
 	var request GetServiceAgentsConversationsIdMessagesRequestObject
@@ -43569,6 +43922,33 @@ func (sh *strictHandler) PostServiceAgentsConversationsIdMessages(ctx *gin.Conte
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostServiceAgentsConversationsIdMessagesResponseObject); ok {
 		if err := validResponse.VisitPostServiceAgentsConversationsIdMessagesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsConversationsIdUnassign operation middleware
+func (sh *strictHandler) PostServiceAgentsConversationsIdUnassign(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostServiceAgentsConversationsIdUnassignRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsConversationsIdUnassign(ctx, request.(PostServiceAgentsConversationsIdUnassignRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsConversationsIdUnassign")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostServiceAgentsConversationsIdUnassignResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsConversationsIdUnassignResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
