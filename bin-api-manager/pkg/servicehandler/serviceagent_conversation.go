@@ -63,3 +63,58 @@ func (h *serviceHandler) ServiceAgentConversationList(ctx context.Context, a *au
 
 	return res, nil
 }
+
+// ServiceAgentConversationUpdate updates the conversation of the given id for a service-agent caller.
+// Only the owning agent may call this endpoint.
+func (h *serviceHandler) ServiceAgentConversationUpdate(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, serviceerrors.ErrAuthenticationRequired
+	}
+
+	// get
+	tmp, err := h.conversationGet(ctx, conversationID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get conversation.")
+	}
+
+	if tmp.OwnerID != a.AgentID() {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	updated, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, fields)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not update conversation.")
+	}
+
+	return updated.ConvertWebhookMessage(), nil
+}
+
+// ServiceAgentConversationUnassign removes the agent as the owner of the given conversation.
+// Only the owning agent may call this endpoint.
+func (h *serviceHandler) ServiceAgentConversationUnassign(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error) {
+	if !a.IsAgent() {
+		return nil, serviceerrors.ErrAuthenticationRequired
+	}
+
+	// get
+	tmp, err := h.conversationGet(ctx, conversationID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not get conversation.")
+	}
+
+	if tmp.OwnerID != a.AgentID() {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	unassignFields := map[cvconversation.Field]any{
+		cvconversation.FieldOwnerID:   uuid.Nil,
+		cvconversation.FieldOwnerType: "",
+	}
+
+	updated, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, unassignFields)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Could not unassign conversation.")
+	}
+
+	return updated.ConvertWebhookMessage(), nil
+}

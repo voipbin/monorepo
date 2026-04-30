@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -244,6 +245,41 @@ func (h *server) PostConversationsIdMessages(c *gin.Context, id string) {
 	res, err := h.serviceHandler.ConversationMessageSend(c.Request.Context(), a, target, req.Text, []cvmedia.Media{})
 	if err != nil {
 		log.Errorf("Could not create a customer. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
+func (h *server) PostConversationsIdUnassign(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostConversationsIdUnassign",
+		"request_address": c.ClientIP(),
+		"conversation_id": id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// Convert openapi_types.UUID to uuid.UUID
+	conversationID, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid conversation ID format. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
+		return
+	}
+
+	res, err := h.serviceHandler.ConversationUnassign(c.Request.Context(), a, conversationID)
+	if err != nil {
+		log.Errorf("Could not unassign the conversation. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}

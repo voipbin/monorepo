@@ -472,42 +472,6 @@ func Test_ConversationUpdate(t *testing.T) {
 				},
 			},
 		},
-		{
-			name: "owning agent self-unassigns owner_id (nil UUID)",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         owningAgentID,
-					CustomerID: customerID,
-				},
-				Permission: amagent.PermissionNone,
-			}),
-
-			conversationID: conversationID,
-			fileds: map[cvconversation.Field]any{
-				cvconversation.FieldOwnerID: uuid.Nil,
-			},
-
-			responseConversation: &cvconversation.Conversation{
-				Identity: commonidentity.Identity{
-					ID:         conversationID,
-					CustomerID: customerID,
-				},
-				Owner: commonidentity.Owner{
-					OwnerType: commonidentity.OwnerTypeAgent,
-					OwnerID:   owningAgentID,
-				},
-			},
-			expectRes: &cvconversation.WebhookMessage{
-				Identity: commonidentity.Identity{
-					ID:         conversationID,
-					CustomerID: customerID,
-				},
-				Owner: commonidentity.Owner{
-					OwnerType: commonidentity.OwnerTypeAgent,
-					OwnerID:   owningAgentID,
-				},
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -746,6 +710,30 @@ func Test_ConversationUpdate_PermissionDenied(t *testing.T) {
 				Owner: commonidentity.Owner{
 					OwnerType: commonidentity.OwnerTypeNone,
 					OwnerID:   uuid.Nil,
+				},
+			},
+		},
+		{
+			name: "owning agent calls PUT — now rejected (breaking change)",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         owningAgentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionNone,
+			}),
+			conversationID: conversationID,
+			fileds: map[cvconversation.Field]any{
+				cvconversation.FieldOwnerID: uuid.Nil,
+			},
+			responseConversation: &cvconversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         conversationID,
+					CustomerID: customerID,
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   owningAgentID,
 				},
 			},
 		},
