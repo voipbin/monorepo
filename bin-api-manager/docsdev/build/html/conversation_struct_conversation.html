@@ -9,7 +9,6 @@
         <title>Conversation &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -219,8 +218,8 @@
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The conversation’s unique identifier. Returned when creating via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conversations</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer’s ID. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): The type of the owner of this conversation (e.g., <code class="docutils literal notranslate"><span class="pre">agent</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The owner’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): The type of agent currently assigned to this conversation. When set (e.g., <code class="docutils literal notranslate"><span class="pre">agent</span></code>), the conversation is currently owned by an agent and inbound messages on this conversation <strong>skip the registered flow trigger</strong> until the assignment is cleared. Empty string means no agent is assigned and the registered flow runs as usual on inbound messages. The server derives this field from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>; clients must not set it directly. See <a class="reference internal" href="conversation_overview.html#conversation-overview-assigning-conversation-to-agent"><span class="std std-ref">Assigning a Conversation to an Agent</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The unique identifier of the agent currently assigned to this conversation. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. The nil UUID <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> (or empty string in webhook payloads) means the conversation is unassigned. When populated, the conversation is currently owned by that agent and inbound messages <strong>skip the registered flow trigger</strong> for the duration of the assignment. Already-running activeflows are unaffected. See <a class="reference internal" href="conversation_overview.html#conversation-overview-assigning-conversation-to-agent"><span class="std std-ref">Assigning a Conversation to an Agent</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">account_id</span></code> (UUID): The messaging account ID associated with this conversation.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable name for the conversation (e.g., “Customer Support #1234”).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): Additional description or context for the conversation.</p></li>
@@ -347,7 +346,7 @@
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -355,11 +354,11 @@
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

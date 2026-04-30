@@ -9,7 +9,6 @@
         <title>Welcome to VoIPBIN’s documentation! &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -1479,6 +1478,7 @@
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#how-conversations-are-created">How Conversations Are Created</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#sending-messages">Sending Messages</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#receiving-messages">Receiving Messages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#assigning-a-conversation-to-an-agent">Assigning a Conversation to an Agent</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#cross-channel-continuity">Cross-Channel Continuity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#event-types">Event Types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#common-scenarios">Common Scenarios</a></li>
@@ -1524,6 +1524,16 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="conversation.html#get-list-of-conversation-messages">Get list of conversation messages</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="conversation.html#id10">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="conversation.html#assigning-a-conversation-to-an-agent-walkthrough">Assigning a conversation to an agent (walkthrough)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#prerequisites-for-this-walkthrough">Prerequisites for this walkthrough</a></li>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#step-1-admin-assigns-the-conversation-to-the-agent">Step 1. Admin assigns the conversation to the agent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#step-2-agent-receives-a-conversation-updated-webhook">Step 2. Agent receives a <code class="docutils literal notranslate"><span class="pre">conversation_updated</span></code> webhook</a></li>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#step-3-inbound-message-arrives-on-the-assigned-conversation">Step 3. Inbound message arrives on the assigned conversation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#step-4-agent-replies-to-the-conversation">Step 4. Agent replies to the conversation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#step-5-agent-self-unassigns-when-handling-is-complete">Step 5. Agent self-unassigns when handling is complete</a></li>
+<li class="toctree-l4"><a class="reference internal" href="conversation.html#step-6-next-inbound-message-registered-flow-resumes">Step 6. Next inbound message: registered flow resumes</a></li>
 </ul>
 </li>
 </ul>
@@ -2593,7 +2603,7 @@
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -2601,11 +2611,11 @@
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

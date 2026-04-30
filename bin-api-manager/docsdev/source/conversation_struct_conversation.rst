@@ -33,8 +33,8 @@ Conversation
 
 * ``id`` (UUID): The conversation's unique identifier. Returned when creating via ``POST /conversations`` or listing via ``GET /conversations``.
 * ``customer_id`` (UUID): The customer's ID. Obtained from the ``id`` field of ``GET /customers``.
-* ``owner_type`` (enum string): The type of the owner of this conversation (e.g., ``agent``).
-* ``owner_id`` (UUID): The owner's unique identifier.
+* ``owner_type`` (enum string): The type of agent currently assigned to this conversation. When set (e.g., ``agent``), the conversation is currently owned by an agent and inbound messages on this conversation **skip the registered flow trigger** until the assignment is cleared. Empty string means no agent is assigned and the registered flow runs as usual on inbound messages. The server derives this field from ``owner_id``; clients must not set it directly. See :ref:`Assigning a Conversation to an Agent <conversation-overview-assigning-conversation-to-agent>`.
+* ``owner_id`` (UUID): The unique identifier of the agent currently assigned to this conversation. Obtained from the ``id`` field of ``GET /agents``. The nil UUID ``00000000-0000-0000-0000-000000000000`` (or empty string in webhook payloads) means the conversation is unassigned. When populated, the conversation is currently owned by that agent and inbound messages **skip the registered flow trigger** for the duration of the assignment. Already-running activeflows are unaffected. See :ref:`Assigning a Conversation to an Agent <conversation-overview-assigning-conversation-to-agent>`.
 * ``account_id`` (UUID): The messaging account ID associated with this conversation.
 * ``name`` (String): A human-readable name for the conversation (e.g., "Customer Support #1234").
 * ``detail`` (String): Additional description or context for the conversation.

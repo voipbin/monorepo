@@ -9,6 +9,10 @@ Overview
    * **Cost:** Free (conversations are organizational containers; message delivery costs apply per channel)
    * **Async:** Yes. Messages sent within a conversation are delivered asynchronously. Use webhooks to receive delivery status and inbound message events.
 
+.. note:: **Recent change (additive, non-breaking)**
+
+   As of this release, ``owner_type`` and ``owner_id`` in conversation webhook payloads will start carrying real values for conversations that have been explicitly assigned to an agent. Existing unassigned conversations continue to read empty values for both fields, so no client-side change is required. See :ref:`Assigning a Conversation to an Agent <conversation-overview-assigning-conversation-to-agent>`.
+
 VoIPBIN's Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.
 
 With the Conversation API you can:
@@ -276,6 +280,81 @@ VoIPBIN delivers inbound messages to your application via webhooks.
             }
         }
     }
+
+
+.. _conversation-overview-assigning-conversation-to-agent:
+
+Assigning a Conversation to an Agent
+------------------------------------
+A conversation can be explicitly assigned to a specific agent so that inbound messages on that conversation are routed to the agent for manual handling instead of running through the registered flow. Assignment is an additive feature: conversations that have never been assigned continue to behave exactly as before.
+
+**How assignment works**
+
+Assignment is performed via a partial-update on the conversation:
+
+.. code:: bash
+
+    PUT https://api.voipbin.net/v1.0/conversations/<conversation-id>?token=<token>
+    Content-Type: application/json
+
+    {
+        "owner_id": "<agent-uuid>"
+    }
+
+To **unassign** a conversation, send the nil UUID:
+
+.. code:: json
+
+    {
+        "owner_id": "00000000-0000-0000-0000-000000000000"
+    }
+
+The server derives ``owner_type`` from ``owner_id``: when ``owner_id`` is a real agent UUID, ``owner_type`` is set to ``agent``; when ``owner_id`` is the nil UUID, ``owner_type`` is cleared to an empty string. Clients must not set ``owner_type`` directly — any value supplied for ``owner_type`` in the request body is ignored.
+
+**Permission Semantics**
+
++--------------------------+--------------------------------------------------------------+
+| Caller                   | What they can do via ``PUT /v1.0/conversations/<id>``        |
++==========================+==============================================================+
+| Customer admin / manager | Assign the conversation to any agent under the same          |
+|                          | customer; reassign it to a different agent; unassign it.     |
++--------------------------+--------------------------------------------------------------+
+| Owning agent             | Self-unassign only — set ``owner_id`` to the nil UUID.       |
+|                          | Cannot assign to themselves and cannot reassign to another   |
+|                          | agent.                                                       |
++--------------------------+--------------------------------------------------------------+
+| Any other agent          | No assignment-related changes permitted.                     |
++--------------------------+--------------------------------------------------------------+
+
+**Error Responses**
+
+* **403 Forbidden:**
+    * **Cause:** Cross-agent assignment attempt (e.g., agent tries to assign the conversation to themselves or to another agent), or any attempt to modify other fields without admin/manager permission. Also returned for cross-customer attempts.
+    * **Fix:** Use a customer admin or manager token to assign or reassign. Owning agents may only set ``owner_id`` to the nil UUID.
+
+* **400 Bad Request:**
+    * **Cause:** ``owner_id`` could not be validated — either it does not reference an existing agent, or the referenced agent does not belong to the same customer as the conversation. The two cases are intentionally indistinguishable in the response.
+    * **Fix:** Verify the agent UUID via ``GET https://api.voipbin.net/v1.0/agents`` under the same customer and retry.
+
+**Behavior Change for Inbound Messages**
+
+When a conversation is assigned (``owner_id`` is a real agent UUID):
+
+* New inbound messages do **not** trigger the conversation's registered flow. No new activeflow is created.
+* Outbound message delivery via ``POST /v1.0/conversations/<id>/messages`` continues to work normally — the assigned agent (or admin/manager) can reply through the standard message-send API.
+* Any activeflow that was already running before the assignment continues to run to completion; assignment does not interrupt in-flight flows.
+
+When a conversation is unassigned (``owner_id`` is the nil UUID or empty):
+
+* The next inbound message resumes the standard behavior and triggers the registered flow as usual.
+
+.. note:: **AI Implementation Hint**
+
+   The unassign payload must be exactly ``{"owner_id": "00000000-0000-0000-0000-000000000000"}``. Do not include ``owner_type`` — the server always derives it from ``owner_id``. To unassign as the owning agent, send only this single key; combining it with other fields (e.g., ``name``) requires admin/manager permission and will be rejected with 403 if the caller is the owning agent.
+
+**Webhook Updates**
+
+When a conversation is assigned or unassigned, a ``conversation_updated`` event fires with the new ``owner_type`` and ``owner_id`` values. See :ref:`Conversation <conversation-struct-conversation>` for the field definitions.
 
 
 Cross-Channel Continuity
