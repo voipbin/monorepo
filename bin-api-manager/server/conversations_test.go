@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
@@ -399,5 +400,22 @@ func Test_conversationsIDPut(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
+	}
+}
+
+func Test_PutConversationsId_emptyStringPreserved(t *testing.T) {
+	body := []byte(`{"name": ""}`)
+	var req openapi_server.PutConversationsIdJSONBody
+	if errBind := json.Unmarshal(body, &req); errBind != nil {
+		t.Fatalf("unmarshal failed: %v", errBind)
+	}
+	raw, errFilter := structToFilteredMap(req)
+	if errFilter != nil {
+		t.Fatalf("filter failed: %v", errFilter)
+	}
+	if v, ok := raw["name"]; !ok {
+		t.Errorf("expected name key in filtered map, got: %v", raw)
+	} else if v != "" {
+		t.Errorf("expected name='', got: %q", v)
 	}
 }
