@@ -9,6 +9,7 @@ import (
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -207,14 +208,18 @@ func (h *serviceHandler) ConversationUnassign(ctx context.Context, a *auth.AuthI
 		return nil, fmt.Errorf("%w: could not find conversation info", err)
 	}
 
-	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	isAdminOrManager := h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager)
+	isOwningAgent := a.IsAgent() && a.Agent != nil &&
+		c.OwnerType == commonidentity.OwnerTypeAgent &&
+		c.OwnerID == a.Agent.ID
+
+	if !isAdminOrManager && !isOwningAgent {
 		log.Info("Caller has no permission to unassign the conversation.")
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	unassignFields := map[cvconversation.Field]any{
-		cvconversation.FieldOwnerID:   uuid.Nil,
-		cvconversation.FieldOwnerType: "",
+		cvconversation.FieldOwnerID: uuid.Nil,
 	}
 
 	res2, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, unassignFields)

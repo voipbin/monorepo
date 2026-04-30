@@ -4,6 +4,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 
 	"github.com/gin-gonic/gin"
@@ -195,8 +196,54 @@ func (h *server) PutServiceAgentsConversationsId(c *gin.Context, id openapi_type
 		"request_address": c.ClientIP(),
 		"conversation_id": id,
 	})
-	log.Info("PutServiceAgentsConversationsId is not yet implemented.")
-	c.JSON(501, map[string]string{"error": "not implemented"})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"agent": a,
+	})
+
+	// Convert openapi_types.UUID to uuid.UUID
+	conversationID, err := uuid.FromString(id.String())
+	if err != nil {
+		log.Errorf("Invalid conversation ID format. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
+		return
+	}
+
+	var req openapi_server.PutServiceAgentsConversationsIdJSONBody
+	if err := c.BindJSON(&req); err != nil {
+		log.Errorf("Could not parse the request. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
+		return
+	}
+
+	raw, err := structToFilteredMap(req)
+	if err != nil {
+		log.Errorf("Could not convert fields. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "Could not convert request fields.").Wrap(err))
+		return
+	}
+
+	fields, err := cvconversation.ConvertStringMapToFieldMap(raw)
+	if err != nil {
+		log.Errorf("Could not convert fields. err: %v", err)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "Could not convert request fields.").Wrap(err))
+		return
+	}
+
+	res, err := h.serviceHandler.ServiceAgentConversationUpdate(c.Request.Context(), a, conversationID, fields)
+	if err != nil {
+		log.Errorf("Could not update the conversation. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
 }
 
 func (h *server) PostServiceAgentsConversationsIdUnassign(c *gin.Context, id openapi_types.UUID) {
