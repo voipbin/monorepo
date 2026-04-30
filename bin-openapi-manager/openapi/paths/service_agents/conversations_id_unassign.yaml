@@ -1,0 +1,34 @@
+post:
+  summary: Unassign the conversation
+  description: |
+    Removes the current owner from the conversation. Admin and manager callers may unassign any
+    conversation. The owning agent may unassign themselves. Returns 403 if the caller is neither
+    an admin/manager nor the current owner.
+  tags:
+    - Service Agent
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "828e75ba-ed24-11ec-bbf2-7f0e56ac76f1"
+      description: "The unique identifier of the conversation. Returned from the `GET /service_agents/conversations` response."
+  responses:
+    '200':
+      description: Conversation after unassignment.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ConversationManagerConversation'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
