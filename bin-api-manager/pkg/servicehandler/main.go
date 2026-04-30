@@ -428,6 +428,7 @@ type ServiceHandler interface {
 	ConversationGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cvconversation.WebhookMessage, error)
 	ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, ownerID uuid.UUID) ([]*cvconversation.WebhookMessage, error)
 	ConversationUpdate(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.WebhookMessage, error)
+	ConversationUnassign(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error)
 	ConversationMessageGetsByConversationID(
 		ctx context.Context,
 		a *auth.AuthIdentity,
@@ -776,6 +777,8 @@ type ServiceHandler interface {
 	// service_agent conversation
 	ServiceAgentConversationGet(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error)
 	ServiceAgentConversationList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cvconversation.WebhookMessage, error)
+	ServiceAgentConversationUpdate(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, fields map[cvconversation.Field]any) (*cvconversation.WebhookMessage, error)
+	ServiceAgentConversationUnassign(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error)
 
 	// service_agent conversation message
 	ServiceAgentConversationMessageList(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, size uint64, token string) ([]*cvmessage.WebhookMessage, error)
