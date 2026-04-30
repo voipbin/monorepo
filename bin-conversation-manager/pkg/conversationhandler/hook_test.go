@@ -116,6 +116,17 @@ func Test_Hook(t *testing.T) {
 
 func Test_hookLine(t *testing.T) {
 
+	accountID := uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae")
+	flowID := uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
+	convID1 := uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43")
+	convID2 := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	custID1 := uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0")
+	custID2 := uuid.FromStringOrNil("b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0")
+	msgID1 := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	msgID2 := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+	afID := uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444")
+	agentOwnerID := uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777")
+
 	tests := []struct {
 		name string
 
@@ -123,18 +134,23 @@ func Test_hookLine(t *testing.T) {
 		data    []byte
 
 		responseHookResults []*linehandler.HookResult
-		responseActiveflow  *fmactiveflow.Activeflow
+		// responseAccount is what accountHandler.Get(ctx, cv.AccountID) returns for
+		// flow-mode dispatch. May be nil for cases that never fetch.
+		responseAccount    *account.Account
+		responseActiveflow *fmactiveflow.Activeflow
 
+		// expectActiveflowCalls: 0 = none expected; >0 = activeflow create succeeds
+		// for each valid result; -1 = activeflow create returns error for first result.
 		expectActiveflowCalls int
 		expectHookError       error
 		expectError           bool
 	}{
 		{
-			name: "nil message flow id returns early without calling activeflow",
+			name: "account has nil message flow id -> no activeflow created",
 
 			account: &account.Account{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+					ID: accountID,
 				},
 			},
 			data: []byte(`{}`),
@@ -143,18 +159,26 @@ func Test_hookLine(t *testing.T) {
 				{
 					Conversation: &conversation.Conversation{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
-							CustomerID: uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0"),
+							ID:         convID1,
+							CustomerID: custID1,
 						},
+						Type:      conversation.TypeLine,
+						AccountID: accountID,
 					},
 					Message: &message.Message{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-							CustomerID: uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0"),
+							ID:         msgID1,
+							CustomerID: custID1,
 						},
-						ConversationID: uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
+						ConversationID: convID1,
 					},
 				},
+			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				MessageFlowID: uuid.Nil,
 			},
 
 			expectActiveflowCalls: 0,
@@ -165,9 +189,9 @@ func Test_hookLine(t *testing.T) {
 
 			account: &account.Account{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+					ID: accountID,
 				},
-				MessageFlowID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+				MessageFlowID: flowID,
 			},
 			data: []byte(`{}`),
 
@@ -175,37 +199,47 @@ func Test_hookLine(t *testing.T) {
 				{
 					Conversation: &conversation.Conversation{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
-							CustomerID: uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0"),
+							ID:         convID1,
+							CustomerID: custID1,
 						},
+						Type:      conversation.TypeLine,
+						AccountID: accountID,
 					},
 					Message: &message.Message{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-							CustomerID: uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0"),
+							ID:         msgID1,
+							CustomerID: custID1,
 						},
-						ConversationID: uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
+						ConversationID: convID1,
 					},
 				},
 				{
 					Conversation: &conversation.Conversation{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
-							CustomerID: uuid.FromStringOrNil("b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"),
+							ID:         convID2,
+							CustomerID: custID2,
 						},
+						Type:      conversation.TypeLine,
+						AccountID: accountID,
 					},
 					Message: &message.Message{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-							CustomerID: uuid.FromStringOrNil("b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0"),
+							ID:         msgID2,
+							CustomerID: custID2,
 						},
-						ConversationID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+						ConversationID: convID2,
 					},
 				},
 			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				MessageFlowID: flowID,
+			},
 			responseActiveflow: &fmactiveflow.Activeflow{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+					ID: afID,
 				},
 			},
 
@@ -217,9 +251,9 @@ func Test_hookLine(t *testing.T) {
 
 			account: &account.Account{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+					ID: accountID,
 				},
-				MessageFlowID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+				MessageFlowID: flowID,
 			},
 			data: []byte(`{}`),
 
@@ -227,16 +261,18 @@ func Test_hookLine(t *testing.T) {
 				{
 					Conversation: &conversation.Conversation{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
-							CustomerID: uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0"),
+							ID:         convID1,
+							CustomerID: custID1,
 						},
+						Type:      conversation.TypeLine,
+						AccountID: accountID,
 					},
 					Message: &message.Message{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-							CustomerID: uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0"),
+							ID:         msgID1,
+							CustomerID: custID1,
 						},
-						ConversationID: uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
+						ConversationID: convID1,
 					},
 				},
 				{
@@ -252,13 +288,21 @@ func Test_hookLine(t *testing.T) {
 						Identity: commonidentity.Identity{
 							ID: uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"),
 						},
+						Type:      conversation.TypeLine,
+						AccountID: accountID,
 					},
 					Message: nil,
 				},
 			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				MessageFlowID: flowID,
+			},
 			responseActiveflow: &fmactiveflow.Activeflow{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+					ID: afID,
 				},
 			},
 
@@ -266,13 +310,13 @@ func Test_hookLine(t *testing.T) {
 			expectError:           false,
 		},
 		{
-			name: "returns error when executeActiveflow fails",
+			name: "assigned conversation (agent owner) -> agent mode no-op, no flow rpcs",
 
 			account: &account.Account{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+					ID: accountID,
 				},
-				MessageFlowID: uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+				MessageFlowID: flowID,
 			},
 			data: []byte(`{}`),
 
@@ -280,18 +324,66 @@ func Test_hookLine(t *testing.T) {
 				{
 					Conversation: &conversation.Conversation{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
-							CustomerID: uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0"),
+							ID:         convID1,
+							CustomerID: custID1,
 						},
+						Owner: commonidentity.Owner{
+							OwnerType: commonidentity.OwnerTypeAgent,
+							OwnerID:   agentOwnerID,
+						},
+						Type:      conversation.TypeLine,
+						AccountID: accountID,
 					},
 					Message: &message.Message{
 						Identity: commonidentity.Identity{
-							ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-							CustomerID: uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0"),
+							ID:         msgID1,
+							CustomerID: custID1,
 						},
-						ConversationID: uuid.FromStringOrNil("f7f25d6c-e874-11ec-b140-3f088b887f43"),
+						ConversationID: convID1,
 					},
 				},
+			},
+
+			// No accountHandler.Get, no FlowV1ActiveflowCreate, no FlowV1VariableSetVariable,
+			// no FlowV1ActiveflowExecute — agent-owned conversations skip the flow path entirely.
+			expectActiveflowCalls: 0,
+			expectError:           false,
+		},
+		{
+			name: "returns error when executeActiveflow fails",
+
+			account: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				MessageFlowID: flowID,
+			},
+			data: []byte(`{}`),
+
+			responseHookResults: []*linehandler.HookResult{
+				{
+					Conversation: &conversation.Conversation{
+						Identity: commonidentity.Identity{
+							ID:         convID1,
+							CustomerID: custID1,
+						},
+						Type:      conversation.TypeLine,
+						AccountID: accountID,
+					},
+					Message: &message.Message{
+						Identity: commonidentity.Identity{
+							ID:         msgID1,
+							CustomerID: custID1,
+						},
+						ConversationID: convID1,
+					},
+				},
+			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				MessageFlowID: flowID,
 			},
 
 			expectActiveflowCalls: -1, // special: activeflow create returns error
@@ -302,7 +394,7 @@ func Test_hookLine(t *testing.T) {
 
 			account: &account.Account{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("e9eb2682-e6ed-11ec-a8f2-0b533280b1ae"),
+					ID: accountID,
 				},
 			},
 			data: []byte(`{}`),
@@ -321,6 +413,7 @@ func Test_hookLine(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
 			h := &conversationHandler{
@@ -328,6 +421,7 @@ func Test_hookLine(t *testing.T) {
 				db:             mockDB,
 				notifyHandler:  mockNotify,
 				reqHandler:     mockReq,
+				accountHandler: mockAccount,
 				messageHandler: mockMessage,
 				lineHandler:    mockLine,
 			}
@@ -340,35 +434,46 @@ func Test_hookLine(t *testing.T) {
 				mockLine.EXPECT().Hook(ctx, tt.account, tt.data).Return(tt.responseHookResults, nil)
 			}
 
+			// Collect valid flow-mode results: non-nil conversation, non-nil message,
+			// AND not owned by an agent (agent-owned conversations skip the flow path).
+			var flowResults []*linehandler.HookResult
+			for _, r := range tt.responseHookResults {
+				if r.Conversation == nil || r.Message == nil {
+					continue
+				}
+				if r.Conversation.OwnerType == commonidentity.OwnerTypeAgent && r.Conversation.OwnerID != uuid.Nil {
+					continue
+				}
+				flowResults = append(flowResults, r)
+			}
+
+			// Each flow-mode result triggers an accountHandler.Get for the cv.AccountID lookup
+			// performed inside runExecuteModeFlowLine.
+			for range flowResults {
+				mockAccount.EXPECT().Get(ctx, accountID).Return(tt.responseAccount, nil)
+			}
+
 			// mock activeflow calls based on expectActiveflowCalls
 			if tt.expectActiveflowCalls == -1 {
-				// activeflow create returns error
-				r := tt.responseHookResults[0]
+				// activeflow create returns error for first valid flow-mode result
+				r := flowResults[0]
 				mockReq.EXPECT().FlowV1ActiveflowCreate(
 					ctx,
 					uuid.Nil,
 					r.Message.CustomerID,
-					tt.account.MessageFlowID,
+					tt.responseAccount.MessageFlowID,
 					fmactiveflow.ReferenceTypeConversation,
 					r.Message.ConversationID,
 					uuid.Nil,
 				).Return(nil, fmt.Errorf("activeflow create failed"))
 			} else if tt.expectActiveflowCalls > 0 {
-				// collect valid results (non-nil conversation and message)
-				var validResults []*linehandler.HookResult
-				for _, r := range tt.responseHookResults {
-					if r.Conversation != nil && r.Message != nil {
-						validResults = append(validResults, r)
-					}
-				}
-
-				for _, r := range validResults {
+				for _, r := range flowResults {
 					activeflowID := tt.responseActiveflow.ID
 					mockReq.EXPECT().FlowV1ActiveflowCreate(
 						ctx,
 						uuid.Nil,
 						r.Message.CustomerID,
-						tt.account.MessageFlowID,
+						tt.responseAccount.MessageFlowID,
 						fmactiveflow.ReferenceTypeConversation,
 						r.Message.ConversationID,
 						uuid.Nil,
