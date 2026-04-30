@@ -27,6 +27,7 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 		conversationID uuid.UUID
 
 		responseConversation *cvconversation.Conversation
+		expectErr            error
 		expectRes            *cvconversation.WebhookMessage
 	}
 
@@ -122,6 +123,52 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "regular agent denied for conversation it does not own",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			conversationID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+
+			responseConversation: &cvconversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("aaaaaaaa-3b9f-11ef-98ac-db226570f09a"),
+				},
+			},
+			expectErr: serviceerrors.ErrPermissionDenied,
+		},
+		{
+			name: "admin denied for conversation in different customer",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaaaaaa-3b9f-11ef-98ac-db226570f09a"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			conversationID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+
+			responseConversation: &cvconversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("cccccccc-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("dddddddd-3b9f-11ef-98ac-db226570f09a"),
+				},
+			},
+			expectErr: serviceerrors.ErrPermissionDenied,
+		},
 	}
 
 	for _, tt := range tests {
@@ -141,6 +188,12 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
 
 			res, err := h.ServiceAgentConversationGet(ctx, tt.agent, tt.conversationID)
+			if tt.expectErr != nil {
+				if !errors.Is(err, tt.expectErr) {
+					t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+				}
+				return
+			}
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
