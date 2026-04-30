@@ -23,11 +23,16 @@ import (
 
 func Test_ConversationListByCustomerID(t *testing.T) {
 
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979")
+	otherAgentID := uuid.FromStringOrNil("a01f2c3a-3001-11f0-9d11-2bd5b4a45af1")
+
 	tests := []struct {
 		name      string
 		agent     *auth.AuthIdentity
 		pageToken string
 		pageSize  uint64
+		ownerID   uuid.UUID
 
 		responseConversations []cvconversation.Conversation
 
@@ -35,16 +40,17 @@ func Test_ConversationListByCustomerID(t *testing.T) {
 		expectRes     []*cvconversation.WebhookMessage
 	}{
 		{
-			name: "normal",
+			name: "admin lists without owner_id filter",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+					ID:         agentID,
+					CustomerID: customerID,
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 			pageToken: "2020-10-20T01:00:00.995000Z",
 			pageSize:  10,
+			ownerID:   uuid.Nil,
 
 			responseConversations: []cvconversation.Conversation{
 				{
@@ -59,7 +65,7 @@ func Test_ConversationListByCustomerID(t *testing.T) {
 				},
 			},
 			expectFilters: map[cvconversation.Field]any{
-				cvconversation.FieldCustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				cvconversation.FieldCustomerID: customerID,
 				cvconversation.FieldDeleted:    false,
 			},
 			expectRes: []*cvconversation.WebhookMessage{
@@ -71,6 +77,72 @@ func Test_ConversationListByCustomerID(t *testing.T) {
 				{
 					Identity: commonidentity.Identity{
 						ID: uuid.FromStringOrNil("18c13288-ed21-11ec-9d0f-c7be55dc87d7"),
+					},
+				},
+			},
+		},
+		{
+			name: "admin lists with owner_id filter (any agent)",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			pageToken: "2020-10-20T01:00:00.995000Z",
+			pageSize:  10,
+			ownerID:   otherAgentID,
+
+			responseConversations: []cvconversation.Conversation{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("18965a18-ed21-11ec-89d2-b7e541377482"),
+					},
+				},
+			},
+			expectFilters: map[cvconversation.Field]any{
+				cvconversation.FieldCustomerID: customerID,
+				cvconversation.FieldDeleted:    false,
+				cvconversation.FieldOwnerID:    otherAgentID,
+			},
+			expectRes: []*cvconversation.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("18965a18-ed21-11ec-89d2-b7e541377482"),
+					},
+				},
+			},
+		},
+		{
+			name: "non-admin agent self-lists with own owner_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionNone,
+			}),
+			pageToken: "2020-10-20T01:00:00.995000Z",
+			pageSize:  10,
+			ownerID:   agentID,
+
+			responseConversations: []cvconversation.Conversation{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("18965a18-ed21-11ec-89d2-b7e541377482"),
+					},
+				},
+			},
+			expectFilters: map[cvconversation.Field]any{
+				cvconversation.FieldCustomerID: customerID,
+				cvconversation.FieldDeleted:    false,
+				cvconversation.FieldOwnerID:    agentID,
+			},
+			expectRes: []*cvconversation.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("18965a18-ed21-11ec-89d2-b7e541377482"),
 					},
 				},
 			},
@@ -93,13 +165,98 @@ func Test_ConversationListByCustomerID(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ConversationV1ConversationList(ctx, tt.pageToken, tt.pageSize, tt.expectFilters).Return(tt.responseConversations, nil)
-			res, err := h.ConversationGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken)
+			res, err := h.ConversationGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken, tt.ownerID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_ConversationListByCustomerID_PermissionDenied(t *testing.T) {
+
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979")
+	otherAgentID := uuid.FromStringOrNil("a01f2c3a-3001-11f0-9d11-2bd5b4a45af1")
+
+	tests := []struct {
+		name      string
+		agent     *auth.AuthIdentity
+		pageToken string
+		pageSize  uint64
+		ownerID   uuid.UUID
+	}{
+		{
+			name: "non-admin agent without owner_id filter",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionNone,
+			}),
+			pageToken: "2020-10-20T01:00:00.995000Z",
+			pageSize:  10,
+			ownerID:   uuid.Nil,
+		},
+		{
+			name: "non-admin agent with someone else's owner_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionNone,
+			}),
+			pageToken: "2020-10-20T01:00:00.995000Z",
+			pageSize:  10,
+			ownerID:   otherAgentID,
+		},
+		{
+			// Defense-in-depth: a malformed agent identity with a Nil agent ID
+			// must NOT pass the self-list gate even if the caller passes
+			// owner_id == uuid.Nil. The Nil-check on a.Agent.ID closes a
+			// theoretical privilege-escalation path.
+			name: "non-admin agent with nil agent id passes nil owner_id",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.Nil,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionNone,
+			}),
+			pageToken: "2020-10-20T01:00:00.995000Z",
+			pageSize:  10,
+			ownerID:   uuid.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			// Permission gate runs before any RPC; ConversationV1ConversationList must NOT be called.
+			res, err := h.ConversationGetsByCustomerID(ctx, tt.agent, tt.pageSize, tt.pageToken, tt.ownerID)
+			if !errors.Is(err, serviceerrors.ErrPermissionDenied) {
+				t.Errorf("Wrong match. expect: %v, got: %v", serviceerrors.ErrPermissionDenied, err)
+			}
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil, got: %v", res)
 			}
 		})
 	}

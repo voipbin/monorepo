@@ -36,13 +36,19 @@ func (h *serviceHandler) conversationGet(ctx context.Context, conversationID uui
 
 // ConversationGetsByCustomerID gets the list of conversations of the given customer id.
 // It returns list of conversations if it succeed.
-func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
+//
+// When ownerID is non-nil it is added to the filter map as FieldOwnerID. Permission rule:
+// admin/manager callers may pass any ownerID (including uuid.Nil) or omit it; non-admin agent
+// callers MUST pass ownerID equal to their own agent ID — any other case (cross-agent filter or
+// no filter) returns ErrPermissionDenied. See design §5.5.
+func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, ownerID uuid.UUID) ([]*cvconversation.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationGetsByCustomerID",
 		"customer_id": a.CustomerID,
 		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
+		"owner_id":    ownerID,
 	})
 	log.Debug("Getting a conversations.")
 
@@ -54,14 +60,21 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *au
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	// Admin/manager callers retain unrestricted access. Non-admin agent callers are permitted
+	// only when the request is filtered by their own agent ID (the "my conversations" path).
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission for this agent.")
-		return nil, serviceerrors.ErrPermissionDenied
+		if !a.IsAgent() || a.Agent == nil || a.Agent.ID == uuid.Nil || ownerID != a.Agent.ID {
+			log.Info("Caller has no permission to list conversations.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
 	}
 
 	filters := map[cvconversation.Field]any{
 		cvconversation.FieldDeleted:    false,
 		cvconversation.FieldCustomerID: a.CustomerID,
+	}
+	if ownerID != uuid.Nil {
+		filters[cvconversation.FieldOwnerID] = ownerID
 	}
 
 	tmps, err := h.conversationList(ctx, a, size, token, filters)

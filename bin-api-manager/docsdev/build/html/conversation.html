@@ -524,6 +524,13 @@ agent.</p></td>
 <p><strong>AI Implementation Hint</strong></p>
 <p>The unassign payload must be exactly <code class="docutils literal notranslate"><span class="pre">{&quot;owner_id&quot;:</span> <span class="pre">&quot;00000000-0000-0000-0000-000000000000&quot;}</span></code>. Do not include <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> — the server always derives it from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>. To unassign as the owning agent, send only this single key; combining it with other fields (e.g., <code class="docutils literal notranslate"><span class="pre">name</span></code>) requires admin/manager permission and will be rejected with 403 if the caller is the owning agent.</p>
 </div>
+<p><strong>Listing Conversations by Owner</strong></p>
+<p>Filter conversations by their currently assigned agent using the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> query parameter on <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>GET<span class="w"> </span>https://api.voipbin.net/v1.0/conversations?owner_id<span class="o">=</span>&lt;agent-uuid&gt;<span class="p">&amp;</span><span class="nv">page_token</span><span class="o">=</span>&lt;token&gt;
+</pre></div>
+</div>
+<p>This is the supported way to build a “my conversations” view for an agent.</p>
+<p>Permission rule: an agent caller (non-admin, non-manager) MUST set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to their own agent UUID; otherwise the request is rejected with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>. Admin and manager callers may pass any <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> or omit the filter entirely. Omitting the filter — or passing the nil UUID — disables the filter and returns all conversations the caller can see.</p>
 <p><strong>Webhook Updates</strong></p>
 <p>When a conversation is assigned or unassigned, a <code class="docutils literal notranslate"><span class="pre">conversation_updated</span></code> event fires with the new <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> and <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> values. See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation"><span class="std std-ref">Conversation</span></a> for the field definitions.</p>
 </section>
@@ -1312,6 +1319,19 @@ conversation participant.</p></td>
 <h4>Step 6. Next inbound message: registered flow resumes<a class="headerlink" href="#step-6-next-inbound-message-registered-flow-resumes" title="Link to this heading"></a></h4>
 <p>Once unassigned (<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID and <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is empty), the conversation reverts to standard behavior. The next inbound message triggers the registered flow as usual, creating a fresh activeflow you can observe via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/activeflows</span></code>.</p>
 </section>
+<section id="listing-my-conversations">
+<h4>Listing “my conversations”<a class="headerlink" href="#listing-my-conversations" title="Link to this heading"></a></h4>
+<p>Agents can build a “my conversations” view by filtering on <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> against their own agent UUID:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/conversations?owner_id=eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&amp;page_token=2026-04-30T10:00:00.000000Z&#39; \
+    --header &#39;Authorization: Bearer &lt;AGENT_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Agent callers (non-admin, non-manager) MUST set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to their own agent UUID. Any other value — or omitting the parameter entirely — returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>. Admin and manager callers have no such restriction; they may pass any <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> or omit the filter to list all conversations for the customer.</p>
+</div>
+</section>
 </section>
 </section>
 </section>
@@ -1396,6 +1416,7 @@ conversation participant.</p></td>
 <li><a class="reference internal" href="#step-4-agent-replies-to-the-conversation">Step 4. Agent replies to the conversation</a></li>
 <li><a class="reference internal" href="#step-5-agent-self-unassigns-when-handling-is-complete">Step 5. Agent self-unassigns when handling is complete</a></li>
 <li><a class="reference internal" href="#step-6-next-inbound-message-registered-flow-resumes">Step 6. Next inbound message: registered flow resumes</a></li>
+<li><a class="reference internal" href="#listing-my-conversations">Listing “my conversations”</a></li>
 </ul>
 </li>
 </ul>

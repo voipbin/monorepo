@@ -314,3 +314,17 @@ Step 6. Next inbound message: registered flow resumes
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Once unassigned (``owner_id`` is the nil UUID and ``owner_type`` is empty), the conversation reverts to standard behavior. The next inbound message triggers the registered flow as usual, creating a fresh activeflow you can observe via ``GET https://api.voipbin.net/v1.0/activeflows``.
+
+Listing "my conversations"
+++++++++++++++++++++++++++
+
+Agents can build a "my conversations" view by filtering on ``owner_id`` against their own agent UUID:
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/conversations?owner_id=eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&page_token=2026-04-30T10:00:00.000000Z' \
+        --header 'Authorization: Bearer <AGENT_TOKEN>'
+
+.. note:: **AI Implementation Hint**
+
+   Agent callers (non-admin, non-manager) MUST set ``owner_id`` to their own agent UUID. Any other value — or omitting the parameter entirely — returns ``403 Forbidden``. Admin and manager callers have no such restriction; they may pass any ``owner_id`` or omit the filter to list all conversations for the customer.

@@ -352,6 +352,18 @@ When a conversation is unassigned (``owner_id`` is the nil UUID or empty):
 
    The unassign payload must be exactly ``{"owner_id": "00000000-0000-0000-0000-000000000000"}``. Do not include ``owner_type`` — the server always derives it from ``owner_id``. To unassign as the owning agent, send only this single key; combining it with other fields (e.g., ``name``) requires admin/manager permission and will be rejected with 403 if the caller is the owning agent.
 
+**Listing Conversations by Owner**
+
+Filter conversations by their currently assigned agent using the ``owner_id`` query parameter on ``GET https://api.voipbin.net/v1.0/conversations``:
+
+.. code:: bash
+
+    GET https://api.voipbin.net/v1.0/conversations?owner_id=<agent-uuid>&page_token=<token>
+
+This is the supported way to build a "my conversations" view for an agent.
+
+Permission rule: an agent caller (non-admin, non-manager) MUST set ``owner_id`` to their own agent UUID; otherwise the request is rejected with ``403 Forbidden``. Admin and manager callers may pass any ``owner_id`` or omit the filter entirely. Omitting the filter — or passing the nil UUID — disables the filter and returns all conversations the caller can see.
+
 **Webhook Updates**
 
 When a conversation is assigned or unassigned, a ``conversation_updated`` event fires with the new ``owner_type`` and ``owner_id`` values. See :ref:`Conversation <conversation-struct-conversation>` for the field definitions.
