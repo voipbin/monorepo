@@ -175,15 +175,15 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIde
 	// callers the only allowed update is the owning-agent self-unassign (see design §5.2).
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		if !a.IsAgent() || a.Agent == nil {
-			log.Info("The agent has no permission for this agent.")
+			log.Info("Caller is not an agent.")
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 		if c.OwnerType != commonidentity.OwnerTypeAgent || c.OwnerID != a.Agent.ID {
-			log.Info("The agent has no permission for this agent.")
+			log.Info("Caller is not the owning agent.")
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 		if !payloadIsExactlySelfUnassign(fields) {
-			log.Info("The agent has no permission for this agent.")
+			log.Info("Non-admin agent payload is not exactly a self-unassign.")
 			return nil, serviceerrors.ErrPermissionDenied
 		}
 	}

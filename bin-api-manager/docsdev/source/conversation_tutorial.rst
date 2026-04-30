@@ -250,11 +250,30 @@ You can verify this by listing recent activeflows for the customer (``GET https:
 Step 4. Agent replies to the conversation
 +++++++++++++++++++++++++++++++++++++++++
 
-The agent uses the standard message-send API (no special endpoint required for assigned conversations).
+.. note:: **Permission scope**
+
+   The message-send endpoint (``POST /conversations/{id}/messages``) currently
+   requires admin or manager permission. A per-agent JWT (``<AGENT_TOKEN>``)
+   does **not** have permission to send messages — it returns ``403 Forbidden``.
+   In practice the agent reply is sent from an admin/manager-scoped session
+   (for example, the agent web app at https://talk.voipbin.net authenticated
+   as an admin or manager user, which fans out replies on behalf of the agent).
+   Use ``<ADMIN_TOKEN>`` (or any admin/manager-scoped token) for this step.
+
+.. note:: **Future work (out of scope for this release)**
+
+   ``ConversationMessageSend`` does not yet have a self-reply carve-out for the
+   owning agent — the owning agent cannot post messages with their own JWT.
+   A follow-up could mirror the ``ConversationUpdate`` self-unassign carve-out
+   (design §5.2) and allow the owning agent to send messages on a conversation
+   they own. This is intentionally out of scope for the current assignment
+   release.
+
+The agent reply uses the standard message-send API (no special endpoint required for assigned conversations).
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=<AGENT_TOKEN>' \
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=<ADMIN_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
             "text": "Hi, this is the support agent. How can I help you today?",

@@ -5,7 +5,6 @@ import (
 	stderrors "errors"
 	"fmt"
 
-	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -153,10 +152,18 @@ func (h *conversationHandler) Create(
 //
 // Caller-supplied owner_type is silently overridden by the derived value.
 func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error) {
+	// Avoid logging field values: the partial-update map can carry owner UUIDs
+	// and other caller-controlled values. Log the field names only as a
+	// defense-in-depth measure against accidental disclosure in structured
+	// log streams.
+	fieldNames := make([]string, 0, len(fields))
+	for k := range fields {
+		fieldNames = append(fieldNames, string(k))
+	}
 	log := logrus.WithFields(logrus.Fields{
-		"func":   "Update",
-		"id":     id,
-		"fields": fields,
+		"func":        "Update",
+		"id":          id,
+		"field_names": fieldNames,
 	})
 	log.Debugf("Updating conversation. conversation_id: %s", id)
 
@@ -170,30 +177,49 @@ func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields m
 			)
 		}
 		if ownerID != uuid.Nil {
-			// Need cv.CustomerID for the validation filter — fetch the existing
-			// conversation. Update did not previously load it.
+			// Need cv.CustomerID for the same-customer constraint — fetch the
+			// existing conversation. Update did not previously load it.
 			cv, errGet := h.Get(ctx, id)
 			if errGet != nil {
 				return nil, errors.Wrapf(errGet, "could not load conversation for validation. id: %s", id)
 			}
 
-			// Validate agent existence + same-customer constraint via list filter.
-			// agent-manager does not surface a typed 404 today, so the
-			// not-found and customer-mismatch cases collapse into a single
-			// combined "could not validate agent" rejection.
-			agents, errList := h.reqHandler.AgentV1AgentList(ctx, "", 1, map[amagent.Field]any{
-				amagent.FieldID:         ownerID,
-				amagent.FieldCustomerID: cv.CustomerID,
-				amagent.FieldDeleted:    false,
-			})
-			if errList != nil {
-				return nil, errors.Wrapf(errList, "could not validate agent. owner_id: %s", ownerID)
-			}
-			if len(agents) == 0 {
+			// Validate agent existence and the same-customer constraint via
+			// per-id Get. Two distinct error reasons surface through the
+			// typed VoipbinError envelope so the api-manager edge can
+			// distinguish them in 400 response bodies (design §5.4).
+			//
+			// NOTE: bin-agent-manager collapses ErrNotFound to HTTP 500 over
+			// RPC today, so a real not-found and a transport error look the
+			// same here. We treat any AgentV1AgentGet error as not-found per
+			// the design's canonical wording (the dominant case); operators
+			// can correlate transport errors via the wrapped underlying error.
+			ag, errGetAgent := h.reqHandler.AgentV1AgentGet(ctx, ownerID)
+			if errGetAgent != nil {
 				return nil, cerrors.InvalidArgument(
 					commonoutline.ServiceNameConversationManager,
-					"AGENT_VALIDATION_FAILED",
-					fmt.Sprintf("could not validate agent. owner_id: %s", ownerID),
+					"AGENT_NOT_FOUND",
+					fmt.Sprintf("agent not found. owner_id: %s", ownerID),
+				).Wrap(errGetAgent)
+			}
+			if ag.CustomerID != cv.CustomerID {
+				// Deviation from design §5.4 verbatim wording: do NOT include the agent's
+				// CustomerID or the conversation's CustomerID in the user-facing message.
+				// Returning agent_customer_id would leak a cross-tenant customer UUID to the
+				// caller — even an admin/manager who is authorized for THIS conversation has
+				// no need to know the customer of an unrelated agent. The reason code
+				// AGENT_CUSTOMER_MISMATCH still distinguishes this case from AGENT_NOT_FOUND
+				// for diagnostic purposes; operators can correlate via server-side logs which
+				// retain the full triple (id is logged in the structured fields).
+				log.WithFields(logrus.Fields{
+					"owner_id":               ownerID,
+					"agent_customer_id":      ag.CustomerID,
+					"conversation_customer_id": cv.CustomerID,
+				}).Info("Agent customer mismatch on assignment.")
+				return nil, cerrors.InvalidArgument(
+					commonoutline.ServiceNameConversationManager,
+					"AGENT_CUSTOMER_MISMATCH",
+					fmt.Sprintf("agent customer mismatch. owner_id: %s", ownerID),
 				)
 			}
 		}
@@ -206,12 +232,12 @@ func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields m
 	}
 
 	if errUpdate := h.db.ConversationUpdate(ctx, id, fields); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "Could not update conversation. err: %v", errUpdate)
+		return nil, errors.Wrapf(errUpdate, "could not update conversation. id: %s", id)
 	}
 
 	res, err := h.db.ConversationGet(ctx, id)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Could not get updated conversation. err: %v", err)
+		return nil, errors.Wrapf(err, "could not get updated conversation. id: %s", id)
 	}
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, conversation.EventTypeConversationUpdated, res)
 

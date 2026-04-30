@@ -3,6 +3,7 @@ package conversationhandler
 import (
 	"context"
 	"reflect"
+	"strings"
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -238,13 +239,13 @@ func Test_Update(t *testing.T) {
 		fields map[conversation.Field]any
 
 		// existingConversation is what h.Get returns during the pre-fetch when
-		// owner_id is non-nil (used to derive cv.CustomerID for the agent
-		// validation filter). Set to nil for cases that do not trigger the
-		// pre-fetch (no owner_id, or owner_id == uuid.Nil).
+		// owner_id is non-nil (used to derive cv.CustomerID for the
+		// same-customer agent constraint). Set to nil for cases that do not
+		// trigger the pre-fetch (no owner_id, or owner_id == uuid.Nil).
 		existingConversation *conversation.Conversation
-		// agentListResponse is what AgentV1AgentList returns when invoked.
-		// Set to nil for cases that do not trigger an agent list call.
-		agentListResponse []amagent.Agent
+		// agentGetResponse is what AgentV1AgentGet returns when invoked.
+		// Set to nil for cases that do not trigger an agent get call.
+		agentGetResponse *amagent.Agent
 
 		expectFields         map[conversation.Field]any
 		responseConversation *conversation.Conversation
@@ -280,12 +281,10 @@ func Test_Update(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("3a3a3a3a-2604-11f0-9a7d-eb1f4d6f9a01"),
 				},
 			},
-			agentListResponse: []amagent.Agent{
-				{
-					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("2c4a4c2a-2604-11f0-aa18-3b3f1b8a1b22"),
-						CustomerID: uuid.FromStringOrNil("3a3a3a3a-2604-11f0-9a7d-eb1f4d6f9a01"),
-					},
+			agentGetResponse: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2c4a4c2a-2604-11f0-aa18-3b3f1b8a1b22"),
+					CustomerID: uuid.FromStringOrNil("3a3a3a3a-2604-11f0-9a7d-eb1f4d6f9a01"),
 				},
 			},
 
@@ -332,12 +331,10 @@ func Test_Update(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("8c2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
 				},
 			},
-			agentListResponse: []amagent.Agent{
-				{
-					Identity: commonidentity.Identity{
-						ID:         uuid.FromStringOrNil("6b2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
-						CustomerID: uuid.FromStringOrNil("8c2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
-					},
+			agentGetResponse: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("6b2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
+					CustomerID: uuid.FromStringOrNil("8c2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
 				},
 			},
 
@@ -372,16 +369,12 @@ func Test_Update(t *testing.T) {
 
 			// If the case triggers the pre-fetch (owner_id non-nil), expect
 			// h.Get -> ConversationGet to load the existing conversation, and
-			// expect AgentV1AgentList with the customer-scoped filter.
+			// expect AgentV1AgentGet for per-id agent lookup.
 			if tt.existingConversation != nil {
 				mockDB.EXPECT().ConversationGet(ctx, tt.id).Return(tt.existingConversation, nil)
 
 				ownerID := tt.fields[conversation.FieldOwnerID].(uuid.UUID)
-				mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), map[amagent.Field]any{
-					amagent.FieldID:         ownerID,
-					amagent.FieldCustomerID: tt.existingConversation.CustomerID,
-					amagent.FieldDeleted:    false,
-				}).Return(tt.agentListResponse, nil)
+				mockReq.EXPECT().AgentV1AgentGet(ctx, ownerID).Return(tt.agentGetResponse, nil)
 			}
 
 			mockDB.EXPECT().ConversationUpdate(ctx, tt.id, tt.expectFields).Return(nil)
@@ -400,7 +393,11 @@ func Test_Update(t *testing.T) {
 	}
 }
 
-func Test_Update_AgentValidationFailed(t *testing.T) {
+// Test_Update_AgentNotFound covers the canonical not-found case (and any
+// transport error from AgentV1AgentGet, which agent-manager today collapses
+// into HTTP 500 over RPC). Both surface as InvalidArgument/AGENT_NOT_FOUND
+// per design §5.4.
+func Test_Update_AgentNotFound(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -430,12 +427,9 @@ func Test_Update_AgentValidationFailed(t *testing.T) {
 		},
 	}
 
+	getErr := stderrors.New("agent not found")
 	mockDB.EXPECT().ConversationGet(ctx, id).Return(existing, nil)
-	mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), map[amagent.Field]any{
-		amagent.FieldID:         ownerID,
-		amagent.FieldCustomerID: customerID,
-		amagent.FieldDeleted:    false,
-	}).Return([]amagent.Agent{}, nil)
+	mockReq.EXPECT().AgentV1AgentGet(ctx, ownerID).Return(nil, getErr)
 	// No DB write, no post-update get, no event publish.
 
 	res, err := h.Update(ctx, id, fields)
@@ -453,12 +447,19 @@ func Test_Update_AgentValidationFailed(t *testing.T) {
 	if ve.Status != cerrors.StatusInvalidArgument {
 		t.Errorf("expected Status=InvalidArgument, got: %v", ve.Status)
 	}
-	if ve.Reason != "AGENT_VALIDATION_FAILED" {
-		t.Errorf("expected Reason=AGENT_VALIDATION_FAILED, got: %v", ve.Reason)
+	if ve.Reason != "AGENT_NOT_FOUND" {
+		t.Errorf("expected Reason=AGENT_NOT_FOUND, got: %v", ve.Reason)
+	}
+	if !stderrors.Is(err, getErr) {
+		t.Errorf("expected wrapped getErr in chain, got: %v", err)
 	}
 }
 
-func Test_Update_AgentListRPCFailure(t *testing.T) {
+// Test_Update_AgentCustomerMismatch covers the case where the agent exists
+// but belongs to a different customer than the conversation. This must
+// surface a distinct typed error so the api-manager edge can show users
+// which constraint failed (design §5.4).
+func Test_Update_AgentCustomerMismatch(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -474,9 +475,10 @@ func Test_Update_AgentListRPCFailure(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	id := uuid.FromStringOrNil("d3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
-	ownerID := uuid.FromStringOrNil("e3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
-	customerID := uuid.FromStringOrNil("f3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
+	id := uuid.FromStringOrNil("11aa22bb-2604-11f0-9a7d-eb1f4d6f9a01")
+	ownerID := uuid.FromStringOrNil("22bb33cc-2604-11f0-9a7d-eb1f4d6f9a01")
+	conversationCustomerID := uuid.FromStringOrNil("33cc44dd-2604-11f0-9a7d-eb1f4d6f9a01")
+	agentCustomerID := uuid.FromStringOrNil("44dd55ee-2604-11f0-9a7d-eb1f4d6f9a01")
 	fields := map[conversation.Field]any{
 		conversation.FieldOwnerID: ownerID,
 	}
@@ -484,18 +486,19 @@ func Test_Update_AgentListRPCFailure(t *testing.T) {
 	existing := &conversation.Conversation{
 		Identity: commonidentity.Identity{
 			ID:         id,
-			CustomerID: customerID,
+			CustomerID: conversationCustomerID,
+		},
+	}
+	agentResp := &amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         ownerID,
+			CustomerID: agentCustomerID, // distinct from the conversation's customer
 		},
 	}
 
-	rpcErr := stderrors.New("rabbitmq RPC failed")
 	mockDB.EXPECT().ConversationGet(ctx, id).Return(existing, nil)
-	mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), map[amagent.Field]any{
-		amagent.FieldID:         ownerID,
-		amagent.FieldCustomerID: customerID,
-		amagent.FieldDeleted:    false,
-	}).Return(nil, rpcErr)
-	// No DB write, no event publish.
+	mockReq.EXPECT().AgentV1AgentGet(ctx, ownerID).Return(agentResp, nil)
+	// No DB write, no post-update get, no event publish.
 
 	res, err := h.Update(ctx, id, fields)
 	if err == nil {
@@ -504,8 +507,25 @@ func Test_Update_AgentListRPCFailure(t *testing.T) {
 	if res != nil {
 		t.Errorf("expected nil result on error, got: %v", res)
 	}
-	if !stderrors.Is(err, rpcErr) {
-		t.Errorf("expected wrapped rpcErr in chain, got: %v", err)
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("expected *cerrors.VoipbinError, got: %T (%v)", err, err)
+	}
+	if ve.Status != cerrors.StatusInvalidArgument {
+		t.Errorf("expected Status=InvalidArgument, got: %v", ve.Status)
+	}
+	if ve.Reason != "AGENT_CUSTOMER_MISMATCH" {
+		t.Errorf("expected Reason=AGENT_CUSTOMER_MISMATCH, got: %v", ve.Reason)
+	}
+	// Defense-in-depth: the user-facing message must NOT include the cross-tenant
+	// agent_customer_id or the redundant conversation_customer_id. Operators can
+	// recover those from server-side structured logs.
+	if strings.Contains(ve.Message, "agent_customer_id") {
+		t.Errorf("agent_customer_id leaked into user-facing message: %q", ve.Message)
+	}
+	if strings.Contains(ve.Message, "conversation_customer_id") {
+		t.Errorf("conversation_customer_id leaked into user-facing message: %q", ve.Message)
 	}
 }
 
