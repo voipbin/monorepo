@@ -298,15 +298,11 @@ The agent reply uses the standard message-send API (no special endpoint required
 Step 5. Agent self-unassigns when handling is complete
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-The owning agent can unassign themselves at any time by sending the nil UUID. This is the only assignment-related change an owning agent is permitted to make.
+The owning agent unassigns themselves using the dedicated ``POST /unassign`` endpoint. No request body is required. This is the only assignment-related operation an owning agent is permitted to perform.
 
 .. code::
 
-    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f?token=<AGENT_TOKEN>' \
-        --header 'Content-Type: application/json' \
-        --data-raw '{
-            "owner_id": "00000000-0000-0000-0000-000000000000"
-        }'
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/unassign?token=<AGENT_TOKEN>'
 
     {
         "id": "a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f",
@@ -327,7 +323,14 @@ The owning agent can unassign themselves at any time by sending the nil UUID. Th
 
 .. note:: **AI Implementation Hint**
 
-   The unassign payload must contain only ``owner_id`` set to the nil UUID. If the owning agent includes any additional field (e.g., ``name``, ``detail``), the request is rejected with ``403 Forbidden`` because non-assignment field updates require admin/manager permission.
+   Use ``POST /v1.0/conversations/<id>/unassign`` for agent-initiated unassignment. The endpoint takes **no request body** and returns the updated conversation. Do **not** use ``PUT /conversations/<id>`` with the nil UUID — that endpoint now requires admin or manager permission and returns ``403 Forbidden`` for agent callers.
+
+   Admin and manager callers may use either ``POST /unassign`` or ``PUT /conversations/<id>`` with ``{"owner_id": "00000000-0000-0000-0000-000000000000"}``.
+
+   **Error responses:**
+
+   * **403 Forbidden:** The caller is neither an admin/manager nor the current owner of the conversation.
+   * **404 Not Found:** The conversation UUID does not exist or belongs to a different customer.
 
 Step 6. Next inbound message: registered flow resumes
 +++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -347,3 +350,103 @@ Agents can build a "my conversations" view by filtering on ``owner_id`` against 
 .. note:: **AI Implementation Hint**
 
    Agent callers (non-admin, non-manager) MUST set ``owner_id`` to their own agent UUID. Any other value — or omitting the parameter entirely — returns ``403 Forbidden``. Admin and manager callers have no such restriction; they may pass any ``owner_id`` or omit the filter to list all conversations for the customer.
+
+
+Assignment and Unassignment Endpoint Reference
+----------------------------------------------
+
+This section summarises the four endpoints introduced or changed in this release.
+
+PUT /v1.0/conversations/{id} (admin/manager only)
++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Update conversation details, including ownership assignment and reassignment.
+
+* **Method:** ``PUT``
+* **Path:** ``https://api.voipbin.net/v1.0/conversations/{id}``
+* **Permission:** Admin or manager only. Agent callers receive ``403 Forbidden``.
+* **Request body fields:**
+
+  * ``owner_id`` (UUID, Optional): Agent UUID to assign as owner. Set to ``00000000-0000-0000-0000-000000000000`` to unassign.
+  * ``owner_type``: Ignored. The server always derives this from ``owner_id``.
+  * ``name`` (String, Optional): Human-readable conversation name.
+  * ``detail`` (String, Optional): Free-form detail field.
+
+* **Response:** The updated conversation object.
+
+**Error responses:**
+
+* **403 Forbidden:** Caller does not have admin or manager permission.
+* **400 Bad Request:** ``owner_id`` references an agent UUID that does not exist or belongs to a different customer.
+
+POST /v1.0/conversations/{id}/unassign (admin/manager + owning agent)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Remove the current owner from a conversation. No request body required.
+
+* **Method:** ``POST``
+* **Path:** ``https://api.voipbin.net/v1.0/conversations/{id}/unassign``
+* **Permission:** Admin, manager, or the current owning agent. Non-owning agents receive ``403 Forbidden``.
+* **Request body:** None.
+* **Response:** The updated conversation object (``owner_id`` is the nil UUID, ``owner_type`` is empty).
+
+**Example:**
+
+.. code::
+
+    $ curl --location --request POST \
+        'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/unassign?token=<AGENT_OR_ADMIN_TOKEN>'
+
+**Error responses:**
+
+* **403 Forbidden:** Caller is neither an admin/manager nor the current owner.
+* **404 Not Found:** Conversation UUID does not exist or belongs to a different customer.
+
+PUT /v1.0/service_agents/conversations/{id} (admin/manager only)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Update conversation details via the service-agents surface. Identical semantics to ``PUT /v1.0/conversations/{id}`` but available under the ``/service_agents/`` prefix.
+
+* **Method:** ``PUT``
+* **Path:** ``https://api.voipbin.net/v1.0/service_agents/conversations/{id}``
+* **Permission:** Admin or manager only.
+* **Request body fields:**
+
+  * ``owner_id`` (UUID, Optional): Agent UUID to assign as owner, or the nil UUID to unassign.
+  * ``owner_type``: Ignored.
+  * ``name`` (String, Optional): Human-readable conversation name.
+  * ``detail`` (String, Optional): Free-form detail field.
+
+* **Response:** The updated conversation object.
+
+**Error responses:**
+
+* **403 Forbidden:** Caller does not have admin or manager permission.
+* **400 Bad Request:** ``owner_id`` references an agent that does not exist or belongs to a different customer.
+
+POST /v1.0/service_agents/conversations/{id}/unassign (admin/manager + owning agent)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Remove the current owner from a conversation via the service-agents surface. Identical semantics to ``POST /v1.0/conversations/{id}/unassign``.
+
+* **Method:** ``POST``
+* **Path:** ``https://api.voipbin.net/v1.0/service_agents/conversations/{id}/unassign``
+* **Permission:** Admin, manager, or the current owning agent.
+* **Request body:** None.
+* **Response:** The updated conversation object (``owner_id`` is the nil UUID, ``owner_type`` is empty).
+
+**Example:**
+
+.. code::
+
+    $ curl --location --request POST \
+        'https://api.voipbin.net/v1.0/service_agents/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/unassign?token=<AGENT_OR_ADMIN_TOKEN>'
+
+**Error responses:**
+
+* **403 Forbidden:** Caller is neither an admin/manager nor the current owner.
+* **404 Not Found:** Conversation UUID does not exist or belongs to a different customer.
+
+.. note:: **AI Implementation Hint**
+
+   The ``/service_agents/conversations/`` prefix is functionally equivalent to ``/conversations/`` for these endpoints. Use the ``/conversations/`` path in typical integrations. The ``/service_agents/`` prefix is provided for service-level tooling and admin workflows that operate on behalf of agents.

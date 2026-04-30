@@ -290,47 +290,81 @@ A conversation can be explicitly assigned to a specific agent so that inbound me
 
 **How assignment works**
 
-Assignment is performed via a partial-update on the conversation:
+Assignment is performed via a partial-update on the conversation. This operation requires admin or manager permission:
 
 .. code:: bash
 
-    PUT https://api.voipbin.net/v1.0/conversations/<conversation-id>?token=<token>
+    PUT https://api.voipbin.net/v1.0/conversations/<conversation-id>?token=<admin-or-manager-token>
     Content-Type: application/json
 
     {
         "owner_id": "<agent-uuid>"
     }
 
-To **unassign** a conversation, send the nil UUID:
+The server derives ``owner_type`` from ``owner_id``: when ``owner_id`` is a real agent UUID, ``owner_type`` is set to ``agent``; when ``owner_id`` is the nil UUID, ``owner_type`` is cleared to an empty string. Clients must not set ``owner_type`` directly — any value supplied for ``owner_type`` in the request body is ignored.
 
-.. code:: json
+**How unassignment works**
+
+There are two ways to unassign a conversation:
+
+1. **Admin/manager**: Use ``PUT /v1.0/conversations/<id>`` with ``owner_id`` set to the nil UUID.
+2. **Owning agent** (or admin/manager): Use the dedicated ``POST /v1.0/conversations/<id>/unassign`` endpoint. No request body is needed.
+
+.. code:: bash
+
+    # Option 1: Admin/manager via PUT (also works for reassignment)
+    PUT https://api.voipbin.net/v1.0/conversations/<conversation-id>?token=<admin-or-manager-token>
+    Content-Type: application/json
 
     {
         "owner_id": "00000000-0000-0000-0000-000000000000"
     }
 
-The server derives ``owner_type`` from ``owner_id``: when ``owner_id`` is a real agent UUID, ``owner_type`` is set to ``agent``; when ``owner_id`` is the nil UUID, ``owner_type`` is cleared to an empty string. Clients must not set ``owner_type`` directly — any value supplied for ``owner_type`` in the request body is ignored.
+.. code:: bash
+
+    # Option 2: Owning agent (or admin/manager) via dedicated unassign endpoint
+    POST https://api.voipbin.net/v1.0/conversations/<conversation-id>/unassign?token=<agent-or-admin-token>
+
+The ``POST /unassign`` endpoint takes no request body and returns the updated conversation object.
 
 **Permission Semantics**
 
-+--------------------------+--------------------------------------------------------------+
-| Caller                   | What they can do via ``PUT /v1.0/conversations/<id>``        |
-+==========================+==============================================================+
-| Customer admin / manager | Assign the conversation to any agent under the same          |
-|                          | customer; reassign it to a different agent; unassign it.     |
-+--------------------------+--------------------------------------------------------------+
-| Owning agent             | Self-unassign only — set ``owner_id`` to the nil UUID.       |
-|                          | Cannot assign to themselves and cannot reassign to another   |
-|                          | agent.                                                       |
-+--------------------------+--------------------------------------------------------------+
-| Any other agent          | No assignment-related changes permitted.                     |
-+--------------------------+--------------------------------------------------------------+
++----------------------------+-------------------------------------------------------------------+
+| Caller                     | Permitted operations                                              |
++============================+===================================================================+
+| Customer admin / manager   | ``PUT /v1.0/conversations/<id>``: assign, reassign, or unassign  |
+|                            | the conversation. All fields (owner, name, detail) may be        |
+|                            | updated.                                                         |
+|                            |                                                                   |
+|                            | ``POST /v1.0/conversations/<id>/unassign``: unassign the         |
+|                            | conversation (no body required).                                  |
++----------------------------+-------------------------------------------------------------------+
+| Owning agent               | ``POST /v1.0/conversations/<id>/unassign`` only — self-unassign  |
+|                            | without a request body.                                          |
+|                            |                                                                   |
+|                            | ``PUT /v1.0/conversations/<id>`` is **not** permitted for agents  |
+|                            | (returns 403 even for the owning agent).                         |
++----------------------------+-------------------------------------------------------------------+
+| Any other agent            | No assignment-related changes permitted. 403 returned.           |
++----------------------------+-------------------------------------------------------------------+
+
+.. note:: **Breaking Change**
+
+   As of this release, ``PUT /v1.0/conversations/<id>`` requires **admin or manager** permission. Owning agents that previously used this endpoint to self-unassign (by sending the nil UUID) **must migrate** to ``POST /v1.0/conversations/<id>/unassign`` instead. The ``/unassign`` endpoint is the supported path for agent-initiated unassignment.
+
+**Service-Agents Surface**
+
+The same endpoints are also available under the ``/service_agents/`` path prefix, which is admin/manager-only:
+
+* ``PUT https://api.voipbin.net/v1.0/service_agents/conversations/<id>`` — same as ``PUT /v1.0/conversations/<id>`` but requires admin or manager permission (no agent access).
+* ``POST https://api.voipbin.net/v1.0/service_agents/conversations/<id>/unassign`` — same unassign semantics as ``POST /v1.0/conversations/<id>/unassign`` (admin/manager + owning agent).
 
 **Error Responses**
 
 * **403 Forbidden:**
-    * **Cause:** Cross-agent assignment attempt (e.g., agent tries to assign the conversation to themselves or to another agent), or any attempt to modify other fields without admin/manager permission. Also returned for cross-customer attempts.
-    * **Fix:** Use a customer admin or manager token to assign or reassign. Owning agents may only set ``owner_id`` to the nil UUID.
+    * **Cause (PUT):** Caller is not an admin or manager. Agents (including the owning agent) are not permitted to call ``PUT /v1.0/conversations/<id>``.
+    * **Cause (POST /unassign):** Caller is neither an admin/manager nor the current owner of the conversation.
+    * **Fix:** Use a customer admin or manager token for ``PUT``. For unassignment, use ``POST /conversations/<id>/unassign`` with the owning agent's token or any admin/manager token.
 
 * **400 Bad Request:**
     * **Cause:** ``owner_id`` could not be validated — either it does not reference an existing agent, or the referenced agent does not belong to the same customer as the conversation. The two cases are intentionally indistinguishable in the response.
@@ -350,7 +384,7 @@ When a conversation is unassigned (``owner_id`` is the nil UUID or empty):
 
 .. note:: **AI Implementation Hint**
 
-   The unassign payload must be exactly ``{"owner_id": "00000000-0000-0000-0000-000000000000"}``. Do not include ``owner_type`` — the server always derives it from ``owner_id``. To unassign as the owning agent, send only this single key; combining it with other fields (e.g., ``name``) requires admin/manager permission and will be rejected with 403 if the caller is the owning agent.
+   To unassign a conversation as the owning agent, use ``POST https://api.voipbin.net/v1.0/conversations/<id>/unassign`` with no request body. Do **not** use ``PUT /conversations/<id>`` — that endpoint now requires admin or manager permission and will return 403 for agent callers. Admin and manager callers may use either endpoint.
 
 **Listing Conversations by Owner**
 
