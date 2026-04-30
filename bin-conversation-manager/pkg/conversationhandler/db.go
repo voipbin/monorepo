@@ -3,6 +3,7 @@ package conversationhandler
 import (
 	"context"
 	stderrors "errors"
+	"fmt"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
@@ -142,6 +143,14 @@ func (h *conversationHandler) Create(
 }
 
 // Update updates conversation and return a updated conversation.
+//
+// When owner_id is present in the partial-update fields, the server derives
+// owner_type from the owner_id value (clients never send owner_type directly):
+//   - owner_id == uuid.Nil  → owner_type = "" (OwnerTypeNone, unassigned)
+//   - owner_id != uuid.Nil  → owner_type = "agent" (OwnerTypeAgent, the only
+//     valid type today)
+//
+// Caller-supplied owner_type is silently overridden by the derived value.
 func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":   "Update",
@@ -149,6 +158,22 @@ func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields m
 		"fields": fields,
 	})
 	log.Debugf("Updating conversation. conversation_id: %s", id)
+
+	if v, ok := fields[conversation.FieldOwnerID]; ok {
+		ownerID, okType := v.(uuid.UUID)
+		if !okType {
+			return nil, cerrors.InvalidArgument(
+				commonoutline.ServiceNameConversationManager,
+				"INVALID_OWNER_ID_TYPE",
+				fmt.Sprintf("invalid owner_id type: %T", v),
+			)
+		}
+		if ownerID == uuid.Nil {
+			fields[conversation.FieldOwnerType] = commonidentity.OwnerTypeNone
+		} else {
+			fields[conversation.FieldOwnerType] = commonidentity.OwnerTypeAgent
+		}
+	}
 
 	if errUpdate := h.db.ConversationUpdate(ctx, id, fields); errUpdate != nil {
 		return nil, errors.Wrapf(errUpdate, "Could not update conversation. err: %v", errUpdate)

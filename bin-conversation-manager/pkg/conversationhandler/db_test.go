@@ -6,9 +6,12 @@ import (
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -232,19 +235,78 @@ func Test_Update(t *testing.T) {
 		id     uuid.UUID
 		fields map[conversation.Field]any
 
+		expectFields         map[conversation.Field]any
 		responseConversation *conversation.Conversation
 	}{
 		{
-			name: "normal",
+			name: "no owner_id present — fields untouched",
 
 			id: uuid.FromStringOrNil("4455607e-006a-11ee-bfbb-032b6e5d2c44"),
 			fields: map[conversation.Field]any{
 				conversation.FieldName: "update name",
 			},
 
+			expectFields: map[conversation.Field]any{
+				conversation.FieldName: "update name",
+			},
 			responseConversation: &conversation.Conversation{
 				Identity: commonidentity.Identity{
 					ID: uuid.FromStringOrNil("4455607e-006a-11ee-bfbb-032b6e5d2c44"),
+				},
+			},
+		},
+		{
+			name: "owner_id non-nil — derives owner_type=agent",
+
+			id: uuid.FromStringOrNil("17a8d3a4-2604-11f0-9a7d-eb1f4d6f9a01"),
+			fields: map[conversation.Field]any{
+				conversation.FieldOwnerID: uuid.FromStringOrNil("2c4a4c2a-2604-11f0-aa18-3b3f1b8a1b22"),
+			},
+
+			expectFields: map[conversation.Field]any{
+				conversation.FieldOwnerID:   uuid.FromStringOrNil("2c4a4c2a-2604-11f0-aa18-3b3f1b8a1b22"),
+				conversation.FieldOwnerType: commonidentity.OwnerTypeAgent,
+			},
+			responseConversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("17a8d3a4-2604-11f0-9a7d-eb1f4d6f9a01"),
+				},
+			},
+		},
+		{
+			name: "owner_id nil — derives owner_type=\"\" (unassign)",
+
+			id: uuid.FromStringOrNil("3f4d6c00-2604-11f0-bf9a-cf1a4d2f9c33"),
+			fields: map[conversation.Field]any{
+				conversation.FieldOwnerID: uuid.Nil,
+			},
+
+			expectFields: map[conversation.Field]any{
+				conversation.FieldOwnerID:   uuid.Nil,
+				conversation.FieldOwnerType: commonidentity.OwnerTypeNone,
+			},
+			responseConversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("3f4d6c00-2604-11f0-bf9a-cf1a4d2f9c33"),
+				},
+			},
+		},
+		{
+			name: "owner_type from caller is overridden by derived value",
+
+			id: uuid.FromStringOrNil("57a91b46-2604-11f0-9a3d-d3a8a45f9d44"),
+			fields: map[conversation.Field]any{
+				conversation.FieldOwnerID:   uuid.FromStringOrNil("6b2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
+				conversation.FieldOwnerType: commonidentity.OwnerType("something-else"),
+			},
+
+			expectFields: map[conversation.Field]any{
+				conversation.FieldOwnerID:   uuid.FromStringOrNil("6b2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
+				conversation.FieldOwnerType: commonidentity.OwnerTypeAgent,
+			},
+			responseConversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("57a91b46-2604-11f0-9a3d-d3a8a45f9d44"),
 				},
 			},
 		},
@@ -265,7 +327,7 @@ func Test_Update(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().ConversationUpdate(ctx, tt.id, tt.fields).Return(nil)
+			mockDB.EXPECT().ConversationUpdate(ctx, tt.id, tt.expectFields).Return(nil)
 			mockDB.EXPECT().ConversationGet(ctx, tt.id).Return(tt.responseConversation, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseConversation.CustomerID, conversation.EventTypeConversationUpdated, tt.responseConversation)
 
@@ -278,6 +340,47 @@ func Test_Update(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseConversation, res)
 			}
 		})
+	}
+}
+
+func Test_Update_invalidOwnerIDType(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockLine := linehandler.NewMockLineHandler(mc)
+	h := &conversationHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		lineHandler:   mockLine,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("a3a91b46-2604-11f0-bb1c-3f7d8a3aef66")
+	fields := map[conversation.Field]any{
+		// Caller passed a string instead of uuid.UUID — defensive type-assertion
+		// failure path; ConvertStringMapToFieldMap should normally produce
+		// uuid.UUID typed values, but we guard against malformed callers.
+		conversation.FieldOwnerID: "not-a-uuid",
+	}
+
+	// No DB calls should happen — derivation rejects the request before the
+	// DB write.
+	res, err := h.Update(ctx, id, fields)
+	if err == nil {
+		t.Fatalf("expected error, got nil (res=%v)", res)
+	}
+	if res != nil {
+		t.Errorf("expected nil result on error, got: %v", res)
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("expected *cerrors.VoipbinError, got: %T (%v)", err, err)
+	}
+	if ve.Status != cerrors.StatusInvalidArgument {
+		t.Errorf("expected Status=InvalidArgument, got: %v", ve.Status)
 	}
 }
 
