@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -20,6 +21,8 @@ import (
 	"monorepo/bin-conversation-manager/pkg/linehandler"
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+	mmmessage "monorepo/bin-message-manager/models/message"
+	mmtarget "monorepo/bin-message-manager/models/target"
 )
 
 func Test_MessageSend(t *testing.T) {
@@ -313,6 +316,118 @@ func Test_executeActiveflow(t *testing.T) {
 				if err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
 				}
+			}
+		})
+	}
+}
+
+func Test_MessageEventReceived(t *testing.T) {
+
+	customerID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	convID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	msgID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	convMsgID := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+	agentOwnerID := uuid.FromStringOrNil("77777777-7777-7777-7777-777777777777")
+
+	selfAddr := commonaddress.Address{
+		Type:   commonaddress.TypeTel,
+		Target: "+886987654321",
+	}
+	peerAddr := commonaddress.Address{
+		Type:   commonaddress.TypeTel,
+		Target: "+886912345678",
+	}
+
+	tests := []struct {
+		name string
+
+		incoming *mmmessage.Message
+
+		responseConversation *conversation.Conversation
+		responseConvMessage  *message.Message
+	}{
+		{
+			name: "assigned conversation (agent owner) -> agent mode no-op, no flow rpcs",
+
+			incoming: &mmmessage.Message{
+				Identity: commonidentity.Identity{
+					ID:         msgID,
+					CustomerID: customerID,
+				},
+				Source: &peerAddr,
+				Targets: []mmtarget.Target{
+					{Destination: selfAddr},
+				},
+				Direction: mmmessage.DirectionInbound,
+				Text:      "hello, this is an assigned conversation message",
+			},
+
+			responseConversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         convID,
+					CustomerID: customerID,
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   agentOwnerID,
+				},
+				Type: conversation.TypeMessage,
+				Self: selfAddr,
+				Peer: peerAddr,
+			},
+			responseConvMessage: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         convMsgID,
+					CustomerID: customerID,
+				},
+				ConversationID: convID,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			h := &conversationHandler{
+				db:             mockDB,
+				notifyHandler:  mockNotify,
+				reqHandler:     mockReq,
+				messageHandler: mockMessage,
+				lineHandler:    mockLine,
+			}
+
+			ctx := context.Background()
+
+			// GetOrCreateBySelfAndPeer returns the existing conversation directly
+			// when ConversationGetBySelfAndPeer succeeds.
+			mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, selfAddr, peerAddr).Return(tt.responseConversation, nil)
+
+			mockMessage.EXPECT().Create(
+				ctx,
+				tt.incoming.ID,
+				tt.responseConversation.CustomerID,
+				tt.responseConversation.ID,
+				message.DirectionIncoming,
+				message.StatusDone,
+				message.ReferenceTypeMessage,
+				tt.incoming.ID,
+				"",
+				tt.incoming.Text,
+				[]media.Media{},
+			).Return(tt.responseConvMessage, nil)
+
+			// Agent-owned conversations skip the flow path entirely. No flow RPCs are
+			// expected on mockReq; gomock will fail if any unexpected call happens.
+
+			if err := h.MessageEventReceived(ctx, tt.incoming); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
 	}

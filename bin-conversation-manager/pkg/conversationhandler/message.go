@@ -2,6 +2,7 @@ package conversationhandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -115,7 +116,7 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		log.WithField("conversation", cv).Debugf("Found conversation. conversation_id: %s", cv.ID)
 
 		// create a new conversation message
-		m, err := h.messageHandler.Create(
+		convMsg, err := h.messageHandler.Create(
 			ctx,
 			m.ID,
 			cv.CustomerID,
@@ -131,17 +132,22 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		if err != nil {
 			return errors.Wrapf(err, "Could not create a message")
 		}
-		log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
+		log.WithField("message", convMsg).Debugf("Create a message. message_id: %s", convMsg.ID)
 
-		// check the number info
-		num, err := h.NumberGet(ctx, cv.Self.Target)
-		if err != nil {
-			return errors.Wrapf(err, "Could not get number info. number: %s", cv.Peer.Target)
-		}
-		log.WithField("number", num).Infof("Found number info. number_id: %s", num.ID)
-
-		if errExecute := h.executeActiveflow(ctx, cv, m, num.MessageFlowID); errExecute != nil {
-			return errors.Wrapf(errExecute, "Could not execute the activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
+		mode := h.getExecuteMode(cv)
+		switch mode {
+		case ExecuteModeAgent:
+			if errAgent := h.runExecuteModeAgent(ctx, cv, convMsg); errAgent != nil {
+				return errors.Wrapf(errAgent, "could not run agent mode. message_id: %s", convMsg.ID)
+			}
+		case ExecuteModeFlow:
+			if errFlow := h.runExecuteModeFlow(ctx, cv, convMsg); errFlow != nil {
+				return errors.Wrapf(errFlow, "could not run flow mode. message_id: %s", convMsg.ID)
+			}
+		case ExecuteModeNone:
+			// reserved; no-op
+		default:
+			return fmt.Errorf("unknown execute mode: %s", mode)
 		}
 	}
 
