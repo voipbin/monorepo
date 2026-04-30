@@ -264,10 +264,9 @@ Step 4. Agent replies to the conversation
 
    ``ConversationMessageSend`` does not yet have a self-reply carve-out for the
    owning agent — the owning agent cannot post messages with their own JWT.
-   A follow-up could mirror the ``ConversationUpdate`` self-unassign carve-out
-   (design §5.2) and allow the owning agent to send messages on a conversation
-   they own. This is intentionally out of scope for the current assignment
-   release.
+   A follow-up could mirror the ``POST /conversations/{id}/unassign`` pattern
+   and allow the owning agent to send messages on a conversation they own.
+   This is intentionally out of scope for the current assignment release.
 
 The agent reply uses the standard message-send API (no special endpoint required for assigned conversations).
 

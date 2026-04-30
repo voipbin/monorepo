@@ -441,10 +441,9 @@ Use <code class="docutils literal notranslate"><span class="pre">&lt;ADMIN_TOKEN
 <p><strong>Future work (out of scope for this release)</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">ConversationMessageSend</span></code> does not yet have a self-reply carve-out for the
 owning agent — the owning agent cannot post messages with their own JWT.
-A follow-up could mirror the <code class="docutils literal notranslate"><span class="pre">ConversationUpdate</span></code> self-unassign carve-out
-(design §5.2) and allow the owning agent to send messages on a conversation
-they own. This is intentionally out of scope for the current assignment
-release.</p>
+A follow-up could mirror the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/unassign</span></code> pattern
+and allow the owning agent to send messages on a conversation they own.
+This is intentionally out of scope for the current assignment release.</p>
 </div>
 <p>The agent reply uses the standard message-send API (no special endpoint required for assigned conversations).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;ADMIN_TOKEN&gt;&#39; \

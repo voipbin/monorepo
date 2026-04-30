@@ -187,8 +187,8 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIde
 }
 
 // ConversationUnassign removes the owner from the conversation of the given id.
-// It returns updated conversation if it succeed.
-// Only admin/manager callers are permitted.
+// It returns updated conversation if it succeeds.
+// Admin and manager callers may unassign any conversation. The owning agent may unassign themselves.
 func (h *serviceHandler) ConversationUnassign(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "ConversationUnassign",

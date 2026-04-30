@@ -266,7 +266,7 @@ func (h *server) PostConversationsIdUnassign(c *gin.Context, id openapi_types.UU
 		return
 	}
 	log = log.WithFields(logrus.Fields{
-		"agent": a,
+		"auth": a,
 	})
 
 	// Convert openapi_types.UUID to uuid.UUID
