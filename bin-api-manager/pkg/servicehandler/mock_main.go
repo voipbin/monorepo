@@ -2009,6 +2009,21 @@ func (mr *MockServiceHandlerMockRecorder) ConversationMessageSend(ctx, a, conver
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationMessageSend", reflect.TypeOf((*MockServiceHandler)(nil).ConversationMessageSend), ctx, a, conversationID, text, medias)
 }
 
+// ConversationUnassign mocks base method.
+func (m *MockServiceHandler) ConversationUnassign(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*conversation.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationUnassign", ctx, a, conversationID)
+	ret0, _ := ret[0].(*conversation.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationUnassign indicates an expected call of ConversationUnassign.
+func (mr *MockServiceHandlerMockRecorder) ConversationUnassign(ctx, a, conversationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationUnassign", reflect.TypeOf((*MockServiceHandler)(nil).ConversationUnassign), ctx, a, conversationID)
+}
+
 // ConversationUpdate mocks base method.
 func (m *MockServiceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, fields map[conversation.Field]any) (*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -4017,6 +4032,36 @@ func (m *MockServiceHandler) ServiceAgentConversationMessageSend(ctx context.Con
 func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationMessageSend(ctx, a, conversationID, text, medias any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationMessageSend", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationMessageSend), ctx, a, conversationID, text, medias)
+}
+
+// ServiceAgentConversationUnassign mocks base method.
+func (m *MockServiceHandler) ServiceAgentConversationUnassign(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*conversation.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentConversationUnassign", ctx, a, conversationID)
+	ret0, _ := ret[0].(*conversation.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentConversationUnassign indicates an expected call of ServiceAgentConversationUnassign.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationUnassign(ctx, a, conversationID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationUnassign", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationUnassign), ctx, a, conversationID)
+}
+
+// ServiceAgentConversationUpdate mocks base method.
+func (m *MockServiceHandler) ServiceAgentConversationUpdate(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID, fields map[conversation.Field]any) (*conversation.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ServiceAgentConversationUpdate", ctx, a, conversationID, fields)
+	ret0, _ := ret[0].(*conversation.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ServiceAgentConversationUpdate indicates an expected call of ServiceAgentConversationUpdate.
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentConversationUpdate(ctx, a, conversationID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentConversationUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentConversationUpdate), ctx, a, conversationID, fields)
 }
 
 // ServiceAgentCustomerGet mocks base method.

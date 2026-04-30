@@ -6,10 +6,10 @@ import (
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
-	commonidentity "monorepo/bin-common-handler/models/identity"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -171,21 +171,9 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIde
 		return nil, fmt.Errorf("%w: could not find conversation info", err)
 	}
 
-	// admin/manager retain unrestricted access to the existing forward path. For non-admin
-	// callers the only allowed update is the owning-agent self-unassign (see design §5.2).
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		if !a.IsAgent() || a.Agent == nil {
-			log.Info("Caller is not an agent.")
-			return nil, serviceerrors.ErrPermissionDenied
-		}
-		if c.OwnerType != commonidentity.OwnerTypeAgent || c.OwnerID != a.Agent.ID {
-			log.Info("Caller is not the owning agent.")
-			return nil, serviceerrors.ErrPermissionDenied
-		}
-		if !payloadIsExactlySelfUnassign(fields) {
-			log.Info("Non-admin agent payload is not exactly a self-unassign.")
-			return nil, serviceerrors.ErrPermissionDenied
-		}
+		log.Info("Caller has no permission to update the conversation.")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	tmp, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, fields)
@@ -198,25 +186,47 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIde
 	return res, nil
 }
 
-// payloadIsExactlySelfUnassign returns true iff the partial-update fields map represents
-// exactly a self-unassign: a single key (FieldOwnerID) whose value is uuid.Nil.
-// FieldOwnerType MUST NOT be present, even if redundant given len==1 — the explicit
-// check closes the OpenAPI-bypass attack where an agent caller sends {owner_id, owner_type}
-// together. See design §5.2.
-func payloadIsExactlySelfUnassign(fields map[cvconversation.Field]any) bool {
-	if len(fields) != 1 {
-		return false
+// ConversationUnassign removes the owner from the conversation of the given id.
+// It returns updated conversation if it succeeds.
+// Admin and manager callers may unassign any conversation. The owning agent may unassign themselves.
+func (h *serviceHandler) ConversationUnassign(ctx context.Context, a *auth.AuthIdentity, conversationID uuid.UUID) (*cvconversation.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "ConversationUnassign",
+		"customer_id":     a.CustomerID,
+		"username":        a.DisplayName(),
+		"conversation_id": conversationID,
+	})
+	log.Debug("Unassigning the conversation.")
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
-	v, ok := fields[cvconversation.FieldOwnerID]
-	if !ok {
-		return false
+
+	c, err := h.conversationGet(ctx, conversationID)
+	if err != nil {
+		log.Errorf("Could not get conversation info. err: %v", err)
+		return nil, fmt.Errorf("%w: could not find conversation info", err)
 	}
-	ownerID, okType := v.(uuid.UUID)
-	if !okType || ownerID != uuid.Nil {
-		return false
+
+	isAdminOrManager := h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager)
+	isOwningAgent := a.IsAgent() && a.Agent != nil &&
+		c.OwnerType == commonidentity.OwnerTypeAgent &&
+		c.OwnerID == a.Agent.ID
+
+	if !isAdminOrManager && !isOwningAgent {
+		log.Info("Caller has no permission to unassign the conversation.")
+		return nil, serviceerrors.ErrPermissionDenied
 	}
-	if _, hasOwnerType := fields[cvconversation.FieldOwnerType]; hasOwnerType {
-		return false
+
+	unassignFields := map[cvconversation.Field]any{
+		cvconversation.FieldOwnerID: uuid.Nil,
 	}
-	return true
+
+	res2, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, unassignFields)
+	if err != nil {
+		log.Errorf("Could not unassign the conversation. err: %v", err)
+		return nil, errors.Wrap(err, "could not unassign the conversation")
+	}
+
+	return res2.ConvertWebhookMessage(), nil
 }

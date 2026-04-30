@@ -451,8 +451,8 @@ immediate                   interactive
 <span id="conversation-overview-assigning-conversation-to-agent"></span><h3>Assigning a Conversation to an Agent<a class="headerlink" href="#assigning-a-conversation-to-an-agent" title="Link to this heading"></a></h3>
 <p>A conversation can be explicitly assigned to a specific agent so that inbound messages on that conversation are routed to the agent for manual handling instead of running through the registered flow. Assignment is an additive feature: conversations that have never been assigned continue to behave exactly as before.</p>
 <p><strong>How assignment works</strong></p>
-<p>Assignment is performed via a partial-update on the conversation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>PUT<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;?token<span class="o">=</span>&lt;token&gt;
+<p>Assignment is performed via a partial-update on the conversation. This operation requires admin or manager permission:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>PUT<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;?token<span class="o">=</span>&lt;admin-or-manager-token&gt;
 Content-Type:<span class="w"> </span>application/json
 
 <span class="o">{</span>
@@ -460,41 +460,46 @@ Content-Type:<span class="w"> </span>application/json
 <span class="o">}</span>
 </pre></div>
 </div>
-<p>To <strong>unassign</strong> a conversation, send the nil UUID:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;owner_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span>
-<span class="p">}</span>
+<p>The server derives <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>: when <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is a real agent UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is set to <code class="docutils literal notranslate"><span class="pre">agent</span></code>; when <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is cleared to an empty string. Clients must not set <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> directly — any value supplied for <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> in the request body is ignored.</p>
+<p><strong>How unassignment works</strong></p>
+<p>There are two ways to unassign a conversation:</p>
+<ol class="arabic simple">
+<li><p><strong>Admin/manager</strong>: Use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code> with <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> set to the nil UUID.</p></li>
+<li><p><strong>Owning agent</strong> (or admin/manager): Use the dedicated <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> endpoint. No request body is needed.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Option 1: Admin/manager via PUT (also works for reassignment)</span>
+PUT<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;?token<span class="o">=</span>&lt;admin-or-manager-token&gt;
+Content-Type:<span class="w"> </span>application/json
+
+<span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;owner_id&quot;</span>:<span class="w"> </span><span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span>
+<span class="o">}</span>
 </pre></div>
 </div>
-<p>The server derives <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>: when <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is a real agent UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is set to <code class="docutils literal notranslate"><span class="pre">agent</span></code>; when <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is cleared to an empty string. Clients must not set <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> directly — any value supplied for <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> in the request body is ignored.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Option 2: Owning agent (or admin/manager) via dedicated unassign endpoint</span>
+POST<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;/unassign?token<span class="o">=</span>&lt;agent-or-admin-token&gt;
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/unassign</span></code> endpoint takes no request body and returns the updated conversation object.</p>
 <p><strong>Permission Semantics</strong></p>
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Caller</p></th>
-<th class="head"><p>What they can do via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code></p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Customer admin / manager</p></td>
-<td><p>Assign the conversation to any agent under the same
-customer; reassign it to a different agent; unassign it.</p></td>
-</tr>
-<tr class="row-odd"><td><p>Owning agent</p></td>
-<td><p>Self-unassign only — set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to the nil UUID.
-Cannot assign to themselves and cannot reassign to another
-agent.</p></td>
-</tr>
-<tr class="row-even"><td><p>Any other agent</p></td>
-<td><p>No assignment-related changes permitted.</p></td>
-</tr>
-</tbody>
-</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Breaking Change</strong></p>
+<p>As of this release, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code> requires <strong>admin or manager</strong> permission. Owning agents that previously used this endpoint to self-unassign (by sending the nil UUID) <strong>must migrate</strong> to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> instead. The <code class="docutils literal notranslate"><span class="pre">/unassign</span></code> endpoint is the supported path for agent-initiated unassignment.</p>
+</div>
+<p><strong>Service-Agents Surface</strong></p>
+<p>The same endpoints are also available under the <code class="docutils literal notranslate"><span class="pre">/service_agents/</span></code> path prefix, which is admin/manager-only:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/conversations/&lt;id&gt;</span></code> — same as <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code> but requires admin or manager permission (no agent access).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/conversations/&lt;id&gt;/unassign</span></code> — same unassign semantics as <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> (admin/manager + owning agent).</p></li>
+</ul>
 <p><strong>Error Responses</strong></p>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>403 Forbidden:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> Cross-agent assignment attempt (e.g., agent tries to assign the conversation to themselves or to another agent), or any attempt to modify other fields without admin/manager permission. Also returned for cross-customer attempts.</p></li>
-<li><p><strong>Fix:</strong> Use a customer admin or manager token to assign or reassign. Owning agents may only set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to the nil UUID.</p></li>
+<li><p><strong>Cause (PUT):</strong> Caller is not an admin or manager. Agents (including the owning agent) are not permitted to call <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code>.</p></li>
+<li><p><strong>Cause (POST /unassign):</strong> Caller is neither an admin/manager nor the current owner of the conversation.</p></li>
+<li><p><strong>Fix:</strong> Use a customer admin or manager token for <code class="docutils literal notranslate"><span class="pre">PUT</span></code>. For unassignment, use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/&lt;id&gt;/unassign</span></code> with the owning agent’s token or any admin/manager token.</p></li>
 </ul>
 </dd>
 </dl>
@@ -522,7 +527,7 @@ agent.</p></td>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The unassign payload must be exactly <code class="docutils literal notranslate"><span class="pre">{&quot;owner_id&quot;:</span> <span class="pre">&quot;00000000-0000-0000-0000-000000000000&quot;}</span></code>. Do not include <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> — the server always derives it from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>. To unassign as the owning agent, send only this single key; combining it with other fields (e.g., <code class="docutils literal notranslate"><span class="pre">name</span></code>) requires admin/manager permission and will be rejected with 403 if the caller is the owning agent.</p>
+<p>To unassign a conversation as the owning agent, use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/conversations/&lt;id&gt;/unassign</span></code> with no request body. Do <strong>not</strong> use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/conversations/&lt;id&gt;</span></code> — that endpoint now requires admin or manager permission and will return 403 for agent callers. Admin and manager callers may use either endpoint.</p>
 </div>
 <p><strong>Listing Conversations by Owner</strong></p>
 <p>Filter conversations by their currently assigned agent using the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> query parameter on <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>:</p>
@@ -1273,10 +1278,9 @@ Use <code class="docutils literal notranslate"><span class="pre">&lt;ADMIN_TOKEN
 <p><strong>Future work (out of scope for this release)</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">ConversationMessageSend</span></code> does not yet have a self-reply carve-out for the
 owning agent — the owning agent cannot post messages with their own JWT.
-A follow-up could mirror the <code class="docutils literal notranslate"><span class="pre">ConversationUpdate</span></code> self-unassign carve-out
-(design §5.2) and allow the owning agent to send messages on a conversation
-they own. This is intentionally out of scope for the current assignment
-release.</p>
+A follow-up could mirror the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/unassign</span></code> pattern
+and allow the owning agent to send messages on a conversation they own.
+This is intentionally out of scope for the current assignment release.</p>
 </div>
 <p>The agent reply uses the standard message-send API (no special endpoint required for assigned conversations).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;ADMIN_TOKEN&gt;&#39; \
@@ -1305,12 +1309,8 @@ release.</p>
 </section>
 <section id="step-5-agent-self-unassigns-when-handling-is-complete">
 <h4>Step 5. Agent self-unassigns when handling is complete<a class="headerlink" href="#step-5-agent-self-unassigns-when-handling-is-complete" title="Link to this heading"></a></h4>
-<p>The owning agent can unassign themselves at any time by sending the nil UUID. This is the only assignment-related change an owning agent is permitted to make.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f?token=&lt;AGENT_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;owner_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;
-    }&#39;
+<p>The owning agent unassigns themselves using the dedicated <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/unassign</span></code> endpoint. No request body is required. This is the only assignment-related operation an owning agent is permitted to perform.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/unassign?token=&lt;AGENT_TOKEN&gt;&#39;
 
 {
     &quot;id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
@@ -1333,7 +1333,13 @@ release.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The unassign payload must contain only <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> set to the nil UUID. If the owning agent includes any additional field (e.g., <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>), the request is rejected with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code> because non-assignment field updates require admin/manager permission.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> for agent-initiated unassignment. The endpoint takes <strong>no request body</strong> and returns the updated conversation. Do <strong>not</strong> use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/conversations/&lt;id&gt;</span></code> with the nil UUID — that endpoint now requires admin or manager permission and returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code> for agent callers.</p>
+<p>Admin and manager callers may use either <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/unassign</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/conversations/&lt;id&gt;</span></code> with <code class="docutils literal notranslate"><span class="pre">{&quot;owner_id&quot;:</span> <span class="pre">&quot;00000000-0000-0000-0000-000000000000&quot;}</span></code>.</p>
+<p><strong>Error responses:</strong></p>
+<ul class="simple">
+<li><p><strong>403 Forbidden:</strong> The caller is neither an admin/manager nor the current owner of the conversation.</p></li>
+<li><p><strong>404 Not Found:</strong> The conversation UUID does not exist or belongs to a different customer.</p></li>
+</ul>
 </div>
 </section>
 <section id="step-6-next-inbound-message-registered-flow-resumes">
@@ -1351,6 +1357,103 @@ release.</p>
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>Agent callers (non-admin, non-manager) MUST set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to their own agent UUID. Any other value — or omitting the parameter entirely — returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>. Admin and manager callers have no such restriction; they may pass any <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> or omit the filter to list all conversations for the customer.</p>
+</div>
+</section>
+</section>
+<section id="assignment-and-unassignment-endpoint-reference">
+<h3>Assignment and Unassignment Endpoint Reference<a class="headerlink" href="#assignment-and-unassignment-endpoint-reference" title="Link to this heading"></a></h3>
+<p>This section summarises the four endpoints introduced or changed in this release.</p>
+<section id="put-v1-0-conversations-id-admin-manager-only">
+<h4>PUT /v1.0/conversations/{id} (admin/manager only)<a class="headerlink" href="#put-v1-0-conversations-id-admin-manager-only" title="Link to this heading"></a></h4>
+<p>Update conversation details, including ownership assignment and reassignment.</p>
+<ul class="simple">
+<li><p><strong>Method:</strong> <code class="docutils literal notranslate"><span class="pre">PUT</span></code></p></li>
+<li><p><strong>Path:</strong> <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/conversations/{id}</span></code></p></li>
+<li><p><strong>Permission:</strong> Admin or manager only. Agent callers receive <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>.</p></li>
+<li><p><strong>Request body fields:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID, Optional): Agent UUID to assign as owner. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> to unassign.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code>: Ignored. The server always derives this from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Optional): Human-readable conversation name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): Free-form detail field.</p></li>
+</ul>
+</li>
+<li><p><strong>Response:</strong> The updated conversation object.</p></li>
+</ul>
+<p><strong>Error responses:</strong></p>
+<ul class="simple">
+<li><p><strong>403 Forbidden:</strong> Caller does not have admin or manager permission.</p></li>
+<li><p><strong>400 Bad Request:</strong> <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> references an agent UUID that does not exist or belongs to a different customer.</p></li>
+</ul>
+</section>
+<section id="post-v1-0-conversations-id-unassign-admin-manager-owning-agent">
+<h4>POST /v1.0/conversations/{id}/unassign (admin/manager + owning agent)<a class="headerlink" href="#post-v1-0-conversations-id-unassign-admin-manager-owning-agent" title="Link to this heading"></a></h4>
+<p>Remove the current owner from a conversation. No request body required.</p>
+<ul class="simple">
+<li><p><strong>Method:</strong> <code class="docutils literal notranslate"><span class="pre">POST</span></code></p></li>
+<li><p><strong>Path:</strong> <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/conversations/{id}/unassign</span></code></p></li>
+<li><p><strong>Permission:</strong> Admin, manager, or the current owning agent. Non-owning agents receive <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>.</p></li>
+<li><p><strong>Request body:</strong> None.</p></li>
+<li><p><strong>Response:</strong> The updated conversation object (<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is empty).</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST \
+    &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/unassign?token=&lt;AGENT_OR_ADMIN_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p><strong>Error responses:</strong></p>
+<ul class="simple">
+<li><p><strong>403 Forbidden:</strong> Caller is neither an admin/manager nor the current owner.</p></li>
+<li><p><strong>404 Not Found:</strong> Conversation UUID does not exist or belongs to a different customer.</p></li>
+</ul>
+</section>
+<section id="put-v1-0-service-agents-conversations-id-admin-manager-only">
+<h4>PUT /v1.0/service_agents/conversations/{id} (admin/manager only)<a class="headerlink" href="#put-v1-0-service-agents-conversations-id-admin-manager-only" title="Link to this heading"></a></h4>
+<p>Update conversation details via the service-agents surface. Identical semantics to <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/{id}</span></code> but available under the <code class="docutils literal notranslate"><span class="pre">/service_agents/</span></code> prefix.</p>
+<ul class="simple">
+<li><p><strong>Method:</strong> <code class="docutils literal notranslate"><span class="pre">PUT</span></code></p></li>
+<li><p><strong>Path:</strong> <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/service_agents/conversations/{id}</span></code></p></li>
+<li><p><strong>Permission:</strong> Admin or manager only.</p></li>
+<li><p><strong>Request body fields:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID, Optional): Agent UUID to assign as owner, or the nil UUID to unassign.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code>: Ignored.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Optional): Human-readable conversation name.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): Free-form detail field.</p></li>
+</ul>
+</li>
+<li><p><strong>Response:</strong> The updated conversation object.</p></li>
+</ul>
+<p><strong>Error responses:</strong></p>
+<ul class="simple">
+<li><p><strong>403 Forbidden:</strong> Caller does not have admin or manager permission.</p></li>
+<li><p><strong>400 Bad Request:</strong> <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> references an agent that does not exist or belongs to a different customer.</p></li>
+</ul>
+</section>
+<section id="post-v1-0-service-agents-conversations-id-unassign-admin-manager-owning-agent">
+<h4>POST /v1.0/service_agents/conversations/{id}/unassign (admin/manager + owning agent)<a class="headerlink" href="#post-v1-0-service-agents-conversations-id-unassign-admin-manager-owning-agent" title="Link to this heading"></a></h4>
+<p>Remove the current owner from a conversation via the service-agents surface. Identical semantics to <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/{id}/unassign</span></code>.</p>
+<ul class="simple">
+<li><p><strong>Method:</strong> <code class="docutils literal notranslate"><span class="pre">POST</span></code></p></li>
+<li><p><strong>Path:</strong> <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/v1.0/service_agents/conversations/{id}/unassign</span></code></p></li>
+<li><p><strong>Permission:</strong> Admin, manager, or the current owning agent.</p></li>
+<li><p><strong>Request body:</strong> None.</p></li>
+<li><p><strong>Response:</strong> The updated conversation object (<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is empty).</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST \
+    &#39;https://api.voipbin.net/v1.0/service_agents/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/unassign?token=&lt;AGENT_OR_ADMIN_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<p><strong>Error responses:</strong></p>
+<ul class="simple">
+<li><p><strong>403 Forbidden:</strong> Caller is neither an admin/manager nor the current owner.</p></li>
+<li><p><strong>404 Not Found:</strong> Conversation UUID does not exist or belongs to a different customer.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">/service_agents/conversations/</span></code> prefix is functionally equivalent to <code class="docutils literal notranslate"><span class="pre">/conversations/</span></code> for these endpoints. Use the <code class="docutils literal notranslate"><span class="pre">/conversations/</span></code> path in typical integrations. The <code class="docutils literal notranslate"><span class="pre">/service_agents/</span></code> prefix is provided for service-level tooling and admin workflows that operate on behalf of agents.</p>
 </div>
 </section>
 </section>
@@ -1438,6 +1541,13 @@ release.</p>
 <li><a class="reference internal" href="#step-5-agent-self-unassigns-when-handling-is-complete">Step 5. Agent self-unassigns when handling is complete</a></li>
 <li><a class="reference internal" href="#step-6-next-inbound-message-registered-flow-resumes">Step 6. Next inbound message: registered flow resumes</a></li>
 <li><a class="reference internal" href="#listing-my-conversations">Listing “my conversations”</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#assignment-and-unassignment-endpoint-reference">Assignment and Unassignment Endpoint Reference</a><ul>
+<li><a class="reference internal" href="#put-v1-0-conversations-id-admin-manager-only">PUT /v1.0/conversations/{id} (admin/manager only)</a></li>
+<li><a class="reference internal" href="#post-v1-0-conversations-id-unassign-admin-manager-owning-agent">POST /v1.0/conversations/{id}/unassign (admin/manager + owning agent)</a></li>
+<li><a class="reference internal" href="#put-v1-0-service-agents-conversations-id-admin-manager-only">PUT /v1.0/service_agents/conversations/{id} (admin/manager only)</a></li>
+<li><a class="reference internal" href="#post-v1-0-service-agents-conversations-id-unassign-admin-manager-owning-agent">POST /v1.0/service_agents/conversations/{id}/unassign (admin/manager + owning agent)</a></li>
 </ul>
 </li>
 </ul>

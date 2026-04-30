@@ -7225,6 +7225,8 @@ paths:
 
   /conversations/{id}/messages:
     $ref: './paths/conversations/id_messages.yaml'
+  /conversations/{id}/unassign:
+    $ref: './paths/conversations/id_unassign.yaml'
   /conversations/{id}:
     $ref: './paths/conversations/id.yaml'
   /conversations:
@@ -7385,6 +7387,8 @@ paths:
 
   /service_agents/conversations/{id}/messages:
     $ref: './paths/service_agents/conversations_id_messages.yaml'
+  /service_agents/conversations/{id}/unassign:
+    $ref: './paths/service_agents/conversations_id_unassign.yaml'
   /service_agents/conversations/{id}:
     $ref: './paths/service_agents/conversations_id.yaml'
   /service_agents/conversations:

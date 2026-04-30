@@ -8303,6 +8303,14 @@ type GetServiceAgentsConversationsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// PutServiceAgentsConversationsIdJSONBody defines parameters for PutServiceAgentsConversationsId.
+type PutServiceAgentsConversationsIdJSONBody struct {
+	Detail    *string             `json:"detail,omitempty"`
+	Name      *string             `json:"name,omitempty"`
+	OwnerId   *openapi_types.UUID `json:"owner_id,omitempty"`
+	OwnerType *string             `json:"owner_type,omitempty"`
+}
+
 // GetServiceAgentsConversationsIdMessagesParams defines parameters for GetServiceAgentsConversationsIdMessages.
 type GetServiceAgentsConversationsIdMessagesParams struct {
 	// PageSize Number of results to return per page.
@@ -9002,6 +9010,9 @@ type PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody PutServi
 
 // PostServiceAgentsContactsIdTagsJSONRequestBody defines body for PostServiceAgentsContactsIdTags for application/json ContentType.
 type PostServiceAgentsContactsIdTagsJSONRequestBody PostServiceAgentsContactsIdTagsJSONBody
+
+// PutServiceAgentsConversationsIdJSONRequestBody defines body for PutServiceAgentsConversationsId for application/json ContentType.
+type PutServiceAgentsConversationsIdJSONRequestBody PutServiceAgentsConversationsIdJSONBody
 
 // PostServiceAgentsConversationsIdMessagesJSONRequestBody defines body for PostServiceAgentsConversationsIdMessages for application/json ContentType.
 type PostServiceAgentsConversationsIdMessagesJSONRequestBody PostServiceAgentsConversationsIdMessagesJSONBody
