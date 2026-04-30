@@ -5,10 +5,12 @@ import (
 	"reflect"
 	"testing"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	stderrors "errors"
@@ -235,6 +237,15 @@ func Test_Update(t *testing.T) {
 		id     uuid.UUID
 		fields map[conversation.Field]any
 
+		// existingConversation is what h.Get returns during the pre-fetch when
+		// owner_id is non-nil (used to derive cv.CustomerID for the agent
+		// validation filter). Set to nil for cases that do not trigger the
+		// pre-fetch (no owner_id, or owner_id == uuid.Nil).
+		existingConversation *conversation.Conversation
+		// agentListResponse is what AgentV1AgentList returns when invoked.
+		// Set to nil for cases that do not trigger an agent list call.
+		agentListResponse []amagent.Agent
+
 		expectFields         map[conversation.Field]any
 		responseConversation *conversation.Conversation
 	}{
@@ -256,11 +267,26 @@ func Test_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "owner_id non-nil — derives owner_type=agent",
+			name: "owner_id non-nil with valid agent — derives owner_type=agent",
 
 			id: uuid.FromStringOrNil("17a8d3a4-2604-11f0-9a7d-eb1f4d6f9a01"),
 			fields: map[conversation.Field]any{
 				conversation.FieldOwnerID: uuid.FromStringOrNil("2c4a4c2a-2604-11f0-aa18-3b3f1b8a1b22"),
+			},
+
+			existingConversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("17a8d3a4-2604-11f0-9a7d-eb1f4d6f9a01"),
+					CustomerID: uuid.FromStringOrNil("3a3a3a3a-2604-11f0-9a7d-eb1f4d6f9a01"),
+				},
+			},
+			agentListResponse: []amagent.Agent{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("2c4a4c2a-2604-11f0-aa18-3b3f1b8a1b22"),
+						CustomerID: uuid.FromStringOrNil("3a3a3a3a-2604-11f0-9a7d-eb1f4d6f9a01"),
+					},
+				},
 			},
 
 			expectFields: map[conversation.Field]any{
@@ -274,7 +300,7 @@ func Test_Update(t *testing.T) {
 			},
 		},
 		{
-			name: "owner_id nil — derives owner_type=\"\" (unassign)",
+			name: "owner_id nil — derives owner_type=\"\" (unassign), no agent validation",
 
 			id: uuid.FromStringOrNil("3f4d6c00-2604-11f0-bf9a-cf1a4d2f9c33"),
 			fields: map[conversation.Field]any{
@@ -300,6 +326,21 @@ func Test_Update(t *testing.T) {
 				conversation.FieldOwnerType: commonidentity.OwnerType("something-else"),
 			},
 
+			existingConversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("57a91b46-2604-11f0-9a3d-d3a8a45f9d44"),
+					CustomerID: uuid.FromStringOrNil("8c2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
+				},
+			},
+			agentListResponse: []amagent.Agent{
+				{
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("6b2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
+						CustomerID: uuid.FromStringOrNil("8c2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
+					},
+				},
+			},
+
 			expectFields: map[conversation.Field]any{
 				conversation.FieldOwnerID:   uuid.FromStringOrNil("6b2a3d80-2604-11f0-a4f6-c3b8a4ad2e55"),
 				conversation.FieldOwnerType: commonidentity.OwnerTypeAgent,
@@ -320,12 +361,28 @@ func Test_Update(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
 			h := &conversationHandler{
 				db:            mockDB,
 				notifyHandler: mockNotify,
 				lineHandler:   mockLine,
+				reqHandler:    mockReq,
 			}
 			ctx := context.Background()
+
+			// If the case triggers the pre-fetch (owner_id non-nil), expect
+			// h.Get -> ConversationGet to load the existing conversation, and
+			// expect AgentV1AgentList with the customer-scoped filter.
+			if tt.existingConversation != nil {
+				mockDB.EXPECT().ConversationGet(ctx, tt.id).Return(tt.existingConversation, nil)
+
+				ownerID := tt.fields[conversation.FieldOwnerID].(uuid.UUID)
+				mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), map[amagent.Field]any{
+					amagent.FieldID:         ownerID,
+					amagent.FieldCustomerID: tt.existingConversation.CustomerID,
+					amagent.FieldDeleted:    false,
+				}).Return(tt.agentListResponse, nil)
+			}
 
 			mockDB.EXPECT().ConversationUpdate(ctx, tt.id, tt.expectFields).Return(nil)
 			mockDB.EXPECT().ConversationGet(ctx, tt.id).Return(tt.responseConversation, nil)
@@ -340,6 +397,153 @@ func Test_Update(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.responseConversation, res)
 			}
 		})
+	}
+}
+
+func Test_Update_AgentValidationFailed(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockLine := linehandler.NewMockLineHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &conversationHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		lineHandler:   mockLine,
+		reqHandler:    mockReq,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("a3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
+	ownerID := uuid.FromStringOrNil("b3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
+	customerID := uuid.FromStringOrNil("c3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
+	fields := map[conversation.Field]any{
+		conversation.FieldOwnerID: ownerID,
+	}
+
+	existing := &conversation.Conversation{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+	}
+
+	mockDB.EXPECT().ConversationGet(ctx, id).Return(existing, nil)
+	mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), map[amagent.Field]any{
+		amagent.FieldID:         ownerID,
+		amagent.FieldCustomerID: customerID,
+		amagent.FieldDeleted:    false,
+	}).Return([]amagent.Agent{}, nil)
+	// No DB write, no post-update get, no event publish.
+
+	res, err := h.Update(ctx, id, fields)
+	if err == nil {
+		t.Fatalf("expected error, got nil (res=%v)", res)
+	}
+	if res != nil {
+		t.Errorf("expected nil result on error, got: %v", res)
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("expected *cerrors.VoipbinError, got: %T (%v)", err, err)
+	}
+	if ve.Status != cerrors.StatusInvalidArgument {
+		t.Errorf("expected Status=InvalidArgument, got: %v", ve.Status)
+	}
+	if ve.Reason != "AGENT_VALIDATION_FAILED" {
+		t.Errorf("expected Reason=AGENT_VALIDATION_FAILED, got: %v", ve.Reason)
+	}
+}
+
+func Test_Update_AgentListRPCFailure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockLine := linehandler.NewMockLineHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &conversationHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		lineHandler:   mockLine,
+		reqHandler:    mockReq,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("d3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
+	ownerID := uuid.FromStringOrNil("e3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
+	customerID := uuid.FromStringOrNil("f3b4c5d6-2604-11f0-9a7d-eb1f4d6f9a01")
+	fields := map[conversation.Field]any{
+		conversation.FieldOwnerID: ownerID,
+	}
+
+	existing := &conversation.Conversation{
+		Identity: commonidentity.Identity{
+			ID:         id,
+			CustomerID: customerID,
+		},
+	}
+
+	rpcErr := stderrors.New("rabbitmq RPC failed")
+	mockDB.EXPECT().ConversationGet(ctx, id).Return(existing, nil)
+	mockReq.EXPECT().AgentV1AgentList(ctx, "", uint64(1), map[amagent.Field]any{
+		amagent.FieldID:         ownerID,
+		amagent.FieldCustomerID: customerID,
+		amagent.FieldDeleted:    false,
+	}).Return(nil, rpcErr)
+	// No DB write, no event publish.
+
+	res, err := h.Update(ctx, id, fields)
+	if err == nil {
+		t.Fatalf("expected error, got nil (res=%v)", res)
+	}
+	if res != nil {
+		t.Errorf("expected nil result on error, got: %v", res)
+	}
+	if !stderrors.Is(err, rpcErr) {
+		t.Errorf("expected wrapped rpcErr in chain, got: %v", err)
+	}
+}
+
+func Test_Update_ConversationGetFailure(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockLine := linehandler.NewMockLineHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &conversationHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		lineHandler:   mockLine,
+		reqHandler:    mockReq,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("11223344-2604-11f0-9a7d-eb1f4d6f9a01")
+	ownerID := uuid.FromStringOrNil("22334455-2604-11f0-9a7d-eb1f4d6f9a01")
+	fields := map[conversation.Field]any{
+		conversation.FieldOwnerID: ownerID,
+	}
+
+	getErr := stderrors.New("database read failed")
+	mockDB.EXPECT().ConversationGet(ctx, id).Return(nil, getErr)
+	// No agent list call, no DB write, no event publish.
+
+	res, err := h.Update(ctx, id, fields)
+	if err == nil {
+		t.Fatalf("expected error, got nil (res=%v)", res)
+	}
+	if res != nil {
+		t.Errorf("expected nil result on error, got: %v", res)
+	}
+	if !stderrors.Is(err, getErr) {
+		t.Errorf("expected wrapped getErr in chain, got: %v", err)
 	}
 }
 

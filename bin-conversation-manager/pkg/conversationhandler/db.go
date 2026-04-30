@@ -5,6 +5,7 @@ import (
 	stderrors "errors"
 	"fmt"
 
+	amagent "monorepo/bin-agent-manager/models/agent"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -168,6 +169,35 @@ func (h *conversationHandler) Update(ctx context.Context, id uuid.UUID, fields m
 				fmt.Sprintf("invalid owner_id type: %T", v),
 			)
 		}
+		if ownerID != uuid.Nil {
+			// Need cv.CustomerID for the validation filter — fetch the existing
+			// conversation. Update did not previously load it.
+			cv, errGet := h.Get(ctx, id)
+			if errGet != nil {
+				return nil, errors.Wrapf(errGet, "could not load conversation for validation. id: %s", id)
+			}
+
+			// Validate agent existence + same-customer constraint via list filter.
+			// agent-manager does not surface a typed 404 today, so the
+			// not-found and customer-mismatch cases collapse into a single
+			// combined "could not validate agent" rejection.
+			agents, errList := h.reqHandler.AgentV1AgentList(ctx, "", 1, map[amagent.Field]any{
+				amagent.FieldID:         ownerID,
+				amagent.FieldCustomerID: cv.CustomerID,
+				amagent.FieldDeleted:    false,
+			})
+			if errList != nil {
+				return nil, errors.Wrapf(errList, "could not validate agent. owner_id: %s", ownerID)
+			}
+			if len(agents) == 0 {
+				return nil, cerrors.InvalidArgument(
+					commonoutline.ServiceNameConversationManager,
+					"AGENT_VALIDATION_FAILED",
+					fmt.Sprintf("could not validate agent. owner_id: %s", ownerID),
+				)
+			}
+		}
+
 		if ownerID == uuid.Nil {
 			fields[conversation.FieldOwnerType] = commonidentity.OwnerTypeNone
 		} else {
