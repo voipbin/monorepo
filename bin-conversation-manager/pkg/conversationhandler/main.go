@@ -104,3 +104,12 @@ const (
 	variableConversationMessageText      = "voipbin.conversation_message.text"
 	variableConversationMessageDirection = "voipbin.conversation_message.direction"
 )
+
+// ExecuteMode defines how an inbound message on a conversation should be processed.
+type ExecuteMode string
+
+const (
+	ExecuteModeNone  ExecuteMode = ""      // reserved; not currently produced by getExecuteMode
+	ExecuteModeAgent ExecuteMode = "agent" // conversation owned by an agent — skip flow trigger
+	ExecuteModeFlow  ExecuteMode = "flow"  // default — trigger the registered flow per cv.Type
+)

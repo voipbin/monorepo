@@ -9,7 +9,6 @@
         <title>Tutorial &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -345,6 +344,182 @@
 }
 </pre></div>
 </div>
+<section id="assigning-a-conversation-to-an-agent-walkthrough">
+<h3>Assigning a conversation to an agent (walkthrough)<a class="headerlink" href="#assigning-a-conversation-to-an-agent-walkthrough" title="Link to this heading"></a></h3>
+<p>This walkthrough shows the full lifecycle of assigning an inbound conversation to a specific agent so the agent can handle it manually, then unassigning it so the registered flow resumes.</p>
+<p>For the conceptual model and permission rules, see <a class="reference internal" href="conversation_overview.html#conversation-overview-assigning-conversation-to-agent"><span class="std std-ref">Assigning a Conversation to an Agent</span></a>.</p>
+</section>
+</section>
+<section id="prerequisites-for-this-walkthrough">
+<h2>Prerequisites for this walkthrough<a class="headerlink" href="#prerequisites-for-this-walkthrough" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>An admin or manager auth token (<code class="docutils literal notranslate"><span class="pre">&lt;ADMIN_TOKEN&gt;</span></code> below) — required for the initial assignment.</p></li>
+<li><p>The agent’s auth token (<code class="docutils literal notranslate"><span class="pre">&lt;AGENT_TOKEN&gt;</span></code> below) — used by the agent to reply and to self-unassign.</p></li>
+<li><p>The agent UUID. Obtain it from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/agents</span></code>. The examples below use the literal value <code class="docutils literal notranslate"><span class="pre">eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b</span></code>; substitute your own.</p></li>
+<li><p>An existing conversation UUID. Obtain it from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>. The examples below use the literal value <code class="docutils literal notranslate"><span class="pre">a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f</span></code>; substitute your own.</p></li>
+</ul>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">&lt;ADMIN_TOKEN&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;AGENT_TOKEN&gt;</span></code> with the corresponding auth tokens in each request.</p>
+</section>
+<section id="step-1-admin-assigns-the-conversation-to-the-agent">
+<h2>Step 1. Admin assigns the conversation to the agent<a class="headerlink" href="#step-1-admin-assigns-the-conversation-to-the-agent" title="Link to this heading"></a></h2>
+<p>The admin (or manager) sends a <code class="docutils literal notranslate"><span class="pre">PUT</span></code> with only the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> field. The server derives <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> and ignores any caller-supplied <code class="docutils literal notranslate"><span class="pre">owner_type</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f?token=&lt;ADMIN_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;agent&quot;,
+    &quot;owner_id&quot;: &quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;,
+    &quot;account_id&quot;: &quot;c5d6e7f8-a9b0-1234-cdef-567890abcdef&quot;,
+    &quot;name&quot;: &quot;conversation&quot;,
+    &quot;detail&quot;: &quot;conversation detail&quot;,
+    &quot;type&quot;: &quot;line&quot;,
+    &quot;dialog_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
+    &quot;self&quot;: { &quot;type&quot;: &quot;line&quot;, &quot;target&quot;: &quot;&quot;, &quot;target_name&quot;: &quot;me&quot;, &quot;name&quot;: &quot;&quot;, &quot;detail&quot;: &quot;&quot; },
+    &quot;peer&quot;: { &quot;type&quot;: &quot;line&quot;, &quot;target&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;, &quot;target_name&quot;: &quot;Unknown&quot;, &quot;name&quot;: &quot;&quot;, &quot;detail&quot;: &quot;&quot; },
+    &quot;tm_create&quot;: &quot;2022-06-17 06:06:14.446158&quot;,
+    &quot;tm_update&quot;: &quot;2026-04-30 09:00:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="step-2-agent-receives-a-conversation-updated-webhook">
+<h2>Step 2. Agent receives a <code class="docutils literal notranslate"><span class="pre">conversation_updated</span></code> webhook<a class="headerlink" href="#step-2-agent-receives-a-conversation-updated-webhook" title="Link to this heading"></a></h2>
+<p>VoIPBIN delivers a webhook to your application reflecting the new owner. The webhook body is the conversation’s <code class="docutils literal notranslate"><span class="pre">WebhookMessage</span></code>, with the assignment fields populated.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation_updated&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c5d6e7f8-a9b0-1234-cdef-567890abcdef&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation detail&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;line&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dialog_id&quot;</span><span class="p">:</span> <span class="s2">&quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;self&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;me&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span> <span class="p">},</span>
+        <span class="s2">&quot;peer&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;line&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;</span><span class="p">,</span> <span class="s2">&quot;target_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span> <span class="p">},</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-06-17 06:06:14.446158&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-04-30 09:00:00.000000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-inbound-message-arrives-on-the-assigned-conversation">
+<h2>Step 3. Inbound message arrives on the assigned conversation<a class="headerlink" href="#step-3-inbound-message-arrives-on-the-assigned-conversation" title="Link to this heading"></a></h2>
+<p>While the conversation is assigned, the next inbound message from the peer does <strong>not</strong> trigger the registered flow. No new activeflow is created. The assigned agent receives the standard <code class="docutils literal notranslate"><span class="pre">conversation_message_created</span></code> webhook (with <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;incoming&quot;</span></code>) and is expected to reply via the API.</p>
+<p>You can verify this by listing recent activeflows for the customer (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/activeflows</span></code>) before and after the inbound message arrives — there will be no new activeflow tied to the inbound message.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Already-running activeflows are unaffected by assignment. If a flow was already running on this conversation when assignment happened, it will continue to run to completion. Only <strong>new</strong> inbound messages that arrive while the conversation is assigned will skip the flow trigger.</p>
+</div>
+</section>
+<section id="step-4-agent-replies-to-the-conversation">
+<h2>Step 4. Agent replies to the conversation<a class="headerlink" href="#step-4-agent-replies-to-the-conversation" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Permission scope</strong></p>
+<p>The message-send endpoint (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversations/{id}/messages</span></code>) currently
+requires admin or manager permission. A per-agent JWT (<code class="docutils literal notranslate"><span class="pre">&lt;AGENT_TOKEN&gt;</span></code>)
+does <strong>not</strong> have permission to send messages — it returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>.
+In practice the agent reply is sent from an admin/manager-scoped session
+(for example, the agent web app at <a class="reference external" href="https://talk.voipbin.net">https://talk.voipbin.net</a> authenticated
+as an admin or manager user, which fans out replies on behalf of the agent).
+Use <code class="docutils literal notranslate"><span class="pre">&lt;ADMIN_TOKEN&gt;</span></code> (or any admin/manager-scoped token) for this step.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Future work (out of scope for this release)</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">ConversationMessageSend</span></code> does not yet have a self-reply carve-out for the
+owning agent — the owning agent cannot post messages with their own JWT.
+A follow-up could mirror the <code class="docutils literal notranslate"><span class="pre">ConversationUpdate</span></code> self-unassign carve-out
+(design §5.2) and allow the owning agent to send messages on a conversation
+they own. This is intentionally out of scope for the current assignment
+release.</p>
+</div>
+<p>The agent reply uses the standard message-send API (no special endpoint required for assigned conversations).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=&lt;ADMIN_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;text&quot;: &quot;Hi, this is the support agent. How can I help you today?&quot;,
+        &quot;medias&quot;: []
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;0c8f23cb-e878-49bf-b69e-03f59252f217&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;conversation_id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
+    &quot;direction&quot;: &quot;outgoing&quot;,
+    &quot;status&quot;: &quot;progressing&quot;,
+    &quot;reference_type&quot;: &quot;line&quot;,
+    &quot;reference_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
+    &quot;text&quot;: &quot;Hi, this is the support agent. How can I help you today?&quot;,
+    &quot;medias&quot;: [],
+    &quot;tm_create&quot;: &quot;2026-04-30 09:05:00.000000&quot;,
+    &quot;tm_update&quot;: &quot;2026-04-30 09:05:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+</section>
+<section id="step-5-agent-self-unassigns-when-handling-is-complete">
+<h2>Step 5. Agent self-unassigns when handling is complete<a class="headerlink" href="#step-5-agent-self-unassigns-when-handling-is-complete" title="Link to this heading"></a></h2>
+<p>The owning agent can unassign themselves at any time by sending the nil UUID. This is the only assignment-related change an owning agent is permitted to make.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f?token=&lt;AGENT_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;owner_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;owner_type&quot;: &quot;&quot;,
+    &quot;owner_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;account_id&quot;: &quot;c5d6e7f8-a9b0-1234-cdef-567890abcdef&quot;,
+    &quot;name&quot;: &quot;conversation&quot;,
+    &quot;detail&quot;: &quot;conversation detail&quot;,
+    &quot;type&quot;: &quot;line&quot;,
+    &quot;dialog_id&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;,
+    &quot;self&quot;: { &quot;type&quot;: &quot;line&quot;, &quot;target&quot;: &quot;&quot;, &quot;target_name&quot;: &quot;me&quot;, &quot;name&quot;: &quot;&quot;, &quot;detail&quot;: &quot;&quot; },
+    &quot;peer&quot;: { &quot;type&quot;: &quot;line&quot;, &quot;target&quot;: &quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;, &quot;target_name&quot;: &quot;Unknown&quot;, &quot;name&quot;: &quot;&quot;, &quot;detail&quot;: &quot;&quot; },
+    &quot;tm_create&quot;: &quot;2022-06-17 06:06:14.446158&quot;,
+    &quot;tm_update&quot;: &quot;2026-04-30 09:30:00.000000&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01 00:00:00.000000&quot;
+}
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The unassign payload must contain only <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> set to the nil UUID. If the owning agent includes any additional field (e.g., <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>), the request is rejected with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code> because non-assignment field updates require admin/manager permission.</p>
+</div>
+</section>
+<section id="step-6-next-inbound-message-registered-flow-resumes">
+<h2>Step 6. Next inbound message: registered flow resumes<a class="headerlink" href="#step-6-next-inbound-message-registered-flow-resumes" title="Link to this heading"></a></h2>
+<p>Once unassigned (<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID and <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is empty), the conversation reverts to standard behavior. The next inbound message triggers the registered flow as usual, creating a fresh activeflow you can observe via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/activeflows</span></code>.</p>
+</section>
+<section id="listing-my-conversations">
+<h2>Listing “my conversations”<a class="headerlink" href="#listing-my-conversations" title="Link to this heading"></a></h2>
+<p>Agents can build a “my conversations” view by filtering on <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> against their own agent UUID:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request GET &#39;https://api.voipbin.net/v1.0/conversations?owner_id=eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&amp;page_token=2026-04-30T10:00:00.000000Z&#39; \
+    --header &#39;Authorization: Bearer &lt;AGENT_TOKEN&gt;&#39;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Agent callers (non-admin, non-manager) MUST set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to their own agent UUID. Any other value — or omitting the parameter entirely — returns <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>. Admin and manager callers have no such restriction; they may pass any <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> or omit the filter to list all conversations for the customer.</p>
+</div>
 </section>
 </section>
 
@@ -373,7 +548,18 @@
 <li><a class="reference internal" href="#get-list-of-conversation-messages">Get list of conversation messages</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id3">Example</a></li>
+<li><a class="reference internal" href="#id3">Example</a><ul>
+<li><a class="reference internal" href="#assigning-a-conversation-to-an-agent-walkthrough">Assigning a conversation to an agent (walkthrough)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#prerequisites-for-this-walkthrough">Prerequisites for this walkthrough</a></li>
+<li><a class="reference internal" href="#step-1-admin-assigns-the-conversation-to-the-agent">Step 1. Admin assigns the conversation to the agent</a></li>
+<li><a class="reference internal" href="#step-2-agent-receives-a-conversation-updated-webhook">Step 2. Agent receives a <code class="docutils literal notranslate"><span class="pre">conversation_updated</span></code> webhook</a></li>
+<li><a class="reference internal" href="#step-3-inbound-message-arrives-on-the-assigned-conversation">Step 3. Inbound message arrives on the assigned conversation</a></li>
+<li><a class="reference internal" href="#step-4-agent-replies-to-the-conversation">Step 4. Agent replies to the conversation</a></li>
+<li><a class="reference internal" href="#step-5-agent-self-unassigns-when-handling-is-complete">Step 5. Agent self-unassigns when handling is complete</a></li>
+<li><a class="reference internal" href="#step-6-next-inbound-message-registered-flow-resumes">Step 6. Next inbound message: registered flow resumes</a></li>
+<li><a class="reference internal" href="#listing-my-conversations">Listing “my conversations”</a></li>
 </ul>
 </li>
 </ul>
@@ -415,7 +601,7 @@
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -423,11 +609,11 @@
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

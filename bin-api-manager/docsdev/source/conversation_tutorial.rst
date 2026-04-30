@@ -160,3 +160,190 @@ Example
         ],
         "next_page_token": "2022-06-17 06:06:14.948432"
     }
+
+
+Assigning a conversation to an agent (walkthrough)
+--------------------------------------------------
+
+This walkthrough shows the full lifecycle of assigning an inbound conversation to a specific agent so the agent can handle it manually, then unassigning it so the registered flow resumes.
+
+For the conceptual model and permission rules, see :ref:`Assigning a Conversation to an Agent <conversation-overview-assigning-conversation-to-agent>`.
+
+Prerequisites for this walkthrough
+++++++++++++++++++++++++++++++++++
+
+* An admin or manager auth token (``<ADMIN_TOKEN>`` below) — required for the initial assignment.
+* The agent's auth token (``<AGENT_TOKEN>`` below) — used by the agent to reply and to self-unassign.
+* The agent UUID. Obtain it from the ``id`` field of ``GET https://api.voipbin.net/v1.0/agents``. The examples below use the literal value ``eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b``; substitute your own.
+* An existing conversation UUID. Obtain it from ``GET https://api.voipbin.net/v1.0/conversations``. The examples below use the literal value ``a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f``; substitute your own.
+
+Replace ``<ADMIN_TOKEN>`` and ``<AGENT_TOKEN>`` with the corresponding auth tokens in each request.
+
+Step 1. Admin assigns the conversation to the agent
++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The admin (or manager) sends a ``PUT`` with only the ``owner_id`` field. The server derives ``owner_type`` from ``owner_id`` and ignores any caller-supplied ``owner_type``.
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f?token=<ADMIN_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "owner_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"
+        }'
+
+    {
+        "id": "a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "owner_type": "agent",
+        "owner_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+        "account_id": "c5d6e7f8-a9b0-1234-cdef-567890abcdef",
+        "name": "conversation",
+        "detail": "conversation detail",
+        "type": "line",
+        "dialog_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+        "self": { "type": "line", "target": "", "target_name": "me", "name": "", "detail": "" },
+        "peer": { "type": "line", "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f", "target_name": "Unknown", "name": "", "detail": "" },
+        "tm_create": "2022-06-17 06:06:14.446158",
+        "tm_update": "2026-04-30 09:00:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+Step 2. Agent receives a ``conversation_updated`` webhook
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+VoIPBIN delivers a webhook to your application reflecting the new owner. The webhook body is the conversation's ``WebhookMessage``, with the assignment fields populated.
+
+.. code::
+
+    {
+        "type": "conversation_updated",
+        "data": {
+            "id": "a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f",
+            "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+            "owner_type": "agent",
+            "owner_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+            "account_id": "c5d6e7f8-a9b0-1234-cdef-567890abcdef",
+            "name": "conversation",
+            "detail": "conversation detail",
+            "type": "line",
+            "dialog_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+            "self": { "type": "line", "target": "", "target_name": "me", "name": "", "detail": "" },
+            "peer": { "type": "line", "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f", "target_name": "Unknown", "name": "", "detail": "" },
+            "tm_create": "2022-06-17 06:06:14.446158",
+            "tm_update": "2026-04-30 09:00:00.000000",
+            "tm_delete": "9999-01-01 00:00:00.000000"
+        }
+    }
+
+Step 3. Inbound message arrives on the assigned conversation
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+While the conversation is assigned, the next inbound message from the peer does **not** trigger the registered flow. No new activeflow is created. The assigned agent receives the standard ``conversation_message_created`` webhook (with ``direction: "incoming"``) and is expected to reply via the API.
+
+You can verify this by listing recent activeflows for the customer (``GET https://api.voipbin.net/v1.0/activeflows``) before and after the inbound message arrives — there will be no new activeflow tied to the inbound message.
+
+.. note:: **AI Implementation Hint**
+
+   Already-running activeflows are unaffected by assignment. If a flow was already running on this conversation when assignment happened, it will continue to run to completion. Only **new** inbound messages that arrive while the conversation is assigned will skip the flow trigger.
+
+Step 4. Agent replies to the conversation
++++++++++++++++++++++++++++++++++++++++++
+
+.. note:: **Permission scope**
+
+   The message-send endpoint (``POST /conversations/{id}/messages``) currently
+   requires admin or manager permission. A per-agent JWT (``<AGENT_TOKEN>``)
+   does **not** have permission to send messages — it returns ``403 Forbidden``.
+   In practice the agent reply is sent from an admin/manager-scoped session
+   (for example, the agent web app at https://talk.voipbin.net authenticated
+   as an admin or manager user, which fans out replies on behalf of the agent).
+   Use ``<ADMIN_TOKEN>`` (or any admin/manager-scoped token) for this step.
+
+.. note:: **Future work (out of scope for this release)**
+
+   ``ConversationMessageSend`` does not yet have a self-reply carve-out for the
+   owning agent — the owning agent cannot post messages with their own JWT.
+   A follow-up could mirror the ``ConversationUpdate`` self-unassign carve-out
+   (design §5.2) and allow the owning agent to send messages on a conversation
+   they own. This is intentionally out of scope for the current assignment
+   release.
+
+The agent reply uses the standard message-send API (no special endpoint required for assigned conversations).
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f/messages?token=<ADMIN_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "text": "Hi, this is the support agent. How can I help you today?",
+            "medias": []
+        }'
+
+    {
+        "id": "0c8f23cb-e878-49bf-b69e-03f59252f217",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "conversation_id": "a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f",
+        "direction": "outgoing",
+        "status": "progressing",
+        "reference_type": "line",
+        "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+        "text": "Hi, this is the support agent. How can I help you today?",
+        "medias": [],
+        "tm_create": "2026-04-30 09:05:00.000000",
+        "tm_update": "2026-04-30 09:05:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+Step 5. Agent self-unassigns when handling is complete
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The owning agent can unassign themselves at any time by sending the nil UUID. This is the only assignment-related change an owning agent is permitted to make.
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/conversations/a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f?token=<AGENT_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "owner_id": "00000000-0000-0000-0000-000000000000"
+        }'
+
+    {
+        "id": "a7bc12b7-f95c-43e6-82a1-38f4b7ff9b3f",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "owner_type": "",
+        "owner_id": "00000000-0000-0000-0000-000000000000",
+        "account_id": "c5d6e7f8-a9b0-1234-cdef-567890abcdef",
+        "name": "conversation",
+        "detail": "conversation detail",
+        "type": "line",
+        "dialog_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+        "self": { "type": "line", "target": "", "target_name": "me", "name": "", "detail": "" },
+        "peer": { "type": "line", "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f", "target_name": "Unknown", "name": "", "detail": "" },
+        "tm_create": "2022-06-17 06:06:14.446158",
+        "tm_update": "2026-04-30 09:30:00.000000",
+        "tm_delete": "9999-01-01 00:00:00.000000"
+    }
+
+.. note:: **AI Implementation Hint**
+
+   The unassign payload must contain only ``owner_id`` set to the nil UUID. If the owning agent includes any additional field (e.g., ``name``, ``detail``), the request is rejected with ``403 Forbidden`` because non-assignment field updates require admin/manager permission.
+
+Step 6. Next inbound message: registered flow resumes
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Once unassigned (``owner_id`` is the nil UUID and ``owner_type`` is empty), the conversation reverts to standard behavior. The next inbound message triggers the registered flow as usual, creating a fresh activeflow you can observe via ``GET https://api.voipbin.net/v1.0/activeflows``.
+
+Listing "my conversations"
+++++++++++++++++++++++++++
+
+Agents can build a "my conversations" view by filtering on ``owner_id`` against their own agent UUID:
+
+.. code::
+
+    $ curl --location --request GET 'https://api.voipbin.net/v1.0/conversations?owner_id=eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&page_token=2026-04-30T10:00:00.000000Z' \
+        --header 'Authorization: Bearer <AGENT_TOKEN>'
+
+.. note:: **AI Implementation Hint**
+
+   Agent callers (non-admin, non-manager) MUST set ``owner_id`` to their own agent UUID. Any other value — or omitting the parameter entirely — returns ``403 Forbidden``. Admin and manager callers have no such restriction; they may pass any ``owner_id`` or omit the filter to list all conversations for the customer.

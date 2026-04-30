@@ -6,6 +6,7 @@ import (
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	cvconversation "monorepo/bin-conversation-manager/models/conversation"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -35,13 +36,19 @@ func (h *serviceHandler) conversationGet(ctx context.Context, conversationID uui
 
 // ConversationGetsByCustomerID gets the list of conversations of the given customer id.
 // It returns list of conversations if it succeed.
-func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cvconversation.WebhookMessage, error) {
+//
+// When ownerID is non-nil it is added to the filter map as FieldOwnerID. Permission rule:
+// admin/manager callers may pass any ownerID (including uuid.Nil) or omit it; non-admin agent
+// callers MUST pass ownerID equal to their own agent ID — any other case (cross-agent filter or
+// no filter) returns ErrPermissionDenied. See design §5.5.
+func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, ownerID uuid.UUID) ([]*cvconversation.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationGetsByCustomerID",
 		"customer_id": a.CustomerID,
 		"username":    a.DisplayName(),
 		"size":        size,
 		"token":       token,
+		"owner_id":    ownerID,
 	})
 	log.Debug("Getting a conversations.")
 
@@ -53,14 +60,21 @@ func (h *serviceHandler) ConversationGetsByCustomerID(ctx context.Context, a *au
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
+	// Admin/manager callers retain unrestricted access. Non-admin agent callers are permitted
+	// only when the request is filtered by their own agent ID (the "my conversations" path).
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission for this agent.")
-		return nil, serviceerrors.ErrPermissionDenied
+		if !a.IsAgent() || a.Agent == nil || a.Agent.ID == uuid.Nil || ownerID != a.Agent.ID {
+			log.Info("Caller has no permission to list conversations.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
 	}
 
 	filters := map[cvconversation.Field]any{
 		cvconversation.FieldDeleted:    false,
 		cvconversation.FieldCustomerID: a.CustomerID,
+	}
+	if ownerID != uuid.Nil {
+		filters[cvconversation.FieldOwnerID] = ownerID
 	}
 
 	tmps, err := h.conversationList(ctx, a, size, token, filters)
@@ -157,9 +171,21 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIde
 		return nil, fmt.Errorf("%w: could not find conversation info", err)
 	}
 
+	// admin/manager retain unrestricted access to the existing forward path. For non-admin
+	// callers the only allowed update is the owning-agent self-unassign (see design §5.2).
 	if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		log.Info("The agent has no permission for this agent.")
-		return nil, serviceerrors.ErrPermissionDenied
+		if !a.IsAgent() || a.Agent == nil {
+			log.Info("Caller is not an agent.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		if c.OwnerType != commonidentity.OwnerTypeAgent || c.OwnerID != a.Agent.ID {
+			log.Info("Caller is not the owning agent.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+		if !payloadIsExactlySelfUnassign(fields) {
+			log.Info("Non-admin agent payload is not exactly a self-unassign.")
+			return nil, serviceerrors.ErrPermissionDenied
+		}
 	}
 
 	tmp, err := h.reqHandler.ConversationV1ConversationUpdate(ctx, conversationID, fields)
@@ -170,4 +196,27 @@ func (h *serviceHandler) ConversationUpdate(ctx context.Context, a *auth.AuthIde
 
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
+}
+
+// payloadIsExactlySelfUnassign returns true iff the partial-update fields map represents
+// exactly a self-unassign: a single key (FieldOwnerID) whose value is uuid.Nil.
+// FieldOwnerType MUST NOT be present, even if redundant given len==1 — the explicit
+// check closes the OpenAPI-bypass attack where an agent caller sends {owner_id, owner_type}
+// together. See design §5.2.
+func payloadIsExactlySelfUnassign(fields map[cvconversation.Field]any) bool {
+	if len(fields) != 1 {
+		return false
+	}
+	v, ok := fields[cvconversation.FieldOwnerID]
+	if !ok {
+		return false
+	}
+	ownerID, okType := v.(uuid.UUID)
+	if !okType || ownerID != uuid.Nil {
+		return false
+	}
+	if _, hasOwnerType := fields[cvconversation.FieldOwnerType]; hasOwnerType {
+		return false
+	}
+	return true
 }

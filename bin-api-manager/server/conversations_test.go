@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"encoding/json"
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/models/auth"
@@ -32,6 +33,7 @@ func Test_conversationsGet(t *testing.T) {
 
 		expectPageSize  uint64
 		expectPageToken string
+		expectOwnerID   uuid.UUID
 		expectRes       string
 	}
 
@@ -48,6 +50,30 @@ func Test_conversationsGet(t *testing.T) {
 
 			expectPageSize:  20,
 			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectOwnerID:   uuid.Nil,
+
+			responseConversations: []*cvconversation.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("120bc6da-ed2e-11ec-839d-cb324c315bf3"),
+					},
+				},
+			},
+			expectRes: `{"result":[{"id":"120bc6da-ed2e-11ec-839d-cb324c315bf3","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{},"tm_create":null,"tm_update":null,"tm_delete":null}],"next_page_token":""}`,
+		},
+		{
+			name: "with owner_id filter",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
+				},
+			}),
+
+			reqQuery: "/conversations?page_size=20&page_token=2020-09-20T03:23:20.995000Z&owner_id=eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+
+			expectPageSize:  20,
+			expectPageToken: "2020-09-20T03:23:20.995000Z",
+			expectOwnerID:   uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
 
 			responseConversations: []*cvconversation.WebhookMessage{
 				{
@@ -82,7 +108,7 @@ func Test_conversationsGet(t *testing.T) {
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationGetsByCustomerID(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken).Return(tt.responseConversations, nil)
+			mockSvc.EXPECT().ConversationGetsByCustomerID(req.Context(), tt.agent, tt.expectPageSize, tt.expectPageToken, tt.expectOwnerID).Return(tt.responseConversations, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -399,5 +425,22 @@ func Test_conversationsIDPut(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
 			}
 		})
+	}
+}
+
+func Test_PutConversationsId_emptyStringPreserved(t *testing.T) {
+	body := []byte(`{"name": ""}`)
+	var req openapi_server.PutConversationsIdJSONBody
+	if errBind := json.Unmarshal(body, &req); errBind != nil {
+		t.Fatalf("unmarshal failed: %v", errBind)
+	}
+	raw, errFilter := structToFilteredMap(req)
+	if errFilter != nil {
+		t.Fatalf("filter failed: %v", errFilter)
+	}
+	if v, ok := raw["name"]; !ok {
+		t.Errorf("expected name key in filtered map, got: %v", raw)
+	} else if v != "" {
+		t.Errorf("expected name='', got: %q", v)
 	}
 }

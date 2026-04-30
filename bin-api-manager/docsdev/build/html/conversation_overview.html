@@ -9,7 +9,6 @@
         <title>Overview &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
             <link rel="index" title="Index" href="genindex.html" />
@@ -200,6 +199,11 @@
 <li><p><strong>Cost:</strong> Free (conversations are organizational containers; message delivery costs apply per channel)</p></li>
 <li><p><strong>Async:</strong> Yes. Messages sent within a conversation are delivered asynchronously. Use webhooks to receive delivery status and inbound message events.</p></li>
 </ul>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Recent change (additive, non-breaking)</strong></p>
+<p>As of this release, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> and <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> in conversation webhook payloads will start carrying real values for conversations that have been explicitly assigned to an agent. Existing unassigned conversations continue to read empty values for both fields, so no client-side change is required. See <a class="reference internal" href="#conversation-overview-assigning-conversation-to-agent"><span class="std std-ref">Assigning a Conversation to an Agent</span></a>.</p>
 </div>
 <p>VoIPBIN’s Conversation API provides a unified multi-channel messaging platform that enables seamless communication across SMS, MMS, email, chat, and social networking channels. Users can start a conversation through one channel and continue it through another without losing context.</p>
 <p>With the Conversation API you can:</p>
@@ -436,6 +440,93 @@ immediate                   interactive
 <span class="p">}</span>
 </pre></div>
 </div>
+</section>
+<section id="assigning-a-conversation-to-an-agent">
+<span id="conversation-overview-assigning-conversation-to-agent"></span><h2>Assigning a Conversation to an Agent<a class="headerlink" href="#assigning-a-conversation-to-an-agent" title="Link to this heading"></a></h2>
+<p>A conversation can be explicitly assigned to a specific agent so that inbound messages on that conversation are routed to the agent for manual handling instead of running through the registered flow. Assignment is an additive feature: conversations that have never been assigned continue to behave exactly as before.</p>
+<p><strong>How assignment works</strong></p>
+<p>Assignment is performed via a partial-update on the conversation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>PUT<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conversation-id&gt;?token<span class="o">=</span>&lt;token&gt;
+Content-Type:<span class="w"> </span>application/json
+
+<span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;owner_id&quot;</span>:<span class="w"> </span><span class="s2">&quot;&lt;agent-uuid&gt;&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>To <strong>unassign</strong> a conversation, send the nil UUID:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;owner_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The server derives <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>: when <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is a real agent UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is set to <code class="docutils literal notranslate"><span class="pre">agent</span></code>; when <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID, <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is cleared to an empty string. Clients must not set <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> directly — any value supplied for <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> in the request body is ignored.</p>
+<p><strong>Permission Semantics</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Caller</p></th>
+<th class="head"><p>What they can do via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Customer admin / manager</p></td>
+<td><p>Assign the conversation to any agent under the same
+customer; reassign it to a different agent; unassign it.</p></td>
+</tr>
+<tr class="row-odd"><td><p>Owning agent</p></td>
+<td><p>Self-unassign only — set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to the nil UUID.
+Cannot assign to themselves and cannot reassign to another
+agent.</p></td>
+</tr>
+<tr class="row-even"><td><p>Any other agent</p></td>
+<td><p>No assignment-related changes permitted.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Error Responses</strong></p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><strong>403 Forbidden:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> Cross-agent assignment attempt (e.g., agent tries to assign the conversation to themselves or to another agent), or any attempt to modify other fields without admin/manager permission. Also returned for cross-customer attempts.</p></li>
+<li><p><strong>Fix:</strong> Use a customer admin or manager token to assign or reassign. Owning agents may only set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to the nil UUID.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><strong>400 Bad Request:</strong></dt><dd><ul>
+<li><p><strong>Cause:</strong> <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> could not be validated — either it does not reference an existing agent, or the referenced agent does not belong to the same customer as the conversation. The two cases are intentionally indistinguishable in the response.</p></li>
+<li><p><strong>Fix:</strong> Verify the agent UUID via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/agents</span></code> under the same customer and retry.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>Behavior Change for Inbound Messages</strong></p>
+<p>When a conversation is assigned (<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is a real agent UUID):</p>
+<ul class="simple">
+<li><p>New inbound messages do <strong>not</strong> trigger the conversation’s registered flow. No new activeflow is created.</p></li>
+<li><p>Outbound message delivery via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/messages</span></code> continues to work normally — the assigned agent (or admin/manager) can reply through the standard message-send API.</p></li>
+<li><p>Any activeflow that was already running before the assignment continues to run to completion; assignment does not interrupt in-flight flows.</p></li>
+</ul>
+<p>When a conversation is unassigned (<code class="docutils literal notranslate"><span class="pre">owner_id</span></code> is the nil UUID or empty):</p>
+<ul class="simple">
+<li><p>The next inbound message resumes the standard behavior and triggers the registered flow as usual.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The unassign payload must be exactly <code class="docutils literal notranslate"><span class="pre">{&quot;owner_id&quot;:</span> <span class="pre">&quot;00000000-0000-0000-0000-000000000000&quot;}</span></code>. Do not include <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> — the server always derives it from <code class="docutils literal notranslate"><span class="pre">owner_id</span></code>. To unassign as the owning agent, send only this single key; combining it with other fields (e.g., <code class="docutils literal notranslate"><span class="pre">name</span></code>) requires admin/manager permission and will be rejected with 403 if the caller is the owning agent.</p>
+</div>
+<p><strong>Listing Conversations by Owner</strong></p>
+<p>Filter conversations by their currently assigned agent using the <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> query parameter on <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/conversations</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>GET<span class="w"> </span>https://api.voipbin.net/v1.0/conversations?owner_id<span class="o">=</span>&lt;agent-uuid&gt;<span class="p">&amp;</span><span class="nv">page_token</span><span class="o">=</span>&lt;token&gt;
+</pre></div>
+</div>
+<p>This is the supported way to build a “my conversations” view for an agent.</p>
+<p>Permission rule: an agent caller (non-admin, non-manager) MUST set <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> to their own agent UUID; otherwise the request is rejected with <code class="docutils literal notranslate"><span class="pre">403</span> <span class="pre">Forbidden</span></code>. Admin and manager callers may pass any <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> or omit the filter entirely. Omitting the filter — or passing the nil UUID — disables the filter and returns all conversations the caller can see.</p>
+<p><strong>Webhook Updates</strong></p>
+<p>When a conversation is assigned or unassigned, a <code class="docutils literal notranslate"><span class="pre">conversation_updated</span></code> event fires with the new <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> and <code class="docutils literal notranslate"><span class="pre">owner_id</span></code> values. See <a class="reference internal" href="conversation_struct_conversation.html#conversation-struct-conversation"><span class="std std-ref">Conversation</span></a> for the field definitions.</p>
 </section>
 <section id="cross-channel-continuity">
 <h2>Cross-Channel Continuity<a class="headerlink" href="#cross-channel-continuity" title="Link to this heading"></a></h2>
@@ -698,6 +789,7 @@ retry queue</p></td>
 <li><a class="reference internal" href="#how-conversations-are-created">How Conversations Are Created</a></li>
 <li><a class="reference internal" href="#sending-messages">Sending Messages</a></li>
 <li><a class="reference internal" href="#receiving-messages">Receiving Messages</a></li>
+<li><a class="reference internal" href="#assigning-a-conversation-to-an-agent">Assigning a Conversation to an Agent</a></li>
 <li><a class="reference internal" href="#cross-channel-continuity">Cross-Channel Continuity</a></li>
 <li><a class="reference internal" href="#event-types">Event Types</a></li>
 <li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
@@ -745,7 +837,7 @@ retry queue</p></td>
                     </a>
                     and
                     <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
+                        Sphinx 7.2.6
                     </a>
                 </small>
             </div>
@@ -753,11 +845,11 @@ retry queue</p></td>
     </div>
         </div>
     </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
         <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="_static/clipboard.min.js?v=a7894cd8"></script>
         <script src="_static/copybutton.js?v=f281be69"></script>
         <script type="text/javascript" src="_static/dist/theme.js"></script>

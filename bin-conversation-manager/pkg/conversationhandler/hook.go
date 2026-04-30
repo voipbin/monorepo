@@ -75,22 +75,26 @@ func (h *conversationHandler) hookLine(ctx context.Context, ac *account.Account,
 		return err
 	}
 
-	// check if account has a message flow
-	if ac.MessageFlowID == uuid.Nil {
-		return nil
-	}
-	log.Debugf("The account has message flow id. account_id: %s, message_flow_id: %s", ac.ID, ac.MessageFlowID)
-
 	for _, r := range results {
 		if r.Conversation == nil || r.Message == nil {
 			continue
 		}
 
-		af, err := h.MessageExecuteActiveflow(ctx, r.Conversation, r.Message, ac.MessageFlowID)
-		if err != nil {
-			return errors.Wrapf(err, "Could not execute the activeflow. account_id: %s", ac.ID)
+		mode := h.getExecuteMode(r.Conversation)
+		switch mode {
+		case ExecuteModeAgent:
+			if errAgent := h.runExecuteModeAgent(ctx, r.Conversation, r.Message); errAgent != nil {
+				return errors.Wrapf(errAgent, "could not run agent mode. account_id: %s", ac.ID)
+			}
+		case ExecuteModeFlow:
+			if errFlow := h.runExecuteModeFlow(ctx, r.Conversation, r.Message); errFlow != nil {
+				return errors.Wrapf(errFlow, "could not run flow mode. account_id: %s", ac.ID)
+			}
+		case ExecuteModeNone:
+			// reserved; no-op
+		default:
+			return fmt.Errorf("unknown execute mode: %s", mode)
 		}
-		log.WithField("activeflow", af).Debugf("Executed activeflow. activeflow_id: %s", af.ID)
 	}
 
 	return nil

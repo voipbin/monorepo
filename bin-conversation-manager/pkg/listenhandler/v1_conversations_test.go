@@ -1,15 +1,19 @@
 package listenhandler
 
 import (
+	stderrors "errors"
+	"fmt"
 	"reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
@@ -103,6 +107,34 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				Data:       []byte(`[{"id":"b7ac843c-e863-11ec-9652-0ff162b38a15","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{},"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"c45aec8c-e863-11ec-9bae-4fcfe883444a","customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{},"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
+		{
+			// owner_id passes through ConvertStringMapToFieldMap as a parsed
+			// uuid.UUID under FieldOwnerID, so non-admin agent callers can list
+			// "my conversations" via the owner_id filter (design §5.5).
+			name: "owner_id filter pass-through",
+
+			request: &sock.Request{
+				URI:      "/v1/conversations?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
+				Method:   sock.RequestMethodGet,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"b77be746-e863-11ec-97b0-bb06bbb7db0e","owner_id":"eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b","deleted":false}`),
+			},
+
+			expectPageSize:  10,
+			expectPageToken: "2021-03-01T03:30:17.000000Z",
+			expectFields: map[conversation.Field]any{
+				conversation.FieldCustomerID: uuid.FromStringOrNil("b77be746-e863-11ec-97b0-bb06bbb7db0e"),
+				conversation.FieldOwnerID:    uuid.FromStringOrNil("eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b"),
+				conversation.FieldDeleted:    false,
+			},
+
+			responseConversations: []*conversation.Conversation{},
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`[]`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -120,7 +152,9 @@ func Test_processV1ConversationsGet(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().List(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any()).Return(tt.responseConversations, nil)
+			mockConversation.EXPECT().
+				List(gomock.Any(), tt.expectPageToken, tt.expectPageSize, tt.expectFields).
+				Return(tt.responseConversations, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -329,6 +363,36 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 				Data:       []byte(`{"id":"8d8ab6ae-0074-11ee-80d0-df60c15605d7","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{},"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
+		{
+			// Empty-string values must round-trip from the JSON body through
+			// GetFilteredItems and ConvertStringMapToFieldMap into the field
+			// map passed to Update unchanged. The conversion pipeline must
+			// not collapse "" into nil/missing.
+			name: "empty-string name preserved",
+
+			request: &sock.Request{
+				URI:      "/v1/conversations/8d8ab6ae-0074-11ee-80d0-df60c15605d7",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":""}`),
+			},
+
+			responseConversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+				},
+			},
+
+			expectedConversationID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+			expectedFields: map[conversation.Field]any{
+				conversation.FieldName: "",
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"8d8ab6ae-0074-11ee-80d0-df60c15605d7","customer_id":"00000000-0000-0000-0000-000000000000","owner_type":"","owner_id":"00000000-0000-0000-0000-000000000000","account_id":"00000000-0000-0000-0000-000000000000","self":{},"peer":{},"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -342,7 +406,7 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().Update(gomock.Any(), tt.expectedConversationID, gomock.Any()).Return(tt.responseConversation, nil)
+			mockConversation.EXPECT().Update(gomock.Any(), tt.expectedConversationID, tt.expectedFields).Return(tt.responseConversation, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -351,6 +415,127 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectRes, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_processV1ConversationsIDPut_ErrorPassthrough verifies that errors
+// returned from conversationHandler.Update flow through errorResponse so the
+// api-manager edge sees the right HTTP status (design §5.4):
+//   - typed *cerrors.VoipbinError (InvalidArgument) → 400 with the typed envelope
+//   - any other error → 500 simple response
+func Test_processV1ConversationsIDPut_ErrorPassthrough(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request   *sock.Request
+		updateErr error
+
+		expectedConversationID uuid.UUID
+		expectedFields         map[conversation.Field]any
+
+		expectStatusCode int
+		expectDataType   string
+		expectIsTyped    bool
+	}{
+		{
+			name: "typed cerrors.InvalidArgument surfaces as 400",
+
+			request: &sock.Request{
+				URI:      "/v1/conversations/8d8ab6ae-0074-11ee-80d0-df60c15605d7",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"owner_id":"f1233333-ab21-11ee-80d0-aabbccddeeff"}`),
+			},
+			updateErr: cerrors.InvalidArgument(
+				commonoutline.ServiceNameConversationManager,
+				"AGENT_NOT_FOUND",
+				"agent not found. owner_id: f1233333-ab21-11ee-80d0-aabbccddeeff",
+			),
+
+			expectedConversationID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+			expectedFields: map[conversation.Field]any{
+				conversation.FieldOwnerID: uuid.FromStringOrNil("f1233333-ab21-11ee-80d0-aabbccddeeff"),
+			},
+
+			expectStatusCode: 400,
+			expectDataType:   string(cerrors.DataTypeVoipbinError),
+			expectIsTyped:    true,
+		},
+		{
+			name: "generic error surfaces as 500",
+
+			request: &sock.Request{
+				URI:      "/v1/conversations/8d8ab6ae-0074-11ee-80d0-df60c15605d7",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"test name"}`),
+			},
+			updateErr: fmt.Errorf("database write failed"),
+
+			expectedConversationID: uuid.FromStringOrNil("8d8ab6ae-0074-11ee-80d0-df60c15605d7"),
+			expectedFields: map[conversation.Field]any{
+				conversation.FieldName: "test name",
+			},
+
+			expectStatusCode: 500,
+			expectDataType:   "",
+			expectIsTyped:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockConversation := conversationhandler.NewMockConversationHandler(mc)
+
+			h := &listenHandler{
+				conversationHandler: mockConversation,
+			}
+
+			mockConversation.EXPECT().
+				Update(gomock.Any(), tt.expectedConversationID, tt.expectedFields).
+				Return(nil, tt.updateErr)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("expected nil err from processRequest, got: %v", err)
+			}
+			if res == nil {
+				t.Fatalf("expected non-nil response")
+			}
+			if res.StatusCode != tt.expectStatusCode {
+				t.Errorf("wrong status code. expect: %d, got: %d", tt.expectStatusCode, res.StatusCode)
+			}
+			if string(res.DataType) != tt.expectDataType {
+				t.Errorf("wrong data type. expect: %q, got: %q", tt.expectDataType, res.DataType)
+			}
+
+			if tt.expectIsTyped {
+				ve := cerrors.FromResponse(res)
+				if ve == nil {
+					t.Fatalf("expected typed *VoipbinError in response body, got none. res: %+v", res)
+				}
+				if ve.Status != cerrors.StatusInvalidArgument {
+					t.Errorf("expected Status=InvalidArgument, got: %v", ve.Status)
+				}
+			} else {
+				// Legacy simpleResponse — no typed envelope, no body.
+				if cerrors.FromResponse(res) != nil {
+					t.Errorf("did not expect typed envelope for non-typed error path")
+				}
+			}
+
+			// Sanity: the typed envelope check above already exercises errors.As semantics
+			// indirectly; this asserts our fixture really is a typed error chain when expected.
+			if tt.expectIsTyped {
+				var ve *cerrors.VoipbinError
+				if !stderrors.As(tt.updateErr, &ve) {
+					t.Fatalf("test fixture should be a typed VoipbinError, got: %T", tt.updateErr)
+				}
 			}
 		})
 	}

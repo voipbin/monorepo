@@ -2,6 +2,7 @@ package conversationhandler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -41,41 +42,44 @@ func (h *conversationHandler) MessageSend(ctx context.Context, conversationID uu
 	return m, nil
 }
 
-// MessageExecuteActiveflow creates and executes an activeflow for the given conversation.
-func (h *conversationHandler) MessageExecuteActiveflow(ctx context.Context, cv *conversation.Conversation, m *message.Message, messageFlowID uuid.UUID) (*fmactiveflow.Activeflow, error) {
+// executeActiveflow creates and executes an activeflow for the given conversation, given a non-nil flowID.
+// Returns nil if flowID is uuid.Nil (no flow configured for this conversation source).
+func (h *conversationHandler) executeActiveflow(ctx context.Context, cv *conversation.Conversation, m *message.Message, flowID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "MessageExecuteActiveflow",
-		"conversation":    cv,
-		"message":         m,
-		"message_flow_id": messageFlowID,
+		"func":            "executeActiveflow",
+		"conversation_id": cv.ID,
+		"message_id":      m.ID,
+		"flow_id":         flowID,
 	})
 
-	// create activeflow
-	res, err := h.reqHandler.FlowV1ActiveflowCreate(
+	if flowID == uuid.Nil {
+		log.Debugf("No flow configured. Skipping activeflow.")
+		return nil
+	}
+
+	af, errCreate := h.reqHandler.FlowV1ActiveflowCreate(
 		ctx,
 		uuid.Nil,
 		m.CustomerID,
-		messageFlowID,
+		flowID,
 		fmactiveflow.ReferenceTypeConversation,
 		m.ConversationID,
 		uuid.Nil,
 	)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Could not create an activeflow. message_id: %s, message_flow_id: %s", m.ID, messageFlowID)
-	}
-	log.WithField("activeflow", res).Debugf("Created activeflow. activeflow_id: %s", res.ID)
-
-	// set variables
-	if errVariable := h.setVariables(ctx, res.ID, cv, m); errVariable != nil {
-		return nil, errors.Wrapf(errVariable, "Could not set the variables. activeflow_id: %s", res.ID)
+	if errCreate != nil {
+		return errors.Wrapf(errCreate, "could not create activeflow. flow_id: %s", flowID)
 	}
 
-	// execute the activeflow
-	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, res.ID); errExecute != nil {
-		return nil, errors.Wrapf(errExecute, "Could not execute the activeflow. activeflow_id: %s", res.ID)
+	if errVariable := h.setVariables(ctx, af.ID, cv, m); errVariable != nil {
+		return errors.Wrapf(errVariable, "could not set variables. activeflow_id: %s", af.ID)
 	}
 
-	return res, nil
+	if errExecute := h.reqHandler.FlowV1ActiveflowExecute(ctx, af.ID); errExecute != nil {
+		return errors.Wrapf(errExecute, "could not execute activeflow. activeflow_id: %s", af.ID)
+	}
+
+	log.WithField("activeflow_id", af.ID).Debugf("Executed activeflow.")
+	return nil
 }
 
 // MessageEventReceived is the handler for the received message event
@@ -112,7 +116,7 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		log.WithField("conversation", cv).Debugf("Found conversation. conversation_id: %s", cv.ID)
 
 		// create a new conversation message
-		m, err := h.messageHandler.Create(
+		convMsg, err := h.messageHandler.Create(
 			ctx,
 			m.ID,
 			cv.CustomerID,
@@ -128,26 +132,23 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		if err != nil {
 			return errors.Wrapf(err, "Could not create a message")
 		}
-		log.WithField("message", m).Debugf("Create a message. message_id: %s", m.ID)
+		log.WithField("message", convMsg).Debugf("Create a message. message_id: %s", convMsg.ID)
 
-		// check the number info
-		num, err := h.NumberGet(ctx, cv.Self.Target)
-		if err != nil {
-			return errors.Wrapf(err, "Could not get number info. number: %s", cv.Peer.Target)
+		mode := h.getExecuteMode(cv)
+		switch mode {
+		case ExecuteModeAgent:
+			if errAgent := h.runExecuteModeAgent(ctx, cv, convMsg); errAgent != nil {
+				return errors.Wrapf(errAgent, "could not run agent mode. message_id: %s", convMsg.ID)
+			}
+		case ExecuteModeFlow:
+			if errFlow := h.runExecuteModeFlow(ctx, cv, convMsg); errFlow != nil {
+				return errors.Wrapf(errFlow, "could not run flow mode. message_id: %s", convMsg.ID)
+			}
+		case ExecuteModeNone:
+			// reserved; no-op
+		default:
+			return fmt.Errorf("unknown execute mode: %s", mode)
 		}
-		log.WithField("number", num).Infof("Found number info. number_id: %s", num.ID)
-
-		if num.MessageFlowID == uuid.Nil {
-			// nothing to do. has no message flow id
-			return nil
-		}
-		log.Debugf("The number has message flow id. number_id: %s, message_flow_id: %s", num.ID, num.MessageFlowID)
-
-		af, err := h.MessageExecuteActiveflow(ctx, cv, m, num.MessageFlowID)
-		if err != nil {
-			return errors.Wrapf(err, "Could not execute the activeflow. message_id: %s, number_id: %s", m.ID, num.ID)
-		}
-		log.WithField("activeflow", af).Debugf("Executed activeflow. activeflow_id: %s", af.ID)
 	}
 
 	return nil

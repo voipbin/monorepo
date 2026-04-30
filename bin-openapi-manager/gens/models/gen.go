@@ -7479,6 +7479,16 @@ type GetConversationsParams struct {
 
 	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// OwnerId Filter conversations by the agent currently owning (assigned to) them. When set to a
+	// non-nil UUID, only conversations whose ``owner_id`` matches that UUID are returned.
+	// Omitting the parameter — or passing the nil UUID (``00000000-0000-0000-0000-000000000000``)
+	// — disables the filter and returns all conversations visible to the caller.
+	//
+	// Permission rule: an agent caller (non-admin, non-manager) MUST set ``owner_id`` to their
+	// own agent ID; otherwise the request is rejected with 403. Admin and manager callers may
+	// pass any ``owner_id`` or omit the filter entirely.
+	OwnerId *openapi_types.UUID `form:"owner_id,omitempty" json:"owner_id,omitempty"`
 }
 
 // GetConversationsJSONBodyType defines parameters for GetConversations.

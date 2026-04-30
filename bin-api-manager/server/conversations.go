@@ -42,7 +42,12 @@ func (h *server) GetConversations(c *gin.Context, params openapi_server.GetConve
 		pageToken = *params.PageToken
 	}
 
-	tmps, err := h.serviceHandler.ConversationGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken)
+	ownerID := uuid.Nil
+	if params.OwnerId != nil {
+		ownerID = uuid.FromStringOrNil(params.OwnerId.String())
+	}
+
+	tmps, err := h.serviceHandler.ConversationGetsByCustomerID(c.Request.Context(), a, pageSize, pageToken, ownerID)
 	if err != nil {
 		log.Errorf("Could not get a conversation list. err: %v", err)
 		abortWithServiceError(c, err)

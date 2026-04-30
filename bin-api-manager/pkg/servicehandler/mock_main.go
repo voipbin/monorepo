@@ -1965,18 +1965,18 @@ func (mr *MockServiceHandlerMockRecorder) ConversationGet(ctx, a, id any) *gomoc
 }
 
 // ConversationGetsByCustomerID mocks base method.
-func (m *MockServiceHandler) ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*conversation.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, ownerID uuid.UUID) ([]*conversation.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationGetsByCustomerID", ctx, a, size, token)
+	ret := m.ctrl.Call(m, "ConversationGetsByCustomerID", ctx, a, size, token, ownerID)
 	ret0, _ := ret[0].([]*conversation.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationGetsByCustomerID indicates an expected call of ConversationGetsByCustomerID.
-func (mr *MockServiceHandlerMockRecorder) ConversationGetsByCustomerID(ctx, a, size, token any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ConversationGetsByCustomerID(ctx, a, size, token, ownerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).ConversationGetsByCustomerID), ctx, a, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).ConversationGetsByCustomerID), ctx, a, size, token, ownerID)
 }
 
 // ConversationMessageGetsByConversationID mocks base method.

@@ -207,8 +207,8 @@ func (h *listenHandler) processV1ConversationsIDPut(ctx context.Context, m *sock
 
 	tmp, err := h.conversationHandler.Update(ctx, id, tmpFields)
 	if err != nil {
-		log.Debugf("Could not get a conversation. conversation_id: %s, err: %v", id, err)
-		return simpleResponse(500), nil
+		log.Debugf("Could not update conversation. conversation_id: %s, err: %v", id, err)
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
