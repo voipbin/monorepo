@@ -26,7 +26,8 @@ func (h *serviceHandler) ServiceAgentConversationGet(ctx context.Context, a *aut
 		return nil, errors.Wrapf(err, "Could not get conversation.")
 	}
 
-	if tmp.OwnerID != a.AgentID() {
+	isAdminOrManager := h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager)
+	if !isAdminOrManager && tmp.OwnerID != a.AgentID() {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
@@ -46,10 +47,15 @@ func (h *serviceHandler) ServiceAgentConversationList(ctx context.Context, a *au
 		token = h.utilHandler.TimeGetCurTime()
 	}
 
-	// filters
+	// Admin and manager callers see all conversations for their customer.
+	// Regular agents see only conversations they own.
 	filters := map[cvconversation.Field]any{
 		cvconversation.FieldDeleted: false,
-		cvconversation.FieldOwnerID: a.AgentID(),
+	}
+	if h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+		filters[cvconversation.FieldCustomerID] = a.CustomerID
+	} else {
+		filters[cvconversation.FieldOwnerID] = a.AgentID()
 	}
 
 	tmps, err := h.conversationList(ctx, a, size, token, filters)

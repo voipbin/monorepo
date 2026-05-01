@@ -27,6 +27,7 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 		conversationID uuid.UUID
 
 		responseConversation *cvconversation.Conversation
+		expectErr            error
 		expectRes            *cvconversation.WebhookMessage
 	}
 
@@ -45,7 +46,8 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 
 			responseConversation: &cvconversation.Conversation{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
@@ -53,12 +55,121 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 			},
 			expectRes: &cvconversation.WebhookMessage{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
 				},
 				Owner: commonidentity.Owner{
 					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
 				},
 			},
+		},
+		{
+			name: "admin gets conversation owned by another agent",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaaaaaa-3b9f-11ef-98ac-db226570f09a"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			conversationID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+
+			responseConversation: &cvconversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
+			},
+			expectRes: &cvconversation.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
+			},
+		},
+		{
+			name: "manager gets conversation owned by another agent",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("bbbbbbbb-3b9f-11ef-98ac-db226570f09b"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Permission: amagent.PermissionCustomerManager,
+			}),
+			conversationID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+
+			responseConversation: &cvconversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
+			},
+			expectRes: &cvconversation.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+				},
+			},
+		},
+		{
+			name: "regular agent denied for conversation it does not own",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			conversationID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+
+			responseConversation: &cvconversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("aaaaaaaa-3b9f-11ef-98ac-db226570f09a"),
+				},
+			},
+			expectErr: serviceerrors.ErrPermissionDenied,
+		},
+		{
+			name: "admin denied for conversation in different customer",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aaaaaaaa-3b9f-11ef-98ac-db226570f09a"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			conversationID: uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+
+			responseConversation: &cvconversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("14189ed4-3ed1-11ef-8056-bffadb501e2f"),
+					CustomerID: uuid.FromStringOrNil("cccccccc-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerID: uuid.FromStringOrNil("dddddddd-3b9f-11ef-98ac-db226570f09a"),
+				},
+			},
+			expectErr: serviceerrors.ErrPermissionDenied,
 		},
 	}
 
@@ -79,6 +190,12 @@ func Test_ServiceAgentConversationGet(t *testing.T) {
 			mockReq.EXPECT().ConversationV1ConversationGet(ctx, tt.conversationID).Return(tt.responseConversation, nil)
 
 			res, err := h.ServiceAgentConversationGet(ctx, tt.agent, tt.conversationID)
+			if tt.expectErr != nil {
+				if !errors.Is(err, tt.expectErr) {
+					t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+				}
+				return
+			}
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -102,6 +219,7 @@ func Test_ServiceAgentConversationList(t *testing.T) {
 		responseConversations []cvconversation.Conversation
 
 		expectFilters map[cvconversation.Field]any
+		expectErr     error
 		expectRes     []*cvconversation.WebhookMessage
 	}
 
@@ -149,6 +267,79 @@ func Test_ServiceAgentConversationList(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "admin sees all conversations (no owner filter)",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09a"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			size:  100,
+			token: "2021-03-01T01:00:00.995000Z",
+
+			responseConversations: []cvconversation.Conversation{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("620bce9e-3ed2-11ef-b45a-3f6e2898153d"),
+					},
+				},
+			},
+
+			expectFilters: map[cvconversation.Field]any{
+				cvconversation.FieldCustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				cvconversation.FieldDeleted:    false,
+			},
+			expectRes: []*cvconversation.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("620bce9e-3ed2-11ef-b45a-3f6e2898153d"),
+					},
+				},
+			},
+		},
+		{
+			name: "manager sees all conversations (no owner filter)",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("5cd8c836-3b9f-11ef-98ac-db226570f09b"),
+					CustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				},
+				Permission: amagent.PermissionCustomerManager,
+			}),
+			size:  100,
+			token: "2021-03-01T01:00:00.995000Z",
+
+			responseConversations: []cvconversation.Conversation{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("62a1ec8a-3ed2-11ef-bb8c-a788ea1ad2ad"),
+					},
+				},
+			},
+
+			expectFilters: map[cvconversation.Field]any{
+				cvconversation.FieldCustomerID: uuid.FromStringOrNil("5d16712c-3b9f-11ef-8a51-f30f1e2ce1e9"),
+				cvconversation.FieldDeleted:    false,
+			},
+			expectRes: []*cvconversation.WebhookMessage{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("62a1ec8a-3ed2-11ef-bb8c-a788ea1ad2ad"),
+					},
+				},
+			},
+		},
+		{
+			name:      "non-agent caller is rejected",
+			agent:     &auth.AuthIdentity{Type: auth.TypeAccesskey},
+			size:      10,
+			token:     "2021-03-01T01:00:00.995000Z",
+			expectErr: serviceerrors.ErrAuthenticationRequired,
+		},
 	}
 
 	for _, tt := range tests {
@@ -165,9 +356,17 @@ func Test_ServiceAgentConversationList(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1ConversationList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseConversations, nil)
+			if tt.expectErr == nil {
+				mockReq.EXPECT().ConversationV1ConversationList(ctx, tt.token, tt.size, tt.expectFilters).Return(tt.responseConversations, nil)
+			}
 
 			res, err := h.ServiceAgentConversationList(ctx, tt.agent, tt.size, tt.token)
+			if tt.expectErr != nil {
+				if !errors.Is(err, tt.expectErr) {
+					t.Errorf("Wrong error. expect: %v, got: %v", tt.expectErr, err)
+				}
+				return
+			}
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
