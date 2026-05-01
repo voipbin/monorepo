@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-conversation-manager/internal/convtitle"
 	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
@@ -107,11 +108,12 @@ func (h *lineHandler) hookEventTypeFollow(ctx context.Context, ac *account.Accou
 		TargetName: "Me",
 	}
 
+	name, detail := convtitle.Build(conversation.TypeLine, *peer)
 	res, err := h.reqHandler.ConversationV1ConversationCreate(
 		ctx,
 		ac.CustomerID,
-		"Conversation with "+peer.TargetName,
-		"Auto generated conversation",
+		name,
+		detail,
 		conversation.TypeLine,
 		dialogID,
 		self,
