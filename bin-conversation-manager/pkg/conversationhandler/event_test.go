@@ -67,8 +67,8 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 					ID:         uuid.FromStringOrNil("2aa9bc18-1a82-11f0-acbf-1fa64c8c8586"),
 					CustomerID: uuid.FromStringOrNil("7aba87f6-1a81-11f0-9dd4-9f991300dc23"),
 				},
-				Name:     "conversation with ",
-				Detail:   "conversation with ",
+				Name:   "SMS · +886912345678",
+				Detail: "SMS conversation",
 				Type:     conversation.TypeMessage,
 				DialogID: "",
 				Self: commonaddress.Address{
