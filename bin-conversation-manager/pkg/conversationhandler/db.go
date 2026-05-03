@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-conversation-manager/internal/convtitle"
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 )
@@ -57,13 +58,14 @@ func (h *conversationHandler) GetOrCreateBySelfAndPeer(
 	if err != nil {
 		log.Debugf("Could not find conversation. Create a new conversation. err: %v", err)
 
+		name, detail := convtitle.Build(conversationType, peer)
 		res, err = h.Create(
 			ctx,
 			customerID,
-			"conversation with "+peer.TargetName,
-			"conversation with "+peer.TargetName,
-			conversation.TypeMessage,
-			dialogID, // because it's sms conversation, there is no dialog id
+			name,
+			detail,
+			conversationType,
+			dialogID,
 			self,
 			peer,
 		)

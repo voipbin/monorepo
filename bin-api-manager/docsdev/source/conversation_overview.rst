@@ -541,6 +541,45 @@ Escalating reminders across channels.
         -> All responses in same conversation
 
 
+Auto-Generated Titles
+---------------------
+
+When a conversation is created automatically — on an inbound SMS or a LINE follow event — the platform
+generates a ``name`` and ``detail`` using the peer's identity and the channel type.
+
+**Format**
+
+* ``name``: ``{channel} · {peer}`` — the middle dot (·) is U+00B7.
+* ``detail``: ``{channel} conversation``
+
+**Examples**
+
++---------------------------------------------------+-----------------------------------+---------------------------+
+| Scenario                                          | name                              | detail                    |
++===================================================+===================================+===========================+
+| Inbound SMS, contact known                        | ``SMS · Alice (+14155551234)``    | ``SMS conversation``      |
++---------------------------------------------------+-----------------------------------+---------------------------+
+| Inbound SMS, number only (no contact name)        | ``SMS · +14155551234``            | ``SMS conversation``      |
++---------------------------------------------------+-----------------------------------+---------------------------+
+| Inbound SMS, no peer information available        | ``SMS · Unknown``                 | ``SMS conversation``      |
++---------------------------------------------------+-----------------------------------+---------------------------+
+| LINE follow event, display name known             | ``LINE · Alice``                  | ``LINE conversation``     |
++---------------------------------------------------+-----------------------------------+---------------------------+
+| LINE follow event, no display name                | ``LINE · Unknown``                | ``LINE conversation``     |
++---------------------------------------------------+-----------------------------------+---------------------------+
+
+.. note:: **AI Implementation Hint**
+
+   LINE user IDs (e.g., ``Uabcdef1234567890``) are opaque platform identifiers and are intentionally
+   **not** shown in the generated title even when no display name is available. Only human-readable
+   identifiers (phone numbers, email addresses, SIP URIs, extension numbers) appear in parentheses
+   after the contact name.
+
+   The ``name`` field can be updated at any time via ``PUT https://api.voipbin.net/v1.0/conversations/{id}``.
+   Auto-generated titles apply only to conversations created automatically; conversations created via
+   ``POST /v1.0/conversations`` use the ``name`` and ``detail`` values provided in the request body.
+
+
 Best Practices
 --------------
 
