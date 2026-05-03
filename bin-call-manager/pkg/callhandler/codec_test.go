@@ -19,7 +19,7 @@ func Test_embedCustomerCodecs(t *testing.T) {
 		{"per-call override wins", map[string]any{call.MetadataKeyCodecs: "G722"}, "PCMU,PCMA", "G722", true},
 		{"empty customer value — key not added", map[string]any{}, "", "", false},
 		{"nil metadata with customer value — creates map", nil, "PCMU", "PCMU", true},
-		{"nil metadata with empty customer value — returns nil", nil, "", "", false},
+		{"nil metadata with empty customer value — no key added", nil, "", "", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

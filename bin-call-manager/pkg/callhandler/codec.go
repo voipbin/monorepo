@@ -11,14 +11,14 @@ import (
 // metadata if the call does not already carry a codecs override.
 // Returns the (possibly newly allocated) metadata map.
 func embedCustomerCodecs(metadata map[string]any, outboundCodecs string) map[string]any {
-	if _, alreadySet := metadata[call.MetadataKeyCodecs]; alreadySet {
-		return metadata
-	}
 	if outboundCodecs == "" {
 		return metadata
 	}
 	if metadata == nil {
 		metadata = map[string]any{}
+	}
+	if _, alreadySet := metadata[call.MetadataKeyCodecs]; alreadySet {
+		return metadata
 	}
 	metadata[call.MetadataKeyCodecs] = outboundCodecs
 	return metadata
