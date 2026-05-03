@@ -22918,12 +22918,17 @@
       },
       "CustomerManagerMetadata": {
         "type": "object",
-        "description": "Configuration flags for a customer account. Controls platform behavior\nsuch as RTP packet capture for debugging audio issues.\nUpdatable by CustomerAdmin via `PUT /customer/metadata`\nor by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.\n",
+        "description": "Configuration flags for a customer account. Controls platform behavior\nsuch as RTP packet capture for debugging audio issues and the preferred\ncodec list for outbound calls.\nUpdatable by CustomerAdmin via `PUT /customer/metadata`\nor by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.\n",
         "properties": {
           "rtp_debug": {
             "type": "boolean",
             "description": "When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.\nUse this to debug audio quality issues (one-way audio, codec problems, jitter).\nDefault is `false`. Enabling this increases storage usage — disable after debugging.\n",
             "example": true
+          },
+          "outbound_codecs": {
+            "type": "string",
+            "description": "Comma-separated, preference-ordered list of codec names for outbound PSTN calls\n(e.g. `PCMU,PCMA,G729`). When set, the platform restricts the outgoing INVITE's\nSDP to only these codecs. Empty string means use the server default\n(current pass-through behavior with PCMU/PCMA transcoding).\nNames match standard SDP `a=rtpmap` codec names. Per-call metadata key\n`codecs` overrides this customer-level default when present.\n",
+            "example": "PCMU,PCMA,G729"
           }
         }
       },

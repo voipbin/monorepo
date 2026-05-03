@@ -188,7 +188,8 @@ Example
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
         "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "metadata": {
-            "rtp_debug": false
+            "rtp_debug": false,
+            "outbound_codecs": ""
         },
         "email_verified": true,
         "status": "active",
@@ -202,11 +203,13 @@ Example
 Update customer metadata
 ------------------------
 
-Update configuration flags for your customer account, such as enabling RTP debug capture.
+Update configuration flags for your customer account, such as enabling RTP debug capture or setting an outbound codec preference.
 
 .. note:: **AI Implementation Hint**
 
    The ``rtp_debug`` flag enables RTP packet capture for debugging audio quality issues. Only agents with CustomerAdmin permission can update metadata. Enabling this increases storage usage — disable after debugging.
+
+   The ``outbound_codecs`` field is a comma-separated, preference-ordered list of codec names (e.g. ``PCMU,PCMA,G729``) that will be offered to PSTN providers on outbound INVITEs. When set, the platform restricts the outgoing SDP to only these codecs. Set to an empty string to fall back to the server default.
 
 Example
 
@@ -215,7 +218,8 @@ Example
     $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer/metadata?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "rtp_debug": true
+            "rtp_debug": true,
+            "outbound_codecs": "PCMU,PCMA,G729"
         }'
 
     {
@@ -230,7 +234,8 @@ Example
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
         "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "metadata": {
-            "rtp_debug": true
+            "rtp_debug": true,
+            "outbound_codecs": "PCMU,PCMA,G729"
         },
         "email_verified": true,
         "status": "active",
