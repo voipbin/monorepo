@@ -7,4 +7,5 @@ const (
 	SIPHeaderDirection    = "VB-DIRECTION"
 
 	SIPHeaderSDPTransport = "VBOUT-SDP_Transport" // transport for outgoing call
+	SIPHeaderCodecs       = "VBOUT-CODECS"        // outbound codec preference for outgoing call
 )
