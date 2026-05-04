@@ -85,10 +85,15 @@ func (h *listenHandler) processV1AgentsIDGet(ctx context.Context, m *sock.Reques
 	})
 	log.Debug("Executing processV1AgentsIDGet.")
 
+	if id == uuid.Nil {
+		log.Errorf("Invalid agent ID.")
+		return simpleResponse(400), nil
+	}
+
 	tmp, err := h.agentHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get an agent info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -172,10 +177,15 @@ func (h *listenHandler) processV1AgentsIDDelete(ctx context.Context, m *sock.Req
 	})
 	log.Debug("Executing processV1AgentsIDDelete.")
 
+	if id == uuid.Nil {
+		log.Errorf("Invalid agent ID.")
+		return simpleResponse(400), nil
+	}
+
 	tmp, err := h.agentHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the agent info. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

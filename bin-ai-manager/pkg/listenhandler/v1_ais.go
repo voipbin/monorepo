@@ -140,11 +140,15 @@ func (h *listenHandler) processV1AIsIDGet(ctx context.Context, m *sock.Request) 
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid AI ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.aiHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get ai. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -175,11 +179,15 @@ func (h *listenHandler) processV1AIsIDDelete(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid AI ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.aiHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete ai. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

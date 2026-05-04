@@ -129,12 +129,16 @@ func (h *listenHandler) processV1QueuesIDGet(ctx context.Context, m *sock.Reques
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid queue ID.")
+		return simpleResponse(400), nil
+	}
 
 	// get queue
 	tmp, err := h.queueHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get queue info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -165,11 +169,15 @@ func (h *listenHandler) processV1QueuesIDDelete(ctx context.Context, m *sock.Req
 	}
 
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid queue ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.queueHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete queue info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

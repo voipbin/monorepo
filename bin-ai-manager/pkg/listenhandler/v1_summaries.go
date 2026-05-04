@@ -122,11 +122,15 @@ func (h *listenHandler) processV1SummariesIDGet(ctx context.Context, m *sock.Req
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid summary ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.summaryHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get item. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -157,11 +161,15 @@ func (h *listenHandler) processV1SummariesIDDelete(ctx context.Context, m *sock.
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid summary ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.summaryHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete item. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

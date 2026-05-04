@@ -131,11 +131,15 @@ func (h *listenHandler) processV1TeamsIDGet(ctx context.Context, m *sock.Request
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid team ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.teamHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get team. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -215,11 +219,15 @@ func (h *listenHandler) processV1TeamsIDDelete(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid team ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.teamHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete team. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
