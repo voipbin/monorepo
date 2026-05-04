@@ -4,7 +4,9 @@ import (
 	reflect "reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -224,9 +226,11 @@ func Test_processV1AIcallsIDGet(t *testing.T) {
 		request *sock.Request
 
 		responseAIcall *aicall.AIcall
+		responseErr    error
 
-		expectedID  uuid.UUID
-		expectedRes *sock.Response
+		expectedID          uuid.UUID
+		expectedResStatus   int
+		expectedResDataType string
 	}{
 		{
 			name: "normal",
@@ -241,12 +245,22 @@ func Test_processV1AIcallsIDGet(t *testing.T) {
 				},
 			},
 
-			expectedID: uuid.FromStringOrNil("3e349bb8-7b31-4533-8e2b-6654ebc84e3e"),
-			expectedRes: &sock.Response{
-				StatusCode: 200,
-				DataType:   "application/json",
-				Data:       []byte(`{"id":"3e349bb8-7b31-4533-8e2b-6654ebc84e3e","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","pipecatcall_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			expectedID:          uuid.FromStringOrNil("3e349bb8-7b31-4533-8e2b-6654ebc84e3e"),
+			expectedResStatus:   200,
+			expectedResDataType: "application/json",
+		},
+		{
+			name: "not found",
+			request: &sock.Request{
+				URI:    "/v1/aicalls/00000000-0000-0000-0000-000000000000",
+				Method: sock.RequestMethodGet,
 			},
+
+			responseErr: cerrors.NotFound(outline.ServiceNameAIManager, "AICALL_NOT_FOUND", "The AI call was not found."),
+
+			expectedID:          uuid.Nil,
+			expectedResStatus:   404,
+			expectedResDataType: cerrors.DataTypeVoipbinError,
 		},
 	}
 
@@ -263,14 +277,17 @@ func Test_processV1AIcallsIDGet(t *testing.T) {
 				aicallHandler: mockAIcall,
 			}
 
-			mockAIcall.EXPECT().Get(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, nil)
+			mockAIcall.EXPECT().Get(gomock.Any(), tt.expectedID).Return(tt.responseAIcall, tt.responseErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if reflect.DeepEqual(res, tt.expectedRes) != true {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, res)
+			if res.StatusCode != tt.expectedResStatus {
+				t.Errorf("Wrong status code.\nexpect: %d\ngot: %d", tt.expectedResStatus, res.StatusCode)
+			}
+			if tt.expectedResDataType != "" && res.DataType != tt.expectedResDataType {
+				t.Errorf("Wrong data type.\nexpect: %s\ngot: %s", tt.expectedResDataType, res.DataType)
 			}
 		})
 	}

@@ -91,7 +91,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 	tmp, err := h.aicallHandler.Send(ctx, req.AIcallID, req.Role, req.Content, req.RunImmediately, req.AudioResponse)
 	if err != nil {
 		log.Errorf("Could not create ai. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

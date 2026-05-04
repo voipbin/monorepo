@@ -126,7 +126,7 @@ func (h *listenHandler) processV1AIcallsIDGet(ctx context.Context, m *sock.Reque
 	tmp, err := h.aicallHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get ai. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
