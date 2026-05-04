@@ -17,8 +17,9 @@ import (
 	"monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 )
 
-// agentNameMaxLength is the maximum allowed length for an agent name,
-// matching the varchar(255) column in agent_agents.name.
+// agentNameMaxLength is the maximum allowed length for an agent name in bytes.
+// Conservative relative to the varchar(255) character limit in agent_agents.name
+// (MySQL counts characters; Go len() counts bytes).
 const agentNameMaxLength = 255
 
 // processV1AgentsGet handles GET /v1/agents request
@@ -128,6 +129,7 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request
 		return simpleResponse(400), nil
 	}
 	if len(reqData.Name) > agentNameMaxLength {
+		log.Debugf("Agent name too long. len: %d, max: %d", len(reqData.Name), agentNameMaxLength)
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
@@ -356,6 +358,7 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 	if len(reqData.Name) > agentNameMaxLength {
+		log.Debugf("Agent name too long. len: %d, max: %d", len(reqData.Name), agentNameMaxLength)
 		return simpleResponse(400), nil
 	}
 
