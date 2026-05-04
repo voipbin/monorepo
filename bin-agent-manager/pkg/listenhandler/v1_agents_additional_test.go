@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -489,5 +490,122 @@ func Test_processV1AgentsIDGet_success(t *testing.T) {
 
 	if resAgent.ID != agentID {
 		t.Errorf("Wrong agent ID. expect: %v, got: %v", agentID, resAgent.ID)
+	}
+}
+
+func Test_processV1AgentsPost_nameLengthValidation(t *testing.T) {
+	tests := []struct {
+		name         string
+		nameLen      int
+		expectStatus int
+	}{
+		{"255 chars - ok", 255, 200},
+		{"256 chars - too long", 256, 400},
+		{"1000 chars - too long", 1000, 400},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+			h := &listenHandler{
+				agentHandler: mockAgent,
+			}
+			ctx := context.Background()
+
+			longName := strings.Repeat("A", tt.nameLen)
+			reqBody, _ := json.Marshal(map[string]any{
+				"customer_id": "92883d56-7fe3-11ec-8931-37d08180a2b9",
+				"username":    "testuser@example.com",
+				"password":    "TestPass123",
+				"name":        longName,
+				"detail":      "test",
+				"ring_method": "ringall",
+				"permission":  16,
+				"tag_ids":     []string{},
+				"addresses":   []string{},
+			})
+
+			if tt.expectStatus == 200 {
+				mockAgent.EXPECT().Create(
+					gomock.Any(),
+					gomock.Any(), gomock.Any(), gomock.Any(),
+					longName,
+					gomock.Any(), gomock.Any(), gomock.Any(),
+					gomock.Any(), gomock.Any(),
+				).Return(&agent.Agent{}, nil)
+			}
+
+			req := &sock.Request{
+				URI:  "/v1/agents",
+				Data: reqBody,
+			}
+
+			res, err := h.processV1AgentsPost(ctx, req)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("expected status %d, got %d", tt.expectStatus, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processV1AgentsIDPut_nameLengthValidation(t *testing.T) {
+	agentID := uuid.FromStringOrNil("69434cfa-79a4-11ec-a7b1-6ba5b7016d83")
+
+	tests := []struct {
+		name         string
+		nameLen      int
+		expectStatus int
+	}{
+		{"255 chars - ok", 255, 200},
+		{"256 chars - too long", 256, 400},
+		{"1000 chars - too long", 1000, 400},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAgent := agenthandler.NewMockAgentHandler(mc)
+			h := &listenHandler{
+				agentHandler: mockAgent,
+			}
+			ctx := context.Background()
+
+			longName := strings.Repeat("A", tt.nameLen)
+			reqBody, _ := json.Marshal(map[string]any{
+				"name":        longName,
+				"detail":      "test",
+				"ring_method": "ringall",
+			})
+
+			if tt.expectStatus == 200 {
+				mockAgent.EXPECT().UpdateBasicInfo(
+					gomock.Any(),
+					agentID,
+					longName,
+					gomock.Any(), gomock.Any(),
+				).Return(&agent.Agent{}, nil)
+			}
+
+			req := &sock.Request{
+				URI:  "/v1/agents/" + agentID.String(),
+				Data: reqBody,
+			}
+
+			res, err := h.processV1AgentsIDPut(ctx, req)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("expected status %d, got %d", tt.expectStatus, res.StatusCode)
+			}
+		})
 	}
 }
