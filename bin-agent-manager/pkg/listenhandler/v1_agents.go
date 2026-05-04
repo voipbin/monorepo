@@ -17,6 +17,11 @@ import (
 	"monorepo/bin-agent-manager/pkg/listenhandler/models/request"
 )
 
+// agentNameMaxLength is the maximum allowed length for an agent name in bytes.
+// Conservative relative to the varchar(255) character limit in agent_agents.name
+// (MySQL counts characters; Go len() counts bytes).
+const agentNameMaxLength = 255
+
 // processV1AgentsGet handles GET /v1/agents request
 func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Request) (*sock.Response, error) {
 
@@ -121,6 +126,10 @@ func (h *listenHandler) processV1AgentsPost(ctx context.Context, m *sock.Request
 	var reqData request.V1DataAgentsPost
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	if len(reqData.Name) > agentNameMaxLength {
+		log.Debugf("Agent name too long. len: %d, max: %d", len(reqData.Name), agentNameMaxLength)
 		return simpleResponse(400), nil
 	}
 	log = log.WithFields(logrus.Fields{
@@ -346,6 +355,10 @@ func (h *listenHandler) processV1AgentsIDPut(ctx context.Context, m *sock.Reques
 	var reqData request.V1DataAgentsIDPut
 	if err := json.Unmarshal([]byte(m.Data), &reqData); err != nil {
 		log.Debugf("Could not unmarshal the data. data: %v, err: %v", m.Data, err)
+		return simpleResponse(400), nil
+	}
+	if len(reqData.Name) > agentNameMaxLength {
+		log.Debugf("Agent name too long. len: %d, max: %d", len(reqData.Name), agentNameMaxLength)
 		return simpleResponse(400), nil
 	}
 
