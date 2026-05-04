@@ -168,7 +168,7 @@ func Test_Create(t *testing.T) {
 
 			mockUtil.EXPECT().EmailIsValid(tt.username).Return(true)
 
-			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(nil, fmt.Errorf("not found"))
+			mockDB.EXPECT().AgentGetByUsername(ctx, tt.username).Return(nil, dbhandler.ErrNotFound)
 
 			mockUtil.EXPECT().HashGenerate(tt.password, defaultPasswordHashCost).Return(tt.responseHash, nil)
 
