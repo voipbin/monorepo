@@ -1,13 +1,16 @@
 package listenhandler
 
 import (
+	"context"
+	"net/http"
 	reflect "reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-
-	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 
@@ -106,6 +109,49 @@ func Test_processV1QueuesPost(t *testing.T) {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
+	}
+}
+
+func Test_processV1QueuesPost_invalid_routing_method(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockQueue := queuehandler.NewMockQueueHandler(mc)
+	h := &listenHandler{
+		queueHandler: mockQueue,
+	}
+	ctx := context.Background()
+
+	mockQueue.EXPECT().Create(
+		gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(),
+		queue.RoutingMethod("invalid"),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+	).Return(nil, cerrors.InvalidArgument(
+		commonoutline.ServiceNameQueueManager,
+		"INVALID_ROUTING_METHOD",
+		`unsupported routing_method "invalid": only "random" is supported`,
+	))
+
+	req := &sock.Request{
+		URI: "/v1/queues",
+		Data: []byte(`{
+			"customer_id": "442f5d62-7f55-11ec-a2c0-0bcd3814d515",
+			"routing_method": "invalid"
+		}`),
+	}
+
+	res, err := h.processV1QueuesPost(ctx, req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != http.StatusBadRequest {
+		t.Errorf("Wrong status code. expect: %d, got: %d", http.StatusBadRequest, res.StatusCode)
+	}
+
+	if res.DataType != cerrors.DataTypeVoipbinError {
+		t.Errorf("Wrong data type. expect: %s, got: %s", cerrors.DataTypeVoipbinError, res.DataType)
 	}
 }
 

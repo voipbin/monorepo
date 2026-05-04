@@ -3,10 +3,13 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"testing"
 
 	commonaddress "monorepo/bin-common-handler/models/address"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
@@ -376,6 +379,51 @@ func Test_processV1AgentsIDAddressesPut(t *testing.T) {
 	}
 }
 
+
+func Test_processV1AgentsPost_invalid_ring_method(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockAgent := agenthandler.NewMockAgentHandler(mc)
+	h := &listenHandler{
+		agentHandler: mockAgent,
+	}
+	ctx := context.Background()
+
+	mockAgent.EXPECT().Create(
+		gomock.Any(),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		agent.RingMethod("invalid"),
+		gomock.Any(), gomock.Any(), gomock.Any(),
+	).Return(nil, cerrors.InvalidArgument(
+		commonoutline.ServiceNameAgentManager,
+		"INVALID_RING_METHOD",
+		`unsupported ring_method "invalid": only "ringall" is supported`,
+	))
+
+	req := &sock.Request{
+		URI: "/v1/agents",
+		Data: []byte(`{
+			"customer_id": "442f5d62-7f55-11ec-a2c0-0bcd3814d515",
+			"username": "test@example.com",
+			"password": "password",
+			"ring_method": "invalid"
+		}`),
+	}
+
+	res, err := h.processV1AgentsPost(ctx, req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != http.StatusBadRequest {
+		t.Errorf("Wrong status code. expect: %d, got: %d", http.StatusBadRequest, res.StatusCode)
+	}
+
+	if res.DataType != cerrors.DataTypeVoipbinError {
+		t.Errorf("Wrong data type. expect: %s, got: %s", cerrors.DataTypeVoipbinError, res.DataType)
+	}
+}
 
 func Test_processV1AgentsPost_unmarshal_error(t *testing.T) {
 	mc := gomock.NewController(t)

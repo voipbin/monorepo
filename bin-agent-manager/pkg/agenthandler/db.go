@@ -7,6 +7,8 @@ import (
 
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"monorepo/bin-agent-manager/pkg/metricshandler"
@@ -63,7 +65,11 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 
 	if ringMethod != agent.RingMethodRingAll {
 		log.Errorf("Unsupported ring method. Currently, support ringall only. ringMethod: %s", ringMethod)
-		return nil, fmt.Errorf("wrong ring_method")
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameAgentManager,
+			"INVALID_RING_METHOD",
+			fmt.Sprintf("unsupported ring_method %q: only %q is supported", ringMethod, agent.RingMethodRingAll),
+		)
 	}
 
 	// generate hash password

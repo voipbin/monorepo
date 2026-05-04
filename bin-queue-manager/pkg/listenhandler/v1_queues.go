@@ -46,7 +46,7 @@ func (h *listenHandler) processV1QueuesPost(ctx context.Context, m *sock.Request
 	)
 	if err != nil {
 		log.Errorf("Could not create the queue. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
