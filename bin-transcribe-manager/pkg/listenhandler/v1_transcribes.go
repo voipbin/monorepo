@@ -39,7 +39,7 @@ func (h *listenHandler) processV1TranscribesPost(ctx context.Context, m *sock.Re
 	tmp, err := h.transcribeHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.OnEndFlowID, req.ReferenceType, req.ReferenceID, req.Language, req.Direction, req.Provider)
 	if err != nil {
 		log.Debugf("Could not create a transcribe. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -126,12 +126,12 @@ func (h *listenHandler) processV1TranscribesIDGet(ctx context.Context, m *sock.R
 	c, err := h.transcribeHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get transcribe. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(c)
 	if err != nil {
-		return simpleResponse(404), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -160,7 +160,7 @@ func (h *listenHandler) processV1TranscribesIDDelete(ctx context.Context, m *soc
 	tmp, err := h.transcribeHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the transcribe. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	d, err := json.Marshal(tmp)
@@ -195,7 +195,7 @@ func (h *listenHandler) processV1TranscribesIDStopPost(ctx context.Context, m *s
 	tr, err := h.transcribeHandler.Stop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not stop the transcribe. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(tr)

@@ -48,7 +48,7 @@ func (h *listenHandler) processV1TranscriptsGet(ctx context.Context, m *sock.Req
 	tmp, err := h.transcriptHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get transcripts. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
