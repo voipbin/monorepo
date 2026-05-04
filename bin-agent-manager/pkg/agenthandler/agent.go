@@ -115,25 +115,29 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 	if err != nil {
 		metricshandler.RPCCallTotal.WithLabelValues("billing-manager", "AccountIsValidResourceLimitByCustomerID", "failure").Inc()
 		log.Errorf("Could not validate resource limit. err: %v", err)
-		return nil, fmt.Errorf("could not validate resource limit: %w", err)
+		return nil, cerrors.Internal(commonoutline.ServiceNameAgentManager, "BILLING_CHECK_FAILED", "could not validate resource limit").Wrap(err)
 	}
 	metricshandler.RPCCallTotal.WithLabelValues("billing-manager", "AccountIsValidResourceLimitByCustomerID", "success").Inc()
 	if !valid {
 		log.Infof("Resource limit exceeded for customer. customer_id: %s", customerID)
-		return nil, fmt.Errorf("resource limit exceeded")
+		return nil, cerrors.ResourceExhausted(commonoutline.ServiceNameAgentManager, "RESOURCE_LIMIT_EXCEEDED", "agent resource limit exceeded for this customer")
 	}
 
 	// validate username
 	if !h.utilHandler.EmailIsValid(username) {
 		log.Infof("Wrong username type. The username must be email format. username: %s", username)
-		return nil, fmt.Errorf("wrong username format")
+		return nil, cerrors.InvalidArgument(commonoutline.ServiceNameAgentManager, "INVALID_USERNAME_FORMAT", "username must be a valid email address")
 	}
 
 	// check existence
 	tmpAgent, err := h.db.AgentGetByUsername(ctx, username)
 	if err == nil {
-		log.WithField("agent", tmpAgent).Errorf("The agent is already exist.")
-		return nil, fmt.Errorf("already exist")
+		log.WithField("agent", tmpAgent).Infof("Agent already exists.")
+		return nil, cerrors.AlreadyExists(commonoutline.ServiceNameAgentManager, "AGENT_ALREADY_EXISTS", "agent with this username already exists")
+	}
+	if err != dbhandler.ErrNotFound {
+		log.Errorf("Could not check agent existence. err: %v", err)
+		return nil, errors.Wrap(err, "could not check agent existence")
 	}
 
 	res, err := h.dbCreate(ctx, customerID, username, password, name, detail, ringMethod, permission, tags, addresses)
