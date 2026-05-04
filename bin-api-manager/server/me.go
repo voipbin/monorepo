@@ -22,6 +22,12 @@ func (h *server) GetMe(c *gin.Context) {
 	}
 	log = log.WithField("agent", a)
 
+	if !a.IsAgent() {
+		log.Infof("Non-agent auth type attempted GET /me. type: %s", a.Type)
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AGENT_AUTH_REQUIRED", "Agent authentication required for this endpoint."))
+		return
+	}
+
 	res, err := h.serviceHandler.AgentGet(c.Request.Context(), a, a.AgentID())
 	if err != nil {
 		log.Infof("Could not get the agent info. err: %v", err)

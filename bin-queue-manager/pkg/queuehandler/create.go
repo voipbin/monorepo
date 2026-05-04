@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"github.com/gofrs/uuid"
@@ -69,7 +71,11 @@ func (h *queueHandler) Create(
 		if _, errDelete := h.reqHandler.DirectV1DirectDelete(ctx, d.ID); errDelete != nil {
 			log.Errorf("Could not cleanup orphaned direct. direct_id: %s, err: %v", d.ID, errDelete)
 		}
-		return nil, fmt.Errorf("wrong routing_method. routing_method: %s", routingMethod)
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameQueueManager,
+			"INVALID_ROUTING_METHOD",
+			fmt.Sprintf("unsupported routing_method %q: only %q is supported", routingMethod, queue.RoutingMethodRandom),
+		)
 	}
 
 	// create a new queue
