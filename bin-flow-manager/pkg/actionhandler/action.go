@@ -11,6 +11,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-flow-manager/models/action"
 )
 
@@ -27,7 +29,11 @@ func (h *actionHandler) ValidateActions(actions []action.Action) error {
 		}
 
 		if !found {
-			return fmt.Errorf("no support action type. type: %s", a.Type)
+			return cerrors.InvalidArgument(
+				commonoutline.ServiceNameFlowManager,
+				"INVALID_ACTION_TYPE",
+				fmt.Sprintf("not supported action type: %s", a.Type),
+			)
 		}
 
 		// validate anonymous option for call and connect actions
@@ -38,7 +44,11 @@ func (h *actionHandler) ValidateActions(actions []action.Action) error {
 				logrus.WithField("action", a).Warnf("Could not parse call action option for anonymous validation. err: %v", err)
 			} else if opt.Anonymous != "" {
 				if !action.ValidateAnonymous(opt.Anonymous) {
-					return fmt.Errorf("invalid anonymous value for call action. anonymous: %s", opt.Anonymous)
+					return cerrors.InvalidArgument(
+						commonoutline.ServiceNameFlowManager,
+						"INVALID_ANONYMOUS_VALUE",
+						fmt.Sprintf("invalid anonymous value for call action: %s", opt.Anonymous),
+					)
 				}
 			}
 		case action.TypeConnect:
@@ -47,7 +57,11 @@ func (h *actionHandler) ValidateActions(actions []action.Action) error {
 				logrus.WithField("action", a).Warnf("Could not parse connect action option for anonymous validation. err: %v", err)
 			} else if opt.Anonymous != "" {
 				if !action.ValidateAnonymous(opt.Anonymous) {
-					return fmt.Errorf("invalid anonymous value for connect action. anonymous: %s", opt.Anonymous)
+					return cerrors.InvalidArgument(
+						commonoutline.ServiceNameFlowManager,
+						"INVALID_ANONYMOUS_VALUE",
+						fmt.Sprintf("invalid anonymous value for connect action: %s", opt.Anonymous),
+					)
 				}
 			}
 		}

@@ -122,11 +122,15 @@ func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid message ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.messageHandler.Get(ctx, id)
 	if err != nil {
-		log.Errorf("Could not create ai. err: %v", err)
-		return simpleResponse(500), nil
+		log.Errorf("Could not get message. err: %v", err)
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

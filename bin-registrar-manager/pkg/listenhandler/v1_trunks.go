@@ -37,7 +37,7 @@ func (h *listenHandler) processV1TrunksPost(ctx context.Context, m *sock.Request
 	tmp, err := h.trunkHandler.Create(ctx, req.CustomerID, req.Name, req.Detail, req.DomainName, req.Authtypes, req.Username, req.Password, req.AllowedIPs)
 	if err != nil {
 		log.Errorf("Could not create a new trunk correctly. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -88,7 +88,7 @@ func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Reques
 	trunks, err := h.trunkHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get trunks. err: %v", err)
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(trunks)
@@ -120,11 +120,15 @@ func (h *listenHandler) processV1TrunksIDGet(ctx context.Context, req *sock.Requ
 	// "/v1/trunks/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid trunk ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.trunkHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get trunk info. err: %v", err)
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -156,6 +160,10 @@ func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Requ
 	// "/v1/trunks/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid trunk ID.")
+		return simpleResponse(400), nil
+	}
 
 	var reqData request.V1DataTrunksIDPut
 	if err := json.Unmarshal([]byte(req.Data), &reqData); err != nil {
@@ -174,8 +182,8 @@ func (h *listenHandler) processV1TrunksIDPut(ctx context.Context, req *sock.Requ
 
 	tmp, err := h.trunkHandler.Update(ctx, id, fields)
 	if err != nil {
-		log.Errorf("Could not get domain info. err: %v", err)
-		return nil, err
+		log.Errorf("Could not update trunk info. err: %v", err)
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -207,11 +215,15 @@ func (h *listenHandler) processV1TrunksIDDelete(ctx context.Context, req *sock.R
 	// "/v1/trunks/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid trunk ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.trunkHandler.Delete(ctx, id)
 	if err != nil {
-		log.Errorf("Could not get trunk info. err: %v", err)
-		return nil, err
+		log.Errorf("Could not delete trunk. err: %v", err)
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

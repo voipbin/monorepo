@@ -133,11 +133,15 @@ func (h *listenHandler) v1RoutesIDGet(ctx context.Context, m *sock.Request) (*so
 	// "/v1/routes/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid route ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.routeHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get route info. err: %v", err)
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -172,6 +176,10 @@ func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *sock.Request) (*so
 	// "/v1/routes/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid route ID.")
+		return simpleResponse(400), nil
+	}
 
 	var req request.V1DataRoutesIDPut
 	if err := json.Unmarshal(m.Data, &req); err != nil {
@@ -190,7 +198,7 @@ func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *sock.Request) (*so
 	)
 	if err != nil {
 		log.Errorf("Could not update the route info. err: %v", err)
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -226,10 +234,15 @@ func (h *listenHandler) v1RoutesIDDelete(ctx context.Context, m *sock.Request) (
 	id := uuid.FromStringOrNil(tmpVals[3])
 	log = log.WithField("route_id", id)
 
+	if id == uuid.Nil {
+		log.Errorf("Invalid route ID.")
+		return simpleResponse(400), nil
+	}
+
 	tmp, err := h.routeHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not delete the route. err: %v", err)
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
