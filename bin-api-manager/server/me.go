@@ -24,7 +24,7 @@ func (h *server) GetMe(c *gin.Context) {
 
 	if !a.IsAgent() {
 		log.Infof("Non-agent auth type attempted GET /me. type: %s", a.Type)
-		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AGENT_AUTH_REQUIRED", "Agent authentication required for this endpoint."))
+		abortWithError(c, cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "AGENT_AUTH_REQUIRED", "This endpoint requires agent authentication."))
 		return
 	}
 
