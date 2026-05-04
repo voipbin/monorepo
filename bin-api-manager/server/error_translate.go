@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 )
 
 // translateToVoipbinError maps any error returned from a servicehandler
@@ -27,6 +28,11 @@ import (
 // state/insufficient/internal/auth strings (PR-final). The legacy
 // substring-fallback step has been removed; any unmatched error
 // correctly degrades to INTERNAL via the default branch.
+//
+// Exception: backend services that return a bare status code (e.g.
+// simpleResponse(400)) without a typed VoipbinError body produce a
+// requesthandler.ErrBadRequest sentinel instead of a VoipbinError.
+// That case is handled explicitly below.
 func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -56,6 +62,8 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.NotFound(commonoutline.ServiceNameAPIManager, "RESOURCE_NOT_FOUND", "The requested resource was not found.")
 	case stderrors.Is(err, serviceerrors.ErrInvalidArgument):
 		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request is invalid.")
+	case stderrors.Is(err, requesthandler.ErrBadRequest):
+		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request contains invalid data.")
 	case stderrors.Is(err, serviceerrors.ErrInternal):
 		return cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.").Wrap(err)
 	case stderrors.Is(err, serviceerrors.ErrIdentityVerificationRequired):
