@@ -200,11 +200,15 @@ func (h *listenHandler) processV1AIcallsIDTerminatePost(ctx context.Context, m *
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid AIcall ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.aicallHandler.ProcessTerminate(ctx, id)
 	if err != nil {
 		log.Errorf("Could not terminate aicall. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

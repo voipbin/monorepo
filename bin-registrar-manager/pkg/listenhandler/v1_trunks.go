@@ -88,7 +88,7 @@ func (h *listenHandler) processV1TrunksGet(ctx context.Context, req *sock.Reques
 	trunks, err := h.trunkHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Errorf("Could not get trunks. err: %v", err)
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(trunks)

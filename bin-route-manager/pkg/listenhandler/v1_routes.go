@@ -176,6 +176,10 @@ func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *sock.Request) (*so
 	// "/v1/routes/a6f4eae8-8a74-11ea-af75-3f1e61b9a236"
 	tmpVals := strings.Split(u.Path, "/")
 	id := uuid.FromStringOrNil(tmpVals[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid route ID.")
+		return simpleResponse(400), nil
+	}
 
 	var req request.V1DataRoutesIDPut
 	if err := json.Unmarshal(m.Data, &req); err != nil {
@@ -194,7 +198,7 @@ func (h *listenHandler) v1RoutesIDPut(ctx context.Context, m *sock.Request) (*so
 	)
 	if err != nil {
 		log.Errorf("Could not update the route info. err: %v", err)
-		return nil, err
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

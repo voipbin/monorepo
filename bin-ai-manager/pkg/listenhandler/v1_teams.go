@@ -176,6 +176,10 @@ func (h *listenHandler) processV1TeamsIDPut(ctx context.Context, m *sock.Request
 		return simpleResponse(400), nil
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
+	if id == uuid.Nil {
+		log.Errorf("Invalid team ID.")
+		return simpleResponse(400), nil
+	}
 
 	tmp, err := h.teamHandler.Update(
 		ctx,
@@ -188,7 +192,7 @@ func (h *listenHandler) processV1TeamsIDPut(ctx context.Context, m *sock.Request
 	)
 	if err != nil {
 		log.Errorf("Could not update team. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
