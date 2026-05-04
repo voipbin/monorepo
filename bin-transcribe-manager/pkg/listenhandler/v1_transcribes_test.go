@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -68,6 +70,31 @@ func Test_processV1TranscribesPost(t *testing.T) {
 				Data:       []byte(`{"id":"1162e178-9693-11ed-9bcf-974fbfeb1ea3","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","provider":"","streaming_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
+		{
+			name: "error returns typed error response",
+
+			request: &sock.Request{
+				URI:      "/v1/transcribes",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"10a7593a-9693-11ed-b4b7-7b48322d6a8d","reference_type":"call","reference_id":"112d907c-9693-11ed-a72c-8fa9ccd046a7","language":"en-US","direction":"both"}`),
+			},
+
+			expectCustomerID:    uuid.FromStringOrNil("10a7593a-9693-11ed-b4b7-7b48322d6a8d"),
+			expectActiveflowID:  uuid.Nil,
+			expectOnEndFlowID:   uuid.Nil,
+			expectReferenceType: transcribe.ReferenceTypeCall,
+			expectReferenceID:   uuid.FromStringOrNil("112d907c-9693-11ed-a72c-8fa9ccd046a7"),
+			expectLanguage:      "en-US",
+			expectDirection:     transcribe.DirectionBoth,
+			expectProvider:      transcribe.ProviderEmpty,
+
+			expectRes: &sock.Response{
+				StatusCode: 500,
+				DataType:   cerrors.DataTypeVoipbinError,
+				Data:       []byte(`{"status":"INTERNAL","reason":"START_FAILED","domain":"transcribe-manager","message":"Could not start the transcribe."}`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -85,7 +112,11 @@ func Test_processV1TranscribesPost(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection, tt.expectProvider).Return(tt.responseTranscribe, nil)
+			if tt.responseTranscribe != nil {
+				mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection, tt.expectProvider).Return(tt.responseTranscribe, nil)
+			} else {
+				mockTranscribe.EXPECT().Start(gomock.Any(), tt.expectCustomerID, tt.expectActiveflowID, tt.expectOnEndFlowID, tt.expectReferenceType, tt.expectReferenceID, tt.expectLanguage, tt.expectDirection, tt.expectProvider).Return(nil, cerrors.Internal(commonoutline.ServiceNameTranscribeManager, "START_FAILED", "Could not start the transcribe."))
+			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -208,7 +239,9 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 		name    string
 		request *sock.Request
 
+		transcribeID       uuid.UUID
 		responseTranscribe *transcribe.Transcribe
+		responseErr        error
 		expectRes          *sock.Response
 	}{
 		{
@@ -217,6 +250,7 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 				URI:    "/v1/transcribes/06db1ed2-7f69-11ed-a6fe-83fb6c80964d",
 				Method: sock.RequestMethodGet,
 			},
+			transcribeID: uuid.FromStringOrNil("06db1ed2-7f69-11ed-a6fe-83fb6c80964d"),
 			responseTranscribe: &transcribe.Transcribe{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("06db1ed2-7f69-11ed-a6fe-83fb6c80964d"),
@@ -227,6 +261,20 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"06db1ed2-7f69-11ed-a6fe-83fb6c80964d","customer_id":"ab0fb69e-7f50-11ec-b0d3-2b4311e649e0","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","provider":"","streaming_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			name: "not found returns typed 404",
+			request: &sock.Request{
+				URI:    "/v1/transcribes/aaaaaaaa-7f69-11ed-a6fe-83fb6c80964d",
+				Method: sock.RequestMethodGet,
+			},
+			transcribeID: uuid.FromStringOrNil("aaaaaaaa-7f69-11ed-a6fe-83fb6c80964d"),
+			responseErr:  cerrors.NotFound(commonoutline.ServiceNameTranscribeManager, "TRANSCRIBE_NOT_FOUND", "The transcribe was not found."),
+			expectRes: &sock.Response{
+				StatusCode: 404,
+				DataType:   cerrors.DataTypeVoipbinError,
+				Data:       []byte(`{"status":"NOT_FOUND","reason":"TRANSCRIBE_NOT_FOUND","domain":"transcribe-manager","message":"The transcribe was not found."}`),
 			},
 		},
 	}
@@ -244,7 +292,7 @@ func Test_processV1TranscribesIDGet(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Get(gomock.Any(), tt.responseTranscribe.ID).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Get(gomock.Any(), tt.transcribeID).Return(tt.responseTranscribe, tt.responseErr)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -268,6 +316,7 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 
 		request            *sock.Request
 		responseTranscribe *transcribe.Transcribe
+		responseErr        error
 
 		expectRes *sock.Response
 	}{
@@ -292,6 +341,22 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 				Data:       []byte(`{"id":"a4f388dc-86ab-11ec-8d14-9bd962288757","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","host_id":"00000000-0000-0000-0000-000000000000","language":"","direction":"","provider":"","streaming_ids":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
+		{
+			name: "not found returns typed 404",
+
+			id: uuid.FromStringOrNil("bbbbbbbb-86ab-11ec-8d14-9bd962288757"),
+
+			request: &sock.Request{
+				URI:    "/v1/transcribes/bbbbbbbb-86ab-11ec-8d14-9bd962288757",
+				Method: sock.RequestMethodDelete,
+			},
+			responseErr: cerrors.NotFound(commonoutline.ServiceNameTranscribeManager, "TRANSCRIBE_NOT_FOUND", "The transcribe was not found."),
+			expectRes: &sock.Response{
+				StatusCode: 404,
+				DataType:   cerrors.DataTypeVoipbinError,
+				Data:       []byte(`{"status":"NOT_FOUND","reason":"TRANSCRIBE_NOT_FOUND","domain":"transcribe-manager","message":"The transcribe was not found."}`),
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -309,7 +374,7 @@ func Test_processV1TranscribesIDDelete(t *testing.T) {
 				transcribeHandler: mockTranscribe,
 			}
 
-			mockTranscribe.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTranscribe, nil)
+			mockTranscribe.EXPECT().Delete(gomock.Any(), tt.id).Return(tt.responseTranscribe, tt.responseErr)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -385,6 +450,44 @@ func Test_processV1TranscribesIDStopPost(t *testing.T) {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_processV1TranscribesIDStopPost_notFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:       mockSock,
+		reqHandler:        mockReq,
+		transcribeHandler: mockTranscribe,
+	}
+
+	id := uuid.FromStringOrNil("cccccccc-821c-11ed-980a-cf31e1861a1f")
+	req := &sock.Request{
+		URI:    "/v1/transcribes/cccccccc-821c-11ed-980a-cf31e1861a1f/stop",
+		Method: sock.RequestMethodPost,
+		Data:   []byte(``),
+	}
+
+	mockTranscribe.EXPECT().Stop(gomock.Any(), id).Return(nil, cerrors.NotFound(commonoutline.ServiceNameTranscribeManager, "TRANSCRIBE_NOT_FOUND", "The transcribe was not found."))
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	expectRes := &sock.Response{
+		StatusCode: 404,
+		DataType:   cerrors.DataTypeVoipbinError,
+		Data:       []byte(`{"status":"NOT_FOUND","reason":"TRANSCRIBE_NOT_FOUND","domain":"transcribe-manager","message":"The transcribe was not found."}`),
+	}
+	if !reflect.DeepEqual(res, expectRes) {
+		t.Errorf("Wrong match.\nexepct: %v\ngot: %v", expectRes, res)
 	}
 }
 
