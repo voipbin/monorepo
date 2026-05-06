@@ -2,10 +2,13 @@ package servicehandler
 
 import (
 	"context"
+	stderrors "errors"
 	"reflect"
 	"testing"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	fmaction "monorepo/bin-flow-manager/models/action"
@@ -293,6 +296,52 @@ func Test_FlowGet(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\n, got: %v\n", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_FlowGet_NotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+
+	h := &serviceHandler{
+		reqHandler: mockReq,
+		dbHandler:  mockDB,
+	}
+	ctx := context.Background()
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+			CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+		},
+		Permission: amagent.PermissionCustomerAdmin,
+	})
+	flowID := uuid.FromStringOrNil("9877fa1f-3bd6-4e90-af61-f713d5cac4d3")
+
+	notFoundErr := cerrors.NotFound(
+		commonoutline.ServiceNameFlowManager,
+		"FLOW_NOT_FOUND",
+		"The flow was not found.",
+	)
+	mockReq.EXPECT().FlowV1FlowGet(ctx, flowID).Return(nil, notFoundErr)
+
+	_, err := h.FlowGet(ctx, agent, flowID)
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+
+	var ve *cerrors.VoipbinError
+	if !stderrors.As(err, &ve) {
+		t.Fatalf("Expected *cerrors.VoipbinError in chain, got: %T: %v", err, err)
+	}
+	if ve.Status != cerrors.StatusNotFound {
+		t.Errorf("Expected StatusNotFound, got: %v", ve.Status)
+	}
+	if ve.Reason != "FLOW_NOT_FOUND" {
+		t.Errorf("Expected reason FLOW_NOT_FOUND, got: %v", ve.Reason)
 	}
 }
 

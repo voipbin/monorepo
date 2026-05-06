@@ -150,7 +150,7 @@ func (h *serviceHandler) FlowGet(ctx context.Context, a *auth.AuthIdentity, id u
 	// get flow
 	tmp, err := h.flowGet(ctx, id)
 	if err != nil {
-		return nil, errors.Errorf("could not get the flow")
+		return nil, errors.Wrapf(err, "could not get the flow")
 	}
 
 	if !h.hasPermission(ctx, a, tmp.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
