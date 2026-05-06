@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: VoipBin API
+  title: VoiPBin API
   version: 1.0.0
   x-logo:
     url: "https://github.com/pchero/voipbin/blob/master/logos/voipbin-high-resolution-logo-black-transparent.png?raw=true"
