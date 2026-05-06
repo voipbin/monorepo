@@ -28,6 +28,13 @@ const (
 	// Set CREATION-TIME only by server-side trusted code. Do not expose in any
 	// customer-facing API body.
 	MetadataKeySkipSourceValidation MetadataKey = "skip_source_validation"
+
+	// MetadataKeyCodecs sets the outbound codec preference for this call.
+	// Value is a comma-separated string, e.g. "PCMU,PCMA,G729".
+	// When present, call-manager adds a VBOUT-CODECS SIP header to the outgoing INVITE.
+	// Overrides the customer-level OutboundCodecs when set per-call.
+	// Creation-time only.
+	MetadataKeyCodecs MetadataKey = "codecs"
 )
 
 // ValidMetadataKeys is the registry of every permitted metadata key.
@@ -42,4 +49,5 @@ var ValidMetadataKeys = map[MetadataKey]bool{
 	MetadataKeyRTPDebug:             true,
 	MetadataKeyRouteProviderIDs:     true,
 	MetadataKeySkipSourceValidation: true,
+	MetadataKeyCodecs:               true,
 }

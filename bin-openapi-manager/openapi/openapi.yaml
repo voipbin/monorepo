@@ -3460,7 +3460,8 @@ components:
       type: object
       description: |
         Configuration flags for a customer account. Controls platform behavior
-        such as RTP packet capture for debugging audio issues.
+        such as RTP packet capture for debugging audio issues and the preferred
+        codec list for outbound calls.
         Updatable by CustomerAdmin via `PUT /customer/metadata`
         or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
       properties:
@@ -3471,6 +3472,16 @@ components:
             Use this to debug audio quality issues (one-way audio, codec problems, jitter).
             Default is `false`. Enabling this increases storage usage — disable after debugging.
           example: true
+        outbound_codecs:
+          type: string
+          description: |
+            Comma-separated, preference-ordered list of codec names for outbound PSTN calls
+            (e.g. `PCMU,PCMA,G729`). When set, the platform restricts the outgoing INVITE's
+            SDP to only these codecs. Empty string means use the server default
+            (current pass-through behavior with PCMU/PCMA transcoding).
+            Names match standard SDP `a=rtpmap` codec names. Per-call metadata key
+            `codecs` overrides this customer-level default when present.
+          example: "PCMU,PCMA,G729"
     CustomerManagerCustomerStatus:
       type: string
       description: Account lifecycle status.

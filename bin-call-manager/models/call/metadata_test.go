@@ -8,6 +8,7 @@ func Test_ValidMetadataKeys_contains_all_declared_constants(t *testing.T) {
 		MetadataKeyRTPDebug,
 		MetadataKeyRouteProviderIDs,
 		MetadataKeySkipSourceValidation,
+		MetadataKeyCodecs, // add this
 	}
 	for _, k := range required {
 		if !ValidMetadataKeys[k] {

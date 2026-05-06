@@ -205,7 +205,8 @@
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;default_outgoing_source_number_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span>
+        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
+        <span class="s2">&quot;outbound_codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
     <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">boolean</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -231,6 +232,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (Object): Configuration flags for the customer account. Contains:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (Boolean): When <code class="docutils literal notranslate"><span class="pre">true</span></code>, RTPEngine captures RTP traffic as PCAP files for this customer’s calls. Use this to debug audio quality issues (one-way audio, codec problems, jitter). Default is <code class="docutils literal notranslate"><span class="pre">false</span></code>. Updatable by CustomerAdmin via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer/metadata</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outbound_codecs</span></code> (String, Optional): Comma-separated, preference-ordered list of codec names for outbound PSTN calls (e.g. <code class="docutils literal notranslate"><span class="pre">PCMU,PCMA,G729</span></code>). When set, the platform restricts the outgoing INVITE’s SDP to only these codecs. Empty string (default) means use the server default (pass-through with PCMU/PCMA transcoding). Codec names match standard SDP <code class="docutils literal notranslate"><span class="pre">a=rtpmap</span></code> names. The per-call metadata key <code class="docutils literal notranslate"><span class="pre">codecs</span></code> overrides this customer-level default when present. Updatable by CustomerAdmin via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/customer/metadata</span></code>.</p></li>
 </ul>
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">email_verified</span></code> (Boolean): Whether the customer’s email address has been verified. <code class="docutils literal notranslate"><span class="pre">true</span></code> if verified, <code class="docutils literal notranslate"><span class="pre">false</span></code> otherwise.</p></li>
@@ -276,7 +278,8 @@
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
     <span class="s2">&quot;default_outgoing_source_number_id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;</span><span class="p">,</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
+        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="s2">&quot;outbound_codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;PCMU,PCMA,G729&quot;</span>
     <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>

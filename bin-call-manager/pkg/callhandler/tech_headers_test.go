@@ -168,6 +168,16 @@ func Test_mergeTechHeaders(t *testing.T) {
 			3,
 		},
 		{
+			"reserved VBOUT-CODECS header is blocked",
+
+			map[string]string{},
+			map[string]string{"VBOUT-CODECS": "PCMU"},
+
+			map[string]string{},
+			0,
+			1,
+		},
+		{
 			"pre-existing dst key is overwritten by tech header (merge semantics; system fns re-overwrite later in createChannelOutgoing)",
 
 			map[string]string{

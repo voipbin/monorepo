@@ -164,6 +164,8 @@ func (h *callHandler) CreateCallOutgoing(
 		}
 	}
 
+	metadata = embedCustomerCodecs(metadata, cu.Metadata.OutboundCodecs)
+
 	// validate outgoing call permission (customer status + identity verification)
 	if err := h.validateOutgoingCallPermission(ctx, cu, destination); err != nil {
 		return nil, err
@@ -573,6 +575,7 @@ func (h *callHandler) createChannelOutgoing(ctx context.Context, c *call.Call) e
 		log.Errorf("Could not set caller ID variables. err: %v", err)
 		return err
 	}
+	setChannelVariableCodecs(channelVariables, c.Metadata)
 
 	if techApplied > 0 || techSkipped > 0 {
 		log.Infof("Applied provider tech config. headers_applied=%d headers_skipped=%d",

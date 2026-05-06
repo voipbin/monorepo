@@ -4,6 +4,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-call-manager/models/common"
 )
 
 // reservedTechHeaderKeys lists channel-variable keys that operator-supplied
@@ -23,6 +25,7 @@ var reservedTechHeaderKeys = map[string]struct{}{
 	"PJSIP_HEADER(add,VB-CALL-ID)":          {},
 	"PJSIP_HEADER(add,VB-CONFBRIDGE-ID)":    {},
 	"PJSIP_HEADER(add,VB-DIRECTION)":        {},
+	"PJSIP_HEADER(add," + common.SIPHeaderCodecs + ")": {}, // prevent provider override
 	"CALLERID(name)":                        {},
 	"CALLERID(num)":                         {},
 	"CALLERID(pres)":                        {},
