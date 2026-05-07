@@ -29,7 +29,14 @@ func (h *listenHandler) processV1OutboundConfigsPost(ctx context.Context, m *soc
 		return simpleResponse(400), nil
 	}
 
-	c, err := h.outboundConfigHandler.Create(ctx, req.CustomerID, &req.Request)
+	updateReq := &outboundconfig.UpdateRequest{
+		Name:                 req.Name,
+		Detail:               req.Detail,
+		DestinationWhitelist: req.DestinationWhitelist,
+		Codecs:               req.Codecs,
+	}
+
+	c, err := h.outboundConfigHandler.Create(ctx, req.CustomerID, updateReq)
 	if err != nil {
 		log.Errorf("Could not create outbound config. err: %v", err)
 		if strings.Contains(err.Error(), "Duplicate entry") {
@@ -182,7 +189,14 @@ func (h *listenHandler) processV1OutboundConfigsIDPut(ctx context.Context, m *so
 		return simpleResponse(400), nil
 	}
 
-	c, err := h.outboundConfigHandler.Update(ctx, id, &req.Request)
+	updateReq := &outboundconfig.UpdateRequest{
+		Name:                 req.Name,
+		Detail:               req.Detail,
+		DestinationWhitelist: req.DestinationWhitelist,
+		Codecs:               req.Codecs,
+	}
+
+	c, err := h.outboundConfigHandler.Update(ctx, id, updateReq)
 	if err != nil {
 		log.Errorf("Could not update outbound config. err: %v", err)
 		return errorResponse(err), nil

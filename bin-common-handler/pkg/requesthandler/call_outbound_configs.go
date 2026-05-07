@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	cmrequest "monorepo/bin-call-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
 
 	"github.com/gofrs/uuid"
@@ -16,14 +17,13 @@ import (
 func (r *requestHandler) CallV1OutboundConfigCreate(ctx context.Context, customerID uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.OutboundConfig, error) {
 	uri := "/v1/outbound_configs"
 
-	body := struct {
-		CustomerID uuid.UUID                    `json:"customer_id"`
-		Request    *cmoutboundconfig.UpdateRequest `json:"request"`
-	}{
-		CustomerID: customerID,
-		Request:    req,
-	}
-	m, err := json.Marshal(body)
+	m, err := json.Marshal(cmrequest.V1DataOutboundConfigsPost{
+		CustomerID:           customerID,
+		Name:                 req.Name,
+		Detail:               req.Detail,
+		DestinationWhitelist: req.DestinationWhitelist,
+		Codecs:               req.Codecs,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,12 @@ func (r *requestHandler) CallV1OutboundConfigDelete(ctx context.Context, id uuid
 func (r *requestHandler) CallV1OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.OutboundConfig, error) {
 	uri := fmt.Sprintf("/v1/outbound_configs/%s", id)
 
-	m, err := json.Marshal(req)
+	m, err := json.Marshal(cmrequest.V1DataOutboundConfigsIDPut{
+		Name:                 req.Name,
+		Detail:               req.Detail,
+		DestinationWhitelist: req.DestinationWhitelist,
+		Codecs:               req.Codecs,
+	})
 	if err != nil {
 		return nil, err
 	}
