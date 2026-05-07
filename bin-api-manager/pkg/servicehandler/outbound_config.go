@@ -200,14 +200,18 @@ func (h *serviceHandler) OutboundConfigSelfUpdate(ctx context.Context, a *auth.A
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	// Resolve the config ID by fetching the customer's own config.
-	cfg, err := h.OutboundConfigSelfGet(ctx, a)
+	// Resolve the config ID with a single list RPC (avoids double permission check
+	// that would occur if calling the public OutboundConfigSelfGet).
+	tmps, err := h.reqHandler.CallV1OutboundConfigList(ctx, a.CustomerID, 1, h.utilHandler.TimeGetCurTime())
 	if err != nil {
-		log.Infof("Could not get own outbound config. err: %v", err)
+		log.Errorf("Could not list outbound configs. err: %v", err)
 		return nil, err
 	}
+	if len(tmps) == 0 {
+		return nil, fmt.Errorf("%w: outbound config not found for customer %s", serviceerrors.ErrNotFound, a.CustomerID)
+	}
 
-	updated, err := h.reqHandler.CallV1OutboundConfigUpdate(ctx, cfg.ID, req)
+	updated, err := h.reqHandler.CallV1OutboundConfigUpdate(ctx, tmps[0].ID, req)
 	if err != nil {
 		log.Errorf("Could not update outbound config. err: %v", err)
 		return nil, err
