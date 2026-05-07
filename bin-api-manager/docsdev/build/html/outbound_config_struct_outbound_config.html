@@ -6,7 +6,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-        <title>Struct &mdash; voipbin  documentation</title>
+        <title>OutboundConfig Struct &mdash; voipbin  documentation</title>
     
     <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
       <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
@@ -14,6 +14,9 @@
             <link rel="index" title="Index" href="genindex.html" />
             <link rel="search" title="Search" href="search.html" />
             <link rel="top" title="voipbin  documentation" href="#" />
+            <link rel="up" title="OutboundConfig" href="outbound_config.html" />
+            <link rel="next" title="Billing Account" href="billing_account.html" />
+            <link rel="prev" title="OutboundConfig Tutorial" href="outbound_config_tutorial.html" />
     </head>
 <body>
     <script type="text/javascript" src="_static/dist/blocking.js"></script>
@@ -116,11 +119,17 @@
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">OutboundConfig Struct</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
 <li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
@@ -162,7 +171,8 @@
                         <nav aria-label="breadcrumb">
     <ol class="breadcrumb m-0 p-0 bg-transparent">
         <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Struct</li>
+            <li class="breadcrumb-item"><a href="outbound_config.html">OutboundConfig</a></li>
+        <li class="breadcrumb-item active" aria-current="page">OutboundConfig Struct</li>
     </ol>
 </nav>
                     </div>
@@ -189,52 +199,54 @@
                 <div class="row">
                     <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
                         <main role="main" id="main">
-    <section id="struct">
-<span id="outbound-config-struct"></span><h1>Struct<a class="headerlink" href="#struct" title="Link to this heading"></a></h1>
-<section id="outboundconfig">
-<span id="outbound-config-struct-outbound-config"></span><h2>OutboundConfig<a class="headerlink" href="#outboundconfig" title="Link to this heading"></a></h2>
+    <section id="outboundconfig-struct">
+<span id="outbound-config-struct-outbound-config"></span><h1>OutboundConfig Struct<a class="headerlink" href="#outboundconfig-struct" title="Link to this heading"></a></h1>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-   <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;3fa85f64-5717-4562-b3fc-2c963f66afa6&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1d9b2cd-4578-4b23-91b6-5f5ec4a2f840&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Default Outbound Config&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;Restrict calls to US and Canada only&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;destination_whitelist&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;us&quot;</span><span class="p">,</span> <span class="s2">&quot;ca&quot;</span><span class="p">],</span>
-   <span class="s2">&quot;codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;ulaw,alaw&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-07T00:00:00.000000Z&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-07T00:00:00.000000Z&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000Z&quot;</span>
+  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;uuid&gt;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;destination_whitelist&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;iso-alpha2&gt;&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+  <span class="s2">&quot;codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;RFC3339 | null&gt;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;RFC3339 | null&gt;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;RFC3339 | null&gt;&quot;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
+<section id="fields">
+<h2>Fields<a class="headerlink" href="#fields" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The outbound config’s unique identifier.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer that owns this outbound config.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable name for the config.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): An optional description of the config’s purpose.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code> (Array of String): List of allowed destination country codes in ISO 3166 alpha-2 lowercase format (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;us&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;ca&quot;</span></code>). An empty list means all destinations are allowed.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">codecs</span></code> (String): Comma-separated list of allowed codecs (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;ulaw,alaw&quot;</span></code>). An empty string means the server default codec list is used.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (String, ISO 8601): Timestamp when the config was created.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (String, ISO 8601): Timestamp when the config was last updated.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (String, ISO 8601): Timestamp when the config was deleted, if applicable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): Server-generated unique identifier. Obtained from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/outbound_configs</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/outbound_configs</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer this config belongs to. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Optional): Human-readable label.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Optional): Extended description.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code> (Array of String): ISO 3166 alpha-2 country codes (lowercase, e.g. <code class="docutils literal notranslate"><span class="pre">us</span></code>, <code class="docutils literal notranslate"><span class="pre">gb</span></code>, <code class="docutils literal notranslate"><span class="pre">kr</span></code>). Empty array = deny all outbound PSTN calls. Always enforced — must be populated before placing PSTN calls.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">codecs</span></code> (String): Comma-separated codec preference list (e.g. <code class="docutils literal notranslate"><span class="pre">PCMU,PCMA,G729</span></code>). Empty string = server default codec negotiation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (ISO 8601 / null): Creation timestamp.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (ISO 8601 / null): Last update timestamp.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (ISO 8601 / null): Soft-deletion timestamp. <code class="docutils literal notranslate"><span class="pre">null</span></code> for active records.</p></li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>A <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> value of <code class="docutils literal notranslate"><span class="pre">9999-01-01T00:00:00.000000Z</span></code> indicates the config has not been deleted and is still active. This sentinel value is used across all VoIPBIN resources to represent “not yet occurred.”</p>
-</div>
 </section>
 </section>
 
 </main>
-                        
+                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
+    <a class="float-left" href="outbound_config_tutorial.html" title="Previous">
+        <span aria-hidden="true">←&nbsp;</span>OutboundConfig Tutorial
+    </a>
+    <a class="float-right" href="billing_account.html" title="Next">
+        Billing Account <span aria-hidden="true">&nbsp;→</span>
+    </a>
+</nav>
                     </div>
                     
                     <nav class="col-12 col-lg-3 pb-4">
                         <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
                             <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
                             <ul>
-<li><a class="reference internal" href="#">Struct</a><ul>
-<li><a class="reference internal" href="#outboundconfig">OutboundConfig</a></li>
+<li><a class="reference internal" href="#">OutboundConfig Struct</a><ul>
+<li><a class="reference internal" href="#fields">Fields</a></li>
 </ul>
 </li>
 </ul>

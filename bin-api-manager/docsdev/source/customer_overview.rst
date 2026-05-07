@@ -143,8 +143,7 @@ Access and update customer account information.
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
         "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "metadata": {
-            "rtp_debug": false,
-            "outbound_codecs": "PCMU,PCMA,G729"
+            "rtp_debug": false
         },
         "email_verified": true,
         "status": "active",
@@ -175,15 +174,12 @@ Update configuration flags for your customer account. Requires CustomerAdmin per
     $ curl -X PUT 'https://api.voipbin.net/v1.0/customer/metadata?token=<token>' \
         --header 'Content-Type: application/json' \
         --data '{
-            "rtp_debug": true,
-            "outbound_codecs": "PCMU,PCMA,G729"
+            "rtp_debug": true
         }'
 
 .. note:: **AI Implementation Hint**
 
    The ``rtp_debug`` flag enables RTP packet capture (PCAP) for all calls made by this customer. This is useful for debugging audio quality issues such as one-way audio, codec mismatches, or jitter. Enabling this increases storage usage — disable it after debugging is complete by setting ``rtp_debug`` to ``false``.
-
-   The ``outbound_codecs`` field is a comma-separated, preference-ordered list of codec names (e.g. ``PCMU,PCMA,G729``) that the platform will offer to PSTN providers on outbound INVITEs. Use this when a downstream provider only accepts a specific codec set or when you want to force a particular codec preference. Set to an empty string to fall back to the server default (PCMU/PCMA pass-through). Codec names match standard SDP ``a=rtpmap`` values.
 
 **Update Default Outgoing Source Number**
 

@@ -72,6 +72,7 @@ Welcome to VoIPBIN's documentation!
    agent
    contact
    customer
+   outbound_config
    billing_account
    storage
    tag
