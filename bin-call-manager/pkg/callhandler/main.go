@@ -23,6 +23,7 @@ import (
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/externalmedia"
@@ -139,6 +140,8 @@ type CallHandler interface {
 	EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error
 	EventFMActiveflowUpdated(ctx context.Context, a *fmactiveflow.Activeflow) error
 	EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error
+
+	ValidateDestination(ctx context.Context, customerID uuid.UUID, config *outboundconfig.OutboundConfig, destination commonaddress.Address) bool
 }
 
 // callHandler structure for service handle

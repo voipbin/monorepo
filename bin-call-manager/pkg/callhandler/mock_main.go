@@ -17,6 +17,7 @@ import (
 	channel "monorepo/bin-call-manager/models/channel"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	recording "monorepo/bin-call-manager/models/recording"
 	address "monorepo/bin-common-handler/models/address"
 	customer "monorepo/bin-customer-manager/models/customer"
@@ -697,4 +698,18 @@ func (m *MockCallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status
 func (mr *MockCallHandlerMockRecorder) UpdateStatus(ctx, id, status any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStatus", reflect.TypeOf((*MockCallHandler)(nil).UpdateStatus), ctx, id, status)
+}
+
+// ValidateDestination mocks base method.
+func (m *MockCallHandler) ValidateDestination(ctx context.Context, customerID uuid.UUID, config *outboundconfig.OutboundConfig, destination address.Address) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateDestination", ctx, customerID, config, destination)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateDestination indicates an expected call of ValidateDestination.
+func (mr *MockCallHandlerMockRecorder) ValidateDestination(ctx, customerID, config, destination any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateDestination", reflect.TypeOf((*MockCallHandler)(nil).ValidateDestination), ctx, customerID, config, destination)
 }
