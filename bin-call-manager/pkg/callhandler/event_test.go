@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"monorepo/bin-call-manager/models/call"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -20,11 +22,15 @@ import (
 
 func Test_EventCUCustomerDeleted(t *testing.T) {
 
+	customerID := uuid.FromStringOrNil("8c0daf80-f0c3-11ee-9ed5-6b65132a6fc3")
+	configID := uuid.FromStringOrNil("a1000000-0000-0000-0000-000000000001")
+
 	tests := []struct {
 		name string
 
-		customer      *cmcustomer.Customer
-		responseCalls []*call.Call
+		customer        *cmcustomer.Customer
+		responseCalls   []*call.Call
+		responseConfig  *outboundconfig.OutboundConfig
 
 		expectFilter map[string]string
 	}{
@@ -32,7 +38,7 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			name: "normal",
 
 			customer: &cmcustomer.Customer{
-				ID: uuid.FromStringOrNil("8c0daf80-f0c3-11ee-9ed5-6b65132a6fc3"),
+				ID: customerID,
 			},
 			responseCalls: []*call.Call{
 				{
@@ -50,11 +56,24 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 					TMDelete: nil,
 				},
 			},
+			responseConfig: &outboundconfig.OutboundConfig{
+				ID:         configID,
+				CustomerID: customerID,
+			},
 
 			expectFilter: map[string]string{
 				"customer_id": "8c0daf80-f0c3-11ee-9ed5-6b65132a6fc3",
 				"deleted":     "false",
 			},
+		},
+		{
+			name: "no outbound config",
+
+			customer: &cmcustomer.Customer{
+				ID: customerID,
+			},
+			responseCalls:  []*call.Call{},
+			responseConfig: nil,
 		},
 	}
 
@@ -67,26 +86,31 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
 			h := &callHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				utilHandler:   mockUtil,
+				reqHandler:            mockReq,
+				db:                    mockDB,
+				notifyHandler:         mockNotify,
+				utilHandler:           mockUtil,
+				outboundConfigHandler: mockOutboundConfig,
 			}
 			ctx := context.Background()
 
 			mockDB.EXPECT().CallList(ctx, uint64(1000), "", gomock.Any()).Return(tt.responseCalls, nil)
 
-			// delete each calls
+			// delete each call
 			for _, c := range tt.responseCalls {
 				mockDB.EXPECT().CallGet(ctx, c.ID).Return(c, nil)
-
-				// dbDelete
 				mockDB.EXPECT().CallDelete(ctx, c.ID).Return(nil)
 				mockDB.EXPECT().CallGet(ctx, c.ID).Return(c, nil)
 				mockNotify.EXPECT().PublishWebhookEvent(ctx, c.CustomerID, call.EventTypeCallDeleted, c)
+			}
 
+			// delete outbound config
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customer.ID).Return(tt.responseConfig, nil)
+			if tt.responseConfig != nil {
+				mockOutboundConfig.EXPECT().Delete(ctx, tt.responseConfig.ID).Return(tt.responseConfig, nil)
 			}
 
 			if err := h.EventCUCustomerDeleted(ctx, tt.customer); err != nil {

@@ -16,6 +16,9 @@ import (
 
 const outboundConfigTable = "call_outbound_configs"
 
+// outboundConfigSelectCols is the canonical column list for SELECT queries against outboundConfigTable.
+const outboundConfigSelectCols = "id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update, tm_delete"
+
 // outboundConfigGetFromRow scans a single call_outbound_configs row into an OutboundConfig.
 func (h *handler) outboundConfigGetFromRow(row *sql.Rows) (*outboundconfig.OutboundConfig, error) {
 	res := &outboundconfig.OutboundConfig{}
@@ -98,7 +101,7 @@ func (h *handler) OutboundConfigDelete(ctx context.Context, id uuid.UUID) error 
 func (h *handler) OutboundConfigGetByID(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {
 	log := logrus.WithField("func", "OutboundConfigGetByID")
 
-	q := `SELECT id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update, tm_delete FROM call_outbound_configs WHERE id = ? AND tm_delete IS NULL LIMIT 1`
+	q := "SELECT " + outboundConfigSelectCols + " FROM " + outboundConfigTable + " WHERE id = ? AND tm_delete IS NULL LIMIT 1"
 	rows, err := h.db.QueryContext(ctx, q, id)
 	if err != nil {
 		log.Errorf("Could not get outbound_config. err: %v", err)
@@ -123,7 +126,7 @@ func (h *handler) OutboundConfigGetByID(ctx context.Context, id uuid.UUID) (*out
 func (h *handler) OutboundConfigGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error) {
 	log := logrus.WithField("func", "OutboundConfigGetByCustomerID")
 
-	q := `SELECT id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update, tm_delete FROM call_outbound_configs WHERE customer_id = ? AND tm_delete IS NULL LIMIT 1`
+	q := "SELECT " + outboundConfigSelectCols + " FROM " + outboundConfigTable + " WHERE customer_id = ? AND tm_delete IS NULL LIMIT 1"
 	rows, err := h.db.QueryContext(ctx, q, customerID)
 	if err != nil {
 		log.Errorf("Could not get outbound_config by customer. err: %v", err)
@@ -188,7 +191,7 @@ func (h *handler) OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *o
 func (h *handler) OutboundConfigList(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*outboundconfig.OutboundConfig, error) {
 	log := logrus.WithField("func", "OutboundConfigList")
 
-	q := `SELECT id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update, tm_delete FROM call_outbound_configs WHERE customer_id = ? AND tm_delete IS NULL`
+	q := "SELECT " + outboundConfigSelectCols + " FROM " + outboundConfigTable + " WHERE customer_id = ? AND tm_delete IS NULL"
 	args := []interface{}{customerID}
 
 	if pageToken != "" {

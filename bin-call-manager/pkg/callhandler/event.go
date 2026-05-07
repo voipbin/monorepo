@@ -43,6 +43,18 @@ func (h *callHandler) EventCUCustomerDeleted(ctx context.Context, cu *cucustomer
 		log.WithField("call", tmp).Debugf("Deleted call info. call_id: %s", tmp.ID)
 	}
 
+	// soft-delete the customer's OutboundConfig
+	cfg, err := h.outboundConfigHandler.GetByCustomerID(ctx, cu.ID)
+	if err != nil {
+		log.Warnf("Could not get outbound config for deleted customer. customer_id: %s, err: %v", cu.ID, err)
+	} else if cfg != nil {
+		if _, err := h.outboundConfigHandler.Delete(ctx, cfg.ID); err != nil {
+			log.Warnf("Could not delete outbound config for deleted customer. customer_id: %s, err: %v", cu.ID, err)
+		} else {
+			log.Debugf("Deleted outbound config for customer. customer_id: %s, config_id: %s", cu.ID, cfg.ID)
+		}
+	}
+
 	return nil
 }
 
