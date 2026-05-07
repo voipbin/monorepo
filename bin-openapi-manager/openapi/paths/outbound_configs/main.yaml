@@ -1,0 +1,51 @@
+get:
+  summary: Get list of outbound configs
+  description: Returns a list of outbound configs for the given customer.
+  tags:
+    - Call
+  parameters:
+    - name: customer_id
+      in: query
+      required: false
+      description: Filter by customer ID.
+      schema:
+        type: string
+        format: uuid
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of outbound configs.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerOutboundConfigList'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Create an outbound config
+  description: Creates a new outbound config and returns the created resource.
+  tags:
+    - Call
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CallManagerOutboundConfigUpdateRequest'
+  responses:
+    '200':
+      description: The created outbound config.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerOutboundConfig'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'

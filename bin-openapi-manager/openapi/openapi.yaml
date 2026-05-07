@@ -1479,6 +1479,90 @@ components:
             - CallManagerExternalMediaDirectionSpeakOut
           example: "both"
 
+    CallManagerOutboundConfig:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          example: "00000000-0000-0000-0000-000000000001"
+          description: The unique identifier of the outbound config.
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          example: "00000000-0000-0000-0000-000000000001"
+          description: The customer ID that owns this outbound config. Returned from the `GET /customers` response.
+        name:
+          type: string
+          example: "production outbound config"
+          description: Human-readable name for this outbound config.
+        detail:
+          type: string
+          example: "allows US and UK PSTN calls"
+          description: Free-text description of this outbound config.
+        destination_whitelist:
+          type: array
+          items:
+            type: string
+          description: "ISO 3166 alpha-2 country codes (lowercase). Empty array = deny all PSTN calls."
+          example: ["us", "gb", "kr"]
+        codecs:
+          type: string
+          description: "Comma-separated codec preference list (e.g. PCMU,PCMA,G729). Empty = server default."
+          example: "PCMU,PCMA"
+        tm_create:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the outbound config was created.
+        tm_update:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the outbound config was last updated.
+        tm_delete:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp when the outbound config was deleted (soft-delete).
+
+    CallManagerOutboundConfigUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Human-readable name for this outbound config.
+          example: "production outbound config"
+        detail:
+          type: string
+          description: Free-text description of this outbound config.
+          example: "allows US and UK PSTN calls"
+        destination_whitelist:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: "ISO 3166 alpha-2 country codes (lowercase). Send null or omit to leave unchanged. Send [] to deny all PSTN calls."
+          example: ["us", "gb", "kr"]
+        codecs:
+          type: string
+          nullable: true
+          description: "Comma-separated codec preference list. Send null or omit to leave unchanged. Send empty string to use server default."
+          example: "PCMU,PCMA"
+
+    CallManagerOutboundConfigList:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CallManagerOutboundConfig'
+        next_page_token:
+          type: string
+          description: "Cursor token for the next page of results. Pass this value as the page_token parameter in the next request."
+
 
 #########################################
 # Campaign Manager
@@ -3460,8 +3544,7 @@ components:
       type: object
       description: |
         Configuration flags for a customer account. Controls platform behavior
-        such as RTP packet capture for debugging audio issues and the preferred
-        codec list for outbound calls.
+        such as RTP packet capture for debugging audio issues.
         Updatable by CustomerAdmin via `PUT /customer/metadata`
         or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
       properties:
@@ -3472,16 +3555,6 @@ components:
             Use this to debug audio quality issues (one-way audio, codec problems, jitter).
             Default is `false`. Enabling this increases storage usage — disable after debugging.
           example: true
-        outbound_codecs:
-          type: string
-          description: |
-            Comma-separated, preference-ordered list of codec names for outbound PSTN calls
-            (e.g. `PCMU,PCMA,G729`). When set, the platform restricts the outgoing INVITE's
-            SDP to only these codecs. Empty string means use the server default
-            (current pass-through behavior with PCMU/PCMA transcoding).
-            Names match standard SDP `a=rtpmap` codec names. Per-call metadata key
-            `codecs` overrides this customer-level default when present.
-          example: "PCMU,PCMA,G729"
     CustomerManagerCustomerStatus:
       type: string
       description: Account lifecycle status.
@@ -7332,6 +7405,11 @@ paths:
     $ref: './paths/outplans/id.yaml'
   /outplans:
     $ref: './paths/outplans/main.yaml'
+
+  /outbound_configs/{id}:
+    $ref: './paths/outbound_configs/id.yaml'
+  /outbound_configs:
+    $ref: './paths/outbound_configs/main.yaml'
 
   /providers/setup:
     $ref: './paths/providers/setup.yaml'
