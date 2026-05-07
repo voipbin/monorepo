@@ -72,8 +72,10 @@ func (h *serviceHandler) CustomerCreate(
 	// Auto-create empty OutboundConfig for the new customer.
 	// Empty whitelist blocks all PSTN calls until the customer explicitly configures it.
 	// Fire-and-forget: OutboundConfig failure does not block customer creation.
-	if _, cfgErr := h.reqHandler.CallV1OutboundConfigCreate(ctx, res.ID, &cmoutboundconfig.UpdateRequest{}); cfgErr != nil {
-		log.Warnf("Could not auto-create OutboundConfig for new customer. customer_id: %s, err: %v", res.ID, cfgErr)
+	if res != nil {
+		if _, cfgErr := h.reqHandler.CallV1OutboundConfigCreate(ctx, res.ID, &cmoutboundconfig.UpdateRequest{}); cfgErr != nil {
+			log.Warnf("Could not auto-create OutboundConfig for new customer. customer_id: %s, err: %v", res.ID, cfgErr)
+		}
 	}
 
 	return res, nil

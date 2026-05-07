@@ -217,9 +217,9 @@
 </ul>
 <p>There is exactly one OutboundConfig per customer. It is created via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/outbound_configs</span></code>, updated via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/outbound_configs/{id}</span></code>, and can be soft-deleted via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/v1/outbound_configs/{id}</span></code>. After deletion all outbound PSTN calls are blocked (no config row = empty whitelist = deny all).</p>
 <p>OutboundConfig is <strong>automatically created</strong> (with an empty <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p><strong>Deploy-day behaviour:</strong> Any customer without an OutboundConfig row will have all outbound PSTN calls rejected immediately. Customers must create their OutboundConfig and populate <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code> before placing PSTN calls.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Deploy-day behaviour:</strong> The Alembic migration <code class="docutils literal notranslate"><span class="pre">b43193683818</span></code> automatically creates an empty OutboundConfig for every active customer that does not yet have one. After migration, every customer will have a row with an empty <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>, meaning all outbound PSTN calls remain blocked until the customer explicitly populates <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>. No manual intervention is required.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>

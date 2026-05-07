@@ -18,9 +18,9 @@ There is exactly one OutboundConfig per customer. It is created via ``POST /v1/o
 
 OutboundConfig is **automatically created** (with an empty ``destination_whitelist``) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates ``destination_whitelist``.
 
-.. warning::
+.. note::
 
-   **Deploy-day behaviour:** Any customer without an OutboundConfig row will have all outbound PSTN calls rejected immediately. Customers must create their OutboundConfig and populate ``destination_whitelist`` before placing PSTN calls.
+   **Deploy-day behaviour:** The Alembic migration ``b43193683818`` automatically creates an empty OutboundConfig for every active customer that does not yet have one. After migration, every customer will have a row with an empty ``destination_whitelist``, meaning all outbound PSTN calls remain blocked until the customer explicitly populates ``destination_whitelist``. No manual intervention is required.
 
 .. note:: **AI Implementation Hint**
 
