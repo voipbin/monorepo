@@ -164,7 +164,7 @@ func (h *callHandler) CreateCallOutgoing(
 		}
 	}
 
-	metadata = embedCustomerCodecs(metadata, cu.Metadata.OutboundCodecs)
+	// codec embed moved to Task 7: will use OutboundConfig.Codecs after outboundconfighandler is wired in
 
 	// validate outgoing call permission (customer status + identity verification)
 	if err := h.validateOutgoingCallPermission(ctx, cu, destination); err != nil {
