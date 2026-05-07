@@ -75,7 +75,9 @@ func (h *handler) OutboundConfigCreate(ctx context.Context, c *outboundconfig.Ou
 
 	now := time.Now()
 	q := "INSERT INTO " + outboundConfigTable + " (id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-	if _, err := h.db.ExecContext(ctx, q, c.ID, c.CustomerID, c.Name, c.Detail, whitelistJSON, c.Codecs, now, now); err != nil {
+	// Use .Bytes() to send raw 16 bytes — gofrs/uuid.UUID.Value() returns a 36-char string
+	// which would not fit a BINARY(16) column. See docs/conventions/database.md §7.0a.
+	if _, err := h.db.ExecContext(ctx, q, c.ID.Bytes(), c.CustomerID.Bytes(), c.Name, c.Detail, whitelistJSON, c.Codecs, now, now); err != nil {
 		log.Errorf("Could not create outbound_config. err: %v", err)
 		return err
 	}
@@ -88,7 +90,7 @@ func (h *handler) OutboundConfigDelete(ctx context.Context, id uuid.UUID) error 
 	log := logrus.WithField("func", "OutboundConfigDelete")
 
 	q := "UPDATE " + outboundConfigTable + " SET tm_delete = ? WHERE id = ? AND tm_delete IS NULL"
-	if _, err := h.db.ExecContext(ctx, q, time.Now(), id); err != nil {
+	if _, err := h.db.ExecContext(ctx, q, time.Now(), id.Bytes()); err != nil {
 		log.Errorf("Could not delete outbound_config. err: %v", err)
 		return err
 	}
@@ -102,7 +104,7 @@ func (h *handler) OutboundConfigGetByID(ctx context.Context, id uuid.UUID) (*out
 	log := logrus.WithField("func", "OutboundConfigGetByID")
 
 	q := "SELECT " + outboundConfigSelectCols + " FROM " + outboundConfigTable + " WHERE id = ? AND tm_delete IS NULL LIMIT 1"
-	rows, err := h.db.QueryContext(ctx, q, id)
+	rows, err := h.db.QueryContext(ctx, q, id.Bytes())
 	if err != nil {
 		log.Errorf("Could not get outbound_config. err: %v", err)
 		return nil, err
@@ -127,7 +129,7 @@ func (h *handler) OutboundConfigGetByCustomerID(ctx context.Context, customerID 
 	log := logrus.WithField("func", "OutboundConfigGetByCustomerID")
 
 	q := "SELECT " + outboundConfigSelectCols + " FROM " + outboundConfigTable + " WHERE customer_id = ? AND tm_delete IS NULL LIMIT 1"
-	rows, err := h.db.QueryContext(ctx, q, customerID)
+	rows, err := h.db.QueryContext(ctx, q, customerID.Bytes())
 	if err != nil {
 		log.Errorf("Could not get outbound_config by customer. err: %v", err)
 		return nil, err
@@ -175,7 +177,7 @@ func (h *handler) OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *o
 		args = append(args, *req.Codecs)
 	}
 
-	args = append(args, id)
+	args = append(args, id.Bytes())
 	q := fmt.Sprintf("UPDATE "+outboundConfigTable+" SET %s WHERE id = ? AND tm_delete IS NULL", strings.Join(sets, ", "))
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
@@ -192,7 +194,7 @@ func (h *handler) OutboundConfigList(ctx context.Context, customerID uuid.UUID, 
 	log := logrus.WithField("func", "OutboundConfigList")
 
 	q := "SELECT " + outboundConfigSelectCols + " FROM " + outboundConfigTable + " WHERE customer_id = ? AND tm_delete IS NULL"
-	args := []interface{}{customerID}
+	args := []interface{}{customerID.Bytes()}
 
 	if pageToken != "" {
 		q += " AND tm_create < ?"

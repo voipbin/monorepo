@@ -42,6 +42,79 @@ When adding a new service, derive the prefix from the service name (e.g. `bin-ra
 
 ---
 
+## 7.0a UUID Column Type — `BINARY(16)`, Never `VARCHAR(36)`
+
+**MANDATORY:** Every column that stores a UUID (e.g. `id`, `customer_id`, `agent_id`, any `_id` foreign key, etc.) **must** be declared as `BINARY(16)` in MySQL. Never use `VARCHAR(36)`.
+
+```python
+# CORRECT
+CREATE TABLE call_outbound_configs (
+    id           BINARY(16)   NOT NULL,
+    customer_id  BINARY(16)   NOT NULL,
+    ...
+)
+
+# WRONG — silent data corruption when stored via Go's MySQL driver
+CREATE TABLE call_outbound_configs (
+    id           VARCHAR(36)  NOT NULL,
+    customer_id  VARCHAR(36)  NOT NULL,
+    ...
+)
+```
+
+**Why this matters:**
+
+- Go's `gofrs/uuid.UUID.Value()` returns a **36-char string** by default, not 16 bytes. The 16-byte form is only produced when call sites use **either** of:
+  - The `commondatabasehandler.PrepareFields()` pipeline with `db:"id,uuid"` tags (preferred — see §7.2).
+  - An explicit `id.Bytes()` call at the dbhandler call site (only when raw SQL is used and `PrepareFields()` is not).
+- A `BINARY(16)` column with the correct call-site form stores 16 bytes and JOINs match.
+- A `VARCHAR(36)` column with mixed call-site forms is the trap: some paths write 36-char strings, other paths (e.g., bootstrap migrations doing `INSERT INTO ... SELECT c.id FROM customer_customers` where `c.id` is `BINARY(16)`) write a different byte sequence into the same VARCHAR(36) column. Subsequent equality queries from Go (`WHERE customer_id = ?` with a 36-char string) match the API-inserted rows but not the migration-inserted rows.
+- Failure mode is **silent**: no errors, no warnings, just empty result sets and orphaned rows. The bug we hit in May 2026 (`call_outbound_configs` UUIDs declared as `VARCHAR(36)`) cost a full day of investigation because the API path was self-consistent while the bootstrap migration path silently produced different bytes.
+
+**Go-side requirement when raw SQL is used (no Squirrel + `PrepareFields`):**
+
+```go
+// CORRECT — explicitly send 16 bytes to BINARY(16)
+h.db.ExecContext(ctx, q, c.ID.Bytes(), c.CustomerID.Bytes(), ...)
+h.db.QueryContext(ctx, q, id.Bytes())
+
+// WRONG — gofrs.UUID.Value() returns a 36-char string, won't fit BINARY(16)
+h.db.ExecContext(ctx, q, c.ID, c.CustomerID, ...)
+```
+
+Squirrel + `commondatabasehandler.PrepareFields()` automatically calls `.Bytes()` for fields tagged `db:",uuid"` — that is the preferred pattern (§7.2). Raw SQL paths (the exception in `bin-call-manager`) must call `.Bytes()` explicitly.
+
+**Bootstrap migrations** that copy UUIDs across tables must use the same byte representation:
+
+```python
+# CORRECT — both columns are BINARY(16); c.id is already in the right form
+INSERT INTO call_outbound_configs (id, customer_id, ...)
+SELECT UNHEX(REPLACE(UUID(), '-', '')), c.id, ...
+FROM customer_customers c
+WHERE c.tm_delete IS NULL
+
+# WRONG — c.id (BINARY(16)) implicitly converted to whatever VARCHAR(36) target stores it as
+INSERT INTO call_outbound_configs (id, customer_id, ...)  -- customer_id VARCHAR(36)
+SELECT UUID(), c.id, ...
+FROM customer_customers ...
+```
+
+**Migration ALTER pattern when fixing an existing table:**
+
+```python
+op.execute("DELETE FROM <table>")  # wipe corrupted rows
+op.execute("ALTER TABLE <table> DROP INDEX <unique_key>")  # if any UUID is in a unique key
+op.execute("ALTER TABLE <table> MODIFY id BINARY(16) NOT NULL")
+op.execute("ALTER TABLE <table> MODIFY <foreign>_id BINARY(16) NOT NULL")
+op.execute("ALTER TABLE <table> ADD UNIQUE KEY <unique_key> (<col>)")
+```
+
+This rule is enforced by the PostToolUse hook `.claude/scripts/check-migration-uuid-columns.sh`, which blocks any migration declaring a column ending in `id` as `VARCHAR(36)`.
+
+**See also:** §7.2 Go-side `db:"id,uuid"` tag (used by `commondatabasehandler.PrepareFields()` to send UUIDs as bytes); the "UUID Tag Gotcha" section at the bottom of this document.
+
+---
+
 ## 7.1 Squirrel Query Builder (Mandatory)
 
 All SQL queries MUST use the squirrel query builder. Raw SQL strings are forbidden.

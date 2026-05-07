@@ -156,6 +156,31 @@ def downgrade():
 
 Migrations use raw SQL via `op.execute()` rather than SQLAlchemy DDL operations.
 
+## CRITICAL: UUID columns must be `BINARY(16)`
+
+Every UUID column (`id`, `customer_id`, `agent_id`, any `_id` foreign key) **must** be declared as `BINARY(16)`. Never use `VARCHAR(36)`.
+
+```python
+# CORRECT
+CREATE TABLE call_outbound_configs (
+    id           BINARY(16)   NOT NULL,
+    customer_id  BINARY(16)   NOT NULL,
+    ...
+)
+
+# WRONG — Go's MySQL driver sends uuid.UUID as 16 raw bytes; VARCHAR(36)
+# silently stores them as garbage characters and JOINs never match.
+CREATE TABLE call_outbound_configs (
+    id           VARCHAR(36)  NOT NULL,
+    customer_id  VARCHAR(36)  NOT NULL,
+    ...
+)
+```
+
+**Bootstrap migrations** that copy UUIDs across tables must use compatible byte representations. To generate a new UUID for `BINARY(16)`, use `UNHEX(REPLACE(UUID(), '-', ''))` (not bare `UUID()`).
+
+This rule is enforced by the PostToolUse hook `.claude/scripts/check-migration-uuid-columns.sh`. Full rationale and ALTER-fix template are in [docs/conventions/database.md §7.0a](../docs/conventions/database.md).
+
 ## Asterisk Schema Updates
 
 To sync latest Asterisk schema (when updating Asterisk version):

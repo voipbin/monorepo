@@ -26,6 +26,11 @@
           },
           {
             "type": "command",
+            "command": "bash .claude/scripts/check-migration-uuid-columns.sh",
+            "description": "Block UUID columns declared as VARCHAR(36) in Alembic migrations — must be BINARY(16)"
+          },
+          {
+            "type": "command",
             "command": "bash .claude/scripts/check-docs-size.sh",
             "description": "Run scripts/check-docs.sh after edits to root CLAUDE.md or docs/* to catch root CLAUDE.md regrowth and missing category READMEs"
           }
