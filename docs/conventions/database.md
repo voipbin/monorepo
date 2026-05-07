@@ -64,10 +64,25 @@ CREATE TABLE call_outbound_configs (
 
 **Why this matters:**
 
-- Go's `uuid.UUID` (from `github.com/gofrs/uuid`) implements `driver.Valuer` by returning the raw 16-byte slice. The MySQL driver sends those 16 bytes on the wire.
-- A `BINARY(16)` column stores them correctly and queries match.
-- A `VARCHAR(36)` column **silently** stores the 16 raw bytes as garbage characters (a 36-char column happily accepts 16 bytes). Subsequent `WHERE customer_id = ?` queries from Go appear to work because the same 16 bytes round-trip identically — but cross-table joins, INSERT-from-SELECT migrations, and any code path that uses a different conversion (e.g., a string-formatted UUID) will silently mismatch.
+- Go's `gofrs/uuid.UUID.Value()` returns a **36-char string** by default, not 16 bytes. The 16-byte form is only produced when call sites use **either** of:
+  - The `commondatabasehandler.PrepareFields()` pipeline with `db:"id,uuid"` tags (preferred — see §7.2).
+  - An explicit `id.Bytes()` call at the dbhandler call site (only when raw SQL is used and `PrepareFields()` is not).
+- A `BINARY(16)` column with the correct call-site form stores 16 bytes and JOINs match.
+- A `VARCHAR(36)` column with mixed call-site forms is the trap: some paths write 36-char strings, other paths (e.g., bootstrap migrations doing `INSERT INTO ... SELECT c.id FROM customer_customers` where `c.id` is `BINARY(16)`) write a different byte sequence into the same VARCHAR(36) column. Subsequent equality queries from Go (`WHERE customer_id = ?` with a 36-char string) match the API-inserted rows but not the migration-inserted rows.
 - Failure mode is **silent**: no errors, no warnings, just empty result sets and orphaned rows. The bug we hit in May 2026 (`call_outbound_configs` UUIDs declared as `VARCHAR(36)`) cost a full day of investigation because the API path was self-consistent while the bootstrap migration path silently produced different bytes.
+
+**Go-side requirement when raw SQL is used (no Squirrel + `PrepareFields`):**
+
+```go
+// CORRECT — explicitly send 16 bytes to BINARY(16)
+h.db.ExecContext(ctx, q, c.ID.Bytes(), c.CustomerID.Bytes(), ...)
+h.db.QueryContext(ctx, q, id.Bytes())
+
+// WRONG — gofrs.UUID.Value() returns a 36-char string, won't fit BINARY(16)
+h.db.ExecContext(ctx, q, c.ID, c.CustomerID, ...)
+```
+
+Squirrel + `commondatabasehandler.PrepareFields()` automatically calls `.Bytes()` for fields tagged `db:",uuid"` — that is the preferred pattern (§7.2). Raw SQL paths (the exception in `bin-call-manager`) must call `.Bytes()` explicitly.
 
 **Bootstrap migrations** that copy UUIDs across tables must use the same byte representation:
 

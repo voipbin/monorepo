@@ -43,8 +43,9 @@ def upgrade():
     # Re-bootstrap an empty config for every active customer.
     # UNHEX(REPLACE(UUID(),'-','')) produces a 16-byte UUID for `id`;
     # `c.id` is already BINARY(16) on customer_customers so it slots in directly.
+    # INSERT IGNORE makes this idempotent against a partial earlier bootstrap.
     op.execute("""
-        INSERT INTO call_outbound_configs
+        INSERT IGNORE INTO call_outbound_configs
             (id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update)
         SELECT UNHEX(REPLACE(UUID(), '-', '')), c.id, '', '', '[]', '', NOW(), NOW()
         FROM customer_customers c
