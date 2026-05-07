@@ -43,11 +43,15 @@ var ISOCountryCodes = map[string]struct{}{
 	"za": {}, "zm": {}, "zw": {},
 }
 
-// codecsRegexp validates the codecs field format: alphanumeric tokens separated by commas.
-var codecsRegexp = regexp.MustCompile(`^[A-Za-z0-9]+(,[A-Za-z0-9]+)*$`)
+// codecsRegexp validates the codecs field format: alphanumeric tokens (optionally
+// containing hyphens) separated by commas. Hyphens are permitted because real-world
+// SDP/RTP codec names use them — for example AMR-WB, GSM-EFR, telephone-event.
+// A leading or trailing hyphen on a token is rejected by the surrounding `+`
+// quantifiers, so each token must start and end with an alphanumeric character.
+var codecsRegexp = regexp.MustCompile(`^[A-Za-z0-9]+(-[A-Za-z0-9]+)*(,[A-Za-z0-9]+(-[A-Za-z0-9]+)*)*$`)
 
 // ValidateCodecs returns true if the codecs string is empty (server default) or
-// matches the expected comma-separated alphanumeric token format.
+// matches the expected comma-separated codec token format.
 func ValidateCodecs(codecs string) bool {
 	if codecs == "" {
 		return true

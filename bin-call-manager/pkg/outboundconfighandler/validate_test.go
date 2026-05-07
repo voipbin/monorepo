@@ -73,7 +73,11 @@ func Test_outboundConfigHandler_validateUpdateRequest(t *testing.T) {
 	validWL := []string{"us", "gb"}
 	invalidWL := []string{"xx"}
 	validCodecs := "PCMU,G729"
-	invalidCodecs := "PCMU;G729" // semicolon not allowed
+	validHyphenCodecs := "PCMU,PCMA,G729,AMR,AMR-WB,GSM,GSM-EFR,opus,telephone-event"
+	invalidCodecs := "PCMU;G729"            // semicolon not allowed
+	invalidLeadingHyphenCodecs := "-PCMU"   // token must start with alnum
+	invalidTrailingHyphenCodecs := "PCMU-"  // token must end with alnum
+	invalidDoubleHyphenCodecs := "AMR--WB"  // hyphens may not be adjacent
 	emptyCodecs := ""
 
 	tests := []struct {
@@ -104,6 +108,26 @@ func Test_outboundConfigHandler_validateUpdateRequest(t *testing.T) {
 		{
 			name:    "invalid codecs - semicolon separator",
 			req:     &outboundconfig.UpdateRequest{Codecs: &invalidCodecs},
+			wantErr: true,
+		},
+		{
+			name:    "valid codecs with hyphens (AMR-WB, GSM-EFR, telephone-event)",
+			req:     &outboundconfig.UpdateRequest{Codecs: &validHyphenCodecs},
+			wantErr: false,
+		},
+		{
+			name:    "invalid codecs - leading hyphen",
+			req:     &outboundconfig.UpdateRequest{Codecs: &invalidLeadingHyphenCodecs},
+			wantErr: true,
+		},
+		{
+			name:    "invalid codecs - trailing hyphen",
+			req:     &outboundconfig.UpdateRequest{Codecs: &invalidTrailingHyphenCodecs},
+			wantErr: true,
+		},
+		{
+			name:    "invalid codecs - double hyphen",
+			req:     &outboundconfig.UpdateRequest{Codecs: &invalidDoubleHyphenCodecs},
 			wantErr: true,
 		},
 		{

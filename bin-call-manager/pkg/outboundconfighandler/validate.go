@@ -20,7 +20,7 @@ func (h *outboundConfigHandler) validateUpdateRequest(req *outboundconfig.Update
 	}
 	if req.Codecs != nil {
 		if !outboundconfig.ValidateCodecs(*req.Codecs) {
-			return fmt.Errorf("codecs must be empty or comma-separated alphanumeric tokens (max 255 chars, no special chars)")
+			return fmt.Errorf("codecs must be empty or a comma-separated list of codec names. Each name must be alphanumeric and may contain internal hyphens (e.g. AMR-WB). Max 255 chars")
 		}
 	}
 	return nil
