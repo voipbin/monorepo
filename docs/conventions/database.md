@@ -42,6 +42,64 @@ When adding a new service, derive the prefix from the service name (e.g. `bin-ra
 
 ---
 
+## 7.0a UUID Column Type — `BINARY(16)`, Never `VARCHAR(36)`
+
+**MANDATORY:** Every column that stores a UUID (e.g. `id`, `customer_id`, `agent_id`, any `_id` foreign key, etc.) **must** be declared as `BINARY(16)` in MySQL. Never use `VARCHAR(36)`.
+
+```python
+# CORRECT
+CREATE TABLE call_outbound_configs (
+    id           BINARY(16)   NOT NULL,
+    customer_id  BINARY(16)   NOT NULL,
+    ...
+)
+
+# WRONG — silent data corruption when stored via Go's MySQL driver
+CREATE TABLE call_outbound_configs (
+    id           VARCHAR(36)  NOT NULL,
+    customer_id  VARCHAR(36)  NOT NULL,
+    ...
+)
+```
+
+**Why this matters:**
+
+- Go's `uuid.UUID` (from `github.com/gofrs/uuid`) implements `driver.Valuer` by returning the raw 16-byte slice. The MySQL driver sends those 16 bytes on the wire.
+- A `BINARY(16)` column stores them correctly and queries match.
+- A `VARCHAR(36)` column **silently** stores the 16 raw bytes as garbage characters (a 36-char column happily accepts 16 bytes). Subsequent `WHERE customer_id = ?` queries from Go appear to work because the same 16 bytes round-trip identically — but cross-table joins, INSERT-from-SELECT migrations, and any code path that uses a different conversion (e.g., a string-formatted UUID) will silently mismatch.
+- Failure mode is **silent**: no errors, no warnings, just empty result sets and orphaned rows. The bug we hit in May 2026 (`call_outbound_configs` UUIDs declared as `VARCHAR(36)`) cost a full day of investigation because the API path was self-consistent while the bootstrap migration path silently produced different bytes.
+
+**Bootstrap migrations** that copy UUIDs across tables must use the same byte representation:
+
+```python
+# CORRECT — both columns are BINARY(16); c.id is already in the right form
+INSERT INTO call_outbound_configs (id, customer_id, ...)
+SELECT UNHEX(REPLACE(UUID(), '-', '')), c.id, ...
+FROM customer_customers c
+WHERE c.tm_delete IS NULL
+
+# WRONG — c.id (BINARY(16)) implicitly converted to whatever VARCHAR(36) target stores it as
+INSERT INTO call_outbound_configs (id, customer_id, ...)  -- customer_id VARCHAR(36)
+SELECT UUID(), c.id, ...
+FROM customer_customers ...
+```
+
+**Migration ALTER pattern when fixing an existing table:**
+
+```python
+op.execute("DELETE FROM <table>")  # wipe corrupted rows
+op.execute("ALTER TABLE <table> DROP INDEX <unique_key>")  # if any UUID is in a unique key
+op.execute("ALTER TABLE <table> MODIFY id BINARY(16) NOT NULL")
+op.execute("ALTER TABLE <table> MODIFY <foreign>_id BINARY(16) NOT NULL")
+op.execute("ALTER TABLE <table> ADD UNIQUE KEY <unique_key> (<col>)")
+```
+
+This rule is enforced by the PostToolUse hook `.claude/scripts/check-migration-uuid-columns.sh`, which blocks any migration declaring a column ending in `id` as `VARCHAR(36)`.
+
+**See also:** §7.2 Go-side `db:"id,uuid"` tag (used by `commondatabasehandler.PrepareFields()` to send UUIDs as bytes); the "UUID Tag Gotcha" section at the bottom of this document.
+
+---
+
 ## 7.1 Squirrel Query Builder (Mandatory)
 
 All SQL queries MUST use the squirrel query builder. Raw SQL strings are forbidden.
