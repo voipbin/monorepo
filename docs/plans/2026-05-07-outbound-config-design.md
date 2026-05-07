@@ -1,5 +1,7 @@
 # OutboundConfig Design
 
+> **Note:** This document was written before the table naming convention (§7.0 in [docs/conventions/database.md](../conventions/database.md)) was enforced. All references to `outbound_configs` in this document should be read as `call_outbound_configs` — that is the actual table name in production.
+
 **Date:** 2026-05-07
 **Branch:** NOJIRA-outbound-config
 

@@ -36,6 +36,10 @@ const outboundConfigTable = "call_outbound_configs"  // CORRECT
 const outboundConfigTable = "outbound_configs"        // WRONG — missing prefix
 ```
 
+When adding a new service, derive the prefix from the service name (e.g. `bin-rag-manager` → `rag_`) and add it to the table above.
+
+**Exception — `bin-call-manager`:** This service uses direct SQL (not Squirrel) per its own `CLAUDE.md`. The §7.0 prefix rule still applies; the §7.1 Squirrel rule does not.
+
 ---
 
 ## 7.1 Squirrel Query Builder (Mandatory)
@@ -192,6 +196,7 @@ Use this checklist when adding or modifying database models and operations:
 
 ### Database Operations
 
+- [ ] Table name uses the owning service's domain prefix (`call_`, `flow_`, `agent_`, …) (§7.0)
 - [ ] Queries use the squirrel query builder, not raw SQL (§7.1)
 - [ ] INSERT/UPDATE go through `commondatabasehandler.PrepareFields` (§7.2)
 - [ ] SELECT uses `commondatabasehandler.GetDBFields` + `ScanRow` — never manual `rows.Scan` (§7.2)
