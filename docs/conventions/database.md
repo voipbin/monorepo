@@ -1,5 +1,47 @@
 # Database Patterns
 
+## 7.0 Table Naming Convention
+
+**MANDATORY:** Every MySQL table name must be prefixed with its owning service's domain abbreviation:
+
+| Service | Prefix | Example |
+|---------|--------|---------|
+| `bin-call-manager` | `call_` | `call_calls`, `call_groupcalls`, `call_outbound_configs` |
+| `bin-flow-manager` | `flow_` | `flow_flows`, `flow_activeflows` |
+| `bin-customer-manager` | `customer_` | `customer_customers` |
+| `bin-agent-manager` | `agent_` | `agent_agents` |
+| `bin-billing-manager` | `billing_` | `billing_accounts`, `billing_billings` |
+| `bin-conference-manager` | `conference_` | `conference_conferences` |
+| `bin-campaign-manager` | `campaign_` | `campaign_campaigns` |
+| `bin-number-manager` | `number_` | `number_numbers` |
+| `bin-registrar-manager` | `registrar_` | `registrar_trunks` |
+
+Format: `<domain>_<plural-entity>` — always lowercase, words separated by underscores.
+
+```python
+# CORRECT
+CREATE TABLE call_outbound_configs (...)         # call-manager owns this table
+
+# WRONG — missing service prefix
+CREATE TABLE outbound_configs (...)
+
+# WRONG — use short prefix, not full service name
+CREATE TABLE call_manager_outbound_configs (...)
+```
+
+The Go constant in the matching `pkg/dbhandler/` file must use the full prefixed name:
+
+```go
+const outboundConfigTable = "call_outbound_configs"  // CORRECT
+const outboundConfigTable = "outbound_configs"        // WRONG — missing prefix
+```
+
+When adding a new service, derive the prefix from the service name (e.g. `bin-rag-manager` → `rag_`) and add it to the table above.
+
+**Exception — `bin-call-manager`:** This service uses direct SQL (not Squirrel) per its own `CLAUDE.md`. The §7.0 prefix rule still applies; the §7.1 Squirrel rule does not.
+
+---
+
 ## 7.1 Squirrel Query Builder (Mandatory)
 
 All SQL queries MUST use the squirrel query builder. Raw SQL strings are forbidden.
@@ -154,6 +196,7 @@ Use this checklist when adding or modifying database models and operations:
 
 ### Database Operations
 
+- [ ] Table name uses the owning service's domain prefix (`call_`, `flow_`, `agent_`, …) (§7.0)
 - [ ] Queries use the squirrel query builder, not raw SQL (§7.1)
 - [ ] INSERT/UPDATE go through `commondatabasehandler.PrepareFields` (§7.2)
 - [ ] SELECT uses `commondatabasehandler.GetDBFields` + `ScanRow` — never manual `rows.Scan` (§7.2)
