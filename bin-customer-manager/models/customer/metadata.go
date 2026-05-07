@@ -12,6 +12,5 @@ const (
 // Can be updated by ProjectSuperAdmin via PUT /customers/{id}/metadata
 // or by CustomerAdmin via PUT /customer/metadata.
 type Metadata struct {
-	RTPDebug       bool   `json:"rtp_debug"`       // enable RTPEngine RTP capture (PCAP)
-	OutboundCodecs string `json:"outbound_codecs"` // comma-separated preferred codec list for outbound calls (e.g. "PCMU,PCMA,G729"); empty means use server default
+	RTPDebug bool `json:"rtp_debug"` // enable RTPEngine RTP capture (PCAP)
 }

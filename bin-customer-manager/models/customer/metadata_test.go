@@ -5,26 +5,26 @@ import (
 	"testing"
 )
 
-func TestMetadata_OutboundCodecs_JSONRoundTrip(t *testing.T) {
+func TestMetadata_RTPDebug_JSONRoundTrip(t *testing.T) {
 	tests := []struct {
 		name   string
 		input  string
 		expect Metadata
 	}{
 		{
-			"outbound_codecs set",
-			`{"rtp_debug":false,"outbound_codecs":"PCMU,PCMA,G729"}`,
-			Metadata{RTPDebug: false, OutboundCodecs: "PCMU,PCMA,G729"},
-		},
-		{
-			"outbound_codecs empty",
-			`{"rtp_debug":false,"outbound_codecs":""}`,
-			Metadata{RTPDebug: false, OutboundCodecs: ""},
-		},
-		{
-			"outbound_codecs absent (zero value)",
+			"rtp_debug true",
 			`{"rtp_debug":true}`,
-			Metadata{RTPDebug: true, OutboundCodecs: ""},
+			Metadata{RTPDebug: true},
+		},
+		{
+			"rtp_debug false",
+			`{"rtp_debug":false}`,
+			Metadata{RTPDebug: false},
+		},
+		{
+			"rtp_debug absent (zero value)",
+			`{}`,
+			Metadata{RTPDebug: false},
 		},
 	}
 
