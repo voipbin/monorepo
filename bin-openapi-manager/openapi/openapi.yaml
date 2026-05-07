@@ -6980,6 +6980,39 @@ components:
           description: "The direct hash link (e.g., \"direct.a1b2c3d4e5f6\"). Obtained from resource direct hash endpoints such as `POST /ais/{id}/direct_hash_regenerate`."
           example: "direct.a1b2c3d4e5f6"
 
+    RequestBodyAuthPasswordForgotPOST:
+      type: object
+      required:
+        - username
+      description: Request body for POST /auth/password-forgot (initiate password reset).
+      properties:
+        username:
+          type: string
+          format: email
+          x-go-type: string
+          description: "The agent's username (email address). A reset link will be sent to this address if an account exists."
+          example: "agent@example.com"
+
+    RequestBodyAuthPasswordResetPOST:
+      type: object
+      required:
+        - token
+        - password
+      description: Request body for POST /auth/password-reset (complete password reset).
+      properties:
+        token:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          minLength: 64
+          maxLength: 64
+          description: "64-character lowercase hexadecimal password reset token. Received via the link in the reset email sent by `POST /auth/password-forgot`."
+          example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6abcd"
+        password:
+          type: string
+          minLength: 8
+          description: "The new password to set for the account. Must be at least 8 characters."
+          example: "myNewSecurePassword123"
+
     AuthBootResponse:
       type: object
       description: "Result of a successful boot request. Contains a resource-scoped JWT and metadata about the scoped resource."
@@ -7188,6 +7221,10 @@ paths:
     $ref: './paths/auth/email-verify.yaml'
   /auth/unregister:
     $ref: './paths/auth/unregister.yaml'
+  /auth/password-forgot:
+    $ref: './paths/auth/password-forgot.yaml'
+  /auth/password-reset:
+    $ref: './paths/auth/password-reset.yaml'
 
   /available_numbers:
     $ref: './paths/available_numbers/main.yaml'
