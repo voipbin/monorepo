@@ -12,9 +12,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// GetOutboundConfigs handles GET /outbound_configs
-// Lists outbound configs for the authenticated customer.
-// IDOR prevention: always uses a.CustomerID from JWT, ignores params.CustomerId.
+// GetOutboundConfigs handles GET /outbound_configs (admin-only).
+// Requires ProjectSuperAdmin permission — enforced by OutboundConfigList in the servicehandler.
 func (h *server) GetOutboundConfigs(c *gin.Context, params openapi_server.GetOutboundConfigsParams) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetOutboundConfigs",
@@ -48,7 +47,6 @@ func (h *server) GetOutboundConfigs(c *gin.Context, params openapi_server.GetOut
 		pageToken = *params.PageToken
 	}
 
-	// IDOR prevention: use JWT customer_id, never params.CustomerId
 	tmps, err := h.serviceHandler.OutboundConfigList(c.Request.Context(), a, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get outbound configs. err: %v", err)

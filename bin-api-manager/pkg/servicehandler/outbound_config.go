@@ -32,8 +32,8 @@ func (h *serviceHandler) outboundConfigGet(ctx context.Context, id uuid.UUID) (*
 	return res, nil
 }
 
-// OutboundConfigCreate creates a new outbound config for the authenticated customer.
-// Uses a.CustomerID from JWT — never a user-supplied customer_id (IDOR prevention).
+// OutboundConfigCreate creates a new outbound config for a given customer.
+// Admin-only (requires PermissionProjectSuperAdmin).
 func (h *serviceHandler) OutboundConfigCreate(ctx context.Context, a *auth.AuthIdentity, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutboundConfigCreate",
@@ -44,7 +44,7 @@ func (h *serviceHandler) OutboundConfigCreate(ctx context.Context, a *auth.AuthI
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
 		return nil, serviceerrors.ErrPermissionDenied
 	}
@@ -58,7 +58,8 @@ func (h *serviceHandler) OutboundConfigCreate(ctx context.Context, a *auth.AuthI
 	return cmoutboundconfig.ConvertWebhookMessage(res), nil
 }
 
-// OutboundConfigDelete deletes an outbound config, enforcing ownership.
+// OutboundConfigDelete deletes an outbound config by ID.
+// Admin-only (requires PermissionProjectSuperAdmin).
 func (h *serviceHandler) OutboundConfigDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmoutboundconfig.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutboundConfigDelete",
@@ -70,14 +71,14 @@ func (h *serviceHandler) OutboundConfigDelete(ctx context.Context, a *auth.AuthI
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	cfg, err := h.outboundConfigGet(ctx, id)
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	_, err := h.outboundConfigGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get outbound config. err: %v", err)
 		return nil, err
-	}
-
-	if !h.hasPermission(ctx, a, cfg.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, serviceerrors.ErrPermissionDenied
 	}
 
 	deleted, err := h.reqHandler.CallV1OutboundConfigDelete(ctx, id)
@@ -89,7 +90,8 @@ func (h *serviceHandler) OutboundConfigDelete(ctx context.Context, a *auth.AuthI
 	return cmoutboundconfig.ConvertWebhookMessage(deleted), nil
 }
 
-// OutboundConfigGet returns an outbound config by ID, enforcing ownership.
+// OutboundConfigGet returns an outbound config by ID.
+// Admin-only (requires PermissionProjectSuperAdmin).
 func (h *serviceHandler) OutboundConfigGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmoutboundconfig.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "OutboundConfigGet",
@@ -101,34 +103,33 @@ func (h *serviceHandler) OutboundConfigGet(ctx context.Context, a *auth.AuthIden
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
 	cfg, err := h.outboundConfigGet(ctx, id)
 	if err != nil {
 		log.Infof("Could not get outbound config. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, cfg.CustomerID, amagent.PermissionCustomerAdmin) {
-		return nil, serviceerrors.ErrPermissionDenied
-	}
-
 	return cmoutboundconfig.ConvertWebhookMessage(cfg), nil
 }
 
-// OutboundConfigList returns outbound configs for the authenticated customer.
-// Always uses a.CustomerID from JWT — never params.CustomerId (IDOR prevention).
+// OutboundConfigList returns all outbound configs across all customers.
+// Admin-only (requires PermissionProjectSuperAdmin).
 func (h *serviceHandler) OutboundConfigList(ctx context.Context, a *auth.AuthIdentity, pageSize uint64, pageToken string) ([]*cmoutboundconfig.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "OutboundConfigList",
-		"customer_id": a.CustomerID,
-		"page_size":   pageSize,
-		"page_token":  pageToken,
+		"func":       "OutboundConfigList",
+		"page_size":  pageSize,
+		"page_token": pageToken,
 	})
 
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
 		log.Info("The agent has no permission.")
 		return nil, serviceerrors.ErrPermissionDenied
 	}
@@ -137,7 +138,8 @@ func (h *serviceHandler) OutboundConfigList(ctx context.Context, a *auth.AuthIde
 		pageToken = h.utilHandler.TimeGetCurTime()
 	}
 
-	tmps, err := h.reqHandler.CallV1OutboundConfigList(ctx, a.CustomerID, pageSize, pageToken)
+	// Admin list: pass uuid.Nil to list across all customers.
+	tmps, err := h.reqHandler.CallV1OutboundConfigList(ctx, uuid.Nil, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not list outbound configs. err: %v", err)
 		return nil, err
@@ -151,27 +153,94 @@ func (h *serviceHandler) OutboundConfigList(ctx context.Context, a *auth.AuthIde
 	return res, nil
 }
 
-// OutboundConfigUpdate updates an outbound config, enforcing ownership.
-func (h *serviceHandler) OutboundConfigUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.WebhookMessage, error) {
+// OutboundConfigSelfGet returns the outbound config for the authenticated customer.
+// Resolves the config from the JWT customer ID — no explicit ID required.
+func (h *serviceHandler) OutboundConfigSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cmoutboundconfig.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "OutboundConfigUpdate",
+		"func":        "OutboundConfigSelfGet",
 		"customer_id": a.CustomerID,
-		"id":          id,
 	})
 
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	// Fetch first to verify ownership before mutating.
-	cfg, err := h.outboundConfigGet(ctx, id)
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	tmps, err := h.reqHandler.CallV1OutboundConfigList(ctx, a.CustomerID, 1, h.utilHandler.TimeGetCurTime())
 	if err != nil {
-		log.Infof("Could not get outbound config. err: %v", err)
+		log.Errorf("Could not list outbound configs. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, cfg.CustomerID, amagent.PermissionCustomerAdmin) {
+	if len(tmps) == 0 {
+		return nil, fmt.Errorf("%w: outbound config not found for customer %s", serviceerrors.ErrNotFound, a.CustomerID)
+	}
+
+	return cmoutboundconfig.ConvertWebhookMessage(&tmps[0]), nil
+}
+
+// OutboundConfigSelfUpdate updates the outbound config for the authenticated customer.
+// Resolves the config from the JWT customer ID — no explicit ID required.
+func (h *serviceHandler) OutboundConfigSelfUpdate(ctx context.Context, a *auth.AuthIdentity, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "OutboundConfigSelfUpdate",
+		"customer_id": a.CustomerID,
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
+		log.Info("The agent has no permission.")
 		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// Resolve the config ID with a single list RPC (avoids double permission check
+	// that would occur if calling the public OutboundConfigSelfGet).
+	tmps, err := h.reqHandler.CallV1OutboundConfigList(ctx, a.CustomerID, 1, h.utilHandler.TimeGetCurTime())
+	if err != nil {
+		log.Errorf("Could not list outbound configs. err: %v", err)
+		return nil, err
+	}
+	if len(tmps) == 0 {
+		return nil, fmt.Errorf("%w: outbound config not found for customer %s", serviceerrors.ErrNotFound, a.CustomerID)
+	}
+
+	updated, err := h.reqHandler.CallV1OutboundConfigUpdate(ctx, tmps[0].ID, req)
+	if err != nil {
+		log.Errorf("Could not update outbound config. err: %v", err)
+		return nil, err
+	}
+
+	return cmoutboundconfig.ConvertWebhookMessage(updated), nil
+}
+
+// OutboundConfigUpdate updates an outbound config by ID.
+// Admin-only (requires PermissionProjectSuperAdmin).
+func (h *serviceHandler) OutboundConfigUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.WebhookMessage, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func": "OutboundConfigUpdate",
+		"id":   id,
+	})
+
+	if a.IsDirect() {
+		return nil, serviceerrors.ErrDirectAccessNotSupported
+	}
+
+	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
+		return nil, serviceerrors.ErrPermissionDenied
+	}
+
+	// Fetch first to verify the config exists before mutating.
+	_, err := h.outboundConfigGet(ctx, id)
+	if err != nil {
+		log.Infof("Could not get outbound config. err: %v", err)
+		return nil, err
 	}
 
 	updated, err := h.reqHandler.CallV1OutboundConfigUpdate(ctx, id, req)

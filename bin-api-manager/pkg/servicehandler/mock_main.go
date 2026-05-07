@@ -2895,6 +2895,36 @@ func (mr *MockServiceHandlerMockRecorder) OutboundConfigList(ctx, a, pageSize, p
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigList", reflect.TypeOf((*MockServiceHandler)(nil).OutboundConfigList), ctx, a, pageSize, pageToken)
 }
 
+// OutboundConfigSelfGet mocks base method.
+func (m *MockServiceHandler) OutboundConfigSelfGet(ctx context.Context, a *auth.AuthIdentity) (*outboundconfig.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigSelfGet", ctx, a)
+	ret0, _ := ret[0].(*outboundconfig.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigSelfGet indicates an expected call of OutboundConfigSelfGet.
+func (mr *MockServiceHandlerMockRecorder) OutboundConfigSelfGet(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigSelfGet", reflect.TypeOf((*MockServiceHandler)(nil).OutboundConfigSelfGet), ctx, a)
+}
+
+// OutboundConfigSelfUpdate mocks base method.
+func (m *MockServiceHandler) OutboundConfigSelfUpdate(ctx context.Context, a *auth.AuthIdentity, req *outboundconfig.UpdateRequest) (*outboundconfig.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigSelfUpdate", ctx, a, req)
+	ret0, _ := ret[0].(*outboundconfig.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigSelfUpdate indicates an expected call of OutboundConfigSelfUpdate.
+func (mr *MockServiceHandlerMockRecorder) OutboundConfigSelfUpdate(ctx, a, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigSelfUpdate", reflect.TypeOf((*MockServiceHandler)(nil).OutboundConfigSelfUpdate), ctx, a, req)
+}
+
 // OutboundConfigUpdate mocks base method.
 func (m *MockServiceHandler) OutboundConfigUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.WebhookMessage, error) {
 	m.ctrl.T.Helper()

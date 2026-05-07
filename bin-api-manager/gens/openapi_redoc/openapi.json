@@ -11737,6 +11737,83 @@
         }
       }
     },
+    "/outbound_config": {
+      "get": {
+        "summary": "Get own outbound config",
+        "description": "Returns the outbound config for the authenticated customer. The config is automatically resolved from the authenticated user's customer record via JWT.",
+        "tags": [
+          "Call"
+        ],
+        "responses": {
+          "200": {
+            "description": "The outbound config for the authenticated customer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallManagerOutboundConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update own outbound config",
+        "description": "Updates the outbound config for the authenticated customer. The config is automatically resolved from the authenticated user's customer record via JWT.",
+        "tags": [
+          "Call"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallManagerOutboundConfigUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully updated outbound config.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallManagerOutboundConfig"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/outbound_configs/{id}": {
       "get": {
         "summary": "Get outbound config detail",

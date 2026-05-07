@@ -215,8 +215,17 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code> — ISO 3166 alpha-2 country codes permitted for outbound PSTN calls. <strong>Always enforced</strong> — an empty list denies all PSTN calls. Customers must populate this before making any outbound PSTN call.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">codecs</span></code> — Comma-separated codec preference list (e.g. <code class="docutils literal notranslate"><span class="pre">PCMU,PCMA,G729</span></code>). Empty string = server default.</p></li>
 </ul>
-<p>There is exactly one OutboundConfig per customer. It is created via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/outbound_configs</span></code>, updated via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/outbound_configs/{id}</span></code>, and can be soft-deleted via <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/v1/outbound_configs/{id}</span></code>. After deletion all outbound PSTN calls are blocked (no config row = empty whitelist = deny all).</p>
-<p>OutboundConfig is <strong>automatically created</strong> (with an empty <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>.</p>
+<p>There is exactly one OutboundConfig per customer. It is <strong>automatically created</strong> (with an empty <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>.</p>
+<p>API endpoints follow the billing-account pattern — singular path for self-service, plural path for admin:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_config</span></code> — Retrieve own OutboundConfig (authenticated customer, no ID required).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_config</span></code> — Update own OutboundConfig (authenticated customer, no ID required).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs</span></code> — Admin only: list all configs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs/{id}</span></code> — Admin only: get by ID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs/{id}</span></code> — Admin only: update by ID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs/{id}</span></code> — Admin only: delete by ID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs</span></code> — Admin only: create for a specific customer (for cases where auto-create did not fire).</p></li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Deploy-day behaviour:</strong> The Alembic migration <code class="docutils literal notranslate"><span class="pre">b43193683818</span></code> automatically creates an empty OutboundConfig for every active customer that does not yet have one. After migration, every customer will have a row with an empty <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>, meaning all outbound PSTN calls remain blocked until the customer explicitly populates <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>. No manual intervention is required.</p>
@@ -224,7 +233,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Before placing an outbound PSTN call on behalf of a customer, verify the destination country is in <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>. If not, add it via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs/{id}</span></code> before attempting the call. A missing or empty whitelist causes a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code> with the message <code class="docutils literal notranslate"><span class="pre">&quot;outbound</span> <span class="pre">destination</span> <span class="pre">country</span> <span class="pre">not</span> <span class="pre">whitelisted&quot;</span></code>.</p>
+<p>Before placing an outbound PSTN call on behalf of a customer, verify the destination country is in <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>. If not, add it via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_config</span></code> before attempting the call. A missing or empty whitelist causes a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code> with the message <code class="docutils literal notranslate"><span class="pre">&quot;outbound</span> <span class="pre">destination</span> <span class="pre">country</span> <span class="pre">not</span> <span class="pre">whitelisted&quot;</span></code>.</p>
 </div>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
@@ -232,15 +241,15 @@
 <li><dl class="simple">
 <dt><strong>400 Bad Request</strong> — <code class="docutils literal notranslate"><span class="pre">&quot;outbound</span> <span class="pre">destination</span> <span class="pre">country</span> <span class="pre">not</span> <span class="pre">whitelisted&quot;</span></code>:</dt><dd><ul>
 <li><p><strong>Cause:</strong> Destination country not in <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>, or whitelist is empty.</p></li>
-<li><p><strong>Fix:</strong> Add the country code via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1/outbound_configs/{id}</span></code> with <code class="docutils literal notranslate"><span class="pre">{&quot;destination_whitelist&quot;:</span> <span class="pre">[&quot;us&quot;,</span> <span class="pre">&quot;gb&quot;]}</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Add the country code via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_config</span></code> with <code class="docutils literal notranslate"><span class="pre">{&quot;destination_whitelist&quot;:</span> <span class="pre">[&quot;us&quot;,</span> <span class="pre">&quot;gb&quot;]}</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><strong>409 Conflict</strong> on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/outbound_configs</span></code>:</dt><dd><ul>
-<li><p><strong>Cause:</strong> An OutboundConfig already exists for this customer.</p></li>
-<li><p><strong>Fix:</strong> Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/outbound_configs?customer_id={id}</span></code> to retrieve it, then update with <code class="docutils literal notranslate"><span class="pre">PUT</span></code>.</p></li>
+<dt><strong>404 Not Found</strong> on <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/outbound_config</span></code>:</dt><dd><ul>
+<li><p><strong>Cause:</strong> No OutboundConfig has been created for this customer yet.</p></li>
+<li><p><strong>Fix:</strong> Contact support — OutboundConfig should be auto-created on account creation.</p></li>
 </ul>
 </dd>
 </dl>

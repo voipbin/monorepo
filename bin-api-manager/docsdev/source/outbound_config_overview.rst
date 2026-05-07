@@ -14,9 +14,17 @@ OutboundConfig controls per-customer outbound PSTN call behaviour. It has two fi
 - ``destination_whitelist`` — ISO 3166 alpha-2 country codes permitted for outbound PSTN calls. **Always enforced** — an empty list denies all PSTN calls. Customers must populate this before making any outbound PSTN call.
 - ``codecs`` — Comma-separated codec preference list (e.g. ``PCMU,PCMA,G729``). Empty string = server default.
 
-There is exactly one OutboundConfig per customer. It is created via ``POST /v1/outbound_configs``, updated via ``PUT /v1/outbound_configs/{id}``, and can be soft-deleted via ``DELETE /v1/outbound_configs/{id}``. After deletion all outbound PSTN calls are blocked (no config row = empty whitelist = deny all).
+There is exactly one OutboundConfig per customer. It is **automatically created** (with an empty ``destination_whitelist``) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates ``destination_whitelist``.
 
-OutboundConfig is **automatically created** (with an empty ``destination_whitelist``) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates ``destination_whitelist``.
+API endpoints follow the billing-account pattern — singular path for self-service, plural path for admin:
+
+* ``GET https://api.voipbin.net/v1.0/outbound_config`` — Retrieve own OutboundConfig (authenticated customer, no ID required).
+* ``PUT https://api.voipbin.net/v1.0/outbound_config`` — Update own OutboundConfig (authenticated customer, no ID required).
+* ``GET https://api.voipbin.net/v1.0/outbound_configs`` — Admin only: list all configs.
+* ``GET https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Admin only: get by ID.
+* ``PUT https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Admin only: update by ID.
+* ``DELETE https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Admin only: delete by ID.
+* ``POST https://api.voipbin.net/v1.0/outbound_configs`` — Admin only: create for a specific customer (for cases where auto-create did not fire).
 
 .. note::
 
@@ -24,15 +32,15 @@ OutboundConfig is **automatically created** (with an empty ``destination_whiteli
 
 .. note:: **AI Implementation Hint**
 
-   Before placing an outbound PSTN call on behalf of a customer, verify the destination country is in ``destination_whitelist``. If not, add it via ``PUT https://api.voipbin.net/v1.0/outbound_configs/{id}`` before attempting the call. A missing or empty whitelist causes a ``400 Bad Request`` with the message ``"outbound destination country not whitelisted"``.
+   Before placing an outbound PSTN call on behalf of a customer, verify the destination country is in ``destination_whitelist``. If not, add it via ``PUT https://api.voipbin.net/v1.0/outbound_config`` before attempting the call. A missing or empty whitelist causes a ``400 Bad Request`` with the message ``"outbound destination country not whitelisted"``.
 
 Troubleshooting
 ---------------
 
 * **400 Bad Request** — ``"outbound destination country not whitelisted"``:
     * **Cause:** Destination country not in ``destination_whitelist``, or whitelist is empty.
-    * **Fix:** Add the country code via ``PUT /v1/outbound_configs/{id}`` with ``{"destination_whitelist": ["us", "gb"]}``.
+    * **Fix:** Add the country code via ``PUT https://api.voipbin.net/v1.0/outbound_config`` with ``{"destination_whitelist": ["us", "gb"]}``.
 
-* **409 Conflict** on ``POST /v1/outbound_configs``:
-    * **Cause:** An OutboundConfig already exists for this customer.
-    * **Fix:** Use ``GET /v1/outbound_configs?customer_id={id}`` to retrieve it, then update with ``PUT``.
+* **404 Not Found** on ``GET /v1.0/outbound_config``:
+    * **Cause:** No OutboundConfig has been created for this customer yet.
+    * **Fix:** Contact support — OutboundConfig should be auto-created on account creation.

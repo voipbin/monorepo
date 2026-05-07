@@ -40,7 +40,7 @@ func Test_outboundConfigsGET(t *testing.T) {
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			}),
 
 			reqQuery: "/outbound_configs",
@@ -122,7 +122,7 @@ func Test_outboundConfigsPOST(t *testing.T) {
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			}),
 
 			reqQuery: "/outbound_configs",
@@ -201,7 +201,7 @@ func Test_outboundConfigsIdGET(t *testing.T) {
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			}),
 
 			reqQuery: "/outbound_configs/7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d",
@@ -276,7 +276,7 @@ func Test_outboundConfigsIdPUT(t *testing.T) {
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			}),
 
 			reqQuery: "/outbound_configs/7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d",
@@ -353,7 +353,7 @@ func Test_outboundConfigsIdDELETE(t *testing.T) {
 					ID:         uuid.FromStringOrNil("cdb5213a-8003-11ec-84ca-9fa226fcda9f"),
 					CustomerID: uuid.FromStringOrNil("e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2"),
 				},
-				Permission: amagent.PermissionCustomerAdmin,
+				Permission: amagent.PermissionProjectSuperAdmin,
 			}),
 
 			reqQuery: "/outbound_configs/7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d",
