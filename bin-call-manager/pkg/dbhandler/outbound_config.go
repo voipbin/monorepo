@@ -14,6 +14,8 @@ import (
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 )
 
+const outboundConfigTable = "outbound_configs"
+
 // outboundConfigGetFromRow scans a single outbound_configs row into an OutboundConfig.
 func (h *handler) outboundConfigGetFromRow(row *sql.Rows) (*outboundconfig.OutboundConfig, error) {
 	res := &outboundconfig.OutboundConfig{}
