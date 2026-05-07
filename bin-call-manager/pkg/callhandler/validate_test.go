@@ -13,6 +13,8 @@ import (
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
+
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 )
 
 func Test_ValidateCustomerStatusOutgoing(t *testing.T) {
@@ -431,6 +433,109 @@ func Test_validateOutgoingCallPermission(t *testing.T) {
 			}
 			if !tt.expectErr && err != nil {
 				t.Errorf("validateOutgoingCallPermission() expected nil, got %v", err)
+			}
+		})
+	}
+}
+
+func Test_ValidateDestination(t *testing.T) {
+	tests := []struct {
+		name        string
+		customerID  uuid.UUID
+		config      *outboundconfig.OutboundConfig
+		destination commonaddress.Address
+		expectValid bool
+	}{
+		{
+			name:       "non-tel destination (TypeSIP) - bypass - allowed",
+			customerID: uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000001"),
+			config:     nil,
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "sip:user@example.com",
+			},
+			expectValid: true,
+		},
+		{
+			name:       "internal customer IDCallManager + tel - bypass - allowed",
+			customerID: cucustomer.IDCallManager,
+			config:     nil,
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+12025550100",
+			},
+			expectValid: true,
+		},
+		{
+			name:       "nil config + tel - deny",
+			customerID: uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000002"),
+			config:     nil,
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+12025550100",
+			},
+			expectValid: false,
+		},
+		{
+			name:       "empty whitelist config + tel - deny",
+			customerID: uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000003"),
+			config:     &outboundconfig.OutboundConfig{DestinationWhitelist: []string{}},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+12025550100",
+			},
+			expectValid: false,
+		},
+		{
+			name:       "config with [us] + US number - allowed",
+			customerID: uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000004"),
+			config:     &outboundconfig.OutboundConfig{DestinationWhitelist: []string{"us"}},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+12025550100",
+			},
+			expectValid: true,
+		},
+		{
+			name:       "config with [us] + UK number - blocked",
+			customerID: uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000005"),
+			config:     &outboundconfig.OutboundConfig{DestinationWhitelist: []string{"us"}},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+442071234567",
+			},
+			expectValid: false,
+		},
+		{
+			name:       "config with [us] + unparseable number - fail-closed - blocked",
+			customerID: uuid.FromStringOrNil("d0000000-0000-0000-0000-000000000006"),
+			config:     &outboundconfig.OutboundConfig{DestinationWhitelist: []string{"us"}},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "notanumber",
+			},
+			expectValid: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := &callHandler{
+				reqHandler:  mockReq,
+				utilHandler: mockUtil,
+			}
+
+			ctx := context.Background()
+
+			valid := h.ValidateDestination(ctx, tt.customerID, tt.config, tt.destination)
+			if valid != tt.expectValid {
+				t.Errorf("ValidateDestination() valid = %v, want %v", valid, tt.expectValid)
 			}
 		})
 	}

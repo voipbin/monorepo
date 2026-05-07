@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
+	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
@@ -24,6 +25,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -77,8 +79,9 @@ func initCallHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (callhandle
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler)
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)
 	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, config.Get().HomerAPIAddress, config.Get().HomerAuthToken, config.Get().HomerWhitelist)
+	outboundConfigHandlerInst := outboundconfighandler.NewOutboundConfigHandler(utilhandler.NewUtilHandler(), db, cache)
 
-	return callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler, groupcallHandler, recoveryHandler), nil
+	return callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandlerInst, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandlerInst), nil
 }
 
 func initCommand() *cobra.Command {

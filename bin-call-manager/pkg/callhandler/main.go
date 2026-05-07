@@ -34,6 +34,7 @@ import (
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
+	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -142,17 +143,18 @@ type CallHandler interface {
 
 // callHandler structure for service handle
 type callHandler struct {
-	utilHandler          utilhandler.UtilHandler
-	reqHandler           requesthandler.RequestHandler
-	db                   dbhandler.DBHandler
-	notifyHandler        notifyhandler.NotifyHandler
-	confbridgeHandler    confbridgehandler.ConfbridgeHandler
-	channelHandler       channelhandler.ChannelHandler
-	bridgeHandler        bridgehandler.BridgeHandler
-	recordingHandler     recordinghandler.RecordingHandler
-	externalMediaHandler externalmediahandler.ExternalMediaHandler
-	groupcallHandler     groupcallhandler.GroupcallHandler
-	recoveryHandler      RecoveryHandler
+	utilHandler            utilhandler.UtilHandler
+	reqHandler             requesthandler.RequestHandler
+	db                     dbhandler.DBHandler
+	notifyHandler          notifyhandler.NotifyHandler
+	confbridgeHandler      confbridgehandler.ConfbridgeHandler
+	channelHandler         channelhandler.ChannelHandler
+	bridgeHandler          bridgehandler.BridgeHandler
+	recordingHandler       recordinghandler.RecordingHandler
+	externalMediaHandler   externalmediahandler.ExternalMediaHandler
+	groupcallHandler       groupcallhandler.GroupcallHandler
+	recoveryHandler        RecoveryHandler
+	outboundConfigHandler  outboundconfighandler.OutboundConfigHandler
 }
 
 // contextType
@@ -301,20 +303,22 @@ func NewCallHandler(
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
 	recoveryHandler RecoveryHandler,
+	outboundConfigHandler outboundconfighandler.OutboundConfigHandler,
 ) CallHandler {
 
 	h := &callHandler{
-		utilHandler:          utilhandler.NewUtilHandler(),
-		reqHandler:           requestHandler,
-		notifyHandler:        notifyHandler,
-		db:                   db,
-		confbridgeHandler:    confbridgeHandler,
-		channelHandler:       channelHandler,
-		bridgeHandler:        bridgeHandler,
-		recordingHandler:     recordingHandler,
-		externalMediaHandler: externalMediaHandler,
-		groupcallHandler:     groupcallHandler,
-		recoveryHandler:      recoveryHandler,
+		utilHandler:           utilhandler.NewUtilHandler(),
+		reqHandler:            requestHandler,
+		notifyHandler:         notifyHandler,
+		db:                    db,
+		confbridgeHandler:     confbridgeHandler,
+		channelHandler:        channelHandler,
+		bridgeHandler:         bridgeHandler,
+		recordingHandler:      recordingHandler,
+		externalMediaHandler:  externalMediaHandler,
+		groupcallHandler:      groupcallHandler,
+		recoveryHandler:       recoveryHandler,
+		outboundConfigHandler: outboundConfigHandler,
 	}
 
 	return h
