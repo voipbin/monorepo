@@ -28,7 +28,10 @@ var mysqlDateTimeFormats = []string{
 }
 
 // parseMySQLDateTime parses a MySQL DATETIME byte string into a *time.Time.
-// Returns nil if the input is not a valid datetime.
+// MySQL DATETIME columns carry no timezone; time.Parse with an unzoned layout
+// returns UTC, and we call .UTC() explicitly so the contract is obvious.
+// Returns nil for empty or unparseable input. Logs unparseable non-empty input
+// since it indicates a corrupted row, not a normal NULL.
 func parseMySQLDateTime(b []byte) *time.Time {
 	if len(b) == 0 {
 		return nil
@@ -36,9 +39,11 @@ func parseMySQLDateTime(b []byte) *time.Time {
 	s := string(b)
 	for _, f := range mysqlDateTimeFormats {
 		if t, err := time.Parse(f, s); err == nil {
+			t = t.UTC()
 			return &t
 		}
 	}
+	logrus.WithField("func", "parseMySQLDateTime").Warnf("Could not parse MySQL DATETIME value. value: %q", s)
 	return nil
 }
 
