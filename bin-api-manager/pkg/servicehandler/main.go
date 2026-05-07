@@ -204,6 +204,8 @@ type ServiceHandler interface {
 	OutboundConfigGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmoutboundconfig.WebhookMessage, error)
 	OutboundConfigList(ctx context.Context, a *auth.AuthIdentity, pageSize uint64, pageToken string) ([]*cmoutboundconfig.WebhookMessage, error)
 	OutboundConfigUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.WebhookMessage, error)
+	OutboundConfigSelfGet(ctx context.Context, a *auth.AuthIdentity) (*cmoutboundconfig.WebhookMessage, error)
+	OutboundConfigSelfUpdate(ctx context.Context, a *auth.AuthIdentity, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.WebhookMessage, error)
 
 	// campaign handlers
 	CampaignCreate(

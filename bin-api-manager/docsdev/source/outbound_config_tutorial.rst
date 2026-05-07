@@ -6,82 +6,20 @@ OutboundConfig Tutorial
 Prerequisites
 +++++++++++++
 
-* Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer``.
-* A valid JWT token for authentication.
+* A valid JWT token for authentication. The API resolves your OutboundConfig automatically from your JWT — no customer ID or config ID is required for self-service endpoints.
 
-Step 1 — Create your OutboundConfig (if it does not already exist)
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-.. note:: **AI Implementation Hint**
-
-   An empty OutboundConfig is **automatically created** for every new customer account.
-   Before calling ``POST /v1/outbound_configs``, check whether a config already exists:
-   ``GET https://api.voipbin.net/v1.0/outbound_configs?customer_id={customer_id}``.
-   If a row is returned, skip this step and proceed directly to Step 2 (``PUT``) to
-   populate ``destination_whitelist``. Only call ``POST`` if no config exists yet.
-
-.. code::
-
-   POST https://api.voipbin.net/v1.0/outbound_configs
-   Authorization: Bearer <token>
-   Content-Type: application/json
-
-   {
-     "name": "production",
-     "destination_whitelist": ["us", "gb", "kr"],
-     "codecs": "PCMU,PCMA"
-   }
-
-Response:
-
-.. code::
-
-   {
-     "id": "a1b2c3d4-...",           // Save this as outbound_config_id
-     "customer_id": "...",
-     "name": "production",
-     "destination_whitelist": ["us", "gb", "kr"],
-     "codecs": "PCMU,PCMA",
-     "tm_create": "2026-05-07T10:00:00Z",
-     "tm_update": "2026-05-07T10:00:00Z",
-     "tm_delete": null
-   }
-
-Step 2 — Add a country to the whitelist
-++++++++++++++++++++++++++++++++++++++++
-
-Partial update — only ``destination_whitelist`` changes; other fields are unchanged.
-
-.. code::
-
-   PUT https://api.voipbin.net/v1.0/outbound_configs/{outbound_config_id}
-   Authorization: Bearer <token>
-   Content-Type: application/json
-
-   {
-     "destination_whitelist": ["us", "gb", "kr", "de"]
-   }
+Step 1 — Retrieve your OutboundConfig
+++++++++++++++++++++++++++++++++++++++
 
 .. note:: **AI Implementation Hint**
 
-   To add a single country without losing existing entries: first ``GET /v1/outbound_configs/{id}`` to retrieve the current list, append the new country, then ``PUT`` the updated list.
-
-Step 3 — Verify
-+++++++++++++++
-
-.. code::
-
-   GET https://api.voipbin.net/v1.0/outbound_configs/{outbound_config_id}
-   Authorization: Bearer <token>
-
-Step 4 — Delete (optional)
-++++++++++++++++++++++++++
-
-Soft-deletes the OutboundConfig. After deletion all outbound PSTN calls for this customer are blocked.
+   An OutboundConfig is **automatically created** for every new customer account.
+   Use ``GET https://api.voipbin.net/v1.0/outbound_config`` (singular, no ID) to retrieve it.
+   The config is resolved from the JWT — no customer ID or config ID is needed.
 
 .. code::
 
-   DELETE https://api.voipbin.net/v1.0/outbound_configs/{outbound_config_id}
+   GET https://api.voipbin.net/v1.0/outbound_config
    Authorization: Bearer <token>
 
 Response:
@@ -91,11 +29,86 @@ Response:
    {
      "id": "a1b2c3d4-...",
      "customer_id": "...",
+     "name": "",
+     "destination_whitelist": [],
+     "codecs": "",
+     "tm_create": "2026-05-07T10:00:00Z",
+     "tm_update": null,
+     "tm_delete": null
+   }
+
+Step 2 — Populate the destination whitelist
+++++++++++++++++++++++++++++++++++++++++++++
+
+Use ``PUT /v1.0/outbound_config`` (singular, no ID) to update your OutboundConfig. The API resolves which config to update from your JWT.
+
+.. code::
+
+   PUT https://api.voipbin.net/v1.0/outbound_config
+   Authorization: Bearer <token>
+   Content-Type: application/json
+
+   {
+     "destination_whitelist": ["us", "gb", "kr"],
+     "codecs": "PCMU,PCMA"
+   }
+
+Response:
+
+.. code::
+
+   {
+     "id": "a1b2c3d4-...",
+     "customer_id": "...",
+     "name": "",
      "destination_whitelist": ["us", "gb", "kr"],
      "codecs": "PCMU,PCMA",
-     "tm_delete": "2026-05-07T12:00:00Z"
+     "tm_create": "2026-05-07T10:00:00Z",
+     "tm_update": "2026-05-07T10:05:00Z",
+     "tm_delete": null
+   }
+
+Step 3 — Add a country to the whitelist
+++++++++++++++++++++++++++++++++++++++++
+
+Partial update — only ``destination_whitelist`` changes; other fields are unchanged.
+
+.. code::
+
+   PUT https://api.voipbin.net/v1.0/outbound_config
+   Authorization: Bearer <token>
+   Content-Type: application/json
+
+   {
+     "destination_whitelist": ["us", "gb", "kr", "de"]
    }
 
 .. note:: **AI Implementation Hint**
 
-   Deleting the OutboundConfig immediately blocks all outbound PSTN calls. To restore access, create a new OutboundConfig via ``POST /v1/outbound_configs`` and re-populate ``destination_whitelist``.
+   To add a single country without losing existing entries: first ``GET https://api.voipbin.net/v1.0/outbound_config``
+   to retrieve the current ``destination_whitelist``, append the new country code (ISO 3166 alpha-2, lowercase),
+   then ``PUT`` the updated list.
+
+Step 4 — Verify
++++++++++++++++
+
+.. code::
+
+   GET https://api.voipbin.net/v1.0/outbound_config
+   Authorization: Bearer <token>
+
+Admin-Only Operations
++++++++++++++++++++++
+
+The following operations require ``PermissionProjectSuperAdmin`` and are not available to normal customers:
+
+* ``GET https://api.voipbin.net/v1.0/outbound_configs`` — List all OutboundConfigs across all customers.
+* ``GET https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Get a specific OutboundConfig by UUID.
+* ``PUT https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Update a specific OutboundConfig by UUID.
+* ``DELETE https://api.voipbin.net/v1.0/outbound_configs/{id}`` — Soft-delete a specific OutboundConfig by UUID. After deletion all outbound PSTN calls for that customer are blocked.
+* ``POST https://api.voipbin.net/v1.0/outbound_configs`` — Create an OutboundConfig for a specific customer (for cases where auto-create did not fire).
+
+.. note:: **AI Implementation Hint**
+
+   Use the singular ``GET /v1.0/outbound_config`` endpoint in user-facing documentation and AI agent flows.
+   Only use the plural ``/v1.0/outbound_configs`` endpoints in admin tooling.

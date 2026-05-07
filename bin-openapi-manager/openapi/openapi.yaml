@@ -7443,6 +7443,9 @@ paths:
   /outplans:
     $ref: './paths/outplans/main.yaml'
 
+  /outbound_config:
+    $ref: './paths/outbound_config/main.yaml'
+
   /outbound_configs/{id}:
     $ref: './paths/outbound_configs/id.yaml'
   /outbound_configs:

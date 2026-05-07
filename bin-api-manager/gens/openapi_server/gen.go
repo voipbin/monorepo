@@ -6871,6 +6871,9 @@ type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
 // PutNumbersIdMetadataJSONRequestBody defines body for PutNumbersIdMetadata for application/json ContentType.
 type PutNumbersIdMetadataJSONRequestBody = NumberManagerMetadata
 
+// PutOutboundConfigJSONRequestBody defines body for PutOutboundConfig for application/json ContentType.
+type PutOutboundConfigJSONRequestBody = CallManagerOutboundConfigUpdateRequest
+
 // PostOutboundConfigsJSONRequestBody defines body for PostOutboundConfigs for application/json ContentType.
 type PostOutboundConfigsJSONRequestBody = CallManagerOutboundConfigUpdateRequest
 
@@ -7575,6 +7578,12 @@ type ServerInterface interface {
 	// Update a number's metadata.
 	// (PUT /numbers/{id}/metadata)
 	PutNumbersIdMetadata(c *gin.Context, id string)
+	// Get own outbound config
+	// (GET /outbound_config)
+	GetOutboundConfig(c *gin.Context)
+	// Update own outbound config
+	// (PUT /outbound_config)
+	PutOutboundConfig(c *gin.Context)
 	// Get list of outbound configs
 	// (GET /outbound_configs)
 	GetOutboundConfigs(c *gin.Context, params GetOutboundConfigsParams)
@@ -12459,6 +12468,32 @@ func (siw *ServerInterfaceWrapper) PutNumbersIdMetadata(c *gin.Context) {
 	siw.Handler.PutNumbersIdMetadata(c, id)
 }
 
+// GetOutboundConfig operation middleware
+func (siw *ServerInterfaceWrapper) GetOutboundConfig(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutboundConfig(c)
+}
+
+// PutOutboundConfig operation middleware
+func (siw *ServerInterfaceWrapper) PutOutboundConfig(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutOutboundConfig(c)
+}
+
 // GetOutboundConfigs operation middleware
 func (siw *ServerInterfaceWrapper) GetOutboundConfigs(c *gin.Context) {
 
@@ -16667,6 +16702,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/numbers/:id", wrapper.PutNumbersId)
 	router.PUT(options.BaseURL+"/numbers/:id/flow_ids", wrapper.PutNumbersIdFlowIds)
 	router.PUT(options.BaseURL+"/numbers/:id/metadata", wrapper.PutNumbersIdMetadata)
+	router.GET(options.BaseURL+"/outbound_config", wrapper.GetOutboundConfig)
+	router.PUT(options.BaseURL+"/outbound_config", wrapper.PutOutboundConfig)
 	router.GET(options.BaseURL+"/outbound_configs", wrapper.GetOutboundConfigs)
 	router.POST(options.BaseURL+"/outbound_configs", wrapper.PostOutboundConfigs)
 	router.DELETE(options.BaseURL+"/outbound_configs/:id", wrapper.DeleteOutboundConfigsId)
@@ -27004,6 +27041,120 @@ func (response PutNumbersIdMetadata500JSONResponse) VisitPutNumbersIdMetadataRes
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetOutboundConfigRequestObject struct {
+}
+
+type GetOutboundConfigResponseObject interface {
+	VisitGetOutboundConfigResponse(w http.ResponseWriter) error
+}
+
+type GetOutboundConfig200JSONResponse CallManagerOutboundConfig
+
+func (response GetOutboundConfig200JSONResponse) VisitGetOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfig401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetOutboundConfig401JSONResponse) VisitGetOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfig403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetOutboundConfig403JSONResponse) VisitGetOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfig404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetOutboundConfig404JSONResponse) VisitGetOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfig500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetOutboundConfig500JSONResponse) VisitGetOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfigRequestObject struct {
+	Body *PutOutboundConfigJSONRequestBody
+}
+
+type PutOutboundConfigResponseObject interface {
+	VisitPutOutboundConfigResponse(w http.ResponseWriter) error
+}
+
+type PutOutboundConfig200JSONResponse CallManagerOutboundConfig
+
+func (response PutOutboundConfig200JSONResponse) VisitPutOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfig400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutOutboundConfig400JSONResponse) VisitPutOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfig401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutOutboundConfig401JSONResponse) VisitPutOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfig403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutOutboundConfig403JSONResponse) VisitPutOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfig404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutOutboundConfig404JSONResponse) VisitPutOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfig500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutOutboundConfig500JSONResponse) VisitPutOutboundConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetOutboundConfigsRequestObject struct {
 	Params GetOutboundConfigsParams
 }
@@ -36446,6 +36597,12 @@ type StrictServerInterface interface {
 	// Update a number's metadata.
 	// (PUT /numbers/{id}/metadata)
 	PutNumbersIdMetadata(ctx context.Context, request PutNumbersIdMetadataRequestObject) (PutNumbersIdMetadataResponseObject, error)
+	// Get own outbound config
+	// (GET /outbound_config)
+	GetOutboundConfig(ctx context.Context, request GetOutboundConfigRequestObject) (GetOutboundConfigResponseObject, error)
+	// Update own outbound config
+	// (PUT /outbound_config)
+	PutOutboundConfig(ctx context.Context, request PutOutboundConfigRequestObject) (PutOutboundConfigResponseObject, error)
 	// Get list of outbound configs
 	// (GET /outbound_configs)
 	GetOutboundConfigs(ctx context.Context, request GetOutboundConfigsRequestObject) (GetOutboundConfigsResponseObject, error)
@@ -42340,6 +42497,64 @@ func (sh *strictHandler) PutNumbersIdMetadata(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutNumbersIdMetadataResponseObject); ok {
 		if err := validResponse.VisitPutNumbersIdMetadataResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutboundConfig operation middleware
+func (sh *strictHandler) GetOutboundConfig(ctx *gin.Context) {
+	var request GetOutboundConfigRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutboundConfig(ctx, request.(GetOutboundConfigRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutboundConfig")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutboundConfigResponseObject); ok {
+		if err := validResponse.VisitGetOutboundConfigResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutOutboundConfig operation middleware
+func (sh *strictHandler) PutOutboundConfig(ctx *gin.Context) {
+	var request PutOutboundConfigRequestObject
+
+	var body PutOutboundConfigJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutOutboundConfig(ctx, request.(PutOutboundConfigRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutOutboundConfig")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutOutboundConfigResponseObject); ok {
+		if err := validResponse.VisitPutOutboundConfigResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

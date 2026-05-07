@@ -204,27 +204,44 @@
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code>.</p></li>
-<li><p>A valid JWT token for authentication.</p></li>
+<li><p>A valid JWT token for authentication. The API resolves your OutboundConfig automatically from your JWT — no customer ID or config ID is required for self-service endpoints.</p></li>
 </ul>
 </section>
-<section id="step-1-create-your-outboundconfig-if-it-does-not-already-exist">
-<h2>Step 1 — Create your OutboundConfig (if it does not already exist)<a class="headerlink" href="#step-1-create-your-outboundconfig-if-it-does-not-already-exist" title="Link to this heading"></a></h2>
+<section id="step-1-retrieve-your-outboundconfig">
+<h2>Step 1 — Retrieve your OutboundConfig<a class="headerlink" href="#step-1-retrieve-your-outboundconfig" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>An empty OutboundConfig is <strong>automatically created</strong> for every new customer account.
-Before calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/outbound_configs</span></code>, check whether a config already exists:
-<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs?customer_id={customer_id}</span></code>.
-If a row is returned, skip this step and proceed directly to Step 2 (<code class="docutils literal notranslate"><span class="pre">PUT</span></code>) to
-populate <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>. Only call <code class="docutils literal notranslate"><span class="pre">POST</span></code> if no config exists yet.</p>
+<p>An OutboundConfig is <strong>automatically created</strong> for every new customer account.
+Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_config</span></code> (singular, no ID) to retrieve it.
+The config is resolved from the JWT — no customer ID or config ID is needed.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_configs</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_config</span>
+<span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">token</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-...&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;destination_whitelist&quot;</span><span class="p">:</span> <span class="p">[],</span>
+  <span class="s2">&quot;codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-07T10:00:00Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="n">null</span><span class="p">,</span>
+  <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-populate-the-destination-whitelist">
+<h2>Step 2 — Populate the destination whitelist<a class="headerlink" href="#step-2-populate-the-destination-whitelist" title="Link to this heading"></a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/outbound_config</span></code> (singular, no ID) to update your OutboundConfig. The API resolves which config to update from your JWT.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_config</span>
 <span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">token</span><span class="o">&gt;</span>
 <span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
 
 <span class="p">{</span>
-  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;production&quot;</span><span class="p">,</span>
   <span class="s2">&quot;destination_whitelist&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;us&quot;</span><span class="p">,</span> <span class="s2">&quot;gb&quot;</span><span class="p">,</span> <span class="s2">&quot;kr&quot;</span><span class="p">],</span>
   <span class="s2">&quot;codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;PCMU,PCMA&quot;</span>
 <span class="p">}</span>
@@ -232,22 +249,22 @@ populate <code class="docutils literal notranslate"><span class="pre">destinatio
 </div>
 <p>Response:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-...&quot;</span><span class="p">,</span>           <span class="o">//</span> <span class="n">Save</span> <span class="n">this</span> <span class="k">as</span> <span class="n">outbound_config_id</span>
+  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-...&quot;</span><span class="p">,</span>
   <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;production&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
   <span class="s2">&quot;destination_whitelist&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;us&quot;</span><span class="p">,</span> <span class="s2">&quot;gb&quot;</span><span class="p">,</span> <span class="s2">&quot;kr&quot;</span><span class="p">],</span>
   <span class="s2">&quot;codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;PCMU,PCMA&quot;</span><span class="p">,</span>
   <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-07T10:00:00Z&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-07T10:00:00Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-07T10:05:00Z&quot;</span><span class="p">,</span>
   <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="n">null</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 </section>
-<section id="step-2-add-a-country-to-the-whitelist">
-<h2>Step 2 — Add a country to the whitelist<a class="headerlink" href="#step-2-add-a-country-to-the-whitelist" title="Link to this heading"></a></h2>
+<section id="step-3-add-a-country-to-the-whitelist">
+<h2>Step 3 — Add a country to the whitelist<a class="headerlink" href="#step-3-add-a-country-to-the-whitelist" title="Link to this heading"></a></h2>
 <p>Partial update — only <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code> changes; other fields are unchanged.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_configs</span><span class="o">/</span><span class="p">{</span><span class="n">outbound_config_id</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_config</span>
 <span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">token</span><span class="o">&gt;</span>
 <span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
 
@@ -259,37 +276,33 @@ populate <code class="docutils literal notranslate"><span class="pre">destinatio
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>To add a single country without losing existing entries: first <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/outbound_configs/{id}</span></code> to retrieve the current list, append the new country, then <code class="docutils literal notranslate"><span class="pre">PUT</span></code> the updated list.</p>
+<p>To add a single country without losing existing entries: first <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_config</span></code>
+to retrieve the current <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>, append the new country code (ISO 3166 alpha-2, lowercase),
+then <code class="docutils literal notranslate"><span class="pre">PUT</span></code> the updated list.</p>
 </div>
 </section>
-<section id="step-3-verify">
-<h2>Step 3 — Verify<a class="headerlink" href="#step-3-verify" title="Link to this heading"></a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_configs</span><span class="o">/</span><span class="p">{</span><span class="n">outbound_config_id</span><span class="p">}</span>
+<section id="step-4-verify">
+<h2>Step 4 — Verify<a class="headerlink" href="#step-4-verify" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_config</span>
 <span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">token</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 </section>
-<section id="step-4-delete-optional">
-<h2>Step 4 — Delete (optional)<a class="headerlink" href="#step-4-delete-optional" title="Link to this heading"></a></h2>
-<p>Soft-deletes the OutboundConfig. After deletion all outbound PSTN calls for this customer are blocked.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_configs</span><span class="o">/</span><span class="p">{</span><span class="n">outbound_config_id</span><span class="p">}</span>
-<span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">token</span><span class="o">&gt;</span>
-</pre></div>
-</div>
-<p>Response:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-...&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;destination_whitelist&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;us&quot;</span><span class="p">,</span> <span class="s2">&quot;gb&quot;</span><span class="p">,</span> <span class="s2">&quot;kr&quot;</span><span class="p">],</span>
-  <span class="s2">&quot;codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;PCMU,PCMA&quot;</span><span class="p">,</span>
-  <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-07T12:00:00Z&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
+<section id="admin-only-operations">
+<h2>Admin-Only Operations<a class="headerlink" href="#admin-only-operations" title="Link to this heading"></a></h2>
+<p>The following operations require <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code> and are not available to normal customers:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs</span></code> — List all OutboundConfigs across all customers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs/{id}</span></code> — Get a specific OutboundConfig by UUID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs/{id}</span></code> — Update a specific OutboundConfig by UUID.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs/{id}</span></code> — Soft-delete a specific OutboundConfig by UUID. After deletion all outbound PSTN calls for that customer are blocked.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs</span></code> — Create an OutboundConfig for a specific customer (for cases where auto-create did not fire).</p></li>
+</ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Deleting the OutboundConfig immediately blocks all outbound PSTN calls. To restore access, create a new OutboundConfig via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/outbound_configs</span></code> and re-populate <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>.</p>
+<p>Use the singular <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1.0/outbound_config</span></code> endpoint in user-facing documentation and AI agent flows.
+Only use the plural <code class="docutils literal notranslate"><span class="pre">/v1.0/outbound_configs</span></code> endpoints in admin tooling.</p>
 </div>
 </section>
 </section>
@@ -311,10 +324,11 @@ populate <code class="docutils literal notranslate"><span class="pre">destinatio
                             <ul>
 <li><a class="reference internal" href="#">OutboundConfig Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li><a class="reference internal" href="#step-1-create-your-outboundconfig-if-it-does-not-already-exist">Step 1 — Create your OutboundConfig (if it does not already exist)</a></li>
-<li><a class="reference internal" href="#step-2-add-a-country-to-the-whitelist">Step 2 — Add a country to the whitelist</a></li>
-<li><a class="reference internal" href="#step-3-verify">Step 3 — Verify</a></li>
-<li><a class="reference internal" href="#step-4-delete-optional">Step 4 — Delete (optional)</a></li>
+<li><a class="reference internal" href="#step-1-retrieve-your-outboundconfig">Step 1 — Retrieve your OutboundConfig</a></li>
+<li><a class="reference internal" href="#step-2-populate-the-destination-whitelist">Step 2 — Populate the destination whitelist</a></li>
+<li><a class="reference internal" href="#step-3-add-a-country-to-the-whitelist">Step 3 — Add a country to the whitelist</a></li>
+<li><a class="reference internal" href="#step-4-verify">Step 4 — Verify</a></li>
+<li><a class="reference internal" href="#admin-only-operations">Admin-Only Operations</a></li>
 </ul>
 </li>
 </ul>
