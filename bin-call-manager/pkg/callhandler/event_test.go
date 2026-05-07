@@ -2,6 +2,7 @@ package callhandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"monorepo/bin-call-manager/models/call"
@@ -76,6 +77,37 @@ func Test_EventCUCustomerDeleted(t *testing.T) {
 			responseConfig: nil,
 		},
 	}
+
+	// Also verify the error path: GetByCustomerID returns an error → handler logs warn and returns nil (non-fatal)
+	t.Run("outbound config get error is non-fatal", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockDB := dbhandler.NewMockDBHandler(mc)
+		mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+		mockUtil := utilhandler.NewMockUtilHandler(mc)
+		mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+		h := &callHandler{
+			reqHandler:            mockReq,
+			db:                    mockDB,
+			notifyHandler:         mockNotify,
+			utilHandler:           mockUtil,
+			outboundConfigHandler: mockOutboundConfig,
+		}
+		ctx := context.Background()
+
+		customer := &cmcustomer.Customer{ID: customerID}
+
+		mockDB.EXPECT().CallList(ctx, uint64(1000), "", gomock.Any()).Return([]*call.Call{}, nil)
+		// GetByCustomerID returns an error — handler must log Warn and return nil (not propagate the error)
+		mockOutboundConfig.EXPECT().GetByCustomerID(ctx, customer.ID).Return(nil, fmt.Errorf("db unavailable"))
+
+		if err := h.EventCUCustomerDeleted(ctx, customer); err != nil {
+			t.Errorf("EventCUCustomerDeleted must return nil even when OutboundConfig get fails, got: %v", err)
+		}
+	})
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

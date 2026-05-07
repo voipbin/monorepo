@@ -74,7 +74,7 @@ func (h *handler) OutboundConfigCreate(ctx context.Context, c *outboundconfig.Ou
 	}
 
 	now := time.Now()
-	q := `INSERT INTO call_outbound_configs (id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	q := "INSERT INTO " + outboundConfigTable + " (id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 	if _, err := h.db.ExecContext(ctx, q, c.ID, c.CustomerID, c.Name, c.Detail, whitelistJSON, c.Codecs, now, now); err != nil {
 		log.Errorf("Could not create outbound_config. err: %v", err)
 		return err
@@ -87,7 +87,7 @@ func (h *handler) OutboundConfigCreate(ctx context.Context, c *outboundconfig.Ou
 func (h *handler) OutboundConfigDelete(ctx context.Context, id uuid.UUID) error {
 	log := logrus.WithField("func", "OutboundConfigDelete")
 
-	q := `UPDATE call_outbound_configs SET tm_delete = ? WHERE id = ? AND tm_delete IS NULL`
+	q := "UPDATE " + outboundConfigTable + " SET tm_delete = ? WHERE id = ? AND tm_delete IS NULL"
 	if _, err := h.db.ExecContext(ctx, q, time.Now(), id); err != nil {
 		log.Errorf("Could not delete outbound_config. err: %v", err)
 		return err
@@ -176,7 +176,7 @@ func (h *handler) OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *o
 	}
 
 	args = append(args, id)
-	q := fmt.Sprintf("UPDATE call_outbound_configs SET %s WHERE id = ? AND tm_delete IS NULL", strings.Join(sets, ", "))
+	q := fmt.Sprintf("UPDATE "+outboundConfigTable+" SET %s WHERE id = ? AND tm_delete IS NULL", strings.Join(sets, ", "))
 
 	if _, err := h.db.ExecContext(ctx, q, args...); err != nil {
 		log.Errorf("Could not update outbound_config. err: %v", err)
