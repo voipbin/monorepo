@@ -6050,7 +6050,7 @@ type RequestBodyAuthPasswordForgotPOST struct {
 
 // RequestBodyAuthPasswordResetPOST Request body for POST /auth/password-reset (complete password reset).
 type RequestBodyAuthPasswordResetPOST struct {
-	// Password The new password to set for the account.
+	// Password The new password to set for the account. Must be at least 8 characters.
 	Password string `json:"password"`
 
 	// Token 64-character lowercase hexadecimal password reset token. Received via the link in the reset email sent by `POST /auth/password-forgot`.
@@ -6995,6 +6995,12 @@ type PostAisummariesJSONBody struct {
 
 	// ReferenceType Type of reference for the AI summary.
 	ReferenceType AIManagerSummaryReferenceType `json:"reference_type"`
+}
+
+// GetAuthPasswordResetParams defines parameters for GetAuthPasswordReset.
+type GetAuthPasswordResetParams struct {
+	// Token 64-character lowercase hexadecimal password reset token from the reset email.
+	Token string `form:"token" json:"token"`
 }
 
 // DeleteAuthUnregisterParams defines parameters for DeleteAuthUnregister.

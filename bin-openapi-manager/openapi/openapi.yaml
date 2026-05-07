@@ -6929,11 +6929,15 @@ components:
       properties:
         token:
           type: string
+          pattern: "^[0-9a-f]{64}$"
+          minLength: 64
+          maxLength: 64
           description: "64-character lowercase hexadecimal password reset token. Received via the link in the reset email sent by `POST /auth/password-forgot`."
           example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6abcd"
         password:
           type: string
-          description: "The new password to set for the account."
+          minLength: 8
+          description: "The new password to set for the account. Must be at least 8 characters."
           example: "myNewSecurePassword123"
 
     AuthBootResponse:
