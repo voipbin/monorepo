@@ -129,6 +129,39 @@ func (h *listenHandler) processV1OutboundConfigsIDGet(ctx context.Context, m *so
 	}, nil
 }
 
+// processV1OutboundConfigsIDDelete handles DELETE /v1/outbound_configs/<uuid>
+func (h *listenHandler) processV1OutboundConfigsIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "processV1OutboundConfigsIDDelete",
+		"request": m,
+	})
+
+	uriItems := strings.Split(m.URI, "/")
+	if len(uriItems) < 4 {
+		return simpleResponse(400), nil
+	}
+
+	id := uuid.FromStringOrNil(uriItems[3])
+
+	c, err := h.outboundConfigHandler.Delete(ctx, id)
+	if err != nil {
+		log.Errorf("Could not delete outbound config. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(outboundconfig.ConvertWebhookMessage(c))
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", c, err)
+		return simpleResponse(500), nil
+	}
+
+	return &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}, nil
+}
+
 // processV1OutboundConfigsIDPut handles PUT /v1/outbound_configs/<uuid>
 func (h *listenHandler) processV1OutboundConfigsIDPut(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{

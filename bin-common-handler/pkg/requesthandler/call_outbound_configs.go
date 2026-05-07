@@ -14,9 +14,16 @@ import (
 
 // CallV1OutboundConfigCreate sends a request to call-manager to create an outbound config.
 func (r *requestHandler) CallV1OutboundConfigCreate(ctx context.Context, customerID uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.OutboundConfig, error) {
-	uri := fmt.Sprintf("/v1/outbound_configs?customer_id=%s", customerID)
+	uri := "/v1/outbound_configs"
 
-	m, err := json.Marshal(req)
+	body := struct {
+		CustomerID uuid.UUID                    `json:"customer_id"`
+		Request    *cmoutboundconfig.UpdateRequest `json:"request"`
+	}{
+		CustomerID: customerID,
+		Request:    req,
+	}
+	m, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}

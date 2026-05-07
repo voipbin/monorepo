@@ -39,7 +39,7 @@ func (h *server) GetOutboundConfigs(c *gin.Context, params openapi_server.GetOut
 	if params.PageSize != nil {
 		pageSize = uint64(*params.PageSize)
 	}
-	if pageSize <= 0 || pageSize > 100 {
+	if pageSize == 0 || pageSize > 100 {
 		pageSize = 100
 	}
 

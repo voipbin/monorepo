@@ -205,6 +205,64 @@ func Test_processV1OutboundConfigsIDGet(t *testing.T) {
 	}
 }
 
+func Test_processV1OutboundConfigsIDDelete(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+
+		expectID       uuid.UUID
+		responseConfig *outboundconfig.OutboundConfig
+		expectRes      *sock.Response
+	}{
+		{
+			name: "basic",
+			request: &sock.Request{
+				URI:    "/v1/outbound_configs/c1234567-f7f5-11ef-92b3-0be9c3b04574",
+				Method: sock.RequestMethodDelete,
+			},
+			expectID: uuid.FromStringOrNil("c1234567-f7f5-11ef-92b3-0be9c3b04574"),
+			responseConfig: &outboundconfig.OutboundConfig{
+				ID:         uuid.FromStringOrNil("c1234567-f7f5-11ef-92b3-0be9c3b04574"),
+				CustomerID: uuid.FromStringOrNil("b3fe6c84-f7f5-11ef-92b3-0be9c3b04574"),
+				Name:       "to-delete",
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"to-delete","detail":"","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:           mockSock,
+				outboundConfigHandler: mockOutboundConfig,
+			}
+
+			mockOutboundConfig.EXPECT().
+				Delete(gomock.Any(), tt.expectID).
+				Return(tt.responseConfig, nil)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_processV1OutboundConfigsIDPut(t *testing.T) {
 	tests := []struct {
 		name    string

@@ -15,6 +15,7 @@ import (
 
 // OutboundConfigHandler manages OutboundConfig resources.
 type OutboundConfigHandler interface {
+	Delete(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error)
 	GetByCustomerID(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error)
 	List(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*outboundconfig.OutboundConfig, error)

@@ -1301,6 +1301,20 @@ func (mr *MockDBHandlerMockRecorder) OutboundConfigCreate(ctx, c any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigCreate", reflect.TypeOf((*MockDBHandler)(nil).OutboundConfigCreate), ctx, c)
 }
 
+// OutboundConfigDelete mocks base method.
+func (m *MockDBHandler) OutboundConfigDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OutboundConfigDelete indicates an expected call of OutboundConfigDelete.
+func (mr *MockDBHandlerMockRecorder) OutboundConfigDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigDelete", reflect.TypeOf((*MockDBHandler)(nil).OutboundConfigDelete), ctx, id)
+}
+
 // OutboundConfigGetByCustomerID mocks base method.
 func (m *MockDBHandler) OutboundConfigGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error) {
 	m.ctrl.T.Helper()

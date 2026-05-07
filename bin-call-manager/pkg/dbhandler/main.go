@@ -146,6 +146,7 @@ type DBHandler interface {
 
 	// outbound configs
 	OutboundConfigCreate(ctx context.Context, c *outboundconfig.OutboundConfig) error
+	OutboundConfigDelete(ctx context.Context, id uuid.UUID) error
 	OutboundConfigGetByID(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error)
 	OutboundConfigGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error)
 	OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.OutboundConfig, error)

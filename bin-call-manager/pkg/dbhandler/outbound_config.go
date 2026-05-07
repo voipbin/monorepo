@@ -78,6 +78,19 @@ func (h *handler) OutboundConfigCreate(ctx context.Context, c *outboundconfig.Ou
 	return nil
 }
 
+// OutboundConfigDelete soft-deletes the outbound_config with the given id.
+func (h *handler) OutboundConfigDelete(ctx context.Context, id uuid.UUID) error {
+	log := logrus.WithField("func", "OutboundConfigDelete")
+
+	q := `UPDATE outbound_configs SET tm_delete = ? WHERE id = ? AND tm_delete IS NULL`
+	if _, err := h.db.ExecContext(ctx, q, time.Now(), id); err != nil {
+		log.Errorf("Could not delete outbound_config. err: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 // OutboundConfigGetByID returns the outbound_config with the given id.
 // Returns nil, nil if no record is found.
 func (h *handler) OutboundConfigGetByID(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {

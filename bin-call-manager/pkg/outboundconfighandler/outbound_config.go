@@ -11,6 +11,25 @@ import (
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 )
 
+// Delete soft-deletes the OutboundConfig identified by id and invalidates its cache entry.
+func (h *outboundConfigHandler) Delete(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {
+	// Fetch first so we have the customer_id for cache invalidation.
+	c, err := h.db.OutboundConfigGetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get outbound_config for delete: %w", err)
+	}
+
+	if err := h.db.OutboundConfigDelete(ctx, id); err != nil {
+		return nil, fmt.Errorf("could not delete outbound_config: %w", err)
+	}
+
+	if c != nil {
+		_ = h.cacheHandler.OutboundConfigDelete(ctx, c.CustomerID)
+	}
+
+	return c, nil
+}
+
 // GetByCustomerID returns the OutboundConfig for the given customerID.
 // It uses a cache-aside pattern with a negative-cache sentinel for missing rows.
 func (h *outboundConfigHandler) GetByCustomerID(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error) {

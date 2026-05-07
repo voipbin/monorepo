@@ -57,6 +57,21 @@ func (mr *MockOutboundConfigHandlerMockRecorder) Create(ctx, customerID, req any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockOutboundConfigHandler)(nil).Create), ctx, customerID, req)
 }
 
+// Delete mocks base method.
+func (m *MockOutboundConfigHandler) Delete(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockOutboundConfigHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockOutboundConfigHandler)(nil).Delete), ctx, id)
+}
+
 // GetByCustomerID mocks base method.
 func (m *MockOutboundConfigHandler) GetByCustomerID(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error) {
 	m.ctrl.T.Helper()

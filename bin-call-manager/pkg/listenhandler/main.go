@@ -591,6 +591,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1OutboundConfigsIDPut(ctx, m)
 		requestType = "/v1/outbound_configs/<id>"
 
+	// DELETE /outbound_configs/<id>
+	case regV1OutboundConfigsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1OutboundConfigsIDDelete(ctx, m)
+		requestType = "/v1/outbound_configs/<id>"
+
 	//////////////
 	// recovery
 	//////////////

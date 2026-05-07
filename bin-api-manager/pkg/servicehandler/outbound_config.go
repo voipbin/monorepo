@@ -21,6 +21,10 @@ func (h *serviceHandler) outboundConfigGet(ctx context.Context, id uuid.UUID) (*
 		return nil, fmt.Errorf("could not get outbound config: %w", err)
 	}
 
+	if res == nil || res.ID == uuid.Nil {
+		return nil, fmt.Errorf("not found: outbound_config %s", id)
+	}
+
 	if res.TMDelete != nil {
 		return nil, fmt.Errorf("%w: deleted outbound config", serviceerrors.ErrStateInvalid)
 	}
