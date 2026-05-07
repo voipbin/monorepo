@@ -15,6 +15,115 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
+func Test_outboundConfigHandler_Delete(t *testing.T) {
+	tests := []struct {
+		name string
+		id   uuid.UUID
+
+		dbGetRes *outboundconfig.OutboundConfig
+		dbGetErr error
+
+		dbDelErr error
+
+		expectCacheDelete bool
+		expectRes         *outboundconfig.OutboundConfig
+		wantErr           bool
+	}{
+		{
+			name: "success",
+			id:   uuid.FromStringOrNil("66666666-0000-0000-0000-000000000001"),
+			dbGetRes: &outboundconfig.OutboundConfig{
+				ID:         uuid.FromStringOrNil("66666666-0000-0000-0000-000000000001"),
+				CustomerID: uuid.FromStringOrNil("66666666-0000-0000-0000-0000000000cc"),
+				Name:       "to-delete",
+			},
+			dbGetErr:          nil,
+			dbDelErr:          nil,
+			expectCacheDelete: true,
+			expectRes:         &outboundconfig.OutboundConfig{Name: "to-delete"},
+			wantErr:           false,
+		},
+		{
+			name:              "GetByID error",
+			id:                uuid.FromStringOrNil("66666666-0000-0000-0000-000000000002"),
+			dbGetRes:          nil,
+			dbGetErr:          fmt.Errorf("db connection error"),
+			expectCacheDelete: false,
+			expectRes:         nil,
+			wantErr:           true,
+		},
+		{
+			name:              "GetByID nil (not found)",
+			id:                uuid.FromStringOrNil("66666666-0000-0000-0000-000000000003"),
+			dbGetRes:          nil,
+			dbGetErr:          nil,
+			dbDelErr:          nil,
+			expectCacheDelete: false,
+			expectRes:         nil,
+			wantErr:           false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockCache := cachehandler.NewMockCacheHandler(mc)
+			h := &outboundConfigHandler{
+				utilHandler:  utilhandler.NewMockUtilHandler(mc),
+				db:           mockDB,
+				cacheHandler: mockCache,
+			}
+			ctx := context.Background()
+
+			mockDB.EXPECT().
+				OutboundConfigGetByID(ctx, tt.id).
+				Return(tt.dbGetRes, tt.dbGetErr).
+				Times(1)
+
+			if tt.dbGetErr == nil {
+				// OutboundConfigDelete is always called when GetByID returns no error
+				mockDB.EXPECT().
+					OutboundConfigDelete(ctx, tt.id).
+					Return(tt.dbDelErr).
+					Times(1)
+			}
+
+			if tt.expectCacheDelete {
+				mockCache.EXPECT().
+					OutboundConfigDelete(ctx, tt.dbGetRes.CustomerID).
+					Return(nil).
+					Times(1)
+			}
+
+			got, err := h.Delete(ctx, tt.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if tt.expectRes == nil && got != nil {
+				t.Errorf("Delete() = %v, want nil", got)
+				return
+			}
+			if tt.expectRes != nil {
+				if got == nil {
+					t.Errorf("Delete() = nil, want non-nil")
+					return
+				}
+				if got.Name != tt.expectRes.Name {
+					t.Errorf("Delete() Name = %v, want %v", got.Name, tt.expectRes.Name)
+				}
+				// After a successful delete, TMDelete must be set on the returned struct
+				if tt.name == "success" && got.TMDelete == nil {
+					t.Errorf("Delete() TMDelete is nil, want non-nil after delete")
+				}
+			}
+		})
+	}
+}
+
 func Test_outboundConfigHandler_GetByCustomerID(t *testing.T) {
 	tests := []struct {
 		name       string

@@ -3,6 +3,7 @@ package outboundconfighandler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
@@ -25,6 +26,8 @@ func (h *outboundConfigHandler) Delete(ctx context.Context, id uuid.UUID) (*outb
 
 	if c != nil {
 		_ = h.cacheHandler.OutboundConfigDelete(ctx, c.CustomerID)
+		now := time.Now()
+		c.TMDelete = &now // reflect the deletion timestamp in the returned struct
 	}
 
 	return c, nil
