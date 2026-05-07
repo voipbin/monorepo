@@ -4114,6 +4114,58 @@ type CallManagerGroupcallRingMethod string
 // CallManagerGroupcallStatus Current status of the call or group call
 type CallManagerGroupcallStatus string
 
+// CallManagerOutboundConfig defines model for CallManagerOutboundConfig.
+type CallManagerOutboundConfig struct {
+	// Codecs Comma-separated codec preference list (e.g. PCMU,PCMA,G729). Empty = server default.
+	Codecs *string `json:"codecs,omitempty"`
+
+	// CustomerId The customer ID that owns this outbound config. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// DestinationWhitelist ISO 3166 alpha-2 country codes (lowercase). Empty array = deny all PSTN calls.
+	DestinationWhitelist *[]string `json:"destination_whitelist,omitempty"`
+
+	// Detail Free-text description of this outbound config.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier of the outbound config.
+	Id *string `json:"id,omitempty"`
+
+	// Name Human-readable name for this outbound config.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the outbound config was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the outbound config was deleted (soft-delete).
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the outbound config was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// CallManagerOutboundConfigList defines model for CallManagerOutboundConfigList.
+type CallManagerOutboundConfigList struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                      `json:"next_page_token,omitempty"`
+	Result        *[]CallManagerOutboundConfig `json:"result,omitempty"`
+}
+
+// CallManagerOutboundConfigUpdateRequest defines model for CallManagerOutboundConfigUpdateRequest.
+type CallManagerOutboundConfigUpdateRequest struct {
+	// Codecs Comma-separated codec preference list. Send null or omit to leave unchanged. Send empty string to use server default.
+	Codecs *string `json:"codecs,omitempty"`
+
+	// DestinationWhitelist ISO 3166 alpha-2 country codes (lowercase). Send null or omit to leave unchanged. Send [] to deny all PSTN calls.
+	DestinationWhitelist *[]string `json:"destination_whitelist,omitempty"`
+
+	// Detail Free-text description of this outbound config.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Human-readable name for this outbound config.
+	Name *string `json:"name,omitempty"`
+}
+
 // CallManagerRecording defines model for CallManagerRecording.
 type CallManagerRecording struct {
 	// ActiveflowId The activeflow ID associated with this recording. Returned from the `POST /activeflows` or `GET /activeflows` response.
@@ -4807,8 +4859,7 @@ type CustomerManagerCustomer struct {
 	IdentityVerificationStatus *CustomerManagerCustomerIdentityVerificationStatus `json:"identity_verification_status,omitempty"`
 
 	// Metadata Configuration flags for a customer account. Controls platform behavior
-	// such as RTP packet capture for debugging audio issues and the preferred
-	// codec list for outbound calls.
+	// such as RTP packet capture for debugging audio issues.
 	// Updatable by CustomerAdmin via `PUT /customer/metadata`
 	// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
@@ -4868,8 +4919,7 @@ type CustomerManagerCustomerAdmin struct {
 	IdentityVerificationStatus *CustomerManagerCustomerIdentityVerificationStatus `json:"identity_verification_status,omitempty"`
 
 	// Metadata Configuration flags for a customer account. Controls platform behavior
-	// such as RTP packet capture for debugging audio issues and the preferred
-	// codec list for outbound calls.
+	// such as RTP packet capture for debugging audio issues.
 	// Updatable by CustomerAdmin via `PUT /customer/metadata`
 	// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
@@ -4923,19 +4973,10 @@ type CustomerManagerEmailVerifyResult struct {
 }
 
 // CustomerManagerMetadata Configuration flags for a customer account. Controls platform behavior
-// such as RTP packet capture for debugging audio issues and the preferred
-// codec list for outbound calls.
+// such as RTP packet capture for debugging audio issues.
 // Updatable by CustomerAdmin via `PUT /customer/metadata`
 // or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 type CustomerManagerMetadata struct {
-	// OutboundCodecs Comma-separated, preference-ordered list of codec names for outbound PSTN calls
-	// (e.g. `PCMU,PCMA,G729`). When set, the platform restricts the outgoing INVITE's
-	// SDP to only these codecs. Empty string means use the server default
-	// (current pass-through behavior with PCMU/PCMA transcoding).
-	// Names match standard SDP `a=rtpmap` codec names. Per-call metadata key
-	// `codecs` overrides this customer-level default when present.
-	OutboundCodecs *string `json:"outbound_codecs,omitempty"`
-
 	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
 	// Use this to debug audio quality issues (one-way audio, codec problems, jitter).
 	// Default is `false`. Enabling this increases storage usage — disable after debugging.
@@ -7833,6 +7874,18 @@ type PutNumbersIdFlowIdsJSONBody struct {
 	MessageFlowId string `json:"message_flow_id"`
 }
 
+// GetOutboundConfigsParams defines parameters for GetOutboundConfigs.
+type GetOutboundConfigsParams struct {
+	// CustomerId Filter by customer ID.
+	CustomerId *openapi_types.UUID `form:"customer_id,omitempty" json:"customer_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetOutdialsParams defines parameters for GetOutdials.
 type GetOutdialsParams struct {
 	// PageSize Number of results to return per page.
@@ -8964,6 +9017,12 @@ type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
 
 // PutNumbersIdMetadataJSONRequestBody defines body for PutNumbersIdMetadata for application/json ContentType.
 type PutNumbersIdMetadataJSONRequestBody = NumberManagerMetadata
+
+// PostOutboundConfigsJSONRequestBody defines body for PostOutboundConfigs for application/json ContentType.
+type PostOutboundConfigsJSONRequestBody = CallManagerOutboundConfigUpdateRequest
+
+// PutOutboundConfigsIdJSONRequestBody defines body for PutOutboundConfigsId for application/json ContentType.
+type PutOutboundConfigsIdJSONRequestBody = CallManagerOutboundConfigUpdateRequest
 
 // PostOutdialsJSONRequestBody defines body for PostOutdials for application/json ContentType.
 type PostOutdialsJSONRequestBody PostOutdialsJSONBody

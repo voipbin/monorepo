@@ -15,6 +15,7 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmexternalmedia "monorepo/bin-call-manager/models/externalmedia"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	ememail "monorepo/bin-email-manager/models/email"
 
@@ -628,6 +629,13 @@ type RequestHandler interface {
 		onEndFlowID uuid.UUID,
 	) (*cmrecording.Recording, error)
 	CallV1RecordingStop(ctx context.Context, recordingID uuid.UUID) (*cmrecording.Recording, error)
+
+	// call-manager outbound_configs
+	CallV1OutboundConfigCreate(ctx context.Context, customerID uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.OutboundConfig, error)
+	CallV1OutboundConfigDelete(ctx context.Context, id uuid.UUID) (*cmoutboundconfig.OutboundConfig, error)
+	CallV1OutboundConfigGet(ctx context.Context, id uuid.UUID) (*cmoutboundconfig.OutboundConfig, error)
+	CallV1OutboundConfigList(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]cmoutboundconfig.OutboundConfig, error)
+	CallV1OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.OutboundConfig, error)
 
 	// campaign-manager campaigns
 	CampaignV1CampaignCreate(

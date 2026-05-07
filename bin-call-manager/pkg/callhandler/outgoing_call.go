@@ -28,6 +28,7 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 )
 
 const (
@@ -164,8 +165,6 @@ func (h *callHandler) CreateCallOutgoing(
 		}
 	}
 
-	metadata = embedCustomerCodecs(metadata, cu.Metadata.OutboundCodecs)
-
 	// validate outgoing call permission (customer status + identity verification)
 	if err := h.validateOutgoingCallPermission(ctx, cu, destination); err != nil {
 		return nil, err
@@ -177,10 +176,24 @@ func (h *callHandler) CreateCallOutgoing(
 		return nil, fmt.Errorf("could not pass the balance validation")
 	}
 
-	// validate destination
-	if validDestination := h.ValidateDestination(ctx, customerID, destination); !validDestination {
-		log.Debugf("Could not pass the destination validation. customer_id: %s", customerID)
-		return nil, fmt.Errorf("could not pass the destination validation")
+	// fetch OutboundConfig once for codec embed and whitelist enforcement (tel only, non-internal)
+	if destination.Type == commonaddress.TypeTel && !cucustomer.IsInternalSystemID(customerID) {
+		outboundCfg, cfgErr := h.outboundConfigHandler.GetByCustomerID(ctx, customerID)
+		if cfgErr != nil {
+			log.Warnf("Could not get outbound config, defaulting to deny. err: %v", cfgErr)
+			outboundCfg = nil
+		}
+		metadata = embedCodecs(metadata, outboundCfg)
+		if !h.ValidateDestination(ctx, customerID, outboundCfg, destination) {
+			log.Infof("Outbound destination not in whitelist. customer_id: %s", customerID)
+			country := h.getCountry(ctx, destination.Target)
+			h.notifyHandler.PublishEvent(ctx, call.EventTypeCallOutboundWhitelistRejected, map[string]interface{}{
+				"customer_id":         customerID,
+				"call_id":             id,
+				"destination_country": country,
+			})
+			return nil, outboundconfig.ErrDestinationNotWhitelisted
+		}
 	}
 
 	// get dialroutes

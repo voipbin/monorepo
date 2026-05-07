@@ -1,0 +1,98 @@
+get:
+  summary: Get outbound config detail
+  description: Returns detailed information about the specified outbound config.
+  tags:
+    - Call
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier of the outbound config.
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: Detailed outbound config information.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerOutboundConfig'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+put:
+  summary: Update an outbound config
+  description: Updates the specified outbound config and returns the updated resource.
+  tags:
+    - Call
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier of the outbound config to update.
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/CallManagerOutboundConfigUpdateRequest'
+  responses:
+    '200':
+      description: The updated outbound config.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerOutboundConfig'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Delete an outbound config
+  description: Deletes the specified outbound config and returns the deleted resource.
+  tags:
+    - Call
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: The unique identifier of the outbound config to delete.
+      schema:
+        type: string
+        format: uuid
+  responses:
+    '200':
+      description: The deleted outbound config.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CallManagerOutboundConfig'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

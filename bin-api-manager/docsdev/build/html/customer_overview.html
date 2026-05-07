@@ -121,6 +121,12 @@
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
 <li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
@@ -350,8 +356,7 @@ verified, rejected</p></td>
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
     <span class="s2">&quot;default_outgoing_source_number_id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;</span><span class="p">,</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
-        <span class="s2">&quot;outbound_codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;PCMU,PCMA,G729&quot;</span>
+        <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
     <span class="p">},</span>
     <span class="s2">&quot;email_verified&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;active&quot;</span><span class="p">,</span>
@@ -377,8 +382,7 @@ verified, rejected</p></td>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/customer/metadata?token=&lt;token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data &#39;{
-        &quot;rtp_debug&quot;: true,
-        &quot;outbound_codecs&quot;: &quot;PCMU,PCMA,G729&quot;
+        &quot;rtp_debug&quot;: true
     }&#39;
 </pre></div>
 </div>
@@ -386,7 +390,6 @@ verified, rejected</p></td>
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> flag enables RTP packet capture (PCAP) for all calls made by this customer. This is useful for debugging audio quality issues such as one-way audio, codec mismatches, or jitter. Enabling this increases storage usage — disable it after debugging is complete by setting <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">outbound_codecs</span></code> field is a comma-separated, preference-ordered list of codec names (e.g. <code class="docutils literal notranslate"><span class="pre">PCMU,PCMA,G729</span></code>) that the platform will offer to PSTN providers on outbound INVITEs. Use this when a downstream provider only accepts a specific codec set or when you want to force a particular codec preference. Set to an empty string to fall back to the server default (PCMU/PCMA pass-through). Codec names match standard SDP <code class="docutils literal notranslate"><span class="pre">a=rtpmap</span></code> values.</p>
 </div>
 <p><strong>Update Default Outgoing Source Number</strong></p>
 <p>Set the default source phone number used as the caller ID for outgoing PSTN calls when no explicit source number is specified in the call request.</p>

@@ -32,9 +32,11 @@ import (
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/pkg/channelhandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
+	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 )
 
 func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
@@ -802,16 +804,23 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
 			h := &callHandler{
-				utilHandler:    mockUtil,
-				reqHandler:     mockReq,
-				notifyHandler:  mockNotify,
-				db:             mockDB,
-				channelHandler: mockChannel,
+				utilHandler:           mockUtil,
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				db:                    mockDB,
+				channelHandler:        mockChannel,
+				outboundConfigHandler: mockOutboundConfig,
 			}
 
 			ctx := context.Background()
+
+			// outbound config: return a permissive config (KR in whitelist) for tel destination
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(&outboundconfig.OutboundConfig{
+				DestinationWhitelist: []string{"kr"},
+			}, nil)
 
 			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
 			// getDialURI

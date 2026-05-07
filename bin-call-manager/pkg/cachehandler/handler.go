@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-call-manager/models/confbridge"
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/models/recording"
 )
 
@@ -301,4 +302,52 @@ func (h *handler) GroupcallSet(ctx context.Context, data *groupcall.Groupcall) e
 	}
 
 	return nil
+}
+
+const outboundConfigNotFoundSentinel = `{"_not_found":true}`
+
+func outboundConfigKey(customerID uuid.UUID) string {
+	return fmt.Sprintf("outbound_config:%s", customerID)
+}
+
+// OutboundConfigGet returns a cached OutboundConfig for customerID.
+// Returns (nil, nil) when key exists but is a negative-cache sentinel (no DB row).
+// Returns (nil, redis.Nil) when key is absent (cache miss).
+func (h *handler) OutboundConfigGet(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error) {
+	key := outboundConfigKey(customerID)
+	tmp, err := h.Cache.Get(ctx, key).Result()
+	if err != nil {
+		return nil, err // redis.Nil means cache miss
+	}
+	if tmp == outboundConfigNotFoundSentinel {
+		return nil, nil // negative cache hit
+	}
+	var res outboundconfig.OutboundConfig
+	if err := json.Unmarshal([]byte(tmp), &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+// OutboundConfigSet caches the config for customerID with a 30-minute TTL.
+func (h *handler) OutboundConfigSet(ctx context.Context, customerID uuid.UUID, c *outboundconfig.OutboundConfig) error {
+	key := outboundConfigKey(customerID)
+	tmp, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	return h.Cache.Set(ctx, key, tmp, time.Minute*30).Err()
+}
+
+// OutboundConfigSetNotFound caches a not-found sentinel for customerID (1-minute TTL).
+// Prevents DB hammering for customers with no config row.
+func (h *handler) OutboundConfigSetNotFound(ctx context.Context, customerID uuid.UUID) error {
+	key := outboundConfigKey(customerID)
+	return h.Cache.Set(ctx, key, outboundConfigNotFoundSentinel, time.Minute).Err()
+}
+
+// OutboundConfigDelete removes the cached config for customerID.
+func (h *handler) OutboundConfigDelete(ctx context.Context, customerID uuid.UUID) error {
+	key := outboundConfigKey(customerID)
+	return h.Cache.Del(ctx, key).Err()
 }

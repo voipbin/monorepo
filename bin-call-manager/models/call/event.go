@@ -12,4 +12,6 @@ const (
 	EventTypeCallTerminating string = "call_terminating"
 	EventTypeCallCanceling   string = "call_canceling"
 	EventTypeCallHangup      string = "call_hangup"
+
+	EventTypeCallOutboundWhitelistRejected string = "call.outbound_whitelist_rejected"
 )

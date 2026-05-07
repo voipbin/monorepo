@@ -23,6 +23,7 @@ import (
 	"monorepo/bin-call-manager/models/ari"
 	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/externalmedia"
@@ -34,6 +35,7 @@ import (
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
+	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -138,21 +140,24 @@ type CallHandler interface {
 	EventCUCustomerFrozen(ctx context.Context, cu *cucustomer.Customer) error
 	EventFMActiveflowUpdated(ctx context.Context, a *fmactiveflow.Activeflow) error
 	EventSMPodDeleted(ctx context.Context, p *smpod.Pod) error
+
+	ValidateDestination(ctx context.Context, customerID uuid.UUID, config *outboundconfig.OutboundConfig, destination commonaddress.Address) bool
 }
 
 // callHandler structure for service handle
 type callHandler struct {
-	utilHandler          utilhandler.UtilHandler
-	reqHandler           requesthandler.RequestHandler
-	db                   dbhandler.DBHandler
-	notifyHandler        notifyhandler.NotifyHandler
-	confbridgeHandler    confbridgehandler.ConfbridgeHandler
-	channelHandler       channelhandler.ChannelHandler
-	bridgeHandler        bridgehandler.BridgeHandler
-	recordingHandler     recordinghandler.RecordingHandler
-	externalMediaHandler externalmediahandler.ExternalMediaHandler
-	groupcallHandler     groupcallhandler.GroupcallHandler
-	recoveryHandler      RecoveryHandler
+	utilHandler            utilhandler.UtilHandler
+	reqHandler             requesthandler.RequestHandler
+	db                     dbhandler.DBHandler
+	notifyHandler          notifyhandler.NotifyHandler
+	confbridgeHandler      confbridgehandler.ConfbridgeHandler
+	channelHandler         channelhandler.ChannelHandler
+	bridgeHandler          bridgehandler.BridgeHandler
+	recordingHandler       recordinghandler.RecordingHandler
+	externalMediaHandler   externalmediahandler.ExternalMediaHandler
+	groupcallHandler       groupcallhandler.GroupcallHandler
+	recoveryHandler        RecoveryHandler
+	outboundConfigHandler  outboundconfighandler.OutboundConfigHandler
 }
 
 // contextType
@@ -276,6 +281,16 @@ var (
 		},
 		[]string{"direction", "type"},
 	)
+
+	// promCallOutboundWhitelistRejectedTotal counts outbound PSTN calls rejected by destination whitelist.
+	promCallOutboundWhitelistRejectedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "call_outbound_whitelist_rejected_total",
+			Help:      "Total outbound PSTN calls rejected by destination whitelist.",
+		},
+		[]string{"destination_country"},
+	)
 )
 
 func init() {
@@ -286,6 +301,7 @@ func init() {
 		promCallActionProcessTime,
 		promConferenceLeaveTotal,
 		promCallDurationSeconds,
+		promCallOutboundWhitelistRejectedTotal,
 	)
 }
 
@@ -301,20 +317,22 @@ func NewCallHandler(
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
 	recoveryHandler RecoveryHandler,
+	outboundConfigHandler outboundconfighandler.OutboundConfigHandler,
 ) CallHandler {
 
 	h := &callHandler{
-		utilHandler:          utilhandler.NewUtilHandler(),
-		reqHandler:           requestHandler,
-		notifyHandler:        notifyHandler,
-		db:                   db,
-		confbridgeHandler:    confbridgeHandler,
-		channelHandler:       channelHandler,
-		bridgeHandler:        bridgeHandler,
-		recordingHandler:     recordingHandler,
-		externalMediaHandler: externalMediaHandler,
-		groupcallHandler:     groupcallHandler,
-		recoveryHandler:      recoveryHandler,
+		utilHandler:           utilhandler.NewUtilHandler(),
+		reqHandler:            requestHandler,
+		notifyHandler:         notifyHandler,
+		db:                    db,
+		confbridgeHandler:     confbridgeHandler,
+		channelHandler:        channelHandler,
+		bridgeHandler:         bridgeHandler,
+		recordingHandler:      recordingHandler,
+		externalMediaHandler:  externalMediaHandler,
+		groupcallHandler:      groupcallHandler,
+		recoveryHandler:       recoveryHandler,
+		outboundConfigHandler: outboundConfigHandler,
 	}
 
 	return h

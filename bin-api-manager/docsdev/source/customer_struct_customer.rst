@@ -22,8 +22,7 @@ Customer
         "billing_account_id": "<string>",
         "default_outgoing_source_number_id": "<string>",
         "metadata": {
-            "rtp_debug": <boolean>,
-            "outbound_codecs": "<string>"
+            "rtp_debug": <boolean>
         },
         "email_verified": <boolean>,
         "status": "<string>",
@@ -47,7 +46,6 @@ Customer
 * ``metadata`` (Object): Configuration flags for the customer account. Contains:
 
   - ``rtp_debug`` (Boolean): When ``true``, RTPEngine captures RTP traffic as PCAP files for this customer's calls. Use this to debug audio quality issues (one-way audio, codec problems, jitter). Default is ``false``. Updatable by CustomerAdmin via ``PUT https://api.voipbin.net/v1.0/customer/metadata``.
-  - ``outbound_codecs`` (String, Optional): Comma-separated, preference-ordered list of codec names for outbound PSTN calls (e.g. ``PCMU,PCMA,G729``). When set, the platform restricts the outgoing INVITE's SDP to only these codecs. Empty string (default) means use the server default (pass-through with PCMU/PCMA transcoding). Codec names match standard SDP ``a=rtpmap`` names. The per-call metadata key ``codecs`` overrides this customer-level default when present. Updatable by CustomerAdmin via ``PUT https://api.voipbin.net/v1.0/customer/metadata``.
 
 * ``email_verified`` (Boolean): Whether the customer's email address has been verified. ``true`` if verified, ``false`` otherwise.
 * ``identity_verification_status`` (enum string): The customer's identity verification status. Determines access to PSTN number purchases and outbound PSTN calls. One of:
@@ -93,8 +91,7 @@ Example
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
         "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "metadata": {
-            "rtp_debug": false,
-            "outbound_codecs": "PCMU,PCMA,G729"
+            "rtp_debug": false
         },
         "email_verified": true,
         "status": "active",

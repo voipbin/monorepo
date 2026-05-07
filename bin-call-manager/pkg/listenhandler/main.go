@@ -27,6 +27,7 @@ import (
 	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
+	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 	"monorepo/bin-call-manager/pkg/recordinghandler"
 )
 
@@ -42,14 +43,15 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	utilHandler          utilhandler.UtilHandler
-	sockHandler          sockhandler.SockHandler
-	callHandler          callhandler.CallHandler
-	confbridgeHandler    confbridgehandler.ConfbridgeHandler
-	channelHandler       channelhandler.ChannelHandler
-	recordingHandler     recordinghandler.RecordingHandler
-	externalMediaHandler externalmediahandler.ExternalMediaHandler
-	groupcallHandler     groupcallhandler.GroupcallHandler
+	utilHandler           utilhandler.UtilHandler
+	sockHandler           sockhandler.SockHandler
+	callHandler           callhandler.CallHandler
+	confbridgeHandler     confbridgehandler.ConfbridgeHandler
+	channelHandler        channelhandler.ChannelHandler
+	recordingHandler      recordinghandler.RecordingHandler
+	externalMediaHandler  externalmediahandler.ExternalMediaHandler
+	groupcallHandler      groupcallhandler.GroupcallHandler
+	outboundConfigHandler outboundconfighandler.OutboundConfigHandler
 }
 
 var (
@@ -111,6 +113,11 @@ var (
 	regV1GroupcallsIDHangupGroupcall   = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup_groupcall$")
 	regV1GroupcallsIDHangupCall        = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/hangup_call$")
 	regV1GroupcallsIDAnswerGroupcallID = regexp.MustCompile("/v1/groupcalls/" + regUUID + "/answer_groupcall_id$")
+
+	// outbound_configs
+	regV1OutboundConfigs    = regexp.MustCompile("/v1/outbound_configs$")
+	regV1OutboundConfigsGet = regexp.MustCompile(`/v1/outbound_configs\?`)
+	regV1OutboundConfigsID  = regexp.MustCompile("/v1/outbound_configs/" + regUUID + "$")
 
 	// recovery
 	regV1Recovery = regexp.MustCompile("/v1/recovery$")
@@ -199,16 +206,18 @@ func NewListenHandler(
 	recordingHandler recordinghandler.RecordingHandler,
 	externalMediaHandler externalmediahandler.ExternalMediaHandler,
 	groupcallHandler groupcallhandler.GroupcallHandler,
+	outboundConfigHandler outboundconfighandler.OutboundConfigHandler,
 ) ListenHandler {
 	h := &listenHandler{
-		utilHandler:          utilhandler.NewUtilHandler(),
-		sockHandler:          sockHandler,
-		callHandler:          callHandler,
-		confbridgeHandler:    confbridgeHandler,
-		channelHandler:       channelHandler,
-		recordingHandler:     recordingHandler,
-		externalMediaHandler: externalMediaHandler,
-		groupcallHandler:     groupcallHandler,
+		utilHandler:           utilhandler.NewUtilHandler(),
+		sockHandler:           sockHandler,
+		callHandler:           callHandler,
+		confbridgeHandler:     confbridgeHandler,
+		channelHandler:        channelHandler,
+		recordingHandler:      recordingHandler,
+		externalMediaHandler:  externalMediaHandler,
+		groupcallHandler:      groupcallHandler,
+		outboundConfigHandler: outboundConfigHandler,
 	}
 
 	return h
@@ -558,6 +567,34 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1GroupcallsIDAnswerGroupcallID.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1GroupcallsIDAnswerGroupcallIDPost(ctx, m)
 		requestType = "/v1/groupcalls/<groupcall-id>/answer_groupcall_id"
+
+	////////////////////
+	// outbound_configs
+	////////////////////
+	// POST /outbound_configs
+	case regV1OutboundConfigs.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1OutboundConfigsPost(ctx, m)
+		requestType = "/v1/outbound_configs"
+
+	// GET /outbound_configs
+	case regV1OutboundConfigsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1OutboundConfigsGet(ctx, m)
+		requestType = "/v1/outbound_configs"
+
+	// GET /outbound_configs/<id>
+	case regV1OutboundConfigsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1OutboundConfigsIDGet(ctx, m)
+		requestType = "/v1/outbound_configs/<id>"
+
+	// PUT /outbound_configs/<id>
+	case regV1OutboundConfigsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1OutboundConfigsIDPut(ctx, m)
+		requestType = "/v1/outbound_configs/<id>"
+
+	// DELETE /outbound_configs/<id>
+	case regV1OutboundConfigsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1OutboundConfigsIDDelete(ctx, m)
+		requestType = "/v1/outbound_configs/<id>"
 
 	//////////////
 	// recovery

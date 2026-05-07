@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-call-manager/models/call"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 )
 
 // ValidateCustomerStatusOutgoing returns the customer and true if the customer status is active.
@@ -194,23 +195,53 @@ func (h *callHandler) ValidateCustomerBalance(
 	return true
 }
 
-// ValidateDestination returns true if the given customer has enough balance
-func (h *callHandler) ValidateDestination(ctx context.Context, customerID uuid.UUID, destination commonaddress.Address) bool {
+// ValidateDestination returns true if the outbound call destination is allowed
+// by the customer's OutboundConfig destination whitelist.
+// Only enforced for TypeTel destinations; other types bypass.
+// Internal system customer IDs bypass entirely.
+func (h *callHandler) ValidateDestination(ctx context.Context, customerID uuid.UUID, config *outboundconfig.OutboundConfig, destination commonaddress.Address) bool {
 	log := logrus.WithFields(logrus.Fields{
-		"funcs":       "ValidateDestination",
+		"func":        "ValidateDestination",
 		"customer_id": customerID,
-		"destination": destination,
 	})
 
-	// todo: need to implement
-	log.Debug("Pass the destination validation.")
-	return true
+	if destination.Type != commonaddress.TypeTel {
+		return true
+	}
+	if cucustomer.IsInternalSystemID(customerID) {
+		return true
+	}
+
+	country := h.getCountry(ctx, destination.Target)
+	if country == "" {
+		log.Infof("Could not determine country for destination; denying. destination: %s", destination.Target)
+		return false
+	}
+
+	if config == nil || len(config.DestinationWhitelist) == 0 {
+		log.Infof("No outbound config or empty whitelist; denying. customer_id: %s", customerID)
+		return false
+	}
+
+	for _, allowed := range config.DestinationWhitelist {
+		if allowed == country {
+			return true
+		}
+	}
+
+	log.Infof("Destination country %q not in whitelist. customer_id: %s", country, customerID)
+	promCallOutboundWhitelistRejectedTotal.WithLabelValues(country).Inc()
+	return false
 }
 
-// ValidateDestination returns true if the given customer has enough balance
+// getCountry returns the ISO 3166 alpha-2 country code (lowercase) for the given
+// E.164 phone number, or "" if it cannot be determined.
+// The leading "+" is stripped before calling the phonenumber library because
+// phonenumber.GetISO3166ByNumber expects digits only (no "+").
+// withLandLine is set to true so that landline numbers are also recognised.
 func (h *callHandler) getCountry(ctx context.Context, number string) string {
-	n := phonenumber.Parse(number, "")
-	country := phonenumber.GetISO3166ByNumber(n, false)
+	digits := strings.TrimPrefix(number, "+")
+	country := phonenumber.GetISO3166ByNumber(digits, true)
 
 	res := strings.ToLower(country.Alpha2)
 	return res

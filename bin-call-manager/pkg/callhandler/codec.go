@@ -5,22 +5,23 @@ import (
 
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/common"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 )
 
-// embedCustomerCodecs copies OutboundCodecs from customer metadata into call
-// metadata if the call does not already carry a codecs override.
+// embedCodecs copies the codec preference from an OutboundConfig into call
+// metadata if the call does not already carry a per-call codecs override.
 // Returns the (possibly newly allocated) metadata map.
-func embedCustomerCodecs(metadata map[string]any, outboundCodecs string) map[string]any {
-	if outboundCodecs == "" {
+func embedCodecs(metadata map[string]any, config *outboundconfig.OutboundConfig) map[string]any {
+	if config == nil || config.Codecs == "" {
 		return metadata
 	}
 	if metadata == nil {
 		metadata = map[string]any{}
 	}
 	if _, alreadySet := metadata[call.MetadataKeyCodecs]; alreadySet {
-		return metadata
+		return metadata // per-call override wins
 	}
-	metadata[call.MetadataKeyCodecs] = outboundCodecs
+	metadata[call.MetadataKeyCodecs] = config.Codecs
 	return metadata
 }
 

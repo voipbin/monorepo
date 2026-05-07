@@ -28,6 +28,7 @@ import (
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	recording "monorepo/bin-call-manager/models/recording"
 	campaign "monorepo/bin-campaign-manager/models/campaign"
 	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
@@ -2415,6 +2416,81 @@ func (m *MockRequestHandler) CallV1GroupcallUpdateAnswerGroupcallID(ctx context.
 func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallUpdateAnswerGroupcallID(ctx, groupcallID, answerGroupcallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallUpdateAnswerGroupcallID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallUpdateAnswerGroupcallID), ctx, groupcallID, answerGroupcallID)
+}
+
+// CallV1OutboundConfigCreate mocks base method.
+func (m *MockRequestHandler) CallV1OutboundConfigCreate(ctx context.Context, customerID uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1OutboundConfigCreate", ctx, customerID, req)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1OutboundConfigCreate indicates an expected call of CallV1OutboundConfigCreate.
+func (mr *MockRequestHandlerMockRecorder) CallV1OutboundConfigCreate(ctx, customerID, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1OutboundConfigCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1OutboundConfigCreate), ctx, customerID, req)
+}
+
+// CallV1OutboundConfigDelete mocks base method.
+func (m *MockRequestHandler) CallV1OutboundConfigDelete(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1OutboundConfigDelete", ctx, id)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1OutboundConfigDelete indicates an expected call of CallV1OutboundConfigDelete.
+func (mr *MockRequestHandlerMockRecorder) CallV1OutboundConfigDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1OutboundConfigDelete", reflect.TypeOf((*MockRequestHandler)(nil).CallV1OutboundConfigDelete), ctx, id)
+}
+
+// CallV1OutboundConfigGet mocks base method.
+func (m *MockRequestHandler) CallV1OutboundConfigGet(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1OutboundConfigGet", ctx, id)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1OutboundConfigGet indicates an expected call of CallV1OutboundConfigGet.
+func (mr *MockRequestHandlerMockRecorder) CallV1OutboundConfigGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1OutboundConfigGet", reflect.TypeOf((*MockRequestHandler)(nil).CallV1OutboundConfigGet), ctx, id)
+}
+
+// CallV1OutboundConfigList mocks base method.
+func (m *MockRequestHandler) CallV1OutboundConfigList(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1OutboundConfigList", ctx, customerID, pageSize, pageToken)
+	ret0, _ := ret[0].([]outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1OutboundConfigList indicates an expected call of CallV1OutboundConfigList.
+func (mr *MockRequestHandlerMockRecorder) CallV1OutboundConfigList(ctx, customerID, pageSize, pageToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1OutboundConfigList", reflect.TypeOf((*MockRequestHandler)(nil).CallV1OutboundConfigList), ctx, customerID, pageSize, pageToken)
+}
+
+// CallV1OutboundConfigUpdate mocks base method.
+func (m *MockRequestHandler) CallV1OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallV1OutboundConfigUpdate", ctx, id, req)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CallV1OutboundConfigUpdate indicates an expected call of CallV1OutboundConfigUpdate.
+func (mr *MockRequestHandlerMockRecorder) CallV1OutboundConfigUpdate(ctx, id, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1OutboundConfigUpdate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1OutboundConfigUpdate), ctx, id, req)
 }
 
 // CallV1RecordingDelete mocks base method.

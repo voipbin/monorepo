@@ -22,6 +22,7 @@ import (
 	"monorepo/bin-call-manager/models/confbridge"
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/models/recording"
 	"monorepo/bin-call-manager/pkg/cachehandler"
 )
@@ -142,6 +143,14 @@ type DBHandler interface {
 	RecordingList(ctx context.Context, size uint64, token string, filters map[recording.Field]any) ([]*recording.Recording, error)
 	RecordingUpdate(ctx context.Context, id uuid.UUID, fields map[recording.Field]any) error
 	RecordingSetStatus(ctx context.Context, id uuid.UUID, status recording.Status) error
+
+	// outbound configs
+	OutboundConfigCreate(ctx context.Context, c *outboundconfig.OutboundConfig) error
+	OutboundConfigDelete(ctx context.Context, id uuid.UUID) error
+	OutboundConfigGetByID(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error)
+	OutboundConfigGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error)
+	OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.OutboundConfig, error)
+	OutboundConfigList(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*outboundconfig.OutboundConfig, error)
 }
 
 // handler database handler

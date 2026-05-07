@@ -5,25 +5,60 @@ import (
 
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/common"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 )
 
-func Test_embedCustomerCodecs(t *testing.T) {
+func Test_embedCodecs(t *testing.T) {
 	tests := []struct {
-		name           string
-		metadata       map[string]any
-		outboundCodecs string
-		expectCodecs   string
-		expectSet      bool
+		name         string
+		metadata     map[string]any
+		config       *outboundconfig.OutboundConfig
+		expectCodecs string
+		expectSet    bool
 	}{
-		{"sets from customer when metadata empty", map[string]any{}, "PCMU,PCMA,G729", "PCMU,PCMA,G729", true},
-		{"per-call override wins", map[string]any{call.MetadataKeyCodecs: "G722"}, "PCMU,PCMA", "G722", true},
-		{"empty customer value — key not added", map[string]any{}, "", "", false},
-		{"nil metadata with customer value — creates map", nil, "PCMU", "PCMU", true},
-		{"nil metadata with empty customer value — no key added", nil, "", "", false},
+		{
+			name:         "sets from config when metadata empty",
+			metadata:     map[string]any{},
+			config:       &outboundconfig.OutboundConfig{Codecs: "PCMU,PCMA,G729"},
+			expectCodecs: "PCMU,PCMA,G729",
+			expectSet:    true,
+		},
+		{
+			name:         "per-call override wins",
+			metadata:     map[string]any{call.MetadataKeyCodecs: "G722"},
+			config:       &outboundconfig.OutboundConfig{Codecs: "PCMU,PCMA"},
+			expectCodecs: "G722",
+			expectSet:    true,
+		},
+		{
+			name:      "nil config — key not added",
+			metadata:  map[string]any{},
+			config:    nil,
+			expectSet: false,
+		},
+		{
+			name:      "config with empty Codecs — key not added",
+			metadata:  map[string]any{},
+			config:    &outboundconfig.OutboundConfig{Codecs: ""},
+			expectSet: false,
+		},
+		{
+			name:         "nil metadata with config value — creates map",
+			metadata:     nil,
+			config:       &outboundconfig.OutboundConfig{Codecs: "PCMU"},
+			expectCodecs: "PCMU",
+			expectSet:    true,
+		},
+		{
+			name:      "nil metadata with nil config — no key added",
+			metadata:  nil,
+			config:    nil,
+			expectSet: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := embedCustomerCodecs(tt.metadata, tt.outboundCodecs)
+			got := embedCodecs(tt.metadata, tt.config)
 			val, present := got[call.MetadataKeyCodecs]
 			if present != tt.expectSet {
 				t.Errorf("Key presence: got %v, expected %v", present, tt.expectSet)

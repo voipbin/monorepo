@@ -121,6 +121,12 @@
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
 <li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
@@ -366,8 +372,7 @@
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
     &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: false,
-        &quot;outbound_codecs&quot;: &quot;&quot;
+        &quot;rtp_debug&quot;: false
     },
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;active&quot;,
@@ -382,19 +387,18 @@
 </section>
 <section id="update-customer-metadata">
 <h3>Update customer metadata<a class="headerlink" href="#update-customer-metadata" title="Link to this heading"></a></h3>
-<p>Update configuration flags for your customer account, such as enabling RTP debug capture or setting an outbound codec preference.</p>
+<p>Update configuration flags for your customer account, such as enabling RTP debug capture.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> flag enables RTP packet capture for debugging audio quality issues. Only agents with CustomerAdmin permission can update metadata. Enabling this increases storage usage — disable after debugging.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">outbound_codecs</span></code> field is a comma-separated, preference-ordered list of codec names (e.g. <code class="docutils literal notranslate"><span class="pre">PCMU,PCMA,G729</span></code>) that will be offered to PSTN providers on outbound INVITEs. When set, the platform restricts the outgoing SDP to only these codecs. Set to an empty string to fall back to the server default.</p>
+<p>To configure outbound codec preferences, use the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/outbound_configs</span></code> endpoint instead of customer metadata.</p>
 </div>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer/metadata?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;rtp_debug&quot;: true,
-        &quot;outbound_codecs&quot;: &quot;PCMU,PCMA,G729&quot;
+        &quot;rtp_debug&quot;: true
     }&#39;
 
 {
@@ -409,8 +413,7 @@
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
     &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: true,
-        &quot;outbound_codecs&quot;: &quot;PCMU,PCMA,G729&quot;
+        &quot;rtp_debug&quot;: true
     },
     &quot;email_verified&quot;: true,
     &quot;status&quot;: &quot;active&quot;,

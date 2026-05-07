@@ -32,7 +32,7 @@ const (
 	// MetadataKeyCodecs sets the outbound codec preference for this call.
 	// Value is a comma-separated string, e.g. "PCMU,PCMA,G729".
 	// When present, call-manager adds a VBOUT-CODECS SIP header to the outgoing INVITE.
-	// Overrides the customer-level OutboundCodecs when set per-call.
+	// Overrides the customer-level OutboundConfig.Codecs when set per-call.
 	// Creation-time only.
 	MetadataKeyCodecs MetadataKey = "codecs"
 )
