@@ -230,6 +230,7 @@ func (h *callHandler) ValidateDestination(ctx context.Context, customerID uuid.U
 	}
 
 	log.Infof("Destination country %q not in whitelist. customer_id: %s", country, customerID)
+	promCallOutboundWhitelistRejectedTotal.WithLabelValues(country).Inc()
 	return false
 }
 

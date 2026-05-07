@@ -281,6 +281,16 @@ var (
 		},
 		[]string{"direction", "type"},
 	)
+
+	// promCallOutboundWhitelistRejectedTotal counts outbound PSTN calls rejected by destination whitelist.
+	promCallOutboundWhitelistRejectedTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "call_outbound_whitelist_rejected_total",
+			Help:      "Total outbound PSTN calls rejected by destination whitelist.",
+		},
+		[]string{"destination_country"},
+	)
 )
 
 func init() {
@@ -291,6 +301,7 @@ func init() {
 		promCallActionProcessTime,
 		promConferenceLeaveTotal,
 		promCallDurationSeconds,
+		promCallOutboundWhitelistRejectedTotal,
 	)
 }
 
