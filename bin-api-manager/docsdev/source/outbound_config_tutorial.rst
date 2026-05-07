@@ -9,8 +9,16 @@ Prerequisites
 * Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer``.
 * A valid JWT token for authentication.
 
-Step 1 — Create your OutboundConfig
-++++++++++++++++++++++++++++++++++++
+Step 1 — Create your OutboundConfig (if it does not already exist)
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+.. note:: **AI Implementation Hint**
+
+   An empty OutboundConfig is **automatically created** for every new customer account.
+   Before calling ``POST /v1/outbound_configs``, check whether a config already exists:
+   ``GET https://api.voipbin.net/v1.0/outbound_configs?customer_id={customer_id}``.
+   If a row is returned, skip this step and proceed directly to Step 2 (``PUT``) to
+   populate ``destination_whitelist``. Only call ``POST`` if no config exists yet.
 
 .. code::
 

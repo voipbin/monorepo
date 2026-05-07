@@ -6,6 +6,7 @@ import (
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
+	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -66,6 +67,13 @@ func (h *serviceHandler) CustomerCreate(
 	if err != nil {
 		log.Errorf("Could not create a new customer. err: %v", err)
 		return nil, err
+	}
+
+	// Auto-create empty OutboundConfig for the new customer.
+	// Empty whitelist blocks all PSTN calls until the customer explicitly configures it.
+	// Fire-and-forget: OutboundConfig failure does not block customer creation.
+	if _, cfgErr := h.reqHandler.CallV1OutboundConfigCreate(ctx, res.ID, &cmoutboundconfig.UpdateRequest{}); cfgErr != nil {
+		log.Warnf("Could not auto-create OutboundConfig for new customer. customer_id: %s, err: %v", res.ID, cfgErr)
 	}
 
 	return res, nil
@@ -716,6 +724,15 @@ func (h *serviceHandler) CustomerSignup(
 	if err != nil {
 		log.Errorf("Could not signup customer. err: %v", err)
 		return nil, err
+	}
+
+	// Auto-create empty OutboundConfig for the new customer.
+	// Empty whitelist blocks all PSTN calls until the customer explicitly configures it.
+	// Fire-and-forget: OutboundConfig failure does not block customer signup.
+	if res.Customer != nil {
+		if _, cfgErr := h.reqHandler.CallV1OutboundConfigCreate(ctx, res.Customer.ID, &cmoutboundconfig.UpdateRequest{}); cfgErr != nil {
+			log.Warnf("Could not auto-create OutboundConfig for new customer. customer_id: %s, err: %v", res.Customer.ID, cfgErr)
+		}
 	}
 
 	return res.ConvertWebhookMessage(), nil

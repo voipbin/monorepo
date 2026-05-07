@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
+	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -103,6 +104,7 @@ func Test_CustomerCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().CustomerV1CustomerCreate(ctx, 30000, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI).Return(tt.responseCustomer, nil)
+			mockReq.EXPECT().CallV1OutboundConfigCreate(ctx, tt.responseCustomer.ID, &cmoutboundconfig.UpdateRequest{}).Return(&cmoutboundconfig.OutboundConfig{}, nil)
 
 			res, err := h.CustomerCreate(ctx, tt.agent, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI)
 			if err != nil {
@@ -734,6 +736,9 @@ func Test_CustomerSignup(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerSignup(
 				ctx, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.clientIP,
 			).Return(tt.responseSignup, nil)
+			if tt.responseSignup != nil && tt.responseSignup.Customer != nil {
+				mockReq.EXPECT().CallV1OutboundConfigCreate(ctx, tt.responseSignup.Customer.ID, &cmoutboundconfig.UpdateRequest{}).Return(&cmoutboundconfig.OutboundConfig{}, nil)
+			}
 
 			res, err := h.CustomerSignup(ctx, tt.customerName, tt.detail, tt.email, tt.phoneNumber, tt.address, tt.webhookMethod, tt.webhookURI, tt.clientIP)
 			if err != nil {

@@ -16,6 +16,8 @@ OutboundConfig controls per-customer outbound PSTN call behaviour. It has two fi
 
 There is exactly one OutboundConfig per customer. It is created via ``POST /v1/outbound_configs``, updated via ``PUT /v1/outbound_configs/{id}``, and can be soft-deleted via ``DELETE /v1/outbound_configs/{id}``. After deletion all outbound PSTN calls are blocked (no config row = empty whitelist = deny all).
 
+OutboundConfig is **automatically created** (with an empty ``destination_whitelist``) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates ``destination_whitelist``.
+
 .. warning::
 
    **Deploy-day behaviour:** Any customer without an OutboundConfig row will have all outbound PSTN calls rejected immediately. Customers must create their OutboundConfig and populate ``destination_whitelist`` before placing PSTN calls.

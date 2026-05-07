@@ -208,8 +208,17 @@
 <li><p>A valid JWT token for authentication.</p></li>
 </ul>
 </section>
-<section id="step-1-create-your-outboundconfig">
-<h2>Step 1 — Create your OutboundConfig<a class="headerlink" href="#step-1-create-your-outboundconfig" title="Link to this heading"></a></h2>
+<section id="step-1-create-your-outboundconfig-if-it-does-not-already-exist">
+<h2>Step 1 — Create your OutboundConfig (if it does not already exist)<a class="headerlink" href="#step-1-create-your-outboundconfig-if-it-does-not-already-exist" title="Link to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>An empty OutboundConfig is <strong>automatically created</strong> for every new customer account.
+Before calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/outbound_configs</span></code>, check whether a config already exists:
+<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/outbound_configs?customer_id={customer_id}</span></code>.
+If a row is returned, skip this step and proceed directly to Step 2 (<code class="docutils literal notranslate"><span class="pre">PUT</span></code>) to
+populate <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>. Only call <code class="docutils literal notranslate"><span class="pre">POST</span></code> if no config exists yet.</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_configs</span>
 <span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">token</span><span class="o">&gt;</span>
 <span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
@@ -302,7 +311,7 @@
                             <ul>
 <li><a class="reference internal" href="#">OutboundConfig Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li><a class="reference internal" href="#step-1-create-your-outboundconfig">Step 1 — Create your OutboundConfig</a></li>
+<li><a class="reference internal" href="#step-1-create-your-outboundconfig-if-it-does-not-already-exist">Step 1 — Create your OutboundConfig (if it does not already exist)</a></li>
 <li><a class="reference internal" href="#step-2-add-a-country-to-the-whitelist">Step 2 — Add a country to the whitelist</a></li>
 <li><a class="reference internal" href="#step-3-verify">Step 3 — Verify</a></li>
 <li><a class="reference internal" href="#step-4-delete-optional">Step 4 — Delete (optional)</a></li>
