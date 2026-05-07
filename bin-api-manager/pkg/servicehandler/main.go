@@ -10,6 +10,7 @@ import (
 
 	cmcall "monorepo/bin-call-manager/models/call"
 	cmgroupcall "monorepo/bin-call-manager/models/groupcall"
+	cmoutboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	cmrecording "monorepo/bin-call-manager/models/recording"
 	ememail "monorepo/bin-email-manager/models/email"
 	smaccount "monorepo/bin-storage-manager/models/account"
@@ -196,6 +197,13 @@ type ServiceHandler interface {
 	CallRecordingStop(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallSilenceOn(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error
 	CallSilenceOff(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) error
+
+	// outbound config handlers
+	OutboundConfigCreate(ctx context.Context, a *auth.AuthIdentity, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.WebhookMessage, error)
+	OutboundConfigDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmoutboundconfig.WebhookMessage, error)
+	OutboundConfigGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cmoutboundconfig.WebhookMessage, error)
+	OutboundConfigList(ctx context.Context, a *auth.AuthIdentity, pageSize uint64, pageToken string) ([]*cmoutboundconfig.WebhookMessage, error)
+	OutboundConfigUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, req *cmoutboundconfig.UpdateRequest) (*cmoutboundconfig.WebhookMessage, error)
 
 	// campaign handlers
 	CampaignCreate(

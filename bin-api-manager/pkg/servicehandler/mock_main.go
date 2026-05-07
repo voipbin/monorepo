@@ -24,6 +24,7 @@ import (
 	billing "monorepo/bin-billing-manager/models/billing"
 	call "monorepo/bin-call-manager/models/call"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	recording "monorepo/bin-call-manager/models/recording"
 	campaign "monorepo/bin-campaign-manager/models/campaign"
 	campaigncall "monorepo/bin-campaign-manager/models/campaigncall"
@@ -2832,6 +2833,81 @@ func (m *MockServiceHandler) NumberUpdateMetadata(ctx context.Context, a *auth.A
 func (mr *MockServiceHandlerMockRecorder) NumberUpdateMetadata(ctx, a, id, metadata any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NumberUpdateMetadata", reflect.TypeOf((*MockServiceHandler)(nil).NumberUpdateMetadata), ctx, a, id, metadata)
+}
+
+// OutboundConfigCreate mocks base method.
+func (m *MockServiceHandler) OutboundConfigCreate(ctx context.Context, a *auth.AuthIdentity, req *outboundconfig.UpdateRequest) (*outboundconfig.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigCreate", ctx, a, req)
+	ret0, _ := ret[0].(*outboundconfig.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigCreate indicates an expected call of OutboundConfigCreate.
+func (mr *MockServiceHandlerMockRecorder) OutboundConfigCreate(ctx, a, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigCreate", reflect.TypeOf((*MockServiceHandler)(nil).OutboundConfigCreate), ctx, a, req)
+}
+
+// OutboundConfigDelete mocks base method.
+func (m *MockServiceHandler) OutboundConfigDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*outboundconfig.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigDelete", ctx, a, id)
+	ret0, _ := ret[0].(*outboundconfig.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigDelete indicates an expected call of OutboundConfigDelete.
+func (mr *MockServiceHandlerMockRecorder) OutboundConfigDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigDelete", reflect.TypeOf((*MockServiceHandler)(nil).OutboundConfigDelete), ctx, a, id)
+}
+
+// OutboundConfigGet mocks base method.
+func (m *MockServiceHandler) OutboundConfigGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*outboundconfig.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigGet", ctx, a, id)
+	ret0, _ := ret[0].(*outboundconfig.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigGet indicates an expected call of OutboundConfigGet.
+func (mr *MockServiceHandlerMockRecorder) OutboundConfigGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigGet", reflect.TypeOf((*MockServiceHandler)(nil).OutboundConfigGet), ctx, a, id)
+}
+
+// OutboundConfigList mocks base method.
+func (m *MockServiceHandler) OutboundConfigList(ctx context.Context, a *auth.AuthIdentity, pageSize uint64, pageToken string) ([]*outboundconfig.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigList", ctx, a, pageSize, pageToken)
+	ret0, _ := ret[0].([]*outboundconfig.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigList indicates an expected call of OutboundConfigList.
+func (mr *MockServiceHandlerMockRecorder) OutboundConfigList(ctx, a, pageSize, pageToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigList", reflect.TypeOf((*MockServiceHandler)(nil).OutboundConfigList), ctx, a, pageSize, pageToken)
+}
+
+// OutboundConfigUpdate mocks base method.
+func (m *MockServiceHandler) OutboundConfigUpdate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigUpdate", ctx, a, id, req)
+	ret0, _ := ret[0].(*outboundconfig.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigUpdate indicates an expected call of OutboundConfigUpdate.
+func (mr *MockServiceHandlerMockRecorder) OutboundConfigUpdate(ctx, a, id, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigUpdate", reflect.TypeOf((*MockServiceHandler)(nil).OutboundConfigUpdate), ctx, a, id, req)
 }
 
 // OutdialCreate mocks base method.

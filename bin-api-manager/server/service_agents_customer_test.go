@@ -45,7 +45,7 @@ func Test_GetServiceAgentsCustomer(t *testing.T) {
 			responseCustomer: &cmcustomer.WebhookMessage{
 				ID: uuid.FromStringOrNil("9aae8ff0-bc88-11ef-8111-0fd82660b367"),
 			},
-			expectedRes: []byte(`{"id":"9aae8ff0-bc88-11ef-8111-0fd82660b367","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false,"outbound_codecs":""},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+			expectedRes: []byte(`{"id":"9aae8ff0-bc88-11ef-8111-0fd82660b367","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 		},
 	}
 

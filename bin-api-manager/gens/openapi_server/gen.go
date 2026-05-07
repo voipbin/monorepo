@@ -1967,6 +1967,58 @@ type CallManagerGroupcallRingMethod string
 // CallManagerGroupcallStatus Current status of the call or group call
 type CallManagerGroupcallStatus string
 
+// CallManagerOutboundConfig defines model for CallManagerOutboundConfig.
+type CallManagerOutboundConfig struct {
+	// Codecs Comma-separated codec preference list (e.g. PCMU,PCMA,G729). Empty = server default.
+	Codecs *string `json:"codecs,omitempty"`
+
+	// CustomerId The customer ID that owns this outbound config. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// DestinationWhitelist ISO 3166 alpha-2 country codes (lowercase). Empty array = deny all PSTN calls.
+	DestinationWhitelist *[]string `json:"destination_whitelist,omitempty"`
+
+	// Detail Free-text description of this outbound config.
+	Detail *string `json:"detail,omitempty"`
+
+	// Id The unique identifier of the outbound config.
+	Id *string `json:"id,omitempty"`
+
+	// Name Human-readable name for this outbound config.
+	Name *string `json:"name,omitempty"`
+
+	// TmCreate Timestamp when the outbound config was created.
+	TmCreate *time.Time `json:"tm_create"`
+
+	// TmDelete Timestamp when the outbound config was deleted (soft-delete).
+	TmDelete *time.Time `json:"tm_delete"`
+
+	// TmUpdate Timestamp when the outbound config was last updated.
+	TmUpdate *time.Time `json:"tm_update"`
+}
+
+// CallManagerOutboundConfigList defines model for CallManagerOutboundConfigList.
+type CallManagerOutboundConfigList struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                      `json:"next_page_token,omitempty"`
+	Result        *[]CallManagerOutboundConfig `json:"result,omitempty"`
+}
+
+// CallManagerOutboundConfigUpdateRequest defines model for CallManagerOutboundConfigUpdateRequest.
+type CallManagerOutboundConfigUpdateRequest struct {
+	// Codecs Comma-separated codec preference list. Send null or omit to leave unchanged. Send empty string to use server default.
+	Codecs *string `json:"codecs"`
+
+	// DestinationWhitelist ISO 3166 alpha-2 country codes (lowercase). Send null or omit to leave unchanged. Send [] to deny all PSTN calls.
+	DestinationWhitelist *[]string `json:"destination_whitelist"`
+
+	// Detail Free-text description of this outbound config.
+	Detail *string `json:"detail,omitempty"`
+
+	// Name Human-readable name for this outbound config.
+	Name *string `json:"name,omitempty"`
+}
+
 // CallManagerRecording defines model for CallManagerRecording.
 type CallManagerRecording struct {
 	// ActiveflowId The activeflow ID associated with this recording. Returned from the `POST /activeflows` or `GET /activeflows` response.
@@ -2660,8 +2712,7 @@ type CustomerManagerCustomer struct {
 	IdentityVerificationStatus *CustomerManagerCustomerIdentityVerificationStatus `json:"identity_verification_status,omitempty"`
 
 	// Metadata Configuration flags for a customer account. Controls platform behavior
-	// such as RTP packet capture for debugging audio issues and the preferred
-	// codec list for outbound calls.
+	// such as RTP packet capture for debugging audio issues.
 	// Updatable by CustomerAdmin via `PUT /customer/metadata`
 	// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
@@ -2721,8 +2772,7 @@ type CustomerManagerCustomerAdmin struct {
 	IdentityVerificationStatus *CustomerManagerCustomerIdentityVerificationStatus `json:"identity_verification_status,omitempty"`
 
 	// Metadata Configuration flags for a customer account. Controls platform behavior
-	// such as RTP packet capture for debugging audio issues and the preferred
-	// codec list for outbound calls.
+	// such as RTP packet capture for debugging audio issues.
 	// Updatable by CustomerAdmin via `PUT /customer/metadata`
 	// or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 	Metadata *CustomerManagerMetadata `json:"metadata,omitempty"`
@@ -2776,19 +2826,10 @@ type CustomerManagerEmailVerifyResult struct {
 }
 
 // CustomerManagerMetadata Configuration flags for a customer account. Controls platform behavior
-// such as RTP packet capture for debugging audio issues and the preferred
-// codec list for outbound calls.
+// such as RTP packet capture for debugging audio issues.
 // Updatable by CustomerAdmin via `PUT /customer/metadata`
 // or by ProjectSuperAdmin via `PUT /customers/{id}/metadata`.
 type CustomerManagerMetadata struct {
-	// OutboundCodecs Comma-separated, preference-ordered list of codec names for outbound PSTN calls
-	// (e.g. `PCMU,PCMA,G729`). When set, the platform restricts the outgoing INVITE's
-	// SDP to only these codecs. Empty string means use the server default
-	// (current pass-through behavior with PCMU/PCMA transcoding).
-	// Names match standard SDP `a=rtpmap` codec names. Per-call metadata key
-	// `codecs` overrides this customer-level default when present.
-	OutboundCodecs *string `json:"outbound_codecs,omitempty"`
-
 	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
 	// Use this to debug audio quality issues (one-way audio, codec problems, jitter).
 	// Default is `false`. Enabling this increases storage usage — disable after debugging.
@@ -5665,6 +5706,18 @@ type PutNumbersIdFlowIdsJSONBody struct {
 	MessageFlowId string `json:"message_flow_id"`
 }
 
+// GetOutboundConfigsParams defines parameters for GetOutboundConfigs.
+type GetOutboundConfigsParams struct {
+	// CustomerId Filter by customer ID.
+	CustomerId *openapi_types.UUID `form:"customer_id,omitempty" json:"customer_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetOutdialsParams defines parameters for GetOutdials.
 type GetOutdialsParams struct {
 	// PageSize Number of results to return per page.
@@ -6791,6 +6844,12 @@ type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
 // PutNumbersIdMetadataJSONRequestBody defines body for PutNumbersIdMetadata for application/json ContentType.
 type PutNumbersIdMetadataJSONRequestBody = NumberManagerMetadata
 
+// PostOutboundConfigsJSONRequestBody defines body for PostOutboundConfigs for application/json ContentType.
+type PostOutboundConfigsJSONRequestBody = CallManagerOutboundConfigUpdateRequest
+
+// PutOutboundConfigsIdJSONRequestBody defines body for PutOutboundConfigsId for application/json ContentType.
+type PutOutboundConfigsIdJSONRequestBody = CallManagerOutboundConfigUpdateRequest
+
 // PostOutdialsJSONRequestBody defines body for PostOutdials for application/json ContentType.
 type PostOutdialsJSONRequestBody PostOutdialsJSONBody
 
@@ -7480,6 +7539,21 @@ type ServerInterface interface {
 	// Update a number's metadata.
 	// (PUT /numbers/{id}/metadata)
 	PutNumbersIdMetadata(c *gin.Context, id string)
+	// Get list of outbound configs
+	// (GET /outbound_configs)
+	GetOutboundConfigs(c *gin.Context, params GetOutboundConfigsParams)
+	// Create an outbound config
+	// (POST /outbound_configs)
+	PostOutboundConfigs(c *gin.Context)
+	// Delete an outbound config
+	// (DELETE /outbound_configs/{id})
+	DeleteOutboundConfigsId(c *gin.Context, id openapi_types.UUID)
+	// Get outbound config detail
+	// (GET /outbound_configs/{id})
+	GetOutboundConfigsId(c *gin.Context, id openapi_types.UUID)
+	// Update an outbound config
+	// (PUT /outbound_configs/{id})
+	PutOutboundConfigsId(c *gin.Context, id openapi_types.UUID)
 	// Retrieve a list of outdials.
 	// (GET /outdials)
 	GetOutdials(c *gin.Context, params GetOutdialsParams)
@@ -12290,6 +12364,133 @@ func (siw *ServerInterfaceWrapper) PutNumbersIdMetadata(c *gin.Context) {
 	siw.Handler.PutNumbersIdMetadata(c, id)
 }
 
+// GetOutboundConfigs operation middleware
+func (siw *ServerInterfaceWrapper) GetOutboundConfigs(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetOutboundConfigsParams
+
+	// ------------- Optional query parameter "customer_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "customer_id", c.Request.URL.Query(), &params.CustomerId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter customer_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutboundConfigs(c, params)
+}
+
+// PostOutboundConfigs operation middleware
+func (siw *ServerInterfaceWrapper) PostOutboundConfigs(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostOutboundConfigs(c)
+}
+
+// DeleteOutboundConfigsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteOutboundConfigsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteOutboundConfigsId(c, id)
+}
+
+// GetOutboundConfigsId operation middleware
+func (siw *ServerInterfaceWrapper) GetOutboundConfigsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetOutboundConfigsId(c, id)
+}
+
+// PutOutboundConfigsId operation middleware
+func (siw *ServerInterfaceWrapper) PutOutboundConfigsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutOutboundConfigsId(c, id)
+}
+
 // GetOutdials operation middleware
 func (siw *ServerInterfaceWrapper) GetOutdials(c *gin.Context) {
 
@@ -16368,6 +16569,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/numbers/:id", wrapper.PutNumbersId)
 	router.PUT(options.BaseURL+"/numbers/:id/flow_ids", wrapper.PutNumbersIdFlowIds)
 	router.PUT(options.BaseURL+"/numbers/:id/metadata", wrapper.PutNumbersIdMetadata)
+	router.GET(options.BaseURL+"/outbound_configs", wrapper.GetOutboundConfigs)
+	router.POST(options.BaseURL+"/outbound_configs", wrapper.PostOutboundConfigs)
+	router.DELETE(options.BaseURL+"/outbound_configs/:id", wrapper.DeleteOutboundConfigsId)
+	router.GET(options.BaseURL+"/outbound_configs/:id", wrapper.GetOutboundConfigsId)
+	router.PUT(options.BaseURL+"/outbound_configs/:id", wrapper.PutOutboundConfigsId)
 	router.GET(options.BaseURL+"/outdials", wrapper.GetOutdials)
 	router.POST(options.BaseURL+"/outdials", wrapper.PostOutdials)
 	router.DELETE(options.BaseURL+"/outdials/:id", wrapper.DeleteOutdialsId)
@@ -26615,6 +26821,272 @@ func (response PutNumbersIdMetadata500JSONResponse) VisitPutNumbersIdMetadataRes
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetOutboundConfigsRequestObject struct {
+	Params GetOutboundConfigsParams
+}
+
+type GetOutboundConfigsResponseObject interface {
+	VisitGetOutboundConfigsResponse(w http.ResponseWriter) error
+}
+
+type GetOutboundConfigs200JSONResponse CallManagerOutboundConfigList
+
+func (response GetOutboundConfigs200JSONResponse) VisitGetOutboundConfigsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfigs401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetOutboundConfigs401JSONResponse) VisitGetOutboundConfigsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfigs500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetOutboundConfigs500JSONResponse) VisitGetOutboundConfigsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostOutboundConfigsRequestObject struct {
+	Body *PostOutboundConfigsJSONRequestBody
+}
+
+type PostOutboundConfigsResponseObject interface {
+	VisitPostOutboundConfigsResponse(w http.ResponseWriter) error
+}
+
+type PostOutboundConfigs200JSONResponse CallManagerOutboundConfig
+
+func (response PostOutboundConfigs200JSONResponse) VisitPostOutboundConfigsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostOutboundConfigs400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostOutboundConfigs400JSONResponse) VisitPostOutboundConfigsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostOutboundConfigs401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostOutboundConfigs401JSONResponse) VisitPostOutboundConfigsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostOutboundConfigs500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostOutboundConfigs500JSONResponse) VisitPostOutboundConfigsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutboundConfigsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteOutboundConfigsIdResponseObject interface {
+	VisitDeleteOutboundConfigsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteOutboundConfigsId200JSONResponse CallManagerOutboundConfig
+
+func (response DeleteOutboundConfigsId200JSONResponse) VisitDeleteOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutboundConfigsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteOutboundConfigsId400JSONResponse) VisitDeleteOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutboundConfigsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteOutboundConfigsId401JSONResponse) VisitDeleteOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutboundConfigsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteOutboundConfigsId403JSONResponse) VisitDeleteOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutboundConfigsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteOutboundConfigsId404JSONResponse) VisitDeleteOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteOutboundConfigsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteOutboundConfigsId500JSONResponse) VisitDeleteOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfigsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetOutboundConfigsIdResponseObject interface {
+	VisitGetOutboundConfigsIdResponse(w http.ResponseWriter) error
+}
+
+type GetOutboundConfigsId200JSONResponse CallManagerOutboundConfig
+
+func (response GetOutboundConfigsId200JSONResponse) VisitGetOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfigsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetOutboundConfigsId400JSONResponse) VisitGetOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfigsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetOutboundConfigsId401JSONResponse) VisitGetOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfigsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetOutboundConfigsId403JSONResponse) VisitGetOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfigsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetOutboundConfigsId404JSONResponse) VisitGetOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOutboundConfigsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetOutboundConfigsId500JSONResponse) VisitGetOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfigsIdRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PutOutboundConfigsIdJSONRequestBody
+}
+
+type PutOutboundConfigsIdResponseObject interface {
+	VisitPutOutboundConfigsIdResponse(w http.ResponseWriter) error
+}
+
+type PutOutboundConfigsId200JSONResponse CallManagerOutboundConfig
+
+func (response PutOutboundConfigsId200JSONResponse) VisitPutOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfigsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PutOutboundConfigsId400JSONResponse) VisitPutOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfigsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PutOutboundConfigsId401JSONResponse) VisitPutOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfigsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PutOutboundConfigsId403JSONResponse) VisitPutOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfigsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PutOutboundConfigsId404JSONResponse) VisitPutOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutOutboundConfigsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PutOutboundConfigsId500JSONResponse) VisitPutOutboundConfigsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetOutdialsRequestObject struct {
 	Params GetOutdialsParams
 }
@@ -35782,6 +36254,21 @@ type StrictServerInterface interface {
 	// Update a number's metadata.
 	// (PUT /numbers/{id}/metadata)
 	PutNumbersIdMetadata(ctx context.Context, request PutNumbersIdMetadataRequestObject) (PutNumbersIdMetadataResponseObject, error)
+	// Get list of outbound configs
+	// (GET /outbound_configs)
+	GetOutboundConfigs(ctx context.Context, request GetOutboundConfigsRequestObject) (GetOutboundConfigsResponseObject, error)
+	// Create an outbound config
+	// (POST /outbound_configs)
+	PostOutboundConfigs(ctx context.Context, request PostOutboundConfigsRequestObject) (PostOutboundConfigsResponseObject, error)
+	// Delete an outbound config
+	// (DELETE /outbound_configs/{id})
+	DeleteOutboundConfigsId(ctx context.Context, request DeleteOutboundConfigsIdRequestObject) (DeleteOutboundConfigsIdResponseObject, error)
+	// Get outbound config detail
+	// (GET /outbound_configs/{id})
+	GetOutboundConfigsId(ctx context.Context, request GetOutboundConfigsIdRequestObject) (GetOutboundConfigsIdResponseObject, error)
+	// Update an outbound config
+	// (PUT /outbound_configs/{id})
+	PutOutboundConfigsId(ctx context.Context, request PutOutboundConfigsIdRequestObject) (PutOutboundConfigsIdResponseObject, error)
 	// Retrieve a list of outdials.
 	// (GET /outdials)
 	GetOutdials(ctx context.Context, request GetOutdialsRequestObject) (GetOutdialsResponseObject, error)
@@ -41568,6 +42055,155 @@ func (sh *strictHandler) PutNumbersIdMetadata(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutNumbersIdMetadataResponseObject); ok {
 		if err := validResponse.VisitPutNumbersIdMetadataResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutboundConfigs operation middleware
+func (sh *strictHandler) GetOutboundConfigs(ctx *gin.Context, params GetOutboundConfigsParams) {
+	var request GetOutboundConfigsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutboundConfigs(ctx, request.(GetOutboundConfigsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutboundConfigs")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutboundConfigsResponseObject); ok {
+		if err := validResponse.VisitGetOutboundConfigsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostOutboundConfigs operation middleware
+func (sh *strictHandler) PostOutboundConfigs(ctx *gin.Context) {
+	var request PostOutboundConfigsRequestObject
+
+	var body PostOutboundConfigsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostOutboundConfigs(ctx, request.(PostOutboundConfigsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostOutboundConfigs")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostOutboundConfigsResponseObject); ok {
+		if err := validResponse.VisitPostOutboundConfigsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteOutboundConfigsId operation middleware
+func (sh *strictHandler) DeleteOutboundConfigsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteOutboundConfigsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteOutboundConfigsId(ctx, request.(DeleteOutboundConfigsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteOutboundConfigsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteOutboundConfigsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteOutboundConfigsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetOutboundConfigsId operation middleware
+func (sh *strictHandler) GetOutboundConfigsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetOutboundConfigsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetOutboundConfigsId(ctx, request.(GetOutboundConfigsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetOutboundConfigsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetOutboundConfigsIdResponseObject); ok {
+		if err := validResponse.VisitGetOutboundConfigsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutOutboundConfigsId operation middleware
+func (sh *strictHandler) PutOutboundConfigsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request PutOutboundConfigsIdRequestObject
+
+	request.Id = id
+
+	var body PutOutboundConfigsIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutOutboundConfigsId(ctx, request.(PutOutboundConfigsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutOutboundConfigsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutOutboundConfigsIdResponseObject); ok {
+		if err := validResponse.VisitPutOutboundConfigsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
