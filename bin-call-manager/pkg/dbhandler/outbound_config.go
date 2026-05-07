@@ -19,12 +19,46 @@ const outboundConfigTable = "call_outbound_configs"
 // outboundConfigSelectCols is the canonical column list for SELECT queries against outboundConfigTable.
 const outboundConfigSelectCols = "id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update, tm_delete"
 
+// mysqlDateTimeFormats are the textual formats the MySQL driver returns when
+// `parseTime=true` is NOT in the DSN — DATETIME(6) → "2006-01-02 15:04:05.999999",
+// DATETIME → "2006-01-02 15:04:05".
+var mysqlDateTimeFormats = []string{
+	"2006-01-02 15:04:05.999999",
+	"2006-01-02 15:04:05",
+}
+
+// parseMySQLDateTime parses a MySQL DATETIME byte string into a *time.Time.
+// MySQL DATETIME columns carry no timezone; time.Parse with an unzoned layout
+// returns UTC, and we call .UTC() explicitly so the contract is obvious.
+// Returns nil for empty or unparseable input. Logs unparseable non-empty input
+// since it indicates a corrupted row, not a normal NULL.
+func parseMySQLDateTime(b []byte) *time.Time {
+	if len(b) == 0 {
+		return nil
+	}
+	s := string(b)
+	for _, f := range mysqlDateTimeFormats {
+		if t, err := time.Parse(f, s); err == nil {
+			t = t.UTC()
+			return &t
+		}
+	}
+	logrus.WithField("func", "parseMySQLDateTime").Warnf("Could not parse MySQL DATETIME value. value: %q", s)
+	return nil
+}
+
 // outboundConfigGetFromRow scans a single call_outbound_configs row into an OutboundConfig.
+//
+// The MySQL driver returns DATETIME columns as raw []byte unless `parseTime=true`
+// is in the DSN — which it isn't on this codebase — so we scan timestamps into
+// sql.RawBytes and parse them with parseMySQLDateTime. Other dbhandler files
+// avoid this by going through commondatabasehandler.ScanRow (which uses db: tags
+// to do the conversion); this file uses raw SQL and handles it inline.
 func (h *handler) outboundConfigGetFromRow(row *sql.Rows) (*outboundconfig.OutboundConfig, error) {
 	res := &outboundconfig.OutboundConfig{}
 
 	var whitelistJSON []byte
-	var tmCreate, tmUpdate, tmDelete sql.NullTime
+	var tmCreateBytes, tmUpdateBytes, tmDeleteBytes sql.RawBytes
 
 	if err := row.Scan(
 		&res.ID,
@@ -33,9 +67,9 @@ func (h *handler) outboundConfigGetFromRow(row *sql.Rows) (*outboundconfig.Outbo
 		&res.Detail,
 		&whitelistJSON,
 		&res.Codecs,
-		&tmCreate,
-		&tmUpdate,
-		&tmDelete,
+		&tmCreateBytes,
+		&tmUpdateBytes,
+		&tmDeleteBytes,
 	); err != nil {
 		return nil, fmt.Errorf("could not scan outbound_config row: %w", err)
 	}
@@ -44,18 +78,9 @@ func (h *handler) outboundConfigGetFromRow(row *sql.Rows) (*outboundconfig.Outbo
 		return nil, fmt.Errorf("could not unmarshal destination_whitelist: %w", err)
 	}
 
-	if tmCreate.Valid {
-		t := tmCreate.Time
-		res.TMCreate = &t
-	}
-	if tmUpdate.Valid {
-		t := tmUpdate.Time
-		res.TMUpdate = &t
-	}
-	if tmDelete.Valid {
-		t := tmDelete.Time
-		res.TMDelete = &t
-	}
+	res.TMCreate = parseMySQLDateTime(tmCreateBytes)
+	res.TMUpdate = parseMySQLDateTime(tmUpdateBytes)
+	res.TMDelete = parseMySQLDateTime(tmDeleteBytes)
 
 	return res, nil
 }
