@@ -150,6 +150,75 @@ mockDB.EXPECT().AgentGet(ctx, gomock.Any()).Return(tt.responseAgent, nil)
 mockDB.EXPECT().AgentGet(ctx, id).Return(gomock.Any(), nil)  // PANIC
 ```
 
+## 13.8 Never Use gomock.Any() For Parsed Request Payloads
+
+`gomock.Any()` is the right matcher for opaque values you don't care about (a context, a randomly generated ID a previous call returned). It is the wrong matcher for **anything the test parsed out of an inbound RPC body**.
+
+A listener handler typically does:
+
+```go
+var req request.V1DataXxxPut
+if err := json.Unmarshal(m.Data, &req); err != nil { ... }
+domainReq := &xxx.UpdateRequest{Name: req.Name, ...}
+result, err := h.xxxHandler.Update(ctx, id, domainReq)
+```
+
+If the test asserts only `Update(gomock.Any(), tt.expectID, gomock.Any())`, it never validates that `m.Data` actually deserialized into the expected struct. A wire-format mismatch between the client and listener (e.g., a missing `request` wrapper, a renamed JSON tag) produces a zero-valued struct, and the test passes anyway. This is exactly the failure mode that produced the Listener Wire-Format Mismatch incident — see [`../workflows/common-gotchas.md`](../workflows/common-gotchas.md).
+
+```go
+// WRONG — third arg is the parsed body; gomock.Any() bypasses the assertion
+mockOutboundConfig.EXPECT().
+    Update(gomock.Any(), tt.expectID, gomock.Any()).
+    Return(tt.responseConfig, nil)
+
+// CORRECT — pass the expected struct; gomock falls back to reflect.DeepEqual
+mockOutboundConfig.EXPECT().
+    Update(gomock.Any(), tt.expectID, tt.expectReq).
+    Return(tt.responseConfig, nil)
+```
+
+The `tt.expectReq` should be the **exact** `*UpdateRequest` (or equivalent) that the listener should construct from `m.Data`. Setting up `expectReq` per row in the table-driven test is the smallest unit that catches a wire-format regression.
+
+When the value crosses pointer or slice boundaries, build it once with a helper closure so the test stays readable:
+
+```go
+expectReq: func() *outboundconfig.UpdateRequest {
+    n := "updated"
+    w := []string{"us", "kr"}
+    return &outboundconfig.UpdateRequest{Name: &n, DestinationWhitelist: &w}
+}(),
+```
+
+`gomock.Any()` is still appropriate for `ctx` and for genuinely opaque return values from the same mock.
+
+## 13.9 RequestHandler Tests Must Assert The Marshaled Wire Shape
+
+Every `bin-common-handler/pkg/requesthandler/<service>_<resource>.go` typed method that constructs a request body MUST have a paired test that:
+
+1. Mocks `sockHandler.RequestPublish` with the **exact** `sock.Request` (URI, Method, DataType, **and `Data`** byte string).
+2. Asserts the marshaled JSON shape — including which top-level keys must and must not be present.
+
+```go
+expectRequest: &sock.Request{
+    URI:      "/v1/outbound_configs/c1234567-f7f5-11ef-92b3-0be9c3b04574",
+    Method:   sock.RequestMethodPut,
+    DataType: "application/json",
+    Data:     []byte(`{"name":"my-config","detail":"detail-text","destination_whitelist":["us","kr"],"codecs":"PCMU,PCMA"}`),
+},
+// ...
+mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
+```
+
+When the convention requires the body to be flat (no `request` wrapper), add an explicit guard so a future refactor that re-introduces the wrapper fails the test, not production:
+
+```go
+if strings.Contains(string(tt.expectRequest.Data), `"request":`) {
+    t.Fatalf("expected flat wire format, but expectRequest.Data contains a `request` wrapper: %s", tt.expectRequest.Data)
+}
+```
+
+Reference implementations: `bin-common-handler/pkg/requesthandler/call_calls_test.go`, `call_recordings_test.go`, `call_outbound_configs_test.go`.
+
 ---
 
 ## Test Utilities

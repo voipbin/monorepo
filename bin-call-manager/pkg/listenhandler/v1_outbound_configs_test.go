@@ -31,7 +31,7 @@ func Test_processV1OutboundConfigsPost(t *testing.T) {
 				URI:      "/v1/outbound_configs",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","request":{"name":"test","codecs":"PCMU"}}`),
+				Data:     []byte(`{"customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"test","codecs":"PCMU"}`),
 			},
 			expectCustomerID: uuid.FromStringOrNil("b3fe6c84-f7f5-11ef-92b3-0be9c3b04574"),
 			expectReq: func() *outboundconfig.UpdateRequest {
@@ -67,7 +67,7 @@ func Test_processV1OutboundConfigsPost(t *testing.T) {
 			}
 
 			mockOutboundConfig.EXPECT().
-				Create(gomock.Any(), tt.expectCustomerID, gomock.Any()).
+				Create(gomock.Any(), tt.expectCustomerID, tt.expectReq).
 				Return(tt.responseConfig, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -269,6 +269,7 @@ func Test_processV1OutboundConfigsIDPut(t *testing.T) {
 		request *sock.Request
 
 		expectID       uuid.UUID
+		expectReq      *outboundconfig.UpdateRequest
 		responseConfig *outboundconfig.OutboundConfig
 		expectRes      *sock.Response
 	}{
@@ -278,9 +279,13 @@ func Test_processV1OutboundConfigsIDPut(t *testing.T) {
 				URI:      "/v1/outbound_configs/c1234567-f7f5-11ef-92b3-0be9c3b04574",
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
-				Data:     []byte(`{"request":{"name":"updated"}}`),
+				Data:     []byte(`{"name":"updated"}`),
 			},
 			expectID: uuid.FromStringOrNil("c1234567-f7f5-11ef-92b3-0be9c3b04574"),
+			expectReq: func() *outboundconfig.UpdateRequest {
+				n := "updated"
+				return &outboundconfig.UpdateRequest{Name: &n}
+			}(),
 			responseConfig: &outboundconfig.OutboundConfig{
 				ID:         uuid.FromStringOrNil("c1234567-f7f5-11ef-92b3-0be9c3b04574"),
 				CustomerID: uuid.FromStringOrNil("b3fe6c84-f7f5-11ef-92b3-0be9c3b04574"),
@@ -290,6 +295,36 @@ func Test_processV1OutboundConfigsIDPut(t *testing.T) {
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"updated","detail":"","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			name: "all fields populated",
+			request: &sock.Request{
+				URI:      "/v1/outbound_configs/c1234567-f7f5-11ef-92b3-0be9c3b04574",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"my-config","detail":"detail-text","destination_whitelist":["us","kr"],"codecs":"PCMU,PCMA"}`),
+			},
+			expectID: uuid.FromStringOrNil("c1234567-f7f5-11ef-92b3-0be9c3b04574"),
+			expectReq: func() *outboundconfig.UpdateRequest {
+				n := "my-config"
+				d := "detail-text"
+				w := []string{"us", "kr"}
+				c := "PCMU,PCMA"
+				return &outboundconfig.UpdateRequest{Name: &n, Detail: &d, DestinationWhitelist: &w, Codecs: &c}
+			}(),
+			responseConfig: &outboundconfig.OutboundConfig{
+				ID:                   uuid.FromStringOrNil("c1234567-f7f5-11ef-92b3-0be9c3b04574"),
+				CustomerID:           uuid.FromStringOrNil("b3fe6c84-f7f5-11ef-92b3-0be9c3b04574"),
+				Name:                 "my-config",
+				Detail:               "detail-text",
+				DestinationWhitelist: []string{"us", "kr"},
+				Codecs:               "PCMU,PCMA",
+			},
+			expectRes: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"my-config","detail":"detail-text","destination_whitelist":["us","kr"],"codecs":"PCMU,PCMA","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -308,7 +343,7 @@ func Test_processV1OutboundConfigsIDPut(t *testing.T) {
 			}
 
 			mockOutboundConfig.EXPECT().
-				Update(gomock.Any(), tt.expectID, gomock.Any()).
+				Update(gomock.Any(), tt.expectID, tt.expectReq).
 				Return(tt.responseConfig, nil)
 
 			res, err := h.processRequest(tt.request)
