@@ -20,6 +20,7 @@ import (
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	recording "monorepo/bin-call-manager/models/recording"
 	action "monorepo/bin-flow-manager/models/action"
 	reflect "reflect"
@@ -1284,6 +1285,80 @@ func (m *MockDBHandler) GroupcallUpdate(ctx context.Context, id uuid.UUID, field
 func (mr *MockDBHandlerMockRecorder) GroupcallUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GroupcallUpdate", reflect.TypeOf((*MockDBHandler)(nil).GroupcallUpdate), ctx, id, fields)
+}
+
+// OutboundConfigCreate mocks base method.
+func (m *MockDBHandler) OutboundConfigCreate(ctx context.Context, c *outboundconfig.OutboundConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigCreate", ctx, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OutboundConfigCreate indicates an expected call of OutboundConfigCreate.
+func (mr *MockDBHandlerMockRecorder) OutboundConfigCreate(ctx, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigCreate", reflect.TypeOf((*MockDBHandler)(nil).OutboundConfigCreate), ctx, c)
+}
+
+// OutboundConfigGetByCustomerID mocks base method.
+func (m *MockDBHandler) OutboundConfigGetByCustomerID(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigGetByCustomerID", ctx, customerID)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigGetByCustomerID indicates an expected call of OutboundConfigGetByCustomerID.
+func (mr *MockDBHandlerMockRecorder) OutboundConfigGetByCustomerID(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigGetByCustomerID", reflect.TypeOf((*MockDBHandler)(nil).OutboundConfigGetByCustomerID), ctx, customerID)
+}
+
+// OutboundConfigGetByID mocks base method.
+func (m *MockDBHandler) OutboundConfigGetByID(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigGetByID", ctx, id)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigGetByID indicates an expected call of OutboundConfigGetByID.
+func (mr *MockDBHandlerMockRecorder) OutboundConfigGetByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigGetByID", reflect.TypeOf((*MockDBHandler)(nil).OutboundConfigGetByID), ctx, id)
+}
+
+// OutboundConfigList mocks base method.
+func (m *MockDBHandler) OutboundConfigList(ctx context.Context, customerID uuid.UUID, pageSize uint64, pageToken string) ([]*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigList", ctx, customerID, pageSize, pageToken)
+	ret0, _ := ret[0].([]*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigList indicates an expected call of OutboundConfigList.
+func (mr *MockDBHandlerMockRecorder) OutboundConfigList(ctx, customerID, pageSize, pageToken any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigList", reflect.TypeOf((*MockDBHandler)(nil).OutboundConfigList), ctx, customerID, pageSize, pageToken)
+}
+
+// OutboundConfigUpdate mocks base method.
+func (m *MockDBHandler) OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigUpdate", ctx, id, req)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigUpdate indicates an expected call of OutboundConfigUpdate.
+func (mr *MockDBHandlerMockRecorder) OutboundConfigUpdate(ctx, id, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigUpdate", reflect.TypeOf((*MockDBHandler)(nil).OutboundConfigUpdate), ctx, id, req)
 }
 
 // RecordingCreate mocks base method.
