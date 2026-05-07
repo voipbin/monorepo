@@ -260,6 +260,29 @@
 </pre></div>
 </div>
 </section>
+<section id="step-4-delete-optional">
+<h2>Step 4 — Delete (optional)<a class="headerlink" href="#step-4-delete-optional" title="Link to this heading"></a></h2>
+<p>Soft-deletes the OutboundConfig. After deletion all outbound PSTN calls for this customer are blocked.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DELETE</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_configs</span><span class="o">/</span><span class="p">{</span><span class="n">outbound_config_id</span><span class="p">}</span>
+<span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">token</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-...&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;destination_whitelist&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;us&quot;</span><span class="p">,</span> <span class="s2">&quot;gb&quot;</span><span class="p">,</span> <span class="s2">&quot;kr&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;codecs&quot;</span><span class="p">:</span> <span class="s2">&quot;PCMU,PCMA&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-07T12:00:00Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Deleting the OutboundConfig immediately blocks all outbound PSTN calls. To restore access, create a new OutboundConfig via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/outbound_configs</span></code> and re-populate <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>.</p>
+</div>
+</section>
 </section>
 
 </main>
@@ -282,6 +305,7 @@
 <li><a class="reference internal" href="#step-1-create-your-outboundconfig">Step 1 — Create your OutboundConfig</a></li>
 <li><a class="reference internal" href="#step-2-add-a-country-to-the-whitelist">Step 2 — Add a country to the whitelist</a></li>
 <li><a class="reference internal" href="#step-3-verify">Step 3 — Verify</a></li>
+<li><a class="reference internal" href="#step-4-delete-optional">Step 4 — Delete (optional)</a></li>
 </ul>
 </li>
 </ul>

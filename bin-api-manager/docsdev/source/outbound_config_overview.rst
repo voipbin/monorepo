@@ -14,7 +14,7 @@ OutboundConfig controls per-customer outbound PSTN call behaviour. It has two fi
 - ``destination_whitelist`` — ISO 3166 alpha-2 country codes permitted for outbound PSTN calls. **Always enforced** — an empty list denies all PSTN calls. Customers must populate this before making any outbound PSTN call.
 - ``codecs`` — Comma-separated codec preference list (e.g. ``PCMU,PCMA,G729``). Empty string = server default.
 
-There is exactly one OutboundConfig per customer. It is created explicitly via ``POST /v1/outbound_configs`` and updated via ``PUT /v1/outbound_configs/{id}``.
+There is exactly one OutboundConfig per customer. It is created via ``POST /v1/outbound_configs``, updated via ``PUT /v1/outbound_configs/{id}``, and can be soft-deleted via ``DELETE /v1/outbound_configs/{id}``. After deletion all outbound PSTN calls are blocked (no config row = empty whitelist = deny all).
 
 .. warning::
 

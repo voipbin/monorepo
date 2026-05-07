@@ -65,3 +65,29 @@ Step 3 — Verify
 
    GET https://api.voipbin.net/v1.0/outbound_configs/{outbound_config_id}
    Authorization: Bearer <token>
+
+Step 4 — Delete (optional)
+++++++++++++++++++++++++++
+
+Soft-deletes the OutboundConfig. After deletion all outbound PSTN calls for this customer are blocked.
+
+.. code::
+
+   DELETE https://api.voipbin.net/v1.0/outbound_configs/{outbound_config_id}
+   Authorization: Bearer <token>
+
+Response:
+
+.. code::
+
+   {
+     "id": "a1b2c3d4-...",
+     "customer_id": "...",
+     "destination_whitelist": ["us", "gb", "kr"],
+     "codecs": "PCMU,PCMA",
+     "tm_delete": "2026-05-07T12:00:00Z"
+   }
+
+.. note:: **AI Implementation Hint**
+
+   Deleting the OutboundConfig immediately blocks all outbound PSTN calls. To restore access, create a new OutboundConfig via ``POST /v1/outbound_configs`` and re-populate ``destination_whitelist``.
