@@ -18,6 +18,7 @@ import (
 	confbridge "monorepo/bin-call-manager/models/confbridge"
 	externalmedia "monorepo/bin-call-manager/models/externalmedia"
 	groupcall "monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	recording "monorepo/bin-call-manager/models/recording"
 	reflect "reflect"
 
@@ -323,6 +324,63 @@ func (m *MockCacheHandler) KamailioMetadataGet(ctx context.Context, sipCallID st
 func (mr *MockCacheHandlerMockRecorder) KamailioMetadataGet(ctx, sipCallID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KamailioMetadataGet", reflect.TypeOf((*MockCacheHandler)(nil).KamailioMetadataGet), ctx, sipCallID)
+}
+
+// OutboundConfigDelete mocks base method.
+func (m *MockCacheHandler) OutboundConfigDelete(ctx context.Context, customerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigDelete", ctx, customerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OutboundConfigDelete indicates an expected call of OutboundConfigDelete.
+func (mr *MockCacheHandlerMockRecorder) OutboundConfigDelete(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigDelete", reflect.TypeOf((*MockCacheHandler)(nil).OutboundConfigDelete), ctx, customerID)
+}
+
+// OutboundConfigGet mocks base method.
+func (m *MockCacheHandler) OutboundConfigGet(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigGet", ctx, customerID)
+	ret0, _ := ret[0].(*outboundconfig.OutboundConfig)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OutboundConfigGet indicates an expected call of OutboundConfigGet.
+func (mr *MockCacheHandlerMockRecorder) OutboundConfigGet(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigGet", reflect.TypeOf((*MockCacheHandler)(nil).OutboundConfigGet), ctx, customerID)
+}
+
+// OutboundConfigSet mocks base method.
+func (m *MockCacheHandler) OutboundConfigSet(ctx context.Context, customerID uuid.UUID, c *outboundconfig.OutboundConfig) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigSet", ctx, customerID, c)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OutboundConfigSet indicates an expected call of OutboundConfigSet.
+func (mr *MockCacheHandlerMockRecorder) OutboundConfigSet(ctx, customerID, c any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigSet", reflect.TypeOf((*MockCacheHandler)(nil).OutboundConfigSet), ctx, customerID, c)
+}
+
+// OutboundConfigSetNotFound mocks base method.
+func (m *MockCacheHandler) OutboundConfigSetNotFound(ctx context.Context, customerID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OutboundConfigSetNotFound", ctx, customerID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// OutboundConfigSetNotFound indicates an expected call of OutboundConfigSetNotFound.
+func (mr *MockCacheHandlerMockRecorder) OutboundConfigSetNotFound(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OutboundConfigSetNotFound", reflect.TypeOf((*MockCacheHandler)(nil).OutboundConfigSetNotFound), ctx, customerID)
 }
 
 // RecordingGet mocks base method.

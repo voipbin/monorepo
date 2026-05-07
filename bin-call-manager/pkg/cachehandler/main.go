@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-call-manager/models/confbridge"
 	"monorepo/bin-call-manager/models/externalmedia"
 	"monorepo/bin-call-manager/models/groupcall"
+	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/models/recording"
 )
 
@@ -59,6 +60,21 @@ type CacheHandler interface {
 	RecordingSet(ctx context.Context, record *recording.Recording) error
 
 	KamailioMetadataGet(ctx context.Context, sipCallID string) (map[string]string, error)
+
+	// OutboundConfigGet returns a cached OutboundConfig for customerID.
+	// Returns (nil, nil) when key exists but is a negative-cache sentinel (no DB row).
+	// Returns (nil, redis.Nil) when key is absent (cache miss).
+	OutboundConfigGet(ctx context.Context, customerID uuid.UUID) (*outboundconfig.OutboundConfig, error)
+
+	// OutboundConfigSet caches the config for customerID with a 30-minute TTL.
+	OutboundConfigSet(ctx context.Context, customerID uuid.UUID, c *outboundconfig.OutboundConfig) error
+
+	// OutboundConfigSetNotFound caches a not-found sentinel for customerID (1-minute TTL).
+	// Prevents DB hammering for customers with no config row.
+	OutboundConfigSetNotFound(ctx context.Context, customerID uuid.UUID) error
+
+	// OutboundConfigDelete removes the cached config for customerID.
+	OutboundConfigDelete(ctx context.Context, customerID uuid.UUID) error
 }
 
 // NewHandler creates DBHandler
