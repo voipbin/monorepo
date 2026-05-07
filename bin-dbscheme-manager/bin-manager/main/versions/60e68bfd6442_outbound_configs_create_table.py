@@ -1,4 +1,4 @@
-"""outbound_configs_create_table
+"""call_outbound_configs_create_table
 
 Revision ID: 60e68bfd6442
 Revises: 86dd44956fa5
@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     op.execute("""
-        CREATE TABLE outbound_configs (
+        CREATE TABLE call_outbound_configs (
             id                    VARCHAR(36)  NOT NULL,
             customer_id           VARCHAR(36)  NOT NULL,
             name                  VARCHAR(255) NOT NULL DEFAULT '',
@@ -35,4 +35,4 @@ def upgrade():
 
 
 def downgrade():
-    op.execute("DROP TABLE IF EXISTS outbound_configs")
+    op.execute("DROP TABLE IF EXISTS call_outbound_configs")
