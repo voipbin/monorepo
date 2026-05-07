@@ -170,6 +170,39 @@ TalkManagerMedia:
 
 **For complete gotcha explanations and troubleshooting, see [code-quality-standards.md#common-gotchas](../reference/code-quality-standards.md#common-gotchas)**
 
+## Listener Wire-Format Mismatch (Silent No-Op)
+
+**Symptom:** A POST or PUT to a public endpoint returns HTTP 200, but a follow-up GET shows nothing changed. No error logs anywhere.
+
+**Root cause:** The `bin-common-handler` requesthandler client and the target service's listenhandler disagree on the JSON shape of the RPC body. `json.Unmarshal` silently ignores unknown top-level keys, so the listener parses a zero-valued struct, the handler operates on nil/zero fields, and the dynamic-update SQL writes nothing (or the create writes empty fields).
+
+**Real incident (2026-05-08):** `PUT /v1.0/outbound_config` returned 200 for weeks but never persisted any change.
+
+- Client (`bin-common-handler/pkg/requesthandler/call_outbound_configs.go`) marshaled the bare `outboundconfig.UpdateRequest`: `{"name":"...","codecs":"..."}`
+- Listener (`bin-call-manager/pkg/listenhandler/v1_outbound_configs.go`) expected the body wrapped in `{"request":{...}}` because `V1DataOutboundConfigsIDPut` had `Request outboundconfig.UpdateRequest` as its only field.
+- Result: `req.Request` was the zero `UpdateRequest{}` — every `*string` / `*[]string` pointer was nil. The DB layer treated nil as "no change," updated only `tm_update`, and returned the unchanged row with HTTP 200.
+
+**Why nobody caught it sooner:**
+- The listener test (`Test_processV1OutboundConfigsIDPut`) used `Update(gomock.Any(), tt.expectID, gomock.Any())` — `gomock.Any()` for the third argument meant the parsed payload was never validated. The test passed even when every field was zero.
+- No client-side test existed for `CallV1OutboundConfigUpdate`, so the marshaled wire shape was never asserted.
+
+### Prevention rules (already encoded in conventions)
+
+1. **Listener request models must be flat.** No `Request` wrapper field in `pkg/listenhandler/models/request/*.go`. See [`../conventions/rpc.md`](../conventions/rpc.md) §9.5.
+2. **Client must marshal via the listener model**, not via the domain model and not via an inline anonymous struct. See [`../conventions/rpc.md`](../conventions/rpc.md) §9.6.
+3. **Listener tests must use a struct-literal matcher for parsed bodies** — never `gomock.Any()` for an argument the test parsed from `m.Data`. See [`../conventions/testing.md`](../conventions/testing.md) §13.8.
+4. **Every requesthandler typed method needs a wire-shape test** — assert the exact `sock.Request.Data` bytes, plus a `strings.Contains` guard against accidental wrapper re-introduction. See [`../conventions/testing.md`](../conventions/testing.md) §13.9.
+
+If you find yourself violating any of these "just for this one resource," go back and read the incident — every one of these rules exists because skipping it caused a silent production failure.
+
+### Diagnostic procedure when symptom appears
+
+1. **Confirm the HTTP layer is fine.** `kubectl logs -n bin-manager api-manager-* | grep -i "PUT.*<endpoint>"` should show 200. If non-200, the bug is upstream of the RPC.
+2. **Check the listener request model.** Open `bin-<target>-manager/pkg/listenhandler/models/request/<resource>.go`. If a struct has a single `Request <DomainModel>` field, that's the smoking gun.
+3. **Check the client marshaling.** Open `bin-common-handler/pkg/requesthandler/<service>_<resource>.go`. If it does `json.Marshal(req)` directly (instead of marshaling a `cmrequest.V1DataXxx` wrapper-or-flat struct), it's almost certainly mismatched.
+4. **Inspect the listener test.** If the mock matcher is `Update(gomock.Any(), id, gomock.Any())` (or `Create(...)`), the test is too loose to have caught this.
+5. **Reproduce locally** by writing a minimal test that unmarshals what the client actually sends into the listener's struct and prints the result — every nil pointer/zero field confirms the diagnosis.
+
 ## Feature Changes Require RST Documentation Updates
 
 **CRITICAL: The RST docs in `bin-api-manager/docsdev/source/` are the primary user-facing documentation and the single source of truth for how the platform works. When adding or changing any user-visible feature, you MUST update the relevant RST docs.**
