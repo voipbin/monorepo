@@ -234,9 +234,14 @@ The config is resolved from the JWT — no customer ID or config ID is needed.</
 </pre></div>
 </div>
 </section>
-<section id="step-2-populate-the-destination-whitelist">
-<h2>Step 2 — Populate the destination whitelist<a class="headerlink" href="#step-2-populate-the-destination-whitelist" title="Link to this heading"></a></h2>
+<section id="step-2-populate-the-destination-whitelist-and-codec-preferences">
+<h2>Step 2 — Populate the destination whitelist and codec preferences<a class="headerlink" href="#step-2-populate-the-destination-whitelist-and-codec-preferences" title="Link to this heading"></a></h2>
 <p>Use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/outbound_config</span></code> (singular, no ID) to update your OutboundConfig. The API resolves which config to update from your JWT.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">codecs</span></code> applies to <strong>SIP outgoing calls only</strong>. PSTN (telephone) calls negotiate codecs directly with the carrier trunk via SDP — setting <code class="docutils literal notranslate"><span class="pre">codecs</span></code> has no effect on PSTN calls.</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PUT</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">api</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">outbound_config</span>
 <span class="n">Authorization</span><span class="p">:</span> <span class="n">Bearer</span> <span class="o">&lt;</span><span class="n">token</span><span class="o">&gt;</span>
 <span class="n">Content</span><span class="o">-</span><span class="n">Type</span><span class="p">:</span> <span class="n">application</span><span class="o">/</span><span class="n">json</span>
@@ -325,7 +330,7 @@ Only use the plural <code class="docutils literal notranslate"><span class="pre"
 <li><a class="reference internal" href="#">OutboundConfig Tutorial</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#step-1-retrieve-your-outboundconfig">Step 1 — Retrieve your OutboundConfig</a></li>
-<li><a class="reference internal" href="#step-2-populate-the-destination-whitelist">Step 2 — Populate the destination whitelist</a></li>
+<li><a class="reference internal" href="#step-2-populate-the-destination-whitelist-and-codec-preferences">Step 2 — Populate the destination whitelist and codec preferences</a></li>
 <li><a class="reference internal" href="#step-3-add-a-country-to-the-whitelist">Step 3 — Add a country to the whitelist</a></li>
 <li><a class="reference internal" href="#step-4-verify">Step 4 — Verify</a></li>
 <li><a class="reference internal" href="#admin-only-operations">Admin-Only Operations</a></li>

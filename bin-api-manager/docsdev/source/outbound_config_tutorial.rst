@@ -37,10 +37,14 @@ Response:
      "tm_delete": null
    }
 
-Step 2 — Populate the destination whitelist
-++++++++++++++++++++++++++++++++++++++++++++
+Step 2 — Populate the destination whitelist and codec preferences
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 Use ``PUT /v1.0/outbound_config`` (singular, no ID) to update your OutboundConfig. The API resolves which config to update from your JWT.
+
+.. note:: **AI Implementation Hint**
+
+   ``codecs`` applies to **SIP outgoing calls only**. PSTN (telephone) calls negotiate codecs directly with the carrier trunk via SDP — setting ``codecs`` has no effect on PSTN calls.
 
 .. code::
 
