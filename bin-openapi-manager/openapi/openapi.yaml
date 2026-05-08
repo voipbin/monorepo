@@ -1516,6 +1516,7 @@ components:
           type: string
           format: uuid
           x-go-type: string
+          nullable: true
           description: |
             UUID of the customer's default outgoing source number, used as the caller ID
             when an outgoing tel call has no valid caller-supplied source.

@@ -1981,7 +1981,7 @@ type CallManagerOutboundConfig struct {
 	// The number must belong to the customer, be of type `normal`, and be active.
 	// Validated at update time and re-validated at call time.
 	// Obtained from the `id` field of the `GET /numbers` response.
-	DefaultOutgoingSourceNumberId *string `json:"default_outgoing_source_number_id,omitempty"`
+	DefaultOutgoingSourceNumberId *string `json:"default_outgoing_source_number_id"`
 
 	// DestinationWhitelist ISO 3166 alpha-2 country codes (lowercase). Empty array = deny all PSTN calls.
 	DestinationWhitelist *[]string `json:"destination_whitelist,omitempty"`

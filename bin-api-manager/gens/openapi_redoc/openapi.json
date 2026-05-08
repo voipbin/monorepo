@@ -20920,6 +20920,7 @@
             "type": "string",
             "format": "uuid",
             "x-go-type": "string",
+            "nullable": true,
             "description": "UUID of the customer's default outgoing source number, used as the caller ID\nwhen an outgoing tel call has no valid caller-supplied source.\nSet to `00000000-0000-0000-0000-000000000000` to clear the default.\nThe number must belong to the customer, be of type `normal`, and be active.\nValidated at update time and re-validated at call time.\nObtained from the `id` field of the `GET /numbers` response.\n",
             "example": "00000000-0000-0000-0000-000000000001"
           },
