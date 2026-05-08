@@ -1501,17 +1501,14 @@ func Test_getDialURI_Tel(t *testing.T) {
 				mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
 			}
 
-			res, techHdrs, err := h.getDialURI(ctx, tt.call)
+			target, err := h.getDialURI(ctx, tt.call)
 
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("Wrong match. expect: err, got: ok")
 				}
-				if res != "" {
-					t.Errorf("Wrong res on error. expect: empty, got: %q", res)
-				}
-				if techHdrs != nil {
-					t.Errorf("Wrong techHdrs on error. expect: nil, got: %v", techHdrs)
+				if target != nil {
+					t.Errorf("Wrong target on error. expect: nil, got: %v", target)
 				}
 				return
 			}
@@ -1520,15 +1517,15 @@ func Test_getDialURI_Tel(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectRes {
-				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, res)
+			if target.URI != tt.expectRes {
+				t.Errorf("Wrong match. expect: %s, got: %s", tt.expectRes, target.URI)
 			}
 
-			if len(techHdrs) != len(tt.expectTechHdrs) {
-				t.Errorf("Wrong techHdrs size. expect: %d, got: %d. techHdrs=%v", len(tt.expectTechHdrs), len(techHdrs), techHdrs)
+			if len(target.TechHeaders) != len(tt.expectTechHdrs) {
+				t.Errorf("Wrong techHdrs size. expect: %d, got: %d. techHdrs=%v", len(tt.expectTechHdrs), len(target.TechHeaders), target.TechHeaders)
 			}
 			for k, v := range tt.expectTechHdrs {
-				if got, ok := techHdrs[k]; !ok || got != v {
+				if got, ok := target.TechHeaders[k]; !ok || got != v {
 					t.Errorf("Wrong techHdrs entry. key=%s expect=%q got=%q (present=%v)", k, v, got, ok)
 				}
 			}
@@ -1595,13 +1592,13 @@ func Test_getDialURI_SIP(t *testing.T) {
 
 			ctx := context.Background()
 
-			res, _, err := h.getDialURI(ctx, tt.c)
+			target, err := h.getDialURI(ctx, tt.c)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res != tt.expectRes {
-				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, res)
+			if target.URI != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %s\ngot: %s", tt.expectRes, target.URI)
 			}
 		})
 	}
@@ -1667,7 +1664,7 @@ func Test_getDialURI_error(t *testing.T) {
 
 			ctx := context.Background()
 
-			_, _, err := h.getDialURI(ctx, tt.call)
+			_, err := h.getDialURI(ctx, tt.call)
 			if err == nil {
 				t.Error("Wrong match. expect: err, got: ok")
 			}
@@ -3189,13 +3186,13 @@ func Test_getDialURISIP(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			res, _, err := h.getDialURISIP(ctx, tt.call)
+			target, err := h.getDialURISIP(ctx, tt.call)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectRes, target.URI) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, target.URI)
 			}
 
 		})
@@ -3247,13 +3244,13 @@ func Test_getDialURISIPDirect(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			res, _, err := h.getDialURISIPDirect(ctx, tt.call)
+			target, err := h.getDialURISIPDirect(ctx, tt.call)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			if !reflect.DeepEqual(tt.expectRes, target.URI) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, target.URI)
 			}
 
 		})
