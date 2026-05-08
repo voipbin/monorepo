@@ -79,7 +79,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Create(gomock.Any(), tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.provierName, tt.providerDetail).Return(tt.responseRoute, nil)
+			mockProvider.EXPECT().Create(gomock.Any(), tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.provierName, tt.providerDetail, "").Return(tt.responseRoute, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -335,7 +335,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Update(gomock.Any(), tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail).Return(tt.responseRoute, nil)
+			mockProvider.EXPECT().Update(gomock.Any(), tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail, "").Return(tt.responseRoute, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

@@ -86,7 +86,7 @@ func (h *providerHandler) setupWithClient(ctx context.Context, carrier, name, de
 	}
 
 	// Step 5: create the VoIPBin provider record
-	res, err := h.Create(ctx, provider.TypeSIP, telnyxSIPHostname, "", "", map[string]string{}, name, detail)
+	res, err := h.Create(ctx, provider.TypeSIP, telnyxSIPHostname, "", "", map[string]string{}, name, detail, "")
 	if err != nil {
 		log.Errorf("Could not create provider record. Attempting Telnyx cleanup. err: %v", err)
 		h.telnyxCleanup(log, client, ipIDs, connID, profileID)

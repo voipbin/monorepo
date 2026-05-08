@@ -18,6 +18,7 @@ type V1DataProvidersPost struct {
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
+	Codecs string `json:"codecs"`
 }
 
 // V1DataProvidersIDPut is
@@ -34,4 +35,5 @@ type V1DataProvidersIDPut struct {
 
 	Name   string `json:"name"`
 	Detail string `json:"detail"`
+	Codecs string `json:"codecs"`
 }

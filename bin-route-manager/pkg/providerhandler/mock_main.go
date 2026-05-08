@@ -43,18 +43,18 @@ func (m *MockProviderHandler) EXPECT() *MockProviderHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockProviderHandler) Create(ctx context.Context, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
+func (m *MockProviderHandler) Create(ctx context.Context, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	ret := m.ctrl.Call(m, "Create", ctx, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 	ret0, _ := ret[0].(*provider.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockProviderHandlerMockRecorder) Create(ctx, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail any) *gomock.Call {
+func (mr *MockProviderHandlerMockRecorder) Create(ctx, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockProviderHandler)(nil).Create), ctx, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockProviderHandler)(nil).Create), ctx, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 }
 
 // Delete mocks base method.
@@ -118,16 +118,16 @@ func (mr *MockProviderHandlerMockRecorder) Setup(ctx, carrier, name, detail, api
 }
 
 // Update mocks base method.
-func (m *MockProviderHandler) Update(ctx context.Context, id uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
+func (m *MockProviderHandler) Update(ctx context.Context, id uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ctx, id, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	ret := m.ctrl.Call(m, "Update", ctx, id, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 	ret0, _ := ret[0].(*provider.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockProviderHandlerMockRecorder) Update(ctx, id, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail any) *gomock.Call {
+func (mr *MockProviderHandlerMockRecorder) Update(ctx, id, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockProviderHandler)(nil).Update), ctx, id, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockProviderHandler)(nil).Update), ctx, id, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 }

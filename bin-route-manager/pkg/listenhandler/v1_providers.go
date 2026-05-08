@@ -41,6 +41,7 @@ func (h *listenHandler) v1ProvidersPost(ctx context.Context, m *sock.Request) (*
 		req.TechHeaders,
 		req.Name,
 		req.Detail,
+		req.Codecs,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new provider. err: %v", err)
@@ -175,6 +176,7 @@ func (h *listenHandler) v1ProvidersIDPut(ctx context.Context, m *sock.Request) (
 		req.TechHeaders,
 		req.Name,
 		req.Detail,
+		req.Codecs,
 	)
 	if err != nil {
 		log.Errorf("Could not update the provider info. err: %v", err)
