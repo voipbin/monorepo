@@ -148,7 +148,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	confbridgeHandler := confbridgehandler.NewConfbridgeHandler(reqHandler, notifyHandler, db, cache, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 	groupcallHandler := groupcallhandler.NewGroupcallHandler(reqHandler, notifyHandler, db)
 	recoveryHandler := callhandler.NewRecoveryHandler(reqHandler, cfg.HomerAPIAddress, cfg.HomerAuthToken, cfg.HomerWhitelist)
-	outboundConfigHandler := outboundconfighandler.NewOutboundConfigHandler(utilhandler.NewUtilHandler(), db, cache)
+	outboundConfigHandler := outboundconfighandler.NewOutboundConfigHandler(utilhandler.NewUtilHandler(), db, cache, reqHandler)
 	callHandler := callhandler.NewCallHandler(reqHandler, notifyHandler, db, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler, groupcallHandler, recoveryHandler, outboundConfigHandler)
 	ariEventHandler := arieventhandler.NewEventHandler(sockHandler, db, cache, reqHandler, notifyHandler, callHandler, confbridgeHandler, channelHandler, bridgeHandler, recordingHandler, externalMediaHandler)
 

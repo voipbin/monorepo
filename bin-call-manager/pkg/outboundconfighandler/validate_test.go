@@ -1,15 +1,20 @@
 package outboundconfighandler
 
 import (
+	"context"
+	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/gofrs/uuid"
+	gomock "go.uber.org/mock/gomock"
 
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/pkg/cachehandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
-
-	gomock "go.uber.org/mock/gomock"
+	nmnumber "monorepo/bin-number-manager/models/number"
 )
 
 func Test_validateWhitelist(t *testing.T) {
@@ -71,23 +76,25 @@ func Test_validateWhitelist(t *testing.T) {
 }
 
 func Test_outboundConfigHandler_validateUpdateRequest(t *testing.T) {
+	customerID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001")
+
 	validWL := []string{"us", "gb"}
 	invalidWL := []string{"xx"}
 	validCodecs := "PCMU,G729"
 	validHyphenCodecs := "PCMU,PCMA,G729,AMR,AMR-WB,GSM,GSM-EFR,GSM-HR-08,opus,telephone-event"
-	invalidCodecs := "PCMU;G729"                       // semicolon not allowed
-	invalidLeadingHyphenCodecs := "-PCMU"              // token must start with alnum
-	invalidTrailingHyphenCodecs := "PCMU-"             // token must end with alnum
-	invalidDoubleHyphenCodecs := "AMR--WB"             // hyphens may not be adjacent
-	invalidSecondTokenLeadingHyphen := "PCMU,-AMR"     // second token may not start with hyphen
+	invalidCodecs := "PCMU;G729"                   // semicolon not allowed
+	invalidLeadingHyphenCodecs := "-PCMU"          // token must start with alnum
+	invalidTrailingHyphenCodecs := "PCMU-"         // token must end with alnum
+	invalidDoubleHyphenCodecs := "AMR--WB"         // hyphens may not be adjacent
+	invalidSecondTokenLeadingHyphen := "PCMU,-AMR" // second token may not start with hyphen
 	emptyCodecs := ""
 
 	// 255-char boundary: build a comma-separated string of exactly 255 chars and one of 256.
 	// Each "PCMU," is 5 bytes; 51 copies = 255, 51+"P" = 256, 52 copies (with trailing trim) etc.
 	// Use exact lengths so the boundary check is deterministic.
-	codecsAt255 := strings.Repeat("PCMU,", 50) + "PCMU"        // 5*50 + 4 = 254 — adjust to 255
-	codecsAt255 = codecsAt255 + "U"                            // 255
-	codecsAt256 := codecsAt255 + "U"                           // 256
+	codecsAt255 := strings.Repeat("PCMU,", 50) + "PCMU" // 5*50 + 4 = 254 — adjust to 255
+	codecsAt255 = codecsAt255 + "U"                     // 255
+	codecsAt256 := codecsAt255 + "U"                    // 256
 	if len(codecsAt255) != 255 || len(codecsAt256) != 256 {
 		t.Fatalf("test setup error: codecsAt255=%d, codecsAt256=%d", len(codecsAt255), len(codecsAt256))
 	}
@@ -189,9 +196,106 @@ func Test_outboundConfigHandler_validateUpdateRequest(t *testing.T) {
 				utilHandler:  utilhandler.NewMockUtilHandler(mc),
 				db:           dbhandler.NewMockDBHandler(mc),
 				cacheHandler: cachehandler.NewMockCacheHandler(mc),
+				reqHandler:   requesthandler.NewMockRequestHandler(mc),
 			}
 
-			err := h.validateUpdateRequest(tt.req)
+			err := h.validateUpdateRequest(context.Background(), customerID, tt.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateUpdateRequest() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_validateUpdateRequest_DefaultOutgoingSourceNumberID(t *testing.T) {
+	customerID := uuid.FromStringOrNil("cccccccc-0000-0000-0000-000000000001")
+	validNumberID := uuid.FromStringOrNil("dddddddd-0000-0000-0000-000000000001")
+	nilID := uuid.Nil
+
+	tests := []struct {
+		name string
+		req  *outboundconfig.UpdateRequest
+
+		// expected NumberV1NumberList outcome. expectListCall=false skips registration.
+		expectListCall bool
+		listResp       []nmnumber.Number
+		listErr        error
+
+		wantErr bool
+	}{
+		{
+			name:           "nil pointer - no validation, no error",
+			req:            &outboundconfig.UpdateRequest{},
+			expectListCall: false,
+			wantErr:        false,
+		},
+		{
+			name: "pointer to uuid.Nil - clear, no validation",
+			req: &outboundconfig.UpdateRequest{
+				DefaultOutgoingSourceNumberID: &nilID,
+			},
+			expectListCall: false,
+			wantErr:        false,
+		},
+		{
+			name: "valid UUID - list returns matching number",
+			req: &outboundconfig.UpdateRequest{
+				DefaultOutgoingSourceNumberID: &validNumberID,
+			},
+			expectListCall: true,
+			listResp:       []nmnumber.Number{{Number: "+15551234567"}},
+			wantErr:        false,
+		},
+		{
+			name: "valid UUID - list returns empty",
+			req: &outboundconfig.UpdateRequest{
+				DefaultOutgoingSourceNumberID: &validNumberID,
+			},
+			expectListCall: true,
+			listResp:       []nmnumber.Number{},
+			wantErr:        true,
+		},
+		{
+			name: "valid UUID - list returns error",
+			req: &outboundconfig.UpdateRequest{
+				DefaultOutgoingSourceNumberID: &validNumberID,
+			},
+			expectListCall: true,
+			listErr:        fmt.Errorf("number service unavailable"),
+			wantErr:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &outboundConfigHandler{
+				utilHandler:  utilhandler.NewMockUtilHandler(mc),
+				db:           dbhandler.NewMockDBHandler(mc),
+				cacheHandler: cachehandler.NewMockCacheHandler(mc),
+				reqHandler:   mockReq,
+			}
+
+			ctx := context.Background()
+
+			if tt.expectListCall {
+				expectFilters := map[nmnumber.Field]any{
+					nmnumber.FieldCustomerID: customerID,
+					nmnumber.FieldID:         *tt.req.DefaultOutgoingSourceNumberID,
+					nmnumber.FieldType:       nmnumber.TypeNormal,
+					nmnumber.FieldStatus:     nmnumber.StatusActive,
+					nmnumber.FieldDeleted:    false,
+				}
+				mockReq.EXPECT().
+					NumberV1NumberList(ctx, "", uint64(1), expectFilters).
+					Return(tt.listResp, tt.listErr).
+					Times(1)
+			}
+
+			err := h.validateUpdateRequest(ctx, customerID, tt.req)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("validateUpdateRequest() error = %v, wantErr %v", err, tt.wantErr)
 			}

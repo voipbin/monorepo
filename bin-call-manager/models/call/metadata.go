@@ -21,10 +21,10 @@ const (
 
 	// MetadataKeySkipSourceValidation, when set to true, instructs call-manager's
 	// getValidatedSourceForOutgoingCall to return the caller-supplied source address
-	// verbatim — skipping the customer-ownership lookup and the silent fallback to
-	// Customer.DefaultOutgoingSourceNumberID. Used by internal admin-test flows that
-	// must preserve a source number the provider's carrier has pre-authorized
-	// (which is typically NOT a number owned by any voipbin customer).
+	// verbatim — skipping the customer-ownership lookup and the OutboundConfig-based
+	// default-source fallback. Used by internal admin-test flows that must preserve a
+	// source number the provider's carrier has pre-authorized (which is typically NOT
+	// a number owned by any voipbin customer).
 	// Set CREATION-TIME only by server-side trusted code. Do not expose in any
 	// customer-facing API body.
 	MetadataKeySkipSourceValidation MetadataKey = "skip_source_validation"

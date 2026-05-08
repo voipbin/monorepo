@@ -73,7 +73,7 @@ func (h *outboundConfigHandler) List(ctx context.Context, customerID uuid.UUID, 
 
 // Create validates the request, creates a new OutboundConfig, and writes it through the cache.
 func (h *outboundConfigHandler) Create(ctx context.Context, customerID uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.OutboundConfig, error) {
-	if err := h.validateUpdateRequest(req); err != nil {
+	if err := h.validateUpdateRequest(ctx, customerID, req); err != nil {
 		return nil, err
 	}
 
@@ -92,7 +92,16 @@ func (h *outboundConfigHandler) Create(ctx context.Context, customerID uuid.UUID
 
 // Update validates the request, updates the OutboundConfig in DB, and invalidates the cache.
 func (h *outboundConfigHandler) Update(ctx context.Context, id uuid.UUID, req *outboundconfig.UpdateRequest) (*outboundconfig.OutboundConfig, error) {
-	if err := h.validateUpdateRequest(req); err != nil {
+	// Look up the existing record so we can validate against its customer.
+	existing, err := h.db.OutboundConfigGetByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get outbound_config for update: %w", err)
+	}
+	if existing == nil {
+		return nil, fmt.Errorf("outbound_config not found: %s", id)
+	}
+
+	if err := h.validateUpdateRequest(ctx, existing.CustomerID, req); err != nil {
 		return nil, err
 	}
 
@@ -122,5 +131,8 @@ func applyUpdateRequest(c *outboundconfig.OutboundConfig, req *outboundconfig.Up
 	}
 	if req.Codecs != nil {
 		c.Codecs = *req.Codecs
+	}
+	if req.DefaultOutgoingSourceNumberID != nil {
+		c.DefaultOutgoingSourceNumberID = *req.DefaultOutgoingSourceNumberID
 	}
 }

@@ -48,7 +48,7 @@ func Test_processV1OutboundConfigsPost(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"test","detail":"","destination_whitelist":null,"codecs":"PCMU","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"test","detail":"","destination_whitelist":null,"codecs":"PCMU","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -113,7 +113,7 @@ func Test_processV1OutboundConfigsGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"test","detail":"","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"test","detail":"","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -171,7 +171,7 @@ func Test_processV1OutboundConfigsIDGet(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"my-config","detail":"","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"my-config","detail":"","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -229,7 +229,7 @@ func Test_processV1OutboundConfigsIDDelete(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"to-delete","detail":"","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"to-delete","detail":"","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -294,7 +294,7 @@ func Test_processV1OutboundConfigsIDPut(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"updated","detail":"","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"updated","detail":"","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 		{
@@ -324,7 +324,7 @@ func Test_processV1OutboundConfigsIDPut(t *testing.T) {
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"my-config","detail":"detail-text","destination_whitelist":["us","kr"],"codecs":"PCMU,PCMA","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"c1234567-f7f5-11ef-92b3-0be9c3b04574","customer_id":"b3fe6c84-f7f5-11ef-92b3-0be9c3b04574","name":"my-config","detail":"detail-text","destination_whitelist":["us","kr"],"codecs":"PCMU,PCMA","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

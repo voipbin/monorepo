@@ -29,6 +29,7 @@ import (
 	"monorepo/bin-call-manager/models/common"
 	"monorepo/bin-call-manager/models/groupcall"
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	"monorepo/bin-call-manager/pkg/outboundconfighandler"
 )
 
 const (
@@ -176,12 +177,17 @@ func (h *callHandler) CreateCallOutgoing(
 		return nil, fmt.Errorf("could not pass the balance validation")
 	}
 
-	// fetch OutboundConfig once for codec embed and whitelist enforcement (tel only, non-internal)
+	// fetch OutboundConfig once for codec embed, whitelist enforcement, and default-source
+	// fallback (tel only, non-internal). Hoisted so it's reachable at the source-validation
+	// call site below.
+	var outboundCfg *outboundconfig.OutboundConfig
 	if destination.Type == commonaddress.TypeTel && !cucustomer.IsInternalSystemID(customerID) {
-		outboundCfg, cfgErr := h.outboundConfigHandler.GetByCustomerID(ctx, customerID)
+		var cfgErr error
+		outboundCfg, cfgErr = h.outboundConfigHandler.GetByCustomerID(ctx, customerID)
 		if cfgErr != nil {
-			log.Warnf("Could not get outbound config, defaulting to deny. err: %v", cfgErr)
-			outboundCfg = nil
+			log.Errorf("Could not get outbound config; rejecting call (fail-closed). err: %v", cfgErr)
+			outboundconfighandler.IncFetchError("db_error")
+			return nil, fmt.Errorf("could not get outbound config: %w", cfgErr)
 		}
 		metadata = embedCodecs(metadata, outboundCfg)
 		if !h.ValidateDestination(ctx, customerID, outboundCfg, destination) {
@@ -221,7 +227,7 @@ func (h *callHandler) CreateCallOutgoing(
 	channelID := h.utilHandler.UUIDCreate().String()
 
 	// validate and resolve the source address for outgoing call
-	s := h.getValidatedSourceForOutgoingCall(ctx, source, destination, cu, metadata)
+	s := h.getValidatedSourceForOutgoingCall(ctx, source, destination, cu, outboundCfg, metadata)
 	if s == nil {
 		log.Errorf("No valid source number available for outgoing call.")
 		if af.ID != uuid.Nil {
@@ -736,7 +742,8 @@ func setChannelVariablesCallerID(variables map[string]string, c *call.Call, anon
 // For tel-type destinations, the source number must:
 // 1. Have a valid E.164 format (starts with "+")
 // 2. Belong to the customer as a normal (non-virtual) number
-// If either condition fails, it falls back to the customer's default outgoing source number.
+// If either condition fails, it falls back to OutboundConfig.DefaultOutgoingSourceNumberID
+// (re-validated against number-manager because stored values may be stale).
 // If no valid source can be determined, it returns nil.
 // For non-tel destinations, the source is returned as-is.
 //
@@ -749,6 +756,7 @@ func (h *callHandler) getValidatedSourceForOutgoingCall(
 	source commonaddress.Address,
 	destination commonaddress.Address,
 	cu *cucustomer.Customer,
+	outboundCfg *outboundconfig.OutboundConfig,
 	metadata map[string]interface{},
 ) *commonaddress.Address {
 	log := logrus.WithFields(logrus.Fields{
@@ -802,22 +810,35 @@ func (h *callHandler) getValidatedSourceForOutgoingCall(
 		log.Infof("Source number is not in E.164 format. source: %s", source.Target)
 	}
 
-	// source is not valid, fall back to customer's default outgoing source number
-	if cu.DefaultOutgoingSourceNumberID != uuid.Nil {
-		defaultNum, err := h.reqHandler.NumberV1NumberGet(ctx, cu.DefaultOutgoingSourceNumberID)
-		if err != nil {
-			log.Errorf("Could not get default outgoing source number. number_id: %s, err: %v", cu.DefaultOutgoingSourceNumberID, err)
-		} else {
-			log.WithField("number", defaultNum).Debugf("Applying customer's default outgoing source number. number_id: %s, number: %s", defaultNum.ID, defaultNum.Number)
-			return &commonaddress.Address{
-				Type:       commonaddress.TypeTel,
-				Target:     defaultNum.Number,
-				TargetName: defaultNum.Number,
-			}
-		}
+	// source is not valid; fall back to OutboundConfig.DefaultOutgoingSourceNumberID.
+	// outboundCfg may legitimately be nil (non-tel destination, internal-system caller,
+	// or transient fetch failure handled at the call site).
+	if outboundCfg == nil || outboundCfg.DefaultOutgoingSourceNumberID == uuid.Nil {
+		log.Infof("No valid source number available. Rejecting call.")
+		return nil
 	}
 
-	// no valid source available, reject the call
-	log.Infof("No valid source number available. Rejecting call.")
-	return nil
+	// Re-validate against the same filters as the caller-supplied path above —
+	// OutboundConfig values may be stale (number released, ownership changed,
+	// soft-deleted, or status flipped after the operator set the default).
+	filters := map[nmnumber.Field]any{
+		nmnumber.FieldCustomerID: cu.ID,
+		nmnumber.FieldID:         outboundCfg.DefaultOutgoingSourceNumberID,
+		nmnumber.FieldType:       nmnumber.TypeNormal,
+		nmnumber.FieldStatus:     nmnumber.StatusActive,
+		nmnumber.FieldDeleted:    false,
+	}
+	nums, err := h.reqHandler.NumberV1NumberList(ctx, "", 1, filters)
+	if err != nil || len(nums) == 0 {
+		log.WithField("number_id", outboundCfg.DefaultOutgoingSourceNumberID).
+			Errorf("Default outgoing source number is not valid (released, wrong customer, inactive, or virtual). err: %v", err)
+		return nil
+	}
+	defaultNum := nums[0]
+	log.WithField("number", defaultNum).Debugf("Applying outbound_config default outgoing source number. number_id: %s, number: %s", defaultNum.ID, defaultNum.Number)
+	return &commonaddress.Address{
+		Type:       commonaddress.TypeTel,
+		Target:     defaultNum.Number,
+		TargetName: defaultNum.Number,
+	}
 }
