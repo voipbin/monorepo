@@ -126,8 +126,6 @@ VoIPbin is composed of multiple services that run independently and communicate 
 * A media path (RTPEngine or equivalent)
 * Optionally, Asterisk instances for call bridging, conferencing, and SIP registration
 
-We recommend reading the platform architecture guide (coming soon) before setup.
-
 ### Clone the Repo
 
 ```
