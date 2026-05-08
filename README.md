@@ -1,12 +1,12 @@
 # VoIPbin Monorepo
 
-VoIPbin is a cloud-native, open-source CPaaS platform for programmable voice communication. This repository is the primary backend services monorepo — it contains the 34 Go microservices that handle call routing, AI pipelines, conferencing, billing, messaging, and more.
+VoIPbin is a cloud-native, open-source CPaaS platform for programmable voice communication. This repository is the main backend services monorepo — it contains backend services that handle call routing, AI pipelines, conferencing, billing, messaging, and more.
 
 This is one of VoIPbin's main repositories. It covers the backend service layer; other infrastructure (Kamailio, Kubernetes configs) lives in separate repos.
 
 ## 🧱 Why a Monorepo?
 
-VoIPBin uses a **monorepo** to manage all backend services in a single codebase. This approach is intentional and comes with many advantages:
+VoIPbin uses a **monorepo** to manage all backend services in a single codebase. This approach is intentional and comes with many advantages:
 
 ### ✅ Benefits
 
@@ -111,7 +111,7 @@ The monorepo includes many backend services under separate directories:
 
 This monorepo handles only part of voipbin services.
 
-![VoIPBin Architecture](architecture_overview_all.png)
+![VoIPbin Architecture](architecture_overview_all.png)
 
 
 That said, here's how to begin:
@@ -150,5 +150,5 @@ You'll need a Kubernetes manifest or Helm chart per service. For now, these are 
 We’re here to help. Visit voipbin.net or reach out to the team via the contact link on the site.
 
 ## 📞 Need Help?
-If you're exploring VoIPBin for your own product, team, or integration — feel free to reach out. We're building it to empower engineers like you.
+If you're exploring VoIPbin for your own product, team, or integration — feel free to reach out. We're building it to empower engineers like you.
 
