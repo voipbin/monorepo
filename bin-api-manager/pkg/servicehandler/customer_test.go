@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -113,6 +114,66 @@ func Test_CustomerCreate(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+// Test_CustomerCreate_AutoOutboundConfigFailureRollsBack verifies that when
+// OutboundConfig auto-create fails permanently after the bounded retry budget,
+// CustomerCreate rolls back the just-created customer (CustomerV1CustomerDelete)
+// and returns an error. This guarantees we never leave a customer that cannot
+// make outgoing PSTN calls because OutboundConfig creation never succeeded.
+func Test_CustomerCreate_AutoOutboundConfigFailureRollsBack(t *testing.T) {
+	customerID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	createdCustomer := &cscustomer.Customer{
+		ID: customerID,
+	}
+
+	tests := []struct {
+		name string
+	}{
+		{name: "OutboundConfig create fails persistently → customer rolled back, error returned"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := serviceHandler{
+				reqHandler:  mockReq,
+				dbHandler:   mockDB,
+				utilHandler: mockUtil,
+			}
+			ctx := context.Background()
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			})
+
+			mockReq.EXPECT().CustomerV1CustomerCreate(
+				ctx, 30000, "n", "d", "e@x.y", "+12025550100", "addr", cscustomer.WebhookMethod("POST"), "https://x.y",
+			).Return(createdCustomer, nil)
+			// Three OutboundConfig attempts, all fail with the same error.
+			mockReq.EXPECT().CallV1OutboundConfigCreate(ctx, customerID, &cmoutboundconfig.UpdateRequest{}).Return(nil, fmt.Errorf("persistent")).Times(3)
+			// Rollback delete is called after all retries are exhausted.
+			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, customerID).Return(createdCustomer, nil)
+
+			res, err := h.CustomerCreate(ctx, agent, "n", "d", "e@x.y", "+12025550100", "addr", cscustomer.WebhookMethod("POST"), "https://x.y")
+			if err == nil {
+				t.Errorf("Wrong match. expect: error, got: nil")
+			}
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil result on rollback, got: %v", res)
 			}
 		})
 	}

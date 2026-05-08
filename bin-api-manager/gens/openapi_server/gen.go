@@ -2693,9 +2693,6 @@ type CustomerManagerCustomer struct {
 	// BillingAccountId The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.
 	BillingAccountId *string `json:"billing_account_id,omitempty"`
 
-	// DefaultOutgoingSourceNumberId The unique identifier of the customer's default outgoing source number. Returned from the `GET /numbers/{id}` response. When set, outgoing PSTN calls without a valid source number will use this number as the caller ID.
-	DefaultOutgoingSourceNumberId *string `json:"default_outgoing_source_number_id,omitempty"`
-
 	// Detail Details about the customer.
 	Detail *string `json:"detail,omitempty"`
 
@@ -2752,9 +2749,6 @@ type CustomerManagerCustomerAdmin struct {
 
 	// BillingAccountId The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.
 	BillingAccountId *string `json:"billing_account_id,omitempty"`
-
-	// DefaultOutgoingSourceNumberId The unique identifier of the customer's default outgoing source number. Returned from the `GET /numbers/{id}` response. When set, outgoing PSTN calls without a valid source number will use this number as the caller ID.
-	DefaultOutgoingSourceNumberId *string `json:"default_outgoing_source_number_id,omitempty"`
 
 	// Detail Details about the customer.
 	Detail *string `json:"detail,omitempty"`
@@ -5475,12 +5469,6 @@ type PutCustomerBillingAccountIdJSONBody struct {
 	BillingAccountId string `json:"billing_account_id"`
 }
 
-// PutCustomerDefaultOutgoingSourceNumberIdJSONBody defines parameters for PutCustomerDefaultOutgoingSourceNumberId.
-type PutCustomerDefaultOutgoingSourceNumberIdJSONBody struct {
-	// DefaultOutgoingSourceNumberId The new default outgoing source number ID for the customer. Obtained from the `id` field of `GET /numbers`.
-	DefaultOutgoingSourceNumberId openapi_types.UUID `json:"default_outgoing_source_number_id"`
-}
-
 // PutCustomerMetadataJSONBody defines parameters for PutCustomerMetadata.
 type PutCustomerMetadataJSONBody struct {
 	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
@@ -5526,12 +5514,6 @@ type PutCustomersIdJSONBody struct {
 // PutCustomersIdBillingAccountIdJSONBody defines parameters for PutCustomersIdBillingAccountId.
 type PutCustomersIdBillingAccountIdJSONBody struct {
 	BillingAccountId string `json:"billing_account_id"`
-}
-
-// PutCustomersIdDefaultOutgoingSourceNumberIdJSONBody defines parameters for PutCustomersIdDefaultOutgoingSourceNumberId.
-type PutCustomersIdDefaultOutgoingSourceNumberIdJSONBody struct {
-	// DefaultOutgoingSourceNumberId The new default outgoing source number ID. Obtained from the `id` field of `GET /numbers`.
-	DefaultOutgoingSourceNumberId openapi_types.UUID `json:"default_outgoing_source_number_id"`
 }
 
 // GetEmailsParams defines parameters for GetEmails.
@@ -6814,9 +6796,6 @@ type PutCustomerJSONRequestBody PutCustomerJSONBody
 // PutCustomerBillingAccountIdJSONRequestBody defines body for PutCustomerBillingAccountId for application/json ContentType.
 type PutCustomerBillingAccountIdJSONRequestBody PutCustomerBillingAccountIdJSONBody
 
-// PutCustomerDefaultOutgoingSourceNumberIdJSONRequestBody defines body for PutCustomerDefaultOutgoingSourceNumberId for application/json ContentType.
-type PutCustomerDefaultOutgoingSourceNumberIdJSONRequestBody PutCustomerDefaultOutgoingSourceNumberIdJSONBody
-
 // PutCustomerMetadataJSONRequestBody defines body for PutCustomerMetadata for application/json ContentType.
 type PutCustomerMetadataJSONRequestBody PutCustomerMetadataJSONBody
 
@@ -6828,9 +6807,6 @@ type PutCustomersIdJSONRequestBody PutCustomersIdJSONBody
 
 // PutCustomersIdBillingAccountIdJSONRequestBody defines body for PutCustomersIdBillingAccountId for application/json ContentType.
 type PutCustomersIdBillingAccountIdJSONRequestBody PutCustomersIdBillingAccountIdJSONBody
-
-// PutCustomersIdDefaultOutgoingSourceNumberIdJSONRequestBody defines body for PutCustomersIdDefaultOutgoingSourceNumberId for application/json ContentType.
-type PutCustomersIdDefaultOutgoingSourceNumberIdJSONRequestBody PutCustomersIdDefaultOutgoingSourceNumberIdJSONBody
 
 // PutCustomersIdMetadataJSONRequestBody defines body for PutCustomersIdMetadata for application/json ContentType.
 type PutCustomersIdMetadataJSONRequestBody = CustomerManagerMetadata
@@ -7440,9 +7416,6 @@ type ServerInterface interface {
 	// Update a customer's billing account ID
 	// (PUT /customer/billing_account_id)
 	PutCustomerBillingAccountId(c *gin.Context)
-	// Update a customer's default outgoing source number ID
-	// (PUT /customer/default_outgoing_source_number_id)
-	PutCustomerDefaultOutgoingSourceNumberId(c *gin.Context)
 	// Update customer metadata
 	// (PUT /customer/metadata)
 	PutCustomerMetadata(c *gin.Context)
@@ -7464,9 +7437,6 @@ type ServerInterface interface {
 	// Update a customer's billing account ID.
 	// (PUT /customers/{id}/billing_account_id)
 	PutCustomersIdBillingAccountId(c *gin.Context, id string)
-	// Update a customer's default outgoing source number ID.
-	// (PUT /customers/{id}/default_outgoing_source_number_id)
-	PutCustomersIdDefaultOutgoingSourceNumberId(c *gin.Context, id string)
 	// Schedule customer deletion (freeze account).
 	// (POST /customers/{id}/freeze)
 	PostCustomersIdFreeze(c *gin.Context, id string)
@@ -11415,19 +11385,6 @@ func (siw *ServerInterfaceWrapper) PutCustomerBillingAccountId(c *gin.Context) {
 	siw.Handler.PutCustomerBillingAccountId(c)
 }
 
-// PutCustomerDefaultOutgoingSourceNumberId operation middleware
-func (siw *ServerInterfaceWrapper) PutCustomerDefaultOutgoingSourceNumberId(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PutCustomerDefaultOutgoingSourceNumberId(c)
-}
-
 // PutCustomerMetadata operation middleware
 func (siw *ServerInterfaceWrapper) PutCustomerMetadata(c *gin.Context) {
 
@@ -11582,30 +11539,6 @@ func (siw *ServerInterfaceWrapper) PutCustomersIdBillingAccountId(c *gin.Context
 	}
 
 	siw.Handler.PutCustomersIdBillingAccountId(c, id)
-}
-
-// PutCustomersIdDefaultOutgoingSourceNumberId operation middleware
-func (siw *ServerInterfaceWrapper) PutCustomersIdDefaultOutgoingSourceNumberId(c *gin.Context) {
-
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PutCustomersIdDefaultOutgoingSourceNumberId(c, id)
 }
 
 // PostCustomersIdFreeze operation middleware
@@ -16656,7 +16589,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/customer", wrapper.GetCustomer)
 	router.PUT(options.BaseURL+"/customer", wrapper.PutCustomer)
 	router.PUT(options.BaseURL+"/customer/billing_account_id", wrapper.PutCustomerBillingAccountId)
-	router.PUT(options.BaseURL+"/customer/default_outgoing_source_number_id", wrapper.PutCustomerDefaultOutgoingSourceNumberId)
 	router.PUT(options.BaseURL+"/customer/metadata", wrapper.PutCustomerMetadata)
 	router.GET(options.BaseURL+"/customers", wrapper.GetCustomers)
 	router.POST(options.BaseURL+"/customers", wrapper.PostCustomers)
@@ -16664,7 +16596,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/customers/:id", wrapper.GetCustomersId)
 	router.PUT(options.BaseURL+"/customers/:id", wrapper.PutCustomersId)
 	router.PUT(options.BaseURL+"/customers/:id/billing_account_id", wrapper.PutCustomersIdBillingAccountId)
-	router.PUT(options.BaseURL+"/customers/:id/default_outgoing_source_number_id", wrapper.PutCustomersIdDefaultOutgoingSourceNumberId)
 	router.POST(options.BaseURL+"/customers/:id/freeze", wrapper.PostCustomersIdFreeze)
 	router.PUT(options.BaseURL+"/customers/:id/metadata", wrapper.PutCustomersIdMetadata)
 	router.POST(options.BaseURL+"/customers/:id/recover", wrapper.PostCustomersIdRecover)
@@ -24423,50 +24354,6 @@ func (response PutCustomerBillingAccountId500JSONResponse) VisitPutCustomerBilli
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PutCustomerDefaultOutgoingSourceNumberIdRequestObject struct {
-	Body *PutCustomerDefaultOutgoingSourceNumberIdJSONRequestBody
-}
-
-type PutCustomerDefaultOutgoingSourceNumberIdResponseObject interface {
-	VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error
-}
-
-type PutCustomerDefaultOutgoingSourceNumberId200JSONResponse CustomerManagerCustomer
-
-func (response PutCustomerDefaultOutgoingSourceNumberId200JSONResponse) VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomerDefaultOutgoingSourceNumberId400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response PutCustomerDefaultOutgoingSourceNumberId400JSONResponse) VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomerDefaultOutgoingSourceNumberId401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response PutCustomerDefaultOutgoingSourceNumberId401JSONResponse) VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomerDefaultOutgoingSourceNumberId500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response PutCustomerDefaultOutgoingSourceNumberId500JSONResponse) VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type PutCustomerMetadataRequestObject struct {
 	Body *PutCustomerMetadataJSONRequestBody
 }
@@ -24847,69 +24734,6 @@ func (response PutCustomersIdBillingAccountId404JSONResponse) VisitPutCustomersI
 type PutCustomersIdBillingAccountId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PutCustomersIdBillingAccountId500JSONResponse) VisitPutCustomersIdBillingAccountIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(500)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomersIdDefaultOutgoingSourceNumberIdRequestObject struct {
-	Id   string `json:"id"`
-	Body *PutCustomersIdDefaultOutgoingSourceNumberIdJSONRequestBody
-}
-
-type PutCustomersIdDefaultOutgoingSourceNumberIdResponseObject interface {
-	VisitPutCustomersIdDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error
-}
-
-type PutCustomersIdDefaultOutgoingSourceNumberId200JSONResponse CustomerManagerCustomerAdmin
-
-func (response PutCustomersIdDefaultOutgoingSourceNumberId200JSONResponse) VisitPutCustomersIdDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomersIdDefaultOutgoingSourceNumberId400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response PutCustomersIdDefaultOutgoingSourceNumberId400JSONResponse) VisitPutCustomersIdDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomersIdDefaultOutgoingSourceNumberId401JSONResponse struct{ UnauthenticatedJSONResponse }
-
-func (response PutCustomersIdDefaultOutgoingSourceNumberId401JSONResponse) VisitPutCustomersIdDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomersIdDefaultOutgoingSourceNumberId403JSONResponse struct{ PermissionDeniedJSONResponse }
-
-func (response PutCustomersIdDefaultOutgoingSourceNumberId403JSONResponse) VisitPutCustomersIdDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomersIdDefaultOutgoingSourceNumberId404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response PutCustomersIdDefaultOutgoingSourceNumberId404JSONResponse) VisitPutCustomersIdDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type PutCustomersIdDefaultOutgoingSourceNumberId500JSONResponse struct{ InternalErrorJSONResponse }
-
-func (response PutCustomersIdDefaultOutgoingSourceNumberId500JSONResponse) VisitPutCustomersIdDefaultOutgoingSourceNumberIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -36459,9 +36283,6 @@ type StrictServerInterface interface {
 	// Update a customer's billing account ID
 	// (PUT /customer/billing_account_id)
 	PutCustomerBillingAccountId(ctx context.Context, request PutCustomerBillingAccountIdRequestObject) (PutCustomerBillingAccountIdResponseObject, error)
-	// Update a customer's default outgoing source number ID
-	// (PUT /customer/default_outgoing_source_number_id)
-	PutCustomerDefaultOutgoingSourceNumberId(ctx context.Context, request PutCustomerDefaultOutgoingSourceNumberIdRequestObject) (PutCustomerDefaultOutgoingSourceNumberIdResponseObject, error)
 	// Update customer metadata
 	// (PUT /customer/metadata)
 	PutCustomerMetadata(ctx context.Context, request PutCustomerMetadataRequestObject) (PutCustomerMetadataResponseObject, error)
@@ -36483,9 +36304,6 @@ type StrictServerInterface interface {
 	// Update a customer's billing account ID.
 	// (PUT /customers/{id}/billing_account_id)
 	PutCustomersIdBillingAccountId(ctx context.Context, request PutCustomersIdBillingAccountIdRequestObject) (PutCustomersIdBillingAccountIdResponseObject, error)
-	// Update a customer's default outgoing source number ID.
-	// (PUT /customers/{id}/default_outgoing_source_number_id)
-	PutCustomersIdDefaultOutgoingSourceNumberId(ctx context.Context, request PutCustomersIdDefaultOutgoingSourceNumberIdRequestObject) (PutCustomersIdDefaultOutgoingSourceNumberIdResponseObject, error)
 	// Schedule customer deletion (freeze account).
 	// (POST /customers/{id}/freeze)
 	PostCustomersIdFreeze(ctx context.Context, request PostCustomersIdFreezeRequestObject) (PostCustomersIdFreezeResponseObject, error)
@@ -41132,39 +40950,6 @@ func (sh *strictHandler) PutCustomerBillingAccountId(ctx *gin.Context) {
 	}
 }
 
-// PutCustomerDefaultOutgoingSourceNumberId operation middleware
-func (sh *strictHandler) PutCustomerDefaultOutgoingSourceNumberId(ctx *gin.Context) {
-	var request PutCustomerDefaultOutgoingSourceNumberIdRequestObject
-
-	var body PutCustomerDefaultOutgoingSourceNumberIdJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PutCustomerDefaultOutgoingSourceNumberId(ctx, request.(PutCustomerDefaultOutgoingSourceNumberIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PutCustomerDefaultOutgoingSourceNumberId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PutCustomerDefaultOutgoingSourceNumberIdResponseObject); ok {
-		if err := validResponse.VisitPutCustomerDefaultOutgoingSourceNumberIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // PutCustomerMetadata operation middleware
 func (sh *strictHandler) PutCustomerMetadata(ctx *gin.Context) {
 	var request PutCustomerMetadataRequestObject
@@ -41375,41 +41160,6 @@ func (sh *strictHandler) PutCustomersIdBillingAccountId(ctx *gin.Context, id str
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutCustomersIdBillingAccountIdResponseObject); ok {
 		if err := validResponse.VisitPutCustomersIdBillingAccountIdResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PutCustomersIdDefaultOutgoingSourceNumberId operation middleware
-func (sh *strictHandler) PutCustomersIdDefaultOutgoingSourceNumberId(ctx *gin.Context, id string) {
-	var request PutCustomersIdDefaultOutgoingSourceNumberIdRequestObject
-
-	request.Id = id
-
-	var body PutCustomersIdDefaultOutgoingSourceNumberIdJSONRequestBody
-	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PutCustomersIdDefaultOutgoingSourceNumberId(ctx, request.(PutCustomersIdDefaultOutgoingSourceNumberIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PutCustomersIdDefaultOutgoingSourceNumberId")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(PutCustomersIdDefaultOutgoingSourceNumberIdResponseObject); ok {
-		if err := validResponse.VisitPutCustomersIdDefaultOutgoingSourceNumberIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

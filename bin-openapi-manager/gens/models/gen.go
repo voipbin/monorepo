@@ -4840,9 +4840,6 @@ type CustomerManagerCustomer struct {
 	// BillingAccountId The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.
 	BillingAccountId *string `json:"billing_account_id,omitempty"`
 
-	// DefaultOutgoingSourceNumberId The unique identifier of the customer's default outgoing source number. Returned from the `GET /numbers/{id}` response. When set, outgoing PSTN calls without a valid source number will use this number as the caller ID.
-	DefaultOutgoingSourceNumberId *string `json:"default_outgoing_source_number_id,omitempty"`
-
 	// Detail Details about the customer.
 	Detail *string `json:"detail,omitempty"`
 
@@ -4899,9 +4896,6 @@ type CustomerManagerCustomerAdmin struct {
 
 	// BillingAccountId The unique identifier of the customer's default billing account. Returned from the `GET /billing_accounts/{id}` response.
 	BillingAccountId *string `json:"billing_account_id,omitempty"`
-
-	// DefaultOutgoingSourceNumberId The unique identifier of the customer's default outgoing source number. Returned from the `GET /numbers/{id}` response. When set, outgoing PSTN calls without a valid source number will use this number as the caller ID.
-	DefaultOutgoingSourceNumberId *string `json:"default_outgoing_source_number_id,omitempty"`
 
 	// Detail Details about the customer.
 	Detail *string `json:"detail,omitempty"`
@@ -7622,12 +7616,6 @@ type PutCustomerBillingAccountIdJSONBody struct {
 	BillingAccountId string `json:"billing_account_id"`
 }
 
-// PutCustomerDefaultOutgoingSourceNumberIdJSONBody defines parameters for PutCustomerDefaultOutgoingSourceNumberId.
-type PutCustomerDefaultOutgoingSourceNumberIdJSONBody struct {
-	// DefaultOutgoingSourceNumberId The new default outgoing source number ID for the customer. Obtained from the `id` field of `GET /numbers`.
-	DefaultOutgoingSourceNumberId openapi_types.UUID `json:"default_outgoing_source_number_id"`
-}
-
 // PutCustomerMetadataJSONBody defines parameters for PutCustomerMetadata.
 type PutCustomerMetadataJSONBody struct {
 	// RtpDebug When set to `true`, RTPEngine captures RTP traffic as PCAP files for this customer's calls.
@@ -7673,12 +7661,6 @@ type PutCustomersIdJSONBody struct {
 // PutCustomersIdBillingAccountIdJSONBody defines parameters for PutCustomersIdBillingAccountId.
 type PutCustomersIdBillingAccountIdJSONBody struct {
 	BillingAccountId string `json:"billing_account_id"`
-}
-
-// PutCustomersIdDefaultOutgoingSourceNumberIdJSONBody defines parameters for PutCustomersIdDefaultOutgoingSourceNumberId.
-type PutCustomersIdDefaultOutgoingSourceNumberIdJSONBody struct {
-	// DefaultOutgoingSourceNumberId The new default outgoing source number ID. Obtained from the `id` field of `GET /numbers`.
-	DefaultOutgoingSourceNumberId openapi_types.UUID `json:"default_outgoing_source_number_id"`
 }
 
 // GetEmailsParams defines parameters for GetEmails.
@@ -8961,9 +8943,6 @@ type PutCustomerJSONRequestBody PutCustomerJSONBody
 // PutCustomerBillingAccountIdJSONRequestBody defines body for PutCustomerBillingAccountId for application/json ContentType.
 type PutCustomerBillingAccountIdJSONRequestBody PutCustomerBillingAccountIdJSONBody
 
-// PutCustomerDefaultOutgoingSourceNumberIdJSONRequestBody defines body for PutCustomerDefaultOutgoingSourceNumberId for application/json ContentType.
-type PutCustomerDefaultOutgoingSourceNumberIdJSONRequestBody PutCustomerDefaultOutgoingSourceNumberIdJSONBody
-
 // PutCustomerMetadataJSONRequestBody defines body for PutCustomerMetadata for application/json ContentType.
 type PutCustomerMetadataJSONRequestBody PutCustomerMetadataJSONBody
 
@@ -8975,9 +8954,6 @@ type PutCustomersIdJSONRequestBody PutCustomersIdJSONBody
 
 // PutCustomersIdBillingAccountIdJSONRequestBody defines body for PutCustomersIdBillingAccountId for application/json ContentType.
 type PutCustomersIdBillingAccountIdJSONRequestBody PutCustomersIdBillingAccountIdJSONBody
-
-// PutCustomersIdDefaultOutgoingSourceNumberIdJSONRequestBody defines body for PutCustomersIdDefaultOutgoingSourceNumberId for application/json ContentType.
-type PutCustomersIdDefaultOutgoingSourceNumberIdJSONRequestBody PutCustomersIdDefaultOutgoingSourceNumberIdJSONBody
 
 // PutCustomersIdMetadataJSONRequestBody defines body for PutCustomersIdMetadata for application/json ContentType.
 type PutCustomersIdMetadataJSONRequestBody = CustomerManagerMetadata
@@ -9017,6 +8993,9 @@ type PutNumbersIdFlowIdsJSONRequestBody PutNumbersIdFlowIdsJSONBody
 
 // PutNumbersIdMetadataJSONRequestBody defines body for PutNumbersIdMetadata for application/json ContentType.
 type PutNumbersIdMetadataJSONRequestBody = NumberManagerMetadata
+
+// PutOutboundConfigJSONRequestBody defines body for PutOutboundConfig for application/json ContentType.
+type PutOutboundConfigJSONRequestBody = CallManagerOutboundConfigUpdateRequest
 
 // PostOutboundConfigsJSONRequestBody defines body for PostOutboundConfigs for application/json ContentType.
 type PostOutboundConfigsJSONRequestBody = CallManagerOutboundConfigUpdateRequest

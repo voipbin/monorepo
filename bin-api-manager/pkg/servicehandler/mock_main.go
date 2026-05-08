@@ -2235,21 +2235,6 @@ func (mr *MockServiceHandlerMockRecorder) CustomerSelfUpdateBillingAccountID(ctx
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSelfUpdateBillingAccountID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSelfUpdateBillingAccountID), ctx, a, billingAccountID)
 }
 
-// CustomerSelfUpdateDefaultOutgoingSourceNumberID mocks base method.
-func (m *MockServiceHandler) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx context.Context, a *auth.AuthIdentity, defaultOutgoingSourceNumberID uuid.UUID) (*customer.WebhookMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerSelfUpdateDefaultOutgoingSourceNumberID", ctx, a, defaultOutgoingSourceNumberID)
-	ret0, _ := ret[0].(*customer.WebhookMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerSelfUpdateDefaultOutgoingSourceNumberID indicates an expected call of CustomerSelfUpdateDefaultOutgoingSourceNumberID.
-func (mr *MockServiceHandlerMockRecorder) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx, a, defaultOutgoingSourceNumberID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerSelfUpdateDefaultOutgoingSourceNumberID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerSelfUpdateDefaultOutgoingSourceNumberID), ctx, a, defaultOutgoingSourceNumberID)
-}
-
 // CustomerSelfUpdateMetadata mocks base method.
 func (m *MockServiceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, metadata customer.Metadata) (*customer.WebhookMessage, error) {
 	m.ctrl.T.Helper()
@@ -2308,21 +2293,6 @@ func (m *MockServiceHandler) CustomerUpdateBillingAccountID(ctx context.Context,
 func (mr *MockServiceHandlerMockRecorder) CustomerUpdateBillingAccountID(ctx, a, customerID, billingAccountID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateBillingAccountID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateBillingAccountID), ctx, a, customerID, billingAccountID)
-}
-
-// CustomerUpdateDefaultOutgoingSourceNumberID mocks base method.
-func (m *MockServiceHandler) CustomerUpdateDefaultOutgoingSourceNumberID(ctx context.Context, a *auth.AuthIdentity, customerID, defaultOutgoingSourceNumberID uuid.UUID) (*customer.Customer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CustomerUpdateDefaultOutgoingSourceNumberID", ctx, a, customerID, defaultOutgoingSourceNumberID)
-	ret0, _ := ret[0].(*customer.Customer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CustomerUpdateDefaultOutgoingSourceNumberID indicates an expected call of CustomerUpdateDefaultOutgoingSourceNumberID.
-func (mr *MockServiceHandlerMockRecorder) CustomerUpdateDefaultOutgoingSourceNumberID(ctx, a, customerID, defaultOutgoingSourceNumberID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CustomerUpdateDefaultOutgoingSourceNumberID", reflect.TypeOf((*MockServiceHandler)(nil).CustomerUpdateDefaultOutgoingSourceNumberID), ctx, a, customerID, defaultOutgoingSourceNumberID)
 }
 
 // CustomerUpdateMetadata mocks base method.

@@ -56,7 +56,7 @@ func Test_outboundConfigsGET(t *testing.T) {
 			},
 
 			expectPageSize: 100,
-			expectRes:      `{"result":[{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"test config","detail":"test detail","destination_whitelist":null,"codecs":"","tm_create":"2024-01-15T10:30:00Z","tm_update":null,"tm_delete":null}],"next_page_token":"2024-01-15T10:30:00.000000Z"}`,
+			expectRes:      `{"result":[{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"test config","detail":"test detail","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":"2024-01-15T10:30:00Z","tm_update":null,"tm_delete":null}],"next_page_token":"2024-01-15T10:30:00.000000Z"}`,
 		},
 	}
 
@@ -139,7 +139,7 @@ func Test_outboundConfigsPOST(t *testing.T) {
 				Name:   &name,
 				Detail: &detail,
 			},
-			expectRes: `{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"test config","detail":"test detail","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"test config","detail":"test detail","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -214,7 +214,7 @@ func Test_outboundConfigsIdGET(t *testing.T) {
 			},
 
 			expectID:  uuid.FromStringOrNil("7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d"),
-			expectRes: `{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"test config","detail":"test detail","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"test config","detail":"test detail","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -290,7 +290,7 @@ func Test_outboundConfigsIdPUT(t *testing.T) {
 			},
 
 			expectID:  uuid.FromStringOrNil("7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d"),
-			expectRes: `{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"updated config","detail":"updated detail","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"updated config","detail":"updated detail","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -366,7 +366,7 @@ func Test_outboundConfigsIdDELETE(t *testing.T) {
 			},
 
 			expectID:  uuid.FromStringOrNil("7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d"),
-			expectRes: `{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"test config","detail":"test detail","destination_whitelist":null,"codecs":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d","customer_id":"e0ea7f86-6a34-11ec-b0d7-034e45d9dfc2","name":"test config","detail":"test detail","destination_whitelist":null,"codecs":"","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
