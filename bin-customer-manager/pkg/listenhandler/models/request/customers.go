@@ -41,17 +41,6 @@ type V1DataCustomersIDBillingAccountIDPut struct {
 	BillingAccountID uuid.UUID `json:"billing_account_id"`
 }
 
-// V1DataCustomersIDDefaultOutgoingSourceNumberIDPut is
-// v1 data type request struct for
-// /v1/customers/<customer-id>/default_outgoing_source_number_id PUT
-//
-// Deprecated: The PUT /v1/customers/<id>/default_outgoing_source_number_id
-// endpoint has been removed. This struct is retained only because
-// bin-common-handler still references it; it will be removed in Phase 4.
-type V1DataCustomersIDDefaultOutgoingSourceNumberIDPut struct {
-	DefaultOutgoingSourceNumberID uuid.UUID `json:"default_outgoing_source_number_id"`
-}
-
 // V1DataCustomersIDMetadataPut is
 // v1 data type request struct for
 // /v1/customers/<customer-id>/metadata PUT

@@ -259,33 +259,6 @@ func (r *requestHandler) CustomerV1CustomerUpdateBillingAccountID(ctx context.Co
 	return &res, nil
 }
 
-// CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID sends a request to customer-manager
-// to update the customer's default outgoing source number id.
-func (r *requestHandler) CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx context.Context, customerID uuid.UUID, defaultOutgoingSourceNumberID uuid.UUID) (*cscustomer.Customer, error) {
-	uri := fmt.Sprintf("/v1/customers/%s/default_outgoing_source_number_id", customerID)
-
-	data := &csrequest.V1DataCustomersIDDefaultOutgoingSourceNumberIDPut{
-		DefaultOutgoingSourceNumberID: defaultOutgoingSourceNumberID,
-	}
-
-	m, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	tmp, err := r.sendRequestCustomer(ctx, uri, sock.RequestMethodPut, "customer/customers/<customer-id>/default_outgoing_source_number_id", requestTimeoutDefault, 0, ContentTypeJSON, m)
-	if err != nil {
-		return nil, err
-	}
-
-	var res cscustomer.Customer
-	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
-	}
-
-	return &res, nil
-}
-
 // CustomerV1CustomerUpdateMetadata sends a request to customer-manager
 // to update the customer's metadata.
 func (r *requestHandler) CustomerV1CustomerUpdateMetadata(ctx context.Context, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error) {
