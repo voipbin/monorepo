@@ -3257,3 +3257,328 @@ func Test_getDialURISIPDirect(t *testing.T) {
 	}
 }
 
+// Test_createChannelOutgoing_ProviderCodecs verifies that when a provider has a Codecs
+// value, setProviderCodecs injects VBOUT-CODECS into the channel variables passed to
+// StartChannel; and that when Codecs is empty, VBOUT-CODECS is absent.
+func Test_createChannelOutgoing_ProviderCodecs(t *testing.T) {
+	codecHeaderKey := "PJSIP_HEADER(add," + common.SIPHeaderCodecs + ")"
+
+	tests := []struct {
+		name string
+
+		id             uuid.UUID
+		customerID     uuid.UUID
+		flowID         uuid.UUID
+		activeflowID   uuid.UUID
+		masterCallID   uuid.UUID
+		source         commonaddress.Address
+		destination    commonaddress.Address
+		earlyExecution bool
+		connect        bool
+
+		responseActiveflow  *fmactiveflow.Activeflow
+		responseRoutes      []rmroute.Route
+		responseAgent       *amagent.Agent
+		responseUUIDChannel uuid.UUID
+		responseProvider    *rmprovider.Provider
+
+		expectProviderID   uuid.UUID
+		expectCall         *call.Call
+		expectEndpointDst  string
+		expectArgs         string
+		expectCodecPresent bool   // whether VBOUT-CODECS key should be in channel variables
+		expectCodecValue   string // expected value when expectCodecPresent is true
+	}{
+		{
+			name: "provider with codecs PCMU - VBOUT-CODECS injected into channel variables",
+
+			id:           uuid.FromStringOrNil("c1c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+			customerID:   uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+			flowID:       uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+			activeflowID: uuid.FromStringOrNil("21e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+14155550100",
+				TargetName: "test",
+			},
+			destination: commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+821121656521",
+				TargetName: "test target",
+			},
+			earlyExecution: true,
+			connect:        true,
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("21e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+				},
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+			},
+			responseRoutes: []rmroute.Route{
+				{
+					ID:         uuid.FromStringOrNil("a86d48aa-5de6-11ed-a69e-9f3df36c7aa8"),
+					ProviderID: uuid.FromStringOrNil("b213af44-534e-11ed-9a1d-73b0076723b8"),
+				},
+			},
+			responseAgent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				},
+			},
+			responseUUIDChannel: uuid.FromStringOrNil("e948969e-5de3-11ed-94f5-137ec429b6b6"),
+			responseProvider: &rmprovider.Provider{
+				ID:       uuid.FromStringOrNil("b213af44-534e-11ed-9a1d-73b0076723b8"),
+				Hostname: "sip.telnyx.com",
+				Codecs:   "PCMU",
+			},
+
+			expectProviderID: uuid.FromStringOrNil("b213af44-534e-11ed-9a1d-73b0076723b8"),
+			expectCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c1c40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+					CustomerID: uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("1b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				},
+				ChannelID:        "e948969e-5de3-11ed-94f5-137ec429b6b6",
+				FlowID:           uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+				ActiveflowID:     uuid.FromStringOrNil("21e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+				Type:             call.TypeFlow,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+				Status:           call.StatusDialing,
+				Data: map[call.DataType]string{
+					call.DataTypeEarlyExecution:            "true",
+					call.DataTypeExecuteNextMasterOnHangup: "true",
+					call.DataTypeAnonymous:                 "false",
+				},
+				Direction:   call.DirectionOutgoing,
+				GroupcallID: uuid.Nil,
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+14155550100",
+					TargetName: "test",
+				},
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821121656521",
+					TargetName: "test target",
+				},
+				Action: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+				DialrouteID: uuid.FromStringOrNil("a86d48aa-5de6-11ed-a69e-9f3df36c7aa8"),
+				Dialroutes: []rmroute.Route{
+					{
+						ID:         uuid.FromStringOrNil("a86d48aa-5de6-11ed-a69e-9f3df36c7aa8"),
+						ProviderID: uuid.FromStringOrNil("b213af44-534e-11ed-9a1d-73b0076723b8"),
+					},
+				},
+			},
+			expectEndpointDst:  "pjsip/call-out/sip:+821121656521@sip.telnyx.com;transport=udp",
+			expectArgs:         "context_type=call,context=call-out,call_id=c1c40962-07fb-11eb-bb82-a3bd16bf1bd9,transport=udp,direction=outgoing",
+			expectCodecPresent: true,
+			expectCodecValue:   "PCMU",
+		},
+		{
+			name: "provider with empty codecs - VBOUT-CODECS absent from channel variables",
+
+			id:           uuid.FromStringOrNil("d2d40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+			customerID:   uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+			flowID:       uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+			activeflowID: uuid.FromStringOrNil("31e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+14155550200",
+				TargetName: "test",
+			},
+			destination: commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+821121656522",
+				TargetName: "test target",
+			},
+			earlyExecution: true,
+			connect:        true,
+
+			responseActiveflow: &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("31e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+				},
+				CurrentAction: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+			},
+			responseRoutes: []rmroute.Route{
+				{
+					ID:         uuid.FromStringOrNil("b86d48aa-5de6-11ed-a69e-9f3df36c7aa8"),
+					ProviderID: uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
+				},
+			},
+			responseAgent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				},
+			},
+			responseUUIDChannel: uuid.FromStringOrNil("f048969e-5de3-11ed-94f5-137ec429b6b6"),
+			responseProvider: &rmprovider.Provider{
+				ID:       uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
+				Hostname: "sip.twilio.com",
+				Codecs:   "", // no codecs configured for this provider
+			},
+
+			expectProviderID: uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
+			expectCall: &call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d2d40962-07fb-11eb-bb82-a3bd16bf1bd9"),
+					CustomerID: uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+				},
+				Owner: commonidentity.Owner{
+					OwnerType: commonidentity.OwnerTypeAgent,
+					OwnerID:   uuid.FromStringOrNil("2b095188-2bfe-11ef-a746-7f4de3b06e46"),
+				},
+				ChannelID:        "f048969e-5de3-11ed-94f5-137ec429b6b6",
+				FlowID:           uuid.FromStringOrNil("c4f08e1c-07fb-11eb-bd6d-8f92c676d869"),
+				ActiveflowID:     uuid.FromStringOrNil("31e2bbc8-a181-4ca1-97f7-4e382f128cf6"),
+				Type:             call.TypeFlow,
+				ChainedCallIDs:   []uuid.UUID{},
+				RecordingIDs:     []uuid.UUID{},
+				ExternalMediaIDs: []uuid.UUID{},
+				Status:           call.StatusDialing,
+				Data: map[call.DataType]string{
+					call.DataTypeEarlyExecution:            "true",
+					call.DataTypeExecuteNextMasterOnHangup: "true",
+					call.DataTypeAnonymous:                 "false",
+				},
+				Direction:   call.DirectionOutgoing,
+				GroupcallID: uuid.Nil,
+				Source: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+14155550200",
+					TargetName: "test",
+				},
+				Destination: commonaddress.Address{
+					Type:       commonaddress.TypeTel,
+					Target:     "+821121656522",
+					TargetName: "test target",
+				},
+				Action: fmaction.Action{
+					ID: fmaction.IDStart,
+				},
+				DialrouteID: uuid.FromStringOrNil("b86d48aa-5de6-11ed-a69e-9f3df36c7aa8"),
+				Dialroutes: []rmroute.Route{
+					{
+						ID:         uuid.FromStringOrNil("b86d48aa-5de6-11ed-a69e-9f3df36c7aa8"),
+						ProviderID: uuid.FromStringOrNil("c213af44-534e-11ed-9a1d-73b0076723b8"),
+					},
+				},
+			},
+			expectEndpointDst:  "pjsip/call-out/sip:+821121656522@sip.twilio.com;transport=udp",
+			expectArgs:         "context_type=call,context=call-out,call_id=d2d40962-07fb-11eb-bb82-a3bd16bf1bd9,transport=udp,direction=outgoing",
+			expectCodecPresent: false,
+			expectCodecValue:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+			h := &callHandler{
+				utilHandler:           mockUtil,
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				db:                    mockDB,
+				channelHandler:        mockChannel,
+				outboundConfigHandler: mockOutboundConfig,
+			}
+
+			ctx := context.Background()
+
+			// outbound config: return a permissive config (KR in whitelist) for tel destination
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(&outboundconfig.OutboundConfig{
+				DestinationWhitelist: []string{"kr"},
+			}, nil)
+
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any(), gomock.Any()).Return(tt.responseRoutes, nil)
+
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			}, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+
+			// source number validation: source belongs to customer as a normal number
+			mockReq.EXPECT().NumberV1NumberList(ctx, "", uint64(1), map[nmnumber.Field]any{
+				nmnumber.FieldCustomerID: tt.customerID,
+				nmnumber.FieldNumber:     tt.source.Target,
+				nmnumber.FieldType:       nmnumber.TypeNormal,
+				nmnumber.FieldStatus:     nmnumber.StatusActive,
+				nmnumber.FieldDeleted:    false,
+			}).Return([]nmnumber.Number{{Number: tt.source.Target}}, nil)
+
+			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
+
+			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCall.CustomerID, call.EventTypeCallCreated, tt.expectCall)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.expectCall.ID, defaultHealthDelay, 0).Return(nil)
+
+			// setVariables
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+			mockReq.EXPECT().RouteV1ProviderGet(ctx, tt.expectProviderID).Return(tt.responseProvider, nil)
+
+			// Capture the channel variables passed to StartChannel so we can assert on them.
+			var capturedVariables map[string]string
+			mockChannel.EXPECT().StartChannel(
+				ctx,
+				requesthandler.AsteriskIDCall,
+				gomock.Any(),
+				tt.expectArgs,
+				tt.expectEndpointDst,
+				"", "", "",
+				gomock.Any(),
+			).DoAndReturn(func(_ context.Context, _ string, _ string, _ string, _ string, _, _, _ string, vars map[string]string) (*channel.Channel, error) {
+				capturedVariables = vars
+				return &channel.Channel{}, nil
+			})
+
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res == nil {
+				t.Fatalf("Wrong match. expected non-nil call result")
+			}
+
+			// Core assertion: check VBOUT-CODECS presence/value in channel variables.
+			val, present := capturedVariables[codecHeaderKey]
+			if present != tt.expectCodecPresent {
+				t.Errorf("VBOUT-CODECS presence: got %v, want %v. variables=%v", present, tt.expectCodecPresent, capturedVariables)
+			}
+			if tt.expectCodecPresent && val != tt.expectCodecValue {
+				t.Errorf("VBOUT-CODECS value: got %q, want %q", val, tt.expectCodecValue)
+			}
+		})
+	}
+}
+

@@ -613,6 +613,11 @@ func (h *callHandler) createChannelOutgoing(ctx context.Context, c *call.Call) e
 		return err
 	}
 	setChannelVariableCodecs(channelVariables, c.Metadata)
+	setProviderCodecs(channelVariables, target.Codecs)
+	if target.Codecs != "" {
+		log.Debugf("Provider codec applied for dial attempt. provider_id: %s, codecs: %s",
+			target.ProviderID, target.Codecs)
+	}
 
 	if techApplied > 0 || techSkipped > 0 {
 		log.Infof("Applied provider tech config. headers_applied=%d headers_skipped=%d",
