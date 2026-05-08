@@ -108,7 +108,7 @@ Call Never Connects
 
     To configure the default outgoing source number, update
     your OutboundConfig:
-    PUT /v1/outbound_configs/<outbound-config-id>
+    PUT https://api.voipbin.net/v1.0/outbound_config
     { "default_outgoing_source_number_id": "<number-uuid>" }
 
 **Cause 3: Insufficient Balance**
@@ -160,8 +160,11 @@ Source Number / Caller ID Issues
       }
     }
 
-    If target is "anonymous", source validation failed and
-    no default outgoing source number was configured.
+    If target is "anonymous", the call leg used anonymous caller ID
+    (e.g., a non-PSTN leg that skipped source validation, or a PSTN
+    call from before the OutboundConfig migration). For new PSTN calls
+    with no valid source and no OutboundConfig default, the call is
+    now rejected instead.
 
 **Cause 1: Source Number Not in E.164 Format**
 
@@ -218,7 +221,7 @@ Source Number / Caller ID Issues
             The call is rejected with no fallback.
 
     To configure the default:
-    PUT /v1/outbound_configs/<outbound-config-id>
+    PUT https://api.voipbin.net/v1.0/outbound_config
     {
       "default_outgoing_source_number_id": "<number-uuid>"
     }
