@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/serviceerrors"
@@ -71,14 +72,65 @@ func (h *serviceHandler) CustomerCreate(
 
 	// Auto-create empty OutboundConfig for the new customer.
 	// Empty whitelist blocks all PSTN calls until the customer explicitly configures it.
-	// Fire-and-forget: OutboundConfig failure does not block customer creation.
+	// Blocking with retry: a permanent failure rolls back customer creation so we never
+	// leave a customer that cannot make outgoing calls.
 	if res != nil {
-		if _, cfgErr := h.reqHandler.CallV1OutboundConfigCreate(ctx, res.ID, &cmoutboundconfig.UpdateRequest{}); cfgErr != nil {
-			log.Warnf("Could not auto-create OutboundConfig for new customer. customer_id: %s, err: %v", res.ID, cfgErr)
+		if cfgErr := h.autoCreateOutboundConfigWithRetry(ctx, res.ID); cfgErr != nil {
+			log.Errorf("OutboundConfig auto-create permanently failed; rolling back customer creation. customer_id: %s, err: %v", res.ID, cfgErr)
+			if _, delErr := h.reqHandler.CustomerV1CustomerDelete(ctx, res.ID); delErr != nil {
+				log.Errorf("Could not roll back customer after OutboundConfig failure. customer_id: %s, err: %v", res.ID, delErr)
+			}
+			return nil, fmt.Errorf("could not create OutboundConfig for new customer: %w", cfgErr)
 		}
 	}
 
 	return res, nil
+}
+
+// autoCreateOutboundConfigWithRetry creates an empty OutboundConfig for the given customer with
+// bounded retries. It returns nil on the first successful attempt or the last error after the
+// retry budget is exhausted.
+//
+// Idempotency note: an INSERT on the server may succeed even when the response is lost (network
+// blip, RPC timeout). On the next attempt the UNIQUE KEY uq_customer_id constraint causes the
+// retry to error, but the original record is intact. To avoid rolling back a healthy customer
+// after such a "lost ACK" scenario, after each failure we list the customer's OutboundConfigs;
+// if one already exists, the retry is treated as an idempotent success.
+func (h *serviceHandler) autoCreateOutboundConfigWithRetry(ctx context.Context, customerID uuid.UUID) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "autoCreateOutboundConfigWithRetry",
+		"customer_id": customerID,
+	})
+
+	const maxRetries = 3
+	var cfgErr error
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		_, cfgErr = h.reqHandler.CallV1OutboundConfigCreate(ctx, customerID, &cmoutboundconfig.UpdateRequest{})
+		if cfgErr == nil {
+			return nil
+		}
+
+		// The INSERT may have succeeded with a lost response. Check whether an
+		// OutboundConfig already exists for this customer. If it does, the prior
+		// attempt was successful — treat this as idempotent success.
+		existing, getErr := h.reqHandler.CallV1OutboundConfigList(ctx, customerID, 1, "")
+		if getErr == nil && len(existing) > 0 {
+			log.Infof("OutboundConfig already exists for customer; treating retry as idempotent success. err: %v", cfgErr)
+			return nil
+		}
+
+		log.Warnf("OutboundConfig auto-create attempt %d/%d failed. err: %v", attempt, maxRetries, cfgErr)
+		if attempt < maxRetries {
+			timer := time.NewTimer(time.Duration(attempt) * 200 * time.Millisecond)
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return ctx.Err()
+			case <-timer.C:
+			}
+		}
+	}
+	return cfgErr
 }
 
 // CustomerGet returns customer info of given customerID.
@@ -520,52 +572,6 @@ func (h *serviceHandler) CustomerUpdateBillingAccountID(ctx context.Context, a *
 	return res, nil
 }
 
-// CustomerUpdateDefaultOutgoingSourceNumberID sends a request to customer-manager
-// to update the customer's default outgoing source number id.
-// Requires ProjectSuperAdmin permission.
-func (h *serviceHandler) CustomerUpdateDefaultOutgoingSourceNumberID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, defaultOutgoingSourceNumberID uuid.UUID) (*cscustomer.Customer, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":                              "CustomerUpdateDefaultOutgoingSourceNumberID",
-		"customer_id":                       customerID,
-		"default_outgoing_source_number_id": defaultOutgoingSourceNumberID,
-	})
-
-	if a.IsDirect() {
-		return nil, serviceerrors.ErrDirectAccessNotSupported
-	}
-
-	if !h.hasPermission(ctx, a, uuid.Nil, amagent.PermissionProjectSuperAdmin) {
-		log.Info("The agent has no permission.")
-		return nil, serviceerrors.ErrPermissionDenied
-	}
-
-	_, err := h.customerGet(ctx, customerID)
-	if err != nil {
-		log.Errorf("Could not validate the customer info. err: %v", err)
-		return nil, err
-	}
-
-	// validate the number exists and belongs to this customer
-	num, err := h.numberGet(ctx, defaultOutgoingSourceNumberID)
-	if err != nil {
-		log.Errorf("Could not validate the number info. err: %v", err)
-		return nil, err
-	}
-	log.WithField("number", num).Debugf("Retrieved number info. number_id: %s", num.ID)
-	if num.CustomerID != customerID {
-		log.Infof("The number does not belong to this customer. number_customer_id: %s", num.CustomerID)
-		return nil, fmt.Errorf("%w: the number does not belong to this customer", serviceerrors.ErrPermissionDenied)
-	}
-
-	res, err := h.reqHandler.CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx, customerID, defaultOutgoingSourceNumberID)
-	if err != nil {
-		log.Errorf("Could not update the customer's default outgoing source number id. err: %v", err)
-		return nil, err
-	}
-
-	return res, nil
-}
-
 // CustomerUpdateMetadata updates the customer's internal metadata.
 // Requires ProjectSuperAdmin permission.
 func (h *serviceHandler) CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error) {
@@ -637,45 +643,6 @@ func (h *serviceHandler) CustomerSelfUpdateBillingAccountID(ctx context.Context,
 	return res.ConvertWebhookMessage(), nil
 }
 
-// CustomerSelfUpdateDefaultOutgoingSourceNumberID updates the authenticated agent's own customer's default outgoing source number id.
-// Requires CustomerAdmin permission.
-func (h *serviceHandler) CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx context.Context, a *auth.AuthIdentity, defaultOutgoingSourceNumberID uuid.UUID) (*cscustomer.WebhookMessage, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":                              "CustomerSelfUpdateDefaultOutgoingSourceNumberID",
-		"customer_id":                       a.CustomerID,
-		"default_outgoing_source_number_id": defaultOutgoingSourceNumberID,
-	})
-
-	if a.IsDirect() {
-		return nil, serviceerrors.ErrDirectAccessNotSupported
-	}
-
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin) {
-		log.Info("The agent has no permission.")
-		return nil, serviceerrors.ErrPermissionDenied
-	}
-
-	// validate the number exists and belongs to the agent's customer
-	num, err := h.numberGet(ctx, defaultOutgoingSourceNumberID)
-	if err != nil {
-		log.Errorf("Could not validate the number info. err: %v", err)
-		return nil, err
-	}
-	log.WithField("number", num).Debugf("Retrieved number info. number_id: %s", num.ID)
-	if num.CustomerID != a.CustomerID {
-		log.Infof("The number does not belong to this customer. number_customer_id: %s", num.CustomerID)
-		return nil, fmt.Errorf("%w: the number does not belong to this customer", serviceerrors.ErrPermissionDenied)
-	}
-
-	res, err := h.reqHandler.CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx, a.CustomerID, defaultOutgoingSourceNumberID)
-	if err != nil {
-		log.Errorf("Could not update the customer's default outgoing source number id. err: %v", err)
-		return nil, err
-	}
-
-	return res.ConvertWebhookMessage(), nil
-}
-
 // CustomerSelfUpdateMetadata updates the authenticated agent's own customer's metadata.
 // Requires CustomerAdmin permission.
 func (h *serviceHandler) CustomerSelfUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error) {
@@ -730,10 +697,15 @@ func (h *serviceHandler) CustomerSignup(
 
 	// Auto-create empty OutboundConfig for the new customer.
 	// Empty whitelist blocks all PSTN calls until the customer explicitly configures it.
-	// Fire-and-forget: OutboundConfig failure does not block customer signup.
-	if res.Customer != nil {
-		if _, cfgErr := h.reqHandler.CallV1OutboundConfigCreate(ctx, res.Customer.ID, &cmoutboundconfig.UpdateRequest{}); cfgErr != nil {
-			log.Warnf("Could not auto-create OutboundConfig for new customer. customer_id: %s, err: %v", res.Customer.ID, cfgErr)
+	// Blocking with retry: a permanent failure rolls back customer signup so we never
+	// leave a customer that cannot make outgoing calls.
+	if res != nil && res.Customer != nil {
+		if cfgErr := h.autoCreateOutboundConfigWithRetry(ctx, res.Customer.ID); cfgErr != nil {
+			log.Errorf("OutboundConfig auto-create permanently failed; rolling back customer signup. customer_id: %s, err: %v", res.Customer.ID, cfgErr)
+			if _, delErr := h.reqHandler.CustomerV1CustomerDelete(ctx, res.Customer.ID); delErr != nil {
+				log.Errorf("Could not roll back customer after OutboundConfig failure. customer_id: %s, err: %v", res.Customer.ID, delErr)
+			}
+			return nil, fmt.Errorf("could not create OutboundConfig for new customer: %w", cfgErr)
 		}
 	}
 

@@ -28,7 +28,7 @@ bin-api-manager is a thin gateway: it authenticates, verifies the ``provider_id`
 2. **Server-side metadata construction** — two internal keys are attached to the Call:
 
    - ``route_provider_ids`` — tells call-manager / route-manager to return a synthetic dialroute that points at exactly the specified provider, bypassing the normal customer / default merge.
-   - ``skip_source_validation`` — tells call-manager to preserve the admin-supplied source number verbatim, instead of silently falling back to the customer's ``DefaultOutgoingSourceNumberID`` when the source is not owned by the customer. Necessary because providers commonly reject INVITEs whose ``From`` / ``P-Asserted-Identity`` doesn't match a pre-allowlisted caller ID.
+   - ``skip_source_validation`` — tells call-manager to preserve the admin-supplied source number verbatim, instead of falling back to the OutboundConfig's ``default_outgoing_source_number_id`` (or rejecting the call if no default is set) when the source is not owned by the customer. Necessary because providers commonly reject INVITEs whose ``From`` / ``P-Asserted-Identity`` doesn't match a pre-allowlisted caller ID.
 
 3. **Create the underlying Call(s)** — route-manager issues ``CallV1CallsCreate`` synchronously. Call-manager persists the Call(s), reads ``route_provider_ids`` in ``getDialroutes`` and forwards them to ``DialrouteList``, honors ``skip_source_validation`` in ``getValidatedSourceForOutgoingCall``.
 

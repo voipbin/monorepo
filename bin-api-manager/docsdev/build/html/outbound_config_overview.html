@@ -210,10 +210,11 @@
 <li><p><strong>Async:</strong> No</p></li>
 </ul>
 </div>
-<p>OutboundConfig controls per-customer outbound PSTN call behaviour. It has two fields:</p>
+<p>OutboundConfig controls per-customer outbound PSTN call behaviour:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code> — ISO 3166 alpha-2 country codes permitted for outbound PSTN calls. <strong>Always enforced</strong> — an empty list denies all PSTN calls. Customers must populate this before making any outbound PSTN call.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">codecs</span></code> — Comma-separated codec preference list (e.g. <code class="docutils literal notranslate"><span class="pre">PCMU,PCMA,G729</span></code>). Empty string = server default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> — Fallback source number used when an outgoing call is placed without a valid customer-owned source (e.g., a SIP caller dialling out, or a missing/non-E.164 source). Must be the UUID of a normal active number owned by the same customer; <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> disables the fallback so such calls are rejected.</p></li>
 </ul>
 <p>There is exactly one OutboundConfig per customer. It is <strong>automatically created</strong> (with an empty <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>) when a customer account is created. All outbound PSTN calls remain blocked until the customer populates <code class="docutils literal notranslate"><span class="pre">destination_whitelist</span></code>.</p>
 <p>API endpoints follow the billing-account pattern — singular path for self-service, plural path for admin:</p>

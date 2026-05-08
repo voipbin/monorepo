@@ -50,7 +50,7 @@ func Test_customerGET(t *testing.T) {
 				ID: uuid.FromStringOrNil("e25f1af8-c44f-11ef-9d46-bfaf61e659c2"),
 			},
 
-			expectedRes: `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes: `{"id":"e25f1af8-c44f-11ef-9d46-bfaf61e659c2","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -131,7 +131,7 @@ func Test_customerPut(t *testing.T) {
 			expectedAddress:       "somewhere",
 			expectedWebhookMethod: cscustomer.WebhookMethodPost,
 			expectedWebhookURI:    "test.com",
-			expectedRes:           `{"id":"4b7dcc68-c451-11ef-a289-33cbfe065115","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:           `{"id":"4b7dcc68-c451-11ef-a289-33cbfe065115","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -202,7 +202,7 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 			},
 
 			expectedBillingAccountID: uuid.FromStringOrNil("245bc55e-c514-11ef-85d3-23d66dfc487a"),
-			expectedRes:              `{"id":"2422306e-c514-11ef-a89d-2f0585ee15f9","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:              `{"id":"2422306e-c514-11ef-a89d-2f0585ee15f9","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -228,78 +228,6 @@ func Test_customerBillingAccountIDPut(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 
 			mockSvc.EXPECT().CustomerSelfUpdateBillingAccountID(req.Context(), tt.agent, tt.expectedBillingAccountID).Return(tt.responseCustomer, nil)
-
-			r.ServeHTTP(w, req)
-			if w.Code != http.StatusOK {
-				t.Errorf("Wrong match. expect: %d, got: %d", http.StatusOK, w.Code)
-			}
-
-			if w.Body.String() != tt.expectedRes {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
-			}
-		})
-	}
-}
-
-func Test_customerDefaultOutgoingSourceNumberIDPut(t *testing.T) {
-
-	tests := []struct {
-		name  string
-		agent *auth.AuthIdentity
-
-		reqQuery string
-		reqBody  []byte
-
-		responseCustomer *cscustomer.WebhookMessage
-
-		expectedDefaultOutgoingSourceNumberID uuid.UUID
-		expectedRes                           string
-	}{
-		{
-			name: "normal",
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d1a2b3c4-e5f6-7890-abcd-ef1234567890"),
-					CustomerID: uuid.FromStringOrNil("d2b3c4e5-f6a7-8901-bcde-f12345678901"),
-				},
-				Permission: amagent.PermissionCustomerAdmin,
-			}),
-
-			reqQuery: "/customer/default_outgoing_source_number_id",
-			reqBody:  []byte(`{"default_outgoing_source_number_id":"d3c4e5f6-a7b8-9012-cdef-123456789012"}`),
-
-			responseCustomer: &cscustomer.WebhookMessage{
-				ID:                            uuid.FromStringOrNil("d2b3c4e5-f6a7-8901-bcde-f12345678901"),
-				DefaultOutgoingSourceNumberID: uuid.FromStringOrNil("d3c4e5f6-a7b8-9012-cdef-123456789012"),
-			},
-
-			expectedDefaultOutgoingSourceNumberID: uuid.FromStringOrNil("d3c4e5f6-a7b8-9012-cdef-123456789012"),
-			expectedRes:                           `{"id":"d2b3c4e5-f6a7-8901-bcde-f12345678901","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"d3c4e5f6-a7b8-9012-cdef-123456789012","metadata":{"rtp_debug":false},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockSvc := servicehandler.NewMockServiceHandler(mc)
-			h := &server{
-				serviceHandler: mockSvc,
-			}
-
-			w := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(w)
-
-			r.Use(func(c *gin.Context) {
-				c.Set("auth_identity", tt.agent)
-			})
-			openapi_server.RegisterHandlers(r, h)
-
-			req, _ := http.NewRequest(http.MethodPut, tt.reqQuery, bytes.NewBuffer(tt.reqBody))
-			req.Header.Set("Content-Type", "application/json")
-
-			mockSvc.EXPECT().CustomerSelfUpdateDefaultOutgoingSourceNumberID(req.Context(), tt.agent, tt.expectedDefaultOutgoingSourceNumberID).Return(tt.responseCustomer, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -491,7 +419,7 @@ func Test_customerMetadataPut(t *testing.T) {
 			expectedMetadata: cscustomer.Metadata{
 				RTPDebug: true,
 			},
-			expectedRes: `{"id":"b2c3d4e5-f6a7-8901-bcde-f12345678901","billing_account_id":"00000000-0000-0000-0000-000000000000","default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":true},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes: `{"id":"b2c3d4e5-f6a7-8901-bcde-f12345678901","billing_account_id":"00000000-0000-0000-0000-000000000000","metadata":{"rtp_debug":true},"email_verified":false,"status":"","identity_verification_status":"","tm_deletion_scheduled":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -583,50 +511,3 @@ func Test_customerBillingAccountIDPut_MissingAuthIdentity(t *testing.T) {
 		[]byte(`{"billing_account_id":"245bc55e-c514-11ef-85d3-23d66dfc487a"}`))
 }
 
-// Test_customerDefaultOutgoingSourceNumberIDPut_MissingAuthIdentity
-// exercises the auth-identity-missing branch of
-// PutCustomerDefaultOutgoingSourceNumberId.
-func Test_customerDefaultOutgoingSourceNumberIDPut_MissingAuthIdentity(t *testing.T) {
-	assertMissingAuthIdentity(t, http.MethodPut, "/customer/default_outgoing_source_number_id",
-		[]byte(`{"default_outgoing_source_number_id":"d3c4e5f6-a7b8-9012-cdef-123456789012"}`))
-}
-
-// Test_customerDefaultOutgoingSourceNumberIDPut_InvalidID verifies that
-// when the body parses as a valid UUID but resolves to uuid.Nil (all
-// zeros), the handler rejects the request with INVALID_ID. The field is
-// typed as openapi_types.UUID so malformed strings fail at JSON binding
-// with INVALID_JSON_BODY; the Nil-UUID path is the INVALID_ID branch.
-func Test_customerDefaultOutgoingSourceNumberIDPut_InvalidID(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-
-	agent := auth.NewAgentIdentity(&amagent.Agent{
-		Identity: commonidentity.Identity{
-			ID:         uuid.FromStringOrNil("d1a2b3c4-e5f6-7890-abcd-ef1234567890"),
-			CustomerID: uuid.FromStringOrNil("d2b3c4e5-f6a7-8901-bcde-f12345678901"),
-		},
-		Permission: amagent.PermissionCustomerAdmin,
-	})
-
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockSvc := servicehandler.NewMockServiceHandler(mc)
-	h := &server{serviceHandler: mockSvc}
-
-	w := httptest.NewRecorder()
-	_, r := gin.CreateTestContext(w)
-	r.Use(middleware.RequestID())
-	r.Use(func(c *gin.Context) {
-		c.Set("auth_identity", agent)
-	})
-	openapi_server.RegisterHandlers(r, h)
-
-	// Valid UUID shape but uuid.Nil — uuid.FromStringOrNil returns Nil
-	// and the handler rejects with INVALID_ID.
-	req, _ := http.NewRequest(http.MethodPut, "/customer/default_outgoing_source_number_id",
-		bytes.NewBufferString(`{"default_outgoing_source_number_id":"00000000-0000-0000-0000-000000000000"}`))
-	req.Header.Set("Content-Type", "application/json")
-	r.ServeHTTP(w, req)
-
-	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
-}

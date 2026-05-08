@@ -10,6 +10,7 @@ import (
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/pkg/cachehandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -27,6 +28,7 @@ type outboundConfigHandler struct {
 	utilHandler  utilhandler.UtilHandler
 	db           dbhandler.DBHandler
 	cacheHandler cachehandler.CacheHandler
+	reqHandler   requesthandler.RequestHandler
 }
 
 // NewOutboundConfigHandler creates an OutboundConfigHandler.
@@ -34,10 +36,12 @@ func NewOutboundConfigHandler(
 	utilHandler utilhandler.UtilHandler,
 	db dbhandler.DBHandler,
 	cacheHandler cachehandler.CacheHandler,
+	reqHandler requesthandler.RequestHandler,
 ) OutboundConfigHandler {
 	return &outboundConfigHandler{
 		utilHandler:  utilHandler,
 		db:           db,
 		cacheHandler: cacheHandler,
+		reqHandler:   reqHandler,
 	}
 }

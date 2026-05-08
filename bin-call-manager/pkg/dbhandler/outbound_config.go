@@ -17,7 +17,7 @@ import (
 const outboundConfigTable = "call_outbound_configs"
 
 // outboundConfigSelectCols is the canonical column list for SELECT queries against outboundConfigTable.
-const outboundConfigSelectCols = "id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update, tm_delete"
+const outboundConfigSelectCols = "id, customer_id, name, detail, destination_whitelist, codecs, default_outgoing_source_number_id, tm_create, tm_update, tm_delete"
 
 // mysqlDateTimeFormats are the textual formats the MySQL driver returns when
 // `parseTime=true` is NOT in the DSN — DATETIME(6) → "2006-01-02 15:04:05.999999",
@@ -67,6 +67,7 @@ func (h *handler) outboundConfigGetFromRow(row *sql.Rows) (*outboundconfig.Outbo
 		&res.Detail,
 		&whitelistJSON,
 		&res.Codecs,
+		&res.DefaultOutgoingSourceNumberID,
 		&tmCreateBytes,
 		&tmUpdateBytes,
 		&tmDeleteBytes,
@@ -99,10 +100,10 @@ func (h *handler) OutboundConfigCreate(ctx context.Context, c *outboundconfig.Ou
 	}
 
 	now := time.Now()
-	q := "INSERT INTO " + outboundConfigTable + " (id, customer_id, name, detail, destination_whitelist, codecs, tm_create, tm_update) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+	q := "INSERT INTO " + outboundConfigTable + " (id, customer_id, name, detail, destination_whitelist, codecs, default_outgoing_source_number_id, tm_create, tm_update) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	// Use .Bytes() to send raw 16 bytes — gofrs/uuid.UUID.Value() returns a 36-char string
 	// which would not fit a BINARY(16) column. See docs/conventions/database.md §7.0a.
-	if _, err := h.db.ExecContext(ctx, q, c.ID.Bytes(), c.CustomerID.Bytes(), c.Name, c.Detail, whitelistJSON, c.Codecs, now, now); err != nil {
+	if _, err := h.db.ExecContext(ctx, q, c.ID.Bytes(), c.CustomerID.Bytes(), c.Name, c.Detail, whitelistJSON, c.Codecs, c.DefaultOutgoingSourceNumberID.Bytes(), now, now); err != nil {
 		log.Errorf("Could not create outbound_config. err: %v", err)
 		return err
 	}
@@ -200,6 +201,10 @@ func (h *handler) OutboundConfigUpdate(ctx context.Context, id uuid.UUID, req *o
 	if req.Codecs != nil {
 		sets = append(sets, "codecs = ?")
 		args = append(args, *req.Codecs)
+	}
+	if req.DefaultOutgoingSourceNumberID != nil {
+		sets = append(sets, "default_outgoing_source_number_id = ?")
+		args = append(args, req.DefaultOutgoingSourceNumberID.Bytes())
 	}
 
 	args = append(args, id.Bytes())

@@ -746,7 +746,6 @@ type RequestHandler interface {
 		webhookURI string,
 	) (*cscustomer.Customer, error)
 	CustomerV1CustomerUpdateBillingAccountID(ctx context.Context, customerID uuid.UUID, biillingAccountID uuid.UUID) (*cscustomer.Customer, error)
-	CustomerV1CustomerUpdateDefaultOutgoingSourceNumberID(ctx context.Context, customerID uuid.UUID, defaultOutgoingSourceNumberID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerV1CustomerUpdateMetadata(ctx context.Context, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error)
 	CustomerV1CustomerSignup(
 		ctx context.Context,

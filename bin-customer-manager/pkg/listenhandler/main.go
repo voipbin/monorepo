@@ -59,7 +59,6 @@ var (
 	regV1CustomersGet                  = regexp.MustCompile(`/v1/customers\?(.*)$`)
 	regV1CustomersID                   = regexp.MustCompile("/v1/customers/" + regUUID + "$")
 	regV1CustomersIDIsBillingAccountID              = regexp.MustCompile("/v1/customers/" + regUUID + "/billing_account_id$")
-	regV1CustomersIDIsDefaultOutgoingSourceNumberID = regexp.MustCompile("/v1/customers/" + regUUID + "/default_outgoing_source_number_id$")
 	regV1CustomersIDIsMetadata                      = regexp.MustCompile("/v1/customers/" + regUUID + "/metadata$")
 
 	regV1CustomersSignup      = regexp.MustCompile("/v1/customers/signup$")
@@ -251,11 +250,6 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1CustomersIDIsBillingAccountID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
 		response, err = h.processV1CustomersIDBillingAccountIDPut(ctx, m)
 		requestType = "/v1/customers/<customer_id>/billing_account_id"
-
-	// PUT /customers/<customer-id>/default_outgoing_source_number_id
-	case regV1CustomersIDIsDefaultOutgoingSourceNumberID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
-		response, err = h.processV1CustomersIDDefaultOutgoingSourceNumberIDPut(ctx, m)
-		requestType = "/v1/customers/<customer_id>/default_outgoing_source_number_id"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

@@ -307,68 +307,6 @@ func (h *server) PutCustomersIdBillingAccountId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
-func (h *server) PutCustomersIdDefaultOutgoingSourceNumberId(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutCustomersIdDefaultOutgoingSourceNumberId",
-		"request_address": c.ClientIP,
-		"customer_id":     id,
-	})
-
-	a, ok := getAuthIdentity(c)
-	if !ok {
-		log.Errorf("Could not find auth identity.")
-		abortWithError(c, cerrors.Unauthenticated(
-			commonoutline.ServiceNameAPIManager,
-			"AUTHENTICATION_REQUIRED",
-			"Authentication is required.",
-		))
-		return
-	}
-	log = log.WithField("agent", a)
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		abortWithError(c, cerrors.InvalidArgument(
-			commonoutline.ServiceNameAPIManager,
-			"INVALID_ID",
-			"The provided id is not a valid UUID.",
-		))
-		return
-	}
-
-	var req openapi_server.PutCustomersIdDefaultOutgoingSourceNumberIdJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		abortWithError(c, cerrors.InvalidArgument(
-			commonoutline.ServiceNameAPIManager,
-			"INVALID_JSON_BODY",
-			"The request body is not valid JSON.",
-		))
-		return
-	}
-
-	defaultOutgoingSourceNumberID := uuid.FromStringOrNil(req.DefaultOutgoingSourceNumberId.String())
-	if defaultOutgoingSourceNumberID == uuid.Nil {
-		log.Error("Could not parse the default outgoing source number id.")
-		abortWithError(c, cerrors.InvalidArgument(
-			commonoutline.ServiceNameAPIManager,
-			"INVALID_ID",
-			"The provided id is not a valid UUID.",
-		))
-		return
-	}
-
-	res, err := h.serviceHandler.CustomerUpdateDefaultOutgoingSourceNumberID(c.Request.Context(), a, target, defaultOutgoingSourceNumberID)
-	if err != nil {
-		log.Errorf("Could not update the customer. err: %v", err)
-		abortWithServiceError(c, err)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
 func (h *server) PutCustomersIdMetadata(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "PutCustomersIdMetadata",

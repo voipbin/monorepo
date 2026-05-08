@@ -225,35 +225,6 @@ func (h *customerHandler) UpdateBillingAccountID(ctx context.Context, id uuid.UU
 	return res, nil
 }
 
-// UpdateDefaultOutgoingSourceNumberID updates the customer's default outgoing source number id.
-func (h *customerHandler) UpdateDefaultOutgoingSourceNumberID(ctx context.Context, id uuid.UUID, defaultOutgoingSourceNumberID uuid.UUID) (*customer.Customer, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "UpdateDefaultOutgoingSourceNumberID",
-		"customer_id": id,
-	})
-	log.Debug("Updating the customer's default outgoing source number id.")
-
-	fields := map[customer.Field]any{
-		customer.FieldDefaultOutgoingSourceNumberID: defaultOutgoingSourceNumberID,
-	}
-
-	if err := h.db.CustomerUpdate(ctx, id, fields); err != nil {
-		log.Errorf("Could not update the default outgoing source number id. err: %v", err)
-		return nil, err
-	}
-
-	res, err := h.db.CustomerGet(ctx, id)
-	if err != nil {
-		log.Errorf("Could not get updated customer. err: %v", err)
-		return nil, fmt.Errorf("could not get updated customer")
-	}
-
-	// notify
-	h.notifyHandler.PublishEvent(ctx, customer.EventTypeCustomerUpdated, res)
-
-	return res, nil
-}
-
 // UpdateMetadata updates the customer's metadata.
 func (h *customerHandler) UpdateMetadata(ctx context.Context, id uuid.UUID, metadata customer.Metadata) (*customer.Customer, error) {
 	log := logrus.WithFields(logrus.Fields{

@@ -514,10 +514,8 @@ type ServiceHandler interface {
 	CustomerSelfFreezeAndDelete(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error)
 	CustomerSelfRecover(ctx context.Context, a *auth.AuthIdentity) (*cscustomer.WebhookMessage, error)
 	CustomerUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, billingAccountID uuid.UUID) (*cscustomer.Customer, error)
-	CustomerUpdateDefaultOutgoingSourceNumberID(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, defaultOutgoingSourceNumberID uuid.UUID) (*cscustomer.Customer, error)
 	CustomerUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, customerID uuid.UUID, metadata cscustomer.Metadata) (*cscustomer.Customer, error)
 	CustomerSelfUpdateBillingAccountID(ctx context.Context, a *auth.AuthIdentity, billingAccountID uuid.UUID) (*cscustomer.WebhookMessage, error)
-	CustomerSelfUpdateDefaultOutgoingSourceNumberID(ctx context.Context, a *auth.AuthIdentity, defaultOutgoingSourceNumberID uuid.UUID) (*cscustomer.WebhookMessage, error)
 	CustomerSelfUpdateMetadata(ctx context.Context, a *auth.AuthIdentity, metadata cscustomer.Metadata) (*cscustomer.WebhookMessage, error)
 	CustomerSignup(
 		ctx context.Context,

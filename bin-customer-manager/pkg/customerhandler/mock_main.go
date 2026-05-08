@@ -231,21 +231,6 @@ func (mr *MockCustomerHandlerMockRecorder) UpdateBillingAccountID(ctx, id, billi
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBillingAccountID", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateBillingAccountID), ctx, id, billingAccountID)
 }
 
-// UpdateDefaultOutgoingSourceNumberID mocks base method.
-func (m *MockCustomerHandler) UpdateDefaultOutgoingSourceNumberID(ctx context.Context, id, defaultOutgoingSourceNumberID uuid.UUID) (*customer.Customer, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateDefaultOutgoingSourceNumberID", ctx, id, defaultOutgoingSourceNumberID)
-	ret0, _ := ret[0].(*customer.Customer)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// UpdateDefaultOutgoingSourceNumberID indicates an expected call of UpdateDefaultOutgoingSourceNumberID.
-func (mr *MockCustomerHandlerMockRecorder) UpdateDefaultOutgoingSourceNumberID(ctx, id, defaultOutgoingSourceNumberID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDefaultOutgoingSourceNumberID", reflect.TypeOf((*MockCustomerHandler)(nil).UpdateDefaultOutgoingSourceNumberID), ctx, id, defaultOutgoingSourceNumberID)
-}
-
 // UpdateIdentityVerificationStatus mocks base method.
 func (m *MockCustomerHandler) UpdateIdentityVerificationStatus(ctx context.Context, id uuid.UUID, status customer.IdentityVerificationStatus) (*customer.Customer, error) {
 	m.ctrl.T.Helper()

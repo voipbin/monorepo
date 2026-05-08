@@ -41,13 +41,6 @@ type V1DataCustomersIDBillingAccountIDPut struct {
 	BillingAccountID uuid.UUID `json:"billing_account_id"`
 }
 
-// V1DataCustomersIDDefaultOutgoingSourceNumberIDPut is
-// v1 data type request struct for
-// /v1/customers/<customer-id>/default_outgoing_source_number_id PUT
-type V1DataCustomersIDDefaultOutgoingSourceNumberIDPut struct {
-	DefaultOutgoingSourceNumberID uuid.UUID `json:"default_outgoing_source_number_id"`
-}
-
 // V1DataCustomersIDMetadataPut is
 // v1 data type request struct for
 // /v1/customers/<customer-id>/metadata PUT

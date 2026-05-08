@@ -12,7 +12,9 @@ import (
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
 	"monorepo/bin-call-manager/pkg/cachehandler"
 	"monorepo/bin-call-manager/pkg/dbhandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	nmnumber "monorepo/bin-number-manager/models/number"
 )
 
 func Test_outboundConfigHandler_Delete(t *testing.T) {
@@ -75,6 +77,7 @@ func Test_outboundConfigHandler_Delete(t *testing.T) {
 				utilHandler:  utilhandler.NewMockUtilHandler(mc),
 				db:           mockDB,
 				cacheHandler: mockCache,
+				reqHandler:   requesthandler.NewMockRequestHandler(mc),
 			}
 			ctx := context.Background()
 
@@ -137,10 +140,10 @@ func Test_outboundConfigHandler_GetByCustomerID(t *testing.T) {
 		dbGetResult *outboundconfig.OutboundConfig
 		dbGetErr    error
 
-		expectCacheSet        bool
+		expectCacheSet         bool
 		expectCacheSetNotFound bool
-		expectRes             *outboundconfig.OutboundConfig
-		expectErr             bool
+		expectRes              *outboundconfig.OutboundConfig
+		expectErr              bool
 	}{
 		{
 			name:           "cache hit - real config",
@@ -159,15 +162,15 @@ func Test_outboundConfigHandler_GetByCustomerID(t *testing.T) {
 			expectErr:      false,
 		},
 		{
-			name:                  "cache miss + DB found - write-through, return config",
-			customerID:            uuid.FromStringOrNil("11111111-0000-0000-0000-000000000003"),
-			cacheGetResult:        nil,
-			cacheGetErr:           redis.Nil,
-			dbGetResult:           &outboundconfig.OutboundConfig{Name: "from-db"},
-			dbGetErr:              nil,
-			expectCacheSet:        true,
-			expectRes:             &outboundconfig.OutboundConfig{Name: "from-db"},
-			expectErr:             false,
+			name:           "cache miss + DB found - write-through, return config",
+			customerID:     uuid.FromStringOrNil("11111111-0000-0000-0000-000000000003"),
+			cacheGetResult: nil,
+			cacheGetErr:    redis.Nil,
+			dbGetResult:    &outboundconfig.OutboundConfig{Name: "from-db"},
+			dbGetErr:       nil,
+			expectCacheSet: true,
+			expectRes:      &outboundconfig.OutboundConfig{Name: "from-db"},
+			expectErr:      false,
 		},
 		{
 			name:                   "cache miss + DB not found - set sentinel, return nil",
@@ -205,6 +208,7 @@ func Test_outboundConfigHandler_GetByCustomerID(t *testing.T) {
 				utilHandler:  mockUtil,
 				db:           mockDB,
 				cacheHandler: mockCache,
+				reqHandler:   requesthandler.NewMockRequestHandler(mc),
 			}
 
 			ctx := context.Background()
@@ -262,11 +266,11 @@ func Test_outboundConfigHandler_GetByCustomerID(t *testing.T) {
 
 func Test_outboundConfigHandler_GetByID(t *testing.T) {
 	tests := []struct {
-		name   string
-		id     uuid.UUID
-		dbRes  *outboundconfig.OutboundConfig
-		dbErr  error
-		expect *outboundconfig.OutboundConfig
+		name    string
+		id      uuid.UUID
+		dbRes   *outboundconfig.OutboundConfig
+		dbErr   error
+		expect  *outboundconfig.OutboundConfig
 		wantErr bool
 	}{
 		{
@@ -305,6 +309,7 @@ func Test_outboundConfigHandler_GetByID(t *testing.T) {
 				utilHandler:  utilhandler.NewMockUtilHandler(mc),
 				db:           mockDB,
 				cacheHandler: cachehandler.NewMockCacheHandler(mc),
+				reqHandler:   requesthandler.NewMockRequestHandler(mc),
 			}
 			ctx := context.Background()
 
@@ -371,6 +376,7 @@ func Test_outboundConfigHandler_List(t *testing.T) {
 				utilHandler:  utilhandler.NewMockUtilHandler(mc),
 				db:           mockDB,
 				cacheHandler: cachehandler.NewMockCacheHandler(mc),
+				reqHandler:   requesthandler.NewMockRequestHandler(mc),
 			}
 			ctx := context.Background()
 
@@ -445,6 +451,7 @@ func Test_outboundConfigHandler_Create(t *testing.T) {
 				utilHandler:  mockUtil,
 				db:           mockDB,
 				cacheHandler: mockCache,
+				reqHandler:   requesthandler.NewMockRequestHandler(mc),
 			}
 			ctx := context.Background()
 
@@ -484,13 +491,86 @@ func Test_outboundConfigHandler_Create(t *testing.T) {
 	}
 }
 
+func Test_Create_WithDefaultOutgoingSourceNumberID(t *testing.T) {
+	customerID := uuid.FromStringOrNil("eeeeeeee-0000-0000-0000-000000000001")
+	defaultNumberID := uuid.FromStringOrNil("ffffffff-0000-0000-0000-000000000001")
+	newID := uuid.FromStringOrNil("eeeeeeee-0000-0000-0000-0000000000aa")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &outboundConfigHandler{
+		utilHandler:  mockUtil,
+		db:           mockDB,
+		cacheHandler: mockCache,
+		reqHandler:   mockReq,
+	}
+	ctx := context.Background()
+
+	req := &outboundconfig.UpdateRequest{
+		DefaultOutgoingSourceNumberID: &defaultNumberID,
+	}
+
+	// validation step should look up the number
+	expectFilters := map[nmnumber.Field]any{
+		nmnumber.FieldCustomerID: customerID,
+		nmnumber.FieldID:         defaultNumberID,
+		nmnumber.FieldType:       nmnumber.TypeNormal,
+		nmnumber.FieldStatus:     nmnumber.StatusActive,
+		nmnumber.FieldDeleted:    false,
+	}
+	mockReq.EXPECT().
+		NumberV1NumberList(ctx, "", uint64(1), expectFilters).
+		Return([]nmnumber.Number{{Number: "+15551234567"}}, nil).
+		Times(1)
+
+	mockUtil.EXPECT().UUIDCreate().Return(newID).Times(1)
+
+	// the OutboundConfig passed to OutboundConfigCreate must carry the field
+	var captured *outboundconfig.OutboundConfig
+	mockDB.EXPECT().
+		OutboundConfigCreate(ctx, gomock.Any()).
+		DoAndReturn(func(_ context.Context, c *outboundconfig.OutboundConfig) error {
+			captured = c
+			return nil
+		}).
+		Times(1)
+
+	mockCache.EXPECT().OutboundConfigSet(ctx, customerID, gomock.Any()).Return(nil).Times(1)
+
+	got, err := h.Create(ctx, customerID, req)
+	if err != nil {
+		t.Fatalf("Create() error = %v", err)
+	}
+	if got == nil {
+		t.Fatalf("Create() returned nil")
+	}
+	if got.DefaultOutgoingSourceNumberID != defaultNumberID {
+		t.Errorf("Create() DefaultOutgoingSourceNumberID = %v, want %v", got.DefaultOutgoingSourceNumberID, defaultNumberID)
+	}
+	if captured == nil || captured.DefaultOutgoingSourceNumberID != defaultNumberID {
+		t.Errorf("OutboundConfigCreate received DefaultOutgoingSourceNumberID = %v, want %v",
+			captured.DefaultOutgoingSourceNumberID, defaultNumberID)
+	}
+}
+
 func Test_outboundConfigHandler_Update(t *testing.T) {
 	name := "updated"
+	existingCustomerID := uuid.FromStringOrNil("55555555-0000-0000-0000-0000000000cc")
 
 	tests := []struct {
-		name    string
-		id      uuid.UUID
-		req     *outboundconfig.UpdateRequest
+		name string
+		id   uuid.UUID
+		req  *outboundconfig.UpdateRequest
+
+		// return values for the GetByID call that Update now performs
+		existingRes *outboundconfig.OutboundConfig
+		existingErr error
+
 		dbRes   *outboundconfig.OutboundConfig
 		dbErr   error
 		wantErr bool
@@ -499,27 +579,55 @@ func Test_outboundConfigHandler_Update(t *testing.T) {
 			name: "success - cache invalidated",
 			id:   uuid.FromStringOrNil("55555555-0000-0000-0000-000000000001"),
 			req:  &outboundconfig.UpdateRequest{Name: &name},
+			existingRes: &outboundconfig.OutboundConfig{
+				ID:         uuid.FromStringOrNil("55555555-0000-0000-0000-000000000001"),
+				CustomerID: existingCustomerID,
+			},
 			dbRes: &outboundconfig.OutboundConfig{
-				CustomerID: uuid.FromStringOrNil("55555555-0000-0000-0000-0000000000cc"),
+				CustomerID: existingCustomerID,
 				Name:       "updated",
 			},
 			wantErr: false,
 		},
 		{
-			name:    "db error",
-			id:      uuid.FromStringOrNil("55555555-0000-0000-0000-000000000002"),
-			req:     &outboundconfig.UpdateRequest{Name: &name},
+			name: "db error",
+			id:   uuid.FromStringOrNil("55555555-0000-0000-0000-000000000002"),
+			req:  &outboundconfig.UpdateRequest{Name: &name},
+			existingRes: &outboundconfig.OutboundConfig{
+				ID:         uuid.FromStringOrNil("55555555-0000-0000-0000-000000000002"),
+				CustomerID: existingCustomerID,
+			},
 			dbRes:   nil,
 			dbErr:   fmt.Errorf("update failed"),
 			wantErr: true,
 		},
 		{
-			name: "invalid whitelist - no db call",
+			name: "invalid whitelist - no db update call",
 			id:   uuid.FromStringOrNil("55555555-0000-0000-0000-000000000003"),
 			req: func() *outboundconfig.UpdateRequest {
 				bad := []string{"xx"} // invalid country code
 				return &outboundconfig.UpdateRequest{DestinationWhitelist: &bad}
 			}(),
+			existingRes: &outboundconfig.OutboundConfig{
+				ID:         uuid.FromStringOrNil("55555555-0000-0000-0000-000000000003"),
+				CustomerID: existingCustomerID,
+			},
+			wantErr: true,
+		},
+		{
+			name: "outbound_config not found",
+			id:   uuid.FromStringOrNil("55555555-0000-0000-0000-000000000004"),
+			req:  &outboundconfig.UpdateRequest{Name: &name},
+			existingRes: nil,
+			existingErr: nil,
+			wantErr: true,
+		},
+		{
+			name: "GetByID error",
+			id:   uuid.FromStringOrNil("55555555-0000-0000-0000-000000000005"),
+			req:  &outboundconfig.UpdateRequest{Name: &name},
+			existingRes: nil,
+			existingErr: fmt.Errorf("connection refused"),
 			wantErr: true,
 		},
 	}
@@ -535,28 +643,29 @@ func Test_outboundConfigHandler_Update(t *testing.T) {
 				utilHandler:  utilhandler.NewMockUtilHandler(mc),
 				db:           mockDB,
 				cacheHandler: mockCache,
+				reqHandler:   requesthandler.NewMockRequestHandler(mc),
 			}
 			ctx := context.Background()
 
-			// validation error - no DB call
-			if tt.name == "invalid whitelist - no db call" {
-				got, err := h.Update(ctx, tt.id, tt.req)
-				if err == nil {
-					t.Errorf("Update() expected error for invalid whitelist, got nil (result=%v)", got)
-				}
-				return
-			}
-
+			// Update always calls GetByID first
 			mockDB.EXPECT().
-				OutboundConfigUpdate(ctx, tt.id, tt.req).
-				Return(tt.dbRes, tt.dbErr).
+				OutboundConfigGetByID(ctx, tt.id).
+				Return(tt.existingRes, tt.existingErr).
 				Times(1)
 
-			if tt.dbErr == nil && tt.dbRes != nil {
-				mockCache.EXPECT().
-					OutboundConfigDelete(ctx, tt.dbRes.CustomerID).
-					Return(nil).
+			// validation error and lookup-error paths skip OutboundConfigUpdate
+			if tt.existingErr == nil && tt.existingRes != nil && tt.name != "invalid whitelist - no db update call" {
+				mockDB.EXPECT().
+					OutboundConfigUpdate(ctx, tt.id, tt.req).
+					Return(tt.dbRes, tt.dbErr).
 					Times(1)
+
+				if tt.dbErr == nil && tt.dbRes != nil {
+					mockCache.EXPECT().
+						OutboundConfigDelete(ctx, tt.dbRes.CustomerID).
+						Return(nil).
+						Times(1)
+				}
 			}
 
 			got, err := h.Update(ctx, tt.id, tt.req)
@@ -567,5 +676,70 @@ func Test_outboundConfigHandler_Update(t *testing.T) {
 				t.Errorf("Update() returned nil, want %v", tt.dbRes)
 			}
 		})
+	}
+}
+
+func Test_Update_WithDefaultOutgoingSourceNumberID(t *testing.T) {
+	id := uuid.FromStringOrNil("11221122-0000-0000-0000-000000000001")
+	customerID := uuid.FromStringOrNil("11221122-0000-0000-0000-0000000000cc")
+	defaultNumberID := uuid.FromStringOrNil("11221122-0000-0000-0000-0000000000dd")
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &outboundConfigHandler{
+		utilHandler:  utilhandler.NewMockUtilHandler(mc),
+		db:           mockDB,
+		cacheHandler: mockCache,
+		reqHandler:   mockReq,
+	}
+	ctx := context.Background()
+
+	existing := &outboundconfig.OutboundConfig{
+		ID:         id,
+		CustomerID: customerID,
+	}
+	req := &outboundconfig.UpdateRequest{
+		DefaultOutgoingSourceNumberID: &defaultNumberID,
+	}
+
+	// 1. GetByID for the customer lookup
+	mockDB.EXPECT().OutboundConfigGetByID(ctx, id).Return(existing, nil).Times(1)
+
+	// 2. validation: NumberV1NumberList must use the existing record's customer_id
+	expectFilters := map[nmnumber.Field]any{
+		nmnumber.FieldCustomerID: customerID,
+		nmnumber.FieldID:         defaultNumberID,
+		nmnumber.FieldType:       nmnumber.TypeNormal,
+		nmnumber.FieldStatus:     nmnumber.StatusActive,
+		nmnumber.FieldDeleted:    false,
+	}
+	mockReq.EXPECT().
+		NumberV1NumberList(ctx, "", uint64(1), expectFilters).
+		Return([]nmnumber.Number{{Number: "+15551234567"}}, nil).
+		Times(1)
+
+	// 3. db update + cache invalidation
+	updated := &outboundconfig.OutboundConfig{
+		ID:                            id,
+		CustomerID:                    customerID,
+		DefaultOutgoingSourceNumberID: defaultNumberID,
+	}
+	mockDB.EXPECT().OutboundConfigUpdate(ctx, id, req).Return(updated, nil).Times(1)
+	mockCache.EXPECT().OutboundConfigDelete(ctx, customerID).Return(nil).Times(1)
+
+	got, err := h.Update(ctx, id, req)
+	if err != nil {
+		t.Fatalf("Update() error = %v", err)
+	}
+	if got == nil {
+		t.Fatalf("Update() returned nil")
+	}
+	if got.DefaultOutgoingSourceNumberID != defaultNumberID {
+		t.Errorf("Update() DefaultOutgoingSourceNumberID = %v, want %v",
+			got.DefaultOutgoingSourceNumberID, defaultNumberID)
 	}
 }

@@ -20,7 +20,6 @@ Customer
         "webhook_method": "<string>",
         "webhook_uri": "<string>",
         "billing_account_id": "<string>",
-        "default_outgoing_source_number_id": "<string>",
         "metadata": {
             "rtp_debug": <boolean>
         },
@@ -42,7 +41,6 @@ Customer
 * ``webhook_method`` (enum string, Optional): The HTTP method used for webhook notifications. One of: ``POST``, ``GET``, ``PUT``, ``DELETE``.
 * ``webhook_uri`` (String, Optional): The URI where webhook event notifications are sent for this customer.
 * ``billing_account_id`` (UUID, Optional): The default billing account ID for this customer. Obtained from ``GET https://api.voipbin.net/v1.0/billing_accounts``.
-* ``default_outgoing_source_number_id`` (UUID, Optional): The default source phone number used as the caller ID for outgoing PSTN calls when no explicit source number is specified. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/numbers``. Set to ``00000000-0000-0000-0000-000000000000`` if no default is configured. Updatable via ``PUT https://api.voipbin.net/v1.0/customer/default_outgoing_source_number_id``.
 * ``metadata`` (Object): Configuration flags for the customer account. Contains:
 
   - ``rtp_debug`` (Boolean): When ``true``, RTPEngine captures RTP traffic as PCAP files for this customer's calls. Use this to debug audio quality issues (one-way audio, codec problems, jitter). Default is ``false``. Updatable by CustomerAdmin via ``PUT https://api.voipbin.net/v1.0/customer/metadata``.
@@ -89,7 +87,6 @@ Example
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
-        "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "metadata": {
             "rtp_debug": false
         },

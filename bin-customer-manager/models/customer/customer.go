@@ -34,8 +34,6 @@ type Customer struct {
 
 	BillingAccountID uuid.UUID `json:"billing_account_id,omitempty" db:"billing_account_id,uuid"` // default billing account id
 
-	DefaultOutgoingSourceNumberID uuid.UUID `json:"default_outgoing_source_number_id,omitempty" db:"default_outgoing_source_number_id,uuid"` // default outgoing source number id
-
 	EmailVerified bool `json:"email_verified" db:"email_verified"`
 
 	Status Status `json:"status" db:"status"`
