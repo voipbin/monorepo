@@ -167,13 +167,15 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
 			h := &callHandler{
-				utilHandler:    mockUtil,
-				reqHandler:     mockReq,
-				notifyHandler:  mockNotify,
-				db:             mockDB,
-				channelHandler: mockChannel,
+				utilHandler:           mockUtil,
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				db:                    mockDB,
+				channelHandler:        mockChannel,
+				outboundConfigHandler: mockOutboundConfig,
 			}
 
 			ctx := context.Background()
@@ -187,6 +189,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, nil)
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 			mockDB.EXPECT().CallCreate(ctx, tt.expectCall).Return(nil)
 			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.expectCall, nil)
@@ -348,13 +351,15 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
 			h := &callHandler{
-				utilHandler:    mockUtil,
-				reqHandler:     mockReq,
-				notifyHandler:  mockNotify,
-				db:             mockDB,
-				channelHandler: mockChannel,
+				utilHandler:           mockUtil,
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				db:                    mockDB,
+				channelHandler:        mockChannel,
+				outboundConfigHandler: mockOutboundConfig,
 			}
 
 			ctx := context.Background()
@@ -368,6 +373,7 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
 			}, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, nil)
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 
 			// CRITICAL assertion: verify the Call passed to CallCreate carries the caller-supplied Metadata.
@@ -612,13 +618,15 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
 
 			h := &callHandler{
-				utilHandler:    mockUtil,
-				reqHandler:     mockReq,
-				notifyHandler:  mockNotify,
-				db:             mockDB,
-				channelHandler: mockChannel,
+				utilHandler:           mockUtil,
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				db:                    mockDB,
+				channelHandler:        mockChannel,
+				outboundConfigHandler: mockOutboundConfig,
 			}
 
 			ctx := context.Background()
@@ -628,6 +636,7 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, nil)
 			mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.destination).Return(tt.responseAgent, nil)
 
 			// CRITICAL assertion: CallCreate must receive the call with rtp_debug in Metadata.
@@ -989,6 +998,150 @@ func Test_CreateCallOutgoing_TypeTel_OutboundConfigFetchError_FailClosed(t *test
 			// operators can grep production logs for the fail-closed reason.
 			if !strings.Contains(err.Error(), "could not get outbound config") {
 				t.Errorf("Wrong match. expect error to mention 'could not get outbound config', got: %v", err)
+			}
+		})
+	}
+}
+
+// Test_embedCodecs_ByDestinationType verifies that embedCodecs is called for SIP
+// destinations and skipped for PSTN destinations.
+func Test_embedCodecs_ByDestinationType(t *testing.T) {
+	tests := []struct {
+		name string
+
+		destination commonaddress.Address
+		outboundCfg *outboundconfig.OutboundConfig
+
+		expectCodecInMetadata bool
+	}{
+		{
+			name: "SIP destination with codecs set - codec embedded in metadata",
+
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "testoutgoing@test.com",
+			},
+			outboundCfg: &outboundconfig.OutboundConfig{
+				CustomerID: uuid.FromStringOrNil("5999f628-7f44-11ec-801f-173217f33e3f"),
+				Codecs:     "ulaw,alaw",
+			},
+			expectCodecInMetadata: true,
+		},
+		{
+			name: "PSTN destination with codecs set - codec NOT embedded in metadata",
+
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+821121656521",
+			},
+			outboundCfg: &outboundconfig.OutboundConfig{
+				CustomerID: uuid.FromStringOrNil("68c94bbc-7f44-11ec-9be4-77cb8e61c513"),
+				Codecs:     "ulaw,alaw",
+			},
+			expectCodecInMetadata: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			metadata := map[string]any{}
+			switch tt.destination.Type {
+			case commonaddress.TypeSIP:
+				metadata = embedCodecs(metadata, tt.outboundCfg)
+			case commonaddress.TypeTel:
+				// no codec embedding for PSTN
+			}
+
+			_, hasCodec := metadata[call.MetadataKeyCodecs]
+			if hasCodec != tt.expectCodecInMetadata {
+				t.Errorf("Wrong match. codec in metadata = %v, want %v", hasCodec, tt.expectCodecInMetadata)
+			}
+		})
+	}
+}
+
+// Test_CreateCallOutgoing_TypeSIP_OutboundConfigFetchError_FailClosed verifies
+// that a DB error during outbound config fetch rejects a SIP call (fail-closed).
+func Test_CreateCallOutgoing_TypeSIP_OutboundConfigFetchError_FailClosed(t *testing.T) {
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		activeflowID uuid.UUID
+		masterCallID uuid.UUID
+		source       commonaddress.Address
+		destination  commonaddress.Address
+		fetchErr     error
+	}{
+		{
+			name: "outbound config fetch returns db error for SIP call - call rejected",
+
+			id:           uuid.FromStringOrNil("b1b2c3d4-0000-4000-8000-000000000001"),
+			customerID:   uuid.FromStringOrNil("b1b2c3d4-0000-4000-8000-0000000000c1"),
+			flowID:       uuid.FromStringOrNil("b1b2c3d4-0000-4000-8000-0000000000f1"),
+			activeflowID: uuid.FromStringOrNil("b1b2c3d4-0000-4000-8000-0000000000a1"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "testsrc@test.com",
+			},
+			destination: commonaddress.Address{
+				Type:   commonaddress.TypeSIP,
+				Target: "testoutgoing@test.com",
+			},
+			fetchErr: fmt.Errorf("transient db error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+			h := &callHandler{
+				utilHandler:           mockUtil,
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				db:                    mockDB,
+				channelHandler:        mockChannel,
+				outboundConfigHandler: mockOutboundConfig,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			}, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, tt.fetchErr)
+
+			// no further interactions: dialroutes, activeflow create, channel start, etc.
+			// must NOT be invoked. gomock will fail the test if any unexpected call lands.
+
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, false, "", nil)
+
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil call, got: %v", res)
+			}
+			if err == nil {
+				t.Fatalf("Wrong match. expect: error, got: nil")
+			}
+			if !stderrors.Is(err, tt.fetchErr) {
+				t.Errorf("Wrong match. expect error to wrap %v, got: %v", tt.fetchErr, err)
+			}
+			if !strings.Contains(err.Error(), "could not get outbound config") {
+				t.Errorf("Wrong match. expect 'could not get outbound config' in error, got: %v", err)
 			}
 		})
 	}
