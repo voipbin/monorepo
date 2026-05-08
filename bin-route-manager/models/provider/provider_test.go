@@ -18,6 +18,7 @@ func TestProviderStruct(t *testing.T) {
 		TechHeaders: map[string]string{"X-Custom": "value"},
 		Name:        "Primary Provider",
 		Detail:      "Main SIP provider",
+		Codecs:      "PCMU,PCMA",
 	}
 
 	if p.ID != id {
@@ -43,6 +44,9 @@ func TestProviderStruct(t *testing.T) {
 	}
 	if p.Detail != "Main SIP provider" {
 		t.Errorf("Provider.Detail = %v, expected %v", p.Detail, "Main SIP provider")
+	}
+	if p.Codecs != "PCMU,PCMA" {
+		t.Errorf("Provider.Codecs = %v, expected %v", p.Codecs, "PCMU,PCMA")
 	}
 }
 
