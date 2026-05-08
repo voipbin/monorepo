@@ -131,8 +131,8 @@ We recommend reading the platform architecture guide (coming soon) before setup.
 ### Clone the Repo
 
 ```
-   $ git clone https://github.com/your-org/voipbin.git
-   $ cd voipbin
+   $ git clone https://github.com/voipbin/monorepo.git
+   $ cd monorepo
 ```
 
 ### Configure Your Secrets
