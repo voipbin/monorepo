@@ -105,7 +105,13 @@ func (h *serviceHandler) autoCreateOutboundConfigWithRetry(ctx context.Context, 
 		}
 		log.Warnf("OutboundConfig auto-create attempt %d/%d failed. err: %v", attempt, maxRetries, cfgErr)
 		if attempt < maxRetries {
-			time.Sleep(time.Duration(attempt) * 200 * time.Millisecond)
+			timer := time.NewTimer(time.Duration(attempt) * 200 * time.Millisecond)
+			select {
+			case <-ctx.Done():
+				timer.Stop()
+				return ctx.Err()
+			case <-timer.C:
+			}
 		}
 	}
 	return cfgErr

@@ -226,7 +226,6 @@
             &quot;webhook_method&quot;: &quot;POST&quot;,
             &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
             &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
-            &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
             &quot;metadata&quot;: {
                 &quot;rtp_debug&quot;: false
             },
@@ -259,7 +258,6 @@
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
-    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;metadata&quot;: {
         &quot;rtp_debug&quot;: false
     },
@@ -299,7 +297,6 @@
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;metadata&quot;: {},
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;initial&quot;,
@@ -332,7 +329,6 @@
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.test-company.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;metadata&quot;: {},
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;deleted&quot;,
@@ -341,46 +337,6 @@
     &quot;tm_create&quot;: &quot;2024-03-10T15:57:08Z&quot;,
     &quot;tm_update&quot;: &quot;2024-03-10T15:57:08Z&quot;,
     &quot;tm_delete&quot;: &quot;2024-03-10T15:59:08Z&quot;
-}
-</pre></div>
-</div>
-</section>
-<section id="update-default-outgoing-source-number">
-<h3>Update default outgoing source number<a class="headerlink" href="#update-default-outgoing-source-number" title="Link to this heading"></a></h3>
-<p>Set the default source phone number for outgoing PSTN calls. When making a call without specifying an explicit source number, the system uses this default.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> must be a UUID of a phone number owned by the customer. Obtain valid IDs from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. Setting this to a nil UUID (<code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>) is not allowed via the API – the endpoint rejects nil UUIDs with a 400 error.</p>
-</div>
-<p>Example</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/customer/default_outgoing_source_number_id?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data-raw &#39;{
-        &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;
-    }&#39;
-
-{
-    &quot;id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
-    &quot;name&quot;: &quot;Acme Corporation&quot;,
-    &quot;detail&quot;: &quot;Enterprise customer account&quot;,
-    &quot;email&quot;: &quot;admin@acme-corp.com&quot;,
-    &quot;phone_number&quot;: &quot;+15551234567&quot;,
-    &quot;address&quot;: &quot;123 Main St, San Francisco, CA 94105&quot;,
-    &quot;webhook_method&quot;: &quot;POST&quot;,
-    &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
-    &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
-    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
-    &quot;metadata&quot;: {
-        &quot;rtp_debug&quot;: false
-    },
-    &quot;email_verified&quot;: true,
-    &quot;status&quot;: &quot;active&quot;,
-    &quot;identity_verification_status&quot;: &quot;verified&quot;,
-    &quot;tm_deletion_scheduled&quot;: null,
-    &quot;tm_create&quot;: &quot;2024-01-15T10:30:00Z&quot;,
-    &quot;tm_update&quot;: &quot;2024-06-20T14:22:35Z&quot;,
-    &quot;tm_delete&quot;: null
 }
 </pre></div>
 </div>
@@ -411,7 +367,6 @@
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
-    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;metadata&quot;: {
         &quot;rtp_debug&quot;: true
     },
@@ -447,7 +402,6 @@
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
-    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;metadata&quot;: {
         &quot;rtp_debug&quot;: false
     },
@@ -485,7 +439,6 @@
     &quot;webhook_method&quot;: &quot;&quot;,
     &quot;webhook_uri&quot;: &quot;&quot;,
     &quot;billing_account_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;default_outgoing_source_number_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;metadata&quot;: {},
     &quot;email_verified&quot;: false,
     &quot;status&quot;: &quot;deleted&quot;,
@@ -520,7 +473,6 @@
     &quot;webhook_method&quot;: &quot;POST&quot;,
     &quot;webhook_uri&quot;: &quot;https://webhooks.acme-corp.com/voipbin&quot;,
     &quot;billing_account_id&quot;: &quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;,
-    &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;,
     &quot;metadata&quot;: {
         &quot;rtp_debug&quot;: false
     },
@@ -552,7 +504,6 @@
 <li><a class="reference internal" href="#get-detail-of-customer">Get detail of customer</a></li>
 <li><a class="reference internal" href="#create-a-new-customer">Create a new customer</a></li>
 <li><a class="reference internal" href="#delete-customer">Delete customer</a></li>
-<li><a class="reference internal" href="#update-default-outgoing-source-number">Update default outgoing source number</a></li>
 <li><a class="reference internal" href="#update-customer-metadata">Update customer metadata</a></li>
 <li><a class="reference internal" href="#unregister-account-schedule-deletion">Unregister account (schedule deletion)</a></li>
 <li><a class="reference internal" href="#unregister-account-immediately">Unregister account immediately</a></li>

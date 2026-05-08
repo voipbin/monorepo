@@ -88,9 +88,6 @@ Key properties of a customer account.
 +------------------------+----------------------------------------------------------------+
 | billing_account_id     | (UUID) Default billing account. From ``GET /billing_accounts`` |
 +------------------------+----------------------------------------------------------------+
-| default_outgoing_      | (UUID) Default source number for outgoing PSTN calls.          |
-| source_number_id       | From ``GET /numbers``                                          |
-+------------------------+----------------------------------------------------------------+
 | metadata               | (Object) Configuration flags. Contains ``rtp_debug`` (Boolean) |
 +------------------------+----------------------------------------------------------------+
 | email_verified         | (Boolean) Whether the email address has been verified          |
@@ -141,7 +138,6 @@ Access and update customer account information.
         "webhook_method": "POST",
         "webhook_uri": "https://webhooks.acme-corp.com/voipbin",
         "billing_account_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
-        "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210",
         "metadata": {
             "rtp_debug": false
         },
@@ -181,21 +177,9 @@ Update configuration flags for your customer account. Requires CustomerAdmin per
 
    The ``rtp_debug`` flag enables RTP packet capture (PCAP) for all calls made by this customer. This is useful for debugging audio quality issues such as one-way audio, codec mismatches, or jitter. Enabling this increases storage usage — disable it after debugging is complete by setting ``rtp_debug`` to ``false``.
 
-**Update Default Outgoing Source Number**
+**Default Outgoing Source Number**
 
-Set the default source phone number used as the caller ID for outgoing PSTN calls when no explicit source number is specified in the call request.
-
-.. code::
-
-    $ curl -X PUT 'https://api.voipbin.net/v1.0/customer/default_outgoing_source_number_id?token=<token>' \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "default_outgoing_source_number_id": "f1e2d3c4-b5a6-7890-fedc-ba9876543210"
-        }'
-
-.. note:: **AI Implementation Hint**
-
-   The ``default_outgoing_source_number_id`` must reference a phone number owned by this customer. Obtain valid number IDs from ``GET https://api.voipbin.net/v1.0/numbers``. When an outgoing call is made without an explicit source number, the system automatically uses this default. Setting this to a nil UUID (``00000000-0000-0000-0000-000000000000``) is not allowed — the endpoint rejects nil UUIDs with a 400 error.
+The default caller ID used for outgoing PSTN calls when no explicit source number is specified in the call request is now managed via the OutboundConfig API. See the :ref:`OutboundConfig Overview <outbound_config_overview>` for details.
 
 
 Account Deletion Lifecycle

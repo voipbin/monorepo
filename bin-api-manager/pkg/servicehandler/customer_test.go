@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	bmaccount "monorepo/bin-billing-manager/models/account"
@@ -169,8 +170,63 @@ func Test_CustomerCreate_AutoOutboundConfigFailureRollsBack(t *testing.T) {
 			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, customerID).Return(createdCustomer, nil)
 
 			res, err := h.CustomerCreate(ctx, agent, "n", "d", "e@x.y", "+12025550100", "addr", cscustomer.WebhookMethod("POST"), "https://x.y")
-			if err == nil {
-				t.Errorf("Wrong match. expect: error, got: nil")
+			if err == nil || !strings.Contains(err.Error(), "could not create OutboundConfig") {
+				t.Errorf("expected OutboundConfig error, got %v", err)
+			}
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil result on rollback, got: %v", res)
+			}
+		})
+	}
+}
+
+// Test_CustomerSignup_AutoOutboundConfigFailureRollsBack verifies that when
+// OutboundConfig auto-create fails permanently after the bounded retry budget,
+// CustomerSignup rolls back the just-created customer (CustomerV1CustomerDelete)
+// and returns an error. This guarantees that even self-service signup does not
+// leave a customer that cannot make outgoing PSTN calls because OutboundConfig
+// creation never succeeded.
+func Test_CustomerSignup_AutoOutboundConfigFailureRollsBack(t *testing.T) {
+	customerID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	signupResult := &cscustomer.SignupResult{
+		Customer: &cscustomer.Customer{
+			ID: customerID,
+		},
+	}
+
+	tests := []struct {
+		name string
+	}{
+		{name: "OutboundConfig create fails persistently → customer rolled back, error returned"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := serviceHandler{
+				reqHandler:  mockReq,
+				dbHandler:   mockDB,
+				utilHandler: mockUtil,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerSignup(
+				ctx, "n", "d", "e@x.y", "+12025550100", "addr", cscustomer.WebhookMethod("POST"), "https://x.y", "192.168.1.1",
+			).Return(signupResult, nil)
+			// Three OutboundConfig attempts, all fail with the same error.
+			mockReq.EXPECT().CallV1OutboundConfigCreate(ctx, customerID, &cmoutboundconfig.UpdateRequest{}).Return(nil, fmt.Errorf("persistent")).Times(3)
+			// Rollback delete is called after all retries are exhausted.
+			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, customerID).Return(signupResult.Customer, nil)
+
+			res, err := h.CustomerSignup(ctx, "n", "d", "e@x.y", "+12025550100", "addr", cscustomer.WebhookMethod("POST"), "https://x.y", "192.168.1.1")
+			if err == nil || !strings.Contains(err.Error(), "could not create OutboundConfig") {
+				t.Errorf("expected OutboundConfig error, got %v", err)
 			}
 			if res != nil {
 				t.Errorf("Wrong match. expect: nil result on rollback, got: %v", res)

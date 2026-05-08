@@ -291,22 +291,17 @@
 <tr class="row-even"><td><p>billing_account_id</p></td>
 <td><p>(UUID) Default billing account. From <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/billing_accounts</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p><a href="#id1"><span class="problematic" id="id2">default_outgoing_</span></a>
-source_number_id</p></td>
-<td><p>(UUID) Default source number for outgoing PSTN calls.
-From <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p>metadata</p></td>
+<tr class="row-odd"><td><p>metadata</p></td>
 <td><p>(Object) Configuration flags. Contains <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> (Boolean)</p></td>
 </tr>
-<tr class="row-odd"><td><p>email_verified</p></td>
+<tr class="row-even"><td><p>email_verified</p></td>
 <td><p>(Boolean) Whether the email address has been verified</p></td>
 </tr>
-<tr class="row-even"><td><p>status</p></td>
+<tr class="row-odd"><td><p>status</p></td>
 <td><p>(enum string) Account status: initial, active, frozen,
 deleted, expired</p></td>
 </tr>
-<tr class="row-odd"><td><p><a href="#id3"><span class="problematic" id="id4">identity_verification_</span></a>
+<tr class="row-even"><td><p><a href="#id1"><span class="problematic" id="id2">identity_verification_</span></a>
 status</p></td>
 <td><p>(enum string) Identity verification state: none, pending,
 verified, rejected</p></td>
@@ -354,7 +349,6 @@ verified, rejected</p></td>
     <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
     <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://webhooks.acme-corp.com/voipbin&quot;</span><span class="p">,</span>
     <span class="s2">&quot;billing_account_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-5678-90ab-cdef-1234567890ab&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;default_outgoing_source_number_id&quot;</span><span class="p">:</span> <span class="s2">&quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;</span><span class="p">,</span>
     <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;rtp_debug&quot;</span><span class="p">:</span> <span class="n">false</span>
     <span class="p">},</span>
@@ -391,20 +385,8 @@ verified, rejected</p></td>
 <p><strong>AI Implementation Hint</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> flag enables RTP packet capture (PCAP) for all calls made by this customer. This is useful for debugging audio quality issues such as one-way audio, codec mismatches, or jitter. Enabling this increases storage usage — disable it after debugging is complete by setting <code class="docutils literal notranslate"><span class="pre">rtp_debug</span></code> to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 </div>
-<p><strong>Update Default Outgoing Source Number</strong></p>
-<p>Set the default source phone number used as the caller ID for outgoing PSTN calls when no explicit source number is specified in the call request.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X PUT &#39;https://api.voipbin.net/v1.0/customer/default_outgoing_source_number_id?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: application/json&#39; \
-    --data &#39;{
-        &quot;default_outgoing_source_number_id&quot;: &quot;f1e2d3c4-b5a6-7890-fedc-ba9876543210&quot;
-    }&#39;
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">default_outgoing_source_number_id</span></code> must reference a phone number owned by this customer. Obtain valid number IDs from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/numbers</span></code>. When an outgoing call is made without an explicit source number, the system automatically uses this default. Setting this to a nil UUID (<code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>) is not allowed — the endpoint rejects nil UUIDs with a 400 error.</p>
-</div>
+<p><strong>Default Outgoing Source Number</strong></p>
+<p>The default caller ID used for outgoing PSTN calls when no explicit source number is specified in the call request is now managed via the OutboundConfig API. See the <a class="reference internal" href="outbound_config_overview.html#outbound-config-overview"><span class="std std-ref">OutboundConfig Overview</span></a> for details.</p>
 </section>
 <section id="account-deletion-lifecycle">
 <h2>Account Deletion Lifecycle<a class="headerlink" href="#account-deletion-lifecycle" title="Link to this heading"></a></h2>
