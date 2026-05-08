@@ -177,11 +177,12 @@ func (h *callHandler) CreateCallOutgoing(
 		return nil, fmt.Errorf("could not pass the balance validation")
 	}
 
-	// fetch OutboundConfig once for codec embed, whitelist enforcement, and default-source
-	// fallback (tel only, non-internal). Hoisted so it's reachable at the source-validation
-	// call site below.
+	// Fetch outbound config once for all non-internal customers.
+	// Used for: codec embedding (SIP only), whitelist + source validation (PSTN).
+	// Internal system IDs (IDCallManager, IDAIManager, etc.) skip this block entirely —
+	// they have no OutboundConfig row and must not be gated by whitelist or codec injection.
 	var outboundCfg *outboundconfig.OutboundConfig
-	if destination.Type == commonaddress.TypeTel && !cucustomer.IsInternalSystemID(customerID) {
+	if !cucustomer.IsInternalSystemID(customerID) {
 		var cfgErr error
 		outboundCfg, cfgErr = h.outboundConfigHandler.GetByCustomerID(ctx, customerID)
 		if cfgErr != nil {
@@ -189,7 +190,21 @@ func (h *callHandler) CreateCallOutgoing(
 			outboundconfighandler.IncFetchError("db_error")
 			return nil, fmt.Errorf("could not get outbound config: %w", cfgErr)
 		}
-		metadata = embedCodecs(metadata, outboundCfg)
+		// Codec embedding is destination-type-specific.
+		// PSTN trunks negotiate codecs directly with the carrier via SDP; injecting a
+		// codec header into PSTN calls overrides that negotiation, which is incorrect.
+		switch destination.Type {
+		case commonaddress.TypeSIP:
+			metadata = embedCodecs(metadata, outboundCfg)
+		case commonaddress.TypeTel:
+			// no codec embedding for PSTN
+		}
+	}
+
+	// PSTN-only: whitelist + source number validation.
+	// outboundCfg is nil for internal system IDs — ValidateDestination returns true
+	// for internal callers regardless of config (bypass path in validate.go).
+	if destination.Type == commonaddress.TypeTel {
 		if !h.ValidateDestination(ctx, customerID, outboundCfg, destination) {
 			log.Infof("Outbound destination not in whitelist. customer_id: %s", customerID)
 			country := h.getCountry(ctx, destination.Target)
