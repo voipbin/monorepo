@@ -20916,6 +20916,13 @@
             "description": "Comma-separated codec preference list (e.g. PCMU,PCMA,G729). Empty = server default.",
             "example": "PCMU,PCMA"
           },
+          "default_outgoing_source_number_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "UUID of the customer's default outgoing source number, used as the caller ID\nwhen an outgoing tel call has no valid caller-supplied source.\nSet to `00000000-0000-0000-0000-000000000000` to clear the default.\nThe number must belong to the customer, be of type `normal`, and be active.\nValidated at update time and re-validated at call time.\nObtained from the `id` field of the `GET /numbers` response.\n",
+            "example": "00000000-0000-0000-0000-000000000001"
+          },
           "tm_create": {
             "type": "string",
             "format": "date-time",
@@ -20967,6 +20974,12 @@
             "nullable": true,
             "description": "Comma-separated codec preference list. Send null or omit to leave unchanged. Send empty string to use server default.",
             "example": "PCMU,PCMA"
+          },
+          "default_outgoing_source_number_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID of the customer's default outgoing source number to set.\nSend `00000000-0000-0000-0000-000000000000` to clear the default.\nOmit this field from the request body to leave the current value unchanged.\nThe number must belong to the customer, be of type `normal`, and be active.\n",
+            "example": "00000000-0000-0000-0000-000000000001"
           }
         }
       },

@@ -1975,6 +1975,14 @@ type CallManagerOutboundConfig struct {
 	// CustomerId The customer ID that owns this outbound config. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
+	// DefaultOutgoingSourceNumberId UUID of the customer's default outgoing source number, used as the caller ID
+	// when an outgoing tel call has no valid caller-supplied source.
+	// Set to `00000000-0000-0000-0000-000000000000` to clear the default.
+	// The number must belong to the customer, be of type `normal`, and be active.
+	// Validated at update time and re-validated at call time.
+	// Obtained from the `id` field of the `GET /numbers` response.
+	DefaultOutgoingSourceNumberId *string `json:"default_outgoing_source_number_id,omitempty"`
+
 	// DestinationWhitelist ISO 3166 alpha-2 country codes (lowercase). Empty array = deny all PSTN calls.
 	DestinationWhitelist *[]string `json:"destination_whitelist,omitempty"`
 
@@ -2008,6 +2016,12 @@ type CallManagerOutboundConfigList struct {
 type CallManagerOutboundConfigUpdateRequest struct {
 	// Codecs Comma-separated codec preference list. Send null or omit to leave unchanged. Send empty string to use server default.
 	Codecs *string `json:"codecs"`
+
+	// DefaultOutgoingSourceNumberId UUID of the customer's default outgoing source number to set.
+	// Send `00000000-0000-0000-0000-000000000000` to clear the default.
+	// Omit this field from the request body to leave the current value unchanged.
+	// The number must belong to the customer, be of type `normal`, and be active.
+	DefaultOutgoingSourceNumberId *openapi_types.UUID `json:"default_outgoing_source_number_id,omitempty"`
 
 	// DestinationWhitelist ISO 3166 alpha-2 country codes (lowercase). Send null or omit to leave unchanged. Send [] to deny all PSTN calls.
 	DestinationWhitelist *[]string `json:"destination_whitelist"`
