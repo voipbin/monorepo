@@ -102,3 +102,67 @@ func Test_setChannelVariableCodecs(t *testing.T) {
 		})
 	}
 }
+
+func Test_setProviderCodecs(t *testing.T) {
+	tests := []struct {
+		name      string
+		codecs    string
+		wantKey   bool
+		wantValue string
+	}{
+		{
+			name:      "codecs set - header written",
+			codecs:    "PCMU,PCMA",
+			wantKey:   true,
+			wantValue: "PCMU,PCMA",
+		},
+		{
+			name:    "empty codecs - no header",
+			codecs:  "",
+			wantKey: false,
+		},
+		{
+			name:    "CRLF in codecs - no header",
+			codecs:  "PCMU\r\nPCMA",
+			wantKey: false,
+		},
+		{
+			name:    "CR alone rejected",
+			codecs:  "PCMU\rPCMA",
+			wantKey: false,
+		},
+		{
+			name:    "LF alone rejected",
+			codecs:  "PCMU\nPCMA",
+			wantKey: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			variables := map[string]string{}
+			setProviderCodecs(variables, tt.codecs)
+			key := "PJSIP_HEADER(add," + common.SIPHeaderCodecs + ")"
+			got, exists := variables[key]
+			if exists != tt.wantKey {
+				t.Errorf("key present=%v, want %v", exists, tt.wantKey)
+			}
+			if tt.wantKey && got != tt.wantValue {
+				t.Errorf("value=%q, want %q", got, tt.wantValue)
+			}
+		})
+	}
+}
+
+func Test_setProviderCodecs_PrecedenceOverMetadata(t *testing.T) {
+	// Provider codecs win over per-call metadata codecs: write metadata codec first,
+	// then provider codec must overwrite it.
+	variables := map[string]string{}
+	key := "PJSIP_HEADER(add," + common.SIPHeaderCodecs + ")"
+	// Simulate the metadata path writing OPUS first.
+	variables[key] = "OPUS"
+	// Provider codec must overwrite.
+	setProviderCodecs(variables, "PCMU")
+	if got := variables[key]; got != "PCMU" {
+		t.Errorf("expected provider codec PCMU, got %q", got)
+	}
+}
