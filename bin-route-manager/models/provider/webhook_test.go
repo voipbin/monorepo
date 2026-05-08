@@ -81,6 +81,21 @@ func TestConvertWebhookMessage(t *testing.T) {
 				// HealthCheckedAt: nil
 			},
 		},
+		{
+			name: "codecs populated",
+			provider: &Provider{
+				ID:       uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+				Type:     TypeSIP,
+				Hostname: "sip.codecs.com",
+				Codecs:   "PCMU,PCMA",
+			},
+			want: &WebhookMessage{
+				ID:       uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+				Type:     TypeSIP,
+				Hostname: "sip.codecs.com",
+				Codecs:   "PCMU,PCMA",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -106,6 +121,9 @@ func TestConvertWebhookMessage(t *testing.T) {
 			}
 			if got.Detail != tt.want.Detail {
 				t.Errorf("Detail = %v, want %v", got.Detail, tt.want.Detail)
+			}
+			if got.Codecs != tt.want.Codecs {
+				t.Errorf("Codecs = %v, want %v", got.Codecs, tt.want.Codecs)
 			}
 			if got.HealthStatus != tt.want.HealthStatus {
 				t.Errorf("HealthStatus = %v, want %v", got.HealthStatus, tt.want.HealthStatus)
@@ -179,4 +197,15 @@ func TestCreateWebhookEvent(t *testing.T) {
 
 func timePtr(t time.Time) *time.Time {
 	return &t
+}
+
+func Test_ConvertWebhookMessage_Codecs(t *testing.T) {
+	p := &Provider{
+		ID:     uuid.Must(uuid.NewV4()),
+		Codecs: "PCMU,PCMA",
+	}
+	got := p.ConvertWebhookMessage()
+	if got.Codecs != "PCMU,PCMA" {
+		t.Errorf("expected Codecs %q, got %q", "PCMU,PCMA", got.Codecs)
+	}
 }

@@ -24,6 +24,8 @@ type WebhookMessage struct {
 
 	Metadata map[string]interface{} `json:"metadata"`
 
+	Codecs string `json:"codecs"`
+
 	// health check
 	HealthStatus    string     `json:"health_status"`
 	HealthCheckedAt *time.Time `json:"health_checked_at"`
@@ -50,6 +52,8 @@ func (h *Provider) ConvertWebhookMessage() *WebhookMessage {
 		Detail: h.Detail,
 
 		Metadata: h.Metadata,
+
+		Codecs: h.Codecs,
 
 		HealthStatus:    h.HealthStatus,
 		HealthCheckedAt: h.HealthCheckedAt,
