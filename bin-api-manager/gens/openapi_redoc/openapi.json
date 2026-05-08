@@ -20979,7 +20979,7 @@
           "default_outgoing_source_number_id": {
             "type": "string",
             "format": "uuid",
-            "description": "UUID of the customer's default outgoing source number to set.\nSend `00000000-0000-0000-0000-000000000000` to clear the default.\nOmit this field from the request body to leave the current value unchanged.\nThe number must belong to the customer, be of type `normal`, and be active.\n",
+            "description": "UUID of the customer's default outgoing source number to set.\nSend `00000000-0000-0000-0000-000000000000` to clear the default.\nOmit this field (or send `null`) to leave the current value unchanged.\nThe number must belong to the customer, be of type `normal`, and be active.\n",
             "example": "00000000-0000-0000-0000-000000000001"
           }
         }

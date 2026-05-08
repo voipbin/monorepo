@@ -780,8 +780,12 @@ func (h *callHandler) getValidatedSourceForOutgoingCall(
 		return &source
 	}
 
-	// if customer info is not available (fail-open from customer-manager),
-	// skip validation and return source as-is
+	// Defensive guard: cu is never nil at this point because CreateCallOutgoing
+	// returns an error if the customer-manager fetch fails. This guard exists in
+	// case a future call path is added that bypasses that check; if so, this
+	// branch fails open and skips source validation, which would be a security
+	// regression. Adding such a path requires explicitly setting MetadataKeySkipSourceValidation
+	// or supplying a valid customer-owned source.
 	if cu == nil {
 		log.Infof("Customer info not available. Skipping source number validation.")
 		return &source

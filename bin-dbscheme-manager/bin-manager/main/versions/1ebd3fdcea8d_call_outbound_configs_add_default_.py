@@ -16,6 +16,23 @@ branch_labels = None
 depends_on = None
 
 
+# RECOVERY (if upgrade fails partway):
+#   MySQL DDL is auto-committed and not rollback-able. If the migration fails
+#   between Step 1 (ADD COLUMN) and Step 3 (MODIFY NOT NULL), re-running
+#   `alembic upgrade head` will fail with "Duplicate column name". To recover:
+#
+#     1. SHOW COLUMNS FROM call_outbound_configs LIKE 'default_outgoing_source_number_id';
+#        (confirm the column exists and is currently NULLABLE)
+#
+#     2. Re-run Step 2 (JOIN backfill) and Step 2b (defensive zero-fill) manually
+#        via the SQL below.
+#
+#     3. Apply Step 3 (MODIFY NOT NULL) manually.
+#
+#     4. Stamp Alembic so it does not re-run:
+#        alembic stamp 1ebd3fdcea8d
+
+
 def upgrade():
     # Step 1: Add the column as NULLable so existing rows accept it.
     op.execute("""

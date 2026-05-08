@@ -166,6 +166,10 @@ func Test_CustomerCreate_AutoOutboundConfigFailureRollsBack(t *testing.T) {
 			).Return(createdCustomer, nil)
 			// Three OutboundConfig attempts, all fail with the same error.
 			mockReq.EXPECT().CallV1OutboundConfigCreate(ctx, customerID, &cmoutboundconfig.UpdateRequest{}).Return(nil, fmt.Errorf("persistent")).Times(3)
+			// After each failure, the helper checks for an existing OutboundConfig
+			// (idempotency guard for "INSERT succeeded but response lost"). All three
+			// list calls return empty, confirming no record exists.
+			mockReq.EXPECT().CallV1OutboundConfigList(ctx, customerID, uint64(1), "").Return([]cmoutboundconfig.OutboundConfig{}, nil).Times(3)
 			// Rollback delete is called after all retries are exhausted.
 			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, customerID).Return(createdCustomer, nil)
 
@@ -221,6 +225,10 @@ func Test_CustomerSignup_AutoOutboundConfigFailureRollsBack(t *testing.T) {
 			).Return(signupResult, nil)
 			// Three OutboundConfig attempts, all fail with the same error.
 			mockReq.EXPECT().CallV1OutboundConfigCreate(ctx, customerID, &cmoutboundconfig.UpdateRequest{}).Return(nil, fmt.Errorf("persistent")).Times(3)
+			// After each failure, the helper checks for an existing OutboundConfig
+			// (idempotency guard for "INSERT succeeded but response lost"). All three
+			// list calls return empty, confirming no record exists.
+			mockReq.EXPECT().CallV1OutboundConfigList(ctx, customerID, uint64(1), "").Return([]cmoutboundconfig.OutboundConfig{}, nil).Times(3)
 			// Rollback delete is called after all retries are exhausted.
 			mockReq.EXPECT().CustomerV1CustomerDelete(ctx, customerID).Return(signupResult.Customer, nil)
 
@@ -230,6 +238,76 @@ func Test_CustomerSignup_AutoOutboundConfigFailureRollsBack(t *testing.T) {
 			}
 			if res != nil {
 				t.Errorf("Wrong match. expect: nil result on rollback, got: %v", res)
+			}
+		})
+	}
+}
+
+// Test_CustomerCreate_AutoOutboundConfigIdempotentRecovery covers the scenario
+// where the first OutboundConfig INSERT actually succeeded on the server, but
+// the response was lost (network blip, timeout). On the retry, the UNIQUE KEY
+// uq_customer_id violation surfaces as an error from CallV1OutboundConfigCreate.
+//
+// Without the idempotency guard, the retry budget would exhaust and the
+// healthy customer would be incorrectly rolled back via CustomerV1CustomerDelete.
+//
+// With the guard, after the failed CREATE we LIST the customer's OutboundConfigs
+// and find the one created by the lost-ACK attempt. The retry helper returns
+// nil (success) and the customer is preserved.
+func Test_CustomerCreate_AutoOutboundConfigIdempotentRecovery(t *testing.T) {
+	customerID := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+	createdCustomer := &cscustomer.Customer{
+		ID: customerID,
+	}
+
+	tests := []struct {
+		name string
+	}{
+		{name: "CREATE returns error but List shows existing config → treat as success, no rollback"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+			h := serviceHandler{
+				reqHandler:  mockReq,
+				dbHandler:   mockDB,
+				utilHandler: mockUtil,
+			}
+			ctx := context.Background()
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionProjectSuperAdmin,
+			})
+
+			mockReq.EXPECT().CustomerV1CustomerCreate(
+				ctx, 30000, "n", "d", "e@x.y", "+12025550100", "addr", cscustomer.WebhookMethod("POST"), "https://x.y",
+			).Return(createdCustomer, nil)
+			// Attempt 1: CREATE returns an error (e.g., uq_customer_id violation
+			// because the prior attempt's INSERT actually succeeded).
+			mockReq.EXPECT().CallV1OutboundConfigCreate(ctx, customerID, &cmoutboundconfig.UpdateRequest{}).Return(nil, fmt.Errorf("duplicate key")).Times(1)
+			// Idempotency check: existing config is found, helper returns success.
+			mockReq.EXPECT().CallV1OutboundConfigList(ctx, customerID, uint64(1), "").Return([]cmoutboundconfig.OutboundConfig{
+				{ID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"), CustomerID: customerID},
+			}, nil).Times(1)
+			// Crucially: CustomerV1CustomerDelete must NOT be called — the customer is healthy.
+
+			res, err := h.CustomerCreate(ctx, agent, "n", "d", "e@x.y", "+12025550100", "addr", cscustomer.WebhookMethod("POST"), "https://x.y")
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok (idempotent success), got: %v", err)
+			}
+			if res == nil || res.ID != customerID {
+				t.Errorf("Wrong match. expect: customer preserved, got: %v", res)
 			}
 		})
 	}

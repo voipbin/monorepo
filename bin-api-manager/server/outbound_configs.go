@@ -253,10 +253,17 @@ func (h *server) PutOutboundConfigsId(c *gin.Context, id openapi_types.UUID) {
 
 // convertOutboundConfigUpdateRequest converts the OpenAPI request body to the internal model.
 func convertOutboundConfigUpdateRequest(req openapi_server.CallManagerOutboundConfigUpdateRequest) *cmoutboundconfig.UpdateRequest {
-	return &cmoutboundconfig.UpdateRequest{
+	r := &cmoutboundconfig.UpdateRequest{
 		Name:                 req.Name,
 		Detail:               req.Detail,
 		DestinationWhitelist: req.DestinationWhitelist,
 		Codecs:               req.Codecs,
 	}
+	if req.DefaultOutgoingSourceNumberId != nil {
+		// openapi_types.UUID is [16]byte; gofrs/uuid.UUID is also [16]byte.
+		// Direct byte-array conversion is correct here.
+		id := uuid.UUID(*req.DefaultOutgoingSourceNumberId)
+		r.DefaultOutgoingSourceNumberID = &id
+	}
+	return r
 }

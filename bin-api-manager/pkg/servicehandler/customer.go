@@ -90,6 +90,12 @@ func (h *serviceHandler) CustomerCreate(
 // autoCreateOutboundConfigWithRetry creates an empty OutboundConfig for the given customer with
 // bounded retries. It returns nil on the first successful attempt or the last error after the
 // retry budget is exhausted.
+//
+// Idempotency note: an INSERT on the server may succeed even when the response is lost (network
+// blip, RPC timeout). On the next attempt the UNIQUE KEY uq_customer_id constraint causes the
+// retry to error, but the original record is intact. To avoid rolling back a healthy customer
+// after such a "lost ACK" scenario, after each failure we list the customer's OutboundConfigs;
+// if one already exists, the retry is treated as an idempotent success.
 func (h *serviceHandler) autoCreateOutboundConfigWithRetry(ctx context.Context, customerID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "autoCreateOutboundConfigWithRetry",
@@ -103,6 +109,16 @@ func (h *serviceHandler) autoCreateOutboundConfigWithRetry(ctx context.Context, 
 		if cfgErr == nil {
 			return nil
 		}
+
+		// The INSERT may have succeeded with a lost response. Check whether an
+		// OutboundConfig already exists for this customer. If it does, the prior
+		// attempt was successful — treat this as idempotent success.
+		existing, getErr := h.reqHandler.CallV1OutboundConfigList(ctx, customerID, 1, "")
+		if getErr == nil && len(existing) > 0 {
+			log.Infof("OutboundConfig already exists for customer; treating retry as idempotent success. err: %v", cfgErr)
+			return nil
+		}
+
 		log.Warnf("OutboundConfig auto-create attempt %d/%d failed. err: %v", attempt, maxRetries, cfgErr)
 		if attempt < maxRetries {
 			timer := time.NewTimer(time.Duration(attempt) * 200 * time.Millisecond)

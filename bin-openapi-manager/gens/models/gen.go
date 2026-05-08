@@ -4166,7 +4166,7 @@ type CallManagerOutboundConfigUpdateRequest struct {
 
 	// DefaultOutgoingSourceNumberId UUID of the customer's default outgoing source number to set.
 	// Send `00000000-0000-0000-0000-000000000000` to clear the default.
-	// Omit this field from the request body to leave the current value unchanged.
+	// Omit this field (or send `null`) to leave the current value unchanged.
 	// The number must belong to the customer, be of type `normal`, and be active.
 	DefaultOutgoingSourceNumberId *openapi_types.UUID `json:"default_outgoing_source_number_id,omitempty"`
 

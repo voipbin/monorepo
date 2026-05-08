@@ -15,8 +15,6 @@ create table customer_customers(
 
   billing_account_id binary(16),
 
-  default_outgoing_source_number_id binary(16),
-
   email_verified boolean not null default false,
 
   status varchar(16) not null default 'active',
