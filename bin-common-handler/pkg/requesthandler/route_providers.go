@@ -25,6 +25,7 @@ func (r *requestHandler) RouteV1ProviderCreate(
 	techHeaders map[string]string,
 	name string,
 	detail string,
+	codecs string,
 ) (*rmprovider.Provider, error) {
 	uri := "/v1/providers"
 
@@ -36,6 +37,7 @@ func (r *requestHandler) RouteV1ProviderCreate(
 		TechHeaders: techHeaders,
 		Name:        name,
 		Detail:      detail,
+		Codecs:      codecs,
 	}
 
 	m, err := json.Marshal(data)
@@ -106,6 +108,7 @@ func (r *requestHandler) RouteV1ProviderUpdate(
 	techHeaders map[string]string,
 	name string,
 	detail string,
+	codecs string,
 ) (*rmprovider.Provider, error) {
 	uri := fmt.Sprintf("/v1/providers/%s", providerID)
 
@@ -117,6 +120,7 @@ func (r *requestHandler) RouteV1ProviderUpdate(
 		TechHeaders: techHeaders,
 		Name:        name,
 		Detail:      detail,
+		Codecs:      codecs,
 	}
 
 	m, err := json.Marshal(data)

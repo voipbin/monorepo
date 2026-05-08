@@ -1175,7 +1175,7 @@ type RequestHandler interface {
 	RouteV1DialrouteList(ctx context.Context, filters map[rmroute.Field]any, targetProviderIDs []uuid.UUID) ([]rmroute.Route, error)
 
 	// route-manager providers
-	RouteV1ProviderCreate(ctx context.Context, provierType rmprovider.Type, hostname string, techPrefix string, techPostfix string, techHeaders map[string]string, name string, detail string) (*rmprovider.Provider, error)
+	RouteV1ProviderCreate(ctx context.Context, provierType rmprovider.Type, hostname string, techPrefix string, techPostfix string, techHeaders map[string]string, name string, detail string, codecs string) (*rmprovider.Provider, error)
 	RouteV1ProviderGet(ctx context.Context, providerID uuid.UUID) (*rmprovider.Provider, error)
 	RouteV1ProviderDelete(ctx context.Context, providerID uuid.UUID) (*rmprovider.Provider, error)
 	RouteV1ProviderUpdate(
@@ -1188,6 +1188,7 @@ type RequestHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
+		codecs string,
 	) (*rmprovider.Provider, error)
 	RouteV1ProviderList(ctx context.Context, pageToken string, pageSize uint64) ([]rmprovider.Provider, error)
 	RouteV1ProviderSetup(
