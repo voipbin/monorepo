@@ -1,14 +1,12 @@
 # VoIPbin Monorepo
 
-Welcome to the VoIPBin monorepo — the unified backend codebase that powers all VoIPBin services.
+VoIPbin is a cloud-native, open-source CPaaS platform for programmable voice communication. This repository is the main backend services monorepo — it contains backend services that handle call routing, AI pipelines, conferencing, billing, messaging, and more.
 
-VoIPBin is a cloud-native, scalable CPaaS platform designed for modern voice communication. This repository provides all the backend components for managing users, routing calls, handling media, running chatbots, and more — all in a single place.
-
-This repository is a **monorepo** for all VoIPbin backend services. It provides a unified development environment for managing the services that power the VoIPbin platform.
+This is one of VoIPbin's main repositories. It covers the backend service layer; other infrastructure (Kamailio, Kubernetes configs) lives in separate repos.
 
 ## 🧱 Why a Monorepo?
 
-VoIPBin uses a **monorepo** to manage all backend services in a single codebase. This approach is intentional and comes with many advantages:
+VoIPbin uses a **monorepo** to manage all backend services in a single codebase. This approach is intentional and comes with many advantages:
 
 ### ✅ Benefits
 
@@ -113,7 +111,7 @@ The monorepo includes many backend services under separate directories:
 
 This monorepo handles only part of voipbin services.
 
-![VoIPBin Architecture](architecture_overview_all.png)
+![VoIPbin Architecture](architecture_overview_all.png)
 
 
 That said, here's how to begin:
@@ -128,13 +126,11 @@ VoIPbin is composed of multiple services that run independently and communicate 
 * A media path (RTPEngine or equivalent)
 * Optionally, Asterisk instances for call bridging, conferencing, and SIP registration
 
-We recommend reading the platform architecture guide (coming soon) before setup.
-
 ### Clone the Repo
 
 ```
-   $ git clone https://github.com/your-org/voipbin.git
-   $ cd voipbin
+   $ git clone https://github.com/voipbin/monorepo.git
+   $ cd monorepo
 ```
 
 ### Configure Your Secrets
@@ -154,5 +150,5 @@ You'll need a Kubernetes manifest or Helm chart per service. For now, these are 
 We’re here to help. Visit voipbin.net or reach out to the team via the contact link on the site.
 
 ## 📞 Need Help?
-If you're exploring VoIPBin for your own product, team, or integration — feel free to reach out. We're building it to empower engineers like you.
+If you're exploring VoIPbin for your own product, team, or integration — feel free to reach out. We're building it to empower engineers like you.
 
