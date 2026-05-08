@@ -102,12 +102,13 @@ Call Never Connects
     active number you already own. Virtual numbers cannot be
     used as the source for outgoing PSTN calls.
 
-    If the source fails validation, VoIPBIN falls back to:
-    1. Customer's default outgoing source number (if configured)
-    2. Anonymous caller ID (if no default is configured)
+    If the source fails validation, VoIPBIN falls back to the
+    OutboundConfig's ``default_outgoing_source_number_id``. If
+    that field is not set (uuid.Nil), the call is rejected.
 
-    To configure a default outgoing source number:
-    PUT /v1/customer
+    To configure the default outgoing source number, update
+    your OutboundConfig:
+    PUT /v1/outbound_configs/<outbound-config-id>
     { "default_outgoing_source_number_id": "<number-uuid>" }
 
 **Cause 3: Insufficient Balance**
@@ -207,24 +208,29 @@ Source Number / Caller ID Issues
 
 .. code::
 
-    If the source fails validation, VoIPBIN checks for a
-    customer default outgoing source number.
+    If the source fails validation, VoIPBIN checks the customer's
+    OutboundConfig for ``default_outgoing_source_number_id``.
 
-    If configured: The call uses that number as caller ID.
-    If not configured: The call uses "Anonymous" caller ID.
+    If set: The call uses that number as caller ID (after re-validation
+            against ``GET /v1/numbers`` filters: customer-owned, normal,
+            active, not soft-deleted).
+    If unset (uuid.Nil) or the validated number is no longer valid:
+            The call is rejected with no fallback.
 
-    To configure a default:
-    PUT /v1/customer
+    To configure the default:
+    PUT /v1/outbound_configs/<outbound-config-id>
     {
       "default_outgoing_source_number_id": "<number-uuid>"
     }
 
     The number-uuid must be from GET /v1/numbers (an active
-    normal number you own).
+    normal number you own). The default is re-validated at
+    call time, so a number that was valid when configured but
+    later released or deactivated will fail.
 
 .. note:: **AI Implementation Hint**
 
-   When a user reports unexpected caller ID behavior, check three things: (1) the source number format (must be E.164 with ``+``), (2) the number type via ``GET https://api.voipbin.net/v1.0/numbers`` (must be ``normal``, not ``virtual``), and (3) whether a default outgoing source number is configured on the customer profile via ``GET https://api.voipbin.net/v1.0/customer``. Non-PSTN calls (SIP, extension) skip source validation entirely and always use the provided source.
+   When a user reports unexpected caller ID behavior, check three things: (1) the source number format (must be E.164 with ``+``), (2) the number type via ``GET https://api.voipbin.net/v1.0/numbers`` (must be ``normal``, not ``virtual``), and (3) whether the customer's OutboundConfig has ``default_outgoing_source_number_id`` set, via ``GET https://api.voipbin.net/v1.0/outbound_config`` (which returns the customer's OutboundConfig). Non-PSTN calls (SIP, extension) skip source validation entirely and always use the provided source.
 
 Call Rings But No Answer
 ------------------------
