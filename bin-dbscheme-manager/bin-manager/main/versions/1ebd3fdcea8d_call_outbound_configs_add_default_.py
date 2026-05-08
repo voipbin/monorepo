@@ -33,8 +33,13 @@ def upgrade():
           SET o.default_outgoing_source_number_id = c.default_outgoing_source_number_id
     """)
 
-    # Step 2b: Defensive zero-fill for any orphan rows the JOIN missed
-    # (e.g., outbound_configs whose customer was hard-deleted).
+    # Step 2b: Zero-fill remaining NULLs. Two cases reach this step:
+    #   (a) Customers with NULL source — customer_customers.default_outgoing_source_number_id
+    #       is NULLABLE (added in 317f486116c9 with no DEFAULT). Customers who never
+    #       configured a default have NULL there, and the JOIN above faithfully copies it.
+    #       In practice this is the majority case.
+    #   (b) Orphan rows — outbound_configs whose customer was hard-deleted (no JOIN match).
+    # Without this, Step 3's MODIFY NOT NULL would fail on those rows.
     op.execute("""
         UPDATE call_outbound_configs
           SET default_outgoing_source_number_id = UNHEX('00000000000000000000000000000000')
