@@ -3,6 +3,7 @@ package callhandler
 import (
 	"monorepo/bin-call-manager/pkg/testhelper"
 	"context"
+	stderrors "errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -877,6 +878,117 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.expectCall) {
 				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectCall, res)
+			}
+		})
+	}
+}
+
+// Test_CreateCallOutgoing_TypeTel_OutboundConfigFetchError_FailClosed locks in the
+// fail-closed contract: when outboundConfigHandler.GetByCustomerID returns a transient
+// error for a tel destination on a non-internal customer, CreateCallOutgoing MUST
+// reject the call (return nil, err) instead of silently continuing with outboundCfg=nil.
+//
+// Regression guard for the previous "log warn + outboundCfg = nil + continue" behavior
+// that allowed calls to bypass whitelist enforcement when the outbound_config DB read
+// failed transiently. See outgoing_call.go fail-closed branch.
+func Test_CreateCallOutgoing_TypeTel_OutboundConfigFetchError_FailClosed(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id           uuid.UUID
+		customerID   uuid.UUID
+		flowID       uuid.UUID
+		activeflowID uuid.UUID
+		masterCallID uuid.UUID
+		source       commonaddress.Address
+		destination  commonaddress.Address
+
+		responseCustomer *cucustomer.Customer
+		fetchErr         error
+	}{
+		{
+			name: "outbound config fetch returns transient db error - call rejected",
+
+			id:           uuid.FromStringOrNil("a1b2c3d4-0000-4000-8000-000000000001"),
+			customerID:   uuid.FromStringOrNil("a1b2c3d4-0000-4000-8000-0000000000c1"),
+			flowID:       uuid.FromStringOrNil("a1b2c3d4-0000-4000-8000-0000000000f1"),
+			activeflowID: uuid.FromStringOrNil("a1b2c3d4-0000-4000-8000-0000000000a1"),
+			masterCallID: uuid.Nil,
+			source: commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+14155550100",
+				TargetName: "test",
+			},
+			destination: commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+14155550199",
+				TargetName: "test target",
+			},
+
+			responseCustomer: &cucustomer.Customer{
+				ID:                         uuid.FromStringOrNil("a1b2c3d4-0000-4000-8000-0000000000c1"),
+				Status:                     cucustomer.StatusActive,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			},
+			fetchErr: fmt.Errorf("transient db error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+			h := &callHandler{
+				utilHandler:           mockUtil,
+				reqHandler:            mockReq,
+				notifyHandler:         mockNotify,
+				db:                    mockDB,
+				channelHandler:        mockChannel,
+				outboundConfigHandler: mockOutboundConfig,
+			}
+
+			ctx := context.Background()
+
+			// customer fetch (precedes the outbound config fetch) succeeds
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
+			// balance check passes so the function reaches the OutboundConfig fetch site
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeCall, gomock.Any(), 1).Return(true, nil)
+
+			// the load-bearing mock: outbound config fetch fails
+			mockOutboundConfig.EXPECT().GetByCustomerID(ctx, tt.customerID).Return(nil, tt.fetchErr)
+
+			// no further interactions: dialroutes, activeflow create, channel start, etc.
+			// must NOT be invoked. gomock will fail the test if any unexpected call lands.
+
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, false, "", nil)
+
+			// fail-closed: must return (nil, error)
+			if res != nil {
+				t.Errorf("Wrong match. expect: nil call, got: %v", res)
+			}
+			if err == nil {
+				t.Fatalf("Wrong match. expect: error, got: nil")
+			}
+
+			// error must wrap the underlying transient db error (errors.Is should walk the
+			// %w chain — guards against accidentally losing provenance via fmt.Errorf("%v")).
+			if !stderrors.Is(err, tt.fetchErr) {
+				t.Errorf("Wrong match. expect error to wrap %v via %%w, got: %v", tt.fetchErr, err)
+			}
+
+			// error message must carry the "could not get outbound config" provenance so
+			// operators can grep production logs for the fail-closed reason.
+			if !strings.Contains(err.Error(), "could not get outbound config") {
+				t.Errorf("Wrong match. expect error to mention 'could not get outbound config', got: %v", err)
 			}
 		})
 	}
