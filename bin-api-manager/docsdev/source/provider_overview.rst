@@ -112,6 +112,8 @@ Configure providers with technical parameters.
 +-------------------+------------------------------------------------------------------+
 | tech_headers      | Custom SIP headers for the provider                              |
 +-------------------+------------------------------------------------------------------+
+| codecs            | Comma-separated codec preference list for PSTN outbound calls    |
++-------------------+------------------------------------------------------------------+
 
 **Example Provider Configuration**
 
@@ -134,6 +136,53 @@ Configure providers with technical parameters.
 .. note:: **AI Implementation Hint**
 
    Providers are typically managed by platform administrators. The ``tech_prefix`` and ``tech_postfix`` fields modify the dialed number before sending to the provider. Most providers do not require these fields (leave as empty strings). The ``tech_headers`` field is an object of custom SIP headers sent with every call to this provider -- use it for provider-specific authentication tokens or routing hints.
+
+
+Codec Configuration
+-------------------
+
+The ``codecs`` field controls which audio codecs VoIPBIN offers during SDP negotiation for PSTN
+outbound calls routed through this provider.
+
+**How it works:**
+
+When an outbound call is placed through a SIP provider, VoIPBIN sends an SDP offer listing the
+allowed codecs in the order specified. The provider (carrier) selects from that list during SDP
+negotiation. Setting ``codecs`` restricts VoIPBIN's offer to only the listed codecs.
+
+**Codecs field rules:**
+
+- **Format:** Comma-separated codec names (e.g., ``"PCMU,PCMA"``). No spaces around commas.
+- **Empty string (``""``):** No restriction applied — VoIPBIN uses its system-default codec list during SDP negotiation.
+- **PSTN outbound only:** This field only affects calls routed to the PSTN through this provider. SIP-to-SIP calls within VoIPBIN are not affected.
+- **Valid only for type ``sip``:** Ignored for other provider types.
+
+**Commonly used codecs:**
+
++----------+------------------------------------------+
+| Codec    | Description                              |
++==========+==========================================+
+| PCMU     | G.711 µ-law (North America, standard)    |
++----------+------------------------------------------+
+| PCMA     | G.711 A-law (Europe/international)       |
++----------+------------------------------------------+
+| G729     | G.729 (compressed, lower bandwidth)      |
++----------+------------------------------------------+
+
+**Setting codecs:**
+
+- **At creation:** Pass ``"codecs"`` in the request body of ``POST /providers``.
+- **After creation:** Update via ``PUT /providers/{id}`` with ``{"codecs": "PCMU,PCMA"}``.
+- **After setup:** ``POST /providers/setup`` does **not** accept a ``codecs`` parameter.
+  Set codec restrictions afterward using ``PUT /providers/{id}``.
+
+.. note:: **AI Implementation Hint**
+
+   Use ``codecs`` to force a specific codec when a carrier has interoperability issues with
+   VoIPBIN's default SDP offer. For example, if a carrier only supports G.711 variants, set
+   ``"codecs": "PCMU,PCMA"`` to prevent codec mismatch errors. Leave ``codecs`` as an empty
+   string (``""``) unless you have a specific reason to restrict the codec list — restricting
+   unnecessarily can reduce audio quality options.
 
 Provider Types
 --------------

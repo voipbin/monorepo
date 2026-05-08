@@ -309,6 +309,9 @@
 <tr class="row-even"><td><p>tech_headers</p></td>
 <td><p>Custom SIP headers for the provider</p></td>
 </tr>
+<tr class="row-odd"><td><p>codecs</p></td>
+<td><p>Comma-separated codec preference list for PSTN outbound calls</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Example Provider Configuration</strong></p>
@@ -330,6 +333,57 @@
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
 <p>Providers are typically managed by platform administrators. The <code class="docutils literal notranslate"><span class="pre">tech_prefix</span></code> and <code class="docutils literal notranslate"><span class="pre">tech_postfix</span></code> fields modify the dialed number before sending to the provider. Most providers do not require these fields (leave as empty strings). The <code class="docutils literal notranslate"><span class="pre">tech_headers</span></code> field is an object of custom SIP headers sent with every call to this provider – use it for provider-specific authentication tokens or routing hints.</p>
+</div>
+</section>
+<section id="codec-configuration">
+<h2>Codec Configuration<a class="headerlink" href="#codec-configuration" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">codecs</span></code> field controls which audio codecs VoIPBIN offers during SDP negotiation for PSTN
+outbound calls routed through this provider.</p>
+<p><strong>How it works:</strong></p>
+<p>When an outbound call is placed through a SIP provider, VoIPBIN sends an SDP offer listing the
+allowed codecs in the order specified. The provider (carrier) selects from that list during SDP
+negotiation. Setting <code class="docutils literal notranslate"><span class="pre">codecs</span></code> restricts VoIPBIN’s offer to only the listed codecs.</p>
+<p><strong>Codecs field rules:</strong></p>
+<ul class="simple">
+<li><p><strong>Format:</strong> Comma-separated codec names (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;PCMU,PCMA&quot;</span></code>). No spaces around commas.</p></li>
+<li><p><strong>Empty string (``””``):</strong> No restriction applied — VoIPBIN uses its system-default codec list during SDP negotiation.</p></li>
+<li><p><strong>PSTN outbound only:</strong> This field only affects calls routed to the PSTN through this provider. SIP-to-SIP calls within VoIPBIN are not affected.</p></li>
+<li><p><strong>Valid only for type ``sip``:</strong> Ignored for other provider types.</p></li>
+</ul>
+<p><strong>Commonly used codecs:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Codec</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PCMU</p></td>
+<td><p>G.711 µ-law (North America, standard)</p></td>
+</tr>
+<tr class="row-odd"><td><p>PCMA</p></td>
+<td><p>G.711 A-law (Europe/international)</p></td>
+</tr>
+<tr class="row-even"><td><p>G729</p></td>
+<td><p>G.729 (compressed, lower bandwidth)</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Setting codecs:</strong></p>
+<ul class="simple">
+<li><p><strong>At creation:</strong> Pass <code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;</span></code> in the request body of <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers</span></code>.</p></li>
+<li><p><strong>After creation:</strong> Update via <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/providers/{id}</span></code> with <code class="docutils literal notranslate"><span class="pre">{&quot;codecs&quot;:</span> <span class="pre">&quot;PCMU,PCMA&quot;}</span></code>.</p></li>
+<li><p><strong>After setup:</strong> <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code> does <strong>not</strong> accept a <code class="docutils literal notranslate"><span class="pre">codecs</span></code> parameter.
+Set codec restrictions afterward using <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/providers/{id}</span></code>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">codecs</span></code> to force a specific codec when a carrier has interoperability issues with
+VoIPBIN’s default SDP offer. For example, if a carrier only supports G.711 variants, set
+<code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;:</span> <span class="pre">&quot;PCMU,PCMA&quot;</span></code> to prevent codec mismatch errors. Leave <code class="docutils literal notranslate"><span class="pre">codecs</span></code> as an empty
+string (<code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code>) unless you have a specific reason to restrict the codec list — restricting
+unnecessarily can reduce audio quality options.</p>
 </div>
 </section>
 <section id="provider-types">
@@ -529,6 +583,7 @@ number is allowed</p></td>
 <li><a class="reference internal" href="#easy-provider-setup">Easy Provider Setup</a></li>
 <li><a class="reference internal" href="#how-providers-work">How Providers Work</a></li>
 <li><a class="reference internal" href="#provider-configuration">Provider Configuration</a></li>
+<li><a class="reference internal" href="#codec-configuration">Codec Configuration</a></li>
 <li><a class="reference internal" href="#provider-types">Provider Types</a></li>
 <li><a class="reference internal" href="#number-formatting">Number Formatting</a></li>
 <li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>

@@ -117,6 +117,9 @@ Example
 Create a new provider
 ---------------------
 
+The following example creates a provider without codec restrictions. VoIPBIN will use its
+system-default codec list during SDP negotiation for calls through this provider.
+
 Example
 
 .. code::
@@ -133,9 +136,37 @@ Example
             "detail": "test domain creation"
         }'
 
+To create a provider with a specific codec restriction from the start, include ``"codecs"`` in
+the request body:
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/providers?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "type": "sip",
+            "hostname": "sip.example.com",
+            "tech_prefix": "",
+            "tech_postfix": "",
+            "tech_headers": {},
+            "name": "example carrier",
+            "detail": "carrier with G.711 codec restriction",
+            "codecs": "PCMU,PCMA"
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   ``POST /providers/setup`` (the automated carrier setup endpoint) does **not** accept a
+   ``codecs`` parameter. If you need codec restrictions on a provider created via
+   ``POST /providers/setup``, use ``PUT /providers/{id}`` afterward to set the ``codecs``
+   field. See the update example below.
+
 
 Update provider
 --------------------------
+
+The following example updates all provider fields. Omit ``"codecs"`` or set it to ``""`` to
+remove any existing codec restriction and revert to system-default negotiation.
 
 Example
 
@@ -152,6 +183,54 @@ Example
             "name": "telnyx basic",
             "detail": "telnyx basic"
         }'
+
+Set codec restriction on an existing provider
++++++++++++++++++++++++++++++++++++++++++++++++
+
+Use ``PUT /providers/{id}`` to restrict which audio codecs VoIPBIN offers during SDP
+negotiation for PSTN outbound calls through this provider. This is useful when a carrier
+only supports specific codecs.
+
+The following example restricts the provider to G.711 µ-law and G.711 A-law:
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "type": "sip",
+            "hostname": "sip.telnyx.com",
+            "tech_prefix": "",
+            "tech_postfix": "",
+            "tech_headers": {},
+            "name": "telnyx basic",
+            "detail": "telnyx basic",
+            "codecs": "PCMU,PCMA"
+        }'
+
+To remove the restriction and revert to system-default codec negotiation, set ``"codecs"``
+to an empty string:
+
+.. code::
+
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "type": "sip",
+            "hostname": "sip.telnyx.com",
+            "tech_prefix": "",
+            "tech_postfix": "",
+            "tech_headers": {},
+            "name": "telnyx basic",
+            "detail": "telnyx basic",
+            "codecs": ""
+        }'
+
+.. note:: **AI Implementation Hint**
+
+   ``codecs`` only affects PSTN outbound calls routed through this provider. SIP-to-SIP calls
+   within VoIPBIN are not affected. The field is valid only for providers with ``"type": "sip"``.
+   Leave ``codecs`` as ``""`` unless you have a specific carrier interoperability requirement.
 
 
 Delete provider
