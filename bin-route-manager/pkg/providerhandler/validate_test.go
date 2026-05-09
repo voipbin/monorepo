@@ -6,9 +6,10 @@ import (
 
 func Test_validateCodecs(t *testing.T) {
 	tests := []struct {
-		name    string
-		input   string
-		wantErr bool
+		name          string
+		input         string
+		wantErr       bool
+		wantNormalized string
 	}{
 		{name: "empty is valid", input: "", wantErr: false},
 		{name: "single codec", input: "PCMU", wantErr: false},
@@ -19,7 +20,7 @@ func Test_validateCodecs(t *testing.T) {
 		{name: "open paren rejected", input: "PCMU(bad", wantErr: true},
 		{name: "close paren rejected", input: "PCMU)bad", wantErr: true},
 		{name: "double comma rejected", input: "PCMU,,PCMA", wantErr: true},
-		{name: "whitespace trimmed and valid", input: " PCMU , PCMA ", wantErr: false},
+		{name: "whitespace trimmed and valid", input: " PCMU , PCMA ", wantErr: false, wantNormalized: "PCMU,PCMA"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -27,8 +28,8 @@ func Test_validateCodecs(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("validateCodecs(%q) error = %v, wantErr %v", tt.input, err, tt.wantErr)
 			}
-			if err == nil && tt.input != "" {
-				_ = got // normalized output; main assertion is no error
+			if err == nil && tt.wantNormalized != "" && got != tt.wantNormalized {
+				t.Errorf("validateCodecs(%q) normalized = %q, want %q", tt.input, got, tt.wantNormalized)
 			}
 		})
 	}

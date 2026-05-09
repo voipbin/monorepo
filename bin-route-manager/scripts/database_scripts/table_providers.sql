@@ -14,7 +14,7 @@ create table route_providers(
 
   metadata  json,
 
-  codecs    varchar(255),
+  codecs    varchar(255) NOT NULL DEFAULT '',
 
   -- health check
   health_status     varchar(64) default 'unknown',
