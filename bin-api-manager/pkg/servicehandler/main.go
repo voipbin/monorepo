@@ -668,6 +668,7 @@ type ServiceHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
+		codecs string,
 	) (*rmprovider.WebhookMessage, error)
 	ProviderDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*rmprovider.WebhookMessage, error)
 	ProviderGet(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID) (*rmprovider.WebhookMessage, error)
@@ -684,6 +685,7 @@ type ServiceHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
+		codecs string,
 	) (*rmprovider.WebhookMessage, error)
 
 	// providercall handlers

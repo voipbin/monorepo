@@ -59,7 +59,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"997a7752-4872-11ed-be7a-5783111a9092","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"997a7752-4872-11ed-be7a-5783111a9092","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"codecs":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -79,7 +79,7 @@ func Test_v1ProvidersPost(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Create(gomock.Any(), tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.provierName, tt.providerDetail).Return(tt.responseRoute, nil)
+			mockProvider.EXPECT().Create(gomock.Any(), tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.provierName, tt.providerDetail, "").Return(tt.responseRoute, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -126,7 +126,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"104eef98-7492-473d-b058-579364d20e6b","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"104eef98-7492-473d-b058-579364d20e6b","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"codecs":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -154,7 +154,7 @@ func Test_v1ProvidersGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"df5c4b4d-a75d-45d3-a27c-ec6686dcd467","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"eac421c0-a0b4-4d33-8184-ffcbe80a92fb","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"df5c4b4d-a75d-45d3-a27c-ec6686dcd467","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"codecs":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"eac421c0-a0b4-4d33-8184-ffcbe80a92fb","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"codecs":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -235,7 +235,7 @@ func Test_v1ProvidersIDGet(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"30bc4952-efcc-4944-95d8-df8e7f571479","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"30bc4952-efcc-4944-95d8-df8e7f571479","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"codecs":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -315,7 +315,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"83cfba90-d8a4-48e2-a9d0-dae964937163","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"83cfba90-d8a4-48e2-a9d0-dae964937163","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"codecs":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}
@@ -335,7 +335,7 @@ func Test_v1ProvidersIDPut(t *testing.T) {
 				providerHandler: mockProvider,
 			}
 
-			mockProvider.EXPECT().Update(gomock.Any(), tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail).Return(tt.responseRoute, nil)
+			mockProvider.EXPECT().Update(gomock.Any(), tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail, "").Return(tt.responseRoute, nil)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -376,7 +376,7 @@ func Test_v1ProvidersIDDelete(t *testing.T) {
 			&sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"be3be98f-d434-4ce9-9374-71b3932de735","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"be3be98f-d434-4ce9-9374-71b3932de735","type":"","hostname":"","tech_prefix":"","tech_postfix":"","tech_headers":null,"name":"","detail":"","metadata":{},"codecs":"","health_status":"","health_checked_at":null,"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 	}

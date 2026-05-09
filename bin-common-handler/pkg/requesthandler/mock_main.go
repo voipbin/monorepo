@@ -5758,18 +5758,18 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderCallGets(ctx, pageToken
 }
 
 // RouteV1ProviderCreate mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderCreate(ctx context.Context, provierType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderCreate(ctx context.Context, provierType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1ProviderCreate", ctx, provierType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	ret := m.ctrl.Call(m, "RouteV1ProviderCreate", ctx, provierType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 	ret0, _ := ret[0].(*provider.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteV1ProviderCreate indicates an expected call of RouteV1ProviderCreate.
-func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderCreate(ctx, provierType, hostname, techPrefix, techPostfix, techHeaders, name, detail any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderCreate(ctx, provierType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderCreate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderCreate), ctx, provierType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderCreate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderCreate), ctx, provierType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 }
 
 // RouteV1ProviderDelete mocks base method.
@@ -5833,18 +5833,18 @@ func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderSetup(ctx, carrier, nam
 }
 
 // RouteV1ProviderUpdate mocks base method.
-func (m *MockRequestHandler) RouteV1ProviderUpdate(ctx context.Context, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.Provider, error) {
+func (m *MockRequestHandler) RouteV1ProviderUpdate(ctx context.Context, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.Provider, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RouteV1ProviderUpdate", ctx, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	ret := m.ctrl.Call(m, "RouteV1ProviderUpdate", ctx, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 	ret0, _ := ret[0].(*provider.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RouteV1ProviderUpdate indicates an expected call of RouteV1ProviderUpdate.
-func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderUpdate(ctx, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) RouteV1ProviderUpdate(ctx, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderUpdate), ctx, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RouteV1ProviderUpdate", reflect.TypeOf((*MockRequestHandler)(nil).RouteV1ProviderUpdate), ctx, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 }
 
 // RouteV1RouteCreate mocks base method.

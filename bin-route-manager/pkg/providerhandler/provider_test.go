@@ -117,7 +117,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().ProviderGet(ctx, gomock.Any()).Return(tt.responseProvider, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, provider.EventTypeProviderCreated, tt.responseProvider)
 
-			res, err := h.Create(ctx, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail)
+			res, err := h.Create(ctx, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -291,6 +291,7 @@ func Test_Update(t *testing.T) {
 				provider.FieldTechHeaders:    tt.techHeaders,
 				provider.FieldName:           tt.updateName,
 				provider.FieldDetail:         tt.detail,
+				provider.FieldCodecs:          "",
 				provider.FieldHealthStatus:    provider.HealthStatusUnknown,
 				provider.FieldHealthCheckedAt: nil,
 			}
@@ -299,7 +300,7 @@ func Test_Update(t *testing.T) {
 			mockDB.EXPECT().ProviderUpdate(ctx, tt.id, fields).Return(nil)
 			mockNotify.EXPECT().PublishEvent(ctx, provider.EventTypeProviderUpdated, tt.responseProvider)
 
-			res, err := h.Update(ctx, tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.updateName, tt.detail)
+			res, err := h.Update(ctx, tt.id, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.updateName, tt.detail, "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -351,7 +352,7 @@ func Test_Create_Error(t *testing.T) {
 
 	mockDB.EXPECT().ProviderCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
 
-	res, err := h.Create(ctx, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
+	res, err := h.Create(ctx, provider.TypeSIP, "test.com", "", "", nil, "name", "detail", "")
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -428,7 +429,7 @@ func Test_Update_Error(t *testing.T) {
 	mockDB.EXPECT().ProviderGet(ctx, id).Return(&provider.Provider{ID: id}, nil)
 	mockDB.EXPECT().ProviderUpdate(ctx, id, gomock.Any()).Return(fmt.Errorf("database error"))
 
-	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
+	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail", "")
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -453,7 +454,7 @@ func Test_Create_GetError(t *testing.T) {
 	mockDB.EXPECT().ProviderCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().ProviderGet(ctx, gomock.Any()).Return(nil, fmt.Errorf("get error"))
 
-	res, err := h.Create(ctx, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
+	res, err := h.Create(ctx, provider.TypeSIP, "test.com", "", "", nil, "name", "detail", "")
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}
@@ -509,7 +510,7 @@ func Test_Update_GetError(t *testing.T) {
 		mockDB.EXPECT().ProviderGet(ctx, id).Return(nil, fmt.Errorf("get error")),
 	)
 
-	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail")
+	res, err := h.Update(ctx, id, provider.TypeSIP, "test.com", "", "", nil, "name", "detail", "")
 	if err == nil {
 		t.Errorf("Expected error, got nil")
 	}

@@ -38,3 +38,18 @@ func setChannelVariableCodecs(variables map[string]string, metadata map[string]a
 	}
 	variables["PJSIP_HEADER(add,"+common.SIPHeaderCodecs+")"] = codecs
 }
+
+// setProviderCodecs writes the VBOUT-CODECS channel variable for PSTN dial
+// attempts. Separate from setChannelVariableCodecs (which reads call metadata
+// for SIP paths) to scope provider codecs to a single dial attempt.
+// Provider codecs win on map-key collision — they represent the authoritative
+// carrier trunk constraint.
+func setProviderCodecs(variables map[string]string, codecs string) {
+	if codecs == "" {
+		return
+	}
+	if strings.ContainsAny(codecs, "\r\n") {
+		return
+	}
+	variables["PJSIP_HEADER(add,"+common.SIPHeaderCodecs+")"] = codecs
+}

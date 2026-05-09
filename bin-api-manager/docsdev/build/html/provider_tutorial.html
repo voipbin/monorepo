@@ -299,6 +299,8 @@
 </section>
 <section id="create-a-new-provider">
 <h3>Create a new provider<a class="headerlink" href="#create-a-new-provider" title="Link to this heading"></a></h3>
+<p>The following example creates a provider without codec restrictions. VoIPBIN will use its
+system-default codec list during SDP negotiation for calls through this provider.</p>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -313,9 +315,35 @@
     }&#39;
 </pre></div>
 </div>
+<p>To create a provider with a specific codec restriction from the start, include <code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;</span></code> in
+the request body:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/providers?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;sip.example.com&quot;,
+        &quot;tech_prefix&quot;: &quot;&quot;,
+        &quot;tech_postfix&quot;: &quot;&quot;,
+        &quot;tech_headers&quot;: {},
+        &quot;name&quot;: &quot;example carrier&quot;,
+        &quot;detail&quot;: &quot;carrier with G.711 codec restriction&quot;,
+        &quot;codecs&quot;: &quot;PCMU,PCMA&quot;
+    }&#39;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code> (the automated carrier setup endpoint) does <strong>not</strong> accept a
+<code class="docutils literal notranslate"><span class="pre">codecs</span></code> parameter. If you need codec restrictions on a provider created via
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/providers/setup</span></code>, use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/providers/{id}</span></code> afterward to set the <code class="docutils literal notranslate"><span class="pre">codecs</span></code>
+field. See the update example below.</p>
+</div>
 </section>
 <section id="update-provider">
 <h3>Update provider<a class="headerlink" href="#update-provider" title="Link to this heading"></a></h3>
+<p>The following example updates all provider fields. Omit <code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;</span></code> or set it to <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> to
+remove any existing codec restriction and revert to system-default negotiation.</p>
 <p>Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -331,6 +359,50 @@
 </pre></div>
 </div>
 </section>
+</section>
+<section id="set-codec-restriction-on-an-existing-provider">
+<h2>Set codec restriction on an existing provider<a class="headerlink" href="#set-codec-restriction-on-an-existing-provider" title="Link to this heading"></a></h2>
+<p>Use <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/providers/{id}</span></code> to restrict which audio codecs VoIPBIN offers during SDP
+negotiation for PSTN outbound calls through this provider. This is useful when a carrier
+only supports specific codecs.</p>
+<p>The following example restricts the provider to G.711 µ-law and G.711 A-law:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+        &quot;tech_prefix&quot;: &quot;&quot;,
+        &quot;tech_postfix&quot;: &quot;&quot;,
+        &quot;tech_headers&quot;: {},
+        &quot;name&quot;: &quot;telnyx basic&quot;,
+        &quot;detail&quot;: &quot;telnyx basic&quot;,
+        &quot;codecs&quot;: &quot;PCMU,PCMA&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>To remove the restriction and revert to system-default codec negotiation, set <code class="docutils literal notranslate"><span class="pre">&quot;codecs&quot;</span></code>
+to an empty string:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request PUT &#39;https://api.voipbin.net/v1.0/providers/4dbeabd6-f397-4375-95d2-a38411e07ed1?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;type&quot;: &quot;sip&quot;,
+        &quot;hostname&quot;: &quot;sip.telnyx.com&quot;,
+        &quot;tech_prefix&quot;: &quot;&quot;,
+        &quot;tech_postfix&quot;: &quot;&quot;,
+        &quot;tech_headers&quot;: {},
+        &quot;name&quot;: &quot;telnyx basic&quot;,
+        &quot;detail&quot;: &quot;telnyx basic&quot;,
+        &quot;codecs&quot;: &quot;&quot;
+    }&#39;
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">codecs</span></code> only affects PSTN outbound calls routed through this provider. SIP-to-SIP calls
+within VoIPBIN are not affected. The field is valid only for providers with <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;sip&quot;</span></code>.
+Leave <code class="docutils literal notranslate"><span class="pre">codecs</span></code> as <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> unless you have a specific carrier interoperability requirement.</p>
+</div>
 <section id="delete-provider">
 <h3>Delete provider<a class="headerlink" href="#delete-provider" title="Link to this heading"></a></h3>
 <p>Example</p>
@@ -356,6 +428,9 @@
 <li><a class="reference internal" href="#get-detail-of-provider">Get detail of provider</a></li>
 <li><a class="reference internal" href="#create-a-new-provider">Create a new provider</a></li>
 <li><a class="reference internal" href="#update-provider">Update provider</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#set-codec-restriction-on-an-existing-provider">Set codec restriction on an existing provider</a><ul>
 <li><a class="reference internal" href="#delete-provider">Delete provider</a></li>
 </ul>
 </li>

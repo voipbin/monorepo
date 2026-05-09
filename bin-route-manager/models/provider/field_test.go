@@ -24,6 +24,7 @@ func TestFieldConstants(t *testing.T) {
 		{"field_tm_update", FieldTMUpdate, "tm_update"},
 		{"field_tm_delete", FieldTMDelete, "tm_delete"},
 		{"field_deleted", FieldDeleted, "deleted"},
+		{"field_codecs", FieldCodecs, "codecs"},
 	}
 
 	for _, tt := range tests {

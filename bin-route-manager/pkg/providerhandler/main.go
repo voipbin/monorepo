@@ -33,6 +33,7 @@ type ProviderHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
+		codecs string,
 	) (*provider.Provider, error)
 	List(ctx context.Context, token string, limit uint64) ([]*provider.Provider, error)
 	Delete(ctx context.Context, id uuid.UUID) (*provider.Provider, error)
@@ -46,6 +47,7 @@ type ProviderHandler interface {
 		techHeaders map[string]string,
 		name string,
 		detail string,
+		codecs string,
 	) (*provider.Provider, error)
 	// Setup validates the carrier API key, creates the carrier-side SIP trunk,
 	// and creates the VoIPBin provider record. Compensating cleanup is attempted

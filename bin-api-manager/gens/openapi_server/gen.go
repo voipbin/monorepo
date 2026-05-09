@@ -4001,6 +4001,9 @@ type RequestBodyAuthUnregisterPOST struct {
 
 // RouteManagerProvider defines model for RouteManagerProvider.
 type RouteManagerProvider struct {
+	// Codecs Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA"). Empty means server-default negotiation. Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
+	Codecs *string `json:"codecs,omitempty"`
+
 	// Detail The details about the provider.
 	Detail *string `json:"detail,omitempty"`
 
@@ -5924,6 +5927,8 @@ type GetProvidersParams struct {
 
 // PostProvidersJSONBody defines parameters for PostProviders.
 type PostProvidersJSONBody struct {
+	// Codecs Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA"). Empty means server-default negotiation. Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
+	Codecs      *string                `json:"codecs,omitempty"`
 	Detail      string                 `json:"detail"`
 	Hostname    string                 `json:"hostname"`
 	Name        string                 `json:"name"`
@@ -5937,6 +5942,8 @@ type PostProvidersJSONBody struct {
 
 // PutProvidersIdJSONBody defines parameters for PutProvidersId.
 type PutProvidersIdJSONBody struct {
+	// Codecs Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA"). Empty means server-default negotiation. Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
+	Codecs      *string                `json:"codecs,omitempty"`
 	Detail      string                 `json:"detail"`
 	Hostname    string                 `json:"hostname"`
 	Name        string                 `json:"name"`

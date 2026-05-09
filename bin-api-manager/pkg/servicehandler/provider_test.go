@@ -224,6 +224,7 @@ func Test_ProviderCreate(t *testing.T) {
 				tt.techHeaders,
 				tt.providerName,
 				tt.detail,
+				"",
 			).Return(tt.response, nil)
 
 			res, err := h.ProviderCreate(
@@ -236,6 +237,7 @@ func Test_ProviderCreate(t *testing.T) {
 				tt.techHeaders,
 				tt.providerName,
 				tt.detail,
+				"",
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -391,6 +393,7 @@ func Test_ProviderUpdate(t *testing.T) {
 				tt.techHeaders,
 				tt.providerName,
 				tt.detail,
+				"",
 			).Return(tt.responseProvider, nil)
 
 			res, err := h.ProviderUpdate(
@@ -404,6 +407,7 @@ func Test_ProviderUpdate(t *testing.T) {
 				tt.techHeaders,
 				tt.providerName,
 				tt.detail,
+				"",
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

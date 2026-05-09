@@ -116,6 +116,7 @@ func (h *serviceHandler) ProviderCreate(
 	techHeaders map[string]string,
 	name string,
 	detail string,
+	codecs string,
 ) (*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderCreate",
@@ -143,6 +144,7 @@ func (h *serviceHandler) ProviderCreate(
 		techHeaders,
 		name,
 		detail,
+		codecs,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new provider. err: %v", err)
@@ -247,6 +249,7 @@ func (h *serviceHandler) ProviderUpdate(
 	techHeaders map[string]string,
 	name string,
 	detail string,
+	codecs string,
 ) (*rmprovider.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ProviderUpdate",
@@ -279,6 +282,7 @@ func (h *serviceHandler) ProviderUpdate(
 		techHeaders,
 		name,
 		detail,
+		codecs,
 	)
 	if err != nil {
 		log.Errorf("Could not update the provider. err: %v", err)

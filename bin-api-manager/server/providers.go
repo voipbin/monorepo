@@ -92,6 +92,11 @@ func (h *server) PostProviders(c *gin.Context) {
 		techHeaders[key] = strValue
 	}
 
+	codecs := ""
+	if req.Codecs != nil {
+		codecs = *req.Codecs
+	}
+
 	res, err := h.serviceHandler.ProviderCreate(
 		c.Request.Context(),
 		a,
@@ -102,6 +107,7 @@ func (h *server) PostProviders(c *gin.Context) {
 		techHeaders,
 		req.Name,
 		req.Detail,
+		codecs,
 	)
 	if err != nil {
 		log.Errorf("Could not create a provider. err: %v", err)
@@ -280,6 +286,11 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 		techHeaders[key] = strValue
 	}
 
+	codecs := ""
+	if req.Codecs != nil {
+		codecs = *req.Codecs
+	}
+
 	res, err := h.serviceHandler.ProviderUpdate(
 		c.Request.Context(),
 		a,
@@ -291,6 +302,7 @@ func (h *server) PutProvidersId(c *gin.Context, id string) {
 		techHeaders,
 		req.Name,
 		req.Detail,
+		codecs,
 	)
 	if err != nil {
 		log.Errorf("Could not update the provider. err: %v", err)

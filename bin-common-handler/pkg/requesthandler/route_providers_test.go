@@ -29,6 +29,7 @@ func Test_RouteV1ProviderCreate(t *testing.T) {
 		techHeaders  map[string]string
 		providerName string
 		detail       string
+		codecs       string
 
 		expectTarget  string
 		expectRequest *sock.Request
@@ -49,13 +50,14 @@ func Test_RouteV1ProviderCreate(t *testing.T) {
 			},
 			"test name",
 			"test detail",
+			"",
 
 			"bin-manager.route-manager.request",
 			&sock.Request{
 				URI:      "/v1/providers",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail"}`),
+				Data:     []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail","codecs":""}`),
 			},
 			&sock.Response{
 				StatusCode: 200,
@@ -81,7 +83,7 @@ func Test_RouteV1ProviderCreate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.RouteV1ProviderCreate(ctx, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail)
+			res, err := reqHandler.RouteV1ProviderCreate(ctx, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail, tt.codecs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -228,6 +230,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 		techHeaders  map[string]string
 		providerName string
 		detail       string
+		codecs       string
 
 		responseRoute *sock.Response
 
@@ -249,6 +252,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 			},
 			"test name",
 			"test detail",
+			"",
 
 			&sock.Response{
 				StatusCode: 200,
@@ -261,7 +265,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 				URI:      "/v1/providers/c5e7f18c-fc5a-4520-8326-e534e2ca0b8f",
 				Method:   sock.RequestMethodPut,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail"}`),
+				Data:     []byte(`{"type":"sip","hostname":"test.com","tech_prefix":"0001","tech_postfix":"1000","tech_headers":{"header1":"val1","header2":"val2"},"name":"test name","detail":"test detail","codecs":""}`),
 			},
 			&rmprovider.Provider{
 				ID: uuid.FromStringOrNil("c5e7f18c-fc5a-4520-8326-e534e2ca0b8f"),
@@ -282,7 +286,7 @@ func Test_RouteV1ProviderUpdate(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.responseRoute, nil)
 
-			res, err := reqHandler.RouteV1ProviderUpdate(ctx, tt.providerID, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail)
+			res, err := reqHandler.RouteV1ProviderUpdate(ctx, tt.providerID, tt.providerType, tt.hostname, tt.techPrefix, tt.techPostfix, tt.techHeaders, tt.providerName, tt.detail, tt.codecs)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

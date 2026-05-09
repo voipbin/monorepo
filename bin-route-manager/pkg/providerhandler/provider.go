@@ -3,6 +3,7 @@ package providerhandler
 import (
 	"context"
 	stderrors "errors"
+	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -47,8 +48,18 @@ func (h *providerHandler) Create(
 	techHeaders map[string]string,
 	name string,
 	detail string,
+	codecs string,
 ) (*provider.Provider, error) {
 	log := logrus.WithField("func", "Create")
+
+	normalizedCodecs, err := validateCodecs(codecs)
+	if err != nil {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameRouteManager,
+			"INVALID_CODECS",
+			fmt.Sprintf("Invalid codecs value: %v", err),
+		)
+	}
 
 	id := uuid.Must(uuid.NewV4())
 	p := &provider.Provider{
@@ -60,6 +71,7 @@ func (h *providerHandler) Create(
 		TechHeaders:  techHeaders,
 		Name:         name,
 		Detail:       detail,
+		Codecs:       normalizedCodecs,
 		HealthStatus: provider.HealthStatusUnknown,
 	}
 	log.WithField("provider", p).Debugf("Creating a new provider. id: %s", id)
@@ -137,6 +149,7 @@ func (h *providerHandler) Update(
 	techHeaders map[string]string,
 	name string,
 	detail string,
+	codecs string,
 ) (*provider.Provider, error) {
 	log := logrus.WithFields(
 		logrus.Fields{
@@ -153,8 +166,18 @@ func (h *providerHandler) Update(
 			"techHeaders": techHeaders,
 			"name":        name,
 			"detail":      detail,
+			"codecs":      codecs,
 		},
 	).Debug("Updating the provider.")
+
+	normalizedCodecs, err := validateCodecs(codecs)
+	if err != nil {
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameRouteManager,
+			"INVALID_CODECS",
+			fmt.Sprintf("Invalid codecs value: %v", err),
+		)
+	}
 
 	// Fetch current provider to determine if hostname is changing.
 	current, err := h.Get(ctx, id)
@@ -164,13 +187,14 @@ func (h *providerHandler) Update(
 	}
 
 	fields := map[provider.Field]any{
-		provider.FieldType:       providerType,
-		provider.FieldHostname:   hostname,
-		provider.FieldTechPrefix: techPrefix,
+		provider.FieldType:        providerType,
+		provider.FieldHostname:    hostname,
+		provider.FieldTechPrefix:  techPrefix,
 		provider.FieldTechPostfix: techPostfix,
 		provider.FieldTechHeaders: techHeaders,
-		provider.FieldName:       name,
-		provider.FieldDetail:     detail,
+		provider.FieldName:        name,
+		provider.FieldDetail:      detail,
+		provider.FieldCodecs:      normalizedCodecs,
 	}
 
 	// Reset health status only when hostname actually changes.

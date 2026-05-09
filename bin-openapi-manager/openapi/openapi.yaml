@@ -5794,6 +5794,13 @@ components:
           type: string
           description: "The details about the provider."
           example: "Primary outbound SIP provider"
+        codecs:
+          type: string
+          description: >
+            Comma-separated codec list offered to this provider (e.g. "PCMU,PCMA").
+            Empty means server-default negotiation.
+            Applied to outgoing PSTN dial attempts only; has no effect on SIP-to-SIP traffic.
+          example: "PCMU,PCMA"
         health_status:
           type: string
           enum:

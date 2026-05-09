@@ -3226,18 +3226,18 @@ func (mr *MockServiceHandlerMockRecorder) ProviderCallGets(ctx, a, size, token, 
 }
 
 // ProviderCreate mocks base method.
-func (m *MockServiceHandler) ProviderCreate(ctx context.Context, a *auth.AuthIdentity, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderCreate(ctx context.Context, a *auth.AuthIdentity, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProviderCreate", ctx, a, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	ret := m.ctrl.Call(m, "ProviderCreate", ctx, a, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 	ret0, _ := ret[0].(*provider.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ProviderCreate indicates an expected call of ProviderCreate.
-func (mr *MockServiceHandlerMockRecorder) ProviderCreate(ctx, a, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ProviderCreate(ctx, a, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCreate", reflect.TypeOf((*MockServiceHandler)(nil).ProviderCreate), ctx, a, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderCreate", reflect.TypeOf((*MockServiceHandler)(nil).ProviderCreate), ctx, a, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 }
 
 // ProviderDelete mocks base method.
@@ -3301,18 +3301,18 @@ func (mr *MockServiceHandlerMockRecorder) ProviderSetup(ctx, a, carrier, name, d
 }
 
 // ProviderUpdate mocks base method.
-func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail string) (*provider.WebhookMessage, error) {
+func (m *MockServiceHandler) ProviderUpdate(ctx context.Context, a *auth.AuthIdentity, providerID uuid.UUID, providerType provider.Type, hostname, techPrefix, techPostfix string, techHeaders map[string]string, name, detail, codecs string) (*provider.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ProviderUpdate", ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	ret := m.ctrl.Call(m, "ProviderUpdate", ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 	ret0, _ := ret[0].(*provider.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ProviderUpdate indicates an expected call of ProviderUpdate.
-func (mr *MockServiceHandlerMockRecorder) ProviderUpdate(ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ProviderUpdate(ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ProviderUpdate), ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProviderUpdate", reflect.TypeOf((*MockServiceHandler)(nil).ProviderUpdate), ctx, a, providerID, providerType, hostname, techPrefix, techPostfix, techHeaders, name, detail, codecs)
 }
 
 // QueueCreate mocks base method.
