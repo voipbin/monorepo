@@ -75,8 +75,8 @@ All output is JSON (stdout); logs go to stderr.
 | Flag | Env Var | Default | Description |
 |------|---------|---------|-------------|
 | `rabbitmq_address` | `RABBITMQ_ADDRESS` | _(required)_ | RabbitMQ server address (amqp URL) |
-| `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | HTTP path for Prometheus metrics scrape |
-| `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Listen address for metrics HTTP server |
+| `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | _(empty)_ | HTTP path for Prometheus metrics scrape |
+| `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | _(empty)_ | Listen address for metrics HTTP server |
 | `database_dsn` | `DATABASE_DSN` | _(required)_ | MySQL DSN (`user:pass@tcp(host:port)/db`) |
 | `redis_address` | `REDIS_ADDRESS` | _(required)_ | Redis server address (`host:port`) |
 | `redis_password` | `REDIS_PASSWORD` | _(empty)_ | Redis password (optional) |
@@ -84,7 +84,7 @@ All output is JSON (stdout); logs go to stderr.
 | `homer_api_address` | `HOMER_API_ADDRESS` | _(empty)_ | Homer SIP capture API base URL (optional) |
 | `homer_auth_token` | `HOMER_AUTH_TOKEN` | _(empty)_ | Homer API authentication token (optional) |
 | `homer_whitelist` | `HOMER_WHITELIST` | _(empty)_ | Comma-separated IP whitelist for Homer recovery endpoint |
-| `asterisk_ws_port` | `ASTERISK_WS_PORT` | _(empty)_ | Asterisk WebSocket port for ARI/external-media connections |
+| `asterisk_ws_port` | `ASTERISK_WS_PORT` | `8088` | Asterisk WebSocket port for ARI/external-media connections |
 
 ## Prometheus Metrics
 

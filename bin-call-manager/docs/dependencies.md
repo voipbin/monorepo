@@ -16,11 +16,13 @@ Services that send RPC requests to this service's queue:
 Services this service calls directly (from `go.mod` replace directives):
 
 - `monorepo/bin-agent-manager` (local: `../bin-agent-manager`)
+- `monorepo/bin-ai-manager` (local: `../bin-ai-manager`)
 - `monorepo/bin-billing-manager` (local: `../bin-billing-manager`)
 - `monorepo/bin-common-handler` (local: `../bin-common-handler`)
 - `monorepo/bin-conference-manager` (local: `../bin-conference-manager`)
 - `monorepo/bin-conversation-manager` (local: `../bin-conversation-manager`)
 - `monorepo/bin-customer-manager` (local: `../bin-customer-manager`)
+- `monorepo/bin-direct-manager` (local: `../bin-direct-manager`)
 - `monorepo/bin-email-manager` (local: `../bin-email-manager`)
 - `monorepo/bin-flow-manager` (local: `../bin-flow-manager`)
 - `monorepo/bin-hook-manager` (local: `../bin-hook-manager`)
