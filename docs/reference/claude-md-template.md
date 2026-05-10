@@ -1,281 +1,212 @@
-# CLAUDE.md Service Template
+# CLAUDE.md and docs/ Template Reference
 
-> **Purpose:** Standardized template for service-specific CLAUDE.md files. Copy this template when creating documentation for a new service.
-
-## Required Sections
-
-Every service CLAUDE.md should include these 10 sections:
-
-1. Overview
-2. Architecture
-3. Request Routing (API endpoints)
-4. Event Subscriptions
-5. Common Commands
-6. Monorepo Context
-7. Testing Patterns
-8. Key Implementation Details
-9. Configuration
-10. Prometheus Metrics
+This document defines the expected structure for each service class.
+Use it as the generation template during the docs refresh.
 
 ---
 
-## Template
+## Class A — Standard Go RPC Manager
 
-Copy everything below this line into your service's `CLAUDE.md`:
+**Examples:** bin-call-manager, bin-flow-manager, bin-conference-manager
 
----
+### CLAUDE.md (slim index, ~100-200 lines)
 
-```markdown
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+```
+# <Service Name>
 
 ## Overview
+2-3 sentences: what business problem this service solves, its primary resource type,
+and how it fits in the CPaaS platform.
 
-`bin-<service>-manager` is [brief description of service purpose]. It [main responsibilities].
-
-**Key Concepts:**
-- **Concept1**: Brief explanation
-- **Concept2**: Brief explanation
-- **Concept3**: Brief explanation
-
-## Architecture
-
-### Service Communication Pattern
-
-This service uses **RabbitMQ for event-driven RPC communication**:
-- **ListenHandler** (`pkg/listenhandler/`): Consumes RPC requests from queue `bin-manager.<service>-manager.request`
-- **SubscribeHandler** (`pkg/subscribehandler/`): Subscribes to events from other services
-- **NotifyHandler**: Publishes events to `bin-manager.<service>-manager.event` exchange
-
-### Core Components
-
-```
-cmd/<service>-manager/main.go
-    ├── Database (MySQL)
-    ├── Cache (Redis via pkg/cachehandler) [if applicable]
-    └── run()
-        ├── pkg/dbhandler (MySQL operations)
-        ├── Domain Handlers:
-        │   ├── pkg/<domain>handler (Business logic)
-        │   └── [additional handlers]
-        ├── runSubscribe() -> pkg/subscribehandler
-        └── runRequestListen() -> pkg/listenhandler
-```
-
-**Layer Responsibilities:**
-- `models/`: Data structures
-- `pkg/*handler/`: Domain-specific business logic
-- `pkg/dbhandler/`: Database operations (Squirrel query builder)
-- `pkg/listenhandler/`: RabbitMQ RPC request routing
-- `pkg/subscribehandler/`: Event consumption [if applicable]
-
-## Request Routing
-
-ListenHandler routes requests using regex patterns matching REST-like URIs:
-
-**Resource API (`/v1/<resources>/*`)**:
-- `POST /v1/<resources>` - Create resource
-- `GET /v1/<resources>?<filters>` - List resources (pagination)
-- `GET /v1/<resources>/<uuid>` - Get resource details
-- `POST /v1/<resources>/<uuid>` - Update resource
-- `DELETE /v1/<resources>/<uuid>` - Delete resource
-
-[Add additional endpoints as needed]
-
-## Event Subscriptions
-
-SubscribeHandler subscribes to these RabbitMQ queues:
-- **bin-manager.<other>-manager.event**: [What events and why]
-
-Processes events including:
-- **EventType1**: What it does
-- **EventType2**: What it does
-
-[If no subscriptions, write: "This service does not subscribe to external events."]
+## Key Concepts
+- **<Entity>**: one-line definition
+- **<Entity>**: one-line definition
+(5-8 concepts max)
 
 ## Common Commands
+| Command | Purpose |
+|---------|---------|
+| `cd bin-<name> && go build ./...` | Compile |
+| `go test ./...` | Run tests |
+| `golangci-lint run -v` | Lint |
+| `go generate ./...` | Regenerate mocks/openapi |
 
-### Build
-```bash
-# Build from service directory
-go build -o bin/<service>-manager ./cmd/<service>-manager
+## Architecture
+→ [docs/architecture.md](docs/architecture.md)
 
-# Build with vendor
-export GOPRIVATE="gitlab.com/voipbin"
-go mod vendor
-go build ./cmd/...
+## Domain / Business Logic
+→ [docs/domain.md](docs/domain.md)
+
+## Dependencies
+→ [docs/dependencies.md](docs/dependencies.md)
+
+## Operations
+→ [docs/operations.md](docs/operations.md)
+
+## CRITICAL Rules
+(Any service-specific rules that must stay inline — no length cap)
 ```
 
-### Test
-```bash
-# Run all tests with coverage
-go test -coverprofile cp.out -v $(go list ./...)
-go tool cover -func=cp.out
+### docs/architecture.md
 
-# Run tests for specific package
-go test -v ./pkg/<domain>handler/...
-```
+**Required H2 headings (must all be present):**
+- `## Component Overview`
+- `## Layer Responsibilities`
+- `## Request Routing`
 
-### Generate Mocks
-```bash
-go generate ./...
-```
+**Content per section:**
+- **Component Overview**: Mermaid diagram showing main packages and their relationships.
+  `cmd/` → `pkg/<domain>handler`, `pkg/listenhandler`, `pkg/subscribehandler`, `pkg/dbhandler`, `pkg/cachehandler`
+- **Layer Responsibilities**: Table with columns: Package | Role | Key Types
+- **Request Routing**: Table from extractor routing_table. Columns: Route Pattern | Handler Function | Description. Must list every route — no fabrication.
 
-### Lint
-```bash
-golangci-lint run -v --timeout 5m
-```
+### docs/domain.md
 
-### Run Locally
-```bash
-DATABASE_DSN="user:pass@tcp(127.0.0.1:3306)/bin_manager" \
-RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672" \
-[additional env vars] \
-./bin/<service>-manager
-```
+**Required H2 headings (must all be present):**
+- `## Domain Entities`
+- `## Key Business Rules`
 
-## Monorepo Context
+**Optional H2 headings:**
+- `## State Machines` (include when service manages stateful resources)
 
-This service depends on local monorepo packages (see `go.mod` replace directives):
-- `monorepo/bin-common-handler`: Shared handlers (sockhandler, requesthandler, notifyhandler)
-- [List other dependencies]
+**Content per section:**
+- **Domain Entities**: One subsection (###) per main entity. Fields from models/ (but refer to RST docs for full field lists — don't restate them here).
+- **Key Business Rules**: Numbered list of invariants and constraints that enforce correct behavior. Source from domain logic in pkg/<domain>handler/.
+- **State Machines**: Mermaid stateDiagram-v2 for each stateful resource lifecycle.
 
-**Important**: Always run `go mod vendor` after changing dependencies.
+### docs/dependencies.md
 
-## Testing Patterns
+**Generated deterministically from extractor JSON using the template at `docs/reference/dependencies.md.tmpl`.**
+**Never hand-written or LLM-generated.**
 
-Tests use **gomock** (go.uber.org/mock):
-- Mock interfaces generated in same package as interface definition
-- Table-driven tests with struct slices
-- Context passed to all handler methods
-- Tests co-located with implementation: `<package>/<feature>_test.go`
+### docs/operations.md
 
-Example test structure:
-```go
-tests := []struct {
-    name      string
-    input     InputType
-    mockSetup func(*MockHandler)
-    expectRes ResultType
-    expectErr bool
-}{
-    {"success case", input1, setupMock1, expected1, false},
-    {"error case", input2, setupMock2, nil, true},
-}
-for _, tt := range tests {
-    t.Run(tt.name, func(t *testing.T) {
-        mc := gomock.NewController(t)
-        defer mc.Finish()
-        // test implementation
-    })
-}
-```
+**Required H2 headings (must all be present):**
+- `## Common Failure Modes`
+- `## Debugging Guide`
+- `## Configuration`
+- `## Prometheus Metrics`
 
-## Key Implementation Details
-
-### Important Pattern 1
-Brief explanation of key implementation detail.
-
-### Important Pattern 2
-Brief explanation of another key detail.
-
-### Database Operations
-- Uses Squirrel query builder
-- Soft deletes with `tm_delete` timestamp (`"9999-01-01 00:00:00.000000"` for active records)
-- UUID fields require `,uuid` db tag
-
-[Add 3-5 key implementation details specific to this service]
-
-## Configuration
-
-Uses **Viper + pflag** pattern (see `cmd/<service>-manager/init.go`):
-
-| Flag/Env | Description | Default |
-|----------|-------------|---------|
-| `database_dsn` / `DATABASE_DSN` | MySQL connection string | required |
-| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server | required |
-| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
-| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
-| [service-specific configs] | | |
-
-## Prometheus Metrics
-
-Service exposes metrics on configured endpoint (default `:2112/metrics`):
-- `<service>_manager_receive_request_process_time` - Histogram of RPC request processing time
-- `<service>_manager_subscribe_event_process_time` - Histogram of event processing time [if applicable]
-- [service-specific metrics]
-```
+**Content per section:**
+- **Common Failure Modes**: Table. Columns: Symptom | Likely Cause | Resolution. Minimum 4 rows.
+- **Debugging Guide**: Log grep patterns, key log messages to look for, how to trace a request.
+- **Configuration**: Table from extractor config_vars. Columns: Flag | Env Var | Default | Description.
+- **Prometheus Metrics**: Table from extractor metrics. Columns: Metric Name | Type | Description.
 
 ---
 
-## Section Guidelines
+## Class A2 — Event-Driven Worker (no inbound RPC)
 
-### Library packages (e.g., `bin-common-handler`)
+**Examples:** bin-sentinel-manager, bin-hook-manager
 
-Some required sections do not apply to shared libraries that are not standalone services. Specifically `Request Routing` (no listenhandler / cmd entrypoint) and `Event Subscriptions` (no SubscribeHandler) are typically N/A for libraries. When a section is N/A, keep the heading and write a one-line note:
+Same structure as Class A **except:**
+- `docs/architecture.md`: Replace `## Request Routing` with `## Execution Model`
+  - **Execution Model**: What triggers this service (events, scheduled polling, webhooks), what it does when triggered, what it produces/emits.
+- No routing table (this service has no listenhandler)
 
-```
-## Request Routing
+---
 
-N/A — shared library, not a service. No `cmd/` entrypoint, no listen queue.
-```
+## Class A+sub — Go RPC + Embedded Native Daemon
 
-This preserves the navigability of the standard section list while making the omission explicit.
+**Examples:** voip-asterisk-proxy, voip-kamailio-proxy, voip-rtpengine-proxy
 
-### Overview
-- 2-3 sentences describing what the service does
-- List 3-5 key concepts/entities the service manages
-- Keep it high-level
+Same structure as Class A **plus:**
+- `docs/subsystems.md` (REQUIRED for all A+sub services)
 
-### Architecture
-- Show the component hierarchy
-- Explain layer responsibilities
-- Include ASCII diagram of component structure
+### docs/subsystems.md
 
-### Request Routing
-- List ALL endpoints handled by ListenHandler
-- Group by resource type
-- Include HTTP method and URI pattern
+**Required H2 headings:**
+- `## Native Daemon Overview`
+- `## Configuration`
+- `## Deployment Notes`
 
-### Event Subscriptions
-- List queues the service subscribes to
-- Explain what events are processed
-- Say "none" if service doesn't subscribe
+**Content:**
+- **Native Daemon Overview**: What the embedded daemon is (Asterisk/Kamailio/RTPEngine), version, how the Go service manages its lifecycle (subprocess, sidecar, etc.)
+- **Configuration**: Config files, environment variables, and ports the daemon needs.
+- **Deployment Notes**: Docker setup, dependency on the native daemon being present, startup order.
 
-### Common Commands
-- Build, test, generate, lint commands
-- Local run command with environment variables
-- Keep it copy-paste ready
+---
 
-### Monorepo Context
-- List dependencies from go.mod replace directives
-- Highlight shared handler usage
+## Class B — HTTP/REST API Gateway
 
-### Testing Patterns
-- Show example test structure
-- Mention mock generation
-- Reference table-driven test pattern
+**Examples:** bin-api-manager
 
-### Key Implementation Details
-- 3-5 service-specific patterns
-- Database patterns if unique
-- Cache strategies
-- Business logic rules
+### docs/ structure (differs from Class A):
+- `docs/architecture.md` — Required H2: `## Component Overview`, `## Middleware Stack`, `## Backend Services`
+- `docs/routing.md` — Maps every REST endpoint to its backend RPC service. Required H2: one per domain group (Auth, Calls, Flows, Agents, Billing, Numbers, etc.)
+- `docs/auth.md` — JWT validation, customer scoping, permission model. Required H2: `## Authentication Flow`, `## Authorization Model`
+- `docs/operations.md` — Same as Class A
 
-### Configuration
-- Table of all config flags
-- Include environment variable names
-- Mark required vs optional
+### CLAUDE.md
 
-### Prometheus Metrics
-- List all exposed metrics
-- Include metric type (counter, histogram, gauge)
-- Describe labels
+Same slim-index format as Class A. Keep any RST sync CRITICAL rule inline.
 
-## See Also
+---
 
-- [Code Quality Standards](code-quality-standards.md) - Logging, naming conventions
-- [Common Workflows](common-workflows.md) - Adding endpoints, handlers
-- [RabbitMQ Queues Reference](rabbitmq-queues-reference.md) - Queue naming
-- [Error Handling Patterns](error-handling-patterns.md) - Error responses
+## Class C — Shared Library
+
+**Examples:** bin-common-handler
+
+### docs/ structure:
+- `docs/architecture.md` — Required H2: `## Package Overview`, `## Package Responsibilities`
+- `docs/usage.md` — How consuming services use this library, import patterns, gotchas. Required H2: `## Import Guidelines`, `## Common Patterns`
+
+### CLAUDE.md
+
+Keep the bin-common-handler admission rule inline (CRITICAL — 3+ services requirement).
+
+---
+
+## Class D — Python/Alembic Migrations Manager
+
+**Examples:** bin-dbscheme-manager
+
+### docs/ structure:
+- `docs/migrations.md` — How to create migrations. Required H2: `## Creating a Migration`, `## Naming Conventions`, `## Example Migration`
+- `docs/schema-ownership.md` — Table: table name → owning service. Required H2: `## Table Ownership`
+- `docs/operations.md` — Environment access matrix. Required H2: `## Environment Access`, `## Emergency Rollback`, `## Common Failures`
+
+### CLAUDE.md
+
+**CRITICAL rules must stay inline (no length cap):**
+- Alembic upgrade/downgrade prohibition
+- Manual revision ID prohibition
+- Human-authorization requirement for schema changes
+
+---
+
+## Class E — OpenAPI Codegen (no runtime)
+
+**Examples:** bin-openapi-manager
+
+### docs/ structure:
+- `docs/architecture.md` — Required H2: `## Codegen Pipeline`, `## Output Artifacts`
+- `docs/usage.md` — How consuming services use the generated types. Required H2: `## Consuming Generated Types`, `## Regeneration`
+
+### CLAUDE.md
+
+Brief. Link to docs/architecture.md and docs/usage.md. Note that this service has no runtime — it only generates code.
+
+---
+
+## Consistency Guard — Required H2 Headings
+
+This is the machine-checkable minimum for each file type. Every file MUST contain all headings for its class.
+
+### architecture.md
+- Class A: `## Component Overview`, `## Layer Responsibilities`, `## Request Routing`
+- Class A2: `## Component Overview`, `## Layer Responsibilities`, `## Execution Model`
+- Class A+sub: same as Class A plus `## Subsystem Overview` (in subsystems.md, not architecture.md)
+- Class B: `## Component Overview`, `## Middleware Stack`, `## Backend Services`
+- Class C: `## Package Overview`, `## Package Responsibilities`
+- Class D: (no architecture.md)
+- Class E: `## Codegen Pipeline`, `## Output Artifacts`
+
+### domain.md
+- Class A, A2, A+sub: `## Domain Entities`, `## Key Business Rules`
+- Class B, C, D, E: (no domain.md)
+
+### operations.md
+- Class A, A2, A+sub, B: `## Common Failure Modes`, `## Debugging Guide`, `## Configuration`, `## Prometheus Metrics`
+- Class C, D (class-specific ops): see class-specific definitions above
+- Class E: (no operations.md)
