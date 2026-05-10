@@ -1,326 +1,53 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# bin-campaign-manager
 
 ## Overview
 
-`bin-campaign-manager` is a Go microservice that manages outbound calling campaigns within a VoIP platform. It orchestrates campaign execution, manages individual calls, and coordinates with other microservices via the RabbitMQ message broker.
-
-**Key Concepts:**
-- **Campaign**: An outbound campaign linking an outplan (dial config), an outdial (target list), and optionally a queue, with status `stop`/`run`/`stopping`.
-- **Campaigncall**: A single call attempt within a campaign with up to 5 destination addresses and independent retry counts; references either a Call or an Activeflow.
-- **Outplan**: Dialing configuration (timeouts, retry intervals, max try counts, source address) shared across multiple campaigns.
-- **Service Level**: Percentage-based throttle on concurrent dialing based on queue agent availability.
+`bin-campaign-manager` orchestrates outbound calling campaigns in VoIPbin. It manages Campaign configuration, Outplan dial settings, and individual Campaigncall attempts, coordinating with call-manager to place calls and with flow-manager to execute on-connect actions. It is a Class A standard Go RPC manager.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-campaign-manager`.
 
+## Key Concepts
+
+- **Campaign**: Outbound campaign entity; statuses: `stop`, `run`, `stopping`; references an outdial (target list), outplan, and optional queue
+- **Campaigncall**: Single call attempt; up to 5 destination slots with independent retry counters; references a Call or Activeflow
+- **Outplan**: Dialing configuration — `source` (caller ID), `dial_timeout`, `try_interval`, `max_try_count_0..4`; shared across campaigns
+- **Service level**: Percentage throttle (0-100) based on available agents in the linked queue; 0 means no dialing
+- **Actions**: Flow actions executed on call connect (play message, transfer to queue, etc.)
+- **Next campaign chaining**: `next_campaign_id` enables sequential campaign execution after current campaign completes
+
 ## Common Commands
 
-### Build
-```bash
-# Build the service binary
-go build -o campaign-manager ./cmd/campaign-manager
-
-# Build the control CLI
-go build -o campaign-control ./cmd/campaign-control
-
-# Build with vendor dependencies
-go build -mod=vendor -o campaign-manager ./cmd/campaign-manager
-go build -mod=vendor -o campaign-control ./cmd/campaign-control
-```
-
-### Test
-```bash
-# Run all tests
-go test ./...
-
-# Run tests with verbose output
-go test -v ./...
-
-# Run tests for a specific package
-go test ./pkg/campaignhandler/...
-
-# Run a specific test
-go test -v -run TestCampaignHandler_Create ./pkg/campaignhandler/
-
-# Run tests with coverage
-go test -cover ./...
-go test -coverprofile=coverage.out ./...
-go tool cover -html=coverage.out
-```
-
-### Code Generation
-```bash
-# Generate all mocks (uses go.uber.org/mock)
-go generate ./...
-```
-
-### campaign-control CLI Tool
-
-A command-line tool for managing campaigns. **All output is JSON format** (stdout), logs go to stderr.
-
-```bash
-# Create campaign - returns created campaign JSON
-./campaign-control campaign create \
-  --customer_id <uuid> \
-  --name <name> \
-  --outplan_id <uuid> \
-  --outdial_id <uuid> \
-  [--type call|flow] \
-  [--detail <description>] \
-  [--service_level 100] \
-  [--end_handle stop|continue] \
-  [--queue_id <uuid>] \
-  [--next_campaign_id <uuid>]
-
-# Get campaign - returns campaign JSON
-./campaign-control campaign get --id <uuid>
-
-# List campaigns - returns JSON array
-./campaign-control campaign list --customer_id <uuid> [--limit 100] [--token]
-
-# Update campaign basic info - returns updated campaign JSON
-./campaign-control campaign update-basic-info \
-  --id <uuid> \
-  --name <name> \
-  [--detail <description>] \
-  [--type call|flow] \
-  [--service_level 100] \
-  [--end_handle stop|continue]
-
-# Update campaign status - returns updated campaign JSON
-./campaign-control campaign update-status --id <uuid> --status run|stop|stopping
-
-# Delete campaign - returns deleted campaign JSON
-./campaign-control campaign delete --id <uuid>
-```
-
-Uses same environment variables as campaign-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
-
-### Running Locally
-```bash
-# Using environment variables
-export DATABASE_DSN="user:password@tcp(localhost:3306)/campaign_db"
-export RABBITMQ_ADDRESS="amqp://guest:guest@localhost:5672"
-export REDIS_ADDRESS="localhost:6379"
-export REDIS_DATABASE="1"
-export PROMETHEUS_LISTEN_ADDRESS=":2112"
-
-go run ./cmd/campaign-manager
-```
+| Command | Purpose |
+|---------|---------|
+| `cd bin-campaign-manager && go build ./...` | Compile |
+| `go test ./...` | Run all tests |
+| `go test -v ./pkg/campaignhandler/...` | Test a specific package |
+| `golangci-lint run -v --timeout 5m` | Lint |
+| `go generate ./...` | Regenerate mocks |
+| `./bin/campaign-control campaign get --id <uuid>` | Inspect a campaign (bypasses RabbitMQ) |
 
 ## Architecture
+→ [docs/architecture.md](docs/architecture.md)
 
-### Core Domain Models
+## Domain / Business Logic
+→ [docs/domain.md](docs/domain.md)
 
-**Campaign** (`models/campaign/`): Outbound campaign configuration
-- Manages campaign lifecycle (status: Stop/Run/Stopping)
-- Two execution types: `TypeCall` (direct calls) or `TypeFlow` (execute flow first)
-- Links to: Outplan (dial config), Outdial (target list), Queue (agents), Flow
-- End handling: `EndHandleStop` (stop when done) or `EndHandleContinue` (continue to next campaign)
+## Dependencies
+→ [docs/dependencies.md](docs/dependencies.md)
 
-**Campaigncall** (`models/campaigncall/`): Individual call instance within a campaign
-- Tracks a single call attempt as part of a campaign
-- References either a Call (in call-manager) or Activeflow (in flow-manager)
-- Supports up to 5 destination addresses with independent retry counts
-- Status: Dialing → Progressing → Done (with result: Success/Fail)
+## Operations
+→ [docs/operations.md](docs/operations.md)
 
-**Outplan** (`models/outplan/`): Dialing configuration/plan
-- Defines dial timeout, retry intervals, max try counts
-- Shared across multiple campaigns
-- Contains source address (caller ID) configuration
+## CRITICAL Rules
 
-### Handler Architecture
+### Execute Loop Requires External Trigger
 
-All business logic is organized into handler packages with interface-first design:
+Campaign execution (`POST /v1/campaigns/{id}/execute`) must be called by an external scheduler to actually place calls. The service does not run an internal timer. If the scheduler stops, campaigns in `run` status will not dial.
 
-**CampaignHandler** (`pkg/campaignhandler/`): Campaign lifecycle and execution
-- CRUD operations for campaigns
-- Status management (Run/Stopping/Stop transitions)
-- **Execute() method**: Main campaign execution loop that:
-  - Fetches available targets from outdial-manager
-  - Checks queue capacity via service_level percentage
-  - Creates campaigncalls and either calls (TypeCall) or flows (TypeFlow)
-  - Recursively schedules next execution with 500ms delay
+### Service Level Requires Queue
 
-**CampaigncallHandler** (`pkg/campaigncallhandler/`): Individual call tracking
-- Manages campaigncall lifecycle and status transitions
-- Handles reference lookups (by call ID or activeflow ID)
-- Processes Done transitions with Success/Fail results
+The `service_level` throttle only applies when `queue_id` is set. Without a queue, all available slots are dialed immediately. Ensure campaigns intended to be throttled have a valid `queue_id`.
 
-**OutplanHandler** (`pkg/outplanhandler/`): Dialing configuration management
+### Stopping State Requires Cleanup
 
-**DBHandler** (`pkg/dbhandler/`): Database abstraction layer
-- All MySQL CRUD operations for campaigns, campaigncalls, outplans
-- Uses soft deletes (tm_delete timestamp)
-- Integrates CacheHandler for Redis caching
-
-**ListenHandler** (`pkg/listenhandler/`): RabbitMQ RPC server
-- Processes incoming API requests from "campaign_request" queue
-- Routes to appropriate handler based on URI pattern and HTTP method
-
-**SubscribeHandler** (`pkg/subscribehandler/`): Event subscriber
-- Listens to events from call-manager and flow-manager
-- Updates campaigncall status and triggers campaign state changes
-
-## Request Routing
-
-ListenHandler routes RPC requests using regex patterns matching REST-like URIs:
-
-**Campaigns API (`/v1/campaigns/*`):**
-- `POST /v1/campaigns` — Create campaign
-- `GET /v1/campaigns?<filters>` — List campaigns (pagination)
-- `GET /v1/campaigns/<uuid>` — Get campaign
-- `PUT /v1/campaigns/<uuid>` — Update campaign basic info
-- `PUT /v1/campaigns/<uuid>/status` — Update status (`run`/`stop`/`stopping`)
-- `DELETE /v1/campaigns/<uuid>` — Delete campaign
-
-**Campaigncalls API (`/v1/campaigncalls/*`):**
-- `GET /v1/campaigncalls?<filters>` — List campaigncalls
-- `GET /v1/campaigncalls/<uuid>` — Get campaigncall
-- `DELETE /v1/campaigncalls/<uuid>` — Delete campaigncall
-
-**Outplans API (`/v1/outplans/*`):**
-- `POST /v1/outplans` — Create outplan
-- `GET /v1/outplans?<filters>` — List outplans
-- `GET /v1/outplans/<uuid>` — Get outplan
-- `PUT /v1/outplans/<uuid>` — Update outplan
-- `DELETE /v1/outplans/<uuid>` — Delete outplan
-
-## Event Subscriptions
-
-SubscribeHandler subscribes to:
-- **bin-manager.call-manager.event**: `call_hangup` → marks campaigncall as done; drives campaign `run` → `stop` transitions when no more targets remain.
-- **bin-manager.flow-manager.event**: `activeflow_deleted` → marks campaigncall as done (for `TypeFlow` campaigns).
-
-### Event-Driven Communication
-
-**Published Events** (to "campaign_event" queue):
-- Campaign: campaign_created, campaign_updated, campaign_deleted, campaign_status_run, campaign_status_stopping, campaign_status_stop
-- Campaigncall: campaigncall_created, campaigncall_updated, campaigncall_deleted
-- Outplan: outplan_created, outplan_updated, outplan_deleted
-
-**Subscribed Events** (from "campaign_subscribe" queue):
-- call-manager: `call_hungup` → marks campaigncall as done
-- flow-manager: `activeflow_deleted` → marks campaigncall as done
-
-### Service Dependencies
-
-**Monorepo Services** (via requesthandler RPC):
-- `bin-call-manager`: Creates calls, queries call status
-- `bin-flow-manager`: Creates flows and activeflows, executes flows
-- `bin-outdial-manager`: Manages target lists, provides available targets, updates target status
-- `bin-queue-manager`: Provides queue info and available agent counts
-- `bin-agent-manager`: Agent availability queries
-
-**External Dependencies**:
-- MySQL: Stores campaigns, campaigncalls, outplans (tables: `campaign_campaigns`, `campaign_campaigncalls`, `campaign_outplans`)
-- Redis: Caches frequently accessed objects
-- RabbitMQ: Message broker for RPC and pub-sub patterns
-
-### Campaign Execution Flow
-
-```
-1. Campaign created with OutplanID, OutdialID, optional QueueID
-2. Campaign status updated to "Run" → triggers Execute()
-3. Execute() loop:
-   a. Get next available target from outdial-manager
-   b. Check queue capacity (service_level constraint)
-   c. Create campaigncall
-   d. If TypeCall: create call via call-manager
-      If TypeFlow: create activeflow via flow-manager
-   e. Wait for external event (call_hungup or activeflow_deleted)
-   f. Reschedule Execute() after 500ms delay
-4. External event received → campaigncall marked as Done
-5. If no more targets or manual stop → Campaign transitions to Stop
-```
-
-## Key Implementation Details
-
-### Interface-Based Design
-All handlers are interfaces with mock implementations for testing (generated via `go generate`).
-
-### Soft Deletes
-All models use `tm_delete` timestamp (default: `"9999-01-01 00:00:000"`). Deleted records are marked with actual deletion time.
-
-### Service Level Queuing
-Campaigns can limit concurrent dialing based on queue agent availability:
-```
-agent_capacity = (available_agents × service_level) / 100
-dialing_allowed = current_dialing_count < agent_capacity
-```
-
-### Recursive Execution
-Campaign `Execute()` uses goroutine-based recursive scheduling (500 ms delay between iterations) rather than a persistent job queue.
-
-### Multi-Destination Retry Logic
-Each campaigncall supports 5 destination addresses with independent retry tracking (`destination_0` through `destination_4`, `try_count_0` through `try_count_4`).
-
-## Configuration
-
-Configuration via Viper (command-line flags or environment variables):
-
-| Flag | Environment Variable | Default | Description |
-|------|---------------------|---------|-------------|
-| `--rabbitmq_address` | `RABBITMQ_ADDRESS` | `amqp://guest:guest@localhost:5672` | RabbitMQ connection string |
-| `--database_dsn` | `DATABASE_DSN` | `testid:testpassword@tcp(127.0.0.1:3306)/test` | MySQL DSN |
-| `--redis_address` | `REDIS_ADDRESS` | `127.0.0.1:6379` | Redis server address |
-| `--redis_password` | `REDIS_PASSWORD` | (empty) | Redis authentication password |
-| `--redis_database` | `REDIS_DATABASE` | `1` | Redis database index |
-| `--prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | `:2112` | Prometheus metrics endpoint |
-| `--prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | `/metrics` | Metrics URL path |
-
-## Monorepo Context
-
-This service is part of a larger VoIP platform monorepo at `/home/pchero/gitvoipbin/monorepo/`. Dependencies on other `bin-*-manager` services are replaced via `go.mod` replace directives pointing to sibling directories.
-
-When making changes that affect other services, coordinate changes across:
-- `bin-call-manager`: Call creation and management
-- `bin-flow-manager`: Flow execution logic
-- `bin-outdial-manager`: Target list management
-- `bin-queue-manager`: Queue and agent tracking
-- `bin-common-handler`: Shared models and utilities
-
-## Testing Patterns
-
-Tests use **gomock** (go.uber.org/mock):
-- All handlers have interface definitions for mockability
-- Generate mocks via `go generate ./...` before running tests
-- Tests should not require external services (use mocks)
-- Event handling tests verify proper event routing and handler invocation
-- Database tests use in-memory SQLite when possible (see `pkg/dbhandler/main_test.go`, which loads `github.com/mattn/go-sqlite3` and `file::memory:` to exercise dbhandler logic without a live MySQL)
-
-```go
-tests := []struct {
-    name      string
-    input     InputType
-    mockSetup func(*MockHandler)
-    expectRes ResultType
-    expectErr bool
-}{
-    {"success case", input1, setupMock1, expected1, false},
-    {"error case", input2, setupMock2, nil, true},
-}
-for _, tt := range tests {
-    t.Run(tt.name, func(t *testing.T) {
-        mc := gomock.NewController(t)
-        defer mc.Finish()
-        // test implementation
-    })
-}
-```
-
-## Prometheus Metrics
-
-Service exposes metrics on the configured endpoint (default `:2112/metrics`):
-- `campaign_manager_receive_request_process_time` — histogram of RPC request processing time (labels: type, method)
-- `campaign_manager_subscribe_event_process_time` — histogram of event processing time (labels: publisher, type)
-
-## Important Files
-
-- `cmd/campaign-manager/init.go`: Configuration initialization and Prometheus setup
-- `cmd/campaign-manager/main.go`: Service entry point and handler orchestration
-- `pkg/campaignhandler/execute.go`: Core campaign execution logic
-- `pkg/listenhandler/campaigns.go`: Campaign API endpoint handlers
-- `pkg/subscribehandler/callmanager.go`: Call event processing
-- `pkg/subscribehandler/flowmanager.go`: Flow event processing
+The `stopping` transition waits for in-progress calls to complete. Do not force-stop a campaign in `stopping` state unless you are certain all associated calls have been cleaned up; orphaned calls may not be tracked properly.
