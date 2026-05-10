@@ -223,14 +223,6 @@ The RST documentation at `bin-api-manager/docsdev/source/` is what customers, de
 - **Reference** → [docs/reference/](docs/reference/) — queue catalog, service CLAUDE.md template, code-quality standards
 - **Plans** → [docs/plans/](docs/plans/) — dated design documents and implementation plans
 
-## Grafana Dashboards
-
-**All Grafana dashboard JSON provisioning files MUST be placed in `monitoring/grafana/dashboards/`.**
-
-- File naming: `<service-name>.json` (e.g., `flow-manager.json`, `call-manager.json`)
-- One dashboard per service
-- Dashboards are importable JSON files (Grafana provisioning format)
-
 ## Where to Document New Information
 
 The `docs/` directory is the **live, authoritative shared documentation** for the monorepo. Subdirectories evolve over time — new categories may be added at any time.
