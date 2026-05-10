@@ -126,6 +126,7 @@ NOJIRA-brief-description-of-change
 
 **NEVER commit directly to `main` without explicit user permission.**
 **NEVER merge any branch to `main` without explicit user permission.**
+**NEVER merge as part of a review loop, automation workflow, or any process not explicitly authorized for merging.** A review loop ends at approval — report the verdict and STOP. Wait for the user to say "merge" before calling `gh pr merge`. The pre-commit hook in `.claude/settings.json` enforces this by blocking `gh pr merge` calls.
 
 **CRITICAL: ALL PR merges MUST use squash merge — no exceptions.**
 
