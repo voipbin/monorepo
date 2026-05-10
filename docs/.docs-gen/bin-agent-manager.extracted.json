@@ -1,0 +1,251 @@
+{
+  "schema_version": "1.0",
+  "service_name": "bin-agent-manager",
+  "service_class": "A",
+  "routing_table": [
+    {
+      "pattern": "/v1/agents/count_by_customer$"
+    },
+    {
+      "pattern": "/v1/agents$"
+    },
+    {
+      "pattern": "/v1/agents\\?(.*)$"
+    },
+    {
+      "pattern": "/v1/agents/{{UUID}}/login$"
+    },
+    {
+      "pattern": "/v1/agents/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/agents/{{UUID}}/addresses$"
+    },
+    {
+      "pattern": "/v1/agents/{{UUID}}/tag_ids$"
+    },
+    {
+      "pattern": "/v1/agents/{{UUID}}/status$"
+    },
+    {
+      "pattern": "/v1/agents/{{UUID}}/password$"
+    },
+    {
+      "pattern": "/v1/agents/{{UUID}}/permission$"
+    },
+    {
+      "pattern": "/v1/agents/{{UUID}}/direct-hash-regenerate$"
+    },
+    {
+      "pattern": "/v1/agents/get_by_customer_id_address$"
+    },
+    {
+      "pattern": "/v1/login$"
+    },
+    {
+      "pattern": "/v1/password-forgot$"
+    },
+    {
+      "pattern": "/v1/password-reset$"
+    }
+  ],
+  "events_subscribed": [
+    {
+      "queue_symbol": "bin-manager.call-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.customer-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.webhook-manager.event"
+    }
+  ],
+  "events_published": [
+    {
+      "event_type_symbol": "agent.EventTypeAgentCreated"
+    },
+    {
+      "event_type_symbol": "agent.EventTypeAgentDeleted"
+    },
+    {
+      "event_type_symbol": "agent.EventTypeAgentStatusUpdated"
+    },
+    {
+      "event_type_symbol": "agent.EventTypeAgentUpdated"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_path": "monorepo/bin-call-manager",
+      "local_path": "../bin-call-manager"
+    },
+    {
+      "module_path": "monorepo/bin-common-handler",
+      "local_path": "../bin-common-handler"
+    },
+    {
+      "module_path": "monorepo/bin-contact-manager",
+      "local_path": "../bin-contact-manager"
+    },
+    {
+      "module_path": "monorepo/bin-talk-manager",
+      "local_path": "../bin-talk-manager"
+    },
+    {
+      "module_path": "monorepo/bin-billing-manager",
+      "local_path": "../bin-billing-manager"
+    },
+    {
+      "module_path": "monorepo/bin-campaign-manager",
+      "local_path": "../bin-campaign-manager"
+    },
+    {
+      "module_path": "monorepo/bin-ai-manager",
+      "local_path": "../bin-ai-manager"
+    },
+    {
+      "module_path": "monorepo/bin-conference-manager",
+      "local_path": "../bin-conference-manager"
+    },
+    {
+      "module_path": "monorepo/bin-conversation-manager",
+      "local_path": "../bin-conversation-manager"
+    },
+    {
+      "module_path": "monorepo/bin-email-manager",
+      "local_path": "../bin-email-manager"
+    },
+    {
+      "module_path": "monorepo/bin-flow-manager",
+      "local_path": "../bin-flow-manager"
+    },
+    {
+      "module_path": "monorepo/bin-hook-manager",
+      "local_path": "../bin-hook-manager"
+    },
+    {
+      "module_path": "monorepo/bin-message-manager",
+      "local_path": "../bin-message-manager"
+    },
+    {
+      "module_path": "monorepo/bin-number-manager",
+      "local_path": "../bin-number-manager"
+    },
+    {
+      "module_path": "monorepo/bin-outdial-manager",
+      "local_path": "../bin-outdial-manager"
+    },
+    {
+      "module_path": "monorepo/bin-pipecat-manager",
+      "local_path": "../bin-pipecat-manager"
+    },
+    {
+      "module_path": "monorepo/bin-queue-manager",
+      "local_path": "../bin-queue-manager"
+    },
+    {
+      "module_path": "monorepo/bin-rag-manager",
+      "local_path": "../bin-rag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-registrar-manager",
+      "local_path": "../bin-registrar-manager"
+    },
+    {
+      "module_path": "monorepo/bin-route-manager",
+      "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-storage-manager",
+      "local_path": "../bin-storage-manager"
+    },
+    {
+      "module_path": "monorepo/bin-tag-manager",
+      "local_path": "../bin-tag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-timeline-manager",
+      "local_path": "../bin-timeline-manager"
+    },
+    {
+      "module_path": "monorepo/bin-transcribe-manager",
+      "local_path": "../bin-transcribe-manager"
+    },
+    {
+      "module_path": "monorepo/bin-transfer-manager",
+      "local_path": "../bin-transfer-manager"
+    },
+    {
+      "module_path": "monorepo/bin-tts-manager",
+      "local_path": "../bin-tts-manager"
+    },
+    {
+      "module_path": "monorepo/bin-webhook-manager",
+      "local_path": "../bin-webhook-manager"
+    },
+    {
+      "module_path": "monorepo/bin-customer-manager",
+      "local_path": "../bin-customer-manager"
+    },
+    {
+      "module_path": "monorepo/bin-direct-manager",
+      "local_path": "../bin-direct-manager"
+    }
+  ],
+  "config_vars": [
+    {
+      "flag": "rabbitmq_address"
+    },
+    {
+      "flag": "prometheus_endpoint"
+    },
+    {
+      "flag": "prometheus_listen_address"
+    },
+    {
+      "flag": "database_dsn"
+    },
+    {
+      "flag": "redis_address"
+    },
+    {
+      "flag": "redis_password"
+    },
+    {
+      "flag": "redis_database"
+    },
+    {
+      "flag": "password_reset_base_url"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "cache_operation_total"
+    },
+    {
+      "name": "db_operation_duration"
+    },
+    {
+      "name": "db_operation_total"
+    },
+    {
+      "name": "login_total"
+    },
+    {
+      "name": "password_reset_total"
+    },
+    {
+      "name": "receive_request_process_time"
+    },
+    {
+      "name": "receive_subscribe_event_process_time"
+    },
+    {
+      "name": "rpc_call_duration"
+    },
+    {
+      "name": "rpc_call_total"
+    }
+  ],
+  "missing_fields": []
+}

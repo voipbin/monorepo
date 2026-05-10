@@ -1,0 +1,263 @@
+{
+  "schema_version": "1.0",
+  "service_name": "bin-flow-manager",
+  "service_class": "A",
+  "routing_table": [
+    {
+      "pattern": "/v1/activeflows\\?"
+    },
+    {
+      "pattern": "/v1/activeflows$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}/continue$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}/execute$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}/next$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}/forward_action_id$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}/stop$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}/add_actions$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}/push_actions$"
+    },
+    {
+      "pattern": "/v1/activeflows/{{UUID}}/service_stop$"
+    },
+    {
+      "pattern": "/v1/flows/count_by_customer$"
+    },
+    {
+      "pattern": "/v1/flows\\?"
+    },
+    {
+      "pattern": "/v1/flows$"
+    },
+    {
+      "pattern": "/v1/flows/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/flows/{{UUID}}/actions$"
+    },
+    {
+      "pattern": "/v1/flows/{{UUID}}/actions/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/flows/{{UUID}}/direct-hash-regenerate$"
+    },
+    {
+      "pattern": "/v1/variables/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/variables/{{UUID}}/substitute$"
+    },
+    {
+      "pattern": "/v1/variables/{{UUID}}/variables$"
+    },
+    {
+      "pattern": "/v1/variables/{{UUID}}/variables/{{UUID}}$"
+    }
+  ],
+  "events_subscribed": [
+    {
+      "queue_symbol": "bin-manager.customer-manager.event"
+    }
+  ],
+  "events_published": [],
+  "dependencies": [
+    {
+      "module_path": "monorepo/bin-agent-manager",
+      "local_path": "../bin-agent-manager"
+    },
+    {
+      "module_path": "monorepo/bin-billing-manager",
+      "local_path": "../bin-billing-manager"
+    },
+    {
+      "module_path": "monorepo/bin-call-manager",
+      "local_path": "../bin-call-manager"
+    },
+    {
+      "module_path": "monorepo/bin-common-handler",
+      "local_path": "../bin-common-handler"
+    },
+    {
+      "module_path": "monorepo/bin-direct-manager",
+      "local_path": "../bin-direct-manager"
+    },
+    {
+      "module_path": "monorepo/bin-contact-manager",
+      "local_path": "../bin-contact-manager"
+    },
+    {
+      "module_path": "monorepo/bin-talk-manager",
+      "local_path": "../bin-talk-manager"
+    },
+    {
+      "module_path": "monorepo/bin-campaign-manager",
+      "local_path": "../bin-campaign-manager"
+    },
+    {
+      "module_path": "monorepo/bin-ai-manager",
+      "local_path": "../bin-ai-manager"
+    },
+    {
+      "module_path": "monorepo/bin-conference-manager",
+      "local_path": "../bin-conference-manager"
+    },
+    {
+      "module_path": "monorepo/bin-conversation-manager",
+      "local_path": "../bin-conversation-manager"
+    },
+    {
+      "module_path": "monorepo/bin-customer-manager",
+      "local_path": "../bin-customer-manager"
+    },
+    {
+      "module_path": "monorepo/bin-email-manager",
+      "local_path": "../bin-email-manager"
+    },
+    {
+      "module_path": "monorepo/bin-flow-manager",
+      "local_path": "../bin-flow-manager"
+    },
+    {
+      "module_path": "monorepo/bin-hook-manager",
+      "local_path": "../bin-hook-manager"
+    },
+    {
+      "module_path": "monorepo/bin-message-manager",
+      "local_path": "../bin-message-manager"
+    },
+    {
+      "module_path": "monorepo/bin-number-manager",
+      "local_path": "../bin-number-manager"
+    },
+    {
+      "module_path": "monorepo/bin-outdial-manager",
+      "local_path": "../bin-outdial-manager"
+    },
+    {
+      "module_path": "monorepo/bin-pipecat-manager",
+      "local_path": "../bin-pipecat-manager"
+    },
+    {
+      "module_path": "monorepo/bin-queue-manager",
+      "local_path": "../bin-queue-manager"
+    },
+    {
+      "module_path": "monorepo/bin-rag-manager",
+      "local_path": "../bin-rag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-registrar-manager",
+      "local_path": "../bin-registrar-manager"
+    },
+    {
+      "module_path": "monorepo/bin-route-manager",
+      "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-storage-manager",
+      "local_path": "../bin-storage-manager"
+    },
+    {
+      "module_path": "monorepo/bin-tag-manager",
+      "local_path": "../bin-tag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-timeline-manager",
+      "local_path": "../bin-timeline-manager"
+    },
+    {
+      "module_path": "monorepo/bin-transcribe-manager",
+      "local_path": "../bin-transcribe-manager"
+    },
+    {
+      "module_path": "monorepo/bin-transfer-manager",
+      "local_path": "../bin-transfer-manager"
+    },
+    {
+      "module_path": "monorepo/bin-tts-manager",
+      "local_path": "../bin-tts-manager"
+    },
+    {
+      "module_path": "monorepo/bin-webhook-manager",
+      "local_path": "../bin-webhook-manager"
+    }
+  ],
+  "config_vars": [
+    {
+      "flag": "rabbitmq_address"
+    },
+    {
+      "flag": "prometheus_endpoint"
+    },
+    {
+      "flag": "prometheus_listen_address"
+    },
+    {
+      "flag": "database_dsn"
+    },
+    {
+      "flag": "redis_address"
+    },
+    {
+      "flag": "redis_password"
+    },
+    {
+      "flag": "redis_database"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "action_dispatch_total"
+    },
+    {
+      "name": "action_error_total"
+    },
+    {
+      "name": "action_executed_total"
+    },
+    {
+      "name": "action_exeucte_duration"
+    },
+    {
+      "name": "activeflow_created_total"
+    },
+    {
+      "name": "activeflow_duration_seconds"
+    },
+    {
+      "name": "activeflow_ended_total"
+    },
+    {
+      "name": "activeflow_execute_iterations"
+    },
+    {
+      "name": "activeflow_running"
+    },
+    {
+      "name": "flow_crud_total"
+    },
+    {
+      "name": "receive_request_process_time"
+    },
+    {
+      "name": "receive_subscribe_event_process_time"
+    }
+  ],
+  "missing_fields": []
+}

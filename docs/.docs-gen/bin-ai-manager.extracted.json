@@ -1,0 +1,312 @@
+{
+  "schema_version": "1.0",
+  "service_name": "bin-ai-manager",
+  "service_class": "A",
+  "routing_table": [
+    {
+      "pattern": "/v1/ais\\?"
+    },
+    {
+      "pattern": "/v1/ais$"
+    },
+    {
+      "pattern": "/v1/ais/{{UUID}}/direct-hash-regenerate$"
+    },
+    {
+      "pattern": "/v1/ais/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/aicalls\\?"
+    },
+    {
+      "pattern": "/v1/aicalls$"
+    },
+    {
+      "pattern": "/v1/aicalls/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/aicalls/{{UUID}}/terminate$"
+    },
+    {
+      "pattern": "/v1/aicalls/{{UUID}}/tool_execute$"
+    },
+    {
+      "pattern": "/v1/messages\\?"
+    },
+    {
+      "pattern": "/v1/messages$"
+    },
+    {
+      "pattern": "/v1/messages/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/services/type/aicall$"
+    },
+    {
+      "pattern": "/v1/services/type/summary$"
+    },
+    {
+      "pattern": "/v1/services/type/task$"
+    },
+    {
+      "pattern": "/v1/summaries\\?"
+    },
+    {
+      "pattern": "/v1/summaries$"
+    },
+    {
+      "pattern": "/v1/summaries/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/tools$"
+    },
+    {
+      "pattern": "/v1/teams\\?"
+    },
+    {
+      "pattern": "/v1/teams$"
+    },
+    {
+      "pattern": "/v1/teams/{{UUID}}/direct-hash-regenerate$"
+    },
+    {
+      "pattern": "/v1/teams/{{UUID}}$"
+    }
+  ],
+  "events_subscribed": [
+    {
+      "queue_symbol": "bin-manager.call-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.transcribe-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.tts-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.pipecat-manager.event"
+    }
+  ],
+  "events_published": [
+    {
+      "event_type_symbol": "ai.EventTypeCreated"
+    },
+    {
+      "event_type_symbol": "ai.EventTypeDeleted"
+    },
+    {
+      "event_type_symbol": "ai.EventTypeUpdated"
+    },
+    {
+      "event_type_symbol": "message.EventTypeMessageCreated"
+    },
+    {
+      "event_type_symbol": "message.EventTypeMessageIntermediate"
+    }
+  ],
+  "dependencies": [
+    {
+      "module_path": "monorepo/bin-agent-manager",
+      "local_path": "../bin-agent-manager"
+    },
+    {
+      "module_path": "monorepo/bin-billing-manager",
+      "local_path": "../bin-billing-manager"
+    },
+    {
+      "module_path": "monorepo/bin-call-manager",
+      "local_path": "../bin-call-manager"
+    },
+    {
+      "module_path": "monorepo/bin-common-handler",
+      "local_path": "../bin-common-handler"
+    },
+    {
+      "module_path": "monorepo/bin-contact-manager",
+      "local_path": "../bin-contact-manager"
+    },
+    {
+      "module_path": "monorepo/bin-talk-manager",
+      "local_path": "../bin-talk-manager"
+    },
+    {
+      "module_path": "monorepo/bin-campaign-manager",
+      "local_path": "../bin-campaign-manager"
+    },
+    {
+      "module_path": "monorepo/bin-ai-manager",
+      "local_path": "../bin-ai-manager"
+    },
+    {
+      "module_path": "monorepo/bin-conference-manager",
+      "local_path": "../bin-conference-manager"
+    },
+    {
+      "module_path": "monorepo/bin-conversation-manager",
+      "local_path": "../bin-conversation-manager"
+    },
+    {
+      "module_path": "monorepo/bin-customer-manager",
+      "local_path": "../bin-customer-manager"
+    },
+    {
+      "module_path": "monorepo/bin-direct-manager",
+      "local_path": "../bin-direct-manager"
+    },
+    {
+      "module_path": "monorepo/bin-email-manager",
+      "local_path": "../bin-email-manager"
+    },
+    {
+      "module_path": "monorepo/bin-flow-manager",
+      "local_path": "../bin-flow-manager"
+    },
+    {
+      "module_path": "monorepo/bin-hook-manager",
+      "local_path": "../bin-hook-manager"
+    },
+    {
+      "module_path": "monorepo/bin-message-manager",
+      "local_path": "../bin-message-manager"
+    },
+    {
+      "module_path": "monorepo/bin-number-manager",
+      "local_path": "../bin-number-manager"
+    },
+    {
+      "module_path": "monorepo/bin-outdial-manager",
+      "local_path": "../bin-outdial-manager"
+    },
+    {
+      "module_path": "monorepo/bin-pipecat-manager",
+      "local_path": "../bin-pipecat-manager"
+    },
+    {
+      "module_path": "monorepo/bin-queue-manager",
+      "local_path": "../bin-queue-manager"
+    },
+    {
+      "module_path": "monorepo/bin-rag-manager",
+      "local_path": "../bin-rag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-registrar-manager",
+      "local_path": "../bin-registrar-manager"
+    },
+    {
+      "module_path": "monorepo/bin-route-manager",
+      "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-storage-manager",
+      "local_path": "../bin-storage-manager"
+    },
+    {
+      "module_path": "monorepo/bin-tag-manager",
+      "local_path": "../bin-tag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-timeline-manager",
+      "local_path": "../bin-timeline-manager"
+    },
+    {
+      "module_path": "monorepo/bin-transcribe-manager",
+      "local_path": "../bin-transcribe-manager"
+    },
+    {
+      "module_path": "monorepo/bin-transfer-manager",
+      "local_path": "../bin-transfer-manager"
+    },
+    {
+      "module_path": "monorepo/bin-tts-manager",
+      "local_path": "../bin-tts-manager"
+    },
+    {
+      "module_path": "monorepo/bin-webhook-manager",
+      "local_path": "../bin-webhook-manager"
+    }
+  ],
+  "config_vars": [
+    {
+      "flag": "rabbitmq_address"
+    },
+    {
+      "flag": "prometheus_endpoint"
+    },
+    {
+      "flag": "prometheus_listen_address"
+    },
+    {
+      "flag": "database_dsn"
+    },
+    {
+      "flag": "redis_address"
+    },
+    {
+      "flag": "redis_password"
+    },
+    {
+      "flag": "redis_database"
+    },
+    {
+      "flag": "engine_key_chatgpt"
+    },
+    {
+      "flag": "aicall_conversation_idle_timeout_hours"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "aicall_backstop_reply_total"
+    },
+    {
+      "name": "aicall_create_total"
+    },
+    {
+      "name": "aicall_duration_seconds"
+    },
+    {
+      "name": "aicall_end_total"
+    },
+    {
+      "name": "aicall_idle_expired_total"
+    },
+    {
+      "name": "aicall_interrupt_attempted_total"
+    },
+    {
+      "name": "aicall_stale_response_dropped_total"
+    },
+    {
+      "name": "aicall_tool_execute_total"
+    },
+    {
+      "name": "connect"
+    },
+    {
+      "name": "conversation_reply_send_total"
+    },
+    {
+      "name": "message_create_total"
+    },
+    {
+      "name": "message_delivery_status_update_failed_total"
+    },
+    {
+      "name": "message_send"
+    },
+    {
+      "name": "receive_request_process_time"
+    },
+    {
+      "name": "subscribe_event_process_time"
+    },
+    {
+      "name": "summary_done_total"
+    },
+    {
+      "name": "summary_start_total"
+    }
+  ],
+  "missing_fields": []
+}

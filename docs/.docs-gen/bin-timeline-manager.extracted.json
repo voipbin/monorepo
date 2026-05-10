@@ -1,0 +1,165 @@
+{
+  "schema_version": "1.0",
+  "service_name": "bin-timeline-manager",
+  "service_class": "A",
+  "routing_table": [
+    {
+      "pattern": "/v1/events$"
+    },
+    {
+      "pattern": "/v1/aggregated-events$"
+    },
+    {
+      "pattern": "/v1/sip/analysis$"
+    },
+    {
+      "pattern": "/v1/sip/pcap$"
+    }
+  ],
+  "events_subscribed": [
+    {
+      "queue_symbol": "bin-manager.ai-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.agent-manager.event"
+    },
+    {
+      "queue_symbol": "asterisk.all.event"
+    },
+    {
+      "queue_symbol": "bin-manager.billing-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.call-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.campaign-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.conference-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.contact-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.conversation-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.customer-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.email-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.flow-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.message-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.number-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.outdial-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.pipecat-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.queue-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.registrar-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.route-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.sentinel-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.storage-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.tag-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.talk-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.transcribe-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.transfer-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.tts-manager.event"
+    },
+    {
+      "queue_symbol": "bin-manager.webhook-manager.event"
+    }
+  ],
+  "events_published": [],
+  "dependencies": [
+    {
+      "module_path": "monorepo/bin-common-handler",
+      "local_path": "../bin-common-handler"
+    },
+    {
+      "module_path": "monorepo/bin-direct-manager",
+      "local_path": "../bin-direct-manager"
+    },
+    {
+      "module_path": "monorepo/bin-rag-manager",
+      "local_path": "../bin-rag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-contact-manager",
+      "local_path": "../bin-contact-manager"
+    }
+  ],
+  "config_vars": [
+    {
+      "flag": "rabbitmq_address"
+    },
+    {
+      "flag": "prometheus_endpoint"
+    },
+    {
+      "flag": "prometheus_listen_address"
+    },
+    {
+      "flag": "clickhouse_address"
+    },
+    {
+      "flag": "clickhouse_database"
+    },
+    {
+      "flag": "default"
+    },
+    {
+      "flag": "migrations_path"
+    },
+    {
+      "flag": "homer_api_address"
+    },
+    {
+      "flag": "homer_auth_token"
+    },
+    {
+      "flag": "gcs_bucket_name"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "receive_request_process_time"
+    },
+    {
+      "name": "subscribe_batch_insert_time"
+    },
+    {
+      "name": "subscribe_batch_size"
+    }
+  ],
+  "missing_fields": []
+}

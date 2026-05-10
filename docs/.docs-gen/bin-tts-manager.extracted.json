@@ -1,0 +1,253 @@
+{
+  "schema_version": "1.0",
+  "service_name": "bin-tts-manager",
+  "service_class": "A",
+  "routing_table": [
+    {
+      "pattern": "/v1/speeches"
+    },
+    {
+      "pattern": "/v1/speakings(\\?|$)"
+    },
+    {
+      "pattern": "/v1/speakings/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/speakings/{{UUID}}/say$"
+    },
+    {
+      "pattern": "/v1/speakings/{{UUID}}/flush$"
+    },
+    {
+      "pattern": "/v1/speakings/{{UUID}}/stop$"
+    },
+    {
+      "pattern": "/v1/streamings$"
+    },
+    {
+      "pattern": "/v1/streamings/{{UUID}}$"
+    },
+    {
+      "pattern": "/v1/streamings/{{UUID}}/say_add$"
+    },
+    {
+      "pattern": "/v1/streamings/{{UUID}}/say_init$"
+    },
+    {
+      "pattern": "/v1/streamings/{{UUID}}/say_stop$"
+    },
+    {
+      "pattern": "/v1/streamings/{{UUID}}/say_finish$"
+    }
+  ],
+  "events_subscribed": [],
+  "events_published": [],
+  "dependencies": [
+    {
+      "module_path": "monorepo/bin-agent-manager",
+      "local_path": "../bin-agent-manager"
+    },
+    {
+      "module_path": "monorepo/bin-billing-manager",
+      "local_path": "../bin-billing-manager"
+    },
+    {
+      "module_path": "monorepo/bin-call-manager",
+      "local_path": "../bin-call-manager"
+    },
+    {
+      "module_path": "monorepo/bin-common-handler",
+      "local_path": "../bin-common-handler"
+    },
+    {
+      "module_path": "monorepo/bin-direct-manager",
+      "local_path": "../bin-direct-manager"
+    },
+    {
+      "module_path": "monorepo/bin-contact-manager",
+      "local_path": "../bin-contact-manager"
+    },
+    {
+      "module_path": "monorepo/bin-talk-manager",
+      "local_path": "../bin-talk-manager"
+    },
+    {
+      "module_path": "monorepo/bin-campaign-manager",
+      "local_path": "../bin-campaign-manager"
+    },
+    {
+      "module_path": "monorepo/bin-ai-manager",
+      "local_path": "../bin-ai-manager"
+    },
+    {
+      "module_path": "monorepo/bin-conference-manager",
+      "local_path": "../bin-conference-manager"
+    },
+    {
+      "module_path": "monorepo/bin-conversation-manager",
+      "local_path": "../bin-conversation-manager"
+    },
+    {
+      "module_path": "monorepo/bin-customer-manager",
+      "local_path": "../bin-customer-manager"
+    },
+    {
+      "module_path": "monorepo/bin-email-manager",
+      "local_path": "../bin-email-manager"
+    },
+    {
+      "module_path": "monorepo/bin-flow-manager",
+      "local_path": "../bin-flow-manager"
+    },
+    {
+      "module_path": "monorepo/bin-hook-manager",
+      "local_path": "../bin-hook-manager"
+    },
+    {
+      "module_path": "monorepo/bin-message-manager",
+      "local_path": "../bin-message-manager"
+    },
+    {
+      "module_path": "monorepo/bin-number-manager",
+      "local_path": "../bin-number-manager"
+    },
+    {
+      "module_path": "monorepo/bin-outdial-manager",
+      "local_path": "../bin-outdial-manager"
+    },
+    {
+      "module_path": "monorepo/bin-pipecat-manager",
+      "local_path": "../bin-pipecat-manager"
+    },
+    {
+      "module_path": "monorepo/bin-queue-manager",
+      "local_path": "../bin-queue-manager"
+    },
+    {
+      "module_path": "monorepo/bin-rag-manager",
+      "local_path": "../bin-rag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-registrar-manager",
+      "local_path": "../bin-registrar-manager"
+    },
+    {
+      "module_path": "monorepo/bin-route-manager",
+      "local_path": "../bin-route-manager"
+    },
+    {
+      "module_path": "monorepo/bin-storage-manager",
+      "local_path": "../bin-storage-manager"
+    },
+    {
+      "module_path": "monorepo/bin-tag-manager",
+      "local_path": "../bin-tag-manager"
+    },
+    {
+      "module_path": "monorepo/bin-timeline-manager",
+      "local_path": "../bin-timeline-manager"
+    },
+    {
+      "module_path": "monorepo/bin-transcribe-manager",
+      "local_path": "../bin-transcribe-manager"
+    },
+    {
+      "module_path": "monorepo/bin-transfer-manager",
+      "local_path": "../bin-transfer-manager"
+    },
+    {
+      "module_path": "monorepo/bin-tts-manager",
+      "local_path": "../bin-tts-manager"
+    },
+    {
+      "module_path": "monorepo/bin-webhook-manager",
+      "local_path": "../bin-webhook-manager"
+    }
+  ],
+  "config_vars": [
+    {
+      "flag": "rabbitmq_address"
+    },
+    {
+      "flag": "prometheus_endpoint"
+    },
+    {
+      "flag": "prometheus_listen_address"
+    },
+    {
+      "flag": "aws_access_key"
+    },
+    {
+      "flag": "aws_secret_key"
+    },
+    {
+      "flag": "elevenlabs_api_key"
+    },
+    {
+      "flag": "gcp_tts_endpoint"
+    },
+    {
+      "flag": "database_dsn"
+    },
+    {
+      "flag": "redis_address"
+    },
+    {
+      "flag": "redis_password"
+    },
+    {
+      "flag": "redis_db"
+    }
+  ],
+  "metrics": [
+    {
+      "name": "bucket_upload_process_time"
+    },
+    {
+      "name": "bucket_url_process_time"
+    },
+    {
+      "name": "gcp_synthesize_duration_seconds"
+    },
+    {
+      "name": "hash_process_time"
+    },
+    {
+      "name": "receive_request_process_time"
+    },
+    {
+      "name": "speech_create_duration_seconds"
+    },
+    {
+      "name": "speech_fallback_total"
+    },
+    {
+      "name": "speech_language_total"
+    },
+    {
+      "name": "speech_request_total"
+    },
+    {
+      "name": "streaming_active"
+    },
+    {
+      "name": "streaming_created_total"
+    },
+    {
+      "name": "streaming_duration_seconds"
+    },
+    {
+      "name": "streaming_ended_total"
+    },
+    {
+      "name": "streaming_error_total"
+    },
+    {
+      "name": "streaming_language_total"
+    },
+    {
+      "name": "streaming_message_total"
+    }
+  ],
+  "missing_fields": []
+}

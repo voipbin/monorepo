@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "service_name": "bin-openapi-manager",
+  "service_class": "E",
+  "routing_table": [],
+  "events_subscribed": [],
+  "events_published": [],
+  "dependencies": [],
+  "config_vars": [],
+  "metrics": [],
+  "missing_fields": []
+}

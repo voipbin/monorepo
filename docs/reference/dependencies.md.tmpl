@@ -1,0 +1,53 @@
+# Dependencies: {{.ServiceName}}
+
+> Dependencies extracted from source by `docs/reference/extractor.sh`. Inbound callers are manually maintained.
+> Regenerate outbound data: `bash docs/reference/extractor.sh {{.ServiceDir}}`
+
+## Inbound Callers
+
+Services that send RPC requests to this service's queue:
+
+{{- if .InboundCallers}}
+{{range .InboundCallers}}- `{{.}}`
+{{end}}
+{{- else}}
+_No known inbound RPC callers. Check `docs/architecture/` for the service topology graph._
+{{- end}}
+
+## Outbound RPC Targets
+
+Services this service calls directly (from `go.mod` replace directives):
+
+{{- if .Dependencies}}
+{{range .Dependencies}}- `{{.ModulePath}}` (local: `{{.LocalPath}}`)
+{{end}}
+{{- else}}
+_No local module dependencies._
+{{- end}}
+
+## Events Subscribed
+
+RabbitMQ queues this service consumes (from `cmd/*/main.go` subscribeTargets):
+
+{{- if .EventsSubscribed}}
+{{range .EventsSubscribed}}- `{{.QueueSymbol}}`
+{{end}}
+{{- else}}
+_No event subscriptions._
+{{- end}}
+
+## Events Published
+
+Webhook events this service publishes (from `PublishWebhookEvent` calls in source):
+
+{{- if .EventsPublished}}
+{{range .EventsPublished}}- `{{.EventTypeSymbol}}`
+{{end}}
+{{- else}}
+_No published events detected._
+{{- end}}
+
+## WebhookMessage Contracts
+
+Field-level schemas for entities this service exposes are defined in the RST docs:
+→ `bin-api-manager/docsdev/source/` — do not restate field lists here.
