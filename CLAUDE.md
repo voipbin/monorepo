@@ -202,6 +202,27 @@ The RST documentation at `bin-api-manager/docsdev/source/` is what customers, de
 
 → Detail: [docs/workflows/special-cases.md](docs/workflows/special-cases.md), [docs/workflows/common-gotchas.md](docs/workflows/common-gotchas.md)
 
+## CRITICAL: Service docs sync
+
+**CRITICAL: Each service's `docs/` suite must stay in sync with its source code. When changing source that drives doc content, update the corresponding doc file in the same commit.**
+
+| Source change | Doc file to update |
+|---|---|
+| `pkg/listenhandler/main.go` | `docs/architecture.md` — routing table |
+| `cmd/*/main.go` or `pkg/subscribehandler/main.go` (subscribeTargets) | `docs/architecture.md` — events section |
+| `internal/config/*.go` or `cmd/*/init.go` | `docs/operations.md` — config table |
+| `models/.../*.go` (any depth) | `docs/domain.md` — domain entities |
+| `go.mod` (replace directives) | `docs/dependencies.md` — local deps |
+
+**To re-extract routing / events / config / deps from source:**
+```bash
+bash docs/reference/extractor.sh <service-dir>
+```
+
+**The pre-commit hook (`scripts/check-service-docs.sh`) will warn (not block) when these source files change without a matching docs update.** Stage the relevant `docs/*.md` alongside the source change to suppress the warning.
+
+→ Script: [scripts/check-service-docs.sh](scripts/check-service-docs.sh)
+
 ## CRITICAL: bin-common-handler admission rule
 
 **CRITICAL: A package may only live in `bin-common-handler` if it is used by 3 or more services.**

@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 # pre-commit hook placeholder
 #
-# Checks previously here have been moved to Claude Code PostToolUse hooks
-# in .claude/settings.json for earlier feedback during the work session.
+# Checks have been moved to Claude Code PostToolUse hooks in .claude/settings.json
+# for earlier feedback during the work session. Active checks:
+#   - RST doc rebuild reminder    (.claude/scripts/check-rst-build.sh)
+#   - Service docs sync warning   (.claude/scripts/check-service-docs.sh)
+#   - Magic string guard          (.claude/scripts/check-magic-strings.sh)
+#   - Log-then-return anti-pattern (.claude/scripts/check-error-log-return.sh)
+#   - Alembic table name check    (.claude/scripts/check-migration-table-names.sh)
+#   - UUID column type check      (.claude/scripts/check-migration-uuid-columns.sh)
+#
+# To get commit-time enforcement, run the corresponding scripts manually or
+# call scripts/check-service-docs.sh directly.
 #
 # Install: git config core.hooksPath .githooks
 

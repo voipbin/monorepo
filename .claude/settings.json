@@ -33,6 +33,11 @@
             "type": "command",
             "command": "bash .claude/scripts/check-docs-size.sh",
             "description": "Run scripts/check-docs.sh after edits to root CLAUDE.md or docs/* to catch root CLAUDE.md regrowth and missing category READMEs"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-service-docs.sh",
+            "description": "Warn when service source files (listenhandler, subscribeTargets, config, models) are edited without updating the corresponding docs/*.md"
           }
         ]
       }
