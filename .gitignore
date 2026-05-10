@@ -51,3 +51,6 @@ htmlcov/
 
 # Environment files
 .env
+
+# Docs generator output
+docs/.docs-gen/

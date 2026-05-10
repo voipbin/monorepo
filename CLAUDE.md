@@ -12,7 +12,7 @@ Whether you're working in `bin-api-manager`, `bin-flow-manager`, `bin-call-manag
 
 ## Overview
 
-This is the VoIPbin monorepo - a unified backend codebase for a cloud-native CPaaS platform. It contains 34 Go microservices providing VoIP, messaging, conferencing, AI integration, and communication workflow orchestration.
+This is the VoIPbin monorepo - a unified backend codebase for a cloud-native CPaaS platform. It contains 37 services (34 `bin-*` + 3 `voip-*`-proxy) providing VoIP, messaging, conferencing, AI integration, and communication workflow orchestration.
 
 **Key Characteristics:**
 - **Monorepo architecture** - All backend services in one repository with local module replacements
@@ -210,7 +210,7 @@ The RST documentation at `bin-api-manager/docsdev/source/` is what customers, de
 - If a package's usage later grows to 3+ services, it can be promoted to `bin-common-handler`.
 - Internal plumbing packages (e.g., `rabbitmqhandler` wrapped by `sockhandler`) are exempt since they serve the shared library itself.
 
-**Why:** `bin-common-handler` is a globally shared library — every change triggers verification across all 34 services. Keeping it lean reduces blast radius and maintenance burden.
+**Why:** `bin-common-handler` is a globally shared library — every change triggers verification across all 37 services. Keeping it lean reduces blast radius and maintenance burden.
 
 → Detail: [docs/conventions/package-structure.md](docs/conventions/package-structure.md)
 
