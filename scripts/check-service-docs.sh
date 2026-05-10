@@ -14,7 +14,7 @@
 #   pkg/listenhandler/main.go                      → docs/architecture.md  (routing table)
 #   cmd/*/main.go or pkg/subscribehandler/main.go  → docs/architecture.md  (events)
 #   internal/config/*.go or cmd/*/init.go          → docs/operations.md    (config table)
-#   models/**/*.go                                 → docs/domain.md        (domain entities)
+#   models/.../*.go (any depth)                     → docs/domain.md        (domain entities)
 #   go.mod (replace directives)                    → docs/dependencies.md  (local deps)
 #
 # Re-extraction command (outbound deps, routing, config, events):

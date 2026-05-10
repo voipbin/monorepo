@@ -7,7 +7,7 @@
 #   pkg/listenhandler/main.go              → docs/architecture.md  (routing table)
 #   cmd/*/main.go, subscribehandler/main.go → docs/architecture.md (events)
 #   internal/config/*.go, cmd/*/init.go    → docs/operations.md    (config flags)
-#   models/**/*.go                         → docs/domain.md        (domain entities)
+#   models/.../*.go (any depth)            → docs/domain.md        (domain entities)
 
 set -euo pipefail
 
