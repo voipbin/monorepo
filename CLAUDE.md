@@ -126,6 +126,7 @@ NOJIRA-brief-description-of-change
 
 **NEVER commit directly to `main` without explicit user permission.**
 **NEVER merge any branch to `main` without explicit user permission.**
+**NEVER merge as part of a review loop, automation workflow, or any process not explicitly authorized for merging.** A review loop ends at approval — report the verdict and STOP. Wait for the user to say "merge" before calling `gh pr merge`. The PreToolUse hook in `.claude/settings.json` enforces this by blocking `gh pr merge` calls.
 
 **CRITICAL: ALL PR merges MUST use squash merge — no exceptions.**
 
@@ -219,7 +220,7 @@ The RST documentation at `bin-api-manager/docsdev/source/` is what customers, de
 bash docs/reference/extractor.sh <service-dir>
 ```
 
-**The pre-commit hook (`scripts/check-service-docs.sh`) will warn (not block) when these source files change without a matching docs update.** Stage the relevant `docs/*.md` alongside the source change to suppress the warning.
+**The PostToolUse hook (`scripts/check-service-docs.sh`) will warn (not block) when these source files change without a matching docs update.** Stage the relevant `docs/*.md` alongside the source change to suppress the warning.
 
 → Script: [scripts/check-service-docs.sh](scripts/check-service-docs.sh)
 
