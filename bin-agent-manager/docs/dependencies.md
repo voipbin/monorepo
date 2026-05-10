@@ -1,7 +1,7 @@
 # Dependencies: bin-agent-manager
 
-> Auto-generated from `docs/reference/extractor.sh`. Do not edit manually.
-> Regenerate: `bash docs/reference/extractor.sh bin-agent-manager && bash docs/reference/render-deps.sh bin-agent-manager`
+> Dependencies extracted from source by `docs/reference/extractor.sh`. Inbound callers are manually maintained.
+> Regenerate: `bash docs/reference/extractor.sh bin-agent-manager`
 
 ## Inbound Callers
 

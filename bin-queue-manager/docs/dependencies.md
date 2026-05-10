@@ -1,7 +1,7 @@
 # Dependencies: bin-queue-manager
 
-> Auto-generated from `docs/reference/extractor.sh`. Do not edit manually.
-> Regenerate: `bash docs/reference/extractor.sh bin-queue-manager && bash docs/reference/render-deps.sh bin-queue-manager`
+> Dependencies extracted from source by `docs/reference/extractor.sh`. Inbound callers are manually maintained.
+> Regenerate: `bash docs/reference/extractor.sh bin-queue-manager`
 
 ## Inbound Callers
 

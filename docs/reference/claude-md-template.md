@@ -196,7 +196,7 @@ This is the machine-checkable minimum for each file type. Every file MUST contai
 ### architecture.md
 - Class A: `## Component Overview`, `## Layer Responsibilities`, `## Request Routing`
 - Class A2: `## Component Overview`, `## Layer Responsibilities`, `## Execution Model`
-- Class A+sub: same as Class A plus `## Subsystem Overview` (in subsystems.md, not architecture.md)
+- Class A+sub: same as Class A plus `## Native Daemon Overview` (in subsystems.md, not architecture.md)
 - Class B: `## Component Overview`, `## Middleware Stack`, `## Backend Services`
 - Class C: `## Package Overview`, `## Package Responsibilities`
 - Class D: (no architecture.md)

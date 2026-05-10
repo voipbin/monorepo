@@ -1,5 +1,9 @@
 # Extractor Coverage Report
 
+**Column legend:** `routing` = inbound RPC routes; `events_sub/pub` = RabbitMQ event subscriptions/publications; `deps` = local monorepo replace directives; `config` = CLI flags; `metrics` = Prometheus metric names; `missing` = required fields the extractor could not populate (0 = fully extracted).
+
+**Note:** Low `deps` counts for `voip-*` proxy services (1) are expected — they are tightly scoped wrappers that depend only on `bin-common-handler`. Low counts are not extractor failures.
+
 | Service | Class | routing | events_sub | events_pub | deps | config | metrics | missing |
 |---------|-------|---------|------------|------------|------|--------|---------|---------|
 | bin-agent-manager | A | 15 | 3 | 4 | 29 | 8 | 9 |  |

@@ -1,7 +1,7 @@
 # Dependencies: bin-call-manager
 
-> Auto-generated from `docs/reference/extractor.sh`. Do not edit manually.
-> Regenerate: `bash docs/reference/extractor.sh bin-call-manager && bash docs/reference/render-deps.sh bin-call-manager`
+> Dependencies extracted from source by `docs/reference/extractor.sh`. Inbound callers are manually maintained.
+> Regenerate: `bash docs/reference/extractor.sh bin-call-manager`
 
 ## Inbound Callers
 

@@ -20,7 +20,7 @@
 | bin-direct-manager | A | Standard Go RPC manager |
 | bin-email-manager | A | Standard Go RPC manager |
 | bin-flow-manager | A | Standard Go RPC manager |
-| bin-hook-manager | A2 | Event-driven worker, no inbound RPC |
+| bin-hook-manager | A2 | HTTP webhook receiver (structural A2; see CLAUDE.md for rationale) |
 | bin-message-manager | A | Standard Go RPC manager |
 | bin-number-manager | A | Standard Go RPC manager |
 | bin-openapi-manager | E | OpenAPI codegen, no runtime |
