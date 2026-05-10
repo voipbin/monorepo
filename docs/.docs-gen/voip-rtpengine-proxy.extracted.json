@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "service_name": "voip-rtpengine-proxy",
+  "service_class": "A+sub",
+  "routing_table": [
+    {
+      "pattern": "^/v1/commands$"
+    }
+  ],
+  "events_subscribed": [],
+  "events_published": [],
+  "dependencies": [
+    {
+      "module_path": "monorepo/bin-common-handler",
+      "local_path": "../bin-common-handler"
+    }
+  ],
+  "config_vars": [
+    {
+      "flag": "interface_name"
+    },
+    {
+      "flag": "rtpengine_ng_address"
+    },
+    {
+      "flag": "rtpengine_ng_timeout"
+    },
+    {
+      "flag": "rabbitmq_address"
+    },
+    {
+      "flag": "rabbitmq_queue_listen"
+    },
+    {
+      "flag": "redis_address"
+    },
+    {
+      "flag": "redis_password"
+    },
+    {
+      "flag": "redis_database"
+    },
+    {
+      "flag": "prometheus_endpoint"
+    },
+    {
+      "flag": "prometheus_listen_address"
+    },
+    {
+      "flag": "rtpengine_recording_dir"
+    },
+    {
+      "flag": "gcp_bucket_name_media"
+    }
+  ],
+  "metrics": [],
+  "missing_fields": []
+}

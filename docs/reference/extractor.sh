@@ -38,37 +38,82 @@ if [ -d "$SVC_DIR/pkg/listenhandler" ]; then
   )
 fi
 
-# --- Events subscribed (cmd/*/main.go) ---
-# Strategy: find the cmd/*/main.go that has subscribeTargets, extract QueueName constant names,
-# then resolve them to string values via bin-common-handler/models/outline/queuename.go
+# --- Events subscribed ---
+# Strategy (in priority order):
+#   1. cmd/*/main.go with subscribeTargets as []string{} — standard multi-event pattern
+#   2. cmd/*/main.go with subscribeTargets as string(...) — single-event pattern
+#   3. pkg/subscribehandler/main.go package-level var subscribeTargets — timeline/api pattern
+# QueueName constants are resolved via bin-common-handler/models/outline/queuename.go
 EVENTS_SUB="[]"
-MAIN_GO=$(grep -rl 'subscribeTargets' "$SVC_DIR/cmd/" 2>/dev/null | { grep 'main\.go' || true; } | head -1 || true)
-if [ -n "$MAIN_GO" ]; then
-  # Try resolving Go constants via queuename.go
+
+# Source files to search (ordered by priority)
+SUB_MAIN_GO=$(grep -rl 'subscribeTargets' "$SVC_DIR/cmd/" 2>/dev/null | { grep 'main\.go' || true; } | head -1 || true)
+SUB_PKG_GO="$SVC_DIR/pkg/subscribehandler/main.go"
+
+# Resolve QueueName constants to their string values
+resolve_const_names() {
+  local const_names="$1"
+  if [ -n "$const_names" ] && [ -f "$QUEUENAME_FILE" ]; then
+    echo "$const_names" \
+    | while read -r const_name; do
+        val=$(grep -E "^\s+${const_name}\s+" "$QUEUENAME_FILE" 2>/dev/null \
+          | { grep -oP '"[^"]*"' || true; } | tr -d '"' || true)
+        [ -n "$val" ] && echo "$val" || true
+      done \
+    | { grep -v '^$' || true; }
+  fi
+}
+
+if [ -n "$SUB_MAIN_GO" ]; then
+  # Pattern 1: subscribeTargets = []string{...} or []string{} — multi-event list
   CONST_NAMES=$(
-    { awk '/subscribeTargets.*:?=.*\[\]string\{/,/^\s*\}/' "$MAIN_GO" 2>/dev/null || true; } \
+    { awk '/subscribeTargets.*:?=.*\[\]string\{/,/^\s*\}/' "$SUB_MAIN_GO" 2>/dev/null || true; } \
     | { grep -oP 'QueueName\w+' || true; }
   )
-  if [ -n "$CONST_NAMES" ] && [ -f "$QUEUENAME_FILE" ]; then
-    EVENTS_SUB=$(
-      echo "$CONST_NAMES" \
-      | while read -r const_name; do
-          val=$(grep -E "^\s+${const_name}\s+" "$QUEUENAME_FILE" 2>/dev/null \
-            | { grep -oP '"[^"]*"' || true; } | tr -d '"' || true)
-          [ -n "$val" ] && echo "$val" || true
-        done \
-      | { grep -v '^$' || true; } \
-      | jq -R '{queue_symbol: .}' | jq -s '.'
-    )
+  if [ -n "$CONST_NAMES" ]; then
+    resolved=$(resolve_const_names "$CONST_NAMES")
+    if [ -n "$resolved" ]; then
+      EVENTS_SUB=$(echo "$resolved" | jq -R '{queue_symbol: .}' | jq -s '.')
+    fi
   fi
-  # Fallback: try raw string literals if no constants found
+  # Fallback: try raw string literals from []string{} block
   if [ "$EVENTS_SUB" = "[]" ]; then
     EVENTS_SUB=$(
-      { awk '/subscribeTargets.*:?=.*\[\]string\{/,/^\s*\}/' "$MAIN_GO" 2>/dev/null || true; } \
+      { awk '/subscribeTargets.*:?=.*\[\]string\{/,/^\s*\}/' "$SUB_MAIN_GO" 2>/dev/null || true; } \
       | { grep -oP '"[^"]*"' || true; } | tr -d '"' \
       | { grep -v '^$' || true; } \
       | jq -R '{queue_symbol: .}' | jq -s '.'
     )
+  fi
+
+  # Pattern 2: subscribeTargets := string(commonoutline.QueueNameXxx) — single-event
+  if [ "$EVENTS_SUB" = "[]" ]; then
+    CONST_NAMES=$(
+      { grep -oP 'subscribeTargets\s*:=\s*string\(commonoutline\.(QueueName\w+)\)' "$SUB_MAIN_GO" 2>/dev/null || true; } \
+      | { grep -oP 'QueueName\w+' || true; }
+    )
+    if [ -n "$CONST_NAMES" ]; then
+      resolved=$(resolve_const_names "$CONST_NAMES")
+      if [ -n "$resolved" ]; then
+        EVENTS_SUB=$(echo "$resolved" | jq -R '{queue_symbol: .}' | jq -s '.')
+      fi
+    fi
+  fi
+fi
+
+# Pattern 3: package-level var subscribeTargets in pkg/subscribehandler/main.go
+# Used by services like timeline-manager that define subscriptions inside the subscribehandler pkg
+if [ "$EVENTS_SUB" = "[]" ] && [ -f "$SUB_PKG_GO" ]; then
+  # Look for: var subscribeTargets = []commonoutline.QueueName{ ... } or []QueueName{ ... }
+  CONST_NAMES=$(
+    { awk '/var\s+subscribeTargets\s*=\s*\[\](commonoutline\.)?QueueName\{/,/^\}/' "$SUB_PKG_GO" 2>/dev/null || true; } \
+    | { grep -oP 'QueueName\w+' || true; }
+  )
+  if [ -n "$CONST_NAMES" ]; then
+    resolved=$(resolve_const_names "$CONST_NAMES")
+    if [ -n "$resolved" ]; then
+      EVENTS_SUB=$(echo "$resolved" | jq -R '{queue_symbol: .}' | jq -s '.')
+    fi
   fi
 fi
 
@@ -100,13 +145,20 @@ if [ -f "$SVC_DIR/go.mod" ]; then
   )
 fi
 
-# --- Config vars (internal/config/*.go takes priority over cmd/*/init.go) ---
+# --- Config vars ---
+# Searches internal/config/*.go (priority) or cmd/*/init.go
+# Matches multiple flag registration patterns:
+#   f.String(...)            — pflag.FlagSet shorthand (most common)
+#   cmd.Flags().String(...)  — cobra direct (campaign-manager style)
+#   pflag.String(...)        — top-level pflag (voip-* proxy style)
 CONFIG="[]"
 CONFIG_SRC=$(ls "$SVC_DIR"/internal/config/*.go 2>/dev/null | head -1 \
   || ls "$SVC_DIR"/cmd/*/init.go 2>/dev/null | head -1 || true)
 if [ -n "$CONFIG_SRC" ]; then
   CONFIG=$(
-    { grep -n 'f\.String\|f\.Int\|f\.Bool\|f\.StringSlice' "$CONFIG_SRC" 2>/dev/null || true; } \
+    { grep -n \
+        'f\.String\|f\.Int\|f\.Bool\|f\.StringSlice\|\.Flags()\.String\|\.Flags()\.Int\|\.Flags()\.Bool\|pflag\.String\|pflag\.Int\|pflag\.Bool' \
+        "$CONFIG_SRC" 2>/dev/null || true; } \
     | { grep -oP '"[a-z][a-z_0-9]+"' || true; } | tr -d '"' \
     | { grep -v '^$' || true; } \
     | jq -R '{flag: .}' | jq -s '.'
@@ -131,16 +183,33 @@ fi
 
 # --- Missing fields ---
 # Class exemptions:
-#   A  = Standard Go RPC manager — requires routing_table, events_subscribed, config_vars
+#   A  = Standard Go RPC manager — requires routing_table and config_vars.
+#         events_subscribed is only required if the service has a subscribehandler package
+#         or explicit subscribeTargets wiring (some Class A services legitimately have none).
 #   A2 = Event-driven worker, no inbound RPC — exempt from routing_table and events_subscribed
+#   A+sub = Go RPC + embedded native daemon — exempt from events_subscribed
 #   B  = HTTP/REST gateway — requires events_subscribed and config_vars (no routing per se)
 #   C  = Shared library, no cmd/ — exempt from all
 #   D  = Python/Alembic — exempt from all (no go.mod/config)
 #   E  = OpenAPI codegen — exempt from all
 MISSING="[]"
 [ "$ROUTING" = "[]" ] && [ "$CLASS" = "A" ] && MISSING=$(echo "$MISSING" | jq '. + ["routing_table"]') || true
-[ "$EVENTS_SUB" = "[]" ] && [ "$CLASS" = "A" ] && \
-  MISSING=$(echo "$MISSING" | jq '. + ["events_subscribed"]') || true
+
+# events_subscribed: flag as missing only for Class A services that have subscribe wiring
+# (a subscribehandler pkg OR subscribeTargets in cmd/) but extraction produced nothing.
+if [ "$CLASS" = "A" ] && [ "$EVENTS_SUB" = "[]" ]; then
+  HAS_SUBSCRIBE_WIRING="false"
+  # Check for subscribehandler package
+  [ -d "$SVC_DIR/pkg/subscribehandler" ] && HAS_SUBSCRIBE_WIRING="true"
+  # Check for subscribeTargets in cmd/
+  if [ "$HAS_SUBSCRIBE_WIRING" = "false" ]; then
+    { grep -rl 'subscribeTargets\|subscribehandler\.New' "$SVC_DIR/cmd/" 2>/dev/null | grep -q '.' && HAS_SUBSCRIBE_WIRING="true"; } || true
+  fi
+  if [ "$HAS_SUBSCRIBE_WIRING" = "true" ]; then
+    MISSING=$(echo "$MISSING" | jq '. + ["events_subscribed"]')
+  fi
+fi
+
 [ "$CONFIG" = "[]" ] && [ "$CLASS" != "C" ] && [ "$CLASS" != "D" ] && [ "$CLASS" != "E" ] && \
   MISSING=$(echo "$MISSING" | jq '. + ["config_vars"]') || true
 
