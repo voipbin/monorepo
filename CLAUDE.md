@@ -211,7 +211,7 @@ The RST documentation at `bin-api-manager/docsdev/source/` is what customers, de
 | `pkg/listenhandler/main.go` | `docs/architecture.md` — routing table |
 | `cmd/*/main.go` or `pkg/subscribehandler/main.go` (subscribeTargets) | `docs/architecture.md` — events section |
 | `internal/config/*.go` or `cmd/*/init.go` | `docs/operations.md` — config table |
-| `models/**/*.go` | `docs/domain.md` — domain entities |
+| `models/.../*.go` (any depth) | `docs/domain.md` — domain entities |
 | `go.mod` (replace directives) | `docs/dependencies.md` — local deps |
 
 **To re-extract routing / events / config / deps from source:**

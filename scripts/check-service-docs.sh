@@ -62,7 +62,9 @@ while IFS= read -r f; do
     fi
 
     if echo "$f" | grep -qE "^${svc}/go\.mod$"; then
-        _add_warn "$svc" "docs/dependencies.md" "go.mod replace directives"
+        if git diff --cached "$f" 2>/dev/null | grep -q "^[+-].*replace "; then
+            _add_warn "$svc" "docs/dependencies.md" "go.mod replace directives"
+        fi
     fi
 done <<< "$STAGED"
 
