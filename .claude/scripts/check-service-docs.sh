@@ -8,6 +8,7 @@
 #   cmd/*/main.go, subscribehandler/main.go → docs/architecture.md (events)
 #   internal/config/*.go, cmd/*/init.go    → docs/operations.md    (config flags)
 #   models/.../*.go (any depth)            → docs/domain.md        (domain entities)
+#   go.mod (replace directives only)       → docs/dependencies.md  (local deps)
 
 set -euo pipefail
 
@@ -35,6 +36,8 @@ elif echo "$FILE_PATH" | grep -qE "${SVC}/(internal/config/|cmd/[^/]+/init\.go)"
     DOC_FILE="docs/operations.md"; REASON="config flags"
 elif echo "$FILE_PATH" | grep -qE "${SVC}/models/"; then
     DOC_FILE="docs/domain.md"; REASON="domain entities"
+elif echo "$FILE_PATH" | grep -qE "${SVC}/go\.mod$"; then
+    DOC_FILE="docs/dependencies.md"; REASON="go.mod (check if replace directives changed)"
 else
     exit 0
 fi
