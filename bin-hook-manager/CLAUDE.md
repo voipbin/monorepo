@@ -1,176 +1,43 @@
-# CLAUDE.md
+# bin-hook-manager
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Public-facing HTTPS webhook gateway. Receives inbound HTTP webhook requests from external platforms (email, SMS, LINE, Paddle billing) and forwards them as RabbitMQ messages to internal services. No inbound RabbitMQ queue — this service exposes HTTP, not RPC.
 
-## Overview
+> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 
-`bin-hook-manager` is a webhook gateway service that receives external webhook messages and forwards them to internal VoIPbin services via RabbitMQ. It acts as a public-facing HTTPS endpoint that routes incoming webhooks to appropriate internal microservices.
+## Docs index
 
-**Key Concepts:**
-- **Public-facing HTTPS gateway**: Runs on both ports 80 and 443 with SSL certificates decoded from base64 environment variables.
-- **Thin proxy**: No business logic; transforms inbound HTTP webhook payloads into RabbitMQ messages forwarded to the right internal service.
-- **Routes by path**: URL path (e.g., `/v1.0/emails`, `/v1.0/messages`, `/v1.0/conversation`) determines the destination service.
+- [docs/architecture.md](docs/architecture.md) — component layout, execution model (HTTP→RabbitMQ bridge), routing table
+- [docs/domain.md](docs/domain.md) — webhook types, Paddle verification, service handler interface
+- [docs/dependencies.md](docs/dependencies.md) — local monorepo deps, external services, target queues
+- [docs/operations.md](docs/operations.md) — config flags, CLI tool, common commands
 
-> Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md). This file documents only what is specific to `bin-hook-manager`.
+## Key concepts
 
-## Architecture
+- **Thin proxy** — no business logic; transforms HTTP payloads into RabbitMQ messages
+- **HTTP routing** — URL path determines destination: `/v1.0/emails` → email-manager, `/v1.0/messages` → message-manager, `/v1.0/conversation` → conversation-manager
+- **No RabbitMQ inbound queue** — unlike all other services, this service only publishes; it does not consume from a request queue
+- **SSL at application layer** — certificates passed as base64 env vars (`SSL_CERT_BASE64`, `SSL_PRIVKEY_BASE64`), written to `/tmp/` at startup
 
-### Service Communication Pattern
+## CRITICAL: No listenhandler pattern
 
-The hook-manager follows a gateway pattern:
-1. Receives external HTTPS webhook requests at public endpoints
-2. Validates and processes the incoming data
-3. Publishes messages to RabbitMQ queues for consumption by internal services
-4. Uses `bin-common-handler/pkg/requesthandler` for RabbitMQ message publishing
+This service uses **Gin HTTP** (not RabbitMQ RPC). Do not add a `pkg/listenhandler`. HTTP endpoints are defined in `api/v1.0/*/`.
 
-The service operates as a thin proxy - it does NOT directly handle business logic but delegates to downstream services (email-manager, message-manager, conversation-manager) via message queues.
+## Common commands
 
-### Key Components
-
-- **API Layer** (`api/`): HTTP endpoint handlers organized by version and resource
-  - `api/v1.0/emails/` - Email webhook endpoint handler
-  - `api/v1.0/messages/` - Message webhook endpoint handler
-  - `api/v1.0/conversation/` - Conversation webhook endpoint handler
-
-- **Service Handler** (`pkg/servicehandler/`): Abstraction layer that publishes webhook data to RabbitMQ
-  - Interface-based design to enable mocking for tests
-  - Uses `requesthandler.RequestHandler` from bin-common-handler to publish messages
-  - Each handler method corresponds to a webhook type (Email, Message, Conversation)
-
-- **Models** (`models/hook/`): Simple data structures for webhook payloads
-
-### Configuration Management
-
-The service uses **Viper + pflag** for configuration (see `cmd/hook-manager/init.go`):
-- Environment variables take precedence over flags
-- Flag format: `--database_dsn`, `--rabbitmq_address`, etc.
-- Environment variable format: `DATABASE_DSN`, `RABBITMQ_ADDRESS`, etc.
-- All configuration is initialized in `initVariable()` before main() runs
-
-### Monorepo Dependencies
-
-This service imports several sibling modules via `replace` directives in go.mod:
-- `monorepo/bin-common-handler` - Shared utilities for database, RabbitMQ, and request handling
-- Other bin-* services are indirect dependencies
-
-When working with shared code, remember that changes to bin-common-handler affect multiple services.
-
-## Common Commands
-
-### Building
 ```bash
-# Build the service
+# Full verification (mandatory before every commit)
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+
+# Build
 go build -o hook-manager ./cmd/hook-manager
 
-# Docker build (runs from monorepo root)
-# See Dockerfile - it expects to be run from parent directory
-```
-
-### Testing
-```bash
-# Run all tests
-go test ./...
-
-# Run specific package tests
-go test ./api/v1.0/emails
-go test ./pkg/servicehandler
-
-# Run with verbose output
+# Test
 go test -v ./...
 
-# Run specific test
-go test -run TestEmailsPOST ./api/v1.0/emails
-```
-
-### Generating Mocks
-```bash
-# Regenerate mocks (requires go-mock)
+# Regenerate mocks
 go generate ./...
-
-# Specific mock generation
-cd pkg/servicehandler && go generate
 ```
 
-## hook-control CLI Tool
+## Testing pattern
 
-A command-line tool for testing webhook functionality. **All output is JSON format** (stdout), logs go to stderr.
-
-```bash
-# Send a test email webhook
-./bin/hook-control send-email --customer_id <uuid> --email_id <uuid>
-
-# Send a test message webhook
-./bin/hook-control send-message --customer_id <uuid> --message_id <uuid>
-
-# Send a test conversation webhook
-./bin/hook-control send-conversation --customer_id <uuid> --conversation_id <uuid>
-```
-
-Uses same environment variables as hook-manager (`DATABASE_DSN`, `RABBITMQ_ADDRESS`, `REDIS_ADDRESS`, etc.).
-
-## Running the Service
-
-### Required Configuration
-
-- **DATABASE_DSN**: MySQL connection string (currently connected in main but not actively used)
-- **RABBITMQ_ADDRESS**: RabbitMQ connection URL (e.g., `amqp://guest:guest@localhost:5672`)
-- **SSL_CERT_BASE64**: Base64-encoded SSL certificate
-- **SSL_PRIVKEY_BASE64**: Base64-encoded SSL private key
-
-The service runs on both HTTP (:80) and HTTPS (:443) simultaneously. SSL certificates are decoded from base64 and written to `/tmp/` at startup.
-
-### Webhook Endpoints
-
-- `POST /v1.0/emails` → forwards to email-manager
-- `POST /v1.0/messages` → forwards to message-manager
-- `POST /v1.0/conversation` → forwards to conversation-manager
-- `GET /ping` → health check endpoint
-
-## Request Routing
-
-Unlike most services in the monorepo, `bin-hook-manager` exposes its API over HTTP/HTTPS (Gin), not RabbitMQ RPC. There is no listenhandler. Endpoints are listed under "Webhook Endpoints" above.
-
-## Event Subscriptions
-
-This service does not subscribe to RabbitMQ events. There is no SubscribeHandler — it only publishes messages to other services.
-
-## Monorepo Context
-
-This service depends on local monorepo packages (see `go.mod` replace directives):
-- `monorepo/bin-common-handler`: Shared utilities (RabbitMQ via `requesthandler`, models)
-
-Always run `go mod vendor` after changing dependencies.
-
-## Testing Patterns
-
-Tests use gomock-generated mocks of ServiceHandler interface:
-- Mock is generated from `pkg/servicehandler/main.go`
-- Tests verify that incoming HTTP requests correctly call service handler methods
-- Example pattern in `api/v1.0/emails/emails_test.go`
-
-## Key Implementation Details
-
-### SSL Certificate Bootstrapping
-Certificates are passed in base64-encoded form via `SSL_CERT_BASE64` and `SSL_PRIVKEY_BASE64`, decoded at startup, and written to `/tmp/`. Ensure proper file permissions in containerized environments.
-
-### CORS
-All endpoints use CORS middleware allowing all origins (`AllowOrigins: ["*"]`) — appropriate because this is a public webhook receiver.
-
-### Logging
-The service uses structured logging with logrus + joonix formatter for Stackdriver compatibility.
-
-## Configuration
-
-| Flag / Env | Description | Default |
-|------------|-------------|---------|
-| `database_dsn` / `DATABASE_DSN` | MySQL connection string (currently connected but not used) | required |
-| `rabbitmq_address` / `RABBITMQ_ADDRESS` | RabbitMQ server (`amqp://guest:guest@localhost:5672`) | required |
-| `ssl_cert_base64` / `SSL_CERT_BASE64` | Base64-encoded SSL certificate | required |
-| `ssl_privkey_base64` / `SSL_PRIVKEY_BASE64` | Base64-encoded SSL private key | required |
-| `prometheus_endpoint` / `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
-| `prometheus_listen_address` / `PROMETHEUS_LISTEN_ADDRESS` | Metrics port | `:2112` |
-
-## Prometheus Metrics
-
-Service exposes metrics on the configured endpoint (default `:2112/metrics`):
-- `hook_manager_receive_request_process_time` — histogram of HTTP request processing time (labels: type, method)
+gomock mocks of `ServiceHandler` interface. Tests verify HTTP requests correctly invoke service handler methods. See `api/v1.0/emails/emails_test.go` for reference.
