@@ -385,7 +385,7 @@ Troubleshooting
 Related Documentation
 ---------------------
 
-- :ref:`Outdial Overview <outdial_overview>` - Managing dial targets
+- :ref:`Outdial Overview <outdial-overview>` - Managing dial targets
 - :ref:`Outplan Overview <outplan-overview>` - Dialing strategy configuration
 - :ref:`Queue Overview <queue-overview>` - Agent queue management
 - :ref:`Flow Overview <flow-overview>` - Call flow configuration

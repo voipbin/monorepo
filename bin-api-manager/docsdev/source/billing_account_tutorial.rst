@@ -89,7 +89,7 @@ Understanding Service Rates
 
 VoIPBIN uses a hybrid billing model: token-eligible services (VN calls, TTS) consume tokens first, then overflow to credits. Credit-only services (PSTN calls, SMS, email, numbers) always charge the credit balance directly. All calls are billed per minute with ceiling rounding.
 
-For the complete rate table, see :ref:`Rate Structure <billing_account_rate_structure>`.
+For the complete rate table, see :ref:`Rate Structure <billing-account-rate-structure>`.
 
 **Calculate VN Call Cost (with tokens):**
 
@@ -479,4 +479,4 @@ Troubleshooting
 - Verify authentication token is valid
 - Check user role in account settings
 
-For more information about billing account management, see :ref:`Billing Account Overview <billing_account_overview>`.
+For more information about billing account management, see :ref:`Billing Account Overview <billing-account-overview>`.

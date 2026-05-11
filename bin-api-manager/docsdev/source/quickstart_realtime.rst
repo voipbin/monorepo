@@ -1,4 +1,4 @@
-.. _quickstart_realtime:
+.. _quickstart-realtime:
 
 Real-Time Voice Interaction
 ---------------------------
@@ -12,11 +12,11 @@ By the end, you will have:
 Prerequisites
 ~~~~~~~~~~~~~
 
-* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
+* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
 * Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer`` or from your admin console profile.
-* A registered SIP extension and softphone. See :ref:`Extension & Softphone Setup <quickstart_extension>`.
-* Event subscription set up (WebSocket or customer webhook). See :ref:`Receiving Events <quickstart_events>`.
+* A registered SIP extension and softphone. See :ref:`Extension & Softphone Setup <quickstart-extension>`.
+* Event subscription set up (WebSocket or customer webhook). See :ref:`Receiving Events <quickstart-events>`.
 
 .. note:: **AI Implementation Hint**
 
@@ -109,7 +109,7 @@ Save the call ``id`` (UUID) from ``calls[0].id`` in the response — you will ne
 
 .. note:: **AI Implementation Hint**
 
-   The ``source`` number must be a VoIPBIN-owned number (from ``GET /numbers``). The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart_extension>`. The ``sleep`` ``duration`` (Integer, milliseconds) keeps the call alive — ``600000`` = 10 minutes. The ``transcribe_start`` action uses BCP47 language codes (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
+   The ``source`` number must be a VoIPBIN-owned number (from ``GET /numbers``). The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart-extension>`. The ``sleep`` ``duration`` (Integer, milliseconds) keeps the call alive — ``600000`` = 10 minutes. The ``transcribe_start`` action uses BCP47 language codes (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
 
 Observe real-time transcription
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -152,7 +152,7 @@ After answering the call on Linphone, you receive transcription events via your 
         }
     }
 
-If you run the Python WebSocket example from :ref:`Receiving Events <quickstart_events>`, you will see output like:
+If you run the Python WebSocket example from :ref:`Receiving Events <quickstart-events>`, you will see output like:
 
 .. code::
 
@@ -264,11 +264,11 @@ Troubleshooting
 
 * **Call created but Linphone does not ring:**
     * **Cause:** Linphone is not registered, or the ``target_name`` does not match the extension ``name``.
-    * **Fix:** Verify Linphone shows "Registered" status. Verify the ``target_name`` in the call request matches the extension ``name`` from the :ref:`Extension & Softphone Setup <quickstart_extension>` exactly (case-sensitive). See :ref:`Extension troubleshooting <quickstart_extension>` for registration issues.
+    * **Fix:** Verify Linphone shows "Registered" status. Verify the ``target_name`` in the call request matches the extension ``name`` from the :ref:`Extension & Softphone Setup <quickstart-extension>` exactly (case-sensitive). See :ref:`Extension troubleshooting <quickstart-extension>` for registration issues.
 
 * **No transcription events received:**
     * **Cause:** Event subscription is not set up, or configuration is incorrect.
-    * **Fix:** See :ref:`Event Subscription troubleshooting <quickstart_event_subscription>`.
+    * **Fix:** See :ref:`Event Subscription troubleshooting <quickstart-event-subscription>`.
 
 * **Speaking creation returns 400 Bad Request:**
     * **Cause:** The call is not in ``progressing`` status (not yet answered or already hung up), or the ``reference_id`` is invalid.

@@ -248,7 +248,7 @@ Events arrive as JSON messages on the open connection. No polling required.
 
 .. note:: **AI Implementation Hint**
 
-   Always implement automatic reconnection with exponential backoff (start at 1 second, cap at 30 seconds). When the connection drops, all subscriptions are lost and must be re-sent after reconnecting. See :ref:`WebSocket Overview <websocket_overview>` for the full topic format and subscription lifecycle.
+   Always implement automatic reconnection with exponential backoff (start at 1 second, cap at 30 seconds). When the connection drops, all subscriptions are lost and must be re-sent after reconnecting. See :ref:`WebSocket Overview <websocket-overview>` for the full topic format and subscription lifecycle.
 
 **Choosing a Delivery Method**
 
@@ -440,4 +440,4 @@ Related Documentation
 - :ref:`AI Overview <ai-overview>` — Managed AI pipeline with ``ai_talk``
 - :ref:`Call Overview <call-overview>` — Call lifecycle and status
 - :ref:`Webhook Overview <webhook-overview>` — Webhook configuration
-- :ref:`WebSocket Overview <websocket_overview>` — Real-time event delivery via WebSocket
+- :ref:`WebSocket Overview <websocket-overview>` — Real-time event delivery via WebSocket

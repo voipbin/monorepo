@@ -1,4 +1,4 @@
-.. _restful_api:
+.. _restful-api:
 
 **********************************************
 RESTful API(Application Programming Interface)
@@ -23,7 +23,7 @@ All API requests must be authenticated using either:
 * **JWT Token**: Include in ``Authorization: Bearer <token>`` header
 * **Access Key**: Include as ``?accesskey=<key>`` query parameter
 
-For details, see :ref:`Authentication <quickstart_authentication>`.
+For details, see :ref:`Authentication <quickstart-authentication>`.
 
 Base URL
 --------

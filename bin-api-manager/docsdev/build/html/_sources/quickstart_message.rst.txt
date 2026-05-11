@@ -1,6 +1,6 @@
 :orphan:
 
-.. _quickstart_message:
+.. _quickstart-message:
 
 Send an SMS
 -----------
@@ -9,7 +9,7 @@ Send an outbound SMS message using the VoIPBIN API.
 Prerequisites
 +++++++++++++
 
-* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
+* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
 * A destination phone number in E.164 format (e.g., ``+15559876543``).
 

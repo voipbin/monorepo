@@ -1,4 +1,4 @@
-.. _outdial_overview:
+.. _outdial-overview:
 
 Overview
 ========

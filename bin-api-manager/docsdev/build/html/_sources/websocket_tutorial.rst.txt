@@ -584,4 +584,4 @@ Connection Lifecycle
     // Close connection
     ws.close();
 
-For more details about WebSocket topics and event types, see :ref:`WebSocket Overview <websocket_overview>`.
+For more details about WebSocket topics and event types, see :ref:`WebSocket Overview <websocket-overview>`.

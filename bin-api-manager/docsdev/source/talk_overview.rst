@@ -537,6 +537,6 @@ Troubleshooting
 Related Documentation
 ---------------------
 
-- :ref:`Agent Overview <agent_overview>` - Agent management
-- :ref:`WebSocket Overview <websocket_overview>` - Real-time connections
+- :ref:`Agent Overview <agent-overview>` - Agent management
+- :ref:`WebSocket Overview <websocket-overview>` - Real-time connections
 - :ref:`Conversation Overview <conversation-overview>` - Multi-channel messaging

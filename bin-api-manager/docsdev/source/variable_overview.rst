@@ -1,4 +1,4 @@
-.. _variable_overview:
+.. _variable-overview:
 
 Overview
 ========

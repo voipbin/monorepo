@@ -1,4 +1,4 @@
-.. _outbound_config_struct_outbound_config:
+.. _outbound-config-struct-outbound-config:
 
 OutboundConfig Struct
 =====================

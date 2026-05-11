@@ -183,7 +183,7 @@ Update configuration flags for your customer account. Requires CustomerAdmin per
 
 **Default Outgoing Source Number**
 
-The default caller ID used for outgoing PSTN calls when no explicit source number is specified in the call request is now managed via the OutboundConfig API. See the :ref:`OutboundConfig Overview <outbound_config_overview>` for details.
+The default caller ID used for outgoing PSTN calls when no explicit source number is specified in the call request is now managed via the OutboundConfig API. See the :ref:`OutboundConfig Overview <outbound-config-overview>` for details.
 
 
 Account Deletion Lifecycle
@@ -512,7 +512,7 @@ Troubleshooting
 Related Documentation
 ---------------------
 
-- :ref:`Agent Overview <agent_overview>` - Managing agents
-- :ref:`Billing Account Overview <billing_account_overview>` - Account billing
+- :ref:`Agent Overview <agent-overview>` - Managing agents
+- :ref:`Billing Account Overview <billing-account-overview>` - Account billing
 - :ref:`Number Overview <number-overview>` - Phone number management
 - :ref:`Flow Overview <flow-overview>` - Call flow configuration

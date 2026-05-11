@@ -1,6 +1,6 @@
 :orphan:
 
-.. _quickstart_queue:
+.. _quickstart-queue:
 
 Queue
 =====
@@ -9,7 +9,7 @@ Queues let you route incoming calls to available agents. Callers hear hold music
 Prerequisites
 +++++++++++++
 
-* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
+* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
 * At least one tag ID (UUID). Create tags via ``POST /tags`` or obtain from ``GET /tags``. Tags are used to match agents to queues.
 * At least one agent with the matching tag assigned. Create agents via ``POST /agents`` and assign tags.
 

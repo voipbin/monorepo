@@ -1,6 +1,6 @@
 :orphan:
 
-.. _quickstart_transcribe:
+.. _quickstart-transcribe:
 
 Transcribe
 ==========
@@ -9,7 +9,7 @@ Set up real-time speech-to-text transcription on a voice call using the VoIPBIN 
 Prerequisites
 +++++++++++++
 
-* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
+* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
 * Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer`` or from your admin console profile.
 
