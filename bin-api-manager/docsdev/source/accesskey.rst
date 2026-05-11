@@ -7,6 +7,9 @@ Manage API access keys for authenticating requests to the VoIPBIN API. Access ke
 
 **API Reference:** `Accesskey endpoints <https://api.voipbin.net/redoc/#tag/Accesskey>`_
 
-.. include:: accesskey_overview.rst
-.. include:: accesskey_struct.rst
-.. include:: accesskey_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   accesskey_overview
+   accesskey_struct
+   accesskey_tutorial
