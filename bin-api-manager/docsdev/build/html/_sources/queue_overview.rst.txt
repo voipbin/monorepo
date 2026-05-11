@@ -109,23 +109,26 @@ Every call in a queue moves through a series of states:
 
 **State Descriptions**
 
-+-------------+--------------------------------------------------------------+
-| State       | What's happening                                             |
-+=============+==============================================================+
-| initiating  | Call just entered the queue. Conference bridge being set up. |
-+-------------+--------------------------------------------------------------+
-| waiting     | Caller is hearing wait flow. System is searching for agents. |
-+-------------+--------------------------------------------------------------+
-| connecting  | Agent found and being called. Caller still in wait flow.    |
-+-------------+--------------------------------------------------------------+
-| kicking     | Call is being removed (kicked) from the queue.               |
-+-------------+--------------------------------------------------------------+
-| service     | Agent and caller are connected. Conversation in progress.   |
-+-------------+--------------------------------------------------------------+
-| done        | Call completed successfully. Agent finished helping caller.  |
-+-------------+--------------------------------------------------------------+
-| abandoned   | Call ended before completion - caller hung up, timeout, etc. |
-+-------------+--------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - State
+     - What's happening
+   * - initiating
+     - Call just entered the queue. Conference bridge being set up.
+   * - waiting
+     - Caller is hearing wait flow. System is searching for agents.
+   * - connecting
+     - Agent found and being called. Caller still in wait flow.
+   * - kicking
+     - Call is being removed (kicked) from the queue.
+   * - service
+     - Agent and caller are connected. Conversation in progress.
+   * - done
+     - Call completed successfully. Agent finished helping caller.
+   * - abandoned
+     - Call ended before completion - caller hung up, timeout, etc.
+
 
 
 Agent Searching
@@ -192,15 +195,13 @@ The agent's status must be "available" to receive queue calls:
 ::
 
     Agent Statuses and Queue Eligibility:
-    +----------------+---------------------------------------------+
-    | Status         | Can receive queue calls?                    |
-    +----------------+---------------------------------------------+
-    | available      | [x] Yes - Agent is ready to take calls      |
-    | busy           | [ ] No - Agent is handling another call     |
-    | wrap-up        | [ ] No - Agent is finishing previous call   |
-    | away           | [ ] No - Agent is temporarily away          |
-    | offline        | [ ] No - Agent is not logged in             |
-    +----------------+---------------------------------------------+
+    .. list-table::
+
+       * - Status
+         - Can receive queue calls?
+       * - available busy wrap-up away offline
+         - [x] Yes - Agent is ready to take calls [ ] No - Agent is handling another call [ ] No - Agent is finishing previous cal [ ] No - Agent is temporarily away [ ] No - Agent is not logged in
+
 
 **Selection Method**
 
@@ -258,19 +259,22 @@ Agents move through a lifecycle as they handle queue calls.
 
 **Status Behaviors**
 
-+---------------+------------------------------------------------------------------+
-| Transition    | What happens                                                     |
-+===============+==================================================================+
-| login         | Agent becomes available to receive queue calls                   |
-+---------------+------------------------------------------------------------------+
-| receive call  | Queue connects agent to caller; status becomes busy              |
-+---------------+------------------------------------------------------------------+
-| call ends     | Conversation finished; agent enters wrap-up for post-call work   |
-+---------------+------------------------------------------------------------------+
-| wrap-up done  | Agent returns to available; ready for next call                  |
-+---------------+------------------------------------------------------------------+
-| logout        | Agent goes offline; removed from queue matching                  |
-+---------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Transition
+     - What happens
+   * - login
+     - Agent becomes available to receive queue calls
+   * - receive call
+     - Queue connects agent to caller; status becomes busy
+   * - call ends
+     - Conversation finished; agent enters wrap-up for post-call work
+   * - wrap-up done
+     - Agent returns to available; ready for next call
+   * - logout
+     - Agent goes offline; removed from queue matching
+
 
 
 Multi-Queue Agent Scenarios
@@ -464,13 +468,15 @@ Queues track detailed metrics for reporting and analysis:
     +--------------------------------------------------------------------------+
 
     Queue: "Customer Support"
-    +---------------------------------+---------------------------------------+
-    | total_incoming_count            | 1,234 calls entered this queue        |
-    +---------------------------------+---------------------------------------+
-    | total_serviced_count            | 1,100 calls reached an agent          |
-    +---------------------------------+---------------------------------------+
-    | total_abandoned_count           | 134 calls abandoned (11% abandon rate)|
-    +---------------------------------+---------------------------------------+
+    .. list-table::
+
+       * - total_incoming_count
+         - 1,234 calls entered this queue
+       * - total_serviced_count
+         - 1,100 calls reached an agent
+       * - total_abandoned_count
+         - 134 calls abandoned (11% abandon r
+
 
 **Per-Queuecall Metrics**
 
@@ -479,17 +485,19 @@ Each call in the queue tracks:
 ::
 
     Queuecall: "abc-123-def"
-    +---------------------------------+---------------------------------------+
-    | duration_waiting                | 45,000 ms (45 seconds in wait flow)   |
-    +---------------------------------+---------------------------------------+
-    | duration_service                | 180,000 ms (3 minutes with agent)     |
-    +---------------------------------+---------------------------------------+
-    | tm_create                       | 2024-01-15 10:30:00 (entered queue)   |
-    +---------------------------------+---------------------------------------+
-    | tm_service                      | 2024-01-15 10:30:45 (agent connected) |
-    +---------------------------------+---------------------------------------+
-    | tm_end                          | 2024-01-15 10:33:45 (call ended)      |
-    +---------------------------------+---------------------------------------+
+    .. list-table::
+
+       * - duration_waiting
+         - 45,000 ms (45 seconds in wait flow
+       * - duration_service
+         - 180,000 ms (3 minutes with agent)
+       * - tm_create
+         - 2024-01-15 10:30:00 (entered queue
+       * - tm_service
+         - 2024-01-15 10:30:45 (agent connect
+       * - tm_end
+         - 2024-01-15 10:33:45 (call ended)
+
 
 **Calculating Service Levels**
 

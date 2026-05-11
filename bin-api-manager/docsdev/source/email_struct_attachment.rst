@@ -24,12 +24,14 @@ Type
 ------
 Attachment's type.
 
-+------------+------------------------------------------------------------------+
-| Type       | Description                                                      |
-+============+==================================================================+
-| ``""``     | No type set. Default when no reference is specified.             |
-+------------+------------------------------------------------------------------+
-| recording  | A call recording file. The ``reference_id`` corresponds to a    |
-|            | recording ID from ``GET /recordings``.                           |
-+------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Type
+     - Description
+   * - ``""``
+     - No type set. Default when no reference is specified.
+   * - recording
+     - A call recording file. The ``reference_id`` corresponds to a recording ID from ``GET /recordings``.
+
 

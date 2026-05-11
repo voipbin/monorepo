@@ -47,14 +47,16 @@ When you start transcription, VoIPBIN captures audio from the call or conference
 
 **Transcription Types**
 
-+---------------------+-------------------------------------------------------+
-| Type                | Description                                           |
-+=====================+=======================================================+
-| Call Transcription  | Transcribes a single call with direction detection    |
-+---------------------+-------------------------------------------------------+
-| Conference          | Transcribes all participants (direction indicates     |
-| Transcription       | speaker relative to conference)                       |
-+---------------------+-------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Type
+     - Description
+   * - Call Transcription
+     - Transcribes a single call with direction detection
+   * - Conference Transcription
+     - Transcribes all participants (direction indicates speaker relative to conference)
+
 
 
 Transcription Lifecycle
@@ -74,14 +76,16 @@ Transcription runs continuously while active, generating transcript segments as 
 
 **State Descriptions**
 
-+---------------+------------------------------------------------------------------+
-| State         | What's happening                                                 |
-+===============+==================================================================+
-| progressing   | Transcription is active. STT engine is connected and processing  |
-|               | audio. Transcripts are being generated and delivered.            |
-+---------------+------------------------------------------------------------------+
-| done          | Transcription has ended. No more transcripts will be generated.  |
-+---------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - State
+     - What's happening
+   * - progressing
+     - Transcription is active. STT engine is connected and processing audio. Transcripts are being generated and delivered.
+   * - done
+     - Transcription has ended. No more transcripts will be generated.
+
 
 **Transcript Delivery Flow**
 
@@ -189,30 +193,35 @@ Start transcription on an active call or conference programmatically.
 
 **Parameters:**
 
-+------------------+----------------------------------------------------------------+
-| Parameter        | Description                                                    |
-+==================+================================================================+
-| reference_type   | Type of resource: ``call`` or ``conference``                   |
-+------------------+----------------------------------------------------------------+
-| reference_id     | UUID of the call or conference                                 |
-+------------------+----------------------------------------------------------------+
-| language         | Language code (e.g., ``en-US``, ``ko-KR``)                     |
-+------------------+----------------------------------------------------------------+
-| direction        | Which audio to transcribe: ``in``, ``out``, or ``both``        |
-+------------------+----------------------------------------------------------------+
-| provider         | (Optional) STT provider: ``gcp`` or ``aws``. If omitted,      |
-|                  | VoIPBIN selects the best available provider automatically.     |
-+------------------+----------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Parameter
+     - Description
+   * - reference_type
+     - Type of resource: ``call`` or ``conference``
+   * - reference_id
+     - UUID of the call or conference
+   * - language
+     - Language code (e.g., ``en-US``, ``ko-KR``)
+   * - direction
+     - Which audio to transcribe: ``in``, ``out``, or ``both``
+   * - provider
+     - (Optional) STT provider: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
+
 
 **When to Use Each Method**
 
-+-------------------+----------------------------------------------------------------+
-| Method            | Best for                                                       |
-+===================+================================================================+
-| Flow Action       | Automated transcription based on call flow logic               |
-+-------------------+----------------------------------------------------------------+
-| API (Interrupt)   | Dynamic control - start/stop based on external events          |
-+-------------------+----------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Method
+     - Best for
+   * - Flow Action
+     - Automated transcription based on call flow logic
+   * - API (Interrupt)
+     - Dynamic control - start/stop based on external events
+
 
 
 Receiving Transcripts
@@ -223,17 +232,20 @@ VoIPBIN delivers transcripts to your application via webhooks or WebSocket subsc
 
 VoIPBIN generates the following events during a transcription session:
 
-+------------------------------------+--------------------------------------------------------------+
-| Event Type                         | Description                                                  |
-+====================================+==============================================================+
-| ``transcript_created``             | Final transcribed text segment                               |
-+------------------------------------+--------------------------------------------------------------+
-| ``transcribe_speech_started``      | Voice activity detected (speaker began talking)              |
-+------------------------------------+--------------------------------------------------------------+
-| ``transcribe_speech_interim``      | Partial transcript while speaker is still talking            |
-+------------------------------------+--------------------------------------------------------------+
-| ``transcribe_speech_ended``        | Voice activity ended (speaker stopped talking)               |
-+------------------------------------+--------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Event Type
+     - Description
+   * - ``transcript_created``
+     - Final transcribed text segment
+   * - ``transcribe_speech_started``
+     - Voice activity detected (speaker began talking)
+   * - ``transcribe_speech_interim``
+     - Partial transcript while speaker is still talking
+   * - ``transcribe_speech_ended``
+     - Voice activity ended (speaker stopped talking)
+
 
 The ``transcript_created`` event delivers final, complete transcript segments. The speech events provide real-time voice activity detection and interim results, useful for AI voice agent integrations. See :ref:`Speech Webhook Message <transcribe-struct-speech-webhook>` for the speech event payload structure.
 
@@ -292,18 +304,25 @@ Subscribe to transcript events via WebSocket for real-time streaming.
 
 **Comparison: Webhook vs WebSocket**
 
-+-------------------+--------------------------------+--------------------------------+
-| Aspect            | Webhook                        | WebSocket                      |
-+===================+================================+================================+
-| Connection        | VoIPBIN initiates POST         | Your app maintains connection  |
-+-------------------+--------------------------------+--------------------------------+
-| Latency           | Higher (HTTP overhead)         | Lower (persistent connection)  |
-+-------------------+--------------------------------+--------------------------------+
-| Reliability       | Retry on failure               | Must handle reconnection       |
-+-------------------+--------------------------------+--------------------------------+
-| Best for          | Simple integration, batch      | Real-time UI, low-latency      |
-|                   | processing                     | applications                   |
-+-------------------+--------------------------------+--------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Webhook
+     - WebSocket
+   * - Connection
+     - VoIPBIN initiates POST
+     - Your app maintains connection
+   * - Latency
+     - Higher (HTTP overhead)
+     - Lower (persistent connection)
+   * - Reliability
+     - Retry on failure
+     - Must handle reconnection
+   * - Best for
+     - Simple integration, batch processing
+     - Real-time UI, low-latency applications
+
 
 
 .. _transcribe-overview-transcription:
@@ -333,13 +352,16 @@ Each transcript includes a ``direction`` field indicating whether the speech was
 
 **Direction Values**
 
-+-------------+----------------------------------------------------------------+
-| Direction   | Meaning                                                        |
-+=============+================================================================+
-| in          | Audio from the caller/remote party toward VoIPBIN             |
-+-------------+----------------------------------------------------------------+
-| out         | Audio from VoIPBIN toward the caller/remote party             |
-+-------------+----------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Direction
+     - Meaning
+   * - in
+     - Audio from the caller/remote party toward VoIPBIN
+   * - out
+     - Audio from VoIPBIN toward the caller/remote party
+
 
 **Transcript Data Structure:**
 
@@ -370,13 +392,16 @@ Working with Transcripts
 
 **Timestamp Fields**
 
-+----------------+----------------------------------------------------------------+
-| Field          | Description                                                    |
-+================+================================================================+
-| tm_transcript  | Time offset within the call when speech occurred               |
-+----------------+----------------------------------------------------------------+
-| tm_create      | Absolute timestamp when transcript was created                 |
-+----------------+----------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Field
+     - Description
+   * - tm_transcript
+     - Time offset within the call when speech occurred
+   * - tm_create
+     - Absolute timestamp when transcript was created
+
 
 **Combining Transcripts into Conversation**
 
@@ -499,39 +524,42 @@ VoIPBIN supports transcription in 70+ languages and regional variants. Specify t
 
 **Common Languages**
 
-+----------------+---------------------------+
-| Language Code  | Language                  |
-+================+===========================+
-| en-US          | English (United States)   |
-+----------------+---------------------------+
-| en-GB          | English (United Kingdom)  |
-+----------------+---------------------------+
-| es-ES          | Spanish (Spain)           |
-+----------------+---------------------------+
-| es-MX          | Spanish (Mexico)          |
-+----------------+---------------------------+
-| fr-FR          | French (France)           |
-+----------------+---------------------------+
-| de-DE          | German (Germany)          |
-+----------------+---------------------------+
-| it-IT          | Italian (Italy)           |
-+----------------+---------------------------+
-| pt-BR          | Portuguese (Brazil)       |
-+----------------+---------------------------+
-| ja-JP          | Japanese (Japan)          |
-+----------------+---------------------------+
-| ko-KR          | Korean (South Korea)      |
-+----------------+---------------------------+
-| zh-CN          | Chinese (Mandarin)        |
-+----------------+---------------------------+
-| ar-SA          | Arabic (Saudi Arabia)     |
-+----------------+---------------------------+
-| hi-IN          | Hindi (India)             |
-+----------------+---------------------------+
-| nl-NL          | Dutch (Netherlands)       |
-+----------------+---------------------------+
-| ru-RU          | Russian (Russia)          |
-+----------------+---------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Language Code
+     - Language
+   * - en-US
+     - English (United States)
+   * - en-GB
+     - English (United Kingdom)
+   * - es-ES
+     - Spanish (Spain)
+   * - es-MX
+     - Spanish (Mexico)
+   * - fr-FR
+     - French (France)
+   * - de-DE
+     - German (Germany)
+   * - it-IT
+     - Italian (Italy)
+   * - pt-BR
+     - Portuguese (Brazil)
+   * - ja-JP
+     - Japanese (Japan)
+   * - ko-KR
+     - Korean (South Korea)
+   * - zh-CN
+     - Chinese (Mandarin)
+   * - ar-SA
+     - Arabic (Saudi Arabia)
+   * - hi-IN
+     - Hindi (India)
+   * - nl-NL
+     - Dutch (Netherlands)
+   * - ru-RU
+     - Russian (Russia)
+
 
 VoIPBIN supports 70+ languages including regional variants for Arabic, Spanish, English, and more. Contact support for the complete language list.
 
@@ -571,59 +599,63 @@ Troubleshooting
 
 **Transcription Not Starting**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| No transcribe_id returned | Verify call/conference is in "progressing"     |
-|                           | status before starting transcription           |
-+---------------------------+------------------------------------------------+
-| Permission denied         | Check API token has transcription permissions  |
-+---------------------------+------------------------------------------------+
-| Invalid language code     | Verify language code is in supported list      |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - No transcribe_id returned
+     - Verify call/conference is in "progressing" status before starting transcription
+   * - Permission denied
+     - Check API token has transcription permissions
+   * - Invalid language code
+     - Verify language code is in supported list
+
 
 **Poor Accuracy**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Words frequently wrong    | Check language code matches speaker's dialect  |
-+---------------------------+------------------------------------------------+
-| Missing words             | Check audio quality - background noise or      |
-|                           | low volume reduces accuracy                    |
-+---------------------------+------------------------------------------------+
-| Technical terms wrong     | STT may not recognize domain-specific terms;   |
-|                           | consider post-processing                       |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Words frequently wrong
+     - Check language code matches speaker's dialect
+   * - Missing words
+     - Check audio quality - background noise or low volume reduces accuracy
+   * - Technical terms wrong
+     - STT may not recognize domain-specific terms; consider post-processing
+
 
 **Missing Transcripts**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Webhook not receiving     | Verify webhook URL is configured in customer   |
-|                           | settings and is publicly accessible            |
-+---------------------------+------------------------------------------------+
-| WebSocket disconnects     | Implement reconnection logic; check for        |
-|                           | network issues                                 |
-+---------------------------+------------------------------------------------+
-| Gaps in transcript        | Silence or unclear audio produces no           |
-|                           | transcripts - this is expected behavior        |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Webhook not receiving
+     - Verify webhook URL is configured in customer settings and is publicly accessible
+   * - WebSocket disconnects
+     - Implement reconnection logic; check for network issues
+   * - Gaps in transcript
+     - Silence or unclear audio produces no transcripts - this is expected behavior
+
 
 **Webhook Delivery Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Events delayed            | Check webhook endpoint response time;          |
-|                           | should respond within 5 seconds                |
-+---------------------------+------------------------------------------------+
-| Duplicate events          | Implement idempotency using transcript ``id``  |
-+---------------------------+------------------------------------------------+
-| Events out of order       | Sort by ``tm_transcript`` to reconstruct       |
-|                           | conversation order                             |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Events delayed
+     - Check webhook endpoint response time; should respond within 5 seconds
+   * - Duplicate events
+     - Implement idempotency using transcript ``id``
+   * - Events out of order
+     - Sort by ``tm_transcript`` to reconstruct conversation order
+
 
 
 Related Documentation

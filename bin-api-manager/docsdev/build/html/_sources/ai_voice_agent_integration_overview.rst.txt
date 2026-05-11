@@ -62,22 +62,24 @@ API Components
 
 The Speaking API creates a streaming TTS session on an active call or conference. You send text, and VoIPBIN synthesizes it into speech and injects the audio into the call.
 
-+-------------------------------------------------------------------+-----------------------------------------------------------+
-| Endpoint                                                          | Description                                               |
-+===================================================================+===========================================================+
-| ``POST https://api.voipbin.net/v1.0/speakings``                  | Create a new speaking session on a call or conference     |
-+-------------------------------------------------------------------+-----------------------------------------------------------+
-| ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``         | Send text to be spoken. Can be called multiple times.     |
-+-------------------------------------------------------------------+-----------------------------------------------------------+
-| ``POST https://api.voipbin.net/v1.0/speakings/{id}/flush``       | Cancel current speech and clear queued text.              |
-|                                                                   | Session stays open.                                       |
-+-------------------------------------------------------------------+-----------------------------------------------------------+
-| ``POST https://api.voipbin.net/v1.0/speakings/{id}/stop``        | Terminate the speaking session.                           |
-+-------------------------------------------------------------------+-----------------------------------------------------------+
-| ``GET https://api.voipbin.net/v1.0/speakings``                   | List speaking sessions.                                   |
-+-------------------------------------------------------------------+-----------------------------------------------------------+
-| ``GET https://api.voipbin.net/v1.0/speakings/{id}``              | Get speaking session details.                             |
-+-------------------------------------------------------------------+-----------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Endpoint
+     - Description
+   * - ``POST https://api.voipbin.net/v1.0/speakings``
+     - Create a new speaking session on a call or conference
+   * - ``POST https://api.voipbin.net/v1.0/speakings/{id}/say``
+     - Send text to be spoken. Can be called multiple times.
+   * - ``POST https://api.voipbin.net/v1.0/speakings/{id}/flush``
+     - Cancel current speech and clear queued text. Session stays open.
+   * - ``POST https://api.voipbin.net/v1.0/speakings/{id}/stop``
+     - Terminate the speaking session.
+   * - ``GET https://api.voipbin.net/v1.0/speakings``
+     - List speaking sessions.
+   * - ``GET https://api.voipbin.net/v1.0/speakings/{id}``
+     - Get speaking session details.
+
 
 **Speaking Session Lifecycle:**
 
@@ -96,64 +98,69 @@ The Speaking API creates a streaming TTS session on an active call or conference
 
 **Speaking Status Values:**
 
-+---------------+------------------------------------------------------------------+
-| Status        | Description                                                      |
-+===============+==================================================================+
-| ``initiating``| Session is being created. TTS provider connection in progress.   |
-+---------------+------------------------------------------------------------------+
-| ``active``    | Session is ready. Text sent via ``/say`` is synthesized and      |
-|               | played into the call.                                            |
-+---------------+------------------------------------------------------------------+
-| ``stopped``   | Session has been terminated. No more text can be sent.           |
-+---------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Status
+     - Description
+   * - ``initiating``
+     - Session is being created. TTS provider connection in progress.
+   * - ``active``
+     - Session is ready. Text sent via ``/say`` is synthesized and played into the call.
+   * - ``stopped``
+     - Session has been terminated. No more text can be sent.
+
 
 **Speaking Parameters:**
 
-+------------------+--------------------------------------------------------------+
-| Parameter        | Description                                                  |
-+==================+==============================================================+
-| reference_type   | (Required, String) Type of resource: ``call`` or             |
-|                  | ``confbridge``                                               |
-+------------------+--------------------------------------------------------------+
-| reference_id     | (Required, UUID) ID of the call or conference. Obtained      |
-|                  | from ``POST https://api.voipbin.net/v1.0/calls`` or         |
-|                  | ``GET https://api.voipbin.net/v1.0/calls``.                  |
-+------------------+--------------------------------------------------------------+
-| language         | (Optional, String) BCP47 language code (e.g., ``en-US``).    |
-|                  | Defaults to provider default.                                |
-+------------------+--------------------------------------------------------------+
-| provider         | (Optional, String) TTS provider. Defaults to ``elevenlabs``. |
-+------------------+--------------------------------------------------------------+
-| voice_id         | (Optional, String) Provider-specific voice ID (e.g.,         |
-|                  | ``21m00Tcm4TlvDq8ikWAM`` for ElevenLabs).                    |
-+------------------+--------------------------------------------------------------+
-| direction        | (Optional, String) Audio injection direction: ``in``,        |
-|                  | ``out``, ``both``, or empty. See Direction Values below.     |
-+------------------+--------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Parameter
+     - Description
+   * - reference_type
+     - (Required, String) Type of resource: ``call`` or ``confbridge``
+   * - reference_id
+     - (Required, UUID) ID of the call or conference. Obtained from ``POST https://api.voipbin.net/v1.0/calls`` or ``GET https://api.voipbin.net/v1.0/calls``.
+   * - language
+     - (Optional, String) BCP47 language code (e.g., ``en-US``). Defaults to provider default.
+   * - provider
+     - (Optional, String) TTS provider. Defaults to ``elevenlabs``.
+   * - voice_id
+     - (Optional, String) Provider-specific voice ID (e.g., ``21m00Tcm4TlvDq8ikWAM`` for ElevenLabs).
+   * - direction
+     - (Optional, String) Audio injection direction: ``in``, ``out``, ``both``, or empty. See Direction Values below.
+
 
 **Direction Values:**
 
-+---------------+------------------------------------------------------------------+
-| Direction     | Meaning                                                          |
-+===============+==================================================================+
-| ``in``        | Inject audio to the incoming side only (caller hears it)         |
-+---------------+------------------------------------------------------------------+
-| ``out``       | Inject audio to the outgoing side only (connected party hears)   |
-+---------------+------------------------------------------------------------------+
-| ``both``      | Inject audio to both sides                                       |
-+---------------+------------------------------------------------------------------+
-| (empty)       | Default behavior                                                 |
-+---------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Direction
+     - Meaning
+   * - ``in``
+     - Inject audio to the incoming side only (caller hears it)
+   * - ``out``
+     - Inject audio to the outgoing side only (connected party hears)
+   * - ``both``
+     - Inject audio to both sides
+   * - (empty)
+     - Default behavior
+
 
 **Speaking Webhook Events:**
 
-+-----------------------+--------------------------------------------------------------+
-| Event                 | Description                                                  |
-+=======================+==============================================================+
-| ``speaking_started``  | Speaking session is active and ready to accept text          |
-+-----------------------+--------------------------------------------------------------+
-| ``speaking_stopped``  | Speaking session has been terminated                         |
-+-----------------------+--------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Event
+     - Description
+   * - ``speaking_started``
+     - Speaking session is active and ready to accept text
+   * - ``speaking_stopped``
+     - Speaking session has been terminated
+
 
 **Transcribe API (Speech-to-Text)**
 
@@ -161,13 +168,16 @@ The Transcribe API captures audio from an active call or conference and converts
 
 Key endpoints for this integration:
 
-+-------------------------------------------------------------------+-----------------------------------------------------------+
-| Endpoint                                                          | Description                                               |
-+===================================================================+===========================================================+
-| ``POST https://api.voipbin.net/v1.0/transcribes``                | Start a transcription session on a call or conference     |
-+-------------------------------------------------------------------+-----------------------------------------------------------+
-| ``POST https://api.voipbin.net/v1.0/transcribes/{id}/stop``      | Stop a transcription session                              |
-+-------------------------------------------------------------------+-----------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Endpoint
+     - Description
+   * - ``POST https://api.voipbin.net/v1.0/transcribes``
+     - Start a transcription session on a call or conference
+   * - ``POST https://api.voipbin.net/v1.0/transcribes/{id}/stop``
+     - Stop a transcription session
+
 
 Transcripts are delivered via ``transcript_created`` webhook events or WebSocket subscription. Each transcript includes:
 
@@ -187,29 +197,32 @@ Webhooks push events to an HTTPS endpoint you register via ``PUT https://api.voi
 
 Key event types for AI voice agent integration:
 
-+------------------------------------+--------------------------------------------------------------+
-| Event Type                         | Description                                                  |
-+====================================+==============================================================+
-| ``transcript_created``             | Final transcribed text from the caller or TTS output         |
-+------------------------------------+--------------------------------------------------------------+
-| ``transcribe_speech_started``      | Caller began speaking (voice activity detected)              |
-+------------------------------------+--------------------------------------------------------------+
-| ``transcribe_speech_interim``      | Partial transcript while caller is still speaking            |
-+------------------------------------+--------------------------------------------------------------+
-| ``transcribe_speech_ended``        | Caller stopped speaking (voice activity ended)               |
-+------------------------------------+--------------------------------------------------------------+
-| ``streaming_started``              | Audio streaming session connected to STT provider            |
-+------------------------------------+--------------------------------------------------------------+
-| ``streaming_stopped``              | Audio streaming session disconnected from STT provider       |
-+------------------------------------+--------------------------------------------------------------+
-| ``speaking_started``               | Speaking session is active and ready for ``/say``            |
-+------------------------------------+--------------------------------------------------------------+
-| ``speaking_stopped``               | Speaking session has been terminated                         |
-+------------------------------------+--------------------------------------------------------------+
-| ``call_progressing``               | Call answered — audio flowing, safe to start sessions        |
-+------------------------------------+--------------------------------------------------------------+
-| ``call_hangup``                    | Call ended — clean up transcribe and speaking sessions       |
-+------------------------------------+--------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Event Type
+     - Description
+   * - ``transcript_created``
+     - Final transcribed text from the caller or TTS output
+   * - ``transcribe_speech_started``
+     - Caller began speaking (voice activity detected)
+   * - ``transcribe_speech_interim``
+     - Partial transcript while caller is still speaking
+   * - ``transcribe_speech_ended``
+     - Caller stopped speaking (voice activity ended)
+   * - ``streaming_started``
+     - Audio streaming session connected to STT provider
+   * - ``streaming_stopped``
+     - Audio streaming session disconnected from STT provider
+   * - ``speaking_started``
+     - Speaking session is active and ready for ``/say``
+   * - ``speaking_stopped``
+     - Speaking session has been terminated
+   * - ``call_progressing``
+     - Call answered — audio flowing, safe to start sessions
+   * - ``call_hangup``
+     - Call ended — clean up transcribe and speaking sessions
+
 
 .. note:: **AI Implementation Hint**
 
@@ -239,17 +252,22 @@ Events arrive as JSON messages on the open connection. No polling required.
 
 **Choosing a Delivery Method**
 
-+------------------+--------------------------------------+--------------------------------------+
-| Aspect           | Webhook                              | WebSocket                            |
-+==================+======================================+======================================+
-| Latency          | Higher (HTTP round-trip per event)   | Lower (persistent connection)        |
-+------------------+--------------------------------------+--------------------------------------+
-| Connection model | Stateless — VoIPBIN POSTs to your    | Stateful — your client holds an open |
-|                  | endpoint                             | connection to VoIPBIN                |
-+------------------+--------------------------------------+--------------------------------------+
-| Best for         | Serverless backends, simple setups,  | Real-time voice agents, low-latency  |
-|                  | multi-region redundancy              | event loops, interactive dashboards  |
-+------------------+--------------------------------------+--------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Webhook
+     - WebSocket
+   * - Latency
+     - Higher (HTTP round-trip per event)
+     - Lower (persistent connection)
+   * - Connection model
+     - Stateless — VoIPBIN POSTs to your endpoint
+     - Stateful — your client holds an open connection to VoIPBIN
+   * - Best for
+     - Serverless backends, simple setups, multi-region redundancy
+     - Real-time voice agents, low-latency event loops, interactive dashboards
+
 
 For real-time AI voice agent scenarios where latency directly impacts conversation quality, **WebSocket is recommended**. The persistent connection eliminates per-event HTTP overhead and delivers transcripts faster to your AI backend.
 
@@ -331,31 +349,34 @@ Custom Integration vs ai_talk
 ------------------------------
 VoIPBIN offers two approaches for AI voice agents:
 
-+---------------------+----------------------------------+----------------------------------+
-| Aspect              | Custom Integration               | ai_talk (Managed)                |
-|                     | (this guide)                     |                                  |
-+=====================+==================================+==================================+
-| AI Backend          | You manage your own LLM          | VoIPBIN manages the LLM          |
-|                     | (any provider)                   | (configured via AI resource)     |
-+---------------------+----------------------------------+----------------------------------+
-| STT/TTS Control     | Individual API calls             | Automatic pipeline               |
-|                     | (``/transcribes``, ``/speakings``)| (configured in flow action)     |
-+---------------------+----------------------------------+----------------------------------+
-| LLM Provider        | Any (OpenAI, Anthropic, local,   | Must be one of the supported     |
-|                     | custom, etc.)                    | providers (see AI docs)          |
-+---------------------+----------------------------------+----------------------------------+
-| Tools/Functions     | Implement your own               | Built-in tools                   |
-|                     |                                  | (connect_call, send_email, etc.) |
-+---------------------+----------------------------------+----------------------------------+
-| Setup Complexity    | Higher (webhook server, loop     | Lower (configure AI resource     |
-|                     | management)                      | and flow action)                 |
-+---------------------+----------------------------------+----------------------------------+
-| Flexibility         | Full control over AI logic,      | Limited to supported providers   |
-|                     | prompts, and conversation flow   | and tool set                     |
-+---------------------+----------------------------------+----------------------------------+
-| Best For            | Custom AI logic, proprietary     | Quick setup, standard            |
-|                     | models, complex pipelines        | conversational agents            |
-+---------------------+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Custom Integration (this guide)
+     - ai_talk (Managed)
+   * - AI Backend
+     - You manage your own LLM (any provider)
+     - VoIPBIN manages the LLM (configured via AI resource)
+   * - STT/TTS Control
+     - Individual API calls (``/transcribes``, ``/speakings``
+     - Automatic pipeline (configured in flow action)
+   * - LLM Provider
+     - Any (OpenAI, Anthropic, local, custom, etc.)
+     - Must be one of the supported providers (see AI docs)
+   * - Tools/Functions
+     - Implement your own
+     - Built-in tools (connect_call, send_email, etc.)
+   * - Setup Complexity
+     - Higher (webhook server, loop management)
+     - Lower (configure AI resource and flow action)
+   * - Flexibility
+     - Full control over AI logic, prompts, and conversation flow
+     - Limited to supported providers and tool set
+   * - Best For
+     - Custom AI logic, proprietary models, complex pipelines
+     - Quick setup, standard conversational agents
+
 
 See :ref:`AI Overview <ai-overview>` for full details on the managed ``ai_talk`` approach.
 

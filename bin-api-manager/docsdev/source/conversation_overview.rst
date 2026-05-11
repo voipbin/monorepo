@@ -83,13 +83,16 @@ VoIPBIN supports multiple communication channels within a single conversation.
 
 **Supported Channels**
 
-+------------+------------------------------------------------------------------+
-| Channel    | Description                                                      |
-+============+==================================================================+
-| message    | SMS/MMS text messages to mobile phones                           |
-+------------+------------------------------------------------------------------+
-| line       | LINE messaging platform                                          |
-+------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Channel
+     - Description
+   * - message
+     - SMS/MMS text messages to mobile phones
+   * - line
+     - LINE messaging platform
+
 
 **Channel Selection**
 
@@ -137,15 +140,18 @@ Messages within a conversation move through predictable states.
 
 **Message Status Descriptions**
 
-+---------------+------------------------------------------------------------------+
-| Status        | What's happening                                                 |
-+===============+==================================================================+
-| progressing   | Message is being processed and delivered                          |
-+---------------+------------------------------------------------------------------+
-| done          | Message was successfully delivered                                |
-+---------------+------------------------------------------------------------------+
-| failed        | Message delivery failed                                          |
-+---------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Status
+     - What's happening
+   * - progressing
+     - Message is being processed and delivered
+   * - done
+     - Message was successfully delivered
+   * - failed
+     - Message delivery failed
+
 
 
 Conversation Rooms
@@ -329,24 +335,18 @@ The ``POST /unassign`` endpoint takes no request body and returns the updated co
 
 **Permission Semantics**
 
-+----------------------------+-------------------------------------------------------------------+
-| Caller                     | Permitted operations                                              |
-+============================+===================================================================+
-| Customer admin / manager   | ``PUT /v1.0/conversations/<id>``: assign, reassign, or unassign  |
-|                            | the conversation. All fields (owner, name, detail) may be        |
-|                            | updated.                                                         |
-|                            |                                                                   |
-|                            | ``POST /v1.0/conversations/<id>/unassign``: unassign the         |
-|                            | conversation (no body required).                                  |
-+----------------------------+-------------------------------------------------------------------+
-| Owning agent               | ``POST /v1.0/conversations/<id>/unassign`` only — self-unassign  |
-|                            | without a request body.                                          |
-|                            |                                                                   |
-|                            | ``PUT /v1.0/conversations/<id>`` is **not** permitted for agents  |
-|                            | (returns 403 even for the owning agent).                         |
-+----------------------------+-------------------------------------------------------------------+
-| Any other agent            | No assignment-related changes permitted. 403 returned.           |
-+----------------------------+-------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Caller
+     - Permitted operations
+   * - Customer admin / manager
+     - ``PUT /v1.0/conversations/<id>``: assign, reassign, or unassign the conversation. All fields (owner, name, detail) may be updated. ``POST /v1.0/conversations/<id>/unassign``: unassign the conversation (no body required).
+   * - Owning agent
+     - ``POST /v1.0/conversations/<id>/unassign`` only — self-unassign without a request body. ``PUT /v1.0/conversations/<id>`` is **not** permitted for agents (returns 403 even for the owning agent).
+   * - Any other agent
+     - No assignment-related changes permitted. 403 returned.
+
 
 .. note:: **Breaking Change**
 
@@ -446,21 +446,24 @@ Event Types
 -----------
 VoIPBIN sends webhook events for conversation activities.
 
-+----------------------------------+------------------------------------------------+
-| Event                            | When it fires                                  |
-+==================================+================================================+
-| conversation_created             | New conversation started                       |
-+----------------------------------+------------------------------------------------+
-| conversation_updated             | Conversation metadata changed                  |
-+----------------------------------+------------------------------------------------+
-| conversation_deleted             | Conversation deleted                           |
-+----------------------------------+------------------------------------------------+
-| conversation_message_created     | New message created in conversation            |
-+----------------------------------+------------------------------------------------+
-| conversation_message_updated     | Message status or content updated              |
-+----------------------------------+------------------------------------------------+
-| conversation_message_deleted     | Message deleted from conversation              |
-+----------------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Event
+     - When it fires
+   * - conversation_created
+     - New conversation started
+   * - conversation_updated
+     - Conversation metadata changed
+   * - conversation_deleted
+     - Conversation deleted
+   * - conversation_message_created
+     - New message created in conversation
+   * - conversation_message_updated
+     - Message status or content updated
+   * - conversation_message_deleted
+     - Message deleted from conversation
+
 
 
 Common Scenarios
@@ -554,19 +557,28 @@ generates a ``name`` and ``detail`` using the peer's identity and the channel ty
 
 **Examples**
 
-+---------------------------------------------------+-----------------------------------+---------------------------+
-| Scenario                                          | name                              | detail                    |
-+===================================================+===================================+===========================+
-| Inbound SMS, contact known                        | ``SMS · Alice (+14155551234)``    | ``SMS conversation``      |
-+---------------------------------------------------+-----------------------------------+---------------------------+
-| Inbound SMS, number only (no contact name)        | ``SMS · +14155551234``            | ``SMS conversation``      |
-+---------------------------------------------------+-----------------------------------+---------------------------+
-| Inbound SMS, no peer information available        | ``SMS · Unknown``                 | ``SMS conversation``      |
-+---------------------------------------------------+-----------------------------------+---------------------------+
-| LINE follow event, display name known             | ``LINE · Alice``                  | ``LINE conversation``     |
-+---------------------------------------------------+-----------------------------------+---------------------------+
-| LINE follow event, no display name                | ``LINE · Unknown``                | ``LINE conversation``     |
-+---------------------------------------------------+-----------------------------------+---------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Scenario
+     - name
+     - detail
+   * - Inbound SMS, contact known
+     - ``SMS · Alice (+14155551234)``
+     - ``SMS conversation``
+   * - Inbound SMS, number only (no contact name)
+     - ``SMS · +14155551234``
+     - ``SMS conversation``
+   * - Inbound SMS, no peer information available
+     - ``SMS · Unknown``
+     - ``SMS conversation``
+   * - LINE follow event, display name known
+     - ``LINE · Alice``
+     - ``LINE conversation``
+   * - LINE follow event, no display name
+     - ``LINE · Unknown``
+     - ``LINE conversation``
+
 
 .. note:: **AI Implementation Hint**
 
@@ -616,45 +628,46 @@ Troubleshooting
 
 **Message Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Message not delivered     | Check participant endpoint validity; verify    |
-|                           | channel is available for participant           |
-+---------------------------+------------------------------------------------+
-| Wrong channel selected    | Check channel selection priority; verify       |
-|                           | participant preferences                        |
-+---------------------------+------------------------------------------------+
-| Duplicate messages        | Check for retry logic; ensure idempotency      |
-|                           | using message IDs                              |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Message not delivered
+     - Check participant endpoint validity; verify channel is available for participant
+   * - Wrong channel selected
+     - Check channel selection priority; verify participant preferences
+   * - Duplicate messages
+     - Check for retry logic; ensure idempotency using message IDs
+
 
 **Conversation Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Messages in wrong         | Check participant matching; verify             |
-| conversation              | conversation is active (not closed)            |
-+---------------------------+------------------------------------------------+
-| New conversation created  | Previous conversation may have timed out;      |
-| unexpectedly              | check conversation state                       |
-+---------------------------+------------------------------------------------+
-| Participant can't receive | Verify endpoint; check channel availability;   |
-| messages                  | review delivery errors                         |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Messages in wrong conversation
+     - Check participant matching; verify conversation is active (not closed)
+   * - New conversation created unexpectedly
+     - Previous conversation may have timed out; check conversation state
+   * - Participant can't receive messages
+     - Verify endpoint; check channel availability; review delivery errors
+
 
 **Webhook Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Missing events            | Verify webhook URL configuration; check        |
-|                           | endpoint returns 200 OK within 5 seconds       |
-+---------------------------+------------------------------------------------+
-| Delayed events            | Check webhook endpoint performance; review     |
-|                           | retry queue                                    |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Missing events
+     - Verify webhook URL configuration; check endpoint returns 200 OK within 5 seconds
+   * - Delayed events
+     - Check webhook endpoint performance; review retry queue
+
 
 
 Related Documentation

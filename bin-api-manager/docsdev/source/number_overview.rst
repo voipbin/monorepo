@@ -97,13 +97,16 @@ Numbers progress through predictable states from provisioning to release.
 
 **State Descriptions**
 
-+-------------+------------------------------------------------------------------+
-| State       | What's happening                                                 |
-+=============+==================================================================+
-| active      | Number is provisioned and ready to receive calls/messages        |
-+-------------+------------------------------------------------------------------+
-| deleted     | Number has been released and is no longer active                 |
-+-------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - State
+     - What's happening
+   * - active
+     - Number is provisioned and ready to receive calls/messages
+   * - deleted
+     - Number has been released and is no longer active
+
 
 
 Provisioning Numbers
@@ -211,19 +214,20 @@ Number Types
 ------------
 VoIPBIN supports various number types for different use cases.
 
-+------------+------------------------------------------------------------------+
-| Type       | Description                                                      |
-+============+==================================================================+
-| local      | Geographic numbers tied to a specific city or region             |
-+------------+------------------------------------------------------------------+
-| toll-free  | Numbers that are free to call (e.g., 1-800)                      |
-+------------+------------------------------------------------------------------+
-| mobile     | Mobile phone numbers (where available)                           |
-+------------+------------------------------------------------------------------+
-| virtual    | Virtual numbers with +899 prefix. No provider purchase required. |
-|            | Designed for non-PSTN callers such as AI calls, WebRTC calls,   |
-|            | and internal routing.                                            |
-+------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Type
+     - Description
+   * - local
+     - Geographic numbers tied to a specific city or region
+   * - toll-free
+     - Numbers that are free to call (e.g., 1-800)
+   * - mobile
+     - Mobile phone numbers (where available)
+   * - virtual
+     - Virtual numbers with +899 prefix. No provider purchase required. Designed for non-PSTN callers such as AI calls, WebRTC calls, and internal routing.
+
 
 **Normal vs Virtual Number Routing**
 
@@ -279,19 +283,28 @@ Normal numbers are routed through an external provider (Telnyx/Twilio) from the 
 
 **Comparison**
 
-+-------------------+-------------------------------+-------------------------------+
-| Aspect            | Normal Number                 | Virtual Number                |
-+===================+===============================+===============================+
-| Format            | E.164 (e.g. +15551234567)     | +899 prefix (+899XXXXXXXXX)   |
-+-------------------+-------------------------------+-------------------------------+
-| Provider          | Telnyx or Twilio              | None (internal only)          |
-+-------------------+-------------------------------+-------------------------------+
-| Inbound routing   | PSTN -> Provider -> VoIPBIN   | Non-PSTN caller -> VoIPBIN    |
-+-------------------+-------------------------------+-------------------------------+
-| Flow execution    | Same (call_flow/message_flow) | Same (call_flow/message_flow) |
-+-------------------+-------------------------------+-------------------------------+
-| Best for          | Production, external callers  | AI, WebRTC, internal routing  |
-+-------------------+-------------------------------+-------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Normal Number
+     - Virtual Number
+   * - Format
+     - E.164 (e.g. +15551234567)
+     - +899 prefix (+899XXXXXXXXX)
+   * - Provider
+     - Telnyx or Twilio
+     - None (internal only)
+   * - Inbound routing
+     - PSTN -> Provider -> VoIPBIN
+     - Non-PSTN caller -> VoIPBIN
+   * - Flow execution
+     - Same (call_flow/message_flow)
+     - Same (call_flow/message_flow)
+   * - Best for
+     - Production, external callers
+     - AI, WebRTC, internal routing
+
 
 For billing and cost details, see :ref:`Billing Account <billing_account_overview>`.
 
@@ -425,30 +438,31 @@ Troubleshooting
 
 **Provisioning Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Number not available      | Try different region or type; number may have  |
-|                           | been provisioned by another customer           |
-+---------------------------+------------------------------------------------+
-| Provisioning failed       | Check account balance; verify number format;   |
-|                           | contact support if issue persists              |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Number not available
+     - Try different region or type; number may have been provisioned by another customer
+   * - Provisioning failed
+     - Check account balance; verify number format; contact support if issue persists
+
 
 **Call/Message Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Calls not connecting      | Check flow is assigned; verify flow is valid;  |
-|                           | test flow in isolation                         |
-+---------------------------+------------------------------------------------+
-| Messages not received     | Verify message_flow_id is set; check carrier   |
-|                           | routing; review webhook logs                   |
-+---------------------------+------------------------------------------------+
-| Wrong flow executing      | Verify correct flow ID is assigned to number;  |
-|                           | check for flow execution errors                |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Calls not connecting
+     - Check flow is assigned; verify flow is valid; test flow in isolation
+   * - Messages not received
+     - Verify message_flow_id is set; check carrier routing; review webhook logs
+   * - Wrong flow executing
+     - Verify correct flow ID is assigned to number; check for flow execution errors
+
 
 
 Related Documentation

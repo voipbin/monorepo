@@ -299,28 +299,22 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>dialing</p></td>
-<td><p>Call has been created. The system is attempting to reach the
-destination through the phone network.</p></td>
+<td><p>Call has been created. The system is attempting to reach the destination through the phone network.</p></td>
 </tr>
 <tr class="row-odd"><td><p>ringing</p></td>
-<td><p>The destination device is ringing. The person being called can
-now answer.</p></td>
+<td><p>The destination device is ringing. The person being called can now answer.</p></td>
 </tr>
 <tr class="row-even"><td><p>progressing</p></td>
-<td><p>The call has been answered. Both parties can now hear each
-other. Media (audio/video) is flowing.</p></td>
+<td><p>The call has been answered. Both parties can now hear each other. Media (audio/video) is flowing.</p></td>
 </tr>
 <tr class="row-odd"><td><p>terminating</p></td>
-<td><p>The system is ending the call. This happens when your
-application hangs up or a flow action ends the call.</p></td>
+<td><p>The system is ending the call. This happens when your application hangs up or a flow action ends the call.</p></td>
 </tr>
 <tr class="row-even"><td><p>canceling</p></td>
-<td><p>The caller is canceling before the destination answered.
-Only happens for outgoing calls.</p></td>
+<td><p>The caller is canceling before the destination answered. Only happens for outgoing calls.</p></td>
 </tr>
 <tr class="row-odd"><td><p>hangup</p></td>
-<td><p>The call has ended. This is the final state - no further
-changes are possible.</p></td>
+<td><p>The call has ended. This is the final state - no further changes are possible.</p></td>
 </tr>
 </tbody>
 </table>
@@ -403,7 +397,55 @@ changes are possible.</p></td>
 <h3>Understanding Hangup Reasons<a class="headerlink" href="#understanding-hangup-reasons" title="Link to this heading"></a></h3>
 <p>When a call ends, VoIPBIN tells you why it ended. This helps you build appropriate responses for different scenarios.</p>
 <p><strong>Hangup Reason Values</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Reason</p></th>
+<th class="head"><p>What happened</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>normal</p></td>
+<td><p>The call ended normally after a conversation. Someone hung up.</p></td>
+</tr>
+<tr class="row-odd"><td><p>failed</p></td>
+<td><p>The call never connected. Network issues prevented the call from reaching the destination.</p></td>
+</tr>
+<tr class="row-even"><td><p>busy</p></td>
+<td><p>The destination is already on another call.</p></td>
+</tr>
+<tr class="row-odd"><td><p>cancel</p></td>
+<td><p>The caller hung up before the destination answered.</p></td>
+</tr>
+<tr class="row-even"><td><p>timeout</p></td>
+<td><p>The call exceeded maximum allowed duration after being answered.</p></td>
+</tr>
+<tr class="row-odd"><td><p>noanswer</p></td>
+<td><p>The destination phone rang but nobody picked up.</p></td>
+</tr>
+<tr class="row-even"><td><p>dialout</p></td>
+<td><p>VoIPBIN’s dialing timeout expired before the destination answered. Different from noanswer - this is our timeout.</p></td>
+</tr>
+<tr class="row-odd"><td><p>amd</p></td>
+<td><p>The Answering Machine Detection (AMD) action detected a voicemail and hung up according to your settings.</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Hangup By Values</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Value</p></th>
+<th class="head"><p>What it means</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>remote</p></td>
+<td><p>The other party hung up first. You were still in the call.</p></td>
+</tr>
+<tr class="row-odd"><td><p>local</p></td>
+<td><p>Your application or flow action ended the call.</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Common Scenarios</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scenario</span><span class="p">:</span> <span class="n">Normal</span> <span class="n">conversation</span>
 <span class="o">----------------------------</span>
@@ -863,6 +905,32 @@ Does the customer have a default outgoing source number configured?
 <h4>Anonymous Caller ID (Outgoing PSTN Calls)<a class="headerlink" href="#anonymous-caller-id-outgoing-pstn-calls" title="Link to this heading"></a></h4>
 <p>You can control whether the caller ID is shown or hidden on outgoing PSTN calls. The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter is available in several places depending on how the outbound call is created.</p>
 <p><strong>Where anonymous caller ID can be set:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Outbound call path</p></th>
+<th class="head"><p>Where to set <code class="docutils literal notranslate"><span class="pre">anonymous</span></code></p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>API-initiated call</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">anonymous</span></code> field in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code> request body</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Flow <code class="docutils literal notranslate"><span class="pre">connect</span></code> action</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">anonymous</span></code> field in the <code class="docutils literal notranslate"><span class="pre">connect</span></code> action’s <code class="docutils literal notranslate"><span class="pre">option</span></code> object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Flow <code class="docutils literal notranslate"><span class="pre">call</span></code> action</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">anonymous</span></code> field in the <code class="docutils literal notranslate"><span class="pre">call</span></code> action’s <code class="docutils literal notranslate"><span class="pre">option</span></code> object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Registered endpoint outbound call (SIP phone dialing out via VoIPBIN)</p></td>
+<td><p>Automatic — inherited from the incoming SIP <code class="docutils literal notranslate"><span class="pre">Privacy</span></code> header. Cannot be overridden by the user.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> (always)</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Allowed values:</strong></p>
 <table class="docutils align-default">
 <thead>
@@ -944,6 +1012,30 @@ Does the customer have a default outgoing source number configured?
 <p>During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
 The VoIPBIN system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
 <p><strong>Common Error Scenarios</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Scenario</p></th>
+<th class="head"><p>What happens</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Network unreachable</p></td>
+<td><p>Call fails immediately with hangup_reason: “failed”</p></td>
+</tr>
+<tr class="row-odd"><td><p>Destination busy</p></td>
+<td><p>Call ends with hangup_reason: “busy” - no retry</p></td>
+</tr>
+<tr class="row-even"><td><p>No answer timeout</p></td>
+<td><p>Call ends with hangup_reason: “noanswer” after ring timeout</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dial timeout</p></td>
+<td><p>Call ends with hangup_reason: “dialout” - our timeout expired</p></td>
+</tr>
+<tr class="row-even"><td><p>Call rejected</p></td>
+<td><p>Call ends with hangup_reason: “noanswer” - destination refused</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="call-concept">
 <h3>Call concept<a class="headerlink" href="#call-concept" title="Link to this heading"></a></h3>
@@ -977,8 +1069,56 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 <section id="troubleshooting">
 <h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
 <p><strong>Call Creation Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Call stuck in “dialing”</p></td>
+<td><p>Check destination number is valid E.164 format; verify route exists for destination</p></td>
+</tr>
+<tr class="row-odd"><td><p>Call immediately hangs up</p></td>
+<td><p>Check <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> field: <code class="docutils literal notranslate"><span class="pre">failed</span></code> means network issue; <code class="docutils literal notranslate"><span class="pre">busy</span></code> means destination is on another call</p></td>
+</tr>
+<tr class="row-even"><td><p>No flow executing after call answers</p></td>
+<td><p>Verify <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> is set on the call or on the number configuration via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code></p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Media Control Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Hold/mute not working</p></td>
+<td><p>Verify call status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>; media controls only work on answered calls</p></td>
+</tr>
+<tr class="row-odd"><td><p>Recording not starting</p></td>
+<td><p>Check call is in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> state; verify billing account has sufficient balance</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Call Chaining Issues</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Symptom</p></th>
+<th class="head"><p>Solution</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Chained calls not created</p></td>
+<td><p>Verify master call is in <code class="docutils literal notranslate"><span class="pre">dialing</span></code>, <code class="docutils literal notranslate"><span class="pre">ringing</span></code>, or <code class="docutils literal notranslate"><span class="pre">progressing</span></code> state</p></td>
+</tr>
+<tr class="row-odd"><td><p>All calls ended unexpectedly</p></td>
+<td><p>Master call hangup cascades to all chained calls; check master call <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code></p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="related-documentation">
 <h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>

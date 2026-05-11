@@ -273,6 +273,48 @@
 </pre></div>
 </div>
 <p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>State</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>(empty)</p></td>
+<td><p>Email has no status yet</p></td>
+</tr>
+<tr class="row-odd"><td><p>initiated</p></td>
+<td><p>Email has been initiated and submitted for processing</p></td>
+</tr>
+<tr class="row-even"><td><p>processed</p></td>
+<td><p>Email has been received and is being processed by the provider</p></td>
+</tr>
+<tr class="row-odd"><td><p>delivered</p></td>
+<td><p>Email was accepted by the recipient’s mail server</p></td>
+</tr>
+<tr class="row-even"><td><p>open</p></td>
+<td><p>Recipient opened the email</p></td>
+</tr>
+<tr class="row-odd"><td><p>click</p></td>
+<td><p>Recipient clicked a link in the email</p></td>
+</tr>
+<tr class="row-even"><td><p>bounce</p></td>
+<td><p>Email bounced (permanent or temporary delivery failure)</p></td>
+</tr>
+<tr class="row-odd"><td><p>dropped</p></td>
+<td><p>Provider dropped the email (invalid recipient, spam report, or blocked IP)</p></td>
+</tr>
+<tr class="row-even"><td><p>deferred</p></td>
+<td><p>Provider has temporarily deferred delivery; will retry later</p></td>
+</tr>
+<tr class="row-odd"><td><p>unsubscribe</p></td>
+<td><p>Recipient unsubscribed from the email list</p></td>
+</tr>
+<tr class="row-even"><td><p>spamreport</p></td>
+<td><p>Recipient marked the email as spam</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="sending-emails">
 <h2>Sending Emails<a class="headerlink" href="#sending-emails" title="Link to this heading"></a></h2>
@@ -433,6 +475,27 @@
 </pre></div>
 </div>
 <p><strong>Content Guidelines</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Do</p></th>
+<th class="head"><p>Don’t</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Use inline CSS styles</p></td>
+<td><p>Use external stylesheets</p></td>
+</tr>
+<tr class="row-odd"><td><p>Use table-based layouts</p></td>
+<td><p>Rely on CSS floats or flexbox</p></td>
+</tr>
+<tr class="row-even"><td><p>Include plain text version</p></td>
+<td><p>Send HTML-only emails</p></td>
+</tr>
+<tr class="row-odd"><td><p>Test across email clients</p></td>
+<td><p>Assume all clients render the same</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="common-scenarios">
 <h2>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h2>
@@ -547,12 +610,10 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Email bounced</p></td>
-<td><p>Check recipient address validity; verify
-mailbox exists</p></td>
+<td><p>Check recipient address validity; verify mailbox exists</p></td>
 </tr>
 <tr class="row-odd"><td><p>Marked as spam</p></td>
-<td><p>Review content for spam triggers; check
-sender reputation</p></td>
+<td><p>Review content for spam triggers; check sender reputation</p></td>
 </tr>
 <tr class="row-even"><td><p>Delayed delivery</p></td>
 <td><p>Check sending rate; verify no throttling</p></td>

@@ -245,6 +245,21 @@
 <li><p><strong>Webhooks</strong>: Notify your application of delivery status and inbound messages</p></li>
 </ul>
 <p><strong>Message Types</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>SMS</p></td>
+<td><p>Text-only messages up to 160 characters (or 70 for Unicode). Longer messages are split and reassembled by the recipient.</p></td>
+</tr>
+<tr class="row-odd"><td><p>MMS</p></td>
+<td><p>Multimedia messages supporting images, videos, audio, and text. Subject line and multiple media attachments supported.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="message-lifecycle">
 <h3>Message Lifecycle<a class="headerlink" href="#message-lifecycle" title="Link to this heading"></a></h3>
@@ -298,8 +313,7 @@
 <td><p>Gateway confirmed the message has been sent downstream</p></td>
 </tr>
 <tr class="row-even"><td><p>delivered</p></td>
-<td><p>Message delivered to recipient (outbound) or transmitted to you
-(inbound)</p></td>
+<td><p>Message delivered to recipient (outbound) or transmitted to you (inbound)</p></td>
 </tr>
 <tr class="row-odd"><td><p>gw_timeout</p></td>
 <td><p>No delivery receipt received from gateway</p></td>
@@ -482,8 +496,7 @@
 <td><p>160 characters</p></td>
 <td><p>153 characters</p></td>
 </tr>
-<tr class="row-odd"><td><p>Unicode (emoji,
-non-Latin)</p></td>
+<tr class="row-odd"><td><p>Unicode (emoji, non-Latin)</p></td>
 <td><p>70 characters</p></td>
 <td><p>67 characters</p></td>
 </tr>
@@ -635,17 +648,13 @@ non-Latin)</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Status stays “sending”</p></td>
-<td><p>Check carrier connectivity; verify destination
-number format (+E.164)</p></td>
+<td><p>Check carrier connectivity; verify destination number format (+E.164)</p></td>
 </tr>
 <tr class="row-odd"><td><p>Status “failed”</p></td>
-<td><p>Check error code; common issues: invalid
-number, carrier rejection, insufficient credit</p></td>
+<td><p>Check error code; common issues: invalid number, carrier rejection, insufficient credit</p></td>
 </tr>
-<tr class="row-even"><td><p>Delivered but not
-received</p></td>
-<td><p>Recipient’s phone may be off or out of range;
-carrier may delay delivery</p></td>
+<tr class="row-even"><td><p>Delivered but not received</p></td>
+<td><p>Recipient’s phone may be off or out of range; carrier may delay delivery</p></td>
 </tr>
 </tbody>
 </table>
@@ -658,16 +667,13 @@ carrier may delay delivery</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>No webhook calls</p></td>
-<td><p>Verify webhook URL is configured and publicly
-accessible</p></td>
+<td><p>Verify webhook URL is configured and publicly accessible</p></td>
 </tr>
 <tr class="row-odd"><td><p>Webhook returns error</p></td>
-<td><p>Ensure endpoint returns 200 OK within 5
-seconds</p></td>
+<td><p>Ensure endpoint returns 200 OK within 5 seconds</p></td>
 </tr>
 <tr class="row-even"><td><p>Missing messages</p></td>
-<td><p>Check webhook logs; implement idempotency
-using message ID</p></td>
+<td><p>Check webhook logs; implement idempotency using message ID</p></td>
 </tr>
 </tbody>
 </table>
@@ -680,8 +686,7 @@ using message ID</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Message truncated</p></td>
-<td><p>Check for Unicode characters; they reduce
-character limit to 70</p></td>
+<td><p>Check for Unicode characters; they reduce character limit to 70</p></td>
 </tr>
 <tr class="row-odd"><td><p>Strange characters</p></td>
 <td><p>Ensure UTF-8 encoding in API requests</p></td>
@@ -782,6 +787,18 @@ character limit to 70</p></td>
 <section id="type">
 <span id="message-struct-message-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
 <p>Message’s type.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>sms</p></td>
+<td><p>Standard SMS text message. Limited to 160 characters per segment (GSM-7 encoding) or 70 characters (Unicode encoding).</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="direction">
 <span id="message-struct-message-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Link to this heading"></a></h3>
@@ -794,12 +811,10 @@ character limit to 70</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>inbound</p></td>
-<td><p>Incoming message received from an external sender to your
-VoIPBIN number. Delivered to your application via webhook.</p></td>
+<td><p>Incoming message received from an external sender to your VoIPBIN number. Delivered to your application via webhook.</p></td>
 </tr>
 <tr class="row-odd"><td><p>outbound</p></td>
-<td><p>Outgoing message sent from your application via the VoIPBIN API
-to an external recipient.</p></td>
+<td><p>Outgoing message sent from your application via the VoIPBIN API to an external recipient.</p></td>
 </tr>
 </tbody>
 </table>

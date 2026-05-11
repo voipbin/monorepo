@@ -333,6 +333,24 @@ immediate                   interactive
 </pre></div>
 </div>
 <p><strong>Message Status Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>progressing</p></td>
+<td><p>Message is being processed and delivered</p></td>
+</tr>
+<tr class="row-odd"><td><p>done</p></td>
+<td><p>Message was successfully delivered</p></td>
+</tr>
+<tr class="row-even"><td><p>failed</p></td>
+<td><p>Message delivery failed</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="conversation-rooms">
 <h3>Conversation Rooms<a class="headerlink" href="#conversation-rooms" title="Link to this heading"></a></h3>
@@ -489,6 +507,24 @@ POST<span class="w"> </span>https://api.voipbin.net/v1.0/conversations/&lt;conve
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/unassign</span></code> endpoint takes no request body and returns the updated conversation object.</p>
 <p><strong>Permission Semantics</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Caller</p></th>
+<th class="head"><p>Permitted operations</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Customer admin / manager</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code>: assign, reassign, or unassign the conversation. All fields (owner, name, detail) may be updated. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code>: unassign the conversation (no body required).</p></td>
+</tr>
+<tr class="row-odd"><td><p>Owning agent</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/conversations/&lt;id&gt;/unassign</span></code> only — self-unassign without a request body. <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/v1.0/conversations/&lt;id&gt;</span></code> is <strong>not</strong> permitted for agents (returns 403 even for the owning agent).</p></td>
+</tr>
+<tr class="row-even"><td><p>Any other agent</p></td>
+<td><p>No assignment-related changes permitted. 403 returned.</p></td>
+</tr>
+</tbody>
+</table>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Breaking Change</strong></p>
@@ -774,16 +810,13 @@ Auto-generated titles apply only to conversations created automatically; convers
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Message not delivered</p></td>
-<td><p>Check participant endpoint validity; verify
-channel is available for participant</p></td>
+<td><p>Check participant endpoint validity; verify channel is available for participant</p></td>
 </tr>
 <tr class="row-odd"><td><p>Wrong channel selected</p></td>
-<td><p>Check channel selection priority; verify
-participant preferences</p></td>
+<td><p>Check channel selection priority; verify participant preferences</p></td>
 </tr>
 <tr class="row-even"><td><p>Duplicate messages</p></td>
-<td><p>Check for retry logic; ensure idempotency
-using message IDs</p></td>
+<td><p>Check for retry logic; ensure idempotency using message IDs</p></td>
 </tr>
 </tbody>
 </table>
@@ -795,20 +828,14 @@ using message IDs</p></td>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Messages in wrong
-conversation</p></td>
-<td><p>Check participant matching; verify
-conversation is active (not closed)</p></td>
+<tr class="row-even"><td><p>Messages in wrong conversation</p></td>
+<td><p>Check participant matching; verify conversation is active (not closed)</p></td>
 </tr>
-<tr class="row-odd"><td><p>New conversation created
-unexpectedly</p></td>
-<td><p>Previous conversation may have timed out;
-check conversation state</p></td>
+<tr class="row-odd"><td><p>New conversation created unexpectedly</p></td>
+<td><p>Previous conversation may have timed out; check conversation state</p></td>
 </tr>
-<tr class="row-even"><td><p>Participant can’t receive
-messages</p></td>
-<td><p>Verify endpoint; check channel availability;
-review delivery errors</p></td>
+<tr class="row-even"><td><p>Participant can’t receive messages</p></td>
+<td><p>Verify endpoint; check channel availability; review delivery errors</p></td>
 </tr>
 </tbody>
 </table>
@@ -821,12 +848,10 @@ review delivery errors</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Missing events</p></td>
-<td><p>Verify webhook URL configuration; check
-endpoint returns 200 OK within 5 seconds</p></td>
+<td><p>Verify webhook URL configuration; check endpoint returns 200 OK within 5 seconds</p></td>
 </tr>
 <tr class="row-odd"><td><p>Delayed events</p></td>
-<td><p>Check webhook endpoint performance; review
-retry queue</p></td>
+<td><p>Check webhook endpoint performance; review retry queue</p></td>
 </tr>
 </tbody>
 </table>

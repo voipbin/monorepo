@@ -75,15 +75,16 @@ An activeflow has two possible states during its lifecycle:
     Cursor moving                               No more changes
     Variables updating                          History preserved
 
-+----------+--------------------------------------------------------------------+
-| Status   | What it means                                                      |
-+==========+====================================================================+
-| running  | The activeflow is actively executing actions. The cursor is        |
-|          | moving through the flow, and the state can change at any time.     |
-+----------+--------------------------------------------------------------------+
-| ended    | The activeflow has completed. No further execution will occur.     |
-|          | The executed_actions history is preserved for review.              |
-+----------+--------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Status
+     - What it means
+   * - running
+     - The activeflow is actively executing actions. The cursor is moving through the flow, and the state can change at any time.
+   * - ended
+     - The activeflow has completed. No further execution will occur. The executed_actions history is preserved for review.
+
 
 
 Execution
@@ -194,23 +195,26 @@ Each activeflow is linked to a reference - the entity that triggered it:
     |                    ActiveFlow Reference Types                       |
     +--------------------------------------------------------------------+
 
-+----------------+-----------------------------------------------------------+
-| Reference Type | When it's used                                            |
-+================+===========================================================+
-| call           | Flow was triggered by an incoming or outgoing call        |
-+----------------+-----------------------------------------------------------+
-| conversation   | Flow was triggered by a message in a conversation         |
-+----------------+-----------------------------------------------------------+
-| api            | Flow was triggered directly via API call                  |
-+----------------+-----------------------------------------------------------+
-| campaign       | Flow was triggered by an outbound campaign                |
-+----------------+-----------------------------------------------------------+
-| transcribe     | Flow was triggered for transcription processing           |
-+----------------+-----------------------------------------------------------+
-| recording      | Flow was triggered for recording processing               |
-+----------------+-----------------------------------------------------------+
-| ai             | Flow was triggered for AI processing                      |
-+----------------+-----------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Reference Type
+     - When it's used
+   * - call
+     - Flow was triggered by an incoming or outgoing call
+   * - conversation
+     - Flow was triggered by a message in a conversation
+   * - api
+     - Flow was triggered directly via API call
+   * - campaign
+     - Flow was triggered by an outbound campaign
+   * - transcribe
+     - Flow was triggered for transcription processing
+   * - recording
+     - Flow was triggered for recording processing
+   * - ai
+     - Flow was triggered for AI processing
+
 
 **Reference Impact on Actions:**
 
@@ -457,15 +461,22 @@ ActiveFlows handle errors gracefully to ensure reliable execution:
 
 **Safety Limits:**
 
-+--------------------------------+--------+----------------------------------------+
-| Limit                          | Value  | Purpose                                |
-+================================+========+========================================+
-| Max iterations per cycle       | 1000   | Prevents infinite loops in goto/branch |
-+--------------------------------+--------+----------------------------------------+
-| Max total execute calls        | 100    | Prevents runaway execution             |
-+--------------------------------+--------+----------------------------------------+
-| Max on_complete chain depth    | 5      | Prevents infinite flow chaining        |
-+--------------------------------+--------+----------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Limit
+     - Value
+     - Purpose
+   * - Max iterations per cycle
+     - 1000
+     - Prevents infinite loops in goto/branch
+   * - Max total execute calls
+     - 100
+     - Prevents runaway execution
+   * - Max on_complete chain depth
+     - 5
+     - Prevents infinite flow chaining
+
 
 
 Common Use Cases
@@ -527,32 +538,28 @@ Troubleshooting
 
 **Execution Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Activeflow stuck in       | Check ``current_action`` via                   |
-| "running" state           | ``GET /activeflows/{id}``; a blocking action   |
-|                           | may be waiting for external input. Use          |
-|                           | ``POST /activeflows/{id}/stop`` to force end.   |
-+---------------------------+------------------------------------------------+
-| Flow ended unexpectedly   | Check ``reference_type``: if ``call``, the call |
-|                           | may have hung up. Verify call status via         |
-|                           | ``GET /calls/{reference_id}``.                   |
-+---------------------------+------------------------------------------------+
-| Variables not inherited   | Ensure ``on_complete_flow_id`` is set on the    |
-| in chained flow           | parent flow. Chain depth maximum is 5.           |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Activeflow stuck in "running" state
+     - Check ``current_action`` via ``GET /activeflows/{id}``; a blocking action may be waiting for external input. Use ``POST /activeflows/{id}/stop`` to force end.
+   * - Flow ended unexpectedly
+     - Check ``reference_type``: if ``call``, the call may have hung up. Verify call status via ``GET /calls/{reference_id}``.
+   * - Variables not inherited in chained flow
+     - Ensure ``on_complete_flow_id`` is set on the parent flow. Chain depth maximum is 5.
+
 
 **Control Interface Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Stop request returns 404  | Verify the activeflow ID exists and belongs to  |
-|                           | your customer; activeflows in ``ended`` state   |
-|                           | cannot be stopped again.                        |
-+---------------------------+------------------------------------------------+
-| Actions being skipped     | Check ``reference_type``: media actions (talk,  |
-|                           | play, recording) are skipped for ``api`` type   |
-|                           | activeflows since there is no media channel.     |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Stop request returns 404
+     - Verify the activeflow ID exists and belongs to your customer; activeflows in ``ended`` state cannot be stopped again.
+   * - Actions being skipped
+     - Check ``reference_type``: media actions (talk, play, recording) are skipped for ``api`` type activeflows since there is no media channel.
+

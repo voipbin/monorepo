@@ -36,17 +36,25 @@ When you connect to a media stream, VoIPBIN establishes a WebSocket connection t
 
 **Key Differences from Traditional VoIP**
 
-+------------------------+----------------------------------+----------------------------------+
-| Aspect                 | Traditional SIP                  | Media Streaming                  |
-+========================+==================================+==================================+
-| Audio Access           | Via RTP to SIP endpoints         | Direct WebSocket to your app     |
-+------------------------+----------------------------------+----------------------------------+
-| Control                | SIP signaling                    | API and WebSocket                |
-+------------------------+----------------------------------+----------------------------------+
-| Integration            | Requires SIP stack               | Simple WebSocket client          |
-+------------------------+----------------------------------+----------------------------------+
-| Use Cases              | Phone-to-phone calls             | AI, custom IVR, analysis         |
-+------------------------+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Traditional SIP
+     - Media Streaming
+   * - Audio Access
+     - Via RTP to SIP endpoints
+     - Direct WebSocket to your app
+   * - Control
+     - SIP signaling
+     - API and WebSocket
+   * - Integration
+     - Requires SIP stack
+     - Simple WebSocket client
+   * - Use Cases
+     - Phone-to-phone calls
+     - AI, custom IVR, analysis
+
 
 **System Components**
 
@@ -132,17 +140,25 @@ See detail :ref:`here <flow-struct-action-external_media_start>`.
 
 **Mode Comparison**
 
-+---------------------+----------------------------------+----------------------------------+
-| Aspect              | Bi-Directional                   | Uni-Directional                  |
-+=====================+==================================+==================================+
-| Audio Direction     | Both send and receive            | Send only (to call)              |
-+---------------------+----------------------------------+----------------------------------+
-| Initiation          | API call (GET /media_stream)     | Flow action (external_media_start)|
-+---------------------+----------------------------------+----------------------------------+
-| Connection          | Your app connects to VoIPBIN     | VoIPBIN connects to your server  |
-+---------------------+----------------------------------+----------------------------------+
-| Best for            | Interactive applications         | Playback applications            |
-+---------------------+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Bi-Directional
+     - Uni-Directional
+   * - Audio Direction
+     - Both send and receive
+     - Send only (to call)
+   * - Initiation
+     - API call (GET /media_stream)
+     - Flow action (external_media_start
+   * - Connection
+     - Your app connects to VoIPBIN
+     - VoIPBIN connects to your server
+   * - Best for
+     - Interactive applications
+     - Playback applications
+
 
 
 Encapsulation Types
@@ -185,26 +201,30 @@ The standard protocol for audio/video over IP networks.
 
 ::
 
-    +------------------+------------------+
-    |   RTP Header     |   Audio Payload  |
-    |   (12 bytes)     |   (160 bytes)    |
-    +------------------+------------------+
+    .. list-table::
 
-+-------------------+------------------------------------------------+
-| Specification     | Value                                          |
-+===================+================================================+
-| Protocol          | RTP over WebSocket                             |
-+-------------------+------------------------------------------------+
-| Codec             | G.711 μ-law (ulaw)                             |
-+-------------------+------------------------------------------------+
-| Sample Rate       | 8 kHz                                          |
-+-------------------+------------------------------------------------+
-| Bit Depth         | 16-bit                                         |
-+-------------------+------------------------------------------------+
-| Channels          | Mono                                           |
-+-------------------+------------------------------------------------+
-| Packet Size       | 172 bytes (12 header + 160 payload = 20ms)     |
-+-------------------+------------------------------------------------+
+       * - RTP Header (12 bytes)
+         - Audio Paylo (160 bytes)
+
+
+.. list-table::
+   :header-rows: 1
+
+   * - Specification
+     - Value
+   * - Protocol
+     - RTP over WebSocket
+   * - Codec
+     - G.711 μ-law (ulaw)
+   * - Sample Rate
+     - 8 kHz
+   * - Bit Depth
+     - 16-bit
+   * - Channels
+     - Mono
+   * - Packet Size
+     - 172 bytes (12 header + 160 payload = 20ms)
+
 
 **Best for:** Standard VoIP tools, industry compatibility, existing RTP processing pipelines.
 
@@ -219,19 +239,22 @@ Raw audio without protocol overhead.
     |   (no headers, no padding)       |
     +----------------------------------+
 
-+-------------------+------------------------------------------------+
-| Specification     | Value                                          |
-+===================+================================================+
-| Format            | Raw PCM, signed linear                         |
-+-------------------+------------------------------------------------+
-| Sample Rate       | 8 kHz                                          |
-+-------------------+------------------------------------------------+
-| Bit Depth         | 16-bit signed                                  |
-+-------------------+------------------------------------------------+
-| Channels          | Mono                                           |
-+-------------------+------------------------------------------------+
-| Byte Order        | Native                                         |
-+-------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Specification
+     - Value
+   * - Format
+     - Raw PCM, signed linear
+   * - Sample Rate
+     - 8 kHz
+   * - Bit Depth
+     - 16-bit signed
+   * - Channels
+     - Mono
+   * - Byte Order
+     - Native
+
 
 **Best for:** Minimal overhead, simple audio processing, direct PCM access without parsing.
 
@@ -241,25 +264,30 @@ Asterisk-specific protocol designed for simple audio streaming.
 
 ::
 
-    +------------------+------------------+
-    | AudioSocket Hdr  |   PCM Audio      |
-    +------------------+------------------+
+    .. list-table::
 
-+-------------------+------------------------------------------------+
-| Specification     | Value                                          |
-+===================+================================================+
-| Protocol          | Asterisk AudioSocket                           |
-+-------------------+------------------------------------------------+
-| Format            | PCM little-endian                              |
-+-------------------+------------------------------------------------+
-| Sample Rate       | 8 kHz                                          |
-+-------------------+------------------------------------------------+
-| Bit Depth         | 16-bit                                         |
-+-------------------+------------------------------------------------+
-| Channels          | Mono                                           |
-+-------------------+------------------------------------------------+
-| Chunk Size        | 320 bytes (20ms of audio)                      |
-+-------------------+------------------------------------------------+
+       * - AudioSocket H
+         - r  |   PCM Audio
+
+
+.. list-table::
+   :header-rows: 1
+
+   * - Specification
+     - Value
+   * - Protocol
+     - Asterisk AudioSocket
+   * - Format
+     - PCM little-endian
+   * - Sample Rate
+     - 8 kHz
+   * - Bit Depth
+     - 16-bit
+   * - Channels
+     - Mono
+   * - Chunk Size
+     - 320 bytes (20ms of audio)
+
 
 **Best for:** Asterisk integration, simple streaming with minimal overhead.
 
@@ -267,17 +295,30 @@ See `Asterisk AudioSocket Documentation <https://docs.asterisk.org/Configuration
 
 **Encapsulation Comparison**
 
-+-------------------+------------------+------------------+------------------+
-| Aspect            | RTP              | SLN              | AudioSocket      |
-+===================+==================+==================+==================+
-| Headers           | 12 bytes         | None             | Protocol header  |
-+-------------------+------------------+------------------+------------------+
-| Compatibility     | Industry standard| Simple           | Asterisk         |
-+-------------------+------------------+------------------+------------------+
-| Overhead          | Low              | Minimal          | Low              |
-+-------------------+------------------+------------------+------------------+
-| Parsing Required  | Yes (RTP)        | No               | Yes (AudioSocket)|
-+-------------------+------------------+------------------+------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - RTP
+     - SLN
+     - AudioSocket
+   * - Headers
+     - 12 bytes
+     - None
+     - Protocol header
+   * - Compatibility
+     - Industry standard
+     - Simple
+     - Asterisk
+   * - Overhead
+     - Low
+     - Minimal
+     - Low
+   * - Parsing Required
+     - Yes (RTP)
+     - No
+     - Yes (AudioSocket)
+
 
 
 Supported Resources
@@ -306,17 +347,25 @@ Stream audio from a conference with multiple participants.
 
 **Resource Comparison**
 
-+-------------------+----------------------------------+----------------------------------+
-| Aspect            | Call                             | Conference                       |
-+===================+==================================+==================================+
-| Audio Source      | Two-party conversation           | Multi-party conversation         |
-+-------------------+----------------------------------+----------------------------------+
-| Audio Mix         | Caller + callee                  | All participants                 |
-+-------------------+----------------------------------+----------------------------------+
-| Audio Injection   | Heard by both parties            | Heard by all participants        |
-+-------------------+----------------------------------+----------------------------------+
-| Use Case          | 1:1 AI assistant                 | Conference monitoring/recording  |
-+-------------------+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Call
+     - Conference
+   * - Audio Source
+     - Two-party conversation
+     - Multi-party conversation
+   * - Audio Mix
+     - Caller + callee
+     - All participants
+   * - Audio Injection
+     - Heard by both parties
+     - Heard by all participants
+   * - Use Case
+     - 1:1 AI assistant
+     - Conference monitoring/recording
+
 
 
 Connection Lifecycle
@@ -357,19 +406,22 @@ Understanding the WebSocket connection lifecycle helps build robust streaming ap
 
 **State Descriptions**
 
-+---------------+------------------------------------------------------------------+
-| State         | What's happening                                                 |
-+===============+==================================================================+
-| connecting    | WebSocket handshake in progress                                  |
-+---------------+------------------------------------------------------------------+
-| open          | Connection established, ready for audio                          |
-+---------------+------------------------------------------------------------------+
-| streaming     | Audio frames being sent/received                                 |
-+---------------+------------------------------------------------------------------+
-| closing       | Graceful shutdown initiated                                      |
-+---------------+------------------------------------------------------------------+
-| closed        | Connection terminated                                            |
-+---------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - State
+     - What's happening
+   * - connecting
+     - WebSocket handshake in progress
+   * - open
+     - Connection established, ready for audio
+   * - streaming
+     - Audio frames being sent/received
+   * - closing
+     - Graceful shutdown initiated
+   * - closed
+     - Connection terminated
+
 
 **Connection Termination**
 
@@ -482,35 +534,35 @@ Troubleshooting
 
 **Connection Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Connection refused        | Verify call/conference is active and           |
-|                           | in "progressing" status                        |
-+---------------------------+------------------------------------------------+
-| 401 Unauthorized          | Check API token is valid and has permissions   |
-+---------------------------+------------------------------------------------+
-| Connection drops          | Implement reconnection logic; check network    |
-|                           | stability                                      |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Connection refused
+     - Verify call/conference is active and in "progressing" status
+   * - 401 Unauthorized
+     - Check API token is valid and has permissions
+   * - Connection drops
+     - Implement reconnection logic; check network stability
+
 
 **Audio Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| No audio received         | Verify call is answered and audio is flowing;  |
-|                           | check encapsulation type                       |
-+---------------------------+------------------------------------------------+
-| Audio quality poor        | Check network latency; verify correct audio    |
-|                           | format; monitor packet loss                    |
-+---------------------------+------------------------------------------------+
-| Audio choppy              | Implement jitter buffer; send in consistent    |
-|                           | 20ms chunks; check CPU usage                   |
-+---------------------------+------------------------------------------------+
-| Can't send audio          | Use binary WebSocket frames; verify audio      |
-|                           | format matches encapsulation type              |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - No audio received
+     - Verify call is answered and audio is flowing; check encapsulation type
+   * - Audio quality poor
+     - Check network latency; verify correct audio format; monitor packet loss
+   * - Audio choppy
+     - Implement jitter buffer; send in consistent 20ms chunks; check CPU usage
+   * - Can't send audio
+     - Use binary WebSocket frames; verify audio format matches encapsulation type
+
 
 
 Related Documentation

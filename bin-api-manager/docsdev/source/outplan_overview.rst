@@ -88,15 +88,22 @@ The dial timeout specifies how long the system waits for the target to answer be
 
 **Recommended Timeouts**
 
-+-------------------+------------------+----------------------------------------+
-| Campaign Type     | Recommended      | Reasoning                              |
-+===================+==================+========================================+
-| Sales calls       | 25-30 seconds    | Allow time to reach phone              |
-+-------------------+------------------+----------------------------------------+
-| Reminders         | 20-25 seconds    | Quick notification, don't wait long   |
-+-------------------+------------------+----------------------------------------+
-| Emergency         | 30-45 seconds    | Maximum opportunity to answer          |
-+-------------------+------------------+----------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Campaign Type
+     - Recommended
+     - Reasoning
+   * - Sales calls
+     - 25-30 seconds
+     - Allow time to reach phone
+   * - Reminders
+     - 20-25 seconds
+     - Quick notification, don't wait long
+   * - Emergency
+     - 30-45 seconds
+     - Maximum opportunity to answer
+
 
 **Try Interval**
 
@@ -125,15 +132,22 @@ The try interval defines the wait time between consecutive dial attempts to the 
 
 **Recommended Intervals**
 
-+-------------------+------------------+----------------------------------------+
-| Campaign Type     | Recommended      | Reasoning                              |
-+===================+==================+========================================+
-| Sales calls       | 2-4 hours        | Try different times of day             |
-+-------------------+------------------+----------------------------------------+
-| Reminders         | 30-60 minutes    | Moderate urgency                       |
-+-------------------+------------------+----------------------------------------+
-| Emergency         | 5-15 minutes     | High urgency, frequent retries         |
-+-------------------+------------------+----------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Campaign Type
+     - Recommended
+     - Reasoning
+   * - Sales calls
+     - 2-4 hours
+     - Try different times of day
+   * - Reminders
+     - 30-60 minutes
+     - Moderate urgency
+   * - Emergency
+     - 5-15 minutes
+     - High urgency, frequent retries
+
 
 **Max Try Count**
 
@@ -176,23 +190,26 @@ Create outplans via the API.
 
 **Field Descriptions**
 
-+-------------------+------------------------------------------------------------------+
-| Field             | Description                                                      |
-+===================+==================================================================+
-| dial_timeout      | Ring timeout in milliseconds (30000 = 30 seconds)                |
-+-------------------+------------------------------------------------------------------+
-| try_interval      | Wait between retries in milliseconds (7200000 = 2 hours)         |
-+-------------------+------------------------------------------------------------------+
-| max_try_count_0   | Max retries for destination_0 on the outdialtarget               |
-+-------------------+------------------------------------------------------------------+
-| max_try_count_1   | Max retries for destination_1 on the outdialtarget               |
-+-------------------+------------------------------------------------------------------+
-| max_try_count_2   | Max retries for destination_2 on the outdialtarget               |
-+-------------------+------------------------------------------------------------------+
-| max_try_count_3   | Max retries for destination_3 on the outdialtarget               |
-+-------------------+------------------------------------------------------------------+
-| max_try_count_4   | Max retries for destination_4 on the outdialtarget               |
-+-------------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Field
+     - Description
+   * - dial_timeout
+     - Ring timeout in milliseconds (30000 = 30 seconds)
+   * - try_interval
+     - Wait between retries in milliseconds (7200000 = 2 hours)
+   * - max_try_count_0
+     - Max retries for destination_0 on the outdialtarget
+   * - max_try_count_1
+     - Max retries for destination_1 on the outdialtarget
+   * - max_try_count_2
+     - Max retries for destination_2 on the outdialtarget
+   * - max_try_count_3
+     - Max retries for destination_3 on the outdialtarget
+   * - max_try_count_4
+     - Max retries for destination_4 on the outdialtarget
+
 
 
 Outplan Strategies
@@ -386,33 +403,33 @@ Troubleshooting
 
 **Timing Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Calls timing out too      | Increase dial_timeout; check network latency;  |
-| quickly                   | verify carrier routing                         |
-+---------------------------+------------------------------------------------+
-| Retries happening too     | Increase try_interval; verify millisecond      |
-| fast                      | values are correct                             |
-+---------------------------+------------------------------------------------+
-| Not enough retries        | Increase max_try_count values; check           |
-|                           | destination-specific configuration             |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Calls timing out too quickly
+     - Increase dial_timeout; check network latency; verify carrier routing
+   * - Retries happening too fast
+     - Increase try_interval; verify millisecond values are correct
+   * - Not enough retries
+     - Increase max_try_count values; check destination-specific configuration
+
 
 **Configuration Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Outplan not applied       | Verify outplan_id in campaign; check outplan   |
-|                           | exists and is active                           |
-+---------------------------+------------------------------------------------+
-| Wrong retry behavior      | Review per-destination max_try_count values;   |
-|                           | check which destination index is being dialed  |
-+---------------------------+------------------------------------------------+
-| Values seem wrong         | Confirm millisecond format; 30 seconds =       |
-|                           | 30000ms, 1 hour = 3600000ms                    |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Outplan not applied
+     - Verify outplan_id in campaign; check outplan exists and is active
+   * - Wrong retry behavior
+     - Review per-destination max_try_count values; check which destination index is being dialed
+   * - Values seem wrong
+     - Confirm millisecond format; 30 seconds = 30000ms, 1 hour = 3600000ms
+
 
 
 Related Documentation

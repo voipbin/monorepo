@@ -283,6 +283,28 @@
 </pre></div>
 </div>
 <p><strong>Recommended Timeouts</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Campaign Type</p></th>
+<th class="head"><p>Recommended</p></th>
+<th class="head"><p>Reasoning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Sales calls</p></td>
+<td><p>25-30 seconds</p></td>
+<td><p>Allow time to reach phone</p></td>
+</tr>
+<tr class="row-odd"><td><p>Reminders</p></td>
+<td><p>20-25 seconds</p></td>
+<td><p>Quick notification, don’t wait long</p></td>
+</tr>
+<tr class="row-even"><td><p>Emergency</p></td>
+<td><p>30-45 seconds</p></td>
+<td><p>Maximum opportunity to answer</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Try Interval</strong></p>
 <p>The try interval defines the wait time between consecutive dial attempts to the same target.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Attempt</span> <span class="mi">1</span><span class="p">:</span> <span class="n">No</span> <span class="n">answer</span>
@@ -566,19 +588,14 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Calls timing out too
-quickly</p></td>
-<td><p>Increase dial_timeout; check network latency;
-verify carrier routing</p></td>
+<tr class="row-even"><td><p>Calls timing out too quickly</p></td>
+<td><p>Increase dial_timeout; check network latency; verify carrier routing</p></td>
 </tr>
-<tr class="row-odd"><td><p>Retries happening too
-fast</p></td>
-<td><p>Increase try_interval; verify millisecond
-values are correct</p></td>
+<tr class="row-odd"><td><p>Retries happening too fast</p></td>
+<td><p>Increase try_interval; verify millisecond values are correct</p></td>
 </tr>
 <tr class="row-even"><td><p>Not enough retries</p></td>
-<td><p>Increase max_try_count values; check
-destination-specific configuration</p></td>
+<td><p>Increase max_try_count values; check destination-specific configuration</p></td>
 </tr>
 </tbody>
 </table>
@@ -591,16 +608,13 @@ destination-specific configuration</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Outplan not applied</p></td>
-<td><p>Verify outplan_id in campaign; check outplan
-exists and is active</p></td>
+<td><p>Verify outplan_id in campaign; check outplan exists and is active</p></td>
 </tr>
 <tr class="row-odd"><td><p>Wrong retry behavior</p></td>
-<td><p>Review per-destination max_try_count values;
-check which destination index is being dialed</p></td>
+<td><p>Review per-destination max_try_count values; check which destination index is being dialed</p></td>
 </tr>
 <tr class="row-even"><td><p>Values seem wrong</p></td>
-<td><p>Confirm millisecond format; 30 seconds =
-30000ms, 1 hour = 3600000ms</p></td>
+<td><p>Confirm millisecond format; 30 seconds = 30000ms, 1 hour = 3600000ms</p></td>
 </tr>
 </tbody>
 </table>

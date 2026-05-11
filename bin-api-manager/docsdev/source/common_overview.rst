@@ -99,39 +99,55 @@ VoIPBIN API uses standard HTTP status codes to indicate success or failure.
 Success Codes
 +++++++++++++
 
-=========== =====================================================
-Code        Description
-=========== =====================================================
-200 OK      Request succeeded. Response contains requested data.
-201 Created Resource created successfully.
-204 No Content Request succeeded with no response body (e.g., DELETE).
-=========== =====================================================
+.. list-table::
+   :header-rows: 1
+
+   * - Code
+     - Description
+   * - 200 OK
+     - Request succeeded. Response contains requested data.
+   * - 201 Created
+     - Resource created successfully.
+   * - 204 No Content
+     - Request succeeded with no response body (e.g., DELETE).
 
 Client Error Codes
 ++++++++++++++++++
 
-=========== =====================================================
-Code        Description
-=========== =====================================================
-400 Bad Request Invalid request format or parameters.
-401 Unauthorized Missing or invalid authentication token.
-403 Forbidden Valid token but insufficient permissions.
-404 Not Found Resource does not exist.
-409 Conflict Resource state conflict (e.g., duplicate creation).
-422 Unprocessable Entity Valid format but semantic errors.
-429 Too Many Requests Rate limit exceeded. Retry after delay.
-=========== =====================================================
+.. list-table::
+   :header-rows: 1
+
+   * - Code
+     - Description
+   * - 400 Bad Request
+     - Invalid request format or parameters.
+   * - 401 Unauthorized
+     - Missing or invalid authentication token.
+   * - 403 Forbidden
+     - Valid token but insufficient permissions.
+   * - 404 Not Found
+     - Resource does not exist.
+   * - 409 Conflict
+     - Resource state conflict (e.g., duplicate creation).
+   * - 422 Unprocessable Entity
+     - Valid format but semantic errors.
+   * - 429 Too Many Requests
+     - Rate limit exceeded. Retry after delay.
 
 Server Error Codes
 ++++++++++++++++++
 
-=========== =====================================================
-Code        Description
-=========== =====================================================
-500 Internal Server Error Unexpected server error.
-502 Bad Gateway Upstream service unavailable.
-503 Service Unavailable Service temporarily unavailable.
-=========== =====================================================
+.. list-table::
+   :header-rows: 1
+
+   * - Code
+     - Description
+   * - 500 Internal Server Error
+     - Unexpected server error.
+   * - 502 Bad Gateway
+     - Upstream service unavailable.
+   * - 503 Service Unavailable
+     - Service temporarily unavailable.
 
 Error Responses
 ---------------
