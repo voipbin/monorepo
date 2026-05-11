@@ -7,6 +7,9 @@ Build a knowledge base from documents and URLs to power AI-assisted conversation
 
 **API Reference:** `RAG endpoints <https://api.voipbin.net/redoc/#tag/RAG>`_
 
-.. include:: rag_overview.rst
-.. include:: rag_struct_rag.rst
-.. include:: rag_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   rag_overview
+   rag_struct_rag
+   rag_tutorial

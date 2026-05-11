@@ -7,5 +7,8 @@ Build custom AI-powered voice agents using VoIPBIN's Speech-to-Text (Transcribe 
 
 **API Reference:** `Speaking endpoints <https://api.voipbin.net/redoc/#tag/Speaking>`_ | `Transcribe endpoints <https://api.voipbin.net/redoc/#tag/Transcribe>`_
 
-.. include:: ai_voice_agent_integration_overview.rst
-.. include:: ai_voice_agent_integration_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   ai_voice_agent_integration_overview
+   ai_voice_agent_integration_tutorial
