@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Security Architecture" href="architecture_security.html"><link rel="prev" title="Call Flow Sequences" href="architecture_sequences.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>Deployment Architecture - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -536,6 +536,10 @@
 </ul>
 </li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Self-Hosting</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="self_hosting.html">Self-Hosting</a></li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
@@ -972,14 +976,14 @@
 <span class="o">|</span>                                           <span class="o">|</span>
 <span class="o">|</span>  <span class="n">Node</span> <span class="mi">2</span> <span class="p">(</span><span class="n">Mirror</span><span class="p">)</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span> <span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span><span class="w"> </span><span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">CPU</span><span class="p">:</span> <span class="mi">4</span> <span class="n">vCPU</span>                     <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">Memory</span><span class="p">:</span> <span class="mi">16</span> <span class="n">GB</span>                   <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
 <span class="o">|</span>                                           <span class="o">|</span>
 <span class="o">|</span>  <span class="n">Node</span> <span class="mi">3</span> <span class="p">(</span><span class="n">Mirror</span><span class="p">)</span>                          <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
-<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span> <span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
+<span class="o">|</span>  <span class="o">|</span>  <span class="n">Queues</span><span class="p">:</span> <span class="n">Mirrored</span> <span class="kn">from</span><span class="w"> </span><span class="nn">Node</span> <span class="mi">1</span>    <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">CPU</span><span class="p">:</span> <span class="mi">4</span> <span class="n">vCPU</span>                     <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">|</span>  <span class="n">Memory</span><span class="p">:</span> <span class="mi">16</span> <span class="n">GB</span>                   <span class="o">|</span>     <span class="o">|</span>
 <span class="o">|</span>  <span class="o">+----------------------------------+</span>     <span class="o">|</span>
@@ -1203,7 +1207,7 @@
 <span class="o">+-------------------------------------------+</span>
 <span class="o">|</span> <span class="mf">1.</span> <span class="n">New</span> <span class="n">pod</span> <span class="n">created</span> <span class="k">with</span> <span class="n">new</span> <span class="n">version</span>       <span class="o">|</span>
 <span class="o">|</span> <span class="mf">2.</span> <span class="n">Wait</span> <span class="k">for</span> <span class="n">readiness</span> <span class="n">probe</span> <span class="n">success</span>       <span class="o">|</span>
-<span class="o">|</span> <span class="mf">3.</span> <span class="n">Remove</span> <span class="n">old</span> <span class="n">pod</span> <span class="kn">from</span> <span class="nn">service</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="mf">3.</span> <span class="n">Remove</span> <span class="n">old</span> <span class="n">pod</span> <span class="kn">from</span><span class="w"> </span><span class="nn">service</span>            <span class="o">|</span>
 <span class="o">|</span> <span class="mf">4.</span> <span class="n">Terminate</span> <span class="n">old</span> <span class="n">pod</span>                      <span class="o">|</span>
 <span class="o">|</span> <span class="mf">5.</span> <span class="n">Repeat</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">replicas</span>                <span class="o">|</span>
 <span class="o">+-------------------------------------------+</span>
@@ -1398,7 +1402,7 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>

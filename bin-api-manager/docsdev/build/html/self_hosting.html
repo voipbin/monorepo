@@ -1,0 +1,1646 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Glossary" href="glossary.html"><link rel="prev" title="Tutorial" href="websocket_tutorial.html">
+        <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
+
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+        <title>Self-Hosting - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-primary: #0066cc;
+  --color-brand-content: #0066cc;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     VoIPBin is an opensource CPaaS platform. <a style="color: var(--color-announcement-text);" href="https://github.com/voipbin/voipbin">Star us on GitHub</a> 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">VoIPBin Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/voipbin-high-resolution-logo-white-transparent.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">VoIPBin Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="flow.html">Flow</a><input aria-label="Toggle navigation of Flow" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_struct_flow.html">Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_struct_action.html">Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_tutorial_basic.html">Tutorial basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_tutorial_scenario.html">Tutorial scenario</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_execution_internals.html">Flow Execution Internals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_advanced_patterns.html">Advanced Flow Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_debugging.html">Flow Debugging and Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow_best_practices.html">Flow Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_struct_activeflow.html">Activeflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="activeflow_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="variable.html">Variable</a><input aria-label="Toggle navigation of Variable" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#using-variables-in-flows">Using Variables in Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#capturing-and-setting-dynamic-values">Capturing and Setting Dynamic Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#integration-with-applications">Integration with Applications</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#best-practices-and-considerations">Best Practices and Considerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="variable_variable.html">Variable</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="webhook.html">Webhook</a><input aria-label="Toggle navigation of Webhook" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="webhook_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webhook_struct_webhook.html">Webhook</a></li>
+<li class="toctree-l2"><a class="reference internal" href="webhook_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="direct_hash.html">Direct Hash</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="common.html">Common</a><input aria-label="Toggle navigation of Common" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="common_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="common_struct_address.html">Address</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="call.html">Call</a><input aria-label="Toggle navigation of Call" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="call_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_transfer.html">Transfer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transfer_struct_transfer.html">Transfer Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_groupcall.html">Groupcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_struct_call.html">Struct Call</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_struct_groupcall.html">Struct Groupcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_sequences.html">Internal Call Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_scenarios.html">Advanced Call Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_media.html">Call Media and Codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="call_troubleshooting.html">Call Troubleshooting</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="conference.html">Conference</a><input aria-label="Toggle navigation of Conference" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="conference_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_struct_conference.html">Conference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_struct_conferencecall.html">conferencecall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conference_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="queue.html">Queue</a><input aria-label="Toggle navigation of Queue" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="queue_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_struct_queue.html">Queue</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_struct_queuecall.html">Queuecall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="queue_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="recording.html">Recording</a><input aria-label="Toggle navigation of Recording" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="recording_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording_struct_recording.html">Recording</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recording_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="transcribe.html">Transcribe</a><input aria-label="Toggle navigation of Transcribe" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html">Transcribe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html#transcription">Transcription</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcribe_struct.html#speech-webhook-message">Speech Webhook Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="transcript_struct_transcript.html">Transcript</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="speaking.html">Speaking</a><input aria-label="Toggle navigation of Speaking" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="speaking_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speaking_struct_speaking.html">Speaking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="speaking_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="mediastream.html">Mediastream</a><input aria-label="Toggle navigation of Mediastream" class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="mediastream_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streaming_struct_streaming.html">Streaming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mediastream_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Messaging</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="message.html">Message</a><input aria-label="Toggle navigation of Message" class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="message_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="message_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="email.html">Email</a><input aria-label="Toggle navigation of Email" class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="email_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_struct_email.html">Email</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_struct_attachment.html">Attachment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="email_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="talk.html">Talk</a><input aria-label="Toggle navigation of Talk" class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="talk_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_talk.html">Talk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_struct_participant.html">Participant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="talk_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="conversation.html">Conversation</a><input aria-label="Toggle navigation of Conversation" class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="conversation_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_conversation.html">Conversation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_message.html">Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_struct_account.html">Conversation Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversation_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">AI &amp; Automation</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ai.html">AI</a><input aria-label="Toggle navigation of AI" class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#tool-functions">Tool Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#using-the-ai">Using the AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-talk">AI Talk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#using-ai-in-conversations-sms-line">Using AI in Conversations (SMS / LINE)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-summary">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#external-ai-agent-integration">External AI Agent Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#common-scenarios">Common Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_message.html">AI Message</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_summary.html">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a><input aria-label="Toggle navigation of AI Voice Agent Integration" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="ai_voice_agent_integration_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_voice_agent_integration_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="rag.html">RAG</a><input aria-label="Toggle navigation of RAG" class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_struct_rag.html">RAG</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="team.html">Team</a><input aria-label="Toggle navigation of Team" class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#how-it-works">How it works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#runtime-behavior">Runtime Behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#use-cases">Use Cases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_overview.html#related-documentation">Related Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_struct_team.html">Team</a></li>
+<li class="toctree-l2"><a class="reference internal" href="team_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="campaign.html">Campaign</a><input aria-label="Toggle navigation of Campaign" class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="campaign_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_struct_campaign.html">Campaign</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_struct_campaigncall.html">Campaigncall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="campaign_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outdial.html">Outdial</a><input aria-label="Toggle navigation of Outdial" class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outdial_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_struct_outdial.html">Outdial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_struct_outdialtarget.html">Outdialtarget</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outdial_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outplan.html">Outplan</a><input aria-label="Toggle navigation of Outplan" class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outplan_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan_struct_outplan.html">Outplan</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outplan_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Identity &amp; Contacts</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="accesskey.html">Accesskey</a><input aria-label="Toggle navigation of Accesskey" class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_overview.html">Accesskey API Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="accesskey_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="agent.html">Agent</a><input aria-label="Toggle navigation of Agent" class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="agent_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agent_struct_agent.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="agent_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="contact.html">Contact</a><input aria-label="Toggle navigation of Contact" class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="contact_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_struct_contact.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contact_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="customer.html">Customer</a><input aria-label="Toggle navigation of Customer" class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="customer_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer_struct_customer.html">Customer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customer_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Numbers &amp; PSTN</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="number.html">Number</a><input aria-label="Toggle navigation of Number" class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="number_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number_struct_number.html">Number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="availablenumber_struct.html">Available Number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="number_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="provider.html">Provider</a><input aria-label="Toggle navigation of Provider" class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" role="switch" type="checkbox"/><label for="toctree-checkbox-28"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="provider_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider_struct_provider.html">Provider</a></li>
+<li class="toctree-l2"><a class="reference internal" href="provider_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="providercall.html">ProviderCall</a><input aria-label="Toggle navigation of ProviderCall" class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" role="switch" type="checkbox"/><label for="toctree-checkbox-29"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="providercall_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="providercall_struct_providercall.html">ProviderCall</a></li>
+<li class="toctree-l2"><a class="reference internal" href="providercall_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="route.html">Route</a><input aria-label="Toggle navigation of Route" class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" role="switch" type="checkbox"/><label for="toctree-checkbox-30"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="route_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route_struct_route.html">Route</a></li>
+<li class="toctree-l2"><a class="reference internal" href="route_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="extension.html">Extension</a><input aria-label="Toggle navigation of Extension" class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" role="switch" type="checkbox"/><label for="toctree-checkbox-31"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="extension_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension_struct_extension.html">Extension</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extension_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="trunk.html">Trunk</a><input aria-label="Toggle navigation of Trunk" class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" role="switch" type="checkbox"/><label for="toctree-checkbox-32"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview_trunking.html">Trunking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_overview_domain_name.html">Domain name</a></li>
+<li class="toctree-l2"><a class="reference internal" href="trunk_struct_trunk.html">Trunk</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><input aria-label="Toggle navigation of OutboundConfig" class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" role="switch" type="checkbox"/><label for="toctree-checkbox-33"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Billing &amp; Operations</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="billing_account.html">Billing Account</a><input aria-label="Toggle navigation of Billing Account" class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" role="switch" type="checkbox"/><label for="toctree-checkbox-34"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_struct_billing.html">Billing</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="storage.html">Storage</a><input aria-label="Toggle navigation of Storage" class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" role="switch" type="checkbox"/><label for="toctree-checkbox-35"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_account.html">Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html">File</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tag.html">Tag</a><input aria-label="Toggle navigation of Tag" class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" role="switch" type="checkbox"/><label for="toctree-checkbox-36"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_struct_tag.html">Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="architecture.html">Architecture</a><input aria-label="Toggle navigation of Architecture" class="toctree-checkbox" id="toctree-checkbox-37" name="toctree-checkbox-37" role="switch" type="checkbox"/><label for="toctree-checkbox-37"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="architecture_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_backend.html">Backend Microservices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_communication.html">Inter-Service Communication</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_data.html">Data Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_dataflow.html">Data Flow Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_rtc.html">Real-Time Communication (RTC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_flow.html">System Request Flows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_sequences.html">Call Flow Sequences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_deployment.html">Deployment Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="architecture_security.html">Security Architecture</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="websocket.html">Websocket</a><input aria-label="Toggle navigation of Websocket" class="toctree-checkbox" id="toctree-checkbox-38" name="toctree-checkbox-38" role="switch" type="checkbox"/><label for="toctree-checkbox-38"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="websocket_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="websocket_struct.html">Structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="websocket_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Self-Hosting</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Self-Hosting</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Help &amp; Support</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/self_hosting.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/self_hosting.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="self-hosting">
+<span id="self-hosting-main"></span><h1>Self-Hosting<a class="headerlink" href="#self-hosting" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Context</strong></p>
+<p>This page documents how to deploy a full VoIPBin platform on your own
+Google Cloud Platform project using the official installer at
+<a class="reference external" href="https://github.com/voipbin/install">https://github.com/voipbin/install</a>. It is intended for operators
+running their own VoIPBin instance, not for customers of the hosted
+service at <a class="reference external" href="https://voipbin.net">https://voipbin.net</a>.</p>
+</div>
+<p>VoIPBin is an opensource CPaaS platform. The complete stack, including the
+SIP edge (Kamailio, RTPEngine), the Asterisk media layer, all backend
+microservices, the database, the message bus, and the admin/talk/meet
+frontends, can be installed into a Google Cloud Platform project with a
+single CLI.</p>
+<p>This section walks through what you need, the three commands that perform
+the install, what configuration the installer generates, and which
+environment variables you typically need to adjust before the platform is
+ready for real traffic.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>The installer is a three stage pipeline driven by the
+<code class="docutils literal notranslate"><span class="pre">voipbin-install</span></code> CLI.</p>
+<ol class="arabic simple">
+<li><p><strong>Terraform</strong> provisions GCP infrastructure: a custom VPC, GKE cluster,
+Cloud SQL (MySQL 8.0), Kamailio and RTPEngine VMs, DNS zone, load
+balancers, KMS key ring for SOPS, and GCS buckets.</p></li>
+<li><p><strong>Ansible</strong> configures the Kamailio and RTPEngine VMs over an IAP
+tunnel and renders their Docker Compose <code class="docutils literal notranslate"><span class="pre">.env</span></code> files from templates.</p></li>
+<li><p><strong>Kubernetes</strong> applies the manifests under <code class="docutils literal notranslate"><span class="pre">k8s/</span></code> to the GKE cluster
+with placeholders substituted from Terraform outputs and SOPS-decrypted
+secrets.</p></li>
+</ol>
+<section id="what-gets-deployed">
+<h3>What gets deployed<a class="headerlink" href="#what-gets-deployed" title="Link to this heading">¶</a></h3>
+<p>A successful install produces:</p>
+<ul class="simple">
+<li><p><strong>VPC and connectivity</strong>: custom VPC <code class="docutils literal notranslate"><span class="pre">10.0.0.0/16</span></code>, Cloud NAT with a
+static IP for outbound, Cloud Router, eight firewall rules covering
+SIP, RTP, IAP SSH, GKE internal, and health checks.</p></li>
+<li><p><strong>GKE cluster</strong>: zonal or regional, 2 nodes of <code class="docutils literal notranslate"><span class="pre">n1-standard-2</span></code> by
+default, private nodes, shielded instances, COS_CONTAINERD image,
+REGULAR release channel.</p></li>
+<li><p><strong>Kamailio VM</strong>: 1x <code class="docutils literal notranslate"><span class="pre">f1-micro</span></code> by default, SIP/TLS/WSS proxy reached
+through an external network load balancer.</p></li>
+<li><p><strong>RTPEngine VM</strong>: 1x <code class="docutils literal notranslate"><span class="pre">f1-micro</span></code> by default, RTP media relay with a
+static external IP for direct media paths.</p></li>
+<li><p><strong>Cloud SQL MySQL 8.0</strong>: <code class="docutils literal notranslate"><span class="pre">db-f1-micro</span></code> instance, SSL required, daily
+automated backups, Cloud SQL Proxy deployed as a sidecar in GKE.</p></li>
+<li><p><strong>Kubernetes workloads</strong>: backend microservices in the <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code>
+namespace, Asterisk in <code class="docutils literal notranslate"><span class="pre">voip</span></code>, Redis, RabbitMQ, ClickHouse, and Cloud
+SQL Proxy in <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code>, plus three frontend apps
+(<code class="docutils literal notranslate"><span class="pre">square-admin</span></code>, <code class="docutils literal notranslate"><span class="pre">square-talk</span></code>, <code class="docutils literal notranslate"><span class="pre">square-meet</span></code>) and an Ingress
+fronted by TLS certificates.</p></li>
+</ul>
+</section>
+<section id="cost">
+<h3>Cost<a class="headerlink" href="#cost" title="Link to this heading">¶</a></h3>
+<p>Estimated monthly costs for the minimal default sizing in
+<code class="docutils literal notranslate"><span class="pre">us-central1</span></code>:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Resource</p></th>
+<th class="head"><p>Cost (USD)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GKE control plane</p></td>
+<td><p>$0 zonal, ~$73 regional</p></td>
+</tr>
+<tr class="row-odd"><td><p>GKE nodes (2x n1-standard-2)</p></td>
+<td><p>~$97</p></td>
+</tr>
+<tr class="row-even"><td><p>Kamailio VM (f1-micro)</p></td>
+<td><p>~$6</p></td>
+</tr>
+<tr class="row-odd"><td><p>RTPEngine VM (f1-micro)</p></td>
+<td><p>~$6</p></td>
+</tr>
+<tr class="row-even"><td><p>Cloud SQL (db-f1-micro)</p></td>
+<td><p>~$13</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cloud NAT</p></td>
+<td><p>~$10</p></td>
+</tr>
+<tr class="row-even"><td><p>External IPs</p></td>
+<td><p>~$8</p></td>
+</tr>
+<tr class="row-odd"><td><p>Network load balancers</p></td>
+<td><p>~$20</p></td>
+</tr>
+<tr class="row-even"><td><p>DNS, GCS, KMS, disks</p></td>
+<td><p>~$6</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Total</strong></p></td>
+<td><p><strong>~$170 zonal, ~$243 regional</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Costs vary by region. The figures above add up the line items in the
+table and are list-price snapshots, not committed-use prices; the
+installer’s <code class="docutils literal notranslate"><span class="pre">README.md</span></code> may show a slightly different headline figure
+depending on which sizing snapshot it was last regenerated against. You
+are responsible for all charges incurred on your GCP project.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">destroy</span></code> is irreversible. It permanently deletes
+every resource the installer created, including the Cloud SQL instance
+and its backups. Export any data you need before destroying.</p>
+</div>
+</section>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
+<section id="local-tools">
+<h3>Local tools<a class="headerlink" href="#local-tools" title="Link to this heading">¶</a></h3>
+<p>Install these on the workstation that will run the installer. The
+preflight step in <code class="docutils literal notranslate"><span class="pre">voipbin-install</span> <span class="pre">init</span></code> verifies each version.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Tool</p></th>
+<th class="head"><p>Min. version</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>gcloud CLI</p></td>
+<td><p>400.0.0</p></td>
+<td><p>Both <code class="docutils literal notranslate"><span class="pre">gcloud</span> <span class="pre">auth</span> <span class="pre">login</span></code> and
+<code class="docutils literal notranslate"><span class="pre">gcloud</span> <span class="pre">auth</span> <span class="pre">application-default</span> <span class="pre">login</span></code> required.</p></td>
+</tr>
+<tr class="row-odd"><td><p>terraform</p></td>
+<td><p>1.5.0</p></td>
+<td><p>Bundled under <code class="docutils literal notranslate"><span class="pre">terraform/</span></code> in the installer repo.</p></td>
+</tr>
+<tr class="row-even"><td><p>ansible</p></td>
+<td><p>2.15.0</p></td>
+<td><p>Install via <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">ansible</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p>kubectl</p></td>
+<td><p>1.28.0</p></td>
+<td><p>Used by the installer and for verification.</p></td>
+</tr>
+<tr class="row-even"><td><p>python3</p></td>
+<td><p>3.10.0</p></td>
+<td><p>Required by the installer CLI.</p></td>
+</tr>
+<tr class="row-odd"><td><p>sops</p></td>
+<td><p>3.7.0</p></td>
+<td><p>Encrypts <code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> with GCP KMS.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Python dependencies are installed with <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code>
+after cloning the installer repo.</p>
+</section>
+<section id="gcp-account">
+<h3>GCP account<a class="headerlink" href="#gcp-account" title="Link to this heading">¶</a></h3>
+<p>The installer refuses to proceed unless the following are true:</p>
+<ul class="simple">
+<li><p>A GCP project exists with <strong>billing enabled</strong>.</p></li>
+<li><p>The authenticated principal has Owner or Editor on the project, or the
+least-privilege set of twelve roles listed in
+<code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (Compute Admin, Container Admin, Cloud
+SQL Admin, DNS Admin, Cloud KMS Admin, Secret Manager Admin, Service
+Account Admin, Service Account User, Project IAM Admin, Storage Admin,
+Service Usage Admin, IAP-Secured Tunnel User).</p></li>
+<li><p>You own a domain name. The installer uses
+<code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">admin.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">talk.&lt;domain&gt;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">meet.&lt;domain&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">sip.&lt;domain&gt;</span></code>.</p></li>
+</ul>
+</section>
+<section id="gcp-quotas">
+<h3>GCP quotas<a class="headerlink" href="#gcp-quotas" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">init</span></code> command checks regional quotas. New GCP projects ship with
+8 vCPUs and 8 in-use external IPs, which is below what VoIPBin needs.
+Request increases for the following before installing if you do not want
+the apply to fail mid stage:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Quota</p></th>
+<th class="head"><p>Minimum required</p></th>
+<th class="head"><p>Notes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>CPUs (region)</p></td>
+<td><p>12</p></td>
+<td><p>2x GKE nodes + 2x VoIP VMs</p></td>
+</tr>
+<tr class="row-odd"><td><p>In-use external IPs</p></td>
+<td><p>10</p></td>
+<td><p>NAT, LBs, RTPEngine static IPs</p></td>
+</tr>
+<tr class="row-even"><td><p>Static external IPs</p></td>
+<td><p>4</p></td>
+<td><p>usually sufficient by default</p></td>
+</tr>
+<tr class="row-odd"><td><p>SSD total (GB)</p></td>
+<td><p>100</p></td>
+<td><p>usually sufficient by default</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Quota increases are requested at
+<a class="reference external" href="https://console.cloud.google.com/iam-admin/quotas">https://console.cloud.google.com/iam-admin/quotas</a>.</p>
+</section>
+<section id="gcp-apis">
+<h3>GCP APIs<a class="headerlink" href="#gcp-apis" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">init</span></code> command automatically enables sixteen APIs on the project:
+<code class="docutils literal notranslate"><span class="pre">compute</span></code>, <code class="docutils literal notranslate"><span class="pre">container</span></code>, <code class="docutils literal notranslate"><span class="pre">sqladmin</span></code>, <code class="docutils literal notranslate"><span class="pre">dns</span></code>, <code class="docutils literal notranslate"><span class="pre">cloudkms</span></code>,
+<code class="docutils literal notranslate"><span class="pre">secretmanager</span></code>, <code class="docutils literal notranslate"><span class="pre">cloudresourcemanager</span></code>, <code class="docutils literal notranslate"><span class="pre">iam</span></code>,
+<code class="docutils literal notranslate"><span class="pre">servicenetworking</span></code>, <code class="docutils literal notranslate"><span class="pre">storage</span></code>, <code class="docutils literal notranslate"><span class="pre">storage-api</span></code>, <code class="docutils literal notranslate"><span class="pre">logging</span></code>,
+<code class="docutils literal notranslate"><span class="pre">monitoring</span></code>, <code class="docutils literal notranslate"><span class="pre">oslogin</span></code>, <code class="docutils literal notranslate"><span class="pre">serviceusage</span></code>, and <code class="docutils literal notranslate"><span class="pre">iap</span></code>.</p>
+</section>
+<section id="two-authentications-not-one">
+<h3>Two authentications, not one<a class="headerlink" href="#two-authentications-not-one" title="Link to this heading">¶</a></h3>
+<p>VoIPBin’s installer depends on <strong>both</strong> of the following being live, and
+this catches operators by surprise often enough to be worth calling out:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">gcloud</span> <span class="pre">auth</span> <span class="pre">login</span></code> for the human/CLI principal.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gcloud</span> <span class="pre">auth</span> <span class="pre">application-default</span> <span class="pre">login</span></code> for Terraform and SOPS,
+which read Application Default Credentials.</p></li>
+</ol>
+<p>The preflight in <code class="docutils literal notranslate"><span class="pre">init</span></code> checks both and offers to refresh ADC if it is
+missing or expired.</p>
+</section>
+</section>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Link to this heading">¶</a></h2>
+<p>The happy path is three commands. They are idempotent and resumable.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/voipbin/install.git
+<span class="nb">cd</span><span class="w"> </span>install
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+./voipbin-install<span class="w"> </span>init<span class="w">      </span><span class="c1"># interactive wizard + GCP bootstrap</span>
+./voipbin-install<span class="w"> </span>apply<span class="w">     </span><span class="c1"># provision and deploy</span>
+./voipbin-install<span class="w"> </span>verify<span class="w">    </span><span class="c1"># health check</span>
+</pre></div>
+</div>
+<section id="init-interactive-wizard">
+<h3><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)<a class="headerlink" href="#init-interactive-wizard" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">init</span></code> command runs a twelve-step bootstrap, in order:</p>
+<ol class="arabic simple">
+<li><p>Preflight checks for the six local tools.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gcloud</span></code> user auth and Application Default Credentials.</p></li>
+<li><p><strong>Seven wizard questions</strong>: GCP project ID, region, GKE cluster type
+(zonal or regional), TLS strategy (Let’s Encrypt, GCP-managed,
+self-signed, or BYO certificate), Docker image tag strategy (latest
+or pinned via <code class="docutils literal notranslate"><span class="pre">config/versions.yaml</span></code>), base domain name, and Cloud
+DNS mode (auto or manual).</p></li>
+<li><p>Project existence and billing.</p></li>
+<li><p>Quota check against <code class="docutils literal notranslate"><span class="pre">config/gcp_quotas.yaml</span></code>.</p></li>
+<li><p>Enable sixteen GCP APIs.</p></li>
+<li><p>Create the <code class="docutils literal notranslate"><span class="pre">voipbin-installer</span></code> service account with twelve IAM
+role bindings.</p></li>
+<li><p>Create a KMS key ring and crypto key.</p></li>
+<li><p>Generate six secrets (<code class="docutils literal notranslate"><span class="pre">jwt_key</span></code>, <code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code>,
+<code class="docutils literal notranslate"><span class="pre">redis_password</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code>,
+<code class="docutils literal notranslate"><span class="pre">api_signing_key</span></code>) and encrypt them into <code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> with SOPS
+bound to the KMS key.</p></li>
+<li><p>Write <code class="docutils literal notranslate"><span class="pre">.sops.yaml</span></code>.</p></li>
+<li><p>Save <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p></li>
+<li><p>Print a cost summary.</p></li>
+</ol>
+<p>Useful flags:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>init<span class="w"> </span>--reconfigure<span class="w">          </span><span class="c1"># re-run the wizard</span>
+./voipbin-install<span class="w"> </span>init<span class="w"> </span>--config<span class="w"> </span>path/to.yaml<span class="w">  </span><span class="c1"># import existing config</span>
+./voipbin-install<span class="w"> </span>init<span class="w"> </span>--skip-api-enable<span class="w">      </span><span class="c1"># APIs already enabled</span>
+./voipbin-install<span class="w"> </span>init<span class="w"> </span>--skip-quota-check<span class="w">     </span><span class="c1"># bypass quota gate</span>
+./voipbin-install<span class="w"> </span>init<span class="w"> </span>--dry-run<span class="w">              </span><span class="c1"># show what would happen</span>
+</pre></div>
+</div>
+<p>The two files written are everything you need to reproduce the install:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>: non-sensitive. Safe to commit if you want a record
+per environment.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code>: SOPS-encrypted with GCP KMS. Decrypt locally with
+<code class="docutils literal notranslate"><span class="pre">sops</span> <span class="pre">--decrypt</span> <span class="pre">secrets.yaml</span></code>.</p></li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Back up <code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> and the KMS key ring. If the key ring is
+destroyed or the GCP project is deleted, <code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> becomes
+unrecoverable.</p>
+</div>
+</section>
+<section id="apply-three-stage-deploy">
+<h3><code class="docutils literal notranslate"><span class="pre">apply</span></code> (three-stage deploy)<a class="headerlink" href="#apply-three-stage-deploy" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code> executes the pipeline in order: Terraform,
+then Ansible, then Kubernetes. The pipeline checkpoints between stages,
+so if a run fails you can fix the problem and rerun the same command;
+it picks up from the failed stage.</p>
+<p>Useful flags:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--dry-run<span class="w">         </span><span class="c1"># plan, do not change</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--auto-approve<span class="w">    </span><span class="c1"># skip prompts</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>terraform<span class="w"> </span><span class="c1"># only run this stage</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s
+</pre></div>
+</div>
+<p>Expected duration on a fresh project:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Stage</p></th>
+<th class="head"><p>Duration</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Terraform</p></td>
+<td><p>12 to 18 minutes (GKE cluster creation dominates)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ansible</p></td>
+<td><p>5 to 8 minutes (waits for cloud-init on both VMs)</p></td>
+</tr>
+<tr class="row-even"><td><p>Kubernetes</p></td>
+<td><p>3 to 5 minutes</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="verify-health-check">
+<h3><code class="docutils literal notranslate"><span class="pre">verify</span></code> (health check)<a class="headerlink" href="#verify-health-check" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">verify</span></code> command runs a series of checks against the live
+deployment and prints a pass, warn, or fail per check. The current set
+of checks covers, in order: GKE cluster status, pod readiness in three
+namespaces, service endpoint availability in three namespaces, Kamailio
+and RTPEngine VM run state, Cloud SQL instance state, DNS resolution
+for <code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code>, HTTPS reachability of <code class="docutils literal notranslate"><span class="pre">https://api.&lt;domain&gt;/health</span></code>,
+and a TCP socket probe of SIP port <code class="docutils literal notranslate"><span class="pre">5060</span></code>. Each check prints the
+underlying command on failure so you can rerun individual probes
+manually.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The SIP probe uses a TCP socket connect. If you need to verify UDP
+reachability for media or signalling, use a separate tool such as
+<code class="docutils literal notranslate"><span class="pre">nc</span> <span class="pre">-zuv</span></code> and the GCP firewall log stream.</p>
+</div>
+</section>
+<section id="dns-step">
+<h3>DNS step<a class="headerlink" href="#dns-step" title="Link to this heading">¶</a></h3>
+<p>After apply, the installer prints the DNS records you must publish if
+you chose <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">manual</span></code>, or the four nameservers to delegate to
+if you chose <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">auto</span></code>. Required records, with
+<code class="docutils literal notranslate"><span class="pre">example.com</span></code> standing in for your domain:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Subdomain</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Value</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">api.example.com</span></code></p></td>
+<td><p>A</p></td>
+<td><p>External LB IP</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">admin.example.com</span></code></p></td>
+<td><p>A</p></td>
+<td><p>External LB IP</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">talk.example.com</span></code></p></td>
+<td><p>A</p></td>
+<td><p>External LB IP</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">meet.example.com</span></code></p></td>
+<td><p>A</p></td>
+<td><p>External LB IP</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sip.example.com</span></code></p></td>
+<td><p>A</p></td>
+<td><p>External LB IP</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DNS propagation can take up to 48 hours for NS delegation changes. Once
+records resolve, rerun <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">verify</span></code>.</p>
+</section>
+</section>
+<section id="configuration-files">
+<h2>Configuration files<a class="headerlink" href="#configuration-files" title="Link to this heading">¶</a></h2>
+<p>The installer writes two files in the working directory.</p>
+<section id="config-yaml-non-sensitive">
+<h3><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> (non-sensitive)<a class="headerlink" href="#config-yaml-non-sensitive" title="Link to this heading">¶</a></h3>
+<p>Holds every parameter from the wizard and the defaults applied around
+them. Environment variables prefixed with <code class="docutils literal notranslate"><span class="pre">VOIPBIN_</span></code> override a value
+at runtime, for a single CLI invocation (for example
+<code class="docutils literal notranslate"><span class="pre">VOIPBIN_REGION=europe-west1</span> <span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>).</p>
+<p>Typical contents:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">gcp_project_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project-123</span>
+<span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
+<span class="nt">zone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1-a</span>
+<span class="nt">gke_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zonal</span>
+<span class="nt">tls_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">letsencrypt</span>
+<span class="nt">image_tag_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pinned</span>
+<span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">voipbin.example.com</span>
+<span class="nt">dns_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
+<span class="nt">gke_machine_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">n1-standard-2</span>
+<span class="nt">gke_node_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="nt">vm_machine_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">f1-micro</span>
+<span class="nt">kamailio_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="nt">rtpengine_count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</pre></div>
+</div>
+<p>The schema is enforced by <code class="docutils literal notranslate"><span class="pre">config/schema.py</span></code>. To change a value after
+the initial install, edit <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and rerun
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>.</p>
+</section>
+<section id="secrets-yaml-sops-encrypted">
+<h3><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> (SOPS-encrypted)<a class="headerlink" href="#secrets-yaml-sops-encrypted" title="Link to this heading">¶</a></h3>
+<p>Holds the six secrets generated by <code class="docutils literal notranslate"><span class="pre">init</span></code>, encrypted with GCP KMS via
+SOPS:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">jwt_key</span></code>: JWT signing key consumed by the API and webhook layers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code>: Cloud SQL root password. The instance is
+created with this value.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">redis_password</span></code>: Redis <code class="docutils literal notranslate"><span class="pre">AUTH</span></code> password.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code> and <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code>. RabbitMQ credentials.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">api_signing_key</span></code>: request signing key used between internal
+services.</p></li>
+</ul>
+<p>Editing a secret:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sops<span class="w"> </span>secrets.yaml<span class="w">         </span><span class="c1"># opens editor with decrypted view</span>
+<span class="c1"># edit the field, save</span>
+./voipbin-install<span class="w"> </span>apply<span class="w">   </span><span class="c1"># re-render ConfigMap, Secret, and VM .env</span>
+</pre></div>
+</div>
+<p>After editing, the Kubernetes ConfigMap, the Kubernetes Secret, and the
+Kamailio VM <code class="docutils literal notranslate"><span class="pre">.env</span></code> are re-rendered consistently in a single apply.</p>
+</section>
+<section id="where-each-value-lands">
+<h3>Where each value lands<a class="headerlink" href="#where-each-value-lands" title="Link to this heading">¶</a></h3>
+<p>Most of the wizard’s answers and secrets fan out into multiple targets at
+apply time. The most important paths to know:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Source</p></th>
+<th class="head"><p>Target type</p></th>
+<th class="head"><p>Where it ends up</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></td>
+<td><p>Terraform variables</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">terraform/</span></code> <code class="docutils literal notranslate"><span class="pre">tfvars</span></code> and resource arguments</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></td>
+<td><p>Kubernetes ConfigMap</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">voipbin-config</span></code> in <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></td>
+<td><p>Ansible group_vars</p></td>
+<td><p>Kamailio VM <code class="docutils literal notranslate"><span class="pre">/opt/kamailio-docker/.env</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code></p></td>
+<td><p>Kubernetes Secret</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">voipbin-secret</span></code> in <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code></p></td>
+<td><p>Kubernetes Secret (composite)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">RABBITMQ_ADDRESS</span></code> and <code class="docutils literal notranslate"><span class="pre">REDIS_ADDRESS</span></code> in <code class="docutils literal notranslate"><span class="pre">voip</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code></p></td>
+<td><p>Ansible group_vars</p></td>
+<td><p>Kamailio VM <code class="docutils literal notranslate"><span class="pre">.env</span></code> (<code class="docutils literal notranslate"><span class="pre">RABBITMQ_URL</span></code>, etc.)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="environment-variables-and-post-install-configuration">
+<h2>Environment variables and post-install configuration<a class="headerlink" href="#environment-variables-and-post-install-configuration" title="Link to this heading">¶</a></h2>
+<p>The defaults produce a deployment that boots and passes <code class="docutils literal notranslate"><span class="pre">verify</span></code>, but
+production workloads need adjustments. This section enumerates what to
+touch and where.</p>
+<section id="domain-related-values">
+<h3>1. Domain-related values<a class="headerlink" href="#domain-related-values" title="Link to this heading">¶</a></h3>
+<p>Derived from the <code class="docutils literal notranslate"><span class="pre">domain</span></code> you entered in the wizard. Using
+<code class="docutils literal notranslate"><span class="pre">voipbin.example.com</span></code> as an example, the rendered values are:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Variable</p></th>
+<th class="head"><p>Value</p></th>
+<th class="head"><p>Location</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DOMAIN</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">voipbin.example.com</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">k8s/backend/configmap.yaml</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">BASE_DOMAIN</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">voipbin.example.com</span></code></p></td>
+<td><p>Kamailio VM <code class="docutils literal notranslate"><span class="pre">/opt/kamailio-docker/.env</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DOMAIN_NAME_EXTENSION</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">registrar.voipbin.example.com</span></code></p></td>
+<td><p>Kamailio VM <code class="docutils literal notranslate"><span class="pre">.env</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DOMAIN_NAME_TRUNK</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">trunk.voipbin.example.com</span></code></p></td>
+<td><p>Kamailio VM <code class="docutils literal notranslate"><span class="pre">.env</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>To change the base domain after install, edit <code class="docutils literal notranslate"><span class="pre">domain</span></code> in
+<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and rerun <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>. Both the Ansible
+env template and the Kubernetes ConfigMap regenerate consistently.</p>
+</section>
+<section id="generated-credentials-rabbitmq-redis-mysql-jwt-api-signing">
+<h3>2. Generated credentials (RabbitMQ, Redis, MySQL, JWT, API signing)<a class="headerlink" href="#generated-credentials-rabbitmq-redis-mysql-jwt-api-signing" title="Link to this heading">¶</a></h3>
+<p>These live in the SOPS-encrypted <code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> and are wired into the
+ConfigMap, Secret, and VM <code class="docutils literal notranslate"><span class="pre">.env</span></code> automatically. Rotate them through
+SOPS:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sops<span class="w"> </span>secrets.yaml
+./voipbin-install<span class="w"> </span>apply
+</pre></div>
+</div>
+</section>
+<section id="sip-and-pstn-settings">
+<h3>3. SIP and PSTN settings<a class="headerlink" href="#sip-and-pstn-settings" title="Link to this heading">¶</a></h3>
+<p>These are not part of the wizard. Edit them in the appropriate place and
+rerun the relevant stage.</p>
+<section id="pstn-allowlist">
+<h4>PSTN allowlist<a class="headerlink" href="#pstn-allowlist" title="Link to this heading">¶</a></h4>
+<p>Kamailio only accepts inbound PSTN traffic from explicitly whitelisted
+source IPs. Populate the list with <code class="docutils literal notranslate"><span class="pre">VOIPBIN_PSTN_WHITELIST_IPS</span></code> and
+rerun the Ansible stage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">VOIPBIN_PSTN_WHITELIST_IPS</span><span class="o">=</span><span class="s2">&quot;203.0.113.10,198.51.100.4&quot;</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
+</pre></div>
+</div>
+<p>The value flows through <code class="docutils literal notranslate"><span class="pre">ansible/group_vars/all.yml</span></code> into the Kamailio
+env template as <code class="docutils literal notranslate"><span class="pre">PSTN_WHITELIST_IPS</span></code>.</p>
+</section>
+<section id="sip-auth-backend">
+<h4>SIP auth backend<a class="headerlink" href="#sip-auth-backend" title="Link to this heading">¶</a></h4>
+<p>The four <code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_*</span></code> variables in the Kamailio env template
+default to empty. Production deployments point them at a database that
+holds SIP credentials:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_DB_URL</span></code>: connection string Kamailio uses for the
+auth database.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_USER_COLUMN</span></code>: defaults to <code class="docutils literal notranslate"><span class="pre">username</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_DOMAIN_COLUMN</span></code>: defaults to <code class="docutils literal notranslate"><span class="pre">realm</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_PASSWORD_COLUMN</span></code>: defaults to <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p></li>
+</ul>
+<p>Set them via Ansible extra vars or by editing
+<code class="docutils literal notranslate"><span class="pre">ansible/group_vars/kamailio.yml</span></code> and rerunning
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">ansible</span></code>.</p>
+</section>
+<section id="rtpengine-port-range">
+<h4>RTPEngine port range<a class="headerlink" href="#rtpengine-port-range" title="Link to this heading">¶</a></h4>
+<p>The default media port range is <code class="docutils literal notranslate"><span class="pre">20000-65535</span></code>. If your network only
+opens <code class="docutils literal notranslate"><span class="pre">20000-30000</span></code>, set <code class="docutils literal notranslate"><span class="pre">rtpengine_port_max:</span> <span class="pre">30000</span></code> in
+<code class="docutils literal notranslate"><span class="pre">ansible/group_vars/rtpengine.yml</span></code> and rerun the Ansible stage. Make
+sure the firewall rule matches.</p>
+</section>
+</section>
+<section id="tls-certificate-strategy">
+<h3>4. TLS certificate strategy<a class="headerlink" href="#tls-certificate-strategy" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> chosen in the wizard governs how certificates are
+issued:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">letsencrypt</span></code>: cert-manager issues per-host certificates via
+HTTP-01 once DNS resolves. DNS must resolve first, otherwise the
+challenge fails and the certificate sits in <code class="docutils literal notranslate"><span class="pre">Pending</span></code>. Verify with
+<code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">certificate</span> <span class="pre">-A</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gcp-managed</span></code>: a GCP-managed certificate is attached to the
+Ingress and provisioned by Google. Same DNS dependency.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">self-signed</span></code>: a self-signed certificate is installed immediately.
+Use only for staging or local-only deployments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">byoc</span></code>: bring your own. Drop <code class="docutils literal notranslate"><span class="pre">tls.crt</span></code> and <code class="docutils literal notranslate"><span class="pre">tls.key</span></code> into the
+<code class="docutils literal notranslate"><span class="pre">voipbin-tls</span></code> Secret in <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> before
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">k8s</span></code>.</p></li>
+</ul>
+<p>To change strategies after install, edit <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> in
+<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and rerun apply.</p>
+</section>
+<section id="third-party-integrations">
+<h3>5. Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h3>
+<p>VoIPBin services can integrate with external providers for LLM, ASR,
+TTS, email, SMS, and payments. The installer ships with these slots
+intentionally <strong>empty</strong>, because they are operator-specific and not
+free. Add them as Kubernetes Secrets in the <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> namespace,
+then mount them into the relevant deployments.</p>
+<p>Provider categories you will likely need to wire up:</p>
+<ul class="simple">
+<li><p>An LLM or AI provider.</p></li>
+<li><p>A speech-to-text provider.</p></li>
+<li><p>A text-to-speech provider.</p></li>
+<li><p>An email API or SMTP provider.</p></li>
+<li><p>An SMS provider.</p></li>
+<li><p>A payment provider for billing flows.</p></li>
+</ul>
+<p>Pick providers based on your own region, compliance, and pricing
+constraints. Until the relevant keys are wired up, the corresponding
+flow actions return <code class="docutils literal notranslate"><span class="pre">provider</span> <span class="pre">not</span> <span class="pre">configured</span></code> errors; the platform
+itself stays healthy and the rest of the channels remain usable.</p>
+<p>Recommended pattern: a separate Secret per provider so rotation is
+independent.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>bin-manager<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>voipbin-llm<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">LLM_API_KEY</span><span class="o">=</span>...
+</pre></div>
+</div>
+<p>Then patch the deployment to mount it via <code class="docutils literal notranslate"><span class="pre">envFrom</span></code>. Track the provider
+matrix per service in your own runbook; upstream manifests deliberately
+do not enumerate provider keys because the supported list evolves.</p>
+</section>
+<section id="scaling">
+<h3>6. Scaling<a class="headerlink" href="#scaling" title="Link to this heading">¶</a></h3>
+<p>The defaults are minimal:</p>
+<ul class="simple">
+<li><p>GKE: 2 nodes of <code class="docutils literal notranslate"><span class="pre">n1-standard-2</span></code>.</p></li>
+<li><p>Kamailio: 1 VM of <code class="docutils literal notranslate"><span class="pre">f1-micro</span></code>.</p></li>
+<li><p>RTPEngine: 1 VM of <code class="docutils literal notranslate"><span class="pre">f1-micro</span></code>.</p></li>
+<li><p>Backend deployments: 1 replica each, <code class="docutils literal notranslate"><span class="pre">50m</span></code> CPU and <code class="docutils literal notranslate"><span class="pre">64Mi</span></code> memory
+request, <code class="docutils literal notranslate"><span class="pre">200m</span></code> and <code class="docutils literal notranslate"><span class="pre">256Mi</span></code> limits.</p></li>
+</ul>
+<p>For anything beyond a demo, raise the VM types and replica counts.
+Adjust <code class="docutils literal notranslate"><span class="pre">gke_machine_type</span></code>, <code class="docutils literal notranslate"><span class="pre">gke_node_count</span></code>, <code class="docutils literal notranslate"><span class="pre">vm_machine_type</span></code>,
+<code class="docutils literal notranslate"><span class="pre">kamailio_count</span></code>, and <code class="docutils literal notranslate"><span class="pre">rtpengine_count</span></code> in <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and
+rerun <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>.</p>
+<p>Backend replica counts live in the per-service manifest under
+<code class="docutils literal notranslate"><span class="pre">k8s/backend/services/&lt;name&gt;.yaml</span></code>. For now, edit those files
+directly; a future installer revision will surface scaling profiles
+through <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p>
+</section>
+<section id="consolidated-environment-variable-map">
+<h3>Consolidated environment variable map<a class="headerlink" href="#consolidated-environment-variable-map" title="Link to this heading">¶</a></h3>
+<p>Every variable a fresh install touches comes from one of three sources:
+the wizard, generated secrets, or operator overrides.</p>
+<section id="wizard-sourced-config-yaml">
+<h4>Wizard-sourced (<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>)<a class="headerlink" href="#wizard-sourced-config-yaml" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">gcp_project_id</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">region</span></code>, <code class="docutils literal notranslate"><span class="pre">zone</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gke_type</span></code> (<code class="docutils literal notranslate"><span class="pre">zonal</span></code> or <code class="docutils literal notranslate"><span class="pre">regional</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">letsencrypt</span></code>, <code class="docutils literal notranslate"><span class="pre">gcp-managed</span></code>, <code class="docutils literal notranslate"><span class="pre">self-signed</span></code>,
+<code class="docutils literal notranslate"><span class="pre">byoc</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">image_tag_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">latest</span></code> or <code class="docutils literal notranslate"><span class="pre">pinned</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">domain</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dns_mode</span></code> (<code class="docutils literal notranslate"><span class="pre">auto</span></code> or <code class="docutils literal notranslate"><span class="pre">manual</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gke_machine_type</span></code>, <code class="docutils literal notranslate"><span class="pre">gke_node_count</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vm_machine_type</span></code>, <code class="docutils literal notranslate"><span class="pre">kamailio_count</span></code>, <code class="docutils literal notranslate"><span class="pre">rtpengine_count</span></code></p></li>
+</ul>
+<p>Any of these can be overridden at runtime with the <code class="docutils literal notranslate"><span class="pre">VOIPBIN_</span></code> prefix
+(uppercased), for example <code class="docutils literal notranslate"><span class="pre">VOIPBIN_REGION=europe-west1</span></code>.</p>
+</section>
+<section id="generated-and-sops-encrypted-secrets-yaml">
+<h4>Generated and SOPS-encrypted (<code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code>)<a class="headerlink" href="#generated-and-sops-encrypted-secrets-yaml" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">jwt_key</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">redis_password</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">api_signing_key</span></code></p></li>
+</ul>
+</section>
+<section id="ansible-variables-kamailio-vms">
+<h4>Ansible variables (Kamailio VMs)<a class="headerlink" href="#ansible-variables-kamailio-vms" title="Link to this heading">¶</a></h4>
+<p>Defined in <code class="docutils literal notranslate"><span class="pre">ansible/group_vars/all.yml</span></code> and
+<code class="docutils literal notranslate"><span class="pre">ansible/group_vars/kamailio.yml</span></code>. The ones operators routinely change:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">domain</span></code> via <code class="docutils literal notranslate"><span class="pre">VOIPBIN_DOMAIN</span></code> or <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">image_tag</span></code> via <code class="docutils literal notranslate"><span class="pre">VOIPBIN_IMAGE_TAG</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pstn_whitelist_ips</span></code> via <code class="docutils literal notranslate"><span class="pre">VOIPBIN_PSTN_WHITELIST_IPS</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kamailio_auth_db_url</span></code> and the three <code class="docutils literal notranslate"><span class="pre">kamailio_auth_*_column</span></code>
+variables via extra-vars or <code class="docutils literal notranslate"><span class="pre">group_vars/kamailio.yml</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kamailio_shm_size</span></code>, <code class="docutils literal notranslate"><span class="pre">kamailio_pkg_size</span></code>: memory tuning.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pike_enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">pike_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">pike_timeout</span></code>: anti-flood.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">homer_enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">homer_uri</span></code>: HEP capture.</p></li>
+</ul>
+</section>
+<section id="kubernetes-configmap-voipbin-config">
+<h4>Kubernetes ConfigMap (<code class="docutils literal notranslate"><span class="pre">voipbin-config</span></code>)<a class="headerlink" href="#kubernetes-configmap-voipbin-config" title="Link to this heading">¶</a></h4>
+<p>In namespaces <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> and <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code>. Placeholders are
+substituted at apply time:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">DOMAIN</span></code>, <code class="docutils literal notranslate"><span class="pre">DB_HOST</span></code>, <code class="docutils literal notranslate"><span class="pre">DB_PORT</span></code>, <code class="docutils literal notranslate"><span class="pre">DB_NAME</span></code>,
+<code class="docutils literal notranslate"><span class="pre">CLOUDSQL_CONNECTION_NAME</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">REDIS_URL</span></code>, <code class="docutils literal notranslate"><span class="pre">RABBITMQ_URL</span></code>, <code class="docutils literal notranslate"><span class="pre">CLICKHOUSE_URL</span></code></p></li>
+</ul>
+</section>
+<section id="kubernetes-secret-voipbin-secret">
+<h4>Kubernetes Secret (<code class="docutils literal notranslate"><span class="pre">voipbin-secret</span></code>)<a class="headerlink" href="#kubernetes-secret-voipbin-secret" title="Link to this heading">¶</a></h4>
+<p>In namespace <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">JWT_KEY</span></code>, <code class="docutils literal notranslate"><span class="pre">DB_USER</span></code>, <code class="docutils literal notranslate"><span class="pre">DB_PASSWORD</span></code>, <code class="docutils literal notranslate"><span class="pre">REDIS_PASSWORD</span></code>,
+<code class="docutils literal notranslate"><span class="pre">RABBITMQ_PASSWORD</span></code>, <code class="docutils literal notranslate"><span class="pre">API_SIGNING_KEY</span></code></p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="operations-and-troubleshooting">
+<h2>Operations and troubleshooting<a class="headerlink" href="#operations-and-troubleshooting" title="Link to this heading">¶</a></h2>
+<section id="day-to-day-commands">
+<h3>Day-to-day commands<a class="headerlink" href="#day-to-day-commands" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show the current pipeline state</span>
+./voipbin-install<span class="w"> </span>status
+
+<span class="c1"># Re-render and apply just the K8s manifests after editing a value</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s
+
+<span class="c1"># Re-render the Kamailio VM .env after editing group_vars</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
+
+<span class="c1"># Inspect what secrets are stored</span>
+sops<span class="w"> </span>--decrypt<span class="w"> </span>secrets.yaml
+
+<span class="c1"># SSH into Kamailio for debugging</span>
+gcloud<span class="w"> </span>compute<span class="w"> </span>ssh<span class="w"> </span>kamailio-0<span class="w"> </span>--tunnel-through-iap<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--project<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>yq<span class="w"> </span>.gcp_project_id<span class="w"> </span>config.yaml<span class="k">)</span><span class="s2">&quot;</span>
+
+<span class="c1"># Get logs from a backend service</span>
+kubectl<span class="w"> </span>-n<span class="w"> </span>bin-manager<span class="w"> </span>logs<span class="w"> </span>deploy/call-manager<span class="w"> </span>--tail<span class="w"> </span><span class="m">200</span>
+
+<span class="c1"># Tear everything down (irreversible, including the database)</span>
+./voipbin-install<span class="w"> </span>destroy
+</pre></div>
+</div>
+</section>
+<section id="common-issues">
+<h3>Common issues<a class="headerlink" href="#common-issues" title="Link to this heading">¶</a></h3>
+<section id="terraform-quota-exceeded">
+<h4>Terraform: quota exceeded<a class="headerlink" href="#terraform-quota-exceeded" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">Quota</span> <span class="pre">exceeded</span></code>. Request quota increases
+at <a class="reference external" href="https://console.cloud.google.com/iam-admin/quotas">https://console.cloud.google.com/iam-admin/quotas</a>, then rerun
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>. Common quotas: <code class="docutils literal notranslate"><span class="pre">CPUS_ALL_REGIONS</span></code>,
+<code class="docutils literal notranslate"><span class="pre">IN_USE_ADDRESSES</span></code>, <code class="docutils literal notranslate"><span class="pre">SSD_TOTAL_GB</span></code>.</p>
+</section>
+<section id="terraform-state-lock">
+<h4>Terraform: state lock<a class="headerlink" href="#terraform-state-lock" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">Error</span> <span class="pre">acquiring</span> <span class="pre">the</span> <span class="pre">state</span> <span class="pre">lock</span></code>. Only when you are certain no
+other process is running Terraform:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>terraform
+terraform<span class="w"> </span>force-unlock<span class="w"> </span>LOCK_ID
+</pre></div>
+</div>
+</section>
+<section id="terraform-api-not-enabled">
+<h4>Terraform: API not enabled<a class="headerlink" href="#terraform-api-not-enabled" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">...</span> <span class="pre">API</span> <span class="pre">not</span> <span class="pre">enabled</span></code>. Re-run
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">init</span></code> to enable APIs, or enable manually:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>services<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>container.googleapis.com<span class="w"> </span>--project<span class="w"> </span>PROJECT_ID
+</pre></div>
+</div>
+</section>
+<section id="terraform-state-bucket-missing">
+<h4>Terraform: state bucket missing<a class="headerlink" href="#terraform-state-bucket-missing" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">get</span> <span class="pre">existing</span> <span class="pre">workspaces:</span> <span class="pre">storage:</span> <span class="pre">bucket</span> <span class="pre">doesn't</span> <span class="pre">exist</span></code>.
+The GCS state bucket must exist before <code class="docutils literal notranslate"><span class="pre">terraform</span> <span class="pre">init</span></code>. The <code class="docutils literal notranslate"><span class="pre">apply</span></code>
+command creates it automatically; if you are running Terraform manually,
+create it first:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gsutil<span class="w"> </span>mb<span class="w"> </span>-p<span class="w"> </span>PROJECT_ID<span class="w"> </span>gs://PROJECT_ID-voipbin-tf-state
+</pre></div>
+</div>
+</section>
+<section id="terraform-permission-denied">
+<h4>Terraform: permission denied<a class="headerlink" href="#terraform-permission-denied" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">Required</span> <span class="pre">permission</span></code>. Re-check the
+authenticated principal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>auth<span class="w"> </span>list
+gcloud<span class="w"> </span>projects<span class="w"> </span>get-iam-policy<span class="w"> </span>PROJECT_ID
+</pre></div>
+</div>
+<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (12 roles).</p>
+</section>
+<section id="ansible-iap-tunnel-connection-failed">
+<h4>Ansible: IAP tunnel connection failed<a class="headerlink" href="#ansible-iap-tunnel-connection-failed" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">ERROR!</span> <span class="pre">Timeout</span> <span class="pre">waiting</span> <span class="pre">for</span> <span class="pre">connection</span></code> or
+<code class="docutils literal notranslate"><span class="pre">Permission</span> <span class="pre">denied</span> <span class="pre">(publickey)</span></code>.</p>
+<ol class="arabic simple">
+<li><p>Verify IAP SSH works directly:
+<code class="docutils literal notranslate"><span class="pre">gcloud</span> <span class="pre">compute</span> <span class="pre">ssh</span> <span class="pre">VM_NAME</span> <span class="pre">--tunnel-through-iap</span> <span class="pre">--project</span> <span class="pre">PROJECT_ID</span> <span class="pre">--zone</span> <span class="pre">ZONE</span></code>.</p></li>
+<li><p>Ensure the IAP API is enabled.</p></li>
+<li><p>Check the IAP firewall rule exists.</p></li>
+<li><p>Verify the principal has <code class="docutils literal notranslate"><span class="pre">roles/iap.tunnelResourceAccessor</span></code>.</p></li>
+</ol>
+</section>
+<section id="ansible-docker-install-failed-on-a-fresh-vm">
+<h4>Ansible: docker install failed on a fresh VM<a class="headerlink" href="#ansible-docker-install-failed-on-a-fresh-vm" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Could</span> <span class="pre">not</span> <span class="pre">get</span> <span class="pre">lock</span> <span class="pre">/var/lib/dpkg/lock</span></code> typically means cloud-init is
+still running. Wait for it and rerun the stage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>ssh<span class="w"> </span>kamailio-0<span class="w"> </span>--tunnel-through-iap<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--<span class="w"> </span><span class="s1">&#39;cloud-init status --wait&#39;</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
+</pre></div>
+</div>
+</section>
+<section id="kubernetes-pod-in-crashloopbackoff">
+<h4>Kubernetes: pod in CrashLoopBackOff<a class="headerlink" href="#kubernetes-pod-in-crashloopbackoff" title="Link to this heading">¶</a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>bin-manager
+kubectl<span class="w"> </span>logs<span class="w"> </span>POD_NAME<span class="w"> </span>-n<span class="w"> </span>bin-manager
+kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>POD_NAME<span class="w"> </span>-n<span class="w"> </span>bin-manager
+</pre></div>
+</div>
+<p>Most common causes:</p>
+<ul class="simple">
+<li><p>Cloud SQL Proxy not ready (check <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code> namespace first).</p></li>
+<li><p>Redis or RabbitMQ not ready.</p></li>
+<li><p>Missing ConfigMap or Secret values.</p></li>
+</ul>
+</section>
+<section id="kubernetes-imagepullbackoff">
+<h4>Kubernetes: ImagePullBackOff<a class="headerlink" href="#kubernetes-imagepullbackoff" title="Link to this heading">¶</a></h4>
+<ol class="arabic simple">
+<li><p>Verify the image exists at the tag declared in
+<code class="docutils literal notranslate"><span class="pre">config/versions.yaml</span></code>.</p></li>
+<li><p>GKE nodes need internet access through Cloud NAT.</p></li>
+<li><p>If images live in a private GAR or GCR repository, confirm the GKE
+node service account has <code class="docutils literal notranslate"><span class="pre">roles/artifactregistry.reader</span></code> (GAR) or
+<code class="docutils literal notranslate"><span class="pre">roles/storage.objectViewer</span></code> on the registry bucket (legacy GCR).</p></li>
+</ol>
+</section>
+<section id="cloud-sql-connection-refused-from-pods">
+<h4>Cloud SQL: connection refused from pods<a class="headerlink" href="#cloud-sql-connection-refused-from-pods" title="Link to this heading">¶</a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>infrastructure<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>cloudsql-proxy
+kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>infrastructure<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>cloudsql-proxy
+</pre></div>
+</div>
+<p>Verify the Cloud SQL instance is up, the proxy service account has
+permissions, and the connection name matches the Terraform output.</p>
+</section>
+<section id="dns-domain-not-resolving">
+<h4>DNS: domain not resolving<a class="headerlink" href="#dns-domain-not-resolving" title="Link to this heading">¶</a></h4>
+<p>When <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">auto</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>dns<span class="w"> </span>managed-zones<span class="w"> </span>describe<span class="w"> </span>voipbin-zone<span class="w"> </span>--project<span class="w"> </span>PROJECT_ID<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--format<span class="o">=</span><span class="s2">&quot;value(nameServers)&quot;</span>
+</pre></div>
+</div>
+<p>Update your registrar’s NS records to point at those nameservers. NS
+delegation can take up to 48 hours.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">manual</span></code>: pull the external LB IP from Terraform
+outputs and create A records for <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">admin</span></code>, <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">meet</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">sip</span></code> subdomains at your DNS provider.</p>
+</section>
+<section id="sip-devices-cannot-register">
+<h4>SIP: devices cannot register<a class="headerlink" href="#sip-devices-cannot-register" title="Link to this heading">¶</a></h4>
+<ol class="arabic">
+<li><p>Confirm Kamailio is running on the VM:
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">ps</span></code> via IAP SSH.</p></li>
+<li><p>Inspect the logs:
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">logs</span> <span class="pre">--tail</span> <span class="pre">100</span></code>.</p></li>
+<li><p>List the Kamailio load balancer resources and check health, since the
+exact resource names vary by deployment environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>target-pools<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">&quot;name~kamailio&quot;</span>
+gcloud<span class="w"> </span>compute<span class="w"> </span>forwarding-rules<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">&quot;name~kamailio&quot;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="audio-calls-connect-but-no-audio">
+<h4>Audio: calls connect but no audio<a class="headerlink" href="#audio-calls-connect-but-no-audio" title="Link to this heading">¶</a></h4>
+<ol class="arabic simple">
+<li><p>Confirm RTPEngine is running on the VM.</p></li>
+<li><p>Check the firewall allows the RTP UDP port range.</p></li>
+<li><p>Verify RTPEngine sees the correct external IP, especially after
+moving regions.</p></li>
+</ol>
+</section>
+</section>
+<section id="rollback">
+<h3>Rollback<a class="headerlink" href="#rollback" title="Link to this heading">¶</a></h3>
+<p>Kubernetes rollout:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>rollout<span class="w"> </span>undo<span class="w"> </span>deployment/DEPLOYMENT_NAME<span class="w"> </span>-n<span class="w"> </span>NAMESPACE
+</pre></div>
+</div>
+<p>Terraform state from a previous version:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gsutil<span class="w"> </span>ls<span class="w"> </span>-la<span class="w"> </span>gs://PROJECT_ID-voipbin-tf-state/default.tfstate
+gsutil<span class="w"> </span>cp<span class="w"> </span>gs://PROJECT_ID-voipbin-tf-state/default.tfstate#VERSION<span class="w"> </span>terraform.tfstate
+<span class="nb">cd</span><span class="w"> </span>terraform<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>terraform<span class="w"> </span>apply
+</pre></div>
+</div>
+<p>Full teardown and rebuild:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>destroy
+./voipbin-install<span class="w"> </span>apply
+</pre></div>
+</div>
+</section>
+<section id="where-to-go-next">
+<h3>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>The installer repo’s own <code class="docutils literal notranslate"><span class="pre">docs/troubleshooting.md</span></code> has a wider list
+of error symptoms by stage.</p></li>
+<li><p>The installer’s <code class="docutils literal notranslate"><span class="pre">README.md</span></code> lists exact IAM roles and Terraform
+outputs.</p></li>
+<li><p>For platform support, contact <code class="docutils literal notranslate"><span class="pre">support&#64;voipbin.net</span></code>.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="glossary.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Glossary</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="websocket_tutorial.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Tutorial</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, VoIPBIN
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/voipbin/voipbin" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Self-Hosting</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#what-gets-deployed">What gets deployed</a></li>
+<li><a class="reference internal" href="#cost">Cost</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#local-tools">Local tools</a></li>
+<li><a class="reference internal" href="#gcp-account">GCP account</a></li>
+<li><a class="reference internal" href="#gcp-quotas">GCP quotas</a></li>
+<li><a class="reference internal" href="#gcp-apis">GCP APIs</a></li>
+<li><a class="reference internal" href="#two-authentications-not-one">Two authentications, not one</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install">Install</a><ul>
+<li><a class="reference internal" href="#init-interactive-wizard"><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)</a></li>
+<li><a class="reference internal" href="#apply-three-stage-deploy"><code class="docutils literal notranslate"><span class="pre">apply</span></code> (three-stage deploy)</a></li>
+<li><a class="reference internal" href="#verify-health-check"><code class="docutils literal notranslate"><span class="pre">verify</span></code> (health check)</a></li>
+<li><a class="reference internal" href="#dns-step">DNS step</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration-files">Configuration files</a><ul>
+<li><a class="reference internal" href="#config-yaml-non-sensitive"><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> (non-sensitive)</a></li>
+<li><a class="reference internal" href="#secrets-yaml-sops-encrypted"><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> (SOPS-encrypted)</a></li>
+<li><a class="reference internal" href="#where-each-value-lands">Where each value lands</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environment-variables-and-post-install-configuration">Environment variables and post-install configuration</a><ul>
+<li><a class="reference internal" href="#domain-related-values">1. Domain-related values</a></li>
+<li><a class="reference internal" href="#generated-credentials-rabbitmq-redis-mysql-jwt-api-signing">2. Generated credentials (RabbitMQ, Redis, MySQL, JWT, API signing)</a></li>
+<li><a class="reference internal" href="#sip-and-pstn-settings">3. SIP and PSTN settings</a><ul>
+<li><a class="reference internal" href="#pstn-allowlist">PSTN allowlist</a></li>
+<li><a class="reference internal" href="#sip-auth-backend">SIP auth backend</a></li>
+<li><a class="reference internal" href="#rtpengine-port-range">RTPEngine port range</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tls-certificate-strategy">4. TLS certificate strategy</a></li>
+<li><a class="reference internal" href="#third-party-integrations">5. Third-party integrations</a></li>
+<li><a class="reference internal" href="#scaling">6. Scaling</a></li>
+<li><a class="reference internal" href="#consolidated-environment-variable-map">Consolidated environment variable map</a><ul>
+<li><a class="reference internal" href="#wizard-sourced-config-yaml">Wizard-sourced (<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>)</a></li>
+<li><a class="reference internal" href="#generated-and-sops-encrypted-secrets-yaml">Generated and SOPS-encrypted (<code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code>)</a></li>
+<li><a class="reference internal" href="#ansible-variables-kamailio-vms">Ansible variables (Kamailio VMs)</a></li>
+<li><a class="reference internal" href="#kubernetes-configmap-voipbin-config">Kubernetes ConfigMap (<code class="docutils literal notranslate"><span class="pre">voipbin-config</span></code>)</a></li>
+<li><a class="reference internal" href="#kubernetes-secret-voipbin-secret">Kubernetes Secret (<code class="docutils literal notranslate"><span class="pre">voipbin-secret</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#operations-and-troubleshooting">Operations and troubleshooting</a><ul>
+<li><a class="reference internal" href="#day-to-day-commands">Day-to-day commands</a></li>
+<li><a class="reference internal" href="#common-issues">Common issues</a><ul>
+<li><a class="reference internal" href="#terraform-quota-exceeded">Terraform: quota exceeded</a></li>
+<li><a class="reference internal" href="#terraform-state-lock">Terraform: state lock</a></li>
+<li><a class="reference internal" href="#terraform-api-not-enabled">Terraform: API not enabled</a></li>
+<li><a class="reference internal" href="#terraform-state-bucket-missing">Terraform: state bucket missing</a></li>
+<li><a class="reference internal" href="#terraform-permission-denied">Terraform: permission denied</a></li>
+<li><a class="reference internal" href="#ansible-iap-tunnel-connection-failed">Ansible: IAP tunnel connection failed</a></li>
+<li><a class="reference internal" href="#ansible-docker-install-failed-on-a-fresh-vm">Ansible: docker install failed on a fresh VM</a></li>
+<li><a class="reference internal" href="#kubernetes-pod-in-crashloopbackoff">Kubernetes: pod in CrashLoopBackOff</a></li>
+<li><a class="reference internal" href="#kubernetes-imagepullbackoff">Kubernetes: ImagePullBackOff</a></li>
+<li><a class="reference internal" href="#cloud-sql-connection-refused-from-pods">Cloud SQL: connection refused from pods</a></li>
+<li><a class="reference internal" href="#dns-domain-not-resolving">DNS: domain not resolving</a></li>
+<li><a class="reference internal" href="#sip-devices-cannot-register">SIP: devices cannot register</a></li>
+<li><a class="reference internal" href="#audio-calls-connect-but-no-audio">Audio: calls connect but no audio</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rollback">Rollback</a></li>
+<li><a class="reference internal" href="#where-to-go-next">Where to go next</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=8a448e45"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>
