@@ -7,6 +7,9 @@ A mediastream provides real-time audio streaming over WebSocket or audiosocket, 
 
 **API Reference:** `Mediastream endpoints <https://api.voipbin.net/redoc/#tag/Mediastream>`_
 
-.. include:: mediastream_overview.rst
-.. include:: streaming_struct_streaming.rst
-.. include:: mediastream_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   mediastream_overview
+   streaming_struct_streaming
+   mediastream_tutorial

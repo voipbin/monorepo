@@ -7,7 +7,10 @@ Create and manage multi-party conference calls with support for recording, mutin
 
 **API Reference:** `Conference endpoints <https://api.voipbin.net/redoc/#tag/Conference>`_
 
-.. include:: conference_overview.rst
-.. include:: conference_struct_conference.rst
-.. include:: conference_struct_conferencecall.rst
-.. include:: conference_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   conference_overview
+   conference_struct_conference
+   conference_struct_conferencecall
+   conference_tutorial

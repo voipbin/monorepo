@@ -7,7 +7,10 @@ Manage call queues with configurable routing strategies and automatic agent matc
 
 **API Reference:** `Queue endpoints <https://api.voipbin.net/redoc/#tag/Queue>`_
 
-.. include:: queue_overview.rst
-.. include:: queue_struct_queue.rst
-.. include:: queue_struct_queuecall.rst
-.. include:: queue_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   queue_overview
+   queue_struct_queue
+   queue_struct_queuecall
+   queue_tutorial
