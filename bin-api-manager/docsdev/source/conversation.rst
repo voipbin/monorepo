@@ -7,8 +7,11 @@ Manage threaded conversations and message history across channels (SMS, voice, c
 
 **API Reference:** `Conversation endpoints <https://api.voipbin.net/redoc/#tag/Conversation>`_
 
-.. include:: conversation_overview.rst
-.. include:: conversation_struct_conversation.rst
-.. include:: conversation_struct_message.rst
-.. include:: conversation_struct_account.rst
-.. include:: conversation_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   conversation_overview
+   conversation_struct_conversation
+   conversation_struct_message
+   conversation_struct_account
+   conversation_tutorial
