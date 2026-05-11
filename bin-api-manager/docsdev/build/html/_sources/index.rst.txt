@@ -1,9 +1,9 @@
 .. voipbin documentation master file.
    The root toctree document for docs.voipbin.net.
 
-###################
+#####################
 VoIPBin Documentation
-###################
+#####################
 
 **Opensource CPaaS platform** for Voice, SMS, Email, Chat, and Social. Own your communications stack.
 
