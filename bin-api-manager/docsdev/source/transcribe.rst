@@ -7,7 +7,10 @@ Real-time speech-to-text transcription for voice calls, converting spoken audio 
 
 **API Reference:** `Transcribe endpoints <https://api.voipbin.net/redoc/#tag/Transcribe>`_
 
-.. include:: transcribe_overview.rst
-.. include:: transcribe_tutorial.rst
-.. include:: transcribe_struct.rst
-.. include:: transcript_struct_transcript.rst
+.. toctree::
+   :maxdepth: 2
+
+   transcribe_overview
+   transcribe_tutorial
+   transcribe_struct
+   transcript_struct_transcript

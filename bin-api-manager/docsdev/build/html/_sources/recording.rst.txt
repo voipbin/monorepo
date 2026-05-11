@@ -7,7 +7,9 @@ Manage call recordings including starting, stopping, and retrieving recorded aud
 
 **API Reference:** `Recording endpoints <https://api.voipbin.net/redoc/#tag/Recording>`_
 
-.. include:: recording_overview.rst
-.. include:: recording_struct_recording.rst
-.. include:: recording_tutorial.rst
+.. toctree::
+   :maxdepth: 2
 
+   recording_overview
+   recording_struct_recording
+   recording_tutorial
