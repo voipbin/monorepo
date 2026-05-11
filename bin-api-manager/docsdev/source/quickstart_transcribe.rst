@@ -1,3 +1,5 @@
+:orphan:
+
 .. _quickstart_transcribe:
 
 Transcribe

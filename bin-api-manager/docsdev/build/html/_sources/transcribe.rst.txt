@@ -10,3 +10,4 @@ Real-time speech-to-text transcription for voice calls, converting spoken audio 
 .. include:: transcribe_overview.rst
 .. include:: transcribe_tutorial.rst
 .. include:: transcribe_struct.rst
+.. include:: transcript_struct_transcript.rst

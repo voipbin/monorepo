@@ -401,7 +401,7 @@ This service monitors pod lifecycle events in Kubernetes:
 **Key Features:**
 
 * **In-Cluster Monitoring**: Uses Kubernetes client-go with RBAC
-* **Label-Based Filtering**: Watches specific pod labels (app=asterisk-*)
+* **Label-Based Filtering**: Watches specific pod labels (``app=asterisk-*``)
 * **Event Publishing**: Notifies services via RabbitMQ for recovery actions
 * **Prometheus Metrics**: Exports pod state change counters
 * **SIP Session Recovery**: Enables call-manager to recover sessions when pods crash

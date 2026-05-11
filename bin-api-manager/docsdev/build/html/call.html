@@ -1294,6 +1294,87 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </div>
 </section>
 </section>
+<section id="transfer-struct-transfer">
+<span id="id1"></span><h2>Transfer<a class="headerlink" href="#transfer-struct-transfer" title="Link to this heading"></a></h2>
+<section id="transfer-struct-transfer-transfer">
+<span id="id2"></span><h3>Transfer<a class="headerlink" href="#transfer-struct-transfer-transfer" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferee_addresses&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;transferee_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;groupcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;confbridge_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The transfer’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this transfer. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The type of call transfer. See <a class="reference internal" href="transfer_struct_transfer.html#transfer-struct-transfer-type"><span class="std std-ref">Type</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transferer_call_id</span></code> (UUID): The call ID of the party initiating the transfer. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> (array of Address): The destination addresses for the transfer target. Each address follows the <a class="reference internal" href="common_struct_address.html#common-struct-address"><span class="std std-ref">Address</span></a> format.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transferee_call_id</span></code> (UUID): The call ID of the party receiving the transfer (created after transfer execution). Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">groupcall_id</span></code> (UUID): The group call ID created for the transfer operation. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/groupcalls</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">confbridge_id</span></code> (UUID): The conference bridge used during the transfer. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/conferences</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when this transfer was created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to this transfer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when this transfer was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Attended transfers allow the transferer to speak with the transferee before completing the transfer. Blind transfers immediately connect the transferee without consultation.</p>
+</div>
+</section>
+<section id="type">
+<span id="transfer-struct-transfer-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">type</span></code> field:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>attended</p></td>
+<td><p>Attended transfer. The transferer can consult with the transferee before completing the transfer.</p></td>
+</tr>
+<tr class="row-odd"><td><p>blind</p></td>
+<td><p>Blind transfer. The call is immediately transferred to the destination without consultation.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;attended&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferer_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transferee_addresses&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+12025551234&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;transferee_call_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-123456789012&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;groupcall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-defa-234567890123&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;confbridge_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e5f6a7b8-c9d0-1234-efab-345678901234&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-01T10:00:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-01T10:00:15.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01T00:00:00.000000Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
 <section id="groupcall">
 <span id="call-groupcall"></span><h2>Groupcall<a class="headerlink" href="#groupcall" title="Link to this heading"></a></h2>
 <p>The Groupcall feature in VoIPBIN is a blast calling functionality that enables team members to communicate in real-time. When a Group Call is initiated, an alert is sent to all team members, allowing them to join the call with a single click. The feature uses VoIP technology to enable high-quality audio communication and offers benefits such as increased productivity, improved collaboration, and enhanced connectivity.</p>
@@ -1396,7 +1477,7 @@ This process will continue until one of the destinations answers the call, at wh
 <section id="struct-call">
 <span id="call-struct-call"></span><h2>Struct Call<a class="headerlink" href="#struct-call" title="Link to this heading"></a></h2>
 <section id="call-struct-call-call">
-<span id="id1"></span><h3>Call<a class="headerlink" href="#call-struct-call-call" title="Link to this heading"></a></h3>
+<span id="id3"></span><h3>Call<a class="headerlink" href="#call-struct-call-call" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1474,8 +1555,8 @@ This process will continue until one of the destinations answers the call, at wh
 <p><strong>AI Implementation Hint</strong></p>
 <p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_hangup</span></code> with this value means the call is still in progress.</p>
 </div>
-<section id="example">
-<h4>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h4>
+<section id="id4">
+<h4>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d9d32881-12fd-4b19-a6b2-6d5b6b6acf76&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
@@ -1530,8 +1611,8 @@ This process will continue until one of the destinations answers the call, at wh
 </div>
 </section>
 </section>
-<section id="type">
-<span id="call-struct-call-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<section id="call-struct-call-type">
+<span id="id5"></span><h3>Type<a class="headerlink" href="#call-struct-call-type" title="Link to this heading"></a></h3>
 <p>Call’s type (enum string).</p>
 <table class="docutils align-default">
 <thead>
@@ -1695,7 +1776,7 @@ This process will continue until one of the destinations answers the call, at wh
 <section id="struct-groupcall">
 <span id="call-struct-groupcall"></span><h2>Struct Groupcall<a class="headerlink" href="#struct-groupcall" title="Link to this heading"></a></h2>
 <section id="call-struct-groupcall-groupcall">
-<span id="id2"></span><h3>Groupcall<a class="headerlink" href="#call-struct-groupcall-groupcall" title="Link to this heading"></a></h3>
+<span id="id6"></span><h3>Groupcall<a class="headerlink" href="#call-struct-groupcall-groupcall" title="Link to this heading"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1769,8 +1850,8 @@ This process will continue until one of the destinations answers the call, at wh
 <p><strong>AI Implementation Hint</strong></p>
 <p>Groupcalls involve active calls to real destinations, which are chargeable. Each destination in the <code class="docutils literal notranslate"><span class="pre">destinations</span></code> array results in an individual call being created. With <code class="docutils literal notranslate"><span class="pre">ring_all</span></code>, all calls are placed simultaneously. Monitor <code class="docutils literal notranslate"><span class="pre">call_ids</span></code> to track the status of each individual call.</p>
 </div>
-<section id="id3">
-<h4>Example<a class="headerlink" href="#id3" title="Link to this heading"></a></h4>
+<section id="id7">
+<h4>Example<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
@@ -1823,7 +1904,7 @@ This process will continue until one of the destinations answers the call, at wh
 </section>
 </section>
 <section id="call-struct-groupcall-status">
-<span id="id4"></span><h3>Status<a class="headerlink" href="#call-struct-groupcall-status" title="Link to this heading"></a></h3>
+<span id="id8"></span><h3>Status<a class="headerlink" href="#call-struct-groupcall-status" title="Link to this heading"></a></h3>
 <p>All possible values for the <code class="docutils literal notranslate"><span class="pre">status</span></code> field:</p>
 <table class="docutils align-default">
 <thead>
@@ -2757,8 +2838,8 @@ When the destination answer the call, it will play the given media file.</p>
 </pre></div>
 </div>
 </section>
-<section id="id5">
-<h3>Troubleshooting<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<section id="id9">
+<h3>Troubleshooting<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
@@ -4949,7 +5030,7 @@ VoIPBIN             Destination              Voicemail
 </section>
 </section>
 <section id="call-troubleshooting">
-<span id="id6"></span><h2>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading"></a></h2>
+<span id="id10"></span><h2>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading"></a></h2>
 <p>This guide helps you diagnose and resolve common call issues. Each problem includes symptoms, causes, and solutions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -5670,6 +5751,12 @@ later released or deactivated will fail.
 <li><a class="reference internal" href="#attended-transfer">Attended Transfer</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#transfer-struct-transfer">Transfer</a><ul>
+<li><a class="reference internal" href="#transfer-struct-transfer-transfer">Transfer</a></li>
+<li><a class="reference internal" href="#type">Type</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#groupcall">Groupcall</a><ul>
 <li><a class="reference internal" href="#ringall">Ringall</a></li>
 <li><a class="reference internal" href="#linear">Linear</a></li>
@@ -5678,10 +5765,10 @@ later released or deactivated will fail.
 </li>
 <li><a class="reference internal" href="#struct-call">Struct Call</a><ul>
 <li><a class="reference internal" href="#call-struct-call-call">Call</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#id4">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#type">Type</a></li>
+<li><a class="reference internal" href="#call-struct-call-type">Type</a></li>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#direction">Direction</a></li>
 <li><a class="reference internal" href="#hangup-by">Hangup by</a></li>
@@ -5694,7 +5781,7 @@ later released or deactivated will fail.
 </li>
 <li><a class="reference internal" href="#struct-groupcall">Struct Groupcall</a><ul>
 <li><a class="reference internal" href="#call-struct-groupcall-groupcall">Groupcall</a><ul>
-<li><a class="reference internal" href="#id3">Example</a></li>
+<li><a class="reference internal" href="#id7">Example</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#call-struct-groupcall-status">Status</a></li>
@@ -5716,7 +5803,7 @@ later released or deactivated will fail.
 <li><a class="reference internal" href="#get-call-list">Get call list</a></li>
 <li><a class="reference internal" href="#get-specific-call">Get specific call</a></li>
 <li><a class="reference internal" href="#make-a-groupcall">Make a groupcall</a></li>
-<li><a class="reference internal" href="#id5">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id9">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#internal-call-sequences">Internal Call Sequences</a><ul>
