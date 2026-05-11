@@ -1,4 +1,4 @@
-.. _extension-tutorial: extension-tutorial
+.. _extension-tutorial:
 
 Tutorial
 ========

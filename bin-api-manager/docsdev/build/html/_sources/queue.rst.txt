@@ -1,4 +1,4 @@
-.. _queue-main: queue-main
+.. _queue-main:
 
 **************
 Queue

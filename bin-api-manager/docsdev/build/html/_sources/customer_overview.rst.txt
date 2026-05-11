@@ -95,7 +95,7 @@ Key properties of a customer account.
 | status                 | (enum string) Account status: initial, active, frozen,         |
 |                        | deleted, expired                                               |
 +------------------------+----------------------------------------------------------------+
-| identity_verification_ | (enum string) Identity verification state: none, pending,      |
+| identity_verification\_| (enum string) Identity verification state: none, pending,      |
 | status                 | verified, rejected                                             |
 +------------------------+----------------------------------------------------------------+
 

@@ -1,4 +1,4 @@
-.. _team-main: team-main
+.. _team-main:
 
 **************
 Team

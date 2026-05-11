@@ -1,4 +1,4 @@
-.. _number-tutorial: number-tutorial
+.. _number-tutorial:
 
 Tutorial
 ========

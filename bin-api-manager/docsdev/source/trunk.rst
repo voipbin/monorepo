@@ -1,4 +1,4 @@
-.. _trunk-main: trunk-main
+.. _trunk-main:
 
 **************
 Trunk

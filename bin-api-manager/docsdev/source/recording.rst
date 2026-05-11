@@ -1,4 +1,4 @@
-.. _recording-main: recording-main
+.. _recording-main:
 
 *************
 Recording
