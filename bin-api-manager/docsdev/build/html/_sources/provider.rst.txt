@@ -7,6 +7,9 @@ A provider represents a telephony carrier configuration (e.g., Telnyx, Twilio) t
 
 **API Reference:** `Provider endpoints <https://api.voipbin.net/redoc/#tag/Provider>`_
 
-.. include:: provider_overview.rst
-.. include:: provider_struct_provider.rst
-.. include:: provider_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   provider_overview
+   provider_struct_provider
+   provider_tutorial
