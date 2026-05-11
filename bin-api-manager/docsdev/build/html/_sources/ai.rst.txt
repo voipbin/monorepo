@@ -7,10 +7,13 @@ Configure AI-powered voice agents with speech-to-text (STT), text-to-speech (TTS
 
 **API Reference:** `AI endpoints <https://api.voipbin.net/redoc/#tag/AI>`_
 
-.. include:: ai_overview.rst
-.. include:: ai_struct_ai.rst
-.. include:: ai_struct_tool.rst
-.. include:: aicall_struct_aicall.rst
-.. include:: ai_struct_message.rst
-.. include:: ai_struct_summary.rst
-.. include:: ai_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   ai_overview
+   ai_struct_ai
+   ai_struct_tool
+   aicall_struct_aicall
+   ai_struct_message
+   ai_struct_summary
+   ai_tutorial

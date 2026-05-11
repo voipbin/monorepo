@@ -7,6 +7,9 @@ Compose multiple AI agents into a directed graph for multi-agent conversations. 
 
 **API Reference:** `Team endpoints <https://api.voipbin.net/redoc/#tag/Team>`_
 
-.. include:: team_overview.rst
-.. include:: team_struct_team.rst
-.. include:: team_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   team_overview
+   team_struct_team
+   team_tutorial
