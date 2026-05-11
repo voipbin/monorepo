@@ -7,6 +7,9 @@ A ProviderCall is an admin-triggered outbound call placed through a specific SIP
 
 **API Reference:** `ProviderCall endpoints <https://api.voipbin.net/redoc/#tag/ProviderCall>`_
 
-.. include:: providercall_overview.rst
-.. include:: providercall_struct_providercall.rst
-.. include:: providercall_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   providercall_overview
+   providercall_struct_providercall
+   providercall_tutorial

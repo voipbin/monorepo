@@ -7,6 +7,9 @@ Define call routing rules that control how inbound and outbound calls are direct
 
 **API Reference:** `Route endpoints <https://api.voipbin.net/redoc/#tag/Route>`_
 
-.. include:: route_overview.rst
-.. include:: route_struct_route.rst
-.. include:: route_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   route_overview
+   route_struct_route
+   route_tutorial

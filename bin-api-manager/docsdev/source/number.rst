@@ -7,8 +7,10 @@ A number is a phone number provisioned on the VoIPBIN platform that can be bound
 
 **API Reference:** `Number endpoints <https://api.voipbin.net/redoc/#tag/Number>`_
 
-.. include:: number_overview.rst
-.. include:: number_struct_number.rst
-.. include:: availablenumber_struct.rst
-.. include:: number_tutorial.rst
+.. toctree::
+   :maxdepth: 2
 
+   number_overview
+   number_struct_number
+   availablenumber_struct
+   number_tutorial

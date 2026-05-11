@@ -7,7 +7,10 @@ Configure SIP trunks for Bring Your Own Carrier (BYOC), connecting your existing
 
 **API Reference:** `Trunk endpoints <https://api.voipbin.net/redoc/#tag/Trunk>`_
 
-.. include:: trunk_overview.rst
-.. include:: trunk_overview_trunking.rst
-.. include:: trunk_overview_domain_name.rst
-.. include:: trunk_struct_trunk.rst
+.. toctree::
+   :maxdepth: 2
+
+   trunk_overview
+   trunk_overview_trunking
+   trunk_overview_domain_name
+   trunk_struct_trunk

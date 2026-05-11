@@ -7,6 +7,9 @@ An extension is an internal SIP endpoint (e.g., ``1001``) that registers agents 
 
 **API Reference:** `Extension endpoints <https://api.voipbin.net/redoc/#tag/Extension>`_
 
-.. include:: extension_overview.rst
-.. include:: extension_struct_extension.rst
-.. include:: extension_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   extension_overview
+   extension_struct_extension
+   extension_tutorial
