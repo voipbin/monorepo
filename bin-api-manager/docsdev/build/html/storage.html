@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tag" href="tag.html"><link rel="prev" title="Billing Account" href="billing_account.html">
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Overview" href="storage_overview.html"><link rel="prev" title="Billing" href="billing_struct_billing.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
@@ -189,7 +189,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -463,9 +463,25 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Billing &amp; Operations</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Storage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="billing_account.html">Billing Account</a><input aria-label="Toggle navigation of Billing Account" class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" role="switch" type="checkbox"/><label for="toctree-checkbox-30"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_account_struct.html">Struct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="billing_struct_billing.html">Billing</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Storage</a><input aria-label="Toggle navigation of Storage" checked="" class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" role="switch" type="checkbox"/><label for="toctree-checkbox-31"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_account.html">Account</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html">File</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="tag.html">Tag</a><input aria-label="Toggle navigation of Tag" class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" role="switch" type="checkbox"/><label for="toctree-checkbox-32"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="tag_overview.html">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_struct_tag.html">Tag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tag_tutorial.html">Tutorial</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
 <ul>
@@ -516,7 +532,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
@@ -525,604 +541,33 @@
 <span id="storage-main"></span><h1>Storage<a class="headerlink" href="#storage" title="Link to this heading">¶</a></h1>
 <p>Upload, download, and manage media files and other stored assets used across VoIPBIN services.</p>
 <p><strong>API Reference:</strong> <a class="reference external" href="https://api.voipbin.net/redoc/#tag/Storage">Storage endpoints</a></p>
-<section id="overview">
-<span id="storage-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Context</strong></p>
-<ul class="simple">
-<li><p><strong>Complexity:</strong> Low</p></li>
-<li><p><strong>Cost:</strong> Chargeable (per GB stored; default quota is 10 GB per customer)</p></li>
-<li><p><strong>Async:</strong> No. File uploads and downloads are synchronous. <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/storage_files</span></code> returns immediately with the file metadata. <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/storage_files/{id}</span></code> returns file details including a time-limited <code class="docutils literal notranslate"><span class="pre">uri_download</span></code>.</p></li>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storage_overview.html">Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#how-storage-works">How Storage Works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#file-operations">File Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#service-agent-file-download">Service Agent File Download</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#storage-account-management">Storage Account Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#file-types-and-sources">File Types and Sources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#quota-management">Quota Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#common-scenarios">Common Scenarios</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_overview.html#related-documentation">Related Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storage_struct_account.html">Account</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_account.html#storage-struct-account-account">Account</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="storage_struct_file.html">File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html#storage-struct-file-file">File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html#reference-type">Reference Type</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_struct_file.html#file-type">File Type</a></li>
+</ul>
+</li>
 </ul>
 </div>
-<p>VoIPBIN’s Storage API provides file management capabilities for storing and retrieving files associated with your communications. From call recordings to media attachments, the Storage API enables secure file operations within your allocated quota.</p>
-<p>With the Storage API you can:</p>
-<ul class="simple">
-<li><p>Upload files to cloud storage</p></li>
-<li><p>Retrieve and download stored files</p></li>
-<li><p>Delete files to manage quota</p></li>
-<li><p>Monitor storage usage</p></li>
-<li><p>Access file metadata and URLs</p></li>
-</ul>
-<section id="how-storage-works">
-<h3>How Storage Works<a class="headerlink" href="#how-storage-works" title="Link to this heading">¶</a></h3>
-<p>VoIPBIN storage provides cloud-based file management with quota limits.</p>
-<p><strong>Storage Architecture</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
-<span class="o">|</span>                         <span class="n">Storage</span> <span class="n">System</span>                                <span class="o">|</span>
-<span class="o">+-----------------------------------------------------------------------+</span>
-
-<span class="o">+-------------------+</span>
-<span class="o">|</span>  <span class="n">Storage</span> <span class="n">Account</span>  <span class="o">|</span>
-<span class="o">|</span>   <span class="p">(</span><span class="n">quota</span><span class="p">:</span> <span class="mi">10</span><span class="n">GB</span><span class="p">)</span>   <span class="o">|</span>
-<span class="o">+--------+----------+</span>
-         <span class="o">|</span>
-         <span class="o">|</span> <span class="n">contains</span>
-         <span class="n">v</span>
-<span class="o">+--------+----------+--------+----------+--------+----------+</span>
-<span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>                   <span class="o">|</span>
-<span class="n">v</span>                   <span class="n">v</span>                   <span class="n">v</span>                   <span class="n">v</span>
-<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
-<span class="o">|</span> <span class="n">Recording</span><span class="o">|</span>   <span class="o">|</span>   <span class="n">Media</span>  <span class="o">|</span>   <span class="o">|</span>  <span class="n">Export</span>  <span class="o">|</span>   <span class="o">|</span>  <span class="n">Other</span>   <span class="o">|</span>
-<span class="o">|</span>  <span class="n">files</span>   <span class="o">|</span>   <span class="o">|</span>   <span class="n">files</span>  <span class="o">|</span>   <span class="o">|</span>  <span class="n">files</span>   <span class="o">|</span>   <span class="o">|</span>  <span class="n">files</span>   <span class="o">|</span>
-<span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>   <span class="o">+----------+</span>
-     <span class="o">|</span>              <span class="o">|</span>              <span class="o">|</span>              <span class="o">|</span>
-     <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>              <span class="n">v</span>
-<span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>
-<span class="o">|</span> <span class="o">.</span><span class="n">wav</span>    <span class="o">|</span>    <span class="o">|</span> <span class="o">.</span><span class="n">jpg</span>    <span class="o">|</span>    <span class="o">|</span> <span class="o">.</span><span class="n">csv</span>    <span class="o">|</span>    <span class="o">|</span> <span class="o">.</span><span class="n">pdf</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="o">.</span><span class="n">mp3</span>    <span class="o">|</span>    <span class="o">|</span> <span class="o">.</span><span class="n">png</span>    <span class="o">|</span>    <span class="o">|</span> <span class="o">.</span><span class="n">json</span>   <span class="o">|</span>    <span class="o">|</span> <span class="o">.</span><span class="n">txt</span>    <span class="o">|</span>
-<span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>    <span class="o">+---------+</span>
-</pre></div>
-</div>
-<p><strong>Key Components</strong></p>
-<ul class="simple">
-<li><p><strong>Storage Account</strong>: Your allocated storage space with quota</p></li>
-<li><p><strong>Files</strong>: Individual stored items with metadata</p></li>
-<li><p><strong>Quota</strong>: Maximum storage limit (currently 10GB)</p></li>
-<li><p><strong>Download URL</strong>: Secure link to access file content</p></li>
-</ul>
-</section>
-<section id="file-operations">
-<h3>File Operations<a class="headerlink" href="#file-operations" title="Link to this heading">¶</a></h3>
-<p>Core file management operations.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> field in file responses contains a time-limited signed URL. Always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using the URL. If the URL has expired, use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/storage_files/{id}/file</span></code> which automatically refreshes the URL and redirects to the download. Do not cache or persist download URLs for long-term use.</p>
-</div>
-<p><strong>Upload a File</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;&#39; \
-    --header &#39;Content-Type: multipart/form-data&#39; \
-    --form &#39;file=@/path/to/file.pdf&#39; \
-    --form &#39;name=document.pdf&#39;
-</pre></div>
-</div>
-<p><strong>Response:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;file-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;document.pdf&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">102400</span><span class="p">,</span>
-    <span class="s2">&quot;mime_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/pdf&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;download_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://storage.voipbin.net/...&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p><strong>List All Files</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_files?token=&lt;token&gt;&#39;
-</pre></div>
-</div>
-<p><strong>Get File Details</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
-</pre></div>
-</div>
-<p><strong>Download a File (Direct)</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -L -X GET &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;/file?token=&lt;token&gt;&#39; \
-    --output downloaded_file.pdf
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/storage_files/{id}/file</span></code> returns an HTTP <strong>307 Temporary Redirect</strong> to a time-limited signed Google Cloud Storage URL. The <code class="docutils literal notranslate"><span class="pre">Location</span></code> header contains the actual download URL. Most HTTP clients (curl with <code class="docutils literal notranslate"><span class="pre">-L</span></code>, browsers, <code class="docutils literal notranslate"><span class="pre">requests</span></code> with <code class="docutils literal notranslate"><span class="pre">allow_redirects=True</span></code>) follow the redirect automatically. The <code class="docutils literal notranslate"><span class="pre">{id}</span></code> parameter is the file’s UUID, obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/storage_files</span></code>. This endpoint requires <strong>CustomerAdmin</strong> or <strong>CustomerManager</strong> permission. If the stored download URL has expired, the server automatically refreshes it before redirecting – so unlike <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code>, you never need to worry about expiration.</p>
-</div>
-<p><strong>Response:</strong></p>
-<p>The server responds with HTTP 307 and a <code class="docutils literal notranslate"><span class="pre">Location</span></code> header:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>HTTP/1.1 307 Temporary Redirect
-Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Signature=...&amp;X-Goog-Expires=...
-</pre></div>
-</div>
-<p>The client follows the redirect and receives the file content directly from the storage backend.</p>
-<p><strong>Delete a File</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X DELETE &#39;https://api.voipbin.net/v1.0/storage_files/&lt;file-id&gt;?token=&lt;token&gt;&#39;
-</pre></div>
-</div>
-</section>
-<section id="service-agent-file-download">
-<h3>Service Agent File Download<a class="headerlink" href="#service-agent-file-download" title="Link to this heading">¶</a></h3>
-<p>Service agents have their own file storage scoped to the authenticated agent. Files uploaded via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/service_agents/files</span></code> (e.g., talk attachments) can be downloaded using the same redirect pattern as storage files.</p>
-<p><strong>Download a Service Agent File</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -L -X GET &#39;https://api.voipbin.net/v1.0/service_agents/files/&lt;file-id&gt;/file?token=&lt;token&gt;&#39; \
-    --output downloaded_file.pdf
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/files/{id}/file</span></code> behaves identically to the storage file download: it returns an HTTP <strong>307 Temporary Redirect</strong> to a time-limited signed URL. The <code class="docutils literal notranslate"><span class="pre">{id}</span></code> parameter is the file’s UUID, obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/service_agents/files</span></code>. Unlike <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}/file</span></code> which requires CustomerAdmin or CustomerManager permission, this endpoint requires only that the file belongs to the same customer as the authenticated agent. If the download URL has expired, the server refreshes it automatically before redirecting.</p>
-</div>
-<p><strong>Response:</strong></p>
-<p>The server responds with HTTP 307 and a <code class="docutils literal notranslate"><span class="pre">Location</span></code> header:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>HTTP/1.1 307 Temporary Redirect
-Location: https://storage.googleapis.com/bucket-name/storage/file-uuid?X-Goog-Signature=...&amp;X-Goog-Expires=...
-</pre></div>
-</div>
-</section>
-<section id="storage-account-management">
-<h3>Storage Account Management<a class="headerlink" href="#storage-account-management" title="Link to this heading">¶</a></h3>
-<p>Monitor and manage your storage usage.</p>
-<p><strong>Get Storage Usage</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X GET &#39;https://api.voipbin.net/v1.0/storage_account?token=&lt;token&gt;&#39;
-</pre></div>
-</div>
-<p><strong>Response:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;storage-uuid-123&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;customer-uuid-456&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;total_size&quot;</span><span class="p">:</span> <span class="mi">524288000</span><span class="p">,</span>
-    <span class="s2">&quot;file_count&quot;</span><span class="p">:</span> <span class="mi">150</span><span class="p">,</span>
-    <span class="s2">&quot;quota&quot;</span><span class="p">:</span> <span class="mi">10737418240</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-01T00:00:00Z&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p><strong>Usage Breakdown</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Storage</span> <span class="n">Account</span><span class="p">:</span>
-<span class="o">+-----------------------------------------------------------------------+</span>
-<span class="o">|</span>                                                                       <span class="o">|</span>
-<span class="o">|</span>  <span class="n">Quota</span><span class="p">:</span>      <span class="mi">10</span> <span class="n">GB</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">737</span><span class="p">,</span><span class="mi">418</span><span class="p">,</span><span class="mi">240</span> <span class="nb">bytes</span><span class="p">)</span>                            <span class="o">|</span>
-<span class="o">|</span>  <span class="n">Used</span><span class="p">:</span>       <span class="mi">500</span> <span class="n">MB</span> <span class="p">(</span><span class="mi">524</span><span class="p">,</span><span class="mi">288</span><span class="p">,</span><span class="mi">000</span> <span class="nb">bytes</span><span class="p">)</span>                              <span class="o">|</span>
-<span class="o">|</span>  <span class="n">Available</span><span class="p">:</span>  <span class="mf">9.5</span> <span class="n">GB</span>                                                  <span class="o">|</span>
-<span class="o">|</span>  <span class="n">File</span> <span class="n">Count</span><span class="p">:</span> <span class="mi">150</span> <span class="n">files</span>                                               <span class="o">|</span>
-<span class="o">|</span>                                                                       <span class="o">|</span>
-<span class="o">|</span>  <span class="n">Usage</span><span class="p">:</span>      <span class="p">[</span><span class="c1">#####------------------------------] 4.9%              |</span>
-<span class="o">|</span>                                                                       <span class="o">|</span>
-<span class="o">+-----------------------------------------------------------------------+</span>
-</pre></div>
-</div>
-</section>
-<section id="file-types-and-sources">
-<h3>File Types and Sources<a class="headerlink" href="#file-types-and-sources" title="Link to this heading">¶</a></h3>
-<p>Storage holds various file types from different sources.</p>
-<p><strong>Common File Types</strong></p>
-<div class="table-wrapper docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Category</p></th>
-<th class="head"><p>Extensions</p></th>
-<th class="head"><p>Source</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Call Recordings</p></td>
-<td><p>.wav, .mp3</p></td>
-<td><p>Automatic recording feature</p></td>
-</tr>
-<tr class="row-odd"><td><p>Voicemail</p></td>
-<td><p>.wav, .mp3</p></td>
-<td><p>Voicemail recordings</p></td>
-</tr>
-<tr class="row-even"><td><p>Media Attachments</p></td>
-<td><p>.jpg, .png, .gif</p></td>
-<td><p>MMS and email attachments</p></td>
-</tr>
-<tr class="row-odd"><td><p>Transcripts</p></td>
-<td><p>.txt, .json</p></td>
-<td><p>Call transcription exports</p></td>
-</tr>
-<tr class="row-even"><td><p>Reports</p></td>
-<td><p>.csv, .pdf</p></td>
-<td><p>Generated reports and exports</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p><strong>File Sources</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+</span>
-<span class="o">|</span>  <span class="n">Call</span> <span class="n">Recording</span>   <span class="o">|---------------+</span>
-<span class="o">+-------------------+</span>               <span class="o">|</span>
-                                    <span class="o">|</span>
-<span class="o">+-------------------+</span>               <span class="n">v</span>
-<span class="o">|</span>  <span class="n">Transcription</span>    <span class="o">|-------&gt;</span> <span class="o">+----------+</span>
-<span class="o">+-------------------+</span>         <span class="o">|</span> <span class="n">Storage</span>  <span class="o">|</span>
-                              <span class="o">|</span> <span class="n">Account</span>  <span class="o">|</span>
-<span class="o">+-------------------+</span>         <span class="o">+----------+</span>
-<span class="o">|</span>  <span class="n">MMS</span> <span class="n">Attachment</span>   <span class="o">|--------&gt;</span>      <span class="o">|</span>
-<span class="o">+-------------------+</span>               <span class="o">|</span>
-                                    <span class="n">v</span>
-<span class="o">+-------------------+</span>         <span class="o">+----------+</span>
-<span class="o">|</span>  <span class="n">Manual</span> <span class="n">Upload</span>    <span class="o">|--------&gt;|</span> <span class="n">Files</span>    <span class="o">|</span>
-<span class="o">+-------------------+</span>         <span class="o">+----------+</span>
-</pre></div>
-</div>
-</section>
-<section id="quota-management">
-<h3>Quota Management<a class="headerlink" href="#quota-management" title="Link to this heading">¶</a></h3>
-<p>Manage storage within your allocated quota.</p>
-<p><strong>Quota Check Flow</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Upload Request
-      |
-      v
-+-------------------+
-| Check quota       |
-| Used + New file   |
-+--------+----------+
-         |
-         v
-+-------------------+     Within limit
-| Under quota?      |----------------------&gt; Upload succeeds
-+--------+----------+
-         |
-         | Exceeds quota
-         v
-+-------------------+
-| Upload rejected   |
-| Error: quota      |
-| exceeded          |
-+-------------------+
-</pre></div>
-</div>
-<p><strong>Managing Quota</strong></p>
-<ul class="simple">
-<li><p>Delete unnecessary files to free space</p></li>
-<li><p>Export and archive old recordings</p></li>
-<li><p>Monitor usage regularly</p></li>
-<li><p>Request quota increase if needed</p></li>
-</ul>
-</section>
-<section id="common-scenarios">
-<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h3>
-<p><strong>Scenario 1: Managing Call Recordings</strong></p>
-<p>Store and access call recordings.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Call with recording enabled
-   +--------------------------------------------+
-   | Call completed                             |
-   | Recording saved to storage                 |
-   | File: call-2024-01-15-abc123.wav          |
-   +--------------------------------------------+
-
-2. Access recording
-   GET /storage_files?type=recording
-   -&gt; List of recording files
-
-3. Download recording
-   GET /storage_files/{id}/file
-   -&gt; HTTP 307 redirect to signed download URL
-   (or GET /storage_files/{id} for metadata + download_url)
-
-4. Clean up old recordings
-   DELETE /storage_files/{id}
-   -&gt; Free storage space
-</pre></div>
-</div>
-<p><strong>Scenario 2: Storage Cleanup</strong></p>
-<p>Free up space when approaching quota.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>1. Check current usage
-   GET /storage_account
-   +--------------------------------------------+
-   | Used: 9.2 GB / 10 GB (92%)                |
-   | Status: Near quota limit                  |
-   +--------------------------------------------+
-
-2. Identify large/old files
-   GET /storage_files?sort=size&amp;order=desc
-   -&gt; Find largest files
-
-   GET /storage_files?sort=tm_create&amp;order=asc
-   -&gt; Find oldest files
-
-3. Delete unnecessary files
-   DELETE /storage_files/{id}
-   (repeat for multiple files)
-
-4. Verify freed space
-   GET /storage_account
-   +--------------------------------------------+
-   | Used: 5.8 GB / 10 GB (58%)                |
-   | Status: OK                                |
-   +--------------------------------------------+
-</pre></div>
-</div>
-<p><strong>Scenario 3: Media File Management</strong></p>
-<p>Handle media attachments from messages.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Inbound</span> <span class="n">MMS</span> <span class="k">with</span> <span class="n">image</span>
-     <span class="o">|</span>
-     <span class="n">v</span>
-<span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Image</span> <span class="n">saved</span> <span class="n">to</span> <span class="n">storage</span>                     <span class="o">|</span>
-<span class="o">|</span> <span class="n">File</span><span class="p">:</span> <span class="n">mms</span><span class="o">-</span><span class="n">attachment</span><span class="o">-</span><span class="n">xyz</span><span class="o">.</span><span class="n">jpg</span>               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Size</span><span class="p">:</span> <span class="mf">2.5</span> <span class="n">MB</span>                               <span class="o">|</span>
-<span class="o">+--------------------------------------------+</span>
-     <span class="o">|</span>
-     <span class="n">v</span>
-<span class="n">Access</span> <span class="n">via</span> <span class="n">API</span> <span class="ow">or</span> <span class="n">webhook</span>
-<span class="o">+--------------------------------------------+</span>
-<span class="o">|</span> <span class="n">download_url</span> <span class="ow">in</span> <span class="n">message</span> <span class="n">webhook</span>            <span class="o">|</span>
-<span class="o">|</span> <span class="n">GET</span> <span class="n">file</span> <span class="k">for</span> <span class="n">processing</span>                    <span class="o">|</span>
-<span class="o">+--------------------------------------------+</span>
-</pre></div>
-</div>
-</section>
-<section id="best-practices">
-<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h3>
-<p><strong>1. Quota Management</strong></p>
-<ul class="simple">
-<li><p>Monitor usage regularly</p></li>
-<li><p>Set up alerts for high usage</p></li>
-<li><p>Clean up old files periodically</p></li>
-<li><p>Archive important files externally</p></li>
-</ul>
-<p><strong>2. File Organization</strong></p>
-<ul class="simple">
-<li><p>Use descriptive file names</p></li>
-<li><p>Track file purpose via metadata</p></li>
-<li><p>Group related files logically</p></li>
-</ul>
-<p><strong>3. Security</strong></p>
-<ul class="simple">
-<li><p>Download URLs are time-limited</p></li>
-<li><p>Don’t share URLs publicly</p></li>
-<li><p>Delete sensitive files when no longer needed</p></li>
-</ul>
-<p><strong>4. Performance</strong></p>
-<ul class="simple">
-<li><p>Delete files you no longer need</p></li>
-<li><p>Don’t upload unnecessarily large files</p></li>
-<li><p>Use appropriate file formats</p></li>
-</ul>
-</section>
-<section id="troubleshooting">
-<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h3>
-<p><strong>Upload Issues</strong></p>
-<div class="table-wrapper docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Symptom</p></th>
-<th class="head"><p>Solution</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Upload fails</p></td>
-<td><p>Check file size; verify quota not exceeded;
-ensure file format is supported</p></td>
-</tr>
-<tr class="row-odd"><td><p>Quota exceeded error</p></td>
-<td><p>Delete old files; check storage usage;
-request quota increase</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p><strong>Download Issues</strong></p>
-<div class="table-wrapper docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Symptom</p></th>
-<th class="head"><p>Solution</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Download URL expired</p></td>
-<td><p>Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/</span>
-<span class="pre">storage_files/{id}/file</span></code> for automatic refresh</p></td>
-</tr>
-<tr class="row-odd"><td><p>307 redirect not followed</p></td>
-<td><p>Ensure your HTTP client follows redirects
-(curl <code class="docutils literal notranslate"><span class="pre">-L</span></code>, requests <code class="docutils literal notranslate"><span class="pre">allow_redirects=True</span></code>)</p></td>
-</tr>
-<tr class="row-even"><td><p>File not found</p></td>
-<td><p>Verify file ID; file may have been deleted</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p><strong>Management Issues</strong></p>
-<div class="table-wrapper docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Symptom</p></th>
-<th class="head"><p>Solution</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>File count mismatch</p></td>
-<td><p>Allow time for sync; some operations are
-eventually consistent</p></td>
-</tr>
-<tr class="row-odd"><td><p>Cannot delete file</p></td>
-<td><p>Check file ID; verify permissions; file may
-be in use</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="related-documentation">
-<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h3>
-<ul class="simple">
-<li><p><a class="reference internal" href="recording_overview.html#recording-overview"><span class="std std-ref">Recording Overview</span></a> - Call recordings</p></li>
-<li><p><a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a> - Transcription files</p></li>
-<li><p><a class="reference internal" href="message_overview.html#message-overview"><span class="std std-ref">Message Overview</span></a> - Media attachments</p></li>
-<li><p><a class="reference internal" href="customer_overview.html#customer-overview"><span class="std std-ref">Customer Overview</span></a> - Account management</p></li>
-</ul>
-</section>
-</section>
-<section id="account">
-<span id="storage-struct-account"></span><h2>Account<a class="headerlink" href="#account" title="Link to this heading">¶</a></h2>
-<section id="storage-struct-account-account">
-<span id="id1"></span><h3>Account<a class="headerlink" href="#storage-struct-account-account" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;total_file_count&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;total_file_size&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The storage account’s unique identifier. Returned when listing storage accounts via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_accounts</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this storage account. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">total_file_count</span></code> (Integer): Total number of files stored in this account.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">total_file_size</span></code> (Integer): Total size of all files in bytes. Divide by 1,073,741,824 to get size in GB.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the storage account was created.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update (e.g., file upload or deletion changed totals).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the storage account was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the storage account has not been deleted. The <code class="docutils literal notranslate"><span class="pre">total_file_size</span></code> is in bytes; compare against the quota (default 10 GB = 10,737,418,240 bytes) to check remaining capacity.</p>
-</div>
-<section id="example">
-<h4>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h4>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1f8ccab9-1b64-11ef-8530-42010a7e5015&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;total_file_count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="s2">&quot;total_file_size&quot;</span><span class="p">:</span> <span class="mi">221762</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-05-26 13:30:31.176034&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-05-27 07:55:17.016150&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-</section>
-</section>
-<section id="file">
-<span id="storage-struct-file"></span><h2>File<a class="headerlink" href="#file" title="Link to this heading">¶</a></h2>
-<section id="storage-struct-file-file">
-<span id="id2"></span><h3>File<a class="headerlink" href="#storage-struct-file-file" title="Link to this heading">¶</a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;filesize&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">number</span><span class="o">&gt;</span><span class="p">,</span>
-    <span class="s2">&quot;uri_download&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_download_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The file’s unique identifier. Returned when uploading a file via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/storage_files</span></code> or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this file. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">owner_type</span></code> (enum string): The type of owner for this file. Possible values: <code class="docutils literal notranslate"><span class="pre">agent</span></code> (owned by a specific agent), or empty string (no specific owner).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">owner_id</span></code> (UUID): The agent who uploaded or owns this file. When <code class="docutils literal notranslate"><span class="pre">owner_type</span></code> is <code class="docutils literal notranslate"><span class="pre">agent</span></code>, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/agents</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no specific owner.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The type of resource this file is associated with. See <a class="reference internal" href="storage_struct_file.html#storage-struct-file-reference-type"><span class="std std-ref">Reference Type</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the associated resource. Depending on <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code> or other endpoints. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no reference.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The file type. See <a class="reference internal" href="storage_struct_file.html#storage-struct-file-type"><span class="std std-ref">File Type</span></a>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> (String): A human-readable name for the file. May be empty if not explicitly set.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (String): A longer description of the file’s purpose or content. May be empty.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (String): The original filename of the uploaded file (e.g., <code class="docutils literal notranslate"><span class="pre">screenshot.png</span></code>, <code class="docutils literal notranslate"><span class="pre">call_recording.wav</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">filesize</span></code> (Integer): The file size in bytes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">uri_download</span></code> (String): A time-limited signed URL for downloading the file. Check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using. Fetch fresh details via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code> if expired.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> (string, ISO 8601): Expiration time of the <code class="docutils literal notranslate"><span class="pre">uri_download</span></code>. After this time, the URL is no longer valid.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the file was created.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to any file property. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if never updated after creation.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> (string, ISO 8601): Timestamp when the file was deleted. Set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> if not deleted.</p></li>
-</ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><strong>AI Implementation Hint</strong></p>
-<p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_delete</span></code> with this value means the file has not been deleted. The <code class="docutils literal notranslate"><span class="pre">uri_download</span></code> is a time-limited signed URL; always check <code class="docutils literal notranslate"><span class="pre">tm_download_expire</span></code> before using it. If expired, call <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/storage_files/{id}</span></code> to obtain a fresh URL.</p>
-</div>
-<section id="id3">
-<h4>Example<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h4>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;0c0c305c-7a55-4395-85a8-ae4860f01393&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_type&quot;</span><span class="p">:</span> <span class="s2">&quot;agent&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="s2">&quot;62005165-7592-4ff7-9076-55bf491023f2&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="s2">&quot;Screenshot from 2024-05-26 21-58-51.png&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;filesize&quot;</span><span class="p">:</span> <span class="mi">110881</span><span class="p">,</span>
-    <span class="s2">&quot;uri_download&quot;</span><span class="p">:</span> <span class="s2">&quot;https://example.com/storage_url&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_download_expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2034-05-25 07:55:16.115684&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-05-27 07:55:16.515315&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="reference-type">
-<span id="storage-struct-file-reference-type"></span><h3>Reference Type<a class="headerlink" href="#reference-type" title="Link to this heading">¶</a></h3>
-<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> field:</p>
-<div class="table-wrapper docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Reference Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>none</p></td>
-<td><p>The file has no associated resource. Typically for manually uploaded files. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> will be <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code>.</p></td>
-</tr>
-<tr class="row-odd"><td><p>recording</p></td>
-<td><p>The file is associated with a recording. The <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is a recording ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="file-type">
-<span id="storage-struct-file-type"></span><h3>File Type<a class="headerlink" href="#file-type" title="Link to this heading">¶</a></h3>
-<p>All possible values for the <code class="docutils literal notranslate"><span class="pre">type</span></code> field:</p>
-<div class="table-wrapper docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Type</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>(empty)</p></td>
-<td><p>No specific type assigned.</p></td>
-</tr>
-<tr class="row-odd"><td><p>rag</p></td>
-<td><p>A file used for RAG (Retrieval-Augmented Generation) knowledge base.</p></td>
-</tr>
-<tr class="row-even"><td><p>talk</p></td>
-<td><p>A file associated with talk/conversation context.</p></td>
-</tr>
-<tr class="row-odd"><td><p>recording</p></td>
-<td><p>A recording file.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-</section>
 </section>
 
         </article>
@@ -1130,23 +575,23 @@ be in use</p></td>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="tag.html">
+          <a class="next-page" href="storage_overview.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Tag</div>
+                <div class="title">Overview</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="billing_account.html">
+          <a class="prev-page" href="billing_struct_billing.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Billing Account</div>
+                <div class="title">Billing</div>
                 
               </div>
             </a>
@@ -1171,55 +616,8 @@ be in use</p></td>
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">Storage</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a><ul>
-<li><a class="reference internal" href="#how-storage-works">How Storage Works</a></li>
-<li><a class="reference internal" href="#file-operations">File Operations</a></li>
-<li><a class="reference internal" href="#service-agent-file-download">Service Agent File Download</a></li>
-<li><a class="reference internal" href="#storage-account-management">Storage Account Management</a></li>
-<li><a class="reference internal" href="#file-types-and-sources">File Types and Sources</a></li>
-<li><a class="reference internal" href="#quota-management">Quota Management</a></li>
-<li><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
-<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
-<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
-<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#account">Account</a><ul>
-<li><a class="reference internal" href="#storage-struct-account-account">Account</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#file">File</a><ul>
-<li><a class="reference internal" href="#storage-struct-file-file">File</a><ul>
-<li><a class="reference internal" href="#id3">Example</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#reference-type">Reference Type</a></li>
-<li><a class="reference internal" href="#file-type">File Type</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
