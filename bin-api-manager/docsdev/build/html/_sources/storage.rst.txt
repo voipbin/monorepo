@@ -7,6 +7,9 @@ Upload, download, and manage media files and other stored assets used across VoI
 
 **API Reference:** `Storage endpoints <https://api.voipbin.net/redoc/#tag/Storage>`_
 
-.. include:: storage_overview.rst
-.. include:: storage_struct_account.rst
-.. include:: storage_struct_file.rst
+.. toctree::
+   :maxdepth: 2
+
+   storage_overview
+   storage_struct_account
+   storage_struct_file

@@ -7,7 +7,10 @@ Manage account billing, balance tracking, and credit usage. Billing accounts hol
 
 **API Reference:** `Billing endpoints <https://api.voipbin.net/redoc/#tag/Billing>`_
 
-.. include:: billing_account_overview.rst
-.. include:: billing_account_tutorial.rst
-.. include:: billing_account_struct.rst
-.. include:: billing_struct_billing.rst
+.. toctree::
+   :maxdepth: 2
+
+   billing_account_overview
+   billing_account_tutorial
+   billing_account_struct
+   billing_struct_billing

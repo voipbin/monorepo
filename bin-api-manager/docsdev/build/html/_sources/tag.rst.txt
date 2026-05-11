@@ -7,6 +7,9 @@ Attach key-value tags to VoIPBIN resources for organization, filtering, and cate
 
 **API Reference:** `Tag endpoints <https://api.voipbin.net/redoc/#tag/Tag>`_
 
-.. include:: tag_overview.rst
-.. include:: tag_struct_tag.rst
-.. include:: tag_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   tag_overview
+   tag_struct_tag
+   tag_tutorial
