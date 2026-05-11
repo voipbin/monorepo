@@ -613,7 +613,7 @@ Client                    API Gateway              Backend Service
 <p><strong>Key Features:</strong></p>
 <ul class="simple">
 <li><p><strong>In-Cluster Monitoring</strong>: Uses Kubernetes client-go with RBAC</p></li>
-<li><p><strong>Label-Based Filtering</strong>: Watches specific pod labels (app=asterisk-<a href="#id1"><span class="problematic" id="id2">*</span></a>)</p></li>
+<li><p><strong>Label-Based Filtering</strong>: Watches specific pod labels (<code class="docutils literal notranslate"><span class="pre">app=asterisk-*</span></code>)</p></li>
 <li><p><strong>Event Publishing</strong>: Notifies services via RabbitMQ for recovery actions</p></li>
 <li><p><strong>Prometheus Metrics</strong>: Exports pod state change counters</p></li>
 <li><p><strong>SIP Session Recovery</strong>: Enables call-manager to recover sessions when pods crash</p></li>

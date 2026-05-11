@@ -9,6 +9,7 @@ Create, control, and manage the full lifecycle of voice calls including outbound
 
 .. include:: call_overview.rst
 .. include:: call_transfer.rst
+.. include:: transfer_struct_transfer.rst
 .. include:: call_groupcall.rst
 .. include:: call_struct_call.rst
 .. include:: call_struct_groupcall.rst

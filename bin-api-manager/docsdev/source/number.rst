@@ -9,5 +9,6 @@ A number is a phone number provisioned on the VoIPBIN platform that can be bound
 
 .. include:: number_overview.rst
 .. include:: number_struct_number.rst
+.. include:: availablenumber_struct.rst
 .. include:: number_tutorial.rst
 

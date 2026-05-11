@@ -824,7 +824,7 @@ Best Practices
 **Database:**
 
 * Use indexes for all WHERE clauses
-* Avoid SELECT *, specify columns
+* Avoid ``SELECT *``, specify columns
 * Use connection pooling
 * Set appropriate timeouts
 * Monitor slow queries

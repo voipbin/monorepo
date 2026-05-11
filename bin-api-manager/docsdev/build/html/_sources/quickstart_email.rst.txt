@@ -1,3 +1,5 @@
+:orphan:
+
 .. _quickstart_email:
 
 Send an Email

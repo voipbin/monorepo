@@ -803,6 +803,77 @@ Result:
 </table>
 </section>
 </section>
+<section id="available-number">
+<span id="availablenumber-struct"></span><h2>Available Number<a class="headerlink" href="#available-number" title="Link to this heading"></a></h2>
+<section id="availablenumber-struct-availablenumber">
+<span id="id3"></span><h3>Available Number<a class="headerlink" href="#availablenumber-struct-availablenumber" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;postal_code&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span></code> (string, E.164): The phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+12025551234</span></code>). This is the number available for purchase.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">country</span></code> (string): The two-letter ISO 3166-1 alpha-2 country code (e.g., <code class="docutils literal notranslate"><span class="pre">US</span></code>, <code class="docutils literal notranslate"><span class="pre">GB</span></code>, <code class="docutils literal notranslate"><span class="pre">KR</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">region</span></code> (string): The region or state within the country (e.g., <code class="docutils literal notranslate"><span class="pre">CA</span></code> for California).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">postal_code</span></code> (string): The postal/zip code associated with this number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">features</span></code> (array of enum string): The capabilities supported by this number. See <a class="reference internal" href="#availablenumber-struct-features"><span class="std std-ref">Features</span></a>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Available numbers are returned by <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/available-numbers</span></code>. To purchase a number, use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/numbers</span></code> with the <code class="docutils literal notranslate"><span class="pre">number</span></code> value from this response. Not all numbers support all features — check the <code class="docutils literal notranslate"><span class="pre">features</span></code> array before purchasing if specific capabilities (e.g., SMS, MMS) are required.</p>
+</div>
+</section>
+<section id="features">
+<span id="availablenumber-struct-features"></span><h3>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h3>
+<p>All possible values in the <code class="docutils literal notranslate"><span class="pre">features</span></code> array:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>emergency</p></td>
+<td><p>Number supports emergency calling (E911/E112)</p></td>
+</tr>
+<tr class="row-odd"><td><p>fax</p></td>
+<td><p>Number supports fax transmission</p></td>
+</tr>
+<tr class="row-even"><td><p>mms</p></td>
+<td><p>Number supports MMS (multimedia messaging)</p></td>
+</tr>
+<tr class="row-odd"><td><p>sms</p></td>
+<td><p>Number supports SMS (text messaging)</p></td>
+</tr>
+<tr class="row-even"><td><p>voice</p></td>
+<td><p>Number supports voice calls</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id4">
+<h3>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;number&quot;</span><span class="p">:</span> <span class="s2">&quot;+12025551234&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="s2">&quot;DC&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;postal_code&quot;</span><span class="p">:</span> <span class="s2">&quot;20001&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;features&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;voice&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sms&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mms&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
 <section id="tutorial">
 <span id="number-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
 <p>Before working with numbers, you need:</p>
@@ -1109,6 +1180,12 @@ Disable after debugging to reduce storage usage.</p>
 <li><a class="reference internal" href="#type">Type</a></li>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#metadata">Metadata</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#available-number">Available Number</a><ul>
+<li><a class="reference internal" href="#availablenumber-struct-availablenumber">Available Number</a></li>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#id4">Example</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tutorial">Tutorial</a><ul>

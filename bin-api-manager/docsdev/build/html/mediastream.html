@@ -771,6 +771,49 @@
 </ul>
 </section>
 </section>
+<section id="streaming">
+<span id="streaming-struct-streaming"></span><h2>Streaming<a class="headerlink" href="#streaming" title="Link to this heading"></a></h2>
+<section id="streaming-struct-streaming-streaming">
+<span id="id1"></span><h3>Streaming<a class="headerlink" href="#streaming-struct-streaming-streaming" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;streaming_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_event&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The streaming event’s unique identifier.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this streaming event. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">streaming_id</span></code> (UUID): The streaming session that produced this event.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transcribe_id</span></code> (UUID): The transcription session associated with this streaming event. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/transcribes</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): The audio direction being streamed. Possible values: <code class="docutils literal notranslate"><span class="pre">in</span></code> (inbound audio), <code class="docutils literal notranslate"><span class="pre">out</span></code> (outbound audio), <code class="docutils literal notranslate"><span class="pre">both</span></code> (both directions).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message</span></code> (string): The real-time transcribed text content of this streaming event. May be empty for intermediate events.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_event</span></code> (string, ISO 8601): Timestamp when this streaming speech event occurred.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when this streaming record was created.</p></li>
+</ul>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;streaming_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-123456789012&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;I need help with my order&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_event&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-01T10:00:03.500000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-01T10:00:03.600000Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
 <section id="tutorial">
 <span id="mediastream-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
 <p>Before using media streaming, you need:</p>
@@ -815,8 +858,8 @@
 - Inject audio into the conference
 - Build custom conference recording or analysis tools</p>
 </section>
-<section id="id1">
-<h3>Encapsulation Types<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<section id="id2">
+<h3>Encapsulation Types<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
 <p>VoIPBIN supports three encapsulation types for media streaming:</p>
 <p><strong>1. RTP (Real-time Transport Protocol)</strong></p>
 <p>Standard protocol for audio/video over IP networks.</p>
@@ -1152,8 +1195,8 @@ ws.on(&#39;close&#39;, function() {
 - Channels: Mono
 - Chunk size: 320 bytes (20ms of audio)</p>
 </section>
-<section id="id2">
-<h3>Best Practices<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<section id="id3">
+<h3>Best Practices<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <p><strong>1. Buffer Management:</strong>
 - Maintain audio buffers to handle jitter
 - Send audio in consistent 20ms chunks
@@ -1179,8 +1222,8 @@ ws.on(&#39;close&#39;, function() {
 - Validate authentication tokens
 - Encrypt sensitive audio data</p>
 </section>
-<section id="id3">
-<h3>Connection Lifecycle<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="id4">
+<h3>Connection Lifecycle<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
 <p><strong>1. Establish Connection:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>GET https://api.voipbin.net/v1.0/calls/&lt;call-id&gt;/media_stream?encapsulation=rtp&amp;token=&lt;token&gt;
 </pre></div>
@@ -1202,8 +1245,8 @@ ws.on(&#39;close&#39;, function() {
 </pre></div>
 </div>
 </section>
-<section id="id4">
-<h3>Troubleshooting<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<section id="id5">
+<h3>Troubleshooting<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
 <p><strong>Common Issues:</strong></p>
 <p><strong>No audio received:</strong>
 - Check WebSocket connection is established
@@ -1254,17 +1297,22 @@ ws.on(&#39;close&#39;, function() {
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#streaming">Streaming</a><ul>
+<li><a class="reference internal" href="#streaming-struct-streaming-streaming">Streaming</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#tutorial">Tutorial</a><ul>
 <li><a class="reference internal" href="#bi-directional-media-streaming-for-calls">Bi-Directional Media Streaming for Calls</a></li>
 <li><a class="reference internal" href="#bi-directional-media-streaming-for-conferences">Bi-Directional Media Streaming for Conferences</a></li>
-<li><a class="reference internal" href="#id1">Encapsulation Types</a></li>
+<li><a class="reference internal" href="#id2">Encapsulation Types</a></li>
 <li><a class="reference internal" href="#websocket-client-examples">WebSocket Client Examples</a></li>
 <li><a class="reference internal" href="#uni-directional-streaming-with-flow-action">Uni-Directional Streaming with Flow Action</a></li>
 <li><a class="reference internal" href="#common-use-cases">Common Use Cases</a></li>
 <li><a class="reference internal" href="#audio-format-details">Audio Format Details</a></li>
-<li><a class="reference internal" href="#id2">Best Practices</a></li>
-<li><a class="reference internal" href="#id3">Connection Lifecycle</a></li>
-<li><a class="reference internal" href="#id4">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id3">Best Practices</a></li>
+<li><a class="reference internal" href="#id4">Connection Lifecycle</a></li>
+<li><a class="reference internal" href="#id5">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>

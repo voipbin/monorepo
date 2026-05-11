@@ -1013,7 +1013,7 @@ Client                    API Gateway              Backend Service
 <p><strong>Key Features:</strong></p>
 <ul class="simple">
 <li><p><strong>In-Cluster Monitoring</strong>: Uses Kubernetes client-go with RBAC</p></li>
-<li><p><strong>Label-Based Filtering</strong>: Watches specific pod labels (app=asterisk-<a href="#id1"><span class="problematic" id="id2">*</span></a>)</p></li>
+<li><p><strong>Label-Based Filtering</strong>: Watches specific pod labels (<code class="docutils literal notranslate"><span class="pre">app=asterisk-*</span></code>)</p></li>
 <li><p><strong>Event Publishing</strong>: Notifies services via RabbitMQ for recovery actions</p></li>
 <li><p><strong>Prometheus Metrics</strong>: Exports pod state change counters</p></li>
 <li><p><strong>SIP Session Recovery</strong>: Enables call-manager to recover sessions when pods crash</p></li>
@@ -2387,8 +2387,8 @@ Max: 7 attempts, ~1 minute total
 <li><p><strong>Dependencies</strong>: Visualize service interactions</p></li>
 </ul>
 </section>
-<section id="id3">
-<h3>Best Practices<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<section id="id1">
+<h3>Best Practices<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
 <p><strong>Message Design:</strong></p>
 <ul class="simple">
 <li><p>Keep messages small (&lt;1MB)</p></li>
@@ -3171,12 +3171,12 @@ EXPIRE key 300         # Set TTL on existing key
 </pre></div>
 </div>
 </section>
-<section id="id4">
-<h3>Best Practices<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<section id="id2">
+<h3>Best Practices<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
 <p><strong>Database:</strong></p>
 <ul class="simple">
 <li><p>Use indexes for all WHERE clauses</p></li>
-<li><p>Avoid SELECT <a href="#id5"><span class="problematic" id="id6">*</span></a>, specify columns</p></li>
+<li><p>Avoid <code class="docutils literal notranslate"><span class="pre">SELECT</span> <span class="pre">*</span></code>, specify columns</p></li>
 <li><p>Use connection pooling</p></li>
 <li><p>Set appropriate timeouts</p></li>
 <li><p>Monitor slow queries</p></li>
@@ -5059,8 +5059,8 @@ Error Categories:
 </pre></div>
 </div>
 </section>
-<section id="id7">
-<h3>Performance Optimization<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<section id="id3">
+<h3>Performance Optimization<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
 <p>VoIPBIN optimizes flow performance through several techniques:</p>
 <p><strong>Parallel Processing</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span> <span class="n">vs</span> <span class="n">Parallel</span><span class="p">:</span>
@@ -5762,7 +5762,7 @@ API Request    campaign-mgr    outdial-mgr    call-manager    flow-manager
 </section>
 </section>
 <section id="architecture-deployment">
-<span id="id8"></span><h2>Deployment Architecture<a class="headerlink" href="#architecture-deployment" title="Link to this heading"></a></h2>
+<span id="id4"></span><h2>Deployment Architecture<a class="headerlink" href="#architecture-deployment" title="Link to this heading"></a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
@@ -7398,7 +7398,7 @@ query := sq.Select(&quot;*&quot;).
 <li><a class="reference internal" href="#error-handling-and-retries">Error Handling and Retries</a></li>
 <li><a class="reference internal" href="#performance-optimization">Performance Optimization</a></li>
 <li><a class="reference internal" href="#monitoring-and-debugging">Monitoring and Debugging</a></li>
-<li><a class="reference internal" href="#id3">Best Practices</a></li>
+<li><a class="reference internal" href="#id1">Best Practices</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#data-architecture">Data Architecture</a><ul>
@@ -7411,7 +7411,7 @@ query := sq.Select(&quot;*&quot;).
 <li><a class="reference internal" href="#data-backup-and-recovery">Data Backup and Recovery</a></li>
 <li><a class="reference internal" href="#performance-monitoring">Performance Monitoring</a></li>
 <li><a class="reference internal" href="#scalability-considerations">Scalability Considerations</a></li>
-<li><a class="reference internal" href="#id4">Best Practices</a></li>
+<li><a class="reference internal" href="#id2">Best Practices</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#data-flow-diagrams">Data Flow Diagrams</a><ul>
@@ -7457,7 +7457,7 @@ query := sq.Select(&quot;*&quot;).
 <li><a class="reference internal" href="#flow-4-complex-multi-service-flow">Flow 4: Complex Multi-Service Flow</a></li>
 <li><a class="reference internal" href="#flow-5-real-time-event-notification">Flow 5: Real-Time Event Notification</a></li>
 <li><a class="reference internal" href="#flow-6-error-handling-flow">Flow 6: Error Handling Flow</a></li>
-<li><a class="reference internal" href="#id7">Performance Optimization</a></li>
+<li><a class="reference internal" href="#id3">Performance Optimization</a></li>
 <li><a class="reference internal" href="#best-practices-for-developers">Best Practices for Developers</a></li>
 <li><a class="reference internal" href="#debugging-request-flows">Debugging Request Flows</a></li>
 <li><a class="reference internal" href="#summary">Summary</a></li>
