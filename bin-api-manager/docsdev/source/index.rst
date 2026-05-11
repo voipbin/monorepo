@@ -129,6 +129,13 @@ What you can build
 .. toctree::
    :maxdepth: 2
    :hidden:
+   :caption: Self-Hosting
+
+   self_hosting
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
    :caption: Reference
 
    glossary
