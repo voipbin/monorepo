@@ -110,7 +110,7 @@ Example
         }
     }
 
-.. _flow-struct-action-amd: flow-struct-action-amd
+.. _flow-struct-action-amd:
 
 AMD
 ---
@@ -798,7 +798,7 @@ Parameters
         "type": "external_media_stop",
     }
 
-.. _flow-struct-action-fetch: flow-struct-action-fetch
+.. _flow-struct-action-fetch:
 
 Fetch
 -----

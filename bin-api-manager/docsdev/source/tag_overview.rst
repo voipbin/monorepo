@@ -332,7 +332,7 @@ Best Practices
 **1. Naming Conventions**
 
 - Use consistent naming (lowercase, underscores)
-- Group by category (lang_, team_, skill_)
+- Group by category (``lang_``, ``team_``, ``skill_``)
 - Keep names short but descriptive
 - Document what each tag means
 

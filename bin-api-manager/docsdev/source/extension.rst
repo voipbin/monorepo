@@ -1,4 +1,4 @@
-.. _extension-main: extension-main
+.. _extension-main:
 
 **************
 Extension

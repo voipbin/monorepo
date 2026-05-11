@@ -1,4 +1,4 @@
-.. _ai-main: ai-main
+.. _ai-main:
 
 **************
 AI

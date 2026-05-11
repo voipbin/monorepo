@@ -1,4 +1,4 @@
-.. _billing_account-main: billing_account-main
+.. _billing_account-main:
 
 ***************
 Billing Account

@@ -1,4 +1,4 @@
-.. _mediastream-main: mediastream-main
+.. _mediastream-main:
 
 **************
 Mediastream

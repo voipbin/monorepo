@@ -1,4 +1,4 @@
-.. _email-tutorial: email-tutorial
+.. _email-tutorial:
 
 Tutorial
 ========

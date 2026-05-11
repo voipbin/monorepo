@@ -1,4 +1,4 @@
-.. _sdk-main: sdk-main
+.. _sdk-main:
 
 ******************************
 SDK(Software Development Kit)

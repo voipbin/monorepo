@@ -1,4 +1,4 @@
-.. _recording-tutorial: recording-tutorial
+.. _recording-tutorial:
 
 Tutorial
 ========

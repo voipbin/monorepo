@@ -30,7 +30,7 @@ Message
 * ``conversation_id`` (UUID): The parent conversation's ID. Obtained from ``GET /conversations`` or from the URL path when sending messages.
 * ``direction`` (enum string): Whether the message is incoming or outgoing. See :ref:`Direction <conversation-struct-message-direction>`.
 * ``status`` (enum string): The message's delivery status (e.g., ``sent``, ``received``, ``failed``).
-* ``reference_type`` (enum string): The channel used for this message. See :ref:`Reference type <conversation-struct-conversation-reference_type>`.
+* ``reference_type`` (enum string): The channel used for this message. See the parent conversation's ``reference_type``.
 * ``reference_id`` (UUID): An identifier associated with the channel reference.
 * ``text`` (String): The message body text content.
 * ``medias`` (Array of Object): List of media attachments (images, videos, etc.) included with the message.

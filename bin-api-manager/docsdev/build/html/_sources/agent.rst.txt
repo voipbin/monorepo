@@ -1,4 +1,4 @@
-.. _agent-main: agent-main
+.. _agent-main:
 
 **************
 Agent

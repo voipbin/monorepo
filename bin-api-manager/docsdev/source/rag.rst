@@ -1,4 +1,4 @@
-.. _rag-main: rag-main
+.. _rag-main:
 
 **************
 RAG

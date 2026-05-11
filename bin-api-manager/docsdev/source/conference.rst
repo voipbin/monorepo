@@ -1,4 +1,4 @@
-.. _conference-main: conference-main
+.. _conference-main:
 
 ************
 Conference
