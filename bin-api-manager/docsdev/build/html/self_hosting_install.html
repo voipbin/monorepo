@@ -592,7 +592,7 @@
           <section id="install">
 <h1>Install<a class="headerlink" href="#install" title="Link to this heading">¶</a></h1>
 <p>The happy path is three commands. They are idempotent and resumable.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:voipbin/install.git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/voipbin/install.git
 <span class="nb">cd</span><span class="w"> </span>install
 pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 
@@ -602,7 +602,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
 </pre></div>
 </div>
 <section id="init-interactive-wizard">
-<h2><code class="docutils literal notranslate"><span class="pre">init</span></code> — interactive wizard<a class="headerlink" href="#init-interactive-wizard" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)<a class="headerlink" href="#init-interactive-wizard" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">init</span></code> command runs a twelve-step bootstrap, in order:</p>
 <ol class="arabic simple">
 <li><p>Preflight checks for the six local tools.</p></li>
@@ -616,7 +616,7 @@ DNS mode (auto or manual).</p></li>
 <li><p>Quota check against <code class="docutils literal notranslate"><span class="pre">config/gcp_quotas.yaml</span></code>.</p></li>
 <li><p>Enable sixteen GCP APIs.</p></li>
 <li><p>Create the <code class="docutils literal notranslate"><span class="pre">voipbin-installer</span></code> service account with twelve IAM
-bindings.</p></li>
+role bindings.</p></li>
 <li><p>Create a KMS key ring and crypto key.</p></li>
 <li><p>Generate six secrets (<code class="docutils literal notranslate"><span class="pre">jwt_key</span></code>, <code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code>,
 <code class="docutils literal notranslate"><span class="pre">redis_password</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code>,
@@ -636,9 +636,9 @@ bound to the KMS key.</p></li>
 </div>
 <p>The two files written are everything you need to reproduce the install:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> — non-sensitive. Safe to commit if you want a record
+<li><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>: non-sensitive. Safe to commit if you want a record
 per environment.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> — SOPS-encrypted with GCP KMS. Decrypt locally with
+<li><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code>: SOPS-encrypted with GCP KMS. Decrypt locally with
 <code class="docutils literal notranslate"><span class="pre">sops</span> <span class="pre">--decrypt</span> <span class="pre">secrets.yaml</span></code>.</p></li>
 </ul>
 <div class="admonition warning">
@@ -649,7 +649,7 @@ unrecoverable.</p>
 </div>
 </section>
 <section id="apply-three-stage-deploy">
-<h2><code class="docutils literal notranslate"><span class="pre">apply</span></code> — three-stage deploy<a class="headerlink" href="#apply-three-stage-deploy" title="Link to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">apply</span></code> (three-stage deploy)<a class="headerlink" href="#apply-three-stage-deploy" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code> executes the pipeline in order: Terraform,
 then Ansible, then Kubernetes. The pipeline checkpoints between stages,
 so if a run fails you can fix the problem and rerun the same command;
@@ -685,13 +685,22 @@ it picks up from the failed stage.</p>
 </div>
 </section>
 <section id="verify-health-check">
-<h2><code class="docutils literal notranslate"><span class="pre">verify</span></code> — health check<a class="headerlink" href="#verify-health-check" title="Link to this heading">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">verify</span></code> command runs ten checks: GKE cluster status, node count,
-pod readiness per namespace, presence of the ConfigMap and Secret, DNS
-A record resolution, HTTPS reachability for <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">admin</span></code>,
-<code class="docutils literal notranslate"><span class="pre">talk</span></code>, and <code class="docutils literal notranslate"><span class="pre">meet</span></code>, and SIP UDP reachability on port 5060. Each
-check prints a clear pass or fail with the underlying command, so you
-can rerun individual checks manually.</p>
+<h2><code class="docutils literal notranslate"><span class="pre">verify</span></code> (health check)<a class="headerlink" href="#verify-health-check" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">verify</span></code> command runs a series of checks against the live
+deployment and prints a pass, warn, or fail per check. The current set
+of checks covers, in order: GKE cluster status, pod readiness in three
+namespaces, service endpoint availability in three namespaces, Kamailio
+and RTPEngine VM run state, Cloud SQL instance state, DNS resolution
+for <code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code>, HTTPS reachability of <code class="docutils literal notranslate"><span class="pre">https://api.&lt;domain&gt;/health</span></code>,
+and a TCP socket probe of SIP port <code class="docutils literal notranslate"><span class="pre">5060</span></code>. Each check prints the
+underlying command on failure so you can rerun individual probes
+manually.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The SIP probe uses a TCP socket connect. If you need to verify UDP
+reachability for media or signalling, use a separate tool such as
+<code class="docutils literal notranslate"><span class="pre">nc</span> <span class="pre">-zuv</span></code> and the GCP firewall log stream.</p>
+</div>
 </section>
 <section id="dns-step">
 <h2>DNS step<a class="headerlink" href="#dns-step" title="Link to this heading">¶</a></h2>
@@ -777,9 +786,9 @@ records resolve, rerun <code class="docutils literal notranslate"><span class="p
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Install</a><ul>
-<li><a class="reference internal" href="#init-interactive-wizard"><code class="docutils literal notranslate"><span class="pre">init</span></code> — interactive wizard</a></li>
-<li><a class="reference internal" href="#apply-three-stage-deploy"><code class="docutils literal notranslate"><span class="pre">apply</span></code> — three-stage deploy</a></li>
-<li><a class="reference internal" href="#verify-health-check"><code class="docutils literal notranslate"><span class="pre">verify</span></code> — health check</a></li>
+<li><a class="reference internal" href="#init-interactive-wizard"><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)</a></li>
+<li><a class="reference internal" href="#apply-three-stage-deploy"><code class="docutils literal notranslate"><span class="pre">apply</span></code> (three-stage deploy)</a></li>
+<li><a class="reference internal" href="#verify-health-check"><code class="docutils literal notranslate"><span class="pre">verify</span></code> (health check)</a></li>
 <li><a class="reference internal" href="#dns-step">DNS step</a></li>
 </ul>
 </li>

@@ -50,6 +50,41 @@ other process is running Terraform:
     cd terraform
     terraform force-unlock LOCK_ID
 
+Terraform: API not enabled
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Error: googleapi: Error 403: ... API not enabled``. Re-run
+``./voipbin-install init`` to enable APIs, or enable manually:
+
+.. code-block:: bash
+
+    gcloud services enable container.googleapis.com --project PROJECT_ID
+
+Terraform: state bucket missing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Error: Failed to get existing workspaces: storage: bucket doesn't exist``.
+The GCS state bucket must exist before ``terraform init``. The ``apply``
+command creates it automatically; if you are running Terraform manually,
+create it first:
+
+.. code-block:: bash
+
+    gsutil mb -p PROJECT_ID gs://PROJECT_ID-voipbin-tf-state
+
+Terraform: permission denied
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``Error: googleapi: Error 403: Required permission``. Re-check the
+authenticated principal:
+
+.. code-block:: bash
+
+    gcloud auth list
+    gcloud projects get-iam-policy PROJECT_ID
+
+The minimum role set is in ``config/gcp_iam_roles.yaml`` (12 roles).
+
 Ansible: IAP tunnel connection failed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -95,6 +130,9 @@ Kubernetes: ImagePullBackOff
 1. Verify the image exists at the tag declared in
    ``config/versions.yaml``.
 2. GKE nodes need internet access through Cloud NAT.
+3. If images live in a private GAR or GCR repository, confirm the GKE
+   node service account has ``roles/artifactregistry.reader`` (GAR) or
+   ``roles/storage.objectViewer`` on the registry bucket (legacy GCR).
 
 Cloud SQL: connection refused from pods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,8 +169,13 @@ SIP: devices cannot register
    ``docker compose ps`` via IAP SSH.
 2. Inspect the logs:
    ``docker compose logs --tail 100``.
-3. Check the external LB health:
-   ``gcloud compute backend-services get-health voipbin-kamailio-backend --region REGION``.
+3. List the Kamailio load balancer resources and check health, since the
+   exact resource names vary by deployment environment:
+
+   .. code-block:: bash
+
+       gcloud compute target-pools list --filter="name~kamailio"
+       gcloud compute forwarding-rules list --filter="name~kamailio"
 
 Audio: calls connect but no audio
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

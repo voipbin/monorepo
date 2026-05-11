@@ -635,6 +635,34 @@ terraform<span class="w"> </span>force-unlock<span class="w"> </span>LOCK_ID
 </pre></div>
 </div>
 </section>
+<section id="terraform-api-not-enabled">
+<h3>Terraform: API not enabled<a class="headerlink" href="#terraform-api-not-enabled" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">...</span> <span class="pre">API</span> <span class="pre">not</span> <span class="pre">enabled</span></code>. Re-run
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">init</span></code> to enable APIs, or enable manually:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>services<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>container.googleapis.com<span class="w"> </span>--project<span class="w"> </span>PROJECT_ID
+</pre></div>
+</div>
+</section>
+<section id="terraform-state-bucket-missing">
+<h3>Terraform: state bucket missing<a class="headerlink" href="#terraform-state-bucket-missing" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">get</span> <span class="pre">existing</span> <span class="pre">workspaces:</span> <span class="pre">storage:</span> <span class="pre">bucket</span> <span class="pre">doesn't</span> <span class="pre">exist</span></code>.
+The GCS state bucket must exist before <code class="docutils literal notranslate"><span class="pre">terraform</span> <span class="pre">init</span></code>. The <code class="docutils literal notranslate"><span class="pre">apply</span></code>
+command creates it automatically; if you are running Terraform manually,
+create it first:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gsutil<span class="w"> </span>mb<span class="w"> </span>-p<span class="w"> </span>PROJECT_ID<span class="w"> </span>gs://PROJECT_ID-voipbin-tf-state
+</pre></div>
+</div>
+</section>
+<section id="terraform-permission-denied">
+<h3>Terraform: permission denied<a class="headerlink" href="#terraform-permission-denied" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">Required</span> <span class="pre">permission</span></code>. Re-check the
+authenticated principal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>auth<span class="w"> </span>list
+gcloud<span class="w"> </span>projects<span class="w"> </span>get-iam-policy<span class="w"> </span>PROJECT_ID
+</pre></div>
+</div>
+<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (12 roles).</p>
+</section>
 <section id="ansible-iap-tunnel-connection-failed">
 <h3>Ansible: IAP tunnel connection failed<a class="headerlink" href="#ansible-iap-tunnel-connection-failed" title="Link to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">ERROR!</span> <span class="pre">Timeout</span> <span class="pre">waiting</span> <span class="pre">for</span> <span class="pre">connection</span></code> or
@@ -677,6 +705,9 @@ kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w
 <li><p>Verify the image exists at the tag declared in
 <code class="docutils literal notranslate"><span class="pre">config/versions.yaml</span></code>.</p></li>
 <li><p>GKE nodes need internet access through Cloud NAT.</p></li>
+<li><p>If images live in a private GAR or GCR repository, confirm the GKE
+node service account has <code class="docutils literal notranslate"><span class="pre">roles/artifactregistry.reader</span></code> (GAR) or
+<code class="docutils literal notranslate"><span class="pre">roles/storage.objectViewer</span></code> on the registry bucket (legacy GCR).</p></li>
 </ol>
 </section>
 <section id="cloud-sql-connection-refused-from-pods">
@@ -703,13 +734,18 @@ and <code class="docutils literal notranslate"><span class="pre">sip</span></cod
 </section>
 <section id="sip-devices-cannot-register">
 <h3>SIP: devices cannot register<a class="headerlink" href="#sip-devices-cannot-register" title="Link to this heading">¶</a></h3>
-<ol class="arabic simple">
+<ol class="arabic">
 <li><p>Confirm Kamailio is running on the VM:
 <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">ps</span></code> via IAP SSH.</p></li>
 <li><p>Inspect the logs:
 <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">logs</span> <span class="pre">--tail</span> <span class="pre">100</span></code>.</p></li>
-<li><p>Check the external LB health:
-<code class="docutils literal notranslate"><span class="pre">gcloud</span> <span class="pre">compute</span> <span class="pre">backend-services</span> <span class="pre">get-health</span> <span class="pre">voipbin-kamailio-backend</span> <span class="pre">--region</span> <span class="pre">REGION</span></code>.</p></li>
+<li><p>List the Kamailio load balancer resources and check health, since the
+exact resource names vary by deployment environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>target-pools<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">&quot;name~kamailio&quot;</span>
+gcloud<span class="w"> </span>compute<span class="w"> </span>forwarding-rules<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">&quot;name~kamailio&quot;</span>
+</pre></div>
+</div>
+</li>
 </ol>
 </section>
 <section id="audio-calls-connect-but-no-audio">
@@ -797,6 +833,9 @@ outputs.</p></li>
 <li><a class="reference internal" href="#common-issues">Common issues</a><ul>
 <li><a class="reference internal" href="#terraform-quota-exceeded">Terraform: quota exceeded</a></li>
 <li><a class="reference internal" href="#terraform-state-lock">Terraform: state lock</a></li>
+<li><a class="reference internal" href="#terraform-api-not-enabled">Terraform: API not enabled</a></li>
+<li><a class="reference internal" href="#terraform-state-bucket-missing">Terraform: state bucket missing</a></li>
+<li><a class="reference internal" href="#terraform-permission-denied">Terraform: permission denied</a></li>
 <li><a class="reference internal" href="#ansible-iap-tunnel-connection-failed">Ansible: IAP tunnel connection failed</a></li>
 <li><a class="reference internal" href="#ansible-docker-install-failed-on-a-fresh-vm">Ansible: docker install failed on a fresh VM</a></li>
 <li><a class="reference internal" href="#kubernetes-pod-in-crashloopbackoff">Kubernetes: pod in CrashLoopBackOff</a></li>

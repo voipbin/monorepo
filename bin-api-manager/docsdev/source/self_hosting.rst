@@ -1,12 +1,5 @@
 .. _self-hosting-main:
 
-.. _self-hosting-overview:
-.. _self-hosting-prerequisites:
-.. _self-hosting-install:
-.. _self-hosting-configuration:
-.. _self-hosting-envvars:
-.. _self-hosting-troubleshooting:
-
 ************
 Self-Hosting
 ************

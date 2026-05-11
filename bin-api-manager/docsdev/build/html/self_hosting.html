@@ -590,7 +590,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <section id="self-hosting">
-<span id="self-hosting-troubleshooting"></span><span id="self-hosting-envvars"></span><span id="self-hosting-configuration"></span><span id="self-hosting-install"></span><span id="self-hosting-prerequisites"></span><span id="self-hosting-overview"></span><span id="self-hosting-main"></span><h1>Self-Hosting<a class="headerlink" href="#self-hosting" title="Link to this heading">¶</a></h1>
+<span id="self-hosting-main"></span><h1>Self-Hosting<a class="headerlink" href="#self-hosting" title="Link to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
@@ -691,8 +691,11 @@ fronted by TLS certificates.</p></li>
 </tbody>
 </table>
 </div>
-<p>Costs vary by region. You are responsible for all charges incurred on your
-GCP project.</p>
+<p>Costs vary by region. The figures above add up the line items in the
+table and are list-price snapshots, not committed-use prices; the
+installer’s <code class="docutils literal notranslate"><span class="pre">README.md</span></code> may show a slightly different headline figure
+depending on which sizing snapshot it was last regenerated against. You
+are responsible for all charges incurred on your GCP project.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">destroy</span></code> is irreversible. It permanently deletes
@@ -824,7 +827,7 @@ missing or expired.</p>
 <section id="install">
 <h2>Install<a class="headerlink" href="#install" title="Link to this heading">¶</a></h2>
 <p>The happy path is three commands. They are idempotent and resumable.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:voipbin/install.git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/voipbin/install.git
 <span class="nb">cd</span><span class="w"> </span>install
 pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 
@@ -834,7 +837,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
 </pre></div>
 </div>
 <section id="init-interactive-wizard">
-<h3><code class="docutils literal notranslate"><span class="pre">init</span></code> — interactive wizard<a class="headerlink" href="#init-interactive-wizard" title="Link to this heading">¶</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)<a class="headerlink" href="#init-interactive-wizard" title="Link to this heading">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">init</span></code> command runs a twelve-step bootstrap, in order:</p>
 <ol class="arabic simple">
 <li><p>Preflight checks for the six local tools.</p></li>
@@ -848,7 +851,7 @@ DNS mode (auto or manual).</p></li>
 <li><p>Quota check against <code class="docutils literal notranslate"><span class="pre">config/gcp_quotas.yaml</span></code>.</p></li>
 <li><p>Enable sixteen GCP APIs.</p></li>
 <li><p>Create the <code class="docutils literal notranslate"><span class="pre">voipbin-installer</span></code> service account with twelve IAM
-bindings.</p></li>
+role bindings.</p></li>
 <li><p>Create a KMS key ring and crypto key.</p></li>
 <li><p>Generate six secrets (<code class="docutils literal notranslate"><span class="pre">jwt_key</span></code>, <code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code>,
 <code class="docutils literal notranslate"><span class="pre">redis_password</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code>,
@@ -868,9 +871,9 @@ bound to the KMS key.</p></li>
 </div>
 <p>The two files written are everything you need to reproduce the install:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> — non-sensitive. Safe to commit if you want a record
+<li><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>: non-sensitive. Safe to commit if you want a record
 per environment.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code> — SOPS-encrypted with GCP KMS. Decrypt locally with
+<li><p><code class="docutils literal notranslate"><span class="pre">secrets.yaml</span></code>: SOPS-encrypted with GCP KMS. Decrypt locally with
 <code class="docutils literal notranslate"><span class="pre">sops</span> <span class="pre">--decrypt</span> <span class="pre">secrets.yaml</span></code>.</p></li>
 </ul>
 <div class="admonition warning">
@@ -881,7 +884,7 @@ unrecoverable.</p>
 </div>
 </section>
 <section id="apply-three-stage-deploy">
-<h3><code class="docutils literal notranslate"><span class="pre">apply</span></code> — three-stage deploy<a class="headerlink" href="#apply-three-stage-deploy" title="Link to this heading">¶</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">apply</span></code> (three-stage deploy)<a class="headerlink" href="#apply-three-stage-deploy" title="Link to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code> executes the pipeline in order: Terraform,
 then Ansible, then Kubernetes. The pipeline checkpoints between stages,
 so if a run fails you can fix the problem and rerun the same command;
@@ -917,13 +920,22 @@ it picks up from the failed stage.</p>
 </div>
 </section>
 <section id="verify-health-check">
-<h3><code class="docutils literal notranslate"><span class="pre">verify</span></code> — health check<a class="headerlink" href="#verify-health-check" title="Link to this heading">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">verify</span></code> command runs ten checks: GKE cluster status, node count,
-pod readiness per namespace, presence of the ConfigMap and Secret, DNS
-A record resolution, HTTPS reachability for <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">admin</span></code>,
-<code class="docutils literal notranslate"><span class="pre">talk</span></code>, and <code class="docutils literal notranslate"><span class="pre">meet</span></code>, and SIP UDP reachability on port 5060. Each
-check prints a clear pass or fail with the underlying command, so you
-can rerun individual checks manually.</p>
+<h3><code class="docutils literal notranslate"><span class="pre">verify</span></code> (health check)<a class="headerlink" href="#verify-health-check" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">verify</span></code> command runs a series of checks against the live
+deployment and prints a pass, warn, or fail per check. The current set
+of checks covers, in order: GKE cluster status, pod readiness in three
+namespaces, service endpoint availability in three namespaces, Kamailio
+and RTPEngine VM run state, Cloud SQL instance state, DNS resolution
+for <code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code>, HTTPS reachability of <code class="docutils literal notranslate"><span class="pre">https://api.&lt;domain&gt;/health</span></code>,
+and a TCP socket probe of SIP port <code class="docutils literal notranslate"><span class="pre">5060</span></code>. Each check prints the
+underlying command on failure so you can rerun individual probes
+manually.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The SIP probe uses a TCP socket connect. If you need to verify UDP
+reachability for media or signalling, use a separate tool such as
+<code class="docutils literal notranslate"><span class="pre">nc</span> <span class="pre">-zuv</span></code> and the GCP firewall log stream.</p>
+</div>
 </section>
 <section id="dns-step">
 <h3>DNS step<a class="headerlink" href="#dns-step" title="Link to this heading">¶</a></h3>
@@ -1001,12 +1013,12 @@ the initial install, edit <code class="docutils literal notranslate"><span class
 <p>Holds the six secrets generated by <code class="docutils literal notranslate"><span class="pre">init</span></code>, encrypted with GCP KMS via
 SOPS:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">jwt_key</span></code> — JWT signing key consumed by the API and webhook layers.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code> — Cloud SQL root password. The instance is
+<li><p><code class="docutils literal notranslate"><span class="pre">jwt_key</span></code>: JWT signing key consumed by the API and webhook layers.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code>: Cloud SQL root password. The instance is
 created with this value.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">redis_password</span></code> — Redis <code class="docutils literal notranslate"><span class="pre">AUTH</span></code> password.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code> and <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code> — RabbitMQ credentials.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">api_signing_key</span></code> — request signing key used between internal
+<li><p><code class="docutils literal notranslate"><span class="pre">redis_password</span></code>: Redis <code class="docutils literal notranslate"><span class="pre">AUTH</span></code> password.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code> and <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code>. RabbitMQ credentials.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">api_signing_key</span></code>: request signing key used between internal
 services.</p></li>
 </ul>
 <p>Editing a secret:</p>
@@ -1133,11 +1145,11 @@ env template as <code class="docutils literal notranslate"><span class="pre">PST
 default to empty. Production deployments point them at a database that
 holds SIP credentials:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_DB_URL</span></code> — connection string Kamailio uses for the
+<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_DB_URL</span></code>: connection string Kamailio uses for the
 auth database.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_USER_COLUMN</span></code> — defaults to <code class="docutils literal notranslate"><span class="pre">username</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_DOMAIN_COLUMN</span></code> — defaults to <code class="docutils literal notranslate"><span class="pre">realm</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_PASSWORD_COLUMN</span></code> — defaults to <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_USER_COLUMN</span></code>: defaults to <code class="docutils literal notranslate"><span class="pre">username</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_DOMAIN_COLUMN</span></code>: defaults to <code class="docutils literal notranslate"><span class="pre">realm</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">KAMAILIO_AUTH_PASSWORD_COLUMN</span></code>: defaults to <code class="docutils literal notranslate"><span class="pre">password</span></code>.</p></li>
 </ul>
 <p>Set them via Ansible extra vars or by editing
 <code class="docutils literal notranslate"><span class="pre">ansible/group_vars/kamailio.yml</span></code> and rerunning
@@ -1156,15 +1168,15 @@ sure the firewall rule matches.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> chosen in the wizard governs how certificates are
 issued:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">letsencrypt</span></code> — cert-manager issues per-host certificates via
+<li><p><code class="docutils literal notranslate"><span class="pre">letsencrypt</span></code>: cert-manager issues per-host certificates via
 HTTP-01 once DNS resolves. DNS must resolve first, otherwise the
 challenge fails and the certificate sits in <code class="docutils literal notranslate"><span class="pre">Pending</span></code>. Verify with
 <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">certificate</span> <span class="pre">-A</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">gcp-managed</span></code> — a GCP-managed certificate is attached to the
+<li><p><code class="docutils literal notranslate"><span class="pre">gcp-managed</span></code>: a GCP-managed certificate is attached to the
 Ingress and provisioned by Google. Same DNS dependency.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">self-signed</span></code> — a self-signed certificate is installed immediately.
+<li><p><code class="docutils literal notranslate"><span class="pre">self-signed</span></code>: a self-signed certificate is installed immediately.
 Use only for staging or local-only deployments.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">byoc</span></code> — bring your own. Drop <code class="docutils literal notranslate"><span class="pre">tls.crt</span></code> and <code class="docutils literal notranslate"><span class="pre">tls.key</span></code> into the
+<li><p><code class="docutils literal notranslate"><span class="pre">byoc</span></code>: bring your own. Drop <code class="docutils literal notranslate"><span class="pre">tls.crt</span></code> and <code class="docutils literal notranslate"><span class="pre">tls.key</span></code> into the
 <code class="docutils literal notranslate"><span class="pre">voipbin-tls</span></code> Secret in <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> before
 <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">k8s</span></code>.</p></li>
 </ul>
@@ -1173,27 +1185,28 @@ Use only for staging or local-only deployments.</p></li>
 </section>
 <section id="third-party-integrations">
 <h3>5. Third-party integrations<a class="headerlink" href="#third-party-integrations" title="Link to this heading">¶</a></h3>
-<p>VoIPBin services integrate with external providers for LLM, ASR, TTS,
-email, SMS, and payments. The installer ships with these slots
+<p>VoIPBin services can integrate with external providers for LLM, ASR,
+TTS, email, SMS, and payments. The installer ships with these slots
 intentionally <strong>empty</strong>, because they are operator-specific and not
 free. Add them as Kubernetes Secrets in the <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> namespace,
 then mount them into the relevant deployments.</p>
 <p>Provider categories you will likely need to wire up:</p>
 <ul class="simple">
-<li><p>LLM / AI providers (for example, OpenAI, Anthropic, Google AI).</p></li>
-<li><p>Speech-to-text (Deepgram, hosted Whisper, etc.).</p></li>
-<li><p>Text-to-speech (ElevenLabs, Google Cloud TTS, etc.).</p></li>
-<li><p>Email API or SMTP provider.</p></li>
-<li><p>SMS provider.</p></li>
-<li><p>Payment provider for billing flows.</p></li>
+<li><p>An LLM or AI provider.</p></li>
+<li><p>A speech-to-text provider.</p></li>
+<li><p>A text-to-speech provider.</p></li>
+<li><p>An email API or SMTP provider.</p></li>
+<li><p>An SMS provider.</p></li>
+<li><p>A payment provider for billing flows.</p></li>
 </ul>
-<p>Until you wire these up, the corresponding flow actions return
-<code class="docutils literal notranslate"><span class="pre">provider</span> <span class="pre">not</span> <span class="pre">configured</span></code> errors. The platform itself stays healthy
-and the rest of the channels remain usable.</p>
+<p>Pick providers based on your own region, compliance, and pricing
+constraints. Until the relevant keys are wired up, the corresponding
+flow actions return <code class="docutils literal notranslate"><span class="pre">provider</span> <span class="pre">not</span> <span class="pre">configured</span></code> errors; the platform
+itself stays healthy and the rest of the channels remain usable.</p>
 <p>Recommended pattern: a separate Secret per provider so rotation is
 independent.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>bin-manager<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>voipbin-openai<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>bin-manager<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>voipbin-llm<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">LLM_API_KEY</span><span class="o">=</span>...
 </pre></div>
 </div>
 <p>Then patch the deployment to mount it via <code class="docutils literal notranslate"><span class="pre">envFrom</span></code>. Track the provider
@@ -1260,9 +1273,9 @@ the wizard, generated secrets, or operator overrides.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">pstn_whitelist_ips</span></code> via <code class="docutils literal notranslate"><span class="pre">VOIPBIN_PSTN_WHITELIST_IPS</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">kamailio_auth_db_url</span></code> and the three <code class="docutils literal notranslate"><span class="pre">kamailio_auth_*_column</span></code>
 variables via extra-vars or <code class="docutils literal notranslate"><span class="pre">group_vars/kamailio.yml</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">kamailio_shm_size</span></code>, <code class="docutils literal notranslate"><span class="pre">kamailio_pkg_size</span></code> — memory tuning.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">pike_enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">pike_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">pike_timeout</span></code> — anti-flood.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">homer_enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">homer_uri</span></code> — HEP capture.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kamailio_shm_size</span></code>, <code class="docutils literal notranslate"><span class="pre">kamailio_pkg_size</span></code>: memory tuning.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pike_enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">pike_rate</span></code>, <code class="docutils literal notranslate"><span class="pre">pike_timeout</span></code>: anti-flood.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">homer_enabled</span></code>, <code class="docutils literal notranslate"><span class="pre">homer_uri</span></code>: HEP capture.</p></li>
 </ul>
 </section>
 <section id="kubernetes-configmap-voipbin-config">
@@ -1331,6 +1344,34 @@ terraform<span class="w"> </span>force-unlock<span class="w"> </span>LOCK_ID
 </pre></div>
 </div>
 </section>
+<section id="terraform-api-not-enabled">
+<h4>Terraform: API not enabled<a class="headerlink" href="#terraform-api-not-enabled" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">...</span> <span class="pre">API</span> <span class="pre">not</span> <span class="pre">enabled</span></code>. Re-run
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">init</span></code> to enable APIs, or enable manually:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>services<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>container.googleapis.com<span class="w"> </span>--project<span class="w"> </span>PROJECT_ID
+</pre></div>
+</div>
+</section>
+<section id="terraform-state-bucket-missing">
+<h4>Terraform: state bucket missing<a class="headerlink" href="#terraform-state-bucket-missing" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">get</span> <span class="pre">existing</span> <span class="pre">workspaces:</span> <span class="pre">storage:</span> <span class="pre">bucket</span> <span class="pre">doesn't</span> <span class="pre">exist</span></code>.
+The GCS state bucket must exist before <code class="docutils literal notranslate"><span class="pre">terraform</span> <span class="pre">init</span></code>. The <code class="docutils literal notranslate"><span class="pre">apply</span></code>
+command creates it automatically; if you are running Terraform manually,
+create it first:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gsutil<span class="w"> </span>mb<span class="w"> </span>-p<span class="w"> </span>PROJECT_ID<span class="w"> </span>gs://PROJECT_ID-voipbin-tf-state
+</pre></div>
+</div>
+</section>
+<section id="terraform-permission-denied">
+<h4>Terraform: permission denied<a class="headerlink" href="#terraform-permission-denied" title="Link to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Error:</span> <span class="pre">googleapi:</span> <span class="pre">Error</span> <span class="pre">403:</span> <span class="pre">Required</span> <span class="pre">permission</span></code>. Re-check the
+authenticated principal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>auth<span class="w"> </span>list
+gcloud<span class="w"> </span>projects<span class="w"> </span>get-iam-policy<span class="w"> </span>PROJECT_ID
+</pre></div>
+</div>
+<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (12 roles).</p>
+</section>
 <section id="ansible-iap-tunnel-connection-failed">
 <h4>Ansible: IAP tunnel connection failed<a class="headerlink" href="#ansible-iap-tunnel-connection-failed" title="Link to this heading">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">ERROR!</span> <span class="pre">Timeout</span> <span class="pre">waiting</span> <span class="pre">for</span> <span class="pre">connection</span></code> or
@@ -1373,6 +1414,9 @@ kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w
 <li><p>Verify the image exists at the tag declared in
 <code class="docutils literal notranslate"><span class="pre">config/versions.yaml</span></code>.</p></li>
 <li><p>GKE nodes need internet access through Cloud NAT.</p></li>
+<li><p>If images live in a private GAR or GCR repository, confirm the GKE
+node service account has <code class="docutils literal notranslate"><span class="pre">roles/artifactregistry.reader</span></code> (GAR) or
+<code class="docutils literal notranslate"><span class="pre">roles/storage.objectViewer</span></code> on the registry bucket (legacy GCR).</p></li>
 </ol>
 </section>
 <section id="cloud-sql-connection-refused-from-pods">
@@ -1399,13 +1443,18 @@ and <code class="docutils literal notranslate"><span class="pre">sip</span></cod
 </section>
 <section id="sip-devices-cannot-register">
 <h4>SIP: devices cannot register<a class="headerlink" href="#sip-devices-cannot-register" title="Link to this heading">¶</a></h4>
-<ol class="arabic simple">
+<ol class="arabic">
 <li><p>Confirm Kamailio is running on the VM:
 <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">ps</span></code> via IAP SSH.</p></li>
 <li><p>Inspect the logs:
 <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">compose</span> <span class="pre">logs</span> <span class="pre">--tail</span> <span class="pre">100</span></code>.</p></li>
-<li><p>Check the external LB health:
-<code class="docutils literal notranslate"><span class="pre">gcloud</span> <span class="pre">compute</span> <span class="pre">backend-services</span> <span class="pre">get-health</span> <span class="pre">voipbin-kamailio-backend</span> <span class="pre">--region</span> <span class="pre">REGION</span></code>.</p></li>
+<li><p>List the Kamailio load balancer resources and check health, since the
+exact resource names vary by deployment environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gcloud<span class="w"> </span>compute<span class="w"> </span>target-pools<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">&quot;name~kamailio&quot;</span>
+gcloud<span class="w"> </span>compute<span class="w"> </span>forwarding-rules<span class="w"> </span>list<span class="w"> </span>--filter<span class="o">=</span><span class="s2">&quot;name~kamailio&quot;</span>
+</pre></div>
+</div>
+</li>
 </ol>
 </section>
 <section id="audio-calls-connect-but-no-audio">
@@ -1522,9 +1571,9 @@ outputs.</p></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#install">Install</a><ul>
-<li><a class="reference internal" href="#init-interactive-wizard"><code class="docutils literal notranslate"><span class="pre">init</span></code> — interactive wizard</a></li>
-<li><a class="reference internal" href="#apply-three-stage-deploy"><code class="docutils literal notranslate"><span class="pre">apply</span></code> — three-stage deploy</a></li>
-<li><a class="reference internal" href="#verify-health-check"><code class="docutils literal notranslate"><span class="pre">verify</span></code> — health check</a></li>
+<li><a class="reference internal" href="#init-interactive-wizard"><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)</a></li>
+<li><a class="reference internal" href="#apply-three-stage-deploy"><code class="docutils literal notranslate"><span class="pre">apply</span></code> (three-stage deploy)</a></li>
+<li><a class="reference internal" href="#verify-health-check"><code class="docutils literal notranslate"><span class="pre">verify</span></code> (health check)</a></li>
 <li><a class="reference internal" href="#dns-step">DNS step</a></li>
 </ul>
 </li>
@@ -1561,6 +1610,9 @@ outputs.</p></li>
 <li><a class="reference internal" href="#common-issues">Common issues</a><ul>
 <li><a class="reference internal" href="#terraform-quota-exceeded">Terraform: quota exceeded</a></li>
 <li><a class="reference internal" href="#terraform-state-lock">Terraform: state lock</a></li>
+<li><a class="reference internal" href="#terraform-api-not-enabled">Terraform: API not enabled</a></li>
+<li><a class="reference internal" href="#terraform-state-bucket-missing">Terraform: state bucket missing</a></li>
+<li><a class="reference internal" href="#terraform-permission-denied">Terraform: permission denied</a></li>
 <li><a class="reference internal" href="#ansible-iap-tunnel-connection-failed">Ansible: IAP tunnel connection failed</a></li>
 <li><a class="reference internal" href="#ansible-docker-install-failed-on-a-fresh-vm">Ansible: docker install failed on a fresh VM</a></li>
 <li><a class="reference internal" href="#kubernetes-pod-in-crashloopbackoff">Kubernetes: pod in CrashLoopBackOff</a></li>

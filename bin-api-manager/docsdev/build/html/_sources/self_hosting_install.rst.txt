@@ -5,7 +5,7 @@ The happy path is three commands. They are idempotent and resumable.
 
 .. code-block:: bash
 
-    git clone git@github.com:voipbin/install.git
+    git clone https://github.com/voipbin/install.git
     cd install
     pip install -r requirements.txt
 
@@ -13,7 +13,7 @@ The happy path is three commands. They are idempotent and resumable.
     ./voipbin-install apply     # provision and deploy
     ./voipbin-install verify    # health check
 
-``init`` — interactive wizard
+``init`` (interactive wizard)
 -----------------------------
 
 The ``init`` command runs a twelve-step bootstrap, in order:
@@ -29,7 +29,7 @@ The ``init`` command runs a twelve-step bootstrap, in order:
 5. Quota check against ``config/gcp_quotas.yaml``.
 6. Enable sixteen GCP APIs.
 7. Create the ``voipbin-installer`` service account with twelve IAM
-   bindings.
+   role bindings.
 8. Create a KMS key ring and crypto key.
 9. Generate six secrets (``jwt_key``, ``cloudsql_password``,
    ``redis_password``, ``rabbitmq_user``, ``rabbitmq_password``,
@@ -51,9 +51,9 @@ Useful flags:
 
 The two files written are everything you need to reproduce the install:
 
-- ``config.yaml`` — non-sensitive. Safe to commit if you want a record
+- ``config.yaml``: non-sensitive. Safe to commit if you want a record
   per environment.
-- ``secrets.yaml`` — SOPS-encrypted with GCP KMS. Decrypt locally with
+- ``secrets.yaml``: SOPS-encrypted with GCP KMS. Decrypt locally with
   ``sops --decrypt secrets.yaml``.
 
 .. warning::
@@ -62,7 +62,7 @@ The two files written are everything you need to reproduce the install:
    destroyed or the GCP project is deleted, ``secrets.yaml`` becomes
    unrecoverable.
 
-``apply`` — three-stage deploy
+``apply`` (three-stage deploy)
 ------------------------------
 
 ``./voipbin-install apply`` executes the pipeline in order: Terraform,
@@ -90,15 +90,24 @@ Ansible                        5 to 8 minutes (waits for cloud-init on both VMs)
 Kubernetes                     3 to 5 minutes
 ============================  ==============================================
 
-``verify`` — health check
+``verify`` (health check)
 -------------------------
 
-The ``verify`` command runs ten checks: GKE cluster status, node count,
-pod readiness per namespace, presence of the ConfigMap and Secret, DNS
-A record resolution, HTTPS reachability for ``api``, ``admin``,
-``talk``, and ``meet``, and SIP UDP reachability on port 5060. Each
-check prints a clear pass or fail with the underlying command, so you
-can rerun individual checks manually.
+The ``verify`` command runs a series of checks against the live
+deployment and prints a pass, warn, or fail per check. The current set
+of checks covers, in order: GKE cluster status, pod readiness in three
+namespaces, service endpoint availability in three namespaces, Kamailio
+and RTPEngine VM run state, Cloud SQL instance state, DNS resolution
+for ``api.<domain>``, HTTPS reachability of ``https://api.<domain>/health``,
+and a TCP socket probe of SIP port ``5060``. Each check prints the
+underlying command on failure so you can rerun individual probes
+manually.
+
+.. note::
+
+   The SIP probe uses a TCP socket connect. If you need to verify UDP
+   reachability for media or signalling, use a separate tool such as
+   ``nc -zuv`` and the GCP firewall log stream.
 
 DNS step
 --------

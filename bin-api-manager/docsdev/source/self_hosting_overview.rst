@@ -57,8 +57,11 @@ DNS, GCS, KMS, disks           ~$6
 **Total**                      **~$170 zonal, ~$243 regional**
 ============================  ==============================
 
-Costs vary by region. You are responsible for all charges incurred on your
-GCP project.
+Costs vary by region. The figures above add up the line items in the
+table and are list-price snapshots, not committed-use prices; the
+installer's ``README.md`` may show a slightly different headline figure
+depending on which sizing snapshot it was last regenerated against. You
+are responsible for all charges incurred on your GCP project.
 
 .. warning::
 

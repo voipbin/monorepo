@@ -64,11 +64,11 @@ The four ``KAMAILIO_AUTH_*`` variables in the Kamailio env template
 default to empty. Production deployments point them at a database that
 holds SIP credentials:
 
-- ``KAMAILIO_AUTH_DB_URL`` — connection string Kamailio uses for the
+- ``KAMAILIO_AUTH_DB_URL``: connection string Kamailio uses for the
   auth database.
-- ``KAMAILIO_AUTH_USER_COLUMN`` — defaults to ``username``.
-- ``KAMAILIO_AUTH_DOMAIN_COLUMN`` — defaults to ``realm``.
-- ``KAMAILIO_AUTH_PASSWORD_COLUMN`` — defaults to ``password``.
+- ``KAMAILIO_AUTH_USER_COLUMN``: defaults to ``username``.
+- ``KAMAILIO_AUTH_DOMAIN_COLUMN``: defaults to ``realm``.
+- ``KAMAILIO_AUTH_PASSWORD_COLUMN``: defaults to ``password``.
 
 Set them via Ansible extra vars or by editing
 ``ansible/group_vars/kamailio.yml`` and rerunning
@@ -88,15 +88,15 @@ sure the firewall rule matches.
 The ``tls_strategy`` chosen in the wizard governs how certificates are
 issued:
 
-- ``letsencrypt`` — cert-manager issues per-host certificates via
+- ``letsencrypt``: cert-manager issues per-host certificates via
   HTTP-01 once DNS resolves. DNS must resolve first, otherwise the
   challenge fails and the certificate sits in ``Pending``. Verify with
   ``kubectl get certificate -A``.
-- ``gcp-managed`` — a GCP-managed certificate is attached to the
+- ``gcp-managed``: a GCP-managed certificate is attached to the
   Ingress and provisioned by Google. Same DNS dependency.
-- ``self-signed`` — a self-signed certificate is installed immediately.
+- ``self-signed``: a self-signed certificate is installed immediately.
   Use only for staging or local-only deployments.
-- ``byoc`` — bring your own. Drop ``tls.crt`` and ``tls.key`` into the
+- ``byoc``: bring your own. Drop ``tls.crt`` and ``tls.key`` into the
   ``voipbin-tls`` Secret in ``bin-manager`` before
   ``./voipbin-install apply --stage k8s``.
 
@@ -106,32 +106,33 @@ To change strategies after install, edit ``tls_strategy`` in
 5. Third-party integrations
 ---------------------------
 
-VoIPBin services integrate with external providers for LLM, ASR, TTS,
-email, SMS, and payments. The installer ships with these slots
+VoIPBin services can integrate with external providers for LLM, ASR,
+TTS, email, SMS, and payments. The installer ships with these slots
 intentionally **empty**, because they are operator-specific and not
 free. Add them as Kubernetes Secrets in the ``bin-manager`` namespace,
 then mount them into the relevant deployments.
 
 Provider categories you will likely need to wire up:
 
-- LLM / AI providers (for example, OpenAI, Anthropic, Google AI).
-- Speech-to-text (Deepgram, hosted Whisper, etc.).
-- Text-to-speech (ElevenLabs, Google Cloud TTS, etc.).
-- Email API or SMTP provider.
-- SMS provider.
-- Payment provider for billing flows.
+- An LLM or AI provider.
+- A speech-to-text provider.
+- A text-to-speech provider.
+- An email API or SMTP provider.
+- An SMS provider.
+- A payment provider for billing flows.
 
-Until you wire these up, the corresponding flow actions return
-``provider not configured`` errors. The platform itself stays healthy
-and the rest of the channels remain usable.
+Pick providers based on your own region, compliance, and pricing
+constraints. Until the relevant keys are wired up, the corresponding
+flow actions return ``provider not configured`` errors; the platform
+itself stays healthy and the rest of the channels remain usable.
 
 Recommended pattern: a separate Secret per provider so rotation is
 independent.
 
 .. code-block:: bash
 
-    kubectl -n bin-manager create secret generic voipbin-openai \
-      --from-literal=OPENAI_API_KEY=sk-...
+    kubectl -n bin-manager create secret generic voipbin-llm \
+      --from-literal=LLM_API_KEY=...
 
 Then patch the deployment to mount it via ``envFrom``. Track the provider
 matrix per service in your own runbook; upstream manifests deliberately
@@ -201,9 +202,9 @@ Defined in ``ansible/group_vars/all.yml`` and
 - ``pstn_whitelist_ips`` via ``VOIPBIN_PSTN_WHITELIST_IPS``.
 - ``kamailio_auth_db_url`` and the three ``kamailio_auth_*_column``
   variables via extra-vars or ``group_vars/kamailio.yml``.
-- ``kamailio_shm_size``, ``kamailio_pkg_size`` — memory tuning.
-- ``pike_enabled``, ``pike_rate``, ``pike_timeout`` — anti-flood.
-- ``homer_enabled``, ``homer_uri`` — HEP capture.
+- ``kamailio_shm_size``, ``kamailio_pkg_size``: memory tuning.
+- ``pike_enabled``, ``pike_rate``, ``pike_timeout``: anti-flood.
+- ``homer_enabled``, ``homer_uri``: HEP capture.
 
 Kubernetes ConfigMap (``voipbin-config``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
