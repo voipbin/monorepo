@@ -10,7 +10,7 @@ By the end, you will have:
 - Real-time text-to-speech injected into the call via the Speaking API
 
 Prerequisites
-+++++++++++++
+~~~~~~~~~~~~~
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
@@ -23,7 +23,7 @@ Prerequisites
    This scenario requires a registered softphone (Linphone) to answer the call and speak. AI agents can execute all API calls and instruct the human for answering the call on Linphone. Set up event delivery before starting — you will need it to observe transcription events during the call.
 
 Make a call to the extension
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 With event subscription configured and Linphone registered, make an outbound call to the extension. This call starts real-time transcription, plays a TTS greeting, and then sleeps to keep the call alive while you interact.
 
 .. code::
@@ -112,7 +112,7 @@ Save the call ``id`` (UUID) from ``calls[0].id`` in the response — you will ne
    The ``source`` number must be a VoIPBIN-owned number (from ``GET /numbers``). The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart_extension>`. The ``sleep`` ``duration`` (Integer, milliseconds) keeps the call alive — ``600000`` = 10 minutes. The ``transcribe_start`` action uses BCP47 language codes (e.g., ``en-US``, ``ko-KR``, ``ja-JP``).
 
 Observe real-time transcription
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads.
 
 **The TTS greeting appears first** (``direction: "out"`` — VoIPBIN to caller):
@@ -162,7 +162,7 @@ If you run the Python WebSocket example from :ref:`Receiving Events <quickstart_
     [TRANSCRIBE in] Hi, this is a test of the transcription feature.
 
 Create a speaking stream
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^
 While the call is active, you can inject real-time text-to-speech audio using the Speaking API. Create a speaking stream attached to the call.
 
 ``POST /speakings`` with:
@@ -217,7 +217,7 @@ Save the speaking ``id`` (UUID) — you will use it to send text-to-speech.
    The speaking stream must be created while the call is in ``progressing`` status (answered and audio flowing). If the call has already hung up, the API returns ``400 Bad Request``. The ``direction`` field controls which side of the call hears the TTS: ``"out"`` means the called party (Linphone) hears it. The ``status`` transitions from ``initiating`` to ``active`` once the TTS provider connects.
 
 Speak via TTS API
-~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^
 Send text to the speaking stream to have it spoken into the call in real time.
 
 ``POST /speakings/{id}/say`` with:
@@ -260,7 +260,7 @@ You should hear the text spoken through Linphone within a second or two. You can
    You can call ``POST /speakings/{id}/say`` multiple times. Each call queues text for sequential playback. If you need to interrupt, call ``POST /speakings/{id}/flush`` first, then ``POST /speakings/{id}/say`` with new text. The ``text`` field has a 5000-character limit per request. Since transcription is still active, the TTS output will also appear in transcription events as ``direction: "out"``.
 
 Troubleshooting
-+++++++++++++++
+~~~~~~~~~~~~~~~
 
 * **Call created but Linphone does not ring:**
     * **Cause:** Linphone is not registered, or the ``target_name`` does not match the extension ``name``.

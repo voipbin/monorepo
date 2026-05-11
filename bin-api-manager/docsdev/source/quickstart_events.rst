@@ -135,7 +135,7 @@ Once configured, VoIPBIN sends a ``POST`` request to your ``webhook_uri`` each t
    The customer webhook receives **all** event types for your account — there is no filtering by event type. For local development, use a tunneling tool (e.g., ngrok) to expose your local server. To stop receiving events, set ``webhook_uri`` to an empty string ``""``.
 
 Troubleshooting
-+++++++++++++++
+^^^^^^^^^^^^^^^
 
 * **No events received via WebSocket:**
     * **Cause:** Subscription topic does not match your customer ID, or subscription was sent before the connection opened.
