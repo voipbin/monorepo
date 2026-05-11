@@ -1,4 +1,4 @@
-.. _sdk_overview:
+.. _sdk-overview:
 
 Overview
 ========

@@ -1,6 +1,6 @@
-.. _quickstart_events:
+.. _quickstart-events:
 
-.. _quickstart_event_subscription:
+.. _quickstart-event-subscription:
 
 Receiving Events
 ----------------

@@ -306,11 +306,11 @@ Normal numbers are routed through an external provider (Telnyx/Twilio) from the 
      - AI, WebRTC, internal routing
 
 
-For billing and cost details, see :ref:`Billing Account <billing_account_overview>`.
+For billing and cost details, see :ref:`Billing Account <billing-account-overview>`.
 
 **Virtual Number Tier Limits**
 
-Virtual numbers are free to create but subject to tier-based limits. When the limit is reached, further virtual number creation is denied. See :ref:`Plan Tiers <billing_account_overview>` for tier limits and billing details.
+Virtual numbers are free to create but subject to tier-based limits. When the limit is reached, further virtual number creation is denied. See :ref:`Plan Tiers <billing-account-overview>` for tier limits and billing details.
 
 
 Common Scenarios

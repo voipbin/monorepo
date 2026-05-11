@@ -1,13 +1,13 @@
-.. _quickstart_extension:
+.. _quickstart-extension:
 
 Extension & Softphone Setup
 ----------------------------
-Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBIN. This is required for the :ref:`Real-Time Voice Interaction <quickstart_realtime>` scenario.
+Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBIN. This is required for the :ref:`Real-Time Voice Interaction <quickstart-realtime>` scenario.
 
 Prerequisites
 ~~~~~~~~~~~~~
 
-* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
+* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
 * Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer`` or from your admin console profile.
 * Linphone softphone installed on your computer or mobile device. Download from `linphone.org <https://www.linphone.org/>`_.
 
@@ -49,7 +49,7 @@ Response:
         "tm_delete": ""
     }
 
-The ``id`` (UUID) is the extension's unique identifier — use it for ``GET /extensions/{id}``, ``PUT /extensions/{id}``, or ``DELETE /extensions/{id}`` operations. For dialing, use the ``name`` field instead. Save the ``name`` (String) — you will use it as the call destination in the :ref:`Real-Time Voice Interaction <quickstart_realtime>` scenario.
+The ``id`` (UUID) is the extension's unique identifier — use it for ``GET /extensions/{id}``, ``PUT /extensions/{id}``, or ``DELETE /extensions/{id}`` operations. For dialing, use the ``name`` field instead. Save the ``name`` (String) — you will use it as the call destination in the :ref:`Real-Time Voice Interaction <quickstart-realtime>` scenario.
 
 .. note:: **AI Implementation Hint**
 

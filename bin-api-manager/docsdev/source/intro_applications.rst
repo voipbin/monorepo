@@ -21,7 +21,7 @@ Agent
 -----
 The Agent, also known as a call center agent or phone agent, plays a vital role in a company's communication with its customers. Working on behalf of the company, the agent handles calls from private or business customers, providing support, assistance, or relevant information as needed.
 
-See detail at :ref:`here <agent_overview>`.
+See detail at :ref:`here <agent-overview>`.
 
 .. _intro-applications-campaign:
 

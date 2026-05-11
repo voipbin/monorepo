@@ -1,4 +1,4 @@
-.. _agent_overview:
+.. _agent-overview:
 
 Overview
 ========

@@ -1,4 +1,4 @@
-.. _outbound_config_overview:
+.. _outbound-config-overview:
 
 OutboundConfig Overview
 =======================

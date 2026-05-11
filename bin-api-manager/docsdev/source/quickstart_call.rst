@@ -1,19 +1,19 @@
-.. _quickstart_call:
+.. _quickstart-call:
 
 Call
 ----
-Make an outbound voice call to the extension you created in :ref:`Extension & Softphone Setup <quickstart_extension>`.
+Make an outbound voice call to the extension you created in :ref:`Extension & Softphone Setup <quickstart-extension>`.
 
 Prerequisites
 ~~~~~~~~~~~~~
 
-* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
+* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
-* A registered SIP extension and softphone. See :ref:`Extension & Softphone Setup <quickstart_extension>`.
+* A registered SIP extension and softphone. See :ref:`Extension & Softphone Setup <quickstart-extension>`.
 
 .. note:: **AI Implementation Hint**
 
-   Phone numbers must be in E.164 format: ``+`` followed by country code and number, no dashes or spaces (e.g., ``+15551234567``, ``+821012345678``). The ``source`` number must be a VoIPBIN-owned number — using an unowned number will result in a ``400 Bad Request``. The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart_extension>`.
+   Phone numbers must be in E.164 format: ``+`` followed by country code and number, no dashes or spaces (e.g., ``+15551234567``, ``+821012345678``). The ``source`` number must be a VoIPBIN-owned number — using an unowned number will result in a ``400 Bad Request``. The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart-extension>`.
 
 Make your first call
 ^^^^^^^^^^^^^^^^^^^^
@@ -92,7 +92,7 @@ Troubleshooting
 
 * **Call created but Linphone does not ring:**
     * **Cause:** Linphone is not registered, or the ``target_name`` does not match the extension ``name``.
-    * **Fix:** Verify Linphone shows "Registered" status. Verify the ``target_name`` in the call request matches the extension ``name`` from :ref:`Extension & Softphone Setup <quickstart_extension>` exactly (case-sensitive).
+    * **Fix:** Verify Linphone shows "Registered" status. Verify the ``target_name`` in the call request matches the extension ``name`` from :ref:`Extension & Softphone Setup <quickstart-extension>` exactly (case-sensitive).
 
 * **Call status immediately shows "hangup":**
     * **Cause:** The destination extension has no registered devices, or the source number has no telephony provider attached.

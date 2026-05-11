@@ -1,4 +1,4 @@
-.. _quickstart_signup:
+.. _quickstart-signup:
 
 Signup
 ------
@@ -54,7 +54,7 @@ Response (always HTTP 200):
         }
     }
 
-The ``accesskey.token`` (String) is your API key. Use it immediately for authentication — see :ref:`Authentication <quickstart_authentication>`.
+The ``accesskey.token`` (String) is your API key. Use it immediately for authentication — see :ref:`Authentication <quickstart-authentication>`.
 
 A verification email is also sent to the email address you provided. Click the link in the email to verify your address and activate your account. After verification, you will receive a welcome email with instructions to set your password.
 

@@ -1,4 +1,4 @@
-.. _websocket_overview:
+.. _websocket-overview:
 
 Overview
 ========
@@ -455,8 +455,8 @@ Related Documentation
 ---------------------
 
 - :ref:`WebSocket Tutorial <websocket-tutorial>` - Implementation examples and code
-- :ref:`WebSocket Structures <websocket_struct>` - Message format specifications
-- :ref:`Authentication Quickstart <quickstart_authentication>` - Token generation
+- :ref:`WebSocket Structures <websocket-struct>` - Message format specifications
+- :ref:`Authentication Quickstart <quickstart-authentication>` - Token generation
 - :ref:`Call Overview <call-overview>` - Call event details
 - :ref:`Message Overview <message-overview>` - Message event details
 - :ref:`Flow Overview <flow-overview>` - Activeflow event details

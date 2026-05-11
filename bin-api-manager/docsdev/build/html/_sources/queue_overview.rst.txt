@@ -736,7 +736,7 @@ Configure agents with tags to control which queues they serve.
                                       |  billing)     |
                                       +---------------+
 
-See :ref:`Agent Overview <agent_overview>` for agent configuration and status management.
+See :ref:`Agent Overview <agent-overview>` for agent configuration and status management.
 
 **Call Integration**
 

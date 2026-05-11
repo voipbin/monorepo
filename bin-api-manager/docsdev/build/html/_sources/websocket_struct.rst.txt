@@ -1,4 +1,4 @@
-.. _websocket_struct:
+.. _websocket-struct:
 
 Structures
 ==========
@@ -236,7 +236,7 @@ Events are pushed from the server when subscribed resources change.
 
 **Fields**
 
-* ``event_type`` (enum string): Type of event (e.g., ``"call.status"``, ``"message.received"``). See :ref:`WebSocket Overview <websocket_overview>` for the full list.
+* ``event_type`` (enum string): Type of event (e.g., ``"call.status"``, ``"message.received"``). See :ref:`WebSocket Overview <websocket-overview>` for the full list.
 * ``timestamp`` (string, ISO 8601): When the event occurred, in UTC format.
 * ``topic`` (String): The topic pattern that triggered this event. Matches one of your subscribed topic patterns.
 * ``data`` (Object): Resource-specific data payload. Structure varies by ``event_type`` and corresponds to the relevant resource struct (e.g., :ref:`Call <call-struct-call>` for call events).
@@ -571,7 +571,7 @@ Code examples for processing WebSocket messages.
 Related Documentation
 ---------------------
 
-- :ref:`WebSocket Overview <websocket_overview>` - Connection and topic concepts
+- :ref:`WebSocket Overview <websocket-overview>` - Connection and topic concepts
 - :ref:`WebSocket Tutorial <websocket-tutorial>` - Implementation examples
 - :ref:`Call Struct <call-struct-call>` - Complete call data structure
 - :ref:`Message Struct <message-struct-message>` - Complete message data structure

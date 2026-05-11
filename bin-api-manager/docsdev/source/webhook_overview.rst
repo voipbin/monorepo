@@ -79,6 +79,6 @@ Related Documentation
 ---------------------
 
 - :ref:`Customer Overview <customer-overview>` - Configuring webhook URL and method on your customer account
-- :ref:`WebSocket Overview <websocket_overview>` - Alternative real-time event delivery via persistent connection
+- :ref:`WebSocket Overview <websocket-overview>` - Alternative real-time event delivery via persistent connection
 - :ref:`Call Overview <call-overview>` - Call events that trigger webhooks
 - :ref:`Message Overview <message-overview>` - Message events that trigger webhooks

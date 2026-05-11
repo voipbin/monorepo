@@ -1,4 +1,4 @@
-.. _billing_account_overview:
+.. _billing-account-overview:
 
 Overview
 ========
@@ -156,7 +156,7 @@ Tokens are replenished at the scheduled top-up date. The current token balance i
 - The current plan tier is returned in the ``plan_type`` field of the billing account.
 
 
-.. _billing_account_rate_structure:
+.. _billing-account-rate-structure:
 
 Rate Structure
 --------------

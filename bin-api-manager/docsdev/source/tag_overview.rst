@@ -390,7 +390,7 @@ Troubleshooting
 Related Documentation
 ---------------------
 
-- :ref:`Agent Overview <agent_overview>` - Agent tag assignment
+- :ref:`Agent Overview <agent-overview>` - Agent tag assignment
 - :ref:`Queue Overview <queue-overview>` - Queue tag requirements
 - :ref:`Customer Overview <customer-overview>` - Resource organization
 

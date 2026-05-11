@@ -1,4 +1,4 @@
-.. _quickstart_authentication:
+.. _quickstart-authentication:
 
 Authentication
 --------------

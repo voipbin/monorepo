@@ -417,7 +417,7 @@ VoIPBIN allows you to personalize the text-to-speech output by specifying a cust
 
     voipbin.tts.elevenlabs.voice_id: <Your Custom Voice ID>
 
-See how to set the variables :ref:`here <variable_overview>`.
+See how to set the variables :ref:`here <variable-overview>`.
 
 .. _ai-overview-conversation-ai:
 
@@ -775,4 +775,4 @@ Related Documentation
 - :ref:`Tool Functions <ai-struct-tool>` - Available tool documentation
 - :ref:`Transcribe Overview <transcribe-overview>` - Speech-to-text languages
 - :ref:`Flow Actions <flow-struct-action>` - ai_talk action configuration
-- :ref:`Variable Overview <variable_overview>` - Using variables with AI
+- :ref:`Variable Overview <variable-overview>` - Using variables with AI

@@ -9,7 +9,7 @@ Send an email using the VoIPBIN API.
 Prerequisites
 +++++++++++++
 
-* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
+* A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart-authentication>`.
 * A source email address with a verified domain in VoIPBIN (e.g., ``service@yourdomain.com``).
 * A destination email address.
 

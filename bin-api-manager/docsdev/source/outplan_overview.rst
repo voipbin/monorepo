@@ -436,7 +436,7 @@ Related Documentation
 ---------------------
 
 - :ref:`Campaign Overview <campaign-overview>` - Using outplans in campaigns
-- :ref:`Outdial Overview <outdial_overview>` - Target management
+- :ref:`Outdial Overview <outdial-overview>` - Target management
 - :ref:`Queue Overview <queue-overview>` - Agent routing
 - :ref:`Call Overview <call-overview>` - Call handling details
 

@@ -34,7 +34,7 @@ Try VoIPBIN's core communication APIs:
 
 .. include:: quickstart_sandbox.rst
 
-.. _quickstart_next:
+.. _quickstart-next:
 
 What's Next
 ===========

@@ -263,6 +263,6 @@ Related Documentation
 ---------------------
 
 - :ref:`Tag Overview <tag-overview>` - Tag management for contact categorization
-- :ref:`Agent Overview <agent_overview>` - Agents that interact with contacts
+- :ref:`Agent Overview <agent-overview>` - Agents that interact with contacts
 - :ref:`Queue Overview <queue-overview>` - Routing based on contact attributes
 - :ref:`Conversation Overview <conversation-overview>` - Conversations with contacts

@@ -1,4 +1,4 @@
-.. _quickstart_sandbox:
+.. _quickstart-sandbox:
 
 Sandbox
 -------
