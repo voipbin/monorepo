@@ -1,83 +1,219 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-<head>
-    <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Conference" href="conference.html"><link rel="prev" title="Common" href="common.html">
+        <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Call - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
-        <title>Call &mdash; voipbin  documentation</title>
     
-    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
-      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
-      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-            <link rel="index" title="Index" href="genindex.html" />
-            <link rel="search" title="Search" href="search.html" />
-            <link rel="top" title="voipbin  documentation" href="#" />
-            <link rel="next" title="Conference" href="conference.html" />
-            <link rel="prev" title="Common" href="common.html" />
-    </head>
-<body>
-    <script type="text/javascript" src="_static/dist/blocking.js"></script>
-    <header class="container-fluid bg-primary">
-        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
-        <div class="container-fluid">
-            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
-                    <a href="intro.html"
-                        title="voipbin"
-                        class="logo navbar-brand"
-                    >
-                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
-                            class="logo-img"
-                        />
-                        VoIPBin Documentation
-                    </a>
-                
-                
-                    <div class="collapse navbar-collapse justify-content-end">
-                        <ul class="navbar-nav">
-                            
-                                
-                                
-                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
-                            
-                                
-                                
-                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
-                            
-                        </ul>
-                    </div>
-                
-                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
-                    <span class="navbar-toggler-icon"></span>
-                    <span class="sr-only">menu</span>
-                </button>
-            </div>
-        </div>
-    </header>
-    <div class="container-fluid">
-        <div class="row">
-            <aside class="col-12 col-lg-3 sidebar-container">
-                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
-<div id="searchbox" class="searchbox mb-6 px-1" role="search">
-    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
-        <div class="input-group">
-            <div class="input-group-prepend">
-                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
-            </div>
-            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
-        </div>
-        <input type="hidden" name="check_keywords" value="yes" />
-        <input type="hidden" name="area" value="default" />
-    </form>
-</div><div class="site-toc">
-    <nav class="toc mt-3" aria-label="Main menu">
-        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-primary: #0066cc;
+  --color-brand-content: #0066cc;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     VoIPBin is an opensource CPaaS platform. <a style="color: var(--color-announcement-text);" href="https://github.com/voipbin/voipbin">Star us on GitHub</a> 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">VoIPBin Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/voipbin-high-resolution-logo-white-transparent.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">VoIPBin Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
@@ -93,7 +229,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Voice &amp; Real-Time</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Call</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Call</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conference.html">Conference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="queue.html">Queue</a></li>
 <li class="toctree-l1"><a class="reference internal" href="recording.html">Recording</a></li>
@@ -118,26 +254,33 @@
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<p class="caption" role="heading"><span class="caption-text">Identity &amp; Contacts</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
-<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<p class="caption" role="heading"><span class="caption-text">Numbers &amp; PSTN</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
 <li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providercall.html">ProviderCall</a></li>
 <li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><input aria-label="Toggle navigation of OutboundConfig" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Billing &amp; Operations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
 <ul>
@@ -153,57 +296,52 @@
 <li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
 </ul>
 
-    </nav>
-    <template data-toggle-item-template>
-        <button class="btn btn-sm btn-link toctree-expand" type="button">
-            <span class="sr-only">Toggle menu contents</span>
-        </button>
-    </template>
 </div>
-                    <div class="d-lg-none border-bottom">
-                        
-                    </div>
-                </div>
-            </aside>
-            <div class="col-12 col-lg-9 pt-5">
-                <header class="row align-items-baseline">
-                    <div class="col">
-                        <nav aria-label="breadcrumb">
-    <ol class="breadcrumb m-0 p-0 bg-transparent">
-        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Call</li>
-    </ol>
-</nav>
-                    </div>
-                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
-                        <noscript>
-                            <p>JavaScript is required to toggle light/dark mode..</p>
-                        </noscript>
-                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
-                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
-                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
-                        </button>
-    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/call.rst.txt" rel="nofollow">
-        <span class="btn-icon"><span class="fas fa-code"></span></span>
-        <span class="btn-text">View source</span>
-    </a>
-                        
-                    </div>
-                </header>
-                <div class="row" >
-                    <div class="col-12">
-                        <hr class="w-100 my-4">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
-                        <main role="main" id="main">
-    <section id="call">
-<span id="call-main"></span><h1>Call<a class="headerlink" href="#call" title="Link to this heading"></a></h1>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/call.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/call.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="call">
+<span id="call-main"></span><h1>Call<a class="headerlink" href="#call" title="Link to this heading">¶</a></h1>
 <p>Create, control, and manage the full lifecycle of voice calls including outbound dialing, call transfers, group calls, and media operations. Calls transition through defined states from <code class="docutils literal notranslate"><span class="pre">dialing</span></code> to <code class="docutils literal notranslate"><span class="pre">hangup</span></code>.</p>
 <p><strong>API Reference:</strong> <a class="reference external" href="https://api.voipbin.net/redoc/#tag/Call">Call endpoints</a></p>
 <section id="overview">
-<span id="call-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<span id="call-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
@@ -228,12 +366,12 @@
 <p>To create an outbound call, use <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code> with a JSON body containing <code class="docutils literal notranslate"><span class="pre">source</span></code> (E.164 number from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>), <code class="docutils literal notranslate"><span class="pre">destinations</span></code> (array of target addresses), and optionally <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> (UUID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>) to execute a flow when the call is answered. The endpoint returns immediately with status <code class="docutils literal notranslate"><span class="pre">dialing</span></code>. Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> or subscribe via WebSocket for real-time status updates. Each call deducts credits from the customer’s billing account per minute.</p>
 </div>
 <section id="protocol">
-<h3>Protocol<a class="headerlink" href="#protocol" title="Link to this heading"></a></h3>
+<h3>Protocol<a class="headerlink" href="#protocol" title="Link to this heading">¶</a></h3>
 <p>VoIPBIN offers support for various call/video protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.</p>
 <img alt="_images/call_overview_protocol.png" src="_images/call_overview_protocol.png" />
 </section>
 <section id="pstn-phone-number-format">
-<h3>PSTN/Phone Number Format<a class="headerlink" href="#pstn-phone-number-format" title="Link to this heading"></a></h3>
+<h3>PSTN/Phone Number Format<a class="headerlink" href="#pstn-phone-number-format" title="Link to this heading">¶</a></h3>
 <p>In the VoIPBIN APIs, all PSTN/Phone numbers must adhere to the <a class="reference external" href="https://en.wikipedia.org/wiki/E.164">+E164</a> format. This format standardizes the representation of phone numbers to facilitate smooth communication and interoperability across different systems.</p>
 <p>Key requirements for phone numbers within the VoIPBIN APIs:</p>
 <ul class="simple">
@@ -243,7 +381,7 @@
 <p>For example, a US phone number should be represented as +16062067563, and a UK phone number should be represented as +442071234567.</p>
 </section>
 <section id="extension-number-format">
-<h3>Extension Number Format<a class="headerlink" href="#extension-number-format" title="Link to this heading"></a></h3>
+<h3>Extension Number Format<a class="headerlink" href="#extension-number-format" title="Link to this heading">¶</a></h3>
 <p>The extension numbers used in the VoIPBIN system can be customized according to specific requirements. However, they must adhere to the following limitation:</p>
 <ul class="simple">
 <li><p>Extension numbers should not contain any special characters, such as spaces, parentheses, or hyphens.</p></li>
@@ -251,7 +389,7 @@
 <p>The absence of special characters ensures consistent and reliable processing of extension numbers within the VoIPBIN system, promoting smooth communication and interaction.</p>
 </section>
 <section id="call-lifecycle">
-<h3>Call Lifecycle<a class="headerlink" href="#call-lifecycle" title="Link to this heading"></a></h3>
+<h3>Call Lifecycle<a class="headerlink" href="#call-lifecycle" title="Link to this heading">¶</a></h3>
 <p>Every call in VoIPBIN follows a predictable lifecycle from creation to termination. Understanding this lifecycle helps you build reliable applications that respond correctly to call state changes.</p>
 <p><strong>State Diagram</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                               <span class="o">+--------------+</span>
@@ -291,6 +429,7 @@
 </pre></div>
 </div>
 <p><strong>State Descriptions</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Status</p></th>
@@ -318,6 +457,7 @@
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Key Behaviors</strong></p>
 <ul class="simple">
 <li><p>States only move forward, never backward. A call that reached “progressing” cannot go back to “ringing”.</p></li>
@@ -326,7 +466,7 @@
 </ul>
 </section>
 <section id="what-happens-at-each-stage">
-<h3>What Happens At Each Stage<a class="headerlink" href="#what-happens-at-each-stage" title="Link to this heading"></a></h3>
+<h3>What Happens At Each Stage<a class="headerlink" href="#what-happens-at-each-stage" title="Link to this heading">¶</a></h3>
 <p><strong>During Dialing</strong></p>
 <p>When you create an outbound call or receive an inbound call, the call enters the dialing state.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">App</span>                    <span class="n">VoIPBIN</span>                    <span class="n">Destination</span>
@@ -394,9 +534,10 @@
 </div>
 </section>
 <section id="understanding-hangup-reasons">
-<h3>Understanding Hangup Reasons<a class="headerlink" href="#understanding-hangup-reasons" title="Link to this heading"></a></h3>
+<h3>Understanding Hangup Reasons<a class="headerlink" href="#understanding-hangup-reasons" title="Link to this heading">¶</a></h3>
 <p>When a call ends, VoIPBIN tells you why it ended. This helps you build appropriate responses for different scenarios.</p>
 <p><strong>Hangup Reason Values</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Reason</p></th>
@@ -430,7 +571,9 @@
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Hangup By Values</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Value</p></th>
@@ -446,6 +589,7 @@
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Common Scenarios</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Scenario</span><span class="p">:</span> <span class="n">Normal</span> <span class="n">conversation</span>
 <span class="o">----------------------------</span>
@@ -474,7 +618,7 @@
 </div>
 </section>
 <section id="media-control-operations">
-<h3>Media Control Operations<a class="headerlink" href="#media-control-operations" title="Link to this heading"></a></h3>
+<h3>Media Control Operations<a class="headerlink" href="#media-control-operations" title="Link to this heading">¶</a></h3>
 <p>Once a call is in the “progressing” state (answered), you can control the audio in several ways. Each operation is independent - you can combine them as needed.</p>
 <p><strong>Hold</strong></p>
 <p>Pauses the call. The other party hears silence (or music if MOH is enabled).</p>
@@ -522,7 +666,7 @@
 </ul>
 </section>
 <section id="call-chaining">
-<h3>Call Chaining<a class="headerlink" href="#call-chaining" title="Link to this heading"></a></h3>
+<h3>Call Chaining<a class="headerlink" href="#call-chaining" title="Link to this heading">¶</a></h3>
 <p>VoIPBIN’s call concept differs from traditional 1:1 calls. A single logical conversation may involve multiple call objects linked together.</p>
 <p><strong>The Two-Call Model</strong></p>
 <p>When you make a call from A to B through VoIPBIN, there are actually two separate calls:</p>
@@ -632,6 +776,7 @@
                         [Conference]
 </pre></div>
 </div>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Aspect</p></th>
@@ -658,9 +803,10 @@
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="timestamps-explained">
-<h3>Timestamps Explained<a class="headerlink" href="#timestamps-explained" title="Link to this heading"></a></h3>
+<h3>Timestamps Explained<a class="headerlink" href="#timestamps-explained" title="Link to this heading">¶</a></h3>
 <p>Each call tracks important moments in its lifecycle:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Timeline</span> <span class="n">of</span> <span class="n">a</span> <span class="n">successful</span> <span class="n">call</span><span class="p">:</span>
 
@@ -675,6 +821,7 @@
                                <span class="n">ringing</span>
 </pre></div>
 </div>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Timestamp</p></th>
@@ -699,6 +846,7 @@
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Calculating Durations</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Ring</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">tm_progressing</span> <span class="o">-</span> <span class="n">tm_ringing</span>
 <span class="n">Talk</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">tm_hangup</span> <span class="o">-</span> <span class="n">tm_progressing</span>
@@ -707,7 +855,7 @@
 </div>
 </section>
 <section id="route-failover">
-<h3>Route Failover<a class="headerlink" href="#route-failover" title="Link to this heading"></a></h3>
+<h3>Route Failover<a class="headerlink" href="#route-failover" title="Link to this heading">¶</a></h3>
 <p>When an outgoing call fails during dialing or ringing, VoIPBIN can automatically try alternate routes.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>+-----------------------------------------------------------------+
 |                       Call Attempt Flow                         |
@@ -747,6 +895,7 @@
 </div>
 <p><strong>Failover Rules</strong></p>
 <p>Not all failures trigger failover. VoIPBIN only tries the next route when recovery is possible:</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Hangup Reason</p></th>
@@ -777,6 +926,7 @@
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>No Failover Cases</strong></p>
 <p>Failover is disabled in these situations:</p>
 <ul class="simple">
@@ -786,12 +936,12 @@
 </ul>
 </section>
 <section id="incoming-call">
-<h3>Incoming call<a class="headerlink" href="#incoming-call" title="Link to this heading"></a></h3>
+<h3>Incoming call<a class="headerlink" href="#incoming-call" title="Link to this heading">¶</a></h3>
 <p>The VoIPBIN system provides the functionality to receive incoming calls from external parties. This feature allows users to accept and handle incoming calls through their VoIP services. Incoming calls are crucial for various communication applications and call center setups as they enable users to receive inquiries, provide support, and engage with customers, clients, or other users.
 When an incoming call is received, the VoIPBIN system processes the call request and prepares for call handling based on the specified parameters and configurations.</p>
 </section>
 <section id="execution-of-call-flow-for-incoming-call">
-<h3>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Link to this heading"></a></h3>
+<h3>Execution of Call Flow for incoming call<a class="headerlink" href="#execution-of-call-flow-for-incoming-call" title="Link to this heading">¶</a></h3>
 <p>The execution of the call flow for incoming calls involves a simple yet effective sequence of actions:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">External</span> <span class="n">Caller</span>                <span class="n">VoIPBIN</span>                    <span class="n">Your</span> <span class="n">Flow</span>
       <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
@@ -819,11 +969,11 @@ When an incoming call is received, the VoIPBIN system processes the call request
 <img alt="_images/call_incoming.png" src="_images/call_incoming.png" />
 </section>
 <section id="outgoing-call">
-<h3>Outgoing call<a class="headerlink" href="#outgoing-call" title="Link to this heading"></a></h3>
+<h3>Outgoing call<a class="headerlink" href="#outgoing-call" title="Link to this heading">¶</a></h3>
 <p>The VoIPBIN system offers the outgoing call feature, enabling users to initiate calls to external parties through their VoIP services. This feature is commonly used in various communication applications and call center setups to establish connections with customers, clients, or other users outside the organization.
 To utilize the outgoing call feature, users need to provide the necessary call parameters, such as the destination phone number, caller ID information, and any additional call settings. These parameters are submitted to the VoIPBIN system, which then processes the request and attempts to establish a connection with the specified destination.</p>
 <section id="outgoing-call-permission-requirements">
-<h4>Outgoing Call Permission Requirements<a class="headerlink" href="#outgoing-call-permission-requirements" title="Link to this heading"></a></h4>
+<h4>Outgoing Call Permission Requirements<a class="headerlink" href="#outgoing-call-permission-requirements" title="Link to this heading">¶</a></h4>
 <p>Before placing an outgoing call, VoIPBIN validates the customer’s account eligibility. Both checks must pass before the call proceeds to balance validation, source number resolution, and routing.</p>
 <p><strong>1. Customer Account Status</strong></p>
 <p>The customer account must have <code class="docutils literal notranslate"><span class="pre">status:</span> <span class="pre">&quot;active&quot;</span></code>. Accounts in any other state (<code class="docutils literal notranslate"><span class="pre">initial</span></code>, <code class="docutils literal notranslate"><span class="pre">frozen</span></code>, <code class="docutils literal notranslate"><span class="pre">expired</span></code>, <code class="docutils literal notranslate"><span class="pre">deleted</span></code>) are rejected.</p>
@@ -863,7 +1013,7 @@ Is the customer account active?
 </div>
 </section>
 <section id="source-number-validation-outgoing-pstn-calls">
-<h4>Source Number Validation (Outgoing PSTN Calls)<a class="headerlink" href="#source-number-validation-outgoing-pstn-calls" title="Link to this heading"></a></h4>
+<h4>Source Number Validation (Outgoing PSTN Calls)<a class="headerlink" href="#source-number-validation-outgoing-pstn-calls" title="Link to this heading">¶</a></h4>
 <p>For outgoing calls to PSTN phone numbers (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>), VoIPBIN validates the source number before placing the call. The system uses a cascading fallback to determine the caller ID shown to the destination:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Source Number Resolution Flow
 ─────────────────────────────
@@ -902,9 +1052,10 @@ Does the customer have a default outgoing source number configured?
 </div>
 </section>
 <section id="anonymous-caller-id-outgoing-pstn-calls">
-<h4>Anonymous Caller ID (Outgoing PSTN Calls)<a class="headerlink" href="#anonymous-caller-id-outgoing-pstn-calls" title="Link to this heading"></a></h4>
+<h4>Anonymous Caller ID (Outgoing PSTN Calls)<a class="headerlink" href="#anonymous-caller-id-outgoing-pstn-calls" title="Link to this heading">¶</a></h4>
 <p>You can control whether the caller ID is shown or hidden on outgoing PSTN calls. The <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> parameter is available in several places depending on how the outbound call is created.</p>
 <p><strong>Where anonymous caller ID can be set:</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Outbound call path</p></th>
@@ -931,7 +1082,9 @@ Does the customer have a default outgoing source number configured?
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Allowed values:</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Value</p></th>
@@ -950,6 +1103,7 @@ Does the customer have a default outgoing source number configured?
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>How it works (SIP level):</strong></p>
 <p>When <code class="docutils literal notranslate"><span class="pre">anonymous</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;yes&quot;</span></code> and the destination is a PSTN number (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">&quot;tel&quot;</span></code>):</p>
 <ul class="simple">
@@ -975,7 +1129,7 @@ Does the customer have a default outgoing source number configured?
 </section>
 </section>
 <section id="execution-of-call-flow-for-outgoing-call">
-<h3>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Link to this heading"></a></h3>
+<h3>Execution of Call Flow for outgoing call<a class="headerlink" href="#execution-of-call-flow-for-outgoing-call" title="Link to this heading">¶</a></h3>
 <p>Once the outgoing call request is initiated, the VoIPBIN system starts the process of connecting to the destination phone number. During this phase, the system waits for the called party to answer the call. The call flow refers to the sequence of actions and events that occur from the moment the call is initiated until it is successfully answered or terminated.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Your</span> <span class="n">Application</span>               <span class="n">VoIPBIN</span>                    <span class="n">Destination</span>
       <span class="o">|</span>                           <span class="o">|</span>                           <span class="o">|</span>
@@ -1008,10 +1162,11 @@ Does the customer have a default outgoing source number configured?
 <img alt="_images/call_outgoing.png" src="_images/call_outgoing.png" />
 </section>
 <section id="error-handling-and-termination">
-<h3>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Link to this heading"></a></h3>
+<h3>Error handling and Termination<a class="headerlink" href="#error-handling-and-termination" title="Link to this heading">¶</a></h3>
 <p>During the incoming/outgoing call process, various errors may occur, such as call failures or network issues.
 The VoIPBIN system have robust error handling mechanisms to gracefully manage such situations. In case of a failed call attempt or call rejection, the system log relevant information for further analysis or reporting purposes.</p>
 <p><strong>Common Error Scenarios</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Scenario</p></th>
@@ -1036,9 +1191,10 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="call-concept">
-<h3>Call concept<a class="headerlink" href="#call-concept" title="Link to this heading"></a></h3>
+<h3>Call concept<a class="headerlink" href="#call-concept" title="Link to this heading">¶</a></h3>
 <p>The concept of a call in VoIPBIN departs from the traditional 1:1 call model. Here’s an overview:</p>
 <p>In VoIPBIN, a call includes source, destination, and additional metadata. Moreover, the call can be associated with multiple other calls, creating a dynamic journey that goes beyond the standard 1:1 connection. Envision a call’s trajectory as it connects to an agent and then diverges to another destination.</p>
 <p>In VoIPBIN, the conventional call scenario A -&gt; B is delineated by two distinct calls:</p>
@@ -1049,7 +1205,7 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </pre></div>
 </div>
 <section id="comparison-traditional-call-concept-vs-voipbin-call-concept">
-<h4>Comparison: Traditional Call Concept vs VoIPBIN Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Link to this heading"></a></h4>
+<h4>Comparison: Traditional Call Concept vs VoIPBIN Call Concept<a class="headerlink" href="#comparison-traditional-call-concept-vs-voipbin-call-concept" title="Link to this heading">¶</a></h4>
 <p>Traditional Call Concept</p>
 <ul class="simple">
 <li><p>Follows a 1:1 model where a call is a direct connection between a source and a destination.</p></li>
@@ -1067,8 +1223,9 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </section>
 </section>
 <section id="troubleshooting">
-<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h3>
 <p><strong>Call Creation Issues</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Symptom</p></th>
@@ -1087,7 +1244,9 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Media Control Issues</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Symptom</p></th>
@@ -1103,7 +1262,9 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Call Chaining Issues</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Symptom</p></th>
@@ -1119,9 +1280,10 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="related-documentation">
-<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h3>
 <p>Calls integrate with many VoIPBIN features. Use these links for detailed information:</p>
 <p><strong>Recording a Call</strong></p>
 <p>Capture call audio for compliance, training, or analysis.</p>
@@ -1180,7 +1342,7 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 </section>
 </section>
 <section id="transfer">
-<span id="call-transfer"></span><h2>Transfer<a class="headerlink" href="#transfer" title="Link to this heading"></a></h2>
+<span id="call-transfer"></span><h2>Transfer<a class="headerlink" href="#transfer" title="Link to this heading">¶</a></h2>
 <p>CPaaS, or Communications Platform as a Service, is a cloud-based technology that allows developers to add real-time communication features to their applications, such as voice and messaging capabilities.
 Call transfer is a common feature in CPaaS that allows an ongoing phone call to be transferred from one person to another, or from one device to another, without disrupting the conversation.</p>
 <p>There are two main types of call transfer in CPaaS: blind transfer and attended transfer.</p>
@@ -1192,7 +1354,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <p>Call transfers involve active calls, which are chargeable. A transfer creates a new outbound call to the transfer destination. Initiate a transfer via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/transfers</span></code> with the <code class="docutils literal notranslate"><span class="pre">transferer_call_id</span></code> (UUID, obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls</span></code>) of an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status, along with <code class="docutils literal notranslate"><span class="pre">transferee_addresses</span></code> (array of addresses) and <code class="docutils literal notranslate"><span class="pre">transfer_type</span></code> (enum: <code class="docutils literal notranslate"><span class="pre">attended</span></code> or <code class="docutils literal notranslate"><span class="pre">blind</span></code>).</p>
 </div>
 <section id="blind-transfer">
-<span id="call-transfer-blind-transfer"></span><h3>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Link to this heading"></a></h3>
+<span id="call-transfer-blind-transfer"></span><h3>Blind Transfer<a class="headerlink" href="#blind-transfer" title="Link to this heading">¶</a></h3>
 <p>Blind transfer is the simplest type of call transfer. In this type of transfer, the person initiating the transfer simply transfers the call to another person or phone number without first speaking to them. This is useful when the person receiving the call is known to be available and ready to take the call. Blind transfer is commonly used in call center environments where a caller needs to be routed to the appropriate agent or department.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBIN</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
@@ -1236,7 +1398,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </div>
 </section>
 <section id="attended-transfer">
-<span id="call-transfer-attended-transfer"></span><h3>Attended Transfer<a class="headerlink" href="#attended-transfer" title="Link to this heading"></a></h3>
+<span id="call-transfer-attended-transfer"></span><h3>Attended Transfer<a class="headerlink" href="#attended-transfer" title="Link to this heading">¶</a></h3>
 <p>Attended transfer, also known as consultative transfer, involves the person initiating the transfer first speaking to the person who will be taking the call. This allows the person initiating the transfer to provide context or information about the caller or the reason for the transfer. Once the person who will be taking the call is ready, the transfer is initiated and the original caller is connected to the new person or device. Attended transfer is commonly used in situations where the person receiving the call may need more information before taking the call, such as when transferring a call to a supervisor or manager.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Caller</span>           <span class="n">VoIPBIN</span>        <span class="n">Transferer</span>        <span class="n">Transferee</span>
 <span class="o">|</span>                  <span class="o">|</span>                <span class="o">|</span>                <span class="o">|</span>
@@ -1295,9 +1457,9 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </section>
 </section>
 <section id="transfer-struct-transfer">
-<span id="id1"></span><h2>Transfer<a class="headerlink" href="#transfer-struct-transfer" title="Link to this heading"></a></h2>
+<span id="id1"></span><h2>Transfer<a class="headerlink" href="#transfer-struct-transfer" title="Link to this heading">¶</a></h2>
 <section id="transfer-struct-transfer-transfer">
-<span id="id2"></span><h3>Transfer<a class="headerlink" href="#transfer-struct-transfer-transfer" title="Link to this heading"></a></h3>
+<span id="id2"></span><h3>Transfer<a class="headerlink" href="#transfer-struct-transfer-transfer" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1333,8 +1495,9 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </div>
 </section>
 <section id="type">
-<span id="transfer-struct-transfer-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading"></a></h3>
+<span id="transfer-struct-transfer-type"></span><h3>Type<a class="headerlink" href="#type" title="Link to this heading">¶</a></h3>
 <p>All possible values for the <code class="docutils literal notranslate"><span class="pre">type</span></code> field:</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -1350,9 +1513,10 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="example">
-<h3>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
+<h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
@@ -1376,7 +1540,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 </section>
 </section>
 <section id="groupcall">
-<span id="call-groupcall"></span><h2>Groupcall<a class="headerlink" href="#groupcall" title="Link to this heading"></a></h2>
+<span id="call-groupcall"></span><h2>Groupcall<a class="headerlink" href="#groupcall" title="Link to this heading">¶</a></h2>
 <p>The Groupcall feature in VoIPBIN is a blast calling functionality that enables team members to communicate in real-time. When a Group Call is initiated, an alert is sent to all team members, allowing them to join the call with a single click. The feature uses VoIP technology to enable high-quality audio communication and offers benefits such as increased productivity, improved collaboration, and enhanced connectivity.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1384,7 +1548,7 @@ Call transfer is a common feature in CPaaS that allows an ongoing phone call to 
 <p>Groupcalls create multiple simultaneous outbound calls, each of which is individually chargeable. The number of calls created equals the number of destinations in the groupcall request. Use <code class="docutils literal notranslate"><span class="pre">call_ids</span></code> in the groupcall response to track the status of each individual call via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{call-id}</span></code>.</p>
 </div>
 <section id="ringall">
-<h3>Ringall<a class="headerlink" href="#ringall" title="Link to this heading"></a></h3>
+<h3>Ringall<a class="headerlink" href="#ringall" title="Link to this heading">¶</a></h3>
 <p>Ringall sends the dial request to all destinations simultaneously.</p>
 <p>The ringall ring method is a way to make calls to multiple destinations simultaneously. When you initiate a groupcall using the ringall method, VoIPBIN will place calls to all of the destinations on your list at once.
 This means that each destination’s phone will start ringing simultaneously, and the person who answers first will begin executing the call flow specified for that groupcall, while all other destinations that have not yet been answered will be hung up immediately.
@@ -1420,7 +1584,7 @@ This ensures that only one call is active at a time and the call flow is execute
 </div>
 </section>
 <section id="linear">
-<h3>Linear<a class="headerlink" href="#linear" title="Link to this heading"></a></h3>
+<h3>Linear<a class="headerlink" href="#linear" title="Link to this heading">¶</a></h3>
 <p>The linear ring method is a way to call a list of destinations one by one, in a specific order.</p>
 <p>When you initiate a groupcall using the linear method, VoIPBIN will call the first destination on your list. If that destination does not answer, VoIPBIN will move on to the next destination on the list and call it instead.
 This process will continue until one of the destinations answers the call, at which point the call flow specified for the groupcall will be executed. If all of the destinations on the list have been called and none of them have answered, the call will end without any further action.</p>
@@ -1444,7 +1608,7 @@ This process will continue until one of the destinations answers the call, at wh
 </div>
 </section>
 <section id="nested-groupcall">
-<h3>Nested groupcall<a class="headerlink" href="#nested-groupcall" title="Link to this heading"></a></h3>
+<h3>Nested groupcall<a class="headerlink" href="#nested-groupcall" title="Link to this heading">¶</a></h3>
 <p>A nested groupcall is a groupcall that is included as one of the destinations in another groupcall. When a groupcall with a nested groupcall is initiated, the nested groupcall is also initiated, creating a “nested” groupcall within the main groupcall.</p>
 <p>For example, let’s say you have a groupcall with the following list of destinations: Destination A, Destination B, and Destination C. Destination C is a nested groupcall that includes its own list of destinations: Destination X and Destination Y.</p>
 <p>When you initiate the main groupcall, VoIPBIN will begin calling Destination A and Destination B simultaneously according to the ring method you’ve specified (either ringall or linear). When it reaches Destination C, the nested groupcall is initiated and VoIPBIN will begin calling Destination X and Destination Y according to the ring method specified in the nested groupcall.</p>
@@ -1475,9 +1639,9 @@ This process will continue until one of the destinations answers the call, at wh
 </section>
 </section>
 <section id="struct-call">
-<span id="call-struct-call"></span><h2>Struct Call<a class="headerlink" href="#struct-call" title="Link to this heading"></a></h2>
+<span id="call-struct-call"></span><h2>Struct Call<a class="headerlink" href="#struct-call" title="Link to this heading">¶</a></h2>
 <section id="call-struct-call-call">
-<span id="id3"></span><h3>Call<a class="headerlink" href="#call-struct-call-call" title="Link to this heading"></a></h3>
+<span id="id3"></span><h3>Call<a class="headerlink" href="#call-struct-call-call" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1556,7 +1720,7 @@ This process will continue until one of the destinations answers the call, at wh
 <p>Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred. For example, <code class="docutils literal notranslate"><span class="pre">tm_hangup</span></code> with this value means the call is still in progress.</p>
 </div>
 <section id="id4">
-<h4>Example<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<h4>Example<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d9d32881-12fd-4b19-a6b2-6d5b6b6acf76&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
@@ -1612,8 +1776,9 @@ This process will continue until one of the destinations answers the call, at wh
 </section>
 </section>
 <section id="call-struct-call-type">
-<span id="id5"></span><h3>Type<a class="headerlink" href="#call-struct-call-type" title="Link to this heading"></a></h3>
+<span id="id5"></span><h3>Type<a class="headerlink" href="#call-struct-call-type" title="Link to this heading">¶</a></h3>
 <p>Call’s type (enum string).</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -1632,10 +1797,12 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="status">
-<span id="call-struct-call-status"></span><h3>Status<a class="headerlink" href="#status" title="Link to this heading"></a></h3>
+<span id="call-struct-call-status"></span><h3>Status<a class="headerlink" href="#status" title="Link to this heading">¶</a></h3>
 <p>Call’s current status (enum string). States only move forward, never backward.</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Status</p></th>
@@ -1663,12 +1830,14 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>state diagram</strong></p>
 <img alt="_images/call_struct_status.png" src="_images/call_struct_status.png" />
 </section>
 <section id="direction">
-<span id="call-struct-call-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Link to this heading"></a></h3>
+<span id="call-struct-call-direction"></span><h3>Direction<a class="headerlink" href="#direction" title="Link to this heading">¶</a></h3>
 <p>Call’s direction (enum string).</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Direction</p></th>
@@ -1684,10 +1853,12 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="hangup-by">
-<span id="call-struct-call-hangupby"></span><h3>Hangup by<a class="headerlink" href="#hangup-by" title="Link to this heading"></a></h3>
+<span id="call-struct-call-hangupby"></span><h3>Hangup by<a class="headerlink" href="#hangup-by" title="Link to this heading">¶</a></h3>
 <p>Which endpoint sent the hangup request first (enum string).</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>hangup by</p></th>
@@ -1703,10 +1874,12 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="hangup-reason">
-<span id="call-struct-call-hangupreason"></span><h3>Hangup reason<a class="headerlink" href="#hangup-reason" title="Link to this heading"></a></h3>
+<span id="call-struct-call-hangupreason"></span><h3>Hangup reason<a class="headerlink" href="#hangup-reason" title="Link to this heading">¶</a></h3>
 <p>The reason the call ended (enum string).</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Reason</p></th>
@@ -1740,13 +1913,15 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="call-metadata">
-<span id="call-struct-call-metadata"></span><h3>Call Metadata<a class="headerlink" href="#call-metadata" title="Link to this heading"></a></h3>
+<span id="call-struct-call-metadata"></span><h3>Call Metadata<a class="headerlink" href="#call-metadata" title="Link to this heading">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field on a call is an internal-only key/value map populated by VoIPBIN services during call setup and execution. Customers can <strong>read</strong> this field via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls/{id}</span></code> and via call webhook events for calls they own, but they <strong>cannot set</strong> it on call creation — <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> does not accept a <code class="docutils literal notranslate"><span class="pre">metadata</span></code> parameter, and any such field in the request body is ignored.</p>
 <p>The map is a JSON object of the form <code class="docutils literal notranslate"><span class="pre">{&quot;&lt;key&gt;&quot;:</span> <span class="pre">&lt;value&gt;}</span></code>. Keys not listed below are reserved for internal use and may appear or disappear without notice. Customers should only rely on the documented keys.</p>
 <section id="supported-keys">
-<h4>Supported keys<a class="headerlink" href="#supported-keys" title="Link to this heading"></a></h4>
+<h4>Supported keys<a class="headerlink" href="#supported-keys" title="Link to this heading">¶</a></h4>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Key</p></th>
@@ -1765,6 +1940,7 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -1774,9 +1950,9 @@ This process will continue until one of the destinations answers the call, at wh
 </section>
 </section>
 <section id="struct-groupcall">
-<span id="call-struct-groupcall"></span><h2>Struct Groupcall<a class="headerlink" href="#struct-groupcall" title="Link to this heading"></a></h2>
+<span id="call-struct-groupcall"></span><h2>Struct Groupcall<a class="headerlink" href="#struct-groupcall" title="Link to this heading">¶</a></h2>
 <section id="call-struct-groupcall-groupcall">
-<span id="id6"></span><h3>Groupcall<a class="headerlink" href="#call-struct-groupcall-groupcall" title="Link to this heading"></a></h3>
+<span id="id6"></span><h3>Groupcall<a class="headerlink" href="#call-struct-groupcall-groupcall" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -1851,7 +2027,7 @@ This process will continue until one of the destinations answers the call, at wh
 <p>Groupcalls involve active calls to real destinations, which are chargeable. Each destination in the <code class="docutils literal notranslate"><span class="pre">destinations</span></code> array results in an individual call being created. With <code class="docutils literal notranslate"><span class="pre">ring_all</span></code>, all calls are placed simultaneously. Monitor <code class="docutils literal notranslate"><span class="pre">call_ids</span></code> to track the status of each individual call.</p>
 </div>
 <section id="id7">
-<h4>Example<a class="headerlink" href="#id7" title="Link to this heading"></a></h4>
+<h4>Example<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d8596b14-4d8e-4a86-afde-642b46d59ac7&quot;</span><span class="p">,</span>
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
@@ -1904,8 +2080,9 @@ This process will continue until one of the destinations answers the call, at wh
 </section>
 </section>
 <section id="call-struct-groupcall-status">
-<span id="id8"></span><h3>Status<a class="headerlink" href="#call-struct-groupcall-status" title="Link to this heading"></a></h3>
+<span id="id8"></span><h3>Status<a class="headerlink" href="#call-struct-groupcall-status" title="Link to this heading">¶</a></h3>
 <p>All possible values for the <code class="docutils literal notranslate"><span class="pre">status</span></code> field:</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Status</p></th>
@@ -1924,10 +2101,12 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="ring-method">
-<span id="call-struct-groupcall-ring-method"></span><h3>Ring method<a class="headerlink" href="#ring-method" title="Link to this heading"></a></h3>
+<span id="call-struct-groupcall-ring-method"></span><h3>Ring method<a class="headerlink" href="#ring-method" title="Link to this heading">¶</a></h3>
 <p>Groupcall’s ringing method (enum string).</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -1943,10 +2122,12 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="answer-method">
-<span id="call-struct-groupcall-answer-method"></span><h3>Answer method<a class="headerlink" href="#answer-method" title="Link to this heading"></a></h3>
+<span id="call-struct-groupcall-answer-method"></span><h3>Answer method<a class="headerlink" href="#answer-method" title="Link to this heading">¶</a></h3>
 <p>What happens when a destination answers (enum string).</p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Type</p></th>
@@ -1959,10 +2140,11 @@ This process will continue until one of the destinations answers the call, at wh
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 </section>
 <section id="tutorial">
-<span id="call-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<span id="call-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading">¶</a></h2>
 <p>Before creating a call, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
@@ -1976,7 +2158,7 @@ This process will continue until one of the destinations answers the call, at wh
 <p>All phone numbers must be in E.164 format: start with <code class="docutils literal notranslate"><span class="pre">+</span></code>, followed by country code and number, no dashes or spaces. For example, <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code> (US) or <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> (Korea). If the user provides a local format like <code class="docutils literal notranslate"><span class="pre">010-1234-5678</span></code>, normalize it to <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code> before calling the API.</p>
 </div>
 <section id="simple-outbound-call-with-tts">
-<h3>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Link to this heading"></a></h3>
+<h3>Simple outbound call with TTS<a class="headerlink" href="#simple-outbound-call-with-tts" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call with TTS (Text-to-Speech) action.
 When the destination answers the call, it will speak the given text message.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -2006,7 +2188,7 @@ When the destination answers the call, it will speak the given text message.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-an-existing-flow">
-<h3>Simple outbound call with an existing flow<a class="headerlink" href="#simple-outbound-call-with-an-existing-flow" title="Link to this heading"></a></h3>
+<h3>Simple outbound call with an existing flow<a class="headerlink" href="#simple-outbound-call-with-an-existing-flow" title="Link to this heading">¶</a></h3>
 <p>If you have already created a flow, you can reference it by <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> instead of defining actions inline:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -2033,7 +2215,7 @@ When the destination answers the call, it will speak the given text message.</p>
 <p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
 </section>
 <section id="anonymous-outbound-call-api-initiated">
-<h3>Anonymous outbound call (API-initiated)<a class="headerlink" href="#anonymous-outbound-call-api-initiated" title="Link to this heading"></a></h3>
+<h3>Anonymous outbound call (API-initiated)<a class="headerlink" href="#anonymous-outbound-call-api-initiated" title="Link to this heading">¶</a></h3>
 <p>You can hide your caller ID on outgoing PSTN calls by setting <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;yes&quot;</span></code> in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request. The destination sees “Anonymous” or “Private number” instead of your real phone number.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -2074,7 +2256,7 @@ When the destination answers the call, it will speak the given text message.</p>
 </div>
 </section>
 <section id="anonymous-outbound-call-within-a-flow-connect-action">
-<h3>Anonymous outbound call within a flow (connect action)<a class="headerlink" href="#anonymous-outbound-call-within-a-flow-connect-action" title="Link to this heading"></a></h3>
+<h3>Anonymous outbound call within a flow (connect action)<a class="headerlink" href="#anonymous-outbound-call-within-a-flow-connect-action" title="Link to this heading">¶</a></h3>
 <p>A common scenario is receiving an incoming call on a registered extension and then connecting it to an external PSTN number with anonymous caller ID. For example, a customer calls your VoIPBIN number, your flow answers and plays a greeting, then connects to a mobile phone — but you want the mobile phone to see “Anonymous” instead of your VoIPBIN number.</p>
 <p>Use the <code class="docutils literal notranslate"><span class="pre">connect</span></code> action with <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;yes&quot;</span></code> in the flow:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -2135,7 +2317,7 @@ When the destination answers the call, it will speak the given text message.</p>
 </div>
 </section>
 <section id="anonymous-outbound-call-within-a-flow-call-action">
-<h3>Anonymous outbound call within a flow (call action)<a class="headerlink" href="#anonymous-outbound-call-within-a-flow-call-action" title="Link to this heading"></a></h3>
+<h3>Anonymous outbound call within a flow (call action)<a class="headerlink" href="#anonymous-outbound-call-within-a-flow-call-action" title="Link to this heading">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">call</span></code> action creates an <strong>independent</strong> outbound call from within a flow. Unlike <code class="docutils literal notranslate"><span class="pre">connect</span></code> (which bridges the current call to another party), <code class="docutils literal notranslate"><span class="pre">call</span></code> spawns a separate call that runs its own flow or actions independently.</p>
 <p>Use this when you want to trigger an anonymous notification call to a third party without bridging it to the current call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/flows?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -2204,7 +2386,7 @@ When the destination answers the call, it will speak the given text message.</p>
 </ul>
 </section>
 <section id="anonymous-outbound-call-from-a-registered-endpoint-sip-phone">
-<h3>Anonymous outbound call from a registered endpoint (SIP phone)<a class="headerlink" href="#anonymous-outbound-call-from-a-registered-endpoint-sip-phone" title="Link to this heading"></a></h3>
+<h3>Anonymous outbound call from a registered endpoint (SIP phone)<a class="headerlink" href="#anonymous-outbound-call-from-a-registered-endpoint-sip-phone" title="Link to this heading">¶</a></h3>
 <p>When a SIP phone registered with VoIPBIN dials an external PSTN number, the system automatically handles anonymous caller ID based on the phone’s SIP <code class="docutils literal notranslate"><span class="pre">Privacy</span></code> header. There is no API parameter to set — the behavior is determined entirely by the SIP phone’s own settings.</p>
 <p><strong>How it works:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SIP</span> <span class="n">Phone</span>                    <span class="n">VoIPBIN</span>                     <span class="n">PSTN</span> <span class="n">Destination</span>
@@ -2243,7 +2425,7 @@ When the destination answers the call, it will speak the given text message.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-media-file-play">
-<h3>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading"></a></h3>
+<h3>Simple outbound call with media file play<a class="headerlink" href="#simple-outbound-call-with-media-file-play" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call with media file play action.
 When the destination answer the call, it will play the given media file.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -2314,7 +2496,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-tts-and-connect">
-<h3>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Link to this heading"></a></h3>
+<h3>Simple outbound call with TTS and connect<a class="headerlink" href="#simple-outbound-call-with-tts-and-connect" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call with TTS(Text-to-Speech) and connect to other destination.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -2399,7 +2581,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-talk-and-digits-send">
-<h3>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Link to this heading"></a></h3>
+<h3>Simple outbound call with talk and digits_send<a class="headerlink" href="#simple-outbound-call-with-talk-and-digits-send" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call. After answer the call, it will play the TTS and then send the DTMFs.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
 --header &#39;Content-Type: application/json&#39; \
@@ -2483,7 +2665,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="simple-outbound-call-with-branch">
-<h3>Simple outbound call with Branch<a class="headerlink" href="#simple-outbound-call-with-branch" title="Link to this heading"></a></h3>
+<h3>Simple outbound call with Branch<a class="headerlink" href="#simple-outbound-call-with-branch" title="Link to this heading">¶</a></h3>
 <p>Making an outbound call with branch. It will get the digits from the call and will execute the branch.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              <span class="n">Start</span>
                 <span class="o">|</span>
@@ -2665,7 +2847,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="get-call-list">
-<h3>Get call list<a class="headerlink" href="#get-call-list" title="Link to this heading"></a></h3>
+<h3>Get call list<a class="headerlink" href="#get-call-list" title="Link to this heading">¶</a></h3>
 <p>Getting a list of calls.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -2716,7 +2898,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="get-specific-call">
-<h3>Get specific call<a class="headerlink" href="#get-specific-call" title="Link to this heading"></a></h3>
+<h3>Get specific call<a class="headerlink" href="#get-specific-call" title="Link to this heading">¶</a></h3>
 <p>Getting a given call uuid’s call info.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -k --location --request GET &#39;https://api.voipbin.net/v1.0/calls/f457951b-9918-44af-a834-2216b1cc31bc?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 
@@ -2763,7 +2945,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="make-a-groupcall">
-<h3>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Link to this heading"></a></h3>
+<h3>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Link to this heading">¶</a></h3>
 <p>Make a groupcall to the multiple destinations.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -2839,7 +3021,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="id9">
-<h3>Troubleshooting<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<h3>Troubleshooting<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
@@ -2901,7 +3083,7 @@ When the destination answer the call, it will play the given media file.</p>
 </section>
 </section>
 <section id="internal-call-sequences">
-<span id="call-sequences"></span><h2>Internal Call Sequences<a class="headerlink" href="#internal-call-sequences" title="Link to this heading"></a></h2>
+<span id="call-sequences"></span><h2>Internal Call Sequences<a class="headerlink" href="#internal-call-sequences" title="Link to this heading">¶</a></h2>
 <p>This section reveals how calls flow through VoIPBIN’s internal components. Understanding these sequences helps developers debug issues and optimize their integrations.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -2909,7 +3091,7 @@ When the destination answer the call, it will play the given media file.</p>
 <p>These internal sequences are provided for debugging and understanding purposes. As an API consumer, you interact only with <code class="docutils literal notranslate"><span class="pre">api-manager</span></code> (via REST API) and receive events via webhooks or WebSocket. You do not need to interact with internal components (Kamailio, Asterisk, RabbitMQ) directly.</p>
 </div>
 <section id="inbound-pstn-call-flow">
-<h3>Inbound PSTN Call Flow<a class="headerlink" href="#inbound-pstn-call-flow" title="Link to this heading"></a></h3>
+<h3>Inbound PSTN Call Flow<a class="headerlink" href="#inbound-pstn-call-flow" title="Link to this heading">¶</a></h3>
 <p>When someone calls your VoIPBIN number from a regular phone:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Inbound</span> <span class="n">PSTN</span> <span class="n">Call</span> <span class="o">-</span> <span class="n">Complete</span> <span class="n">Internal</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -3017,7 +3199,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="outbound-api-call-flow">
-<h3>Outbound API Call Flow<a class="headerlink" href="#outbound-api-call-flow" title="Link to this heading"></a></h3>
+<h3>Outbound API Call Flow<a class="headerlink" href="#outbound-api-call-flow" title="Link to this heading">¶</a></h3>
 <p>When you create a call via the API:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Outbound</span> <span class="n">API</span> <span class="n">Call</span> <span class="o">-</span> <span class="n">Complete</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -3099,7 +3281,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="webrtc-call-flow">
-<h3>WebRTC Call Flow<a class="headerlink" href="#webrtc-call-flow" title="Link to this heading"></a></h3>
+<h3>WebRTC Call Flow<a class="headerlink" href="#webrtc-call-flow" title="Link to this heading">¶</a></h3>
 <p>WebRTC calls (browser-to-phone or browser-to-browser):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">WebRTC</span> <span class="n">Inbound</span> <span class="n">Call</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -3163,7 +3345,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="sip-trunk-call-flow">
-<h3>SIP Trunk Call Flow<a class="headerlink" href="#sip-trunk-call-flow" title="Link to this heading"></a></h3>
+<h3>SIP Trunk Call Flow<a class="headerlink" href="#sip-trunk-call-flow" title="Link to this heading">¶</a></h3>
 <p>Calls between registered SIP endpoints (extensions):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SIP</span> <span class="n">Trunk</span> <span class="n">Extension</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Extension</span><span class="p">:</span>
 
@@ -3215,7 +3397,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="call-recording-sequence">
-<h3>Call Recording Sequence<a class="headerlink" href="#call-recording-sequence" title="Link to this heading"></a></h3>
+<h3>Call Recording Sequence<a class="headerlink" href="#call-recording-sequence" title="Link to this heading">¶</a></h3>
 <p>How recording starts and stops:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">Start</span> <span class="n">Sequence</span><span class="p">:</span>
 
@@ -3320,7 +3502,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="ai-voice-call-sequence">
-<h3>AI Voice Call Sequence<a class="headerlink" href="#ai-voice-call-sequence" title="Link to this heading"></a></h3>
+<h3>AI Voice Call Sequence<a class="headerlink" href="#ai-voice-call-sequence" title="Link to this heading">¶</a></h3>
 <p>Calls with AI assistant (Pipecat integration):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AI</span> <span class="n">Voice</span> <span class="n">Call</span> <span class="o">-</span> <span class="n">Detailed</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -3432,7 +3614,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="conference-bridge-sequence">
-<h3>Conference Bridge Sequence<a class="headerlink" href="#conference-bridge-sequence" title="Link to this heading"></a></h3>
+<h3>Conference Bridge Sequence<a class="headerlink" href="#conference-bridge-sequence" title="Link to this heading">¶</a></h3>
 <p>Multi-party conference call setup:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Conference</span> <span class="n">Join</span> <span class="n">Sequence</span><span class="p">:</span>
 
@@ -3519,7 +3701,7 @@ When the destination answer the call, it will play the given media file.</p>
 </div>
 </section>
 <section id="event-publication-sequence">
-<h3>Event Publication Sequence<a class="headerlink" href="#event-publication-sequence" title="Link to this heading"></a></h3>
+<h3>Event Publication Sequence<a class="headerlink" href="#event-publication-sequence" title="Link to this heading">¶</a></h3>
 <p>How call events propagate through the system:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Event</span> <span class="n">Publication</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -3581,7 +3763,7 @@ call_transcribing   webhook-manager, transcribe-manager
 </section>
 </section>
 <section id="advanced-call-scenarios">
-<span id="call-scenarios"></span><h2>Advanced Call Scenarios<a class="headerlink" href="#advanced-call-scenarios" title="Link to this heading"></a></h2>
+<span id="call-scenarios"></span><h2>Advanced Call Scenarios<a class="headerlink" href="#advanced-call-scenarios" title="Link to this heading">¶</a></h2>
 <p>This section covers real-world call scenarios that combine multiple VoIPBIN features. Each scenario includes the complete flow, API examples, and best practices.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -3589,7 +3771,7 @@ call_transcribing   webhook-manager, transcribe-manager
 <p>All scenarios in this section involve active outbound calls, which are chargeable. Each <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request creates a billable call. Test your flow logic with a single destination before scaling to production. Use <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{call-id}</span></code> to verify call status at each step.</p>
 </div>
 <section id="ivr-menu-with-queue-routing">
-<h3>IVR Menu with Queue Routing<a class="headerlink" href="#ivr-menu-with-queue-routing" title="Link to this heading"></a></h3>
+<h3>IVR Menu with Queue Routing<a class="headerlink" href="#ivr-menu-with-queue-routing" title="Link to this heading">¶</a></h3>
 <p>A common contact center pattern: caller navigates an IVR menu, then enters a queue.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">IVR</span> <span class="n">to</span> <span class="n">Queue</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -3735,7 +3917,7 @@ call_transcribing   webhook-manager, transcribe-manager
 </div>
 </section>
 <section id="ai-assisted-customer-service">
-<h3>AI-Assisted Customer Service<a class="headerlink" href="#ai-assisted-customer-service" title="Link to this heading"></a></h3>
+<h3>AI-Assisted Customer Service<a class="headerlink" href="#ai-assisted-customer-service" title="Link to this heading">¶</a></h3>
 <p>Combine AI voice assistant with human escalation:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">AI</span> <span class="n">First</span><span class="p">,</span> <span class="n">Human</span> <span class="n">Backup</span><span class="p">:</span>
 
@@ -3808,7 +3990,7 @@ call_transcribing   webhook-manager, transcribe-manager
 </div>
 </section>
 <section id="outbound-campaign-with-voicemail-detection">
-<h3>Outbound Campaign with Voicemail Detection<a class="headerlink" href="#outbound-campaign-with-voicemail-detection" title="Link to this heading"></a></h3>
+<h3>Outbound Campaign with Voicemail Detection<a class="headerlink" href="#outbound-campaign-with-voicemail-detection" title="Link to this heading">¶</a></h3>
 <p>Automated calling campaign that detects answering machines:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Campaign Call Flow:
 
@@ -3934,7 +4116,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="click-to-call-with-recording">
-<h3>Click-to-Call with Recording<a class="headerlink" href="#click-to-call-with-recording" title="Link to this heading"></a></h3>
+<h3>Click-to-Call with Recording<a class="headerlink" href="#click-to-call-with-recording" title="Link to this heading">¶</a></h3>
 <p>Website visitor clicks to call, conversation is recorded:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Click</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">Call</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -4042,7 +4224,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="multi-leg-conference-call">
-<h3>Multi-leg Conference Call<a class="headerlink" href="#multi-leg-conference-call" title="Link to this heading"></a></h3>
+<h3>Multi-leg Conference Call<a class="headerlink" href="#multi-leg-conference-call" title="Link to this heading">¶</a></h3>
 <p>Create a conference with multiple participants joining at different times:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Multi</span><span class="o">-</span><span class="n">leg</span> <span class="n">Conference</span><span class="p">:</span>
 
@@ -4156,7 +4338,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="call-screening-with-whisper">
-<h3>Call Screening with Whisper<a class="headerlink" href="#call-screening-with-whisper" title="Link to this heading"></a></h3>
+<h3>Call Screening with Whisper<a class="headerlink" href="#call-screening-with-whisper" title="Link to this heading">¶</a></h3>
 <p>Screen calls before connecting to agent:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Call</span> <span class="n">Screening</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -4254,7 +4436,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="warm-transfer-with-context">
-<h3>Warm Transfer with Context<a class="headerlink" href="#warm-transfer-with-context" title="Link to this heading"></a></h3>
+<h3>Warm Transfer with Context<a class="headerlink" href="#warm-transfer-with-context" title="Link to this heading">¶</a></h3>
 <p>Transfer call with context passed to the receiving agent:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Warm</span> <span class="n">Transfer</span> <span class="n">Flow</span><span class="p">:</span>
 
@@ -4329,7 +4511,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="call-with-real-time-transcription">
-<h3>Call with Real-time Transcription<a class="headerlink" href="#call-with-real-time-transcription" title="Link to this heading"></a></h3>
+<h3>Call with Real-time Transcription<a class="headerlink" href="#call-with-real-time-transcription" title="Link to this heading">¶</a></h3>
 <p>Transcribe call in real-time for live captioning or analysis:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Real</span><span class="o">-</span><span class="n">time</span> <span class="n">Transcription</span><span class="p">:</span>
 
@@ -4415,7 +4597,7 @@ VoIPBIN             Destination              Voicemail
 </section>
 </section>
 <section id="call-media-and-codecs">
-<span id="call-media"></span><h2>Call Media and Codecs<a class="headerlink" href="#call-media-and-codecs" title="Link to this heading"></a></h2>
+<span id="call-media"></span><h2>Call Media and Codecs<a class="headerlink" href="#call-media-and-codecs" title="Link to this heading">¶</a></h2>
 <p>This section covers audio and video media handling in VoIPBIN, including codec support, quality considerations, and encryption.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -4423,7 +4605,7 @@ VoIPBIN             Destination              Voicemail
 <p>Media operations (recording, transcription, TTS) require an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain the <code class="docutils literal notranslate"><span class="pre">call-id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event (e.g., <code class="docutils literal notranslate"><span class="pre">call_answered</span></code>) before issuing media-related API calls. Starting media operations on a call that has not yet been answered will fail.</p>
 </div>
 <section id="audio-codec-support">
-<h3>Audio Codec Support<a class="headerlink" href="#audio-codec-support" title="Link to this heading"></a></h3>
+<h3>Audio Codec Support<a class="headerlink" href="#audio-codec-support" title="Link to this heading">¶</a></h3>
 <p>VoIPBIN supports multiple audio codecs for different use cases:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Supported</span> <span class="n">Audio</span> <span class="n">Codecs</span><span class="p">:</span>
 
@@ -4487,7 +4669,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="audio-quality-factors">
-<h3>Audio Quality Factors<a class="headerlink" href="#audio-quality-factors" title="Link to this heading"></a></h3>
+<h3>Audio Quality Factors<a class="headerlink" href="#audio-quality-factors" title="Link to this heading">¶</a></h3>
 <p>Several factors affect call audio quality:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Quality</span> <span class="n">Factor</span><span class="p">:</span> <span class="n">Network</span> <span class="n">Latency</span>
 
@@ -4543,7 +4725,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="rtp-and-media-transport">
-<h3>RTP and Media Transport<a class="headerlink" href="#rtp-and-media-transport" title="Link to this heading"></a></h3>
+<h3>RTP and Media Transport<a class="headerlink" href="#rtp-and-media-transport" title="Link to this heading">¶</a></h3>
 <p>Real-time Transport Protocol (RTP) carries audio:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RTP</span> <span class="n">Packet</span> <span class="n">Structure</span><span class="p">:</span>
 
@@ -4600,7 +4782,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="media-encryption">
-<h3>Media Encryption<a class="headerlink" href="#media-encryption" title="Link to this heading"></a></h3>
+<h3>Media Encryption<a class="headerlink" href="#media-encryption" title="Link to this heading">¶</a></h3>
 <p>VoIPBIN supports encrypted media for security:</p>
 <p><strong>SRTP (Secure RTP):</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SRTP</span> <span class="n">Encryption</span><span class="p">:</span>
@@ -4668,7 +4850,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="dtmf-handling">
-<h3>DTMF Handling<a class="headerlink" href="#dtmf-handling" title="Link to this heading"></a></h3>
+<h3>DTMF Handling<a class="headerlink" href="#dtmf-handling" title="Link to this heading">¶</a></h3>
 <p>Dual-Tone Multi-Frequency (DTMF) for IVR input:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DTMF</span> <span class="n">Methods</span><span class="p">:</span>
 
@@ -4723,7 +4905,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="recording-formats">
-<h3>Recording Formats<a class="headerlink" href="#recording-formats" title="Link to this heading"></a></h3>
+<h3>Recording Formats<a class="headerlink" href="#recording-formats" title="Link to this heading">¶</a></h3>
 <p>VoIPBIN supports multiple recording formats:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Recording</span> <span class="n">Format</span> <span class="n">Options</span><span class="p">:</span>
 
@@ -4781,7 +4963,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="text-to-speech-tts">
-<h3>Text-to-Speech (TTS)<a class="headerlink" href="#text-to-speech-tts" title="Link to this heading"></a></h3>
+<h3>Text-to-Speech (TTS)<a class="headerlink" href="#text-to-speech-tts" title="Link to this heading">¶</a></h3>
 <p>TTS converts text to spoken audio:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TTS</span> <span class="n">Providers</span><span class="p">:</span>
 
@@ -4843,7 +5025,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="speech-to-text-stt">
-<h3>Speech-to-Text (STT)<a class="headerlink" href="#speech-to-text-stt" title="Link to this heading"></a></h3>
+<h3>Speech-to-Text (STT)<a class="headerlink" href="#speech-to-text-stt" title="Link to this heading">¶</a></h3>
 <p>Real-time transcription of audio:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">STT</span> <span class="n">Configuration</span><span class="p">:</span>
 
@@ -4893,7 +5075,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="video-calls-webrtc">
-<h3>Video Calls (WebRTC)<a class="headerlink" href="#video-calls-webrtc" title="Link to this heading"></a></h3>
+<h3>Video Calls (WebRTC)<a class="headerlink" href="#video-calls-webrtc" title="Link to this heading">¶</a></h3>
 <p>VoIPBIN supports video via WebRTC:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Video</span> <span class="n">Codec</span> <span class="n">Support</span><span class="p">:</span>
 
@@ -4940,7 +5122,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="bandwidth-requirements">
-<h3>Bandwidth Requirements<a class="headerlink" href="#bandwidth-requirements" title="Link to this heading"></a></h3>
+<h3>Bandwidth Requirements<a class="headerlink" href="#bandwidth-requirements" title="Link to this heading">¶</a></h3>
 <p>Plan network capacity based on call types:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Bandwidth</span> <span class="n">per</span> <span class="n">Call</span><span class="p">:</span>
 
@@ -4992,7 +5174,7 @@ VoIPBIN             Destination              Voicemail
 </div>
 </section>
 <section id="quality-monitoring">
-<h3>Quality Monitoring<a class="headerlink" href="#quality-monitoring" title="Link to this heading"></a></h3>
+<h3>Quality Monitoring<a class="headerlink" href="#quality-monitoring" title="Link to this heading">¶</a></h3>
 <p>Monitor call quality with metrics:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Available</span> <span class="n">Metrics</span> <span class="p">(</span><span class="n">via</span> <span class="n">API</span><span class="o">/</span><span class="n">Webhooks</span><span class="p">):</span>
 
@@ -5030,7 +5212,7 @@ VoIPBIN             Destination              Voicemail
 </section>
 </section>
 <section id="call-troubleshooting">
-<span id="id10"></span><h2>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading"></a></h2>
+<span id="id10"></span><h2>Call Troubleshooting<a class="headerlink" href="#call-troubleshooting" title="Link to this heading">¶</a></h2>
 <p>This guide helps you diagnose and resolve common call issues. Each problem includes symptoms, causes, and solutions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -5038,7 +5220,7 @@ VoIPBIN             Destination              Voicemail
 <p>When troubleshooting, always start by fetching the call details: <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/calls/{call-id}</span></code>. The <code class="docutils literal notranslate"><span class="pre">status</span></code>, <code class="docutils literal notranslate"><span class="pre">hangup_by</span></code>, <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code>, and timestamp fields provide the primary diagnostic information. If the call has an associated <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>, also check <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/v1/activeflows/{activeflow-id}</span></code> for flow execution errors.</p>
 </div>
 <section id="debugging-tools">
-<h3>Debugging Tools<a class="headerlink" href="#debugging-tools" title="Link to this heading"></a></h3>
+<h3>Debugging Tools<a class="headerlink" href="#debugging-tools" title="Link to this heading">¶</a></h3>
 <p>Before troubleshooting, understand the tools available:</p>
 <p><strong>API Endpoints for Debugging:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Get</span> <span class="n">call</span> <span class="n">details</span><span class="p">:</span>
@@ -5080,7 +5262,7 @@ Events you&#39;ll receive:
 </div>
 </section>
 <section id="call-never-connects">
-<h3>Call Never Connects<a class="headerlink" href="#call-never-connects" title="Link to this heading"></a></h3>
+<h3>Call Never Connects<a class="headerlink" href="#call-never-connects" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> Call status goes directly from <code class="docutils literal notranslate"><span class="pre">dialing</span></code> to <code class="docutils literal notranslate"><span class="pre">hangup</span></code>. The <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> is <code class="docutils literal notranslate"><span class="pre">failed</span></code>. No ringing ever occurred (<code class="docutils literal notranslate"><span class="pre">tm_ringing</span></code> is <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code>).</p>
 <p><strong>Diagnostic API call:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
@@ -5154,7 +5336,7 @@ Events you&#39;ll receive:
 </div>
 </section>
 <section id="source-number-caller-id-issues">
-<h3>Source Number / Caller ID Issues<a class="headerlink" href="#source-number-caller-id-issues" title="Link to this heading"></a></h3>
+<h3>Source Number / Caller ID Issues<a class="headerlink" href="#source-number-caller-id-issues" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> Outgoing PSTN call shows “Anonymous” caller ID, or shows a different number than the one provided in <code class="docutils literal notranslate"><span class="pre">source.target</span></code>.</p>
 <p><strong>Diagnostic API call:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
@@ -5239,7 +5421,7 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="call-rings-but-no-answer">
-<h3>Call Rings But No Answer<a class="headerlink" href="#call-rings-but-no-answer" title="Link to this heading"></a></h3>
+<h3>Call Rings But No Answer<a class="headerlink" href="#call-rings-but-no-answer" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> Call reaches <code class="docutils literal notranslate"><span class="pre">ringing</span></code> status, then hangs up. The <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code> is <code class="docutils literal notranslate"><span class="pre">noanswer</span></code> or <code class="docutils literal notranslate"><span class="pre">dialout</span></code>.</p>
 <p><strong>Understanding the difference:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;noanswer&quot;</span><span class="p">:</span>
@@ -5285,7 +5467,7 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="call-answers-but-no-audio">
-<h3>Call Answers But No Audio<a class="headerlink" href="#call-answers-but-no-audio" title="Link to this heading"></a></h3>
+<h3>Call Answers But No Audio<a class="headerlink" href="#call-answers-but-no-audio" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> Call reaches <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. One or both parties cannot hear each other. Call may disconnect after silence.</p>
 <p><strong>Diagnostic API call:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
@@ -5342,7 +5524,7 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="flow-actions-not-executing">
-<h3>Flow Actions Not Executing<a class="headerlink" href="#flow-actions-not-executing" title="Link to this heading"></a></h3>
+<h3>Flow Actions Not Executing<a class="headerlink" href="#flow-actions-not-executing" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> Call answers but expected TTS/media does not play. Actions seem to be skipped.</p>
 <p><strong>Diagnostic API call:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">activeflows</span><span class="o">/</span><span class="p">{</span><span class="n">activeflow</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
@@ -5406,7 +5588,7 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="webhooks-not-received">
-<h3>Webhooks Not Received<a class="headerlink" href="#webhooks-not-received" title="Link to this heading"></a></h3>
+<h3>Webhooks Not Received<a class="headerlink" href="#webhooks-not-received" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> No webhooks arrive at your endpoint, or only some webhooks arrive.</p>
 <p><strong>Diagnostic steps:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Verify</span> <span class="n">webhook</span> <span class="n">configuration</span> <span class="n">on</span> <span class="n">your</span> <span class="n">customer</span> <span class="n">profile</span><span class="p">:</span>
@@ -5468,7 +5650,7 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="recording-issues">
-<h3>Recording Issues<a class="headerlink" href="#recording-issues" title="Link to this heading"></a></h3>
+<h3>Recording Issues<a class="headerlink" href="#recording-issues" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> Recording not found, recording is empty or truncated, or recording URL does not work.</p>
 <p><strong>Diagnostic API call:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">GET</span> <span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">calls</span><span class="o">/</span><span class="p">{</span><span class="n">call</span><span class="o">-</span><span class="nb">id</span><span class="p">}</span>
@@ -5526,7 +5708,7 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="transfer-problems">
-<h3>Transfer Problems<a class="headerlink" href="#transfer-problems" title="Link to this heading"></a></h3>
+<h3>Transfer Problems<a class="headerlink" href="#transfer-problems" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> Transfer fails, caller dropped during transfer, or consult call does not connect.</p>
 <p><strong>Diagnostic steps:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Use</span> <span class="n">the</span> <span class="n">transfer_id</span> <span class="kn">from</span><span class="w"> </span><span class="nn">the</span> <span class="n">POST</span> <span class="o">/</span><span class="n">transfers</span> <span class="n">response</span>
@@ -5583,7 +5765,7 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="queue-problems">
-<h3>Queue Problems<a class="headerlink" href="#queue-problems" title="Link to this heading"></a></h3>
+<h3>Queue Problems<a class="headerlink" href="#queue-problems" title="Link to this heading">¶</a></h3>
 <p><strong>Symptom:</strong> Calls not distributed to agents, long wait times, or agents not receiving calls.</p>
 <p><strong>Diagnostic API calls:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Check</span> <span class="n">queue</span> <span class="n">status</span><span class="p">:</span>
@@ -5640,7 +5822,7 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="error-reference">
-<h3>Error Reference<a class="headerlink" href="#error-reference" title="Link to this heading"></a></h3>
+<h3>Error Reference<a class="headerlink" href="#error-reference" title="Link to this heading">¶</a></h3>
 <p><strong>Hangup Reason Quick Reference:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+----------------+----------------------------------+------------------------+</span>
 <span class="o">|</span> <span class="n">Reason</span>         <span class="o">|</span> <span class="n">Meaning</span>                          <span class="o">|</span> <span class="n">Action</span>                 <span class="o">|</span>
@@ -5695,27 +5877,70 @@ later released or deactivated will fail.
 </div>
 </section>
 <section id="getting-help">
-<h3>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading"></a></h3>
+<h3>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading">¶</a></h3>
 <p>If issues persist after troubleshooting, see <a class="reference internal" href="support.html#support"><span class="std std-ref">Support</span></a> for contact information and additional resources.</p>
 </section>
 </section>
 </section>
 
-</main>
-                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
-    <a class="float-left" href="common.html" title="Previous">
-        <span aria-hidden="true">←&nbsp;</span>Common
-    </a>
-    <a class="float-right" href="conference.html" title="Next">
-        Conference <span aria-hidden="true">&nbsp;→</span>
-    </a>
-</nav>
-                    </div>
-                    
-                    <nav class="col-12 col-lg-3 pb-4">
-                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
-                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
-                            <ul>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="conference.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Conference</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="common.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Common</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, VoIPBIN
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/voipbin/voipbin" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
 <li><a class="reference internal" href="#">Call</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
 <li><a class="reference internal" href="#protocol">Protocol</a></li>
@@ -5861,65 +6086,16 @@ later released or deactivated will fail.
 </li>
 </ul>
 
-                        </div>
-                    </nav>
-                    
-                </div>
-            </div>
+          </div>
         </div>
-    </div>
-    <footer class="container-fluid bg-primary text-light">
-        <div class="container">
-            <div class="row">
-        <div class="col p-4">
-            
-                <nav aria-label="Footer">
-                    <ul class="nav justify-content-center mb-2">
-                        
-                            
-                            
-                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
-                        
-                            
-                            
-                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
-                        
-                    </ul>
-                </nav>
-            
-            <div class="text-center">
-                    &copy; Copyright 2026, VoIPBIN
-            </div>
-            <div class="text-center text-white-50 font-italic mt-3">
-                <small>
-                    Created using
-                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
-                        Sphinx Wagtail Theme 6.5.0
-                    </a>
-                    and
-                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
-                    </a>
-                </small>
-            </div>
-        </div>
-    </div>
-        </div>
-    </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
-        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
-        <script src="_static/copybutton.js?v=f281be69"></script>
-        <script type="text/javascript" src="_static/dist/theme.js"></script>
-        <script type="text/javascript" src="_static/dist/vendor.js"></script>
-        <script type="text/javascript" src="_static/searchtools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
-        </script>
-        <script type="text/javascript" id="searchindexloader"></script>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=8a448e45"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

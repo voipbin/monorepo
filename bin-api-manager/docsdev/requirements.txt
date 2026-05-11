@@ -1,0 +1,10 @@
+# Sphinx documentation build dependencies for bin-api-manager/docsdev.
+# Install with: pip install -r requirements.txt
+#
+# The built HTML in docsdev/build/ is committed to the repo and served from
+# docs.voipbin.net, so these dependencies are only needed when regenerating
+# the HTML locally.
+
+Sphinx>=7,<9
+furo>=2024.1.29
+sphinxcontrib-youtube>=1.4.1

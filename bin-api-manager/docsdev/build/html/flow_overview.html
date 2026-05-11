@@ -1,81 +1,219 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-<head>
-    <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html">
+        <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Overview - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
-        <title>Overview &mdash; voipbin  documentation</title>
     
-    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
-      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
-      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-            <link rel="index" title="Index" href="genindex.html" />
-            <link rel="search" title="Search" href="search.html" />
-            <link rel="top" title="voipbin  documentation" href="#" />
-    </head>
-<body>
-    <script type="text/javascript" src="_static/dist/blocking.js"></script>
-    <header class="container-fluid bg-primary">
-        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
-        <div class="container-fluid">
-            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
-                    <a href="intro.html"
-                        title="voipbin"
-                        class="logo navbar-brand"
-                    >
-                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
-                            class="logo-img"
-                        />
-                        VoIPBin Documentation
-                    </a>
-                
-                
-                    <div class="collapse navbar-collapse justify-content-end">
-                        <ul class="navbar-nav">
-                            
-                                
-                                
-                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
-                            
-                                
-                                
-                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
-                            
-                        </ul>
-                    </div>
-                
-                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
-                    <span class="navbar-toggler-icon"></span>
-                    <span class="sr-only">menu</span>
-                </button>
-            </div>
-        </div>
-    </header>
-    <div class="container-fluid">
-        <div class="row">
-            <aside class="col-12 col-lg-3 sidebar-container">
-                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
-<div id="searchbox" class="searchbox mb-6 px-1" role="search">
-    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
-        <div class="input-group">
-            <div class="input-group-prepend">
-                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
-            </div>
-            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
-        </div>
-        <input type="hidden" name="check_keywords" value="yes" />
-        <input type="hidden" name="area" value="default" />
-    </form>
-</div><div class="site-toc">
-    <nav class="toc mt-3" aria-label="Main menu">
-        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-primary: #0066cc;
+  --color-brand-content: #0066cc;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     VoIPBin is an opensource CPaaS platform. <a style="color: var(--color-announcement-text);" href="https://github.com/voipbin/voipbin">Star us on GitHub</a> 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">VoIPBin Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/voipbin-high-resolution-logo-white-transparent.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">VoIPBin Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
@@ -116,26 +254,33 @@
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<p class="caption" role="heading"><span class="caption-text">Identity &amp; Contacts</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
-<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<p class="caption" role="heading"><span class="caption-text">Numbers &amp; PSTN</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
 <li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providercall.html">ProviderCall</a></li>
 <li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><input aria-label="Toggle navigation of OutboundConfig" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Billing &amp; Operations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
 <ul>
@@ -151,53 +296,48 @@
 <li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
 </ul>
 
-    </nav>
-    <template data-toggle-item-template>
-        <button class="btn btn-sm btn-link toctree-expand" type="button">
-            <span class="sr-only">Toggle menu contents</span>
-        </button>
-    </template>
 </div>
-                    <div class="d-lg-none border-bottom">
-                        
-                    </div>
-                </div>
-            </aside>
-            <div class="col-12 col-lg-9 pt-5">
-                <header class="row align-items-baseline">
-                    <div class="col">
-                        <nav aria-label="breadcrumb">
-    <ol class="breadcrumb m-0 p-0 bg-transparent">
-        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Overview</li>
-    </ol>
-</nav>
-                    </div>
-                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
-                        <noscript>
-                            <p>JavaScript is required to toggle light/dark mode..</p>
-                        </noscript>
-                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
-                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
-                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
-                        </button>
-    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/flow_overview.rst.txt" rel="nofollow">
-        <span class="btn-icon"><span class="fas fa-code"></span></span>
-        <span class="btn-text">View source</span>
-    </a>
-                        
-                    </div>
-                </header>
-                <div class="row" >
-                    <div class="col-12">
-                        <hr class="w-100 my-4">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
-                        <main role="main" id="main">
-    <section id="overview">
-<span id="flow-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h1>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/flow_overview.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/flow_overview.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="overview">
+<span id="flow-overview"></span><h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
@@ -215,7 +355,7 @@
 <p>A <strong>flow</strong> (managed via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/flows</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/flows</span></code>) is a reusable <strong>template</strong> – it defines the action sequence but does not execute anything by itself. An <strong>activeflow</strong> (see <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/activeflows</span></code>) is the <strong>runtime instance</strong> created when a flow is triggered by a call, message, or API request. Multiple activeflows can run simultaneously from the same flow template. Modifying a flow (<code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">https://api.voipbin.net/v1.0/flows/{id}</span></code>) does not affect activeflows already in progress.</p>
 </div>
 <section id="how-the-flow-works">
-<span id="flow-overview-how-the-flow-works"></span><h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Link to this heading"></a></h2>
+<span id="flow-overview-how-the-flow-works"></span><h2>How the flow works<a class="headerlink" href="#how-the-flow-works" title="Link to this heading">¶</a></h2>
 <p>When an incoming call is received on one of your VoIPBIN numbers or destinations, the platform identifies the associated URL and sends a request.</p>
 <p>The Flow instructions are then processed, providing a step-by-step guide on how to handle the call. This might involve greeting the caller, presenting options, gathering input, or executing various actions based on the caller’s response.</p>
 <div class="admonition note">
@@ -225,7 +365,7 @@
 </div>
 </section>
 <section id="understanding-flow-execution">
-<h2>Understanding Flow Execution<a class="headerlink" href="#understanding-flow-execution" title="Link to this heading"></a></h2>
+<h2>Understanding Flow Execution<a class="headerlink" href="#understanding-flow-execution" title="Link to this heading">¶</a></h2>
 <p>Think of a Flow like a recipe. Each action is a step, and VoIPBIN follows the steps one by one until the recipe is complete.</p>
 <p><strong>The Execution Cursor</strong></p>
 <p>VoIPBIN uses a “cursor” to track where it is in the flow - like a finger pointing at the current step:</p>
@@ -280,7 +420,7 @@
 </div>
 </section>
 <section id="action-execution-patterns">
-<h2>Action Execution Patterns<a class="headerlink" href="#action-execution-patterns" title="Link to this heading"></a></h2>
+<h2>Action Execution Patterns<a class="headerlink" href="#action-execution-patterns" title="Link to this heading">¶</a></h2>
 <p>Actions behave differently depending on their type. Understanding these patterns helps you predict flow behavior.</p>
 <p><strong>Immediate Actions (Execute and Continue)</strong></p>
 <p>These actions complete instantly and the cursor moves to the next action:</p>
@@ -349,7 +489,7 @@
 <p>Examples: <code class="docutils literal notranslate"><span class="pre">queue_join</span></code>, <code class="docutils literal notranslate"><span class="pre">ai_talk</span></code>, <code class="docutils literal notranslate"><span class="pre">conference_join</span></code>, <code class="docutils literal notranslate"><span class="pre">fetch_flow</span></code></p>
 </section>
 <section id="branching-and-decision-making">
-<h2>Branching and Decision Making<a class="headerlink" href="#branching-and-decision-making" title="Link to this heading"></a></h2>
+<h2>Branching and Decision Making<a class="headerlink" href="#branching-and-decision-making" title="Link to this heading">¶</a></h2>
 <p>Flows can make decisions and take different paths based on conditions.</p>
 <p><strong>The Branch Action</strong></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">branch</span></code> action reads a variable and jumps to different actions based on its value:</p>
@@ -405,7 +545,7 @@
 - <code class="docutils literal notranslate"><span class="pre">greater_equal</span></code>, <code class="docutils literal notranslate"><span class="pre">less_equal</span></code></p>
 </section>
 <section id="the-variable-system">
-<h2>The Variable System<a class="headerlink" href="#the-variable-system" title="Link to this heading"></a></h2>
+<h2>The Variable System<a class="headerlink" href="#the-variable-system" title="Link to this heading">¶</a></h2>
 <p>Variables store information during flow execution. They’re like sticky notes that actions can write and read.</p>
 <p><strong>Built-in Variables</strong></p>
 <p>VoIPBIN automatically creates these variables:</p>
@@ -455,12 +595,12 @@
 </div>
 </section>
 <section id="unified-flow">
-<span id="flow-overview-unified-flow"></span><h2>Unified flow<a class="headerlink" href="#unified-flow" title="Link to this heading"></a></h2>
+<span id="flow-overview-unified-flow"></span><h2>Unified flow<a class="headerlink" href="#unified-flow" title="Link to this heading">¶</a></h2>
 <p>VoIPBIN’s Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice and video calls, SMS, and RESTful API triggers.</p>
 <p>With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBIN then automatically executes this flow, ensuring a consistent experience for customers across various channels.</p>
 </section>
 <section id="non-linear-action-execution">
-<span id="flow-overview-non-linear-action-execution"></span><h2>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Link to this heading"></a></h2>
+<span id="flow-overview-non-linear-action-execution"></span><h2>Non-linear action execution<a class="headerlink" href="#non-linear-action-execution" title="Link to this heading">¶</a></h2>
 <p>VoIPBIN’s Flow provides the flexibility of Non-Linear action execution.</p>
 <p>Users can customize their actions in both linear and non-linear ways, allowing them to define complex logic and decision trees to handle various call scenarios.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Linear Execution:
@@ -484,7 +624,7 @@ Non-Linear Execution (with goto and branch):
 <img alt="_images/flow_overview_non_linear.png" src="_images/flow_overview_non_linear.png" />
 </section>
 <section id="flow-fork">
-<span id="flow-overview-flow-fork"></span><h2>Flow fork<a class="headerlink" href="#flow-fork" title="Link to this heading"></a></h2>
+<span id="flow-overview-flow-fork"></span><h2>Flow fork<a class="headerlink" href="#flow-fork" title="Link to this heading">¶</a></h2>
 <p>Certain flow actions, such as fetch, fetch_flow, queue_join, and more, enable flow forking.</p>
 <p>When the flow is forked, the execution cursor moves to the forked flow and starts executing the actions within it. Once the forked flow reaches its end, the execution cursor moves back to the following action of the forking action, continuing the flow execution.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Main</span> <span class="n">Flow</span>                         <span class="n">Forked</span> <span class="n">Flow</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">queue_join</span><span class="p">)</span>
@@ -508,10 +648,11 @@ Non-Linear Execution (with goto and branch):
 <img alt="_images/flow_overview_fork.png" src="_images/flow_overview_fork.png" />
 </section>
 <section id="actions">
-<span id="flow-overview-actions"></span><h2>Actions<a class="headerlink" href="#actions" title="Link to this heading"></a></h2>
+<span id="flow-overview-actions"></span><h2>Actions<a class="headerlink" href="#actions" title="Link to this heading">¶</a></h2>
 <p>Within VoIPBIN, actions dictate the course of the platform’s response in a given flow, encompassing tasks such as initiating calls, playing sounds or prompts, activating text-to-speech, sending SMS or DTMFs, and dispatching SNS messages. These diverse actions serve as indispensable building blocks for crafting customized voice applications, ensuring the creation of uniquely tailored call experiences for users.</p>
 <p>VoIPBIN’s Flow provides developers with a versatile and robust toolkit, empowering them to forge dynamic voice applications, efficiently manage incoming calls, and curate personalized call encounters. Through its non-linear execution, cohesive flow capabilities, and an array of actions including SMS, DTMFs, SNS messages, and more, VoIPBIN’s Flow unveils limitless possibilities for the development of sophisticated and interactive voice applications, precisely tailored to meet specific business needs.</p>
 <p><strong>Action Categories</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Category</p></th>
@@ -546,12 +687,13 @@ Non-Linear Execution (with goto and branch):
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="flow-execution">
-<span id="flow-overview-flow-execution"></span><h2>Flow execution<a class="headerlink" href="#flow-execution" title="Link to this heading"></a></h2>
+<span id="flow-overview-flow-execution"></span><h2>Flow execution<a class="headerlink" href="#flow-execution" title="Link to this heading">¶</a></h2>
 <p>In VoIPBIN, the execution of flows is versatile and can be initiated through various methods:</p>
 <section id="incoming-outgoing-calls">
-<h3>Incoming/Outgoing Calls<a class="headerlink" href="#incoming-outgoing-calls" title="Link to this heading"></a></h3>
+<h3>Incoming/Outgoing Calls<a class="headerlink" href="#incoming-outgoing-calls" title="Link to this heading">¶</a></h3>
 <p>VoIPBIN facilitates flow execution with both incoming and outgoing calls. Users have the option to register a flow to a specific number. Upon an incoming call to the registered number, VoIPBIN will seamlessly execute the associated flow.
 Users can also initiate a call with a predefined flow. Once the outgoing call is answered, the attached flow will be triggered.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Incoming</span> <span class="n">Call</span> <span class="n">Flow</span><span class="p">:</span>
@@ -569,7 +711,7 @@ Users can also initiate a call with a predefined flow. Once the outgoing call is
 </div>
 </section>
 <section id="received-messages">
-<h3>Received Messages<a class="headerlink" href="#received-messages" title="Link to this heading"></a></h3>
+<h3>Received Messages<a class="headerlink" href="#received-messages" title="Link to this heading">¶</a></h3>
 <p>VoIPBIN allows users to register flows to received messages. When a message is received, the registered flow will be executed.
 For example, you can register the flow like the below.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
@@ -592,11 +734,11 @@ Should the message text match the specified criterion, such as “call me,” th
 See the <a class="reference internal" href="variable_variable.html#variable-variable"><span class="std std-ref">Variable Reference</span></a> for all available variables.</p>
 </section>
 <section id="outbound-campaigns">
-<h3>Outbound Campaigns<a class="headerlink" href="#outbound-campaigns" title="Link to this heading"></a></h3>
+<h3>Outbound Campaigns<a class="headerlink" href="#outbound-campaigns" title="Link to this heading">¶</a></h3>
 <p>The VoIPBIN platform integrates flows into outbound campaigns, providing a structured and automated approach to execution.</p>
 </section>
 <section id="api">
-<h3>API<a class="headerlink" href="#api" title="Link to this heading"></a></h3>
+<h3>API<a class="headerlink" href="#api" title="Link to this heading">¶</a></h3>
 <p>Users have the flexibility to trigger flows through API calls. This API integration empowers developers to seamlessly incorporate and activate flows within their applications.
 These diverse methods offer users and developers flexibility in integrating and executing flows based on their specific needs and scenarios.
 See the <a class="reference external" href="https://api.voipbin.net/redoc/#tag/Activeflow">Activeflow API Reference</a> for API details.
@@ -604,7 +746,7 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 </section>
 </section>
 <section id="flow-lifecycle">
-<h2>Flow Lifecycle<a class="headerlink" href="#flow-lifecycle" title="Link to this heading"></a></h2>
+<h2>Flow Lifecycle<a class="headerlink" href="#flow-lifecycle" title="Link to this heading">¶</a></h2>
 <p>Understanding when flows start, run, and end helps you design reliable applications.</p>
 <p><strong>Flow States</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------------+</span>         <span class="o">+------------+</span>         <span class="o">+------------+</span>
@@ -645,10 +787,10 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <p>When a flow ends, if <code class="docutils literal notranslate"><span class="pre">on_complete_flow_id</span></code> is set, the next flow starts automatically (see below).</p>
 </section>
 <section id="flow-actions-and-interrupt-actions">
-<h2>Flow Actions and Interrupt Actions<a class="headerlink" href="#flow-actions-and-interrupt-actions" title="Link to this heading"></a></h2>
+<h2>Flow Actions and Interrupt Actions<a class="headerlink" href="#flow-actions-and-interrupt-actions" title="Link to this heading">¶</a></h2>
 <p>VoIPBIN’s Flow is built on an action-based engine. Each flow is defined as a JSON array of actions, where a “cursor” tracks the current execution point. Under normal circumstances, the cursor advances sequentially from one action to the next based on the flow’s logic. This modular design lets you compose a variety of call-handling scenarios—from answering calls and playing prompts to branching based on caller input.</p>
 <section id="standard-flow-actions">
-<h3>Standard Flow Actions<a class="headerlink" href="#standard-flow-actions" title="Link to this heading"></a></h3>
+<h3>Standard Flow Actions<a class="headerlink" href="#standard-flow-actions" title="Link to this heading">¶</a></h3>
 <p>Standard flow actions are the building blocks of your call handling logic. Examples include:</p>
 <ul class="simple">
 <li><p>Answer: Picks up the incoming call.</p></li>
@@ -699,7 +841,7 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 <p>In this example, the flow proceeds step-by-step—from answering the call to playing a welcome message, receiving DTMF input, and branching accordingly.</p>
 </section>
 <section id="interrupt-actions">
-<h3>Interrupt Actions<a class="headerlink" href="#interrupt-actions" title="Link to this heading"></a></h3>
+<h3>Interrupt Actions<a class="headerlink" href="#interrupt-actions" title="Link to this heading">¶</a></h3>
 <p>Interrupt actions are specialized commands that can be triggered asynchronously—at any point during the flow—to handle unexpected events or to initiate high-priority tasks. Unlike standard actions, interrupt actions are designed to override or temporarily suspend the normal flow progression.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Normal Flow Execution              Interrupt Arrives!
 +---+   +---+   +---+             +-----------------+
@@ -723,12 +865,12 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 </ul>
 </section>
 <section id="how-interrupt-actions-work">
-<h3>How Interrupt Actions Work<a class="headerlink" href="#how-interrupt-actions-work" title="Link to this heading"></a></h3>
+<h3>How Interrupt Actions Work<a class="headerlink" href="#how-interrupt-actions-work" title="Link to this heading">¶</a></h3>
 <p>Interrupt actions are implemented through dedicated API endpoints. When an interrupt is invoked, the platform either temporarily pauses the current flow or dynamically inserts the interrupt action into the execution sequence. Once the interrupt is handled, the flow resumes from the appropriate point.</p>
 <p>For example, while the call is waiting for DTMF input in the standard flow, an attended transfer interrupt may be triggered via a separate API call. This immediate action takes precedence over the flow’s waiting state, ensuring that time-sensitive operations are executed without delay.</p>
 </section>
 <section id="integration-and-best-practices">
-<h3>Integration and Best Practices<a class="headerlink" href="#integration-and-best-practices" title="Link to this heading"></a></h3>
+<h3>Integration and Best Practices<a class="headerlink" href="#integration-and-best-practices" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Flexibility: Use standard flow actions to define your routine call-handling steps, and rely on interrupt actions for events that require immediate attention.</p></li>
 <li><p>API Integration: Interrupt actions can be initiated via dedicated API calls, enabling your application to react in real time to dynamic call events.</p></li>
@@ -738,11 +880,11 @@ And due to the absence of any media-based incoming or outgoing elements in the A
 </section>
 </section>
 <section id="the-on-complete-flow-id">
-<h2>The on complete flow id<a class="headerlink" href="#the-on-complete-flow-id" title="Link to this heading"></a></h2>
+<h2>The on complete flow id<a class="headerlink" href="#the-on-complete-flow-id" title="Link to this heading">¶</a></h2>
 <p>The on_complete_flow_id allows a flow to automatically trigger another flow in a new session once the current flow completes. This feature addresses a key limitation of call-based flows: when a call ends, the flow execution ends immediately, preventing any post-call actions (After Call Work) from running.</p>
 <p>With on_complete_flow_id, developers can define a follow-up flow that executes after the call or flow ends, enabling tasks such as call-summary generation, sending emails, processing recordings, or running analytics.</p>
 <section id="how-it-works">
-<h3>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading"></a></h3>
+<h3>How it works<a class="headerlink" href="#how-it-works" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span>                    <span class="n">On</span> <span class="n">Complete</span> <span class="n">Flow</span> <span class="n">Chain</span>                             <span class="o">|</span>
 <span class="o">+-----------------------------------------------------------------------+</span>
@@ -818,7 +960,7 @@ Flow B starts with these variables:
 </section>
 </section>
 <section id="execution-limits">
-<h2>Execution limits<a class="headerlink" href="#execution-limits" title="Link to this heading"></a></h2>
+<h2>Execution limits<a class="headerlink" href="#execution-limits" title="Link to this heading">¶</a></h2>
 <p>To prevent infinite recursion, VoIPBIN enforces:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Flow</span> <span class="n">A</span> <span class="o">--&gt;</span> <span class="n">Flow</span> <span class="n">B</span> <span class="o">--&gt;</span> <span class="n">Flow</span> <span class="n">C</span> <span class="o">--&gt;</span> <span class="n">Flow</span> <span class="n">D</span> <span class="o">--&gt;</span> <span class="n">Flow</span> <span class="n">E</span> <span class="o">--&gt;</span> <span class="n">STOP</span>
   <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>
@@ -835,14 +977,14 @@ Flow B starts with these variables:
 </ul>
 </section>
 <section id="behavior-on-termination">
-<h2>Behavior on termination<a class="headerlink" href="#behavior-on-termination" title="Link to this heading"></a></h2>
+<h2>Behavior on termination<a class="headerlink" href="#behavior-on-termination" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>If the flow fails, on_complete_flow_id is not triggered.</p></li>
 <li><p>If the flow is forcefully terminated (e.g., due to call hangup), the on-complete flow still runs.</p></li>
 </ul>
 </section>
 <section id="example">
-<h2>Example<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
+<h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flow_initial&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;on_complete_flow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;flow_after_call_work&quot;</span>
@@ -852,9 +994,10 @@ Flow B starts with these variables:
 <p>This configuration ensures that when <em>flow_initial</em> completes—regardless of how the call ended—the <em>flow_after_call_work</em> flow starts immediately in a new session, while preserving key session variables from the original flow.</p>
 </section>
 <section id="error-handling-in-flows">
-<h2>Error Handling in Flows<a class="headerlink" href="#error-handling-in-flows" title="Link to this heading"></a></h2>
+<h2>Error Handling in Flows<a class="headerlink" href="#error-handling-in-flows" title="Link to this heading">¶</a></h2>
 <p>When something goes wrong during flow execution, VoIPBIN handles it gracefully.</p>
 <p><strong>Error Scenarios</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Scenario</p></th>
@@ -879,6 +1022,7 @@ Flow B starts with these variables:
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Safety Limits</strong></p>
 <p>VoIPBIN prevents runaway flows with built-in limits:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Maximum</span> <span class="n">iterations</span> <span class="n">per</span> <span class="n">execution</span> <span class="n">cycle</span><span class="p">:</span> <span class="mi">1000</span>
@@ -897,14 +1041,46 @@ Flow B starts with these variables:
 </section>
 </section>
 
-</main>
-                        
-                    </div>
-                    
-                    <nav class="col-12 col-lg-3 pb-4">
-                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
-                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
-                            <ul>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, VoIPBIN
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/voipbin/voipbin" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#how-the-flow-works">How the flow works</a></li>
 <li><a class="reference internal" href="#understanding-flow-execution">Understanding Flow Execution</a></li>
@@ -942,65 +1118,16 @@ Flow B starts with these variables:
 </li>
 </ul>
 
-                        </div>
-                    </nav>
-                    
-                </div>
-            </div>
+          </div>
         </div>
-    </div>
-    <footer class="container-fluid bg-primary text-light">
-        <div class="container">
-            <div class="row">
-        <div class="col p-4">
-            
-                <nav aria-label="Footer">
-                    <ul class="nav justify-content-center mb-2">
-                        
-                            
-                            
-                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
-                        
-                            
-                            
-                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
-                        
-                    </ul>
-                </nav>
-            
-            <div class="text-center">
-                    &copy; Copyright 2026, VoIPBIN
-            </div>
-            <div class="text-center text-white-50 font-italic mt-3">
-                <small>
-                    Created using
-                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
-                        Sphinx Wagtail Theme 6.5.0
-                    </a>
-                    and
-                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
-                    </a>
-                </small>
-            </div>
-        </div>
-    </div>
-        </div>
-    </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
-        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
-        <script src="_static/copybutton.js?v=f281be69"></script>
-        <script type="text/javascript" src="_static/dist/theme.js"></script>
-        <script type="text/javascript" src="_static/dist/vendor.js"></script>
-        <script type="text/javascript" src="_static/searchtools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
-        </script>
-        <script type="text/javascript" id="searchindexloader"></script>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=8a448e45"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>
