@@ -1,83 +1,219 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="no-js" lang="en" data-content_root="./">
-<head>
-    <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Glossary" href="glossary.html"><link rel="prev" title="Architecture" href="architecture.html">
+        <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Websocket - VoIPBin Documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
-        <title>Websocket &mdash; voipbin  documentation</title>
     
-    <link rel="stylesheet" type="text/css" href="_static/dist/fontawesome.css" />
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8e8a900e" />
-      <link rel="stylesheet" type="text/css" href="_static/dist/theme.css?v=310cf088" />
-      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-            <link rel="index" title="Index" href="genindex.html" />
-            <link rel="search" title="Search" href="search.html" />
-            <link rel="top" title="voipbin  documentation" href="#" />
-            <link rel="next" title="Glossary" href="glossary.html" />
-            <link rel="prev" title="Architecture" href="architecture.html" />
-    </head>
-<body>
-    <script type="text/javascript" src="_static/dist/blocking.js"></script>
-    <header class="container-fluid bg-primary">
-        <a class="btn btn-sm btn-light skip-to-content-link" href="#main">Skip to content</a>
-        <div class="container-fluid">
-            <div class="navbar navbar-expand-lg navbar-dark font-weight-bold">
-                    <a href="intro.html"
-                        title="voipbin"
-                        class="logo navbar-brand"
-                    >
-                        <img src="_static/images/voipbin-high-resolution-logo-white-transparent.png" width="45" height="80" alt="voipbin"
-                            class="logo-img"
-                        />
-                        VoIPBin Documentation
-                    </a>
-                
-                
-                    <div class="collapse navbar-collapse justify-content-end">
-                        <ul class="navbar-nav">
-                            
-                                
-                                
-                                <li class="nav-item"><a class="nav-link"  href="http://voipbin.net">Project</a></li>
-                            
-                                
-                                
-                                <li class="nav-item"><a class="nav-link"  href="https://admin.voipbin.net">Admin</a></li>
-                            
-                        </ul>
-                    </div>
-                
-                <button class="navbar-toggler btn btn-primary d-lg-none" type="button" data-toggle="collapse" data-target="#collapseSidebar" aria-expanded="false" aria-controls="collapseExample">
-                    <span class="navbar-toggler-icon"></span>
-                    <span class="sr-only">menu</span>
-                </button>
-            </div>
-        </div>
-    </header>
-    <div class="container-fluid">
-        <div class="row">
-            <aside class="col-12 col-lg-3 sidebar-container">
-                <div id="collapseSidebar" class="collapse sticky-top d-lg-block pt-5 pr-lg-4">
-<div id="searchbox" class="searchbox mb-6 px-1" role="search">
-    <form id="search-form" action="search.html" autocomplete="off" method="get" role="search">
-        <div class="input-group">
-            <div class="input-group-prepend">
-                <div class="input-group-text border-right-0 bg-white py-3 pl-3 pr-2"><span class="fas fa-search"></span></div>
-            </div>
-            <input class="form-control py-3 pr-3 pl-1 h-100 border-left-0" type="search" name="q" placeholder="Search documentation" aria-label="Search documentation" id="searchinput" />
-        </div>
-        <input type="hidden" name="check_keywords" value="yes" />
-        <input type="hidden" name="area" value="default" />
-    </form>
-</div><div class="site-toc">
-    <nav class="toc mt-3" aria-label="Main menu">
-        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-primary: #0066cc;
+  --color-brand-content: #0066cc;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #272822;
+  --color-code-foreground: #f8f8f2;
+  --color-brand-primary: #4da3ff;
+  --color-brand-content: #4da3ff;
+  --color-announcement-background: #0a2540;
+  --color-announcement-text: #ffffff;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     VoIPBin is an opensource CPaaS platform. <a style="color: var(--color-announcement-text);" href="https://github.com/voipbin/voipbin">Star us on GitHub</a> 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">VoIPBin Documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/voipbin-high-resolution-logo-white-transparent.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">VoIPBin Documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
-<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="sdk.html">SDK(Software Development Kit)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restful_api.html">RESTful API(Application Programming Interface)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restful_api_errors.html">Error Reason Codes</a></li>
@@ -118,31 +254,38 @@
 <li class="toctree-l1"><a class="reference internal" href="outdial.html">Outdial</a></li>
 <li class="toctree-l1"><a class="reference internal" href="outplan.html">Outplan</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Resources &amp; Management</span></p>
+<p class="caption" role="heading"><span class="caption-text">Identity &amp; Contacts</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accesskey.html">Accesskey</a></li>
 <li class="toctree-l1"><a class="reference internal" href="agent.html">Agent</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contact.html">Contact</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customer.html">Customer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
-<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
-<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
+<p class="caption" role="heading"><span class="caption-text">Numbers &amp; PSTN</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="number.html">Number</a></li>
 <li class="toctree-l1"><a class="reference internal" href="provider.html">Provider</a></li>
 <li class="toctree-l1"><a class="reference internal" href="providercall.html">ProviderCall</a></li>
 <li class="toctree-l1"><a class="reference internal" href="route.html">Route</a></li>
 <li class="toctree-l1"><a class="reference internal" href="extension.html">Extension</a></li>
 <li class="toctree-l1"><a class="reference internal" href="trunk.html">Trunk</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="outbound_config.html">OutboundConfig</a><input aria-label="Toggle navigation of OutboundConfig" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_overview.html">OutboundConfig Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_tutorial.html">OutboundConfig Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outbound_config_struct_outbound_config.html">OutboundConfig Struct</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Billing &amp; Operations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="billing_account.html">Billing Account</a></li>
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tag.html">Tag</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Architecture (Deep Dive)</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Websocket</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Websocket</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -153,57 +296,52 @@
 <li class="toctree-l1"><a class="reference internal" href="support.html">Support</a></li>
 </ul>
 
-    </nav>
-    <template data-toggle-item-template>
-        <button class="btn btn-sm btn-link toctree-expand" type="button">
-            <span class="sr-only">Toggle menu contents</span>
-        </button>
-    </template>
 </div>
-                    <div class="d-lg-none border-bottom">
-                        
-                    </div>
-                </div>
-            </aside>
-            <div class="col-12 col-lg-9 pt-5">
-                <header class="row align-items-baseline">
-                    <div class="col">
-                        <nav aria-label="breadcrumb">
-    <ol class="breadcrumb m-0 p-0 bg-transparent">
-        <li class="breadcrumb-item"><a href="index.html">Docs</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Websocket</li>
-    </ol>
-</nav>
-                    </div>
-                    <div class="col-sm-12 col-lg-auto mt-3 mt-lg-3">
-                        <noscript>
-                            <p>JavaScript is required to toggle light/dark mode..</p>
-                        </noscript>
-                        <button id="wagtail-theme" class="btn btn-sm btn-light text-decoration-none" type="button">
-                            <span class="dark-only"><i class="fas fa-sun"></i> Light mode</span>
-                            <span class="light-only"><i class="fas fa-moon"></i> Dark mode</span>
-                        </button>
-    <a class="btn btn-sm btn-light text-decoration-none" href="_sources/websocket.rst.txt" rel="nofollow">
-        <span class="btn-icon"><span class="fas fa-code"></span></span>
-        <span class="btn-text">View source</span>
-    </a>
-                        
-                    </div>
-                </header>
-                <div class="row" >
-                    <div class="col-12">
-                        <hr class="w-100 my-4">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12 col-lg-9 order-last order-lg-first rst-content">
-                        <main role="main" id="main">
-    <section id="websocket">
-<span id="websocket-main"></span><h1>Websocket<a class="headerlink" href="#websocket" title="Link to this heading"></a></h1>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/blob/main/bin-api-manager/docsdev/source/websocket.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/voipbin/monorepo/edit/main/bin-api-manager/docsdev/source/websocket.rst" rel="edit" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="websocket">
+<span id="websocket-main"></span><h1>Websocket<a class="headerlink" href="#websocket" title="Link to this heading">¶</a></h1>
 <p>Stream real-time events from VoIPBIN services over a persistent WebSocket connection for low-latency updates.</p>
 <p><strong>API Reference:</strong> <a class="reference external" href="https://api.voipbin.net/redoc/#tag/Websocket">Websocket endpoints</a></p>
 <section id="overview">
-<span id="websocket-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<span id="websocket-overview"></span><h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Context</strong></p>
@@ -223,7 +361,7 @@
 <li><p>Wildcard pattern matching for subscriptions</p></li>
 </ul>
 <section id="how-websocket-works">
-<h3>How WebSocket Works<a class="headerlink" href="#how-websocket-works" title="Link to this heading"></a></h3>
+<h3>How WebSocket Works<a class="headerlink" href="#how-websocket-works" title="Link to this heading">¶</a></h3>
 <p>WebSocket maintains a persistent connection for instant event delivery.</p>
 <p><strong>WebSocket Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
@@ -272,7 +410,7 @@
 </ul>
 </section>
 <section id="connection-architecture">
-<h3>Connection Architecture<a class="headerlink" href="#connection-architecture" title="Link to this heading"></a></h3>
+<h3>Connection Architecture<a class="headerlink" href="#connection-architecture" title="Link to this heading">¶</a></h3>
 <p>WebSocket connections integrate with VoIPBIN’s event system.</p>
 <p><strong>Event Flow Architecture</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
@@ -306,7 +444,7 @@
 </div>
 </section>
 <section id="topic-system">
-<h3>Topic System<a class="headerlink" href="#topic-system" title="Link to this heading"></a></h3>
+<h3>Topic System<a class="headerlink" href="#topic-system" title="Link to this heading">¶</a></h3>
 <p>Topics define which events a client receives.</p>
 <p><strong>Topic Format</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
@@ -332,6 +470,7 @@
 </pre></div>
 </div>
 <p><strong>Available Resource Types</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Resource</p></th>
@@ -365,9 +504,10 @@
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="connection-lifecycle">
-<h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading"></a></h3>
+<h3>Connection Lifecycle<a class="headerlink" href="#connection-lifecycle" title="Link to this heading">¶</a></h3>
 <p>WebSocket connections follow a defined lifecycle.</p>
 <p><strong>Connection States</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-------------------+</span>
@@ -420,7 +560,7 @@ Authentication:
 </div>
 </section>
 <section id="event-message-format">
-<h3>Event Message Format<a class="headerlink" href="#event-message-format" title="Link to this heading"></a></h3>
+<h3>Event Message Format<a class="headerlink" href="#event-message-format" title="Link to this heading">¶</a></h3>
 <p>All events follow a consistent structure.</p>
 <p><strong>Event Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -434,6 +574,7 @@ Authentication:
 </pre></div>
 </div>
 <p><strong>Common Event Types</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Event Type</p></th>
@@ -482,9 +623,10 @@ Authentication:
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="common-scenarios">
-<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading"></a></h3>
+<h3>Common Scenarios<a class="headerlink" href="#common-scenarios" title="Link to this heading">¶</a></h3>
 <p><strong>Scenario 1: Real-Time Call Dashboard</strong></p>
 <p>Build a live dashboard showing all active calls.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Setup</span><span class="p">:</span>
@@ -575,7 +717,7 @@ Agent Interface:
 </div>
 </section>
 <section id="best-practices">
-<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading"></a></h3>
+<h3>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h3>
 <p><strong>1. Connection Management</strong></p>
 <ul class="simple">
 <li><p>Implement automatic reconnection with exponential backoff</p></li>
@@ -606,8 +748,9 @@ Agent Interface:
 </ul>
 </section>
 <section id="troubleshooting">
-<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h3>
+<h3>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h3>
 <p><strong>Connection Issues</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Symptom</p></th>
@@ -629,7 +772,9 @@ verify token has WebSocket permissions</p></td>
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Subscription Issues</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Symptom</p></th>
@@ -652,7 +797,9 @@ check agent_id matches token owner</p></td>
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Message Issues</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Symptom</p></th>
@@ -674,9 +821,10 @@ network latency; monitor server health</p></td>
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="related-documentation">
-<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading"></a></h3>
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="websocket_tutorial.html#websocket-tutorial"><span class="std std-ref">WebSocket Tutorial</span></a> - Implementation examples and code</p></li>
 <li><p><a class="reference internal" href="websocket_struct.html#websocket-struct"><span class="std std-ref">WebSocket Structures</span></a> - Message format specifications</p></li>
@@ -688,10 +836,10 @@ network latency; monitor server health</p></td>
 </section>
 </section>
 <section id="structures">
-<span id="websocket-struct"></span><h2>Structures<a class="headerlink" href="#structures" title="Link to this heading"></a></h2>
+<span id="websocket-struct"></span><h2>Structures<a class="headerlink" href="#structures" title="Link to this heading">¶</a></h2>
 <p>This section documents the message structures used in VoIPBIN’s WebSocket API for subscription management and event delivery.</p>
 <section id="message-overview">
-<h3>Message Overview<a class="headerlink" href="#message-overview" title="Link to this heading"></a></h3>
+<h3>Message Overview<a class="headerlink" href="#message-overview" title="Link to this heading">¶</a></h3>
 <p>WebSocket communication uses JSON messages for all operations.</p>
 <p><strong>Message Categories</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
@@ -714,7 +862,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="subscribe-message">
-<h3>Subscribe Message<a class="headerlink" href="#subscribe-message" title="Link to this heading"></a></h3>
+<h3>Subscribe Message<a class="headerlink" href="#subscribe-message" title="Link to this heading">¶</a></h3>
 <p>Send a subscribe message to receive events for specific topics.</p>
 <p><strong>Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -773,7 +921,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="unsubscribe-message">
-<h3>Unsubscribe Message<a class="headerlink" href="#unsubscribe-message" title="Link to this heading"></a></h3>
+<h3>Unsubscribe Message<a class="headerlink" href="#unsubscribe-message" title="Link to this heading">¶</a></h3>
 <p>Send an unsubscribe message to stop receiving events for specific topics.</p>
 <p><strong>Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -811,7 +959,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="topic-pattern-structure">
-<h3>Topic Pattern Structure<a class="headerlink" href="#topic-pattern-structure" title="Link to this heading"></a></h3>
+<h3>Topic Pattern Structure<a class="headerlink" href="#topic-pattern-structure" title="Link to this heading">¶</a></h3>
 <p>Topics follow a consistent format for event filtering.</p>
 <p><strong>Topic Format</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">scope</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">scope_id</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource_type</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">resource_id</span><span class="o">&gt;</span>
@@ -825,6 +973,7 @@ network latency; monitor server health</p></td>
 <li><p><code class="docutils literal notranslate"><span class="pre">resource_id</span></code> (UUID or <code class="docutils literal notranslate"><span class="pre">*</span></code>): UUID of a specific resource, or <code class="docutils literal notranslate"><span class="pre">*</span></code> to match all resources of the given type.</p></li>
 </ul>
 <p><strong>Valid Scopes</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Scope</p></th>
@@ -840,7 +989,9 @@ network latency; monitor server health</p></td>
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Valid Resource Types</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Resource Type</p></th>
@@ -874,6 +1025,7 @@ network latency; monitor server health</p></td>
 </tr>
 </tbody>
 </table>
+</div>
 <p><strong>Wildcard Usage</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------+</span>
 <span class="o">|</span>                         <span class="n">Wildcard</span> <span class="n">Patterns</span>                             <span class="o">|</span>
@@ -895,7 +1047,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="event-message-structure">
-<h3>Event Message Structure<a class="headerlink" href="#event-message-structure" title="Link to this heading"></a></h3>
+<h3>Event Message Structure<a class="headerlink" href="#event-message-structure" title="Link to this heading">¶</a></h3>
 <p>Events are pushed from the server when subscribed resources change.</p>
 <p><strong>Structure</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -922,7 +1074,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="event-type-reference">
-<h3>Event Type Reference<a class="headerlink" href="#event-type-reference" title="Link to this heading"></a></h3>
+<h3>Event Type Reference<a class="headerlink" href="#event-type-reference" title="Link to this heading">¶</a></h3>
 <p>Complete list of event types and their data structures.</p>
 <p><strong>Call Events</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">call</span><span class="o">.</span><span class="n">created</span>
@@ -1125,7 +1277,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="acknowledgment-messages">
-<h3>Acknowledgment Messages<a class="headerlink" href="#acknowledgment-messages" title="Link to this heading"></a></h3>
+<h3>Acknowledgment Messages<a class="headerlink" href="#acknowledgment-messages" title="Link to this heading">¶</a></h3>
 <p>Server may send acknowledgments for subscription operations.</p>
 <p><strong>Success Acknowledgment</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -1151,6 +1303,7 @@ network latency; monitor server health</p></td>
 </pre></div>
 </div>
 <p><strong>Error Codes</strong></p>
+<div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Code</p></th>
@@ -1172,9 +1325,10 @@ network latency; monitor server health</p></td>
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="message-handling-examples">
-<h3>Message Handling Examples<a class="headerlink" href="#message-handling-examples" title="Link to this heading"></a></h3>
+<h3>Message Handling Examples<a class="headerlink" href="#message-handling-examples" title="Link to this heading">¶</a></h3>
 <p>Code examples for processing WebSocket messages.</p>
 <p><strong>JavaScript</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span><span class="o">.</span><span class="n">onmessage</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="p">{</span>
@@ -1227,7 +1381,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="id1">
-<h3>Related Documentation<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<h3>Related Documentation<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference internal" href="websocket_overview.html#websocket-overview"><span class="std std-ref">WebSocket Overview</span></a> - Connection and topic concepts</p></li>
 <li><p><a class="reference internal" href="websocket_tutorial.html#websocket-tutorial"><span class="std std-ref">WebSocket Tutorial</span></a> - Implementation examples</p></li>
@@ -1238,7 +1392,7 @@ network latency; monitor server health</p></td>
 </section>
 </section>
 <section id="tutorial">
-<span id="websocket-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading"></a></h2>
+<span id="websocket-tutorial"></span><h2>Tutorial<a class="headerlink" href="#tutorial" title="Link to this heading">¶</a></h2>
 <p>Before connecting to WebSocket, you need:</p>
 <ul class="simple">
 <li><p>An authentication token. Obtain one via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/auth/login</span></code> or use an access key from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/accesskeys</span></code>.</p></li>
@@ -1252,7 +1406,7 @@ network latency; monitor server health</p></td>
 <p>The WebSocket URL is <code class="docutils literal notranslate"><span class="pre">wss://api.voipbin.net/v1.0/ws?token=&lt;token&gt;</span></code>. Always use <code class="docutils literal notranslate"><span class="pre">wss://</span></code> (not <code class="docutils literal notranslate"><span class="pre">ws://</span></code>) for production. The token is passed as a query parameter, not a header. After connecting, you must send a <code class="docutils literal notranslate"><span class="pre">subscribe</span></code> message before any events will be delivered. If the connection drops, all subscriptions are lost and must be re-sent after reconnecting.</p>
 </div>
 <section id="connect-to-websocket">
-<h3>Connect to WebSocket<a class="headerlink" href="#connect-to-websocket" title="Link to this heading"></a></h3>
+<h3>Connect to WebSocket<a class="headerlink" href="#connect-to-websocket" title="Link to this heading">¶</a></h3>
 <p>Establish a WebSocket connection to receive real-time event updates from VoIPBIN. The WebSocket provides bi-directional communication for subscribing to specific event topics.</p>
 <p><strong>WebSocket Endpoint:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;
@@ -1260,7 +1414,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="subscribe-to-events">
-<h3>Subscribe to Events<a class="headerlink" href="#subscribe-to-events" title="Link to this heading"></a></h3>
+<h3>Subscribe to Events<a class="headerlink" href="#subscribe-to-events" title="Link to this heading">¶</a></h3>
 <p>After connecting, send a subscription message to receive events for specific resources.</p>
 <p><strong>Subscription Message Format:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -1286,7 +1440,7 @@ network latency; monitor server health</p></td>
 <p>This subscribes to all call and message events for your customer account.</p>
 </section>
 <section id="unsubscribe-from-events">
-<h3>Unsubscribe from Events<a class="headerlink" href="#unsubscribe-from-events" title="Link to this heading"></a></h3>
+<h3>Unsubscribe from Events<a class="headerlink" href="#unsubscribe-from-events" title="Link to this heading">¶</a></h3>
 <p>Stop receiving events for specific topics by sending an unsubscribe message.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;unsubscribe&quot;</span><span class="p">,</span>
@@ -1298,7 +1452,7 @@ network latency; monitor server health</p></td>
 </div>
 </section>
 <section id="websocket-client-examples">
-<h3>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading"></a></h3>
+<h3>WebSocket Client Examples<a class="headerlink" href="#websocket-client-examples" title="Link to this heading">¶</a></h3>
 <p><strong>Python Example:</strong></p>
 <p>Using the <code class="docutils literal notranslate"><span class="pre">websocket-client</span></code> library:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
@@ -1527,7 +1681,7 @@ function processIncomingMessage(messageData) {
 </div>
 </section>
 <section id="topic-pattern-matching">
-<h3>Topic Pattern Matching<a class="headerlink" href="#topic-pattern-matching" title="Link to this heading"></a></h3>
+<h3>Topic Pattern Matching<a class="headerlink" href="#topic-pattern-matching" title="Link to this heading">¶</a></h3>
 <p>WebSocket supports wildcard subscriptions using <code class="docutils literal notranslate"><span class="pre">*</span></code> to match multiple resources.</p>
 <p><strong>Subscribe to all calls:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -1571,7 +1725,7 @@ function processIncomingMessage(messageData) {
 </div>
 </section>
 <section id="permission-requirements">
-<h3>Permission Requirements<a class="headerlink" href="#permission-requirements" title="Link to this heading"></a></h3>
+<h3>Permission Requirements<a class="headerlink" href="#permission-requirements" title="Link to this heading">¶</a></h3>
 <p><strong>Customer-Level Topics:</strong></p>
 <p>To subscribe to customer-level topics, you need:
 - Admin permission, OR
@@ -1586,7 +1740,7 @@ function processIncomingMessage(messageData) {
 </div>
 </section>
 <section id="id2">
-<h3>Event Message Format<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<h3>Event Message Format<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
 <p>All WebSocket events follow this structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call.status&quot;</span><span class="p">,</span>
@@ -1605,7 +1759,7 @@ function processIncomingMessage(messageData) {
 - <code class="docutils literal notranslate"><span class="pre">data</span></code>: Resource-specific data (call, message, activeflow, etc.)</p>
 </section>
 <section id="common-use-cases">
-<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h3>
+<h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading">¶</a></h3>
 <p><strong>Real-Time Call Monitoring:</strong></p>
 <p>Monitor all active calls in real-time:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example</span>
@@ -1685,7 +1839,7 @@ ws.on(&#39;message&#39;, function(data) {
 </div>
 </section>
 <section id="id3">
-<h3>Best Practices<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<h3>Best Practices<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
 <p><strong>1. Connection Management:</strong>
 - Implement automatic reconnection with exponential backoff
 - Handle connection drops gracefully
@@ -1712,7 +1866,7 @@ ws.on(&#39;message&#39;, function(data) {
 - Verify subscription/unsubscription works correctly</p>
 </section>
 <section id="id4">
-<h3>Connection Lifecycle<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<h3>Connection Lifecycle<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
 <p><strong>1. Connect:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ws</span> <span class="o">=</span> <span class="n">new</span> <span class="n">WebSocket</span><span class="p">(</span><span class="s1">&#39;wss://api.voipbin.net/v1.0/ws?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;</span><span class="p">);</span>
 </pre></div>
@@ -1757,21 +1911,64 @@ ws.on(&#39;message&#39;, function(data) {
 </section>
 </section>
 
-</main>
-                        <nav aria-label="Page navigation" class="py-4 my-5 clearfix font-weight-bold border-top">
-    <a class="float-left" href="architecture.html" title="Previous">
-        <span aria-hidden="true">←&nbsp;</span>Architecture
-    </a>
-    <a class="float-right" href="glossary.html" title="Next">
-        Glossary <span aria-hidden="true">&nbsp;→</span>
-    </a>
-</nav>
-                    </div>
-                    
-                    <nav class="col-12 col-lg-3 pb-4">
-                        <div class="sticky-top toc page-toc" aria-labelledby="page-toc-heading">
-                            <p class="font-weight-bold" id="page-toc-heading">Page contents</p>
-                            <ul>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="glossary.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Glossary</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="architecture.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Architecture</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, VoIPBIN
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/voipbin/voipbin" aria-label="GitHub"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
 <li><a class="reference internal" href="#">Websocket</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a><ul>
 <li><a class="reference internal" href="#how-websocket-works">How WebSocket Works</a></li>
@@ -1814,65 +2011,16 @@ ws.on(&#39;message&#39;, function(data) {
 </li>
 </ul>
 
-                        </div>
-                    </nav>
-                    
-                </div>
-            </div>
+          </div>
         </div>
-    </div>
-    <footer class="container-fluid bg-primary text-light">
-        <div class="container">
-            <div class="row">
-        <div class="col p-4">
-            
-                <nav aria-label="Footer">
-                    <ul class="nav justify-content-center mb-2">
-                        
-                            
-                            
-                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">About Us</a></li>
-                        
-                            
-                            
-                            <li class="nav-item"><a class="nav-link text-light"  href="http://voipbin.net">Contact</a></li>
-                        
-                    </ul>
-                </nav>
-            
-            <div class="text-center">
-                    &copy; Copyright 2026, VoIPBIN
-            </div>
-            <div class="text-center text-white-50 font-italic mt-3">
-                <small>
-                    Created using
-                    <a class="text-white" href="https://github.com/wagtail/sphinx_wagtail_theme" rel="nofollow" target="_blank">
-                        Sphinx Wagtail Theme 6.5.0
-                    </a>
-                    and
-                    <a class="text-white" href="https://www.sphinx-doc.org/" rel="nofollow" target="_blank">
-                        Sphinx 9.1.0
-                    </a>
-                </small>
-            </div>
-        </div>
-    </div>
-        </div>
-    </footer>
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="_static/doctools.js?v=fd6eb6e6"></script>
-        <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
-        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
-        <script src="_static/copybutton.js?v=f281be69"></script>
-        <script type="text/javascript" src="_static/dist/theme.js"></script>
-        <script type="text/javascript" src="_static/dist/vendor.js"></script>
-        <script type="text/javascript" src="_static/searchtools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script type="text/javascript">
-            document.addEventListener('DOMContentLoaded', function() { Search.loadIndex("searchindex.js"); });
-        </script>
-        <script type="text/javascript" id="searchindexloader"></script>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=8a448e45"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>
