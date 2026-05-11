@@ -30,7 +30,24 @@ source_suffix = ".rst"
 master_doc = "index"
 language = "en"
 
-exclude_patterns = []
+# Files included via `.. include::` from a parent shim. They are NOT standalone
+# documents and re-declare the same labels as the parent (which causes duplicate
+# label warnings if Sphinx tries to build them as top-level pages). Excluding
+# them from the build keeps the single-page UX of the parent shim while
+# silencing the duplicate-label noise.
+exclude_patterns = [
+    "direct_hash_overview.rst",
+    "intro_applications.rst",
+    "intro_channels.rst",
+    "quickstart_authentication.rst",
+    "quickstart_call.rst",
+    "quickstart_events.rst",
+    "quickstart_extension.rst",
+    "quickstart_realtime.rst",
+    "quickstart_sandbox.rst",
+    "quickstart_signup.rst",
+    "sdk_overview.rst",
+]
 
 
 # -- Options for HTML output -------------------------------------------------

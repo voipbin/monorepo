@@ -5,7 +5,7 @@ Extension & Softphone Setup
 Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBIN. This is required for the :ref:`Real-Time Voice Interaction <quickstart_realtime>` scenario.
 
 Prerequisites
-+++++++++++++
+~~~~~~~~~~~~~
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
 * Your customer ID (UUID). Obtained from ``GET https://api.voipbin.net/v1.0/customer`` or from your admin console profile.
@@ -16,7 +16,7 @@ Prerequisites
    This section requires a human with a softphone to complete the registration and answer calls. AI agents can execute the API call to create the extension and instruct the human for the Linphone registration.
 
 Create an extension
-~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^
 Create a SIP extension that your softphone will register to. The ``name`` (String, Required) identifies the extension for dialing. The ``detail`` (String, Required) is a description. The ``extension`` (String, Required) and ``password`` (String, Required) are used for SIP authentication.
 
 .. code::
@@ -56,7 +56,7 @@ The ``id`` (UUID) is the extension's unique identifier — use it for ``GET /ext
    The ``extension`` and ``password`` are SIP credentials, not VoIPBIN login credentials. The ``name`` field is the extension identifier used when dialing (e.g., ``"target_name": "quickstart-phone"`` in the call request). The response includes both ``extension`` and ``username`` fields — they contain the same value (``username`` is a Kamailio-internal mirror of ``extension``). Choose a memorable ``extension`` value and a strong ``password``.
 
 Register Linphone
-~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^
 Configure your Linphone softphone to register with VoIPBIN using the extension credentials created above.
 
 **Linphone configuration:**
@@ -85,7 +85,7 @@ Replace ``<your-customer-id>`` with your customer ID (UUID) obtained from ``GET 
 If registration succeeds, the status indicator turns green. If it fails, see Troubleshooting below.
 
 Troubleshooting
-+++++++++++++++
+~~~~~~~~~~~~~~~
 
 * **Extension creation returns 400 Bad Request:**
     * **Cause:** Missing required fields (``name``, ``detail``, ``extension``, ``password``).

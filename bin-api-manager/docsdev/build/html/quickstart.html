@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="SDK(Software Development Kit)" href="sdk.html"><link rel="prev" title="Introduction" href="intro.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2025.12.19 -->
         <title>Quickstart - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -639,7 +639,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> (String) is your API key. Use it immediately for authentication — see <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">accesskey.token</span></code> (String) is your API key. Use it immediately for authentication — see <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p>
 <p>A verification email is also sent to the email address you provided. Click the link in the email to verify your address and activate your account. After verification, you will receive a welcome email with instructions to set your password.</p>
 </section>
 <section id="troubleshooting">
@@ -854,9 +854,11 @@
 <p>Before running the tutorials, set up a SIP extension and softphone for voice testing, and configure event delivery to observe real-time notifications.</p>
 <section id="extension-softphone-setup">
 <span id="quickstart-extension"></span><h3>Extension &amp; Softphone Setup<a class="headerlink" href="#extension-softphone-setup" title="Link to this heading">¶</a></h3>
-<p>Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBIN. This is required for the <a class="reference internal" href="quickstart_realtime.html#quickstart-realtime"><span class="std std-ref">Real-Time Voice Interaction</span></a> scenario.</p>
+<p>Create a SIP extension and register a softphone (Linphone) to receive calls from VoIPBIN. This is required for the <a class="reference internal" href="#quickstart-realtime"><span class="std std-ref">Real-Time Voice Interaction</span></a> scenario.</p>
+<section id="prerequisites">
+<h4>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> or from your admin console profile.</p></li>
 <li><p>Linphone softphone installed on your computer or mobile device. Download from <a class="reference external" href="https://www.linphone.org/">linphone.org</a>.</p></li>
 </ul>
@@ -866,7 +868,7 @@
 <p>This section requires a human with a softphone to complete the registration and answer calls. AI agents can execute the API call to create the extension and instruct the human for the Linphone registration.</p>
 </div>
 <section id="create-an-extension">
-<h4>Create an extension<a class="headerlink" href="#create-an-extension" title="Link to this heading">¶</a></h4>
+<h5>Create an extension<a class="headerlink" href="#create-an-extension" title="Link to this heading">¶</a></h5>
 <p>Create a SIP extension that your softphone will register to. The <code class="docutils literal notranslate"><span class="pre">name</span></code> (String, Required) identifies the extension for dialing. The <code class="docutils literal notranslate"><span class="pre">detail</span></code> (String, Required) is a description. The <code class="docutils literal notranslate"><span class="pre">extension</span></code> (String, Required) and <code class="docutils literal notranslate"><span class="pre">password</span></code> (String, Required) are used for SIP authentication.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/extensions?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -895,7 +897,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) is the extension’s unique identifier — use it for <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/extensions/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/extensions/{id}</span></code>, or <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/extensions/{id}</span></code> operations. For dialing, use the <code class="docutils literal notranslate"><span class="pre">name</span></code> field instead. Save the <code class="docutils literal notranslate"><span class="pre">name</span></code> (String) — you will use it as the call destination in the <a class="reference internal" href="quickstart_realtime.html#quickstart-realtime"><span class="std std-ref">Real-Time Voice Interaction</span></a> scenario.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) is the extension’s unique identifier — use it for <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/extensions/{id}</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/extensions/{id}</span></code>, or <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/extensions/{id}</span></code> operations. For dialing, use the <code class="docutils literal notranslate"><span class="pre">name</span></code> field instead. Save the <code class="docutils literal notranslate"><span class="pre">name</span></code> (String) — you will use it as the call destination in the <a class="reference internal" href="#quickstart-realtime"><span class="std std-ref">Real-Time Voice Interaction</span></a> scenario.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
@@ -903,7 +905,7 @@
 </div>
 </section>
 <section id="register-linphone">
-<h4>Register Linphone<a class="headerlink" href="#register-linphone" title="Link to this heading">¶</a></h4>
+<h5>Register Linphone<a class="headerlink" href="#register-linphone" title="Link to this heading">¶</a></h5>
 <p>Configure your Linphone softphone to register with VoIPBIN using the extension credentials created above.</p>
 <p><strong>Linphone configuration:</strong></p>
 <div class="table-wrapper docutils container">
@@ -938,8 +940,10 @@
 <li><p>Save. Linphone should show <strong>Registered</strong> status within a few seconds.</p></li>
 </ol>
 <p>If registration succeeds, the status indicator turns green. If it fails, see Troubleshooting below.</p>
+</section>
+</section>
 <section id="id4">
-<h5>Troubleshooting<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h5>
+<h4>Troubleshooting<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>Extension creation returns 400 Bad Request:</strong></dt><dd><ul>
@@ -958,7 +962,6 @@
 </dl>
 </li>
 </ul>
-</section>
 </section>
 </section>
 <section id="receiving-events">
@@ -1024,13 +1027,13 @@
 </div>
 <p>The wildcard <code class="docutils literal notranslate"><span class="pre">*</span></code> subscribes to events from all resources of that type under your account.</p>
 <p><strong>Python example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
 <span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-token&gt;&quot;</span>
 <span class="n">customer_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-customer-id&gt;&quot;</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">event_type</span><span class="p">:</span>
@@ -1042,7 +1045,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[EVENT] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
         <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -1146,19 +1149,21 @@
 </div>
 <section id="call">
 <span id="quickstart-call"></span><h3>Call<a class="headerlink" href="#call" title="Link to this heading">¶</a></h3>
-<p>Make an outbound voice call to the extension you created in <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
+<p>Make an outbound voice call to the extension you created in <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
+<section id="id6">
+<h4>Prerequisites<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
-<li><p>A registered SIP extension and softphone. See <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
+<li><p>A registered SIP extension and softphone. See <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>. The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
+<p>Phone numbers must be in E.164 format: <code class="docutils literal notranslate"><span class="pre">+</span></code> followed by country code and number, no dashes or spaces (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>, <code class="docutils literal notranslate"><span class="pre">+821012345678</span></code>). The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number — using an unowned number will result in a <code class="docutils literal notranslate"><span class="pre">400</span> <span class="pre">Bad</span> <span class="pre">Request</span></code>. The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p>
 </div>
 <section id="make-your-first-call">
-<h4>Make your first call<a class="headerlink" href="#make-your-first-call" title="Link to this heading">¶</a></h4>
+<h5>Make your first call<a class="headerlink" href="#make-your-first-call" title="Link to this heading">¶</a></h5>
 <p>This example calls your registered extension and plays a text-to-speech greeting. Make sure Linphone is registered and ready to receive the call.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -1221,8 +1226,10 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>When calling an extension, the response contains a <code class="docutils literal notranslate"><span class="pre">groupcalls</span></code> array (not <code class="docutils literal notranslate"><span class="pre">calls</span></code>). The <code class="docutils literal notranslate"><span class="pre">groupcalls[0].id</span></code> (UUID) is the group call ID. The individual call IDs are in <code class="docutils literal notranslate"><span class="pre">groupcalls[0].call_ids</span></code> — use these with <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code> to check call status or <code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">/calls/{id}</span></code> to hang up. The <code class="docutils literal notranslate"><span class="pre">ring_method</span></code> (String) controls how multiple devices are rung (<code class="docutils literal notranslate"><span class="pre">ring_all</span></code> rings all registered devices simultaneously). For the full call lifecycle and advanced call scenarios, see <a class="reference internal" href="call_overview.html#call-overview"><span class="std std-ref">Call overview</span></a> and <a class="reference internal" href="call_tutorial.html#call-tutorial"><span class="std std-ref">Call tutorial</span></a>.</p>
 </div>
-<section id="id6">
-<h5>Troubleshooting<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h5>
+</section>
+</section>
+<section id="id7">
+<h4>Troubleshooting<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
@@ -1235,7 +1242,7 @@
 <li><dl class="simple">
 <dt><strong>Call created but Linphone does not ring:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Linphone is not registered, or the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> does not match the extension <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p></li>
-<li><p><strong>Fix:</strong> Verify Linphone shows “Registered” status. Verify the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> in the call request matches the extension <code class="docutils literal notranslate"><span class="pre">name</span></code> from <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a> exactly (case-sensitive).</p></li>
+<li><p><strong>Fix:</strong> Verify Linphone shows “Registered” status. Verify the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> in the call request matches the extension <code class="docutils literal notranslate"><span class="pre">name</span></code> from <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a> exactly (case-sensitive).</p></li>
 </ul>
 </dd>
 </dl>
@@ -1251,7 +1258,6 @@
 </ul>
 </section>
 </section>
-</section>
 <section id="real-time-voice-interaction">
 <span id="quickstart-realtime"></span><h3>Real-Time Voice Interaction<a class="headerlink" href="#real-time-voice-interaction" title="Link to this heading">¶</a></h3>
 <p>This scenario walks through making a call with live transcription and speaking into the call using the real-time TTS API.</p>
@@ -1260,12 +1266,14 @@
 <li><p>A live call with real-time speech-to-text transcription</p></li>
 <li><p>Real-time text-to-speech injected into the call via the Speaking API</p></li>
 </ul>
+<section id="id8">
+<h4>Prerequisites<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart_authentication.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
+<li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
 <li><p>A source phone number in E.164 format (e.g., <code class="docutils literal notranslate"><span class="pre">+15551234567</span></code>). Must be a number owned by your VoIPBIN account. Obtain available numbers via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>.</p></li>
 <li><p>Your customer ID (UUID). Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/customer</span></code> or from your admin console profile.</p></li>
-<li><p>A registered SIP extension and softphone. See <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
-<li><p>Event subscription set up (WebSocket or customer webhook). See <a class="reference internal" href="quickstart_events.html#quickstart-events"><span class="std std-ref">Receiving Events</span></a>.</p></li>
+<li><p>A registered SIP extension and softphone. See <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>.</p></li>
+<li><p>Event subscription set up (WebSocket or customer webhook). See <a class="reference internal" href="#quickstart-events"><span class="std std-ref">Receiving Events</span></a>.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1273,7 +1281,7 @@
 <p>This scenario requires a registered softphone (Linphone) to answer the call and speak. AI agents can execute all API calls and instruct the human for answering the call on Linphone. Set up event delivery before starting — you will need it to observe transcription events during the call.</p>
 </div>
 <section id="make-a-call-to-the-extension">
-<h4>Make a call to the extension<a class="headerlink" href="#make-a-call-to-the-extension" title="Link to this heading">¶</a></h4>
+<h5>Make a call to the extension<a class="headerlink" href="#make-a-call-to-the-extension" title="Link to this heading">¶</a></h5>
 <p>With event subscription configured and Linphone registered, make an outbound call to the extension. This call starts real-time transcription, plays a TTS greeting, and then sleeps to keep the call alive while you interact.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
@@ -1355,11 +1363,11 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>). The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>. The <code class="docutils literal notranslate"><span class="pre">sleep</span></code> <code class="docutils literal notranslate"><span class="pre">duration</span></code> (Integer, milliseconds) keeps the call alive — <code class="docutils literal notranslate"><span class="pre">600000</span></code> = 10 minutes. The <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action uses BCP47 language codes (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code>).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> number must be a VoIPBIN-owned number (from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>). The destination <code class="docutils literal notranslate"><span class="pre">type</span></code> is <code class="docutils literal notranslate"><span class="pre">extension</span></code> (not <code class="docutils literal notranslate"><span class="pre">tel</span></code>), and <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String) is the extension’s <code class="docutils literal notranslate"><span class="pre">name</span></code> field from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a>. The <code class="docutils literal notranslate"><span class="pre">sleep</span></code> <code class="docutils literal notranslate"><span class="pre">duration</span></code> (Integer, milliseconds) keeps the call alive — <code class="docutils literal notranslate"><span class="pre">600000</span></code> = 10 minutes. The <code class="docutils literal notranslate"><span class="pre">transcribe_start</span></code> action uses BCP47 language codes (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>, <code class="docutils literal notranslate"><span class="pre">ja-JP</span></code>).</p>
 </div>
 </section>
 <section id="observe-real-time-transcription">
-<h4>Observe real-time transcription<a class="headerlink" href="#observe-real-time-transcription" title="Link to this heading">¶</a></h4>
+<h5>Observe real-time transcription<a class="headerlink" href="#observe-real-time-transcription" title="Link to this heading">¶</a></h5>
 <p>After answering the call on Linphone, you receive transcription events via your configured event subscription (WebSocket or customer webhook). The examples below show WebSocket event payloads.</p>
 <p><strong>The TTS greeting appears first</strong> (<code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code> — VoIPBIN to caller):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
@@ -1394,7 +1402,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>If you run the Python WebSocket example from <a class="reference internal" href="quickstart_events.html#quickstart-events"><span class="std std-ref">Receiving Events</span></a>, you will see output like:</p>
+<p>If you run the Python WebSocket example from <a class="reference internal" href="#quickstart-events"><span class="std std-ref">Receiving Events</span></a>, you will see output like:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Subscribed</span> <span class="n">to</span> <span class="n">call</span> <span class="ow">and</span> <span class="n">transcribe</span> <span class="n">events</span><span class="o">.</span> <span class="n">Waiting</span><span class="o">...</span>
 <span class="p">[</span><span class="n">EVENT</span><span class="p">]</span> <span class="n">call_progressing</span>
 <span class="p">[</span><span class="n">TRANSCRIBE</span> <span class="n">out</span><span class="p">]</span> <span class="n">Hello</span><span class="o">.</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">VoIPBIN</span> <span class="n">real</span><span class="o">-</span><span class="n">time</span> <span class="n">voice</span> <span class="n">interaction</span> <span class="n">test</span><span class="o">...</span>
@@ -1403,7 +1411,7 @@
 </div>
 </section>
 <section id="create-a-speaking-stream">
-<h4>Create a speaking stream<a class="headerlink" href="#create-a-speaking-stream" title="Link to this heading">¶</a></h4>
+<h5>Create a speaking stream<a class="headerlink" href="#create-a-speaking-stream" title="Link to this heading">¶</a></h5>
 <p>While the call is active, you can inject real-time text-to-speech audio using the Speaking API. Create a speaking stream attached to the call.</p>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings</span></code> with:</p>
 <ul class="simple">
@@ -1455,7 +1463,7 @@
 </div>
 </section>
 <section id="speak-via-tts-api">
-<h4>Speak via TTS API<a class="headerlink" href="#speak-via-tts-api" title="Link to this heading">¶</a></h4>
+<h5>Speak via TTS API<a class="headerlink" href="#speak-via-tts-api" title="Link to this heading">¶</a></h5>
 <p>Send text to the speaking stream to have it spoken into the call in real time.</p>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> with:</p>
 <ul class="simple">
@@ -1493,13 +1501,15 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>You can call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> multiple times. Each call queues text for sequential playback. If you need to interrupt, call <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/flush</span></code> first, then <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/speakings/{id}/say</span></code> with new text. The <code class="docutils literal notranslate"><span class="pre">text</span></code> field has a 5000-character limit per request. Since transcription is still active, the TTS output will also appear in transcription events as <code class="docutils literal notranslate"><span class="pre">direction:</span> <span class="pre">&quot;out&quot;</span></code>.</p>
 </div>
-<section id="id7">
-<h5>Troubleshooting<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h5>
+</section>
+</section>
+<section id="id9">
+<h4>Troubleshooting<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>Call created but Linphone does not ring:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Linphone is not registered, or the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> does not match the extension <code class="docutils literal notranslate"><span class="pre">name</span></code>.</p></li>
-<li><p><strong>Fix:</strong> Verify Linphone shows “Registered” status. Verify the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> in the call request matches the extension <code class="docutils literal notranslate"><span class="pre">name</span></code> from the <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a> exactly (case-sensitive). See <a class="reference internal" href="quickstart_extension.html#quickstart-extension"><span class="std std-ref">Extension troubleshooting</span></a> for registration issues.</p></li>
+<li><p><strong>Fix:</strong> Verify Linphone shows “Registered” status. Verify the <code class="docutils literal notranslate"><span class="pre">target_name</span></code> in the call request matches the extension <code class="docutils literal notranslate"><span class="pre">name</span></code> from the <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension &amp; Softphone Setup</span></a> exactly (case-sensitive). See <a class="reference internal" href="#quickstart-extension"><span class="std std-ref">Extension troubleshooting</span></a> for registration issues.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1507,7 +1517,7 @@
 <li><dl class="simple">
 <dt><strong>No transcription events received:</strong></dt><dd><ul>
 <li><p><strong>Cause:</strong> Event subscription is not set up, or configuration is incorrect.</p></li>
-<li><p><strong>Fix:</strong> See <a class="reference internal" href="quickstart_events.html#quickstart-event-subscription"><span class="std std-ref">Event Subscription troubleshooting</span></a>.</p></li>
+<li><p><strong>Fix:</strong> See <a class="reference internal" href="#quickstart-event-subscription"><span class="std std-ref">Event Subscription troubleshooting</span></a>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1555,7 +1565,6 @@
 </ul>
 </section>
 </section>
-</section>
 <section id="sandbox">
 <span id="quickstart-sandbox"></span><h3>Sandbox<a class="headerlink" href="#sandbox" title="Link to this heading">¶</a></h3>
 <p>The VoIPBIN Sandbox lets you run the entire VoIPBIN platform on your local machine with a single command. No sign-up required — it comes with a pre-configured admin account and is ready to use immediately.</p>
@@ -1564,8 +1573,8 @@
 <p><strong>AI Implementation Hint</strong></p>
 <p>The Sandbox is a fully functional local VoIPBIN instance. When working with the Sandbox, replace all API URLs from <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net</span></code> to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.test:8443</span></code>. The Sandbox uses a self-signed SSL certificate, so add <code class="docutils literal notranslate"><span class="pre">-k</span></code> (insecure) flag to curl commands. The default credentials are <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code> / <code class="docutils literal notranslate"><span class="pre">admin&#64;localhost</span></code>.</p>
 </div>
-<section id="prerequisites">
-<h4>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h4>
+<section id="id10">
+<h4>Prerequisites<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Docker and Docker Compose v2</p></li>
 </ul>
@@ -1607,8 +1616,8 @@ $ sudo ./voipbin
 </pre></div>
 </div>
 </section>
-<section id="id8">
-<h4>Troubleshooting<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h4>
+<section id="id11">
+<h4>Troubleshooting<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>“init” or “start” command fails:</strong></dt><dd><ul>
@@ -1743,11 +1752,12 @@ $ sudo ./voipbin
 </li>
 <li><a class="reference internal" href="#set-up-your-test-environment">Set Up Your Test Environment</a><ul>
 <li><a class="reference internal" href="#extension-softphone-setup">Extension &amp; Softphone Setup</a><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#create-an-extension">Create an extension</a></li>
-<li><a class="reference internal" href="#register-linphone">Register Linphone</a><ul>
-<li><a class="reference internal" href="#id4">Troubleshooting</a></li>
+<li><a class="reference internal" href="#register-linphone">Register Linphone</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#id4">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#receiving-events">Receiving Events</a><ul>
@@ -1762,27 +1772,29 @@ $ sudo ./voipbin
 </li>
 <li><a class="reference internal" href="#make-your-first-hello-world">Make your first Hello World</a><ul>
 <li><a class="reference internal" href="#call">Call</a><ul>
-<li><a class="reference internal" href="#make-your-first-call">Make your first call</a><ul>
-<li><a class="reference internal" href="#id6">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id6">Prerequisites</a><ul>
+<li><a class="reference internal" href="#make-your-first-call">Make your first call</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a class="reference internal" href="#real-time-voice-interaction">Real-Time Voice Interaction</a><ul>
-<li><a class="reference internal" href="#make-a-call-to-the-extension">Make a call to the extension</a></li>
-<li><a class="reference internal" href="#observe-real-time-transcription">Observe real-time transcription</a></li>
-<li><a class="reference internal" href="#create-a-speaking-stream">Create a speaking stream</a></li>
-<li><a class="reference internal" href="#speak-via-tts-api">Speak via TTS API</a><ul>
 <li><a class="reference internal" href="#id7">Troubleshooting</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#real-time-voice-interaction">Real-Time Voice Interaction</a><ul>
+<li><a class="reference internal" href="#id8">Prerequisites</a><ul>
+<li><a class="reference internal" href="#make-a-call-to-the-extension">Make a call to the extension</a></li>
+<li><a class="reference internal" href="#observe-real-time-transcription">Observe real-time transcription</a></li>
+<li><a class="reference internal" href="#create-a-speaking-stream">Create a speaking stream</a></li>
+<li><a class="reference internal" href="#speak-via-tts-api">Speak via TTS API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id9">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#sandbox">Sandbox</a><ul>
-<li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#id10">Prerequisites</a></li>
 <li><a class="reference internal" href="#install-and-run">Install and Run</a></li>
 <li><a class="reference internal" href="#using-tutorials-with-the-sandbox">Using Tutorials with the Sandbox</a></li>
-<li><a class="reference internal" href="#id8">Troubleshooting</a></li>
+<li><a class="reference internal" href="#id11">Troubleshooting</a></li>
 </ul>
 </li>
 </ul>
@@ -1800,8 +1812,8 @@ $ sudo ./voipbin
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

@@ -5,7 +5,7 @@ Call
 Make an outbound voice call to the extension you created in :ref:`Extension & Softphone Setup <quickstart_extension>`.
 
 Prerequisites
-+++++++++++++
+~~~~~~~~~~~~~
 
 * A valid authentication token (String) or accesskey (String). See :ref:`Authentication <quickstart_authentication>`.
 * A source phone number in E.164 format (e.g., ``+15551234567``). Must be a number owned by your VoIPBIN account. Obtain available numbers via ``GET /numbers``.
@@ -16,7 +16,7 @@ Prerequisites
    Phone numbers must be in E.164 format: ``+`` followed by country code and number, no dashes or spaces (e.g., ``+15551234567``, ``+821012345678``). The ``source`` number must be a VoIPBIN-owned number — using an unowned number will result in a ``400 Bad Request``. The destination ``type`` is ``extension`` (not ``tel``), and ``target_name`` (String) is the extension's ``name`` field from the :ref:`Extension & Softphone Setup <quickstart_extension>`.
 
 Make your first call
-~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^
 This example calls your registered extension and plays a text-to-speech greeting. Make sure Linphone is registered and ready to receive the call.
 
 .. code::
@@ -84,7 +84,7 @@ Linphone rings — **answer the call** to hear the TTS greeting.
    When calling an extension, the response contains a ``groupcalls`` array (not ``calls``). The ``groupcalls[0].id`` (UUID) is the group call ID. The individual call IDs are in ``groupcalls[0].call_ids`` — use these with ``GET /calls/{id}`` to check call status or ``DELETE /calls/{id}`` to hang up. The ``ring_method`` (String) controls how multiple devices are rung (``ring_all`` rings all registered devices simultaneously). For the full call lifecycle and advanced call scenarios, see :ref:`Call overview <call-overview>` and :ref:`Call tutorial <call-tutorial>`.
 
 Troubleshooting
-+++++++++++++++
+~~~~~~~~~~~~~~~
 
 * **400 Bad Request:**
     * **Cause:** The ``source`` number is not owned by your VoIPBIN account, or the phone number is not in E.164 format.
