@@ -7,5 +7,8 @@ Define and manage flow variables that store dynamic data for use within automati
 
 **API Reference:** `Variable endpoints <https://api.voipbin.net/redoc/#tag/Variable>`_
 
-.. include:: variable_overview.rst
-.. include:: variable_variable.rst
+.. toctree::
+   :maxdepth: 2
+
+   variable_overview
+   variable_variable
