@@ -7,6 +7,9 @@ A message represents an SMS sent or received through the VoIPBIN platform, enabl
 
 **API Reference:** `Message endpoints <https://api.voipbin.net/redoc/#tag/Message>`_
 
-.. include:: message_overview.rst
-.. include:: message_struct_message.rst
-.. include:: message_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   message_overview
+   message_struct_message
+   message_tutorial
