@@ -297,6 +297,36 @@
 </pre></div>
 </div>
 <p><strong>State Descriptions</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>State</p></th>
+<th class="head"><p>What’s happening</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>initiating</p></td>
+<td><p>Call just entered the queue. Conference bridge being set up.</p></td>
+</tr>
+<tr class="row-odd"><td><p>waiting</p></td>
+<td><p>Caller is hearing wait flow. System is searching for agents.</p></td>
+</tr>
+<tr class="row-even"><td><p>connecting</p></td>
+<td><p>Agent found and being called. Caller still in wait flow.</p></td>
+</tr>
+<tr class="row-odd"><td><p>kicking</p></td>
+<td><p>Call is being removed (kicked) from the queue.</p></td>
+</tr>
+<tr class="row-even"><td><p>service</p></td>
+<td><p>Agent and caller are connected. Conversation in progress.</p></td>
+</tr>
+<tr class="row-odd"><td><p>done</p></td>
+<td><p>Call completed successfully. Agent finished helping caller.</p></td>
+</tr>
+<tr class="row-even"><td><p>abandoned</p></td>
+<td><p>Call ended before completion - caller hung up, timeout, etc.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="agent-searching">
 <h2>Agent Searching<a class="headerlink" href="#agent-searching" title="Link to this heading"></a></h2>
@@ -354,15 +384,12 @@ Queue Configuration:                    Agent Pool:
 <p><strong>Agent Status</strong></p>
 <p>The agent’s status must be “available” to receive queue calls:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Agent Statuses and Queue Eligibility:
-+----------------+---------------------------------------------+
-| Status         | Can receive queue calls?                    |
-+----------------+---------------------------------------------+
-| available      | [x] Yes - Agent is ready to take calls      |
-| busy           | [ ] No - Agent is handling another call     |
-| wrap-up        | [ ] No - Agent is finishing previous call   |
-| away           | [ ] No - Agent is temporarily away          |
-| offline        | [ ] No - Agent is not logged in             |
-+----------------+---------------------------------------------+
+.. list-table::
+
+   * - Status
+     - Can receive queue calls?
+   * - available busy wrap-up away offline
+     - [x] Yes - Agent is ready to take calls [ ] No - Agent is handling another call [ ] No - Agent is finishing previous cal [ ] No - Agent is temporarily away [ ] No - Agent is not logged in
 </pre></div>
 </div>
 <p><strong>Selection Method</strong></p>
@@ -608,29 +635,31 @@ Caller enters queue
 <span class="o">+--------------------------------------------------------------------------+</span>
 
 <span class="n">Queue</span><span class="p">:</span> <span class="s2">&quot;Customer Support&quot;</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
-<span class="o">|</span> <span class="n">total_incoming_count</span>            <span class="o">|</span> <span class="mi">1</span><span class="p">,</span><span class="mi">234</span> <span class="n">calls</span> <span class="n">entered</span> <span class="n">this</span> <span class="n">queue</span>        <span class="o">|</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
-<span class="o">|</span> <span class="n">total_serviced_count</span>            <span class="o">|</span> <span class="mi">1</span><span class="p">,</span><span class="mi">100</span> <span class="n">calls</span> <span class="n">reached</span> <span class="n">an</span> <span class="n">agent</span>          <span class="o">|</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
-<span class="o">|</span> <span class="n">total_abandoned_count</span>           <span class="o">|</span> <span class="mi">134</span> <span class="n">calls</span> <span class="n">abandoned</span> <span class="p">(</span><span class="mi">11</span><span class="o">%</span> <span class="n">abandon</span> <span class="n">rate</span><span class="p">)</span><span class="o">|</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">..</span> <span class="nb">list</span><span class="o">-</span><span class="n">table</span><span class="p">::</span>
+
+   <span class="o">*</span> <span class="o">-</span> <span class="n">total_incoming_count</span>
+     <span class="o">-</span> <span class="mi">1</span><span class="p">,</span><span class="mi">234</span> <span class="n">calls</span> <span class="n">entered</span> <span class="n">this</span> <span class="n">queue</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="n">total_serviced_count</span>
+     <span class="o">-</span> <span class="mi">1</span><span class="p">,</span><span class="mi">100</span> <span class="n">calls</span> <span class="n">reached</span> <span class="n">an</span> <span class="n">agent</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="n">total_abandoned_count</span>
+     <span class="o">-</span> <span class="mi">134</span> <span class="n">calls</span> <span class="n">abandoned</span> <span class="p">(</span><span class="mi">11</span><span class="o">%</span> <span class="n">abandon</span> <span class="n">r</span>
 </pre></div>
 </div>
 <p><strong>Per-Queuecall Metrics</strong></p>
 <p>Each call in the queue tracks:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Queuecall</span><span class="p">:</span> <span class="s2">&quot;abc-123-def&quot;</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
-<span class="o">|</span> <span class="n">duration_waiting</span>                <span class="o">|</span> <span class="mi">45</span><span class="p">,</span><span class="mi">000</span> <span class="n">ms</span> <span class="p">(</span><span class="mi">45</span> <span class="n">seconds</span> <span class="ow">in</span> <span class="n">wait</span> <span class="n">flow</span><span class="p">)</span>   <span class="o">|</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
-<span class="o">|</span> <span class="n">duration_service</span>                <span class="o">|</span> <span class="mi">180</span><span class="p">,</span><span class="mi">000</span> <span class="n">ms</span> <span class="p">(</span><span class="mi">3</span> <span class="n">minutes</span> <span class="k">with</span> <span class="n">agent</span><span class="p">)</span>     <span class="o">|</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
-<span class="o">|</span> <span class="n">tm_create</span>                       <span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">00</span> <span class="p">(</span><span class="n">entered</span> <span class="n">queue</span><span class="p">)</span>   <span class="o">|</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
-<span class="o">|</span> <span class="n">tm_service</span>                      <span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">45</span> <span class="p">(</span><span class="n">agent</span> <span class="n">connected</span><span class="p">)</span> <span class="o">|</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
-<span class="o">|</span> <span class="n">tm_end</span>                          <span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mi">45</span> <span class="p">(</span><span class="n">call</span> <span class="n">ended</span><span class="p">)</span>      <span class="o">|</span>
-<span class="o">+---------------------------------+---------------------------------------+</span>
+<span class="o">..</span> <span class="nb">list</span><span class="o">-</span><span class="n">table</span><span class="p">::</span>
+
+   <span class="o">*</span> <span class="o">-</span> <span class="n">duration_waiting</span>
+     <span class="o">-</span> <span class="mi">45</span><span class="p">,</span><span class="mi">000</span> <span class="n">ms</span> <span class="p">(</span><span class="mi">45</span> <span class="n">seconds</span> <span class="ow">in</span> <span class="n">wait</span> <span class="n">flow</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="n">duration_service</span>
+     <span class="o">-</span> <span class="mi">180</span><span class="p">,</span><span class="mi">000</span> <span class="n">ms</span> <span class="p">(</span><span class="mi">3</span> <span class="n">minutes</span> <span class="k">with</span> <span class="n">agent</span><span class="p">)</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="n">tm_create</span>
+     <span class="o">-</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">00</span> <span class="p">(</span><span class="n">entered</span> <span class="n">queue</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="n">tm_service</span>
+     <span class="o">-</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">30</span><span class="p">:</span><span class="mi">45</span> <span class="p">(</span><span class="n">agent</span> <span class="n">connect</span>
+   <span class="o">*</span> <span class="o">-</span> <span class="n">tm_end</span>
+     <span class="o">-</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">15</span> <span class="mi">10</span><span class="p">:</span><span class="mi">33</span><span class="p">:</span><span class="mi">45</span> <span class="p">(</span><span class="n">call</span> <span class="n">ended</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>Calculating Service Levels</strong></p>

@@ -67,51 +67,55 @@ Key properties of a customer account.
 
 **Core Properties**
 
-+------------------------+----------------------------------------------------------------+
-| Property               | Description                                                    |
-+========================+================================================================+
-| id                     | (UUID) Unique identifier for the customer account              |
-+------------------------+----------------------------------------------------------------+
-| name                   | (String) Display name of the organization                      |
-+------------------------+----------------------------------------------------------------+
-| detail                 | (String) Additional description or notes                       |
-+------------------------+----------------------------------------------------------------+
-| email                  | (String) Email address associated with the account             |
-+------------------------+----------------------------------------------------------------+
-| phone_number           | (String) Phone number associated with the account              |
-+------------------------+----------------------------------------------------------------+
-| address                | (String) Physical or mailing address                           |
-+------------------------+----------------------------------------------------------------+
-| webhook_method         | (enum string) HTTP method for webhooks: POST, GET, PUT, DELETE |
-+------------------------+----------------------------------------------------------------+
-| webhook_uri            | (String) URI for webhook event notifications                   |
-+------------------------+----------------------------------------------------------------+
-| billing_account_id     | (UUID) Default billing account. From ``GET /billing_accounts`` |
-+------------------------+----------------------------------------------------------------+
-| metadata               | (Object) Configuration flags. Contains ``rtp_debug`` (Boolean) |
-+------------------------+----------------------------------------------------------------+
-| email_verified         | (Boolean) Whether the email address has been verified          |
-+------------------------+----------------------------------------------------------------+
-| status                 | (enum string) Account status: initial, active, frozen,         |
-|                        | deleted, expired                                               |
-+------------------------+----------------------------------------------------------------+
-| identity_verification\_| (enum string) Identity verification state: none, pending,      |
-| status                 | verified, rejected                                             |
-+------------------------+----------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Property
+     - Description
+   * - id
+     - (UUID) Unique identifier for the customer account
+   * - name
+     - (String) Display name of the organization
+   * - detail
+     - (String) Additional description or notes
+   * - email
+     - (String) Email address associated with the account
+   * - phone_number
+     - (String) Phone number associated with the account
+   * - address
+     - (String) Physical or mailing address
+   * - webhook_method
+     - (enum string) HTTP method for webhooks: POST, GET, PUT, DELETE
+   * - webhook_uri
+     - (String) URI for webhook event notifications
+   * - billing_account_id
+     - (UUID) Default billing account. From ``GET /billing_accounts``
+   * - metadata
+     - (Object) Configuration flags. Contains ``rtp_debug`` (Boolean)
+   * - email_verified
+     - (Boolean) Whether the email address has been verified
+   * - status
+     - (enum string) Account status: initial, active, frozen, deleted, expired
+   * - identity_verification\_ status
+     - (enum string) Identity verification state: none, pending, verified, rejected
+
 
 **Timestamps**
 
-+------------------------+----------------------------------------------------------------+
-| Property               | Description                                                    |
-+========================+================================================================+
-| tm_deletion_scheduled  | (ISO 8601, nullable) When permanent deletion is scheduled      |
-+------------------------+----------------------------------------------------------------+
-| tm_create              | (ISO 8601) When the account was created                        |
-+------------------------+----------------------------------------------------------------+
-| tm_update              | (ISO 8601) When the account was last modified                  |
-+------------------------+----------------------------------------------------------------+
-| tm_delete              | (ISO 8601, nullable) When the account was deleted              |
-+------------------------+----------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Property
+     - Description
+   * - tm_deletion_scheduled
+     - (ISO 8601, nullable) When permanent deletion is scheduled
+   * - tm_create
+     - (ISO 8601) When the account was created
+   * - tm_update
+     - (ISO 8601) When the account was last modified
+   * - tm_delete
+     - (ISO 8601, nullable) When the account was deleted
+
 
 
 Managing Customers
@@ -204,20 +208,22 @@ Customer accounts follow a defined status lifecycle that governs account creatio
 
 **Status Values**
 
-+------------+-------------------------------------------------------------------+
-| Status     | Description                                                       |
-+============+===================================================================+
-| initial    | Account created, pending email verification.                      |
-+------------+-------------------------------------------------------------------+
-| active     | Normal operation, fully verified. All features available.          |
-+------------+-------------------------------------------------------------------+
-| frozen     | Deletion scheduled, 30-day grace period (or immediate deletion    |
-|            | in progress). Active calls terminated, new operations blocked.    |
-+------------+-------------------------------------------------------------------+
-| deleted    | Permanently deleted. All PII anonymized, all resources removed.   |
-+------------+-------------------------------------------------------------------+
-| expired    | Unverified signup expired. Account was never activated.           |
-+------------+-------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Status
+     - Description
+   * - initial
+     - Account created, pending email verification.
+   * - active
+     - Normal operation, fully verified. All features available.
+   * - frozen
+     - Deletion scheduled, 30-day grace period (or immediate deletion in progress). Active calls terminated, new operations blocked.
+   * - deleted
+     - Permanently deleted. All PII anonymized, all resources removed.
+   * - expired
+     - Unverified signup expired. Account was never activated.
+
 
 **Self-Service Unregistration**
 
@@ -478,27 +484,29 @@ Troubleshooting
 
 **Access Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Cannot access customer    | Verify API token is valid; check agent has     |
-| data                      | admin permission                               |
-+---------------------------+------------------------------------------------+
-| Resources not visible     | Ensure accessing correct customer ID; verify   |
-|                           | resource exists                                |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Cannot access customer data
+     - Verify API token is valid; check agent has admin permission
+   * - Resources not visible
+     - Ensure accessing correct customer ID; verify resource exists
+
 
 **Account Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Account frozen            | Account has deletion scheduled. Cancel with    |
-|                           | ``DELETE /auth/unregister`` to recover          |
-+---------------------------+------------------------------------------------+
-| Cannot update account     | Verify admin permissions; check account status |
-|                           | is ``active`` (frozen accounts are read-only)  |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Account frozen
+     - Account has deletion scheduled. Cancel with ``DELETE /auth/unregister`` to recover
+   * - Cannot update account
+     - Verify admin permissions; check account status is ``active`` (frozen accounts are read-only)
+
 
 
 Related Documentation

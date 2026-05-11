@@ -92,31 +92,64 @@ Each billing account is assigned a plan tier that determines both resource creat
 
 **Monthly Token Allocations**
 
-+----------------------+---------+---------+--------------+-----------+
-| Plan                 | Free    | Basic   | Professional | Unlimited |
-+======================+=========+=========+==============+===========+
-| Tokens per month     |     100 |   1,000 |       10,000 | unlimited |
-+----------------------+---------+---------+--------------+-----------+
+.. list-table::
+   :header-rows: 1
+
+   * - Plan
+     - Free
+     - Basic
+     - Professional
+     - Unlimited
+   * - Tokens per month
+     - 100
+     - 1,000
+     - 10,000
+     - unlimited
+
 
 Tokens are replenished at the scheduled top-up date. The current token balance is available in the ``balance_token`` field of the account.
 
 **Resource Limits**
 
-+----------------------+-------+-------+--------------+-----------+
-| Resource             | Free  | Basic | Professional | Unlimited |
-+======================+=======+=======+==============+===========+
-| Extensions           |     5 |    50 |          500 | unlimited |
-+----------------------+-------+-------+--------------+-----------+
-| Agents               |     5 |    50 |          500 | unlimited |
-+----------------------+-------+-------+--------------+-----------+
-| Queues               |     2 |    10 |          100 | unlimited |
-+----------------------+-------+-------+--------------+-----------+
-| Conferences          |     2 |    10 |          100 | unlimited |
-+----------------------+-------+-------+--------------+-----------+
-| Trunks               |     1 |     5 |           50 | unlimited |
-+----------------------+-------+-------+--------------+-----------+
-| Virtual Numbers      |     5 |    50 |          500 | unlimited |
-+----------------------+-------+-------+--------------+-----------+
+.. list-table::
+   :header-rows: 1
+
+   * - Resource
+     - Free
+     - Basic
+     - Professional
+     - Unlimited
+   * - Extensions
+     - 5
+     - 50
+     - 500
+     - unlimited
+   * - Agents
+     - 5
+     - 50
+     - 500
+     - unlimited
+   * - Queues
+     - 2
+     - 10
+     - 100
+     - unlimited
+   * - Conferences
+     - 2
+     - 10
+     - 100
+     - unlimited
+   * - Trunks
+     - 1
+     - 5
+     - 50
+     - unlimited
+   * - Virtual Numbers
+     - 5
+     - 50
+     - 500
+     - unlimited
+
 
 - When a resource limit is reached, further creation of that resource type is denied.
 - Only platform admins can change a customer's plan tier.
@@ -131,43 +164,75 @@ VoIPBIN uses per-minute billing for calls (rounded up to the next whole minute) 
 
 **Token Rates**
 
-+----------------------+------------------+----------------------------------------+
-| Service              | Token Cost       | Unit                                   |
-+======================+==================+========================================+
-| VN Calls             | 1 token          | Per minute (ceiling-rounded)           |
-+----------------------+------------------+----------------------------------------+
-| TTS (Text-to-Speech) | 3 tokens         | Per minute (ceiling-rounded)           |
-+----------------------+------------------+----------------------------------------+
-| Recording            | 3 tokens         | Per minute (ceiling-rounded)           |
-+----------------------+------------------+----------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Service
+     - Token Cost
+     - Unit
+   * - VN Calls
+     - 1 token
+     - Per minute (ceiling-rounded)
+   * - TTS (Text-to-Speech)
+     - 3 tokens
+     - Per minute (ceiling-rounded)
+   * - Recording
+     - 3 tokens
+     - Per minute (ceiling-rounded)
+
 
 **Credit Rates (Overflow and Credit-Only)**
 
 All credit rates are stored internally as int64 micros.
 
-+----------------------+------------------+------------------+-------------------------+
-| Service              | Rate (USD)       | Rate (micros)    | Unit                    |
-+======================+==================+==================+=========================+
-| VN Calls (overflow)  | $0.001           | 1,000            | Per minute              |
-+----------------------+------------------+------------------+-------------------------+
-| PSTN Outgoing Calls  | $0.01            | 10,000           | Per minute              |
-+----------------------+------------------+------------------+-------------------------+
-| PSTN Incoming Calls  | $0.01            | 10,000           | Per minute              |
-+----------------------+------------------+------------------+-------------------------+
-| SMS                  | $0.01            | 10,000           | Per message             |
-+----------------------+------------------+------------------+-------------------------+
-| Email                | $0.01            | 10,000           | Per message             |
-+----------------------+------------------+------------------+-------------------------+
-| Number Purchase      | $5.00            | 5,000,000        | Per number              |
-+----------------------+------------------+------------------+-------------------------+
-| Number Renewal       | $5.00            | 5,000,000        | Per number              |
-+----------------------+------------------+------------------+-------------------------+
-| TTS (overflow)       | $0.03            | 30,000           | Per minute              |
-+----------------------+------------------+------------------+-------------------------+
-| Recording (overflow) | $0.03            | 30,000           | Per minute              |
-+----------------------+------------------+------------------+-------------------------+
-| Extension Calls      | Free             | 0                | No charge               |
-+----------------------+------------------+------------------+-------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Service
+     - Rate (USD)
+     - Rate (micros)
+     - Unit
+   * - VN Calls (overflow)
+     - $0.001
+     - 1,000
+     - Per minute
+   * - PSTN Outgoing Calls
+     - $0.01
+     - 10,000
+     - Per minute
+   * - PSTN Incoming Calls
+     - $0.01
+     - 10,000
+     - Per minute
+   * - SMS
+     - $0.01
+     - 10,000
+     - Per message
+   * - Email
+     - $0.01
+     - 10,000
+     - Per message
+   * - Number Purchase
+     - $5.00
+     - 5,000,000
+     - Per number
+   * - Number Renewal
+     - $5.00
+     - 5,000,000
+     - Per number
+   * - TTS (overflow)
+     - $0.03
+     - 30,000
+     - Per minute
+   * - Recording (overflow)
+     - $0.03
+     - 30,000
+     - Per minute
+   * - Extension Calls
+     - Free
+     - 0
+     - No charge
+
 
 **How Token Consumption Works**
 
@@ -492,46 +557,46 @@ Troubleshooting
 
 **Balance Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Services being denied     | Check ``balance_credit`` and                   |
-|                           | ``balance_token`` on the account;              |
-|                           | add funds or upgrade plan if needed            |
-+---------------------------+------------------------------------------------+
-| Cannot add balance        | Verify admin permissions; check API token       |
-|                           | validity                                       |
-+---------------------------+------------------------------------------------+
-| Balance not updating      | Allow time for transaction processing; check    |
-|                           | billing ledger for recent entries               |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Services being denied
+     - Check ``balance_credit`` and ``balance_token`` on the account; add funds or upgrade plan if needed
+   * - Cannot add balance
+     - Verify admin permissions; check API token validity
+   * - Balance not updating
+     - Allow time for transaction processing; check billing ledger for recent entries
+
 
 **Token Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Tokens exhausted early    | Review billing ledger for usage patterns;       |
-|                           | consider upgrading plan tier for more tokens    |
-+---------------------------+------------------------------------------------+
-| Unexpected overflow       | Check ``balance_token`` on account; VN calls,   |
-|                           | TTS, and recording consume tokens first         |
-+---------------------------+------------------------------------------------+
-| Tokens not replenishing   | Check ``tm_next_topup`` on the account;         |
-|                           | tokens are replenished by the automated cron    |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Tokens exhausted early
+     - Review billing ledger for usage patterns; consider upgrading plan tier for more tokens
+   * - Unexpected overflow
+     - Check ``balance_token`` on account; VN calls, TTS, and recording consume tokens first
+   * - Tokens not replenishing
+     - Check ``tm_next_topup`` on the account; tokens are replenished by the automated cron
+
 
 **Billing Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Unexpected charges        | Review billing ledger entries; check if tokens  |
-|                           | were exhausted causing credit overflow          |
-+---------------------------+------------------------------------------------+
-| Rate seems wrong          | Verify current rate structure; note all credit  |
-|                           | amounts are in micros (divide by 1,000,000)    |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Unexpected charges
+     - Review billing ledger entries; check if tokens were exhausted causing credit overflow
+   * - Rate seems wrong
+     - Verify current rate structure; note all credit amounts are in micros (divide by 1,000,000)
+
 
 
 Related Documentation

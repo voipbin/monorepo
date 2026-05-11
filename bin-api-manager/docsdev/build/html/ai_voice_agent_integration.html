@@ -260,6 +260,33 @@
 <h3>API Components<a class="headerlink" href="#api-components" title="Link to this heading"></a></h3>
 <p><strong>Speaking API (Text-to-Speech)</strong></p>
 <p>The Speaking API creates a streaming TTS session on an active call or conference. You send text, and VoIPBIN synthesizes it into speech and injects the audio into the call.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Endpoint</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings</span></code></p></td>
+<td><p>Create a new speaking session on a call or conference</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/say</span></code></p></td>
+<td><p>Send text to be spoken. Can be called multiple times.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/flush</span></code></p></td>
+<td><p>Cancel current speech and clear queued text. Session stays open.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}/stop</span></code></p></td>
+<td><p>Terminate the speaking session.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/speakings</span></code></p></td>
+<td><p>List speaking sessions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/speakings/{id}</span></code></p></td>
+<td><p>Get speaking session details.</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Speaking Session Lifecycle:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">POST</span> <span class="o">/</span><span class="n">speakings</span>
      <span class="o">|</span>
@@ -285,8 +312,7 @@
 <td><p>Session is being created. TTS provider connection in progress.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">active</span></code></p></td>
-<td><p>Session is ready. Text sent via <code class="docutils literal notranslate"><span class="pre">/say</span></code> is synthesized and
-played into the call.</p></td>
+<td><p>Session is ready. Text sent via <code class="docutils literal notranslate"><span class="pre">/say</span></code> is synthesized and played into the call.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stopped</span></code></p></td>
 <td><p>Session has been terminated. No more text can be sent.</p></td>
@@ -294,6 +320,33 @@ played into the call.</p></td>
 </tbody>
 </table>
 <p><strong>Speaking Parameters:</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>reference_type</p></td>
+<td><p>(Required, String) Type of resource: <code class="docutils literal notranslate"><span class="pre">call</span></code> or <code class="docutils literal notranslate"><span class="pre">confbridge</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>reference_id</p></td>
+<td><p>(Required, UUID) ID of the call or conference. Obtained from <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code> or <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/calls</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p>language</p></td>
+<td><p>(Optional, String) BCP47 language code (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>). Defaults to provider default.</p></td>
+</tr>
+<tr class="row-odd"><td><p>provider</p></td>
+<td><p>(Optional, String) TTS provider. Defaults to <code class="docutils literal notranslate"><span class="pre">elevenlabs</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p>voice_id</p></td>
+<td><p>(Optional, String) Provider-specific voice ID (e.g., <code class="docutils literal notranslate"><span class="pre">21m00Tcm4TlvDq8ikWAM</span></code> for ElevenLabs).</p></td>
+</tr>
+<tr class="row-odd"><td><p>direction</p></td>
+<td><p>(Optional, String) Audio injection direction: <code class="docutils literal notranslate"><span class="pre">in</span></code>, <code class="docutils literal notranslate"><span class="pre">out</span></code>, <code class="docutils literal notranslate"><span class="pre">both</span></code>, or empty. See Direction Values below.</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Direction Values:</strong></p>
 <table class="docutils align-default">
 <thead>
@@ -335,6 +388,21 @@ played into the call.</p></td>
 <p><strong>Transcribe API (Speech-to-Text)</strong></p>
 <p>The Transcribe API captures audio from an active call or conference and converts it to text in real-time. For full details, see <a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a>.</p>
 <p>Key endpoints for this integration:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Endpoint</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/transcribes</span></code></p></td>
+<td><p>Start a transcription session on a call or conference</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/transcribes/{id}/stop</span></code></p></td>
+<td><p>Stop a transcription session</p></td>
+</tr>
+</tbody>
+</table>
 <p>Transcripts are delivered via <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> webhook events or WebSocket subscription. Each transcript includes:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code>: <code class="docutils literal notranslate"><span class="pre">in</span></code> (caller’s speech) or <code class="docutils literal notranslate"><span class="pre">out</span></code> (VoIPBIN’s speech toward caller)</p></li>
@@ -424,16 +492,12 @@ played into the call.</p></td>
 <td><p>Lower (persistent connection)</p></td>
 </tr>
 <tr class="row-odd"><td><p>Connection model</p></td>
-<td><p>Stateless — VoIPBIN POSTs to your
-endpoint</p></td>
-<td><p>Stateful — your client holds an open
-connection to VoIPBIN</p></td>
+<td><p>Stateless — VoIPBIN POSTs to your endpoint</p></td>
+<td><p>Stateful — your client holds an open connection to VoIPBIN</p></td>
 </tr>
 <tr class="row-even"><td><p>Best for</p></td>
-<td><p>Serverless backends, simple setups,
-multi-region redundancy</p></td>
-<td><p>Real-time voice agents, low-latency
-event loops, interactive dashboards</p></td>
+<td><p>Serverless backends, simple setups, multi-region redundancy</p></td>
+<td><p>Real-time voice agents, low-latency event loops, interactive dashboards</p></td>
 </tr>
 </tbody>
 </table>
@@ -505,50 +569,38 @@ event loops, interactive dashboards</p></td>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Aspect</p></th>
-<th class="head"><p>Custom Integration
-(this guide)</p></th>
+<th class="head"><p>Custom Integration (this guide)</p></th>
 <th class="head"><p>ai_talk (Managed)</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>AI Backend</p></td>
-<td><p>You manage your own LLM
-(any provider)</p></td>
-<td><p>VoIPBIN manages the LLM
-(configured via AI resource)</p></td>
+<td><p>You manage your own LLM (any provider)</p></td>
+<td><p>VoIPBIN manages the LLM (configured via AI resource)</p></td>
 </tr>
 <tr class="row-odd"><td><p>STT/TTS Control</p></td>
-<td colspan="2"><p>Individual API calls             | Automatic pipeline
-(<code class="docutils literal notranslate"><span class="pre">/transcribes</span></code>, <code class="docutils literal notranslate"><span class="pre">/speakings</span></code>)| (configured in flow action)</p></td>
+<td><p>Individual API calls (<code class="docutils literal notranslate"><span class="pre">/transcribes</span></code>, <code class="docutils literal notranslate"><span class="pre">/speakings</span></code></p></td>
+<td><p>Automatic pipeline (configured in flow action)</p></td>
 </tr>
 <tr class="row-even"><td><p>LLM Provider</p></td>
-<td><p>Any (OpenAI, Anthropic, local,
-custom, etc.)</p></td>
-<td><p>Must be one of the supported
-providers (see AI docs)</p></td>
+<td><p>Any (OpenAI, Anthropic, local, custom, etc.)</p></td>
+<td><p>Must be one of the supported providers (see AI docs)</p></td>
 </tr>
 <tr class="row-odd"><td><p>Tools/Functions</p></td>
 <td><p>Implement your own</p></td>
-<td><p>Built-in tools
-(connect_call, send_email, etc.)</p></td>
+<td><p>Built-in tools (connect_call, send_email, etc.)</p></td>
 </tr>
 <tr class="row-even"><td><p>Setup Complexity</p></td>
-<td><p>Higher (webhook server, loop
-management)</p></td>
-<td><p>Lower (configure AI resource
-and flow action)</p></td>
+<td><p>Higher (webhook server, loop management)</p></td>
+<td><p>Lower (configure AI resource and flow action)</p></td>
 </tr>
 <tr class="row-odd"><td><p>Flexibility</p></td>
-<td><p>Full control over AI logic,
-prompts, and conversation flow</p></td>
-<td><p>Limited to supported providers
-and tool set</p></td>
+<td><p>Full control over AI logic, prompts, and conversation flow</p></td>
+<td><p>Limited to supported providers and tool set</p></td>
 </tr>
 <tr class="row-even"><td><p>Best For</p></td>
-<td><p>Custom AI logic, proprietary
-models, complex pipelines</p></td>
-<td><p>Quick setup, standard
-conversational agents</p></td>
+<td><p>Custom AI logic, proprietary models, complex pipelines</p></td>
+<td><p>Quick setup, standard conversational agents</p></td>
 </tr>
 </tbody>
 </table>

@@ -47,15 +47,16 @@ When you send a message, VoIPBIN routes it through carrier networks to reach the
 
 **Message Types**
 
-+--------+------------------------------------------------------------------+
-| Type   | Description                                                      |
-+========+==================================================================+
-| SMS    | Text-only messages up to 160 characters (or 70 for Unicode).    |
-|        | Longer messages are split and reassembled by the recipient.     |
-+--------+------------------------------------------------------------------+
-| MMS    | Multimedia messages supporting images, videos, audio, and text. |
-|        | Subject line and multiple media attachments supported.          |
-+--------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Type
+     - Description
+   * - SMS
+     - Text-only messages up to 160 characters (or 70 for Unicode). Longer messages are split and reassembled by the recipient.
+   * - MMS
+     - Multimedia messages supporting images, videos, audio, and text. Subject line and multiple media attachments supported.
+
 
 
 Message Lifecycle
@@ -102,24 +103,26 @@ Every message moves through a predictable set of states from sending to delivery
 
 **Target Status Descriptions**
 
-+-------------+------------------------------------------------------------------+
-| Status      | What's happening                                                 |
-+=============+==================================================================+
-| queued      | Message is queued and submitted to the gateway                   |
-+-------------+------------------------------------------------------------------+
-| sent        | Gateway confirmed the message has been sent downstream           |
-+-------------+------------------------------------------------------------------+
-| delivered   | Message delivered to recipient (outbound) or transmitted to you  |
-|             | (inbound)                                                        |
-+-------------+------------------------------------------------------------------+
-| gw_timeout  | No delivery receipt received from gateway                        |
-+-------------+------------------------------------------------------------------+
-| dlr_timeout | No delivery receipt received from downstream carrier             |
-+-------------+------------------------------------------------------------------+
-| failed      | Delivery failure reported by gateway or downstream carrier       |
-+-------------+------------------------------------------------------------------+
-| received    | Inbound message received by VoIPBIN messaging services           |
-+-------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Status
+     - What's happening
+   * - queued
+     - Message is queued and submitted to the gateway
+   * - sent
+     - Gateway confirmed the message has been sent downstream
+   * - delivered
+     - Message delivered to recipient (outbound) or transmitted to you (inbound)
+   * - gw_timeout
+     - No delivery receipt received from gateway
+   * - dlr_timeout
+     - No delivery receipt received from downstream carrier
+   * - failed
+     - Delivery failure reported by gateway or downstream carrier
+   * - received
+     - Inbound message received by VoIPBIN messaging services
+
 
 **Inbound Message Flow**
 
@@ -222,13 +225,16 @@ Send messages as part of an automated flow.
 
 **When to Use Each Method**
 
-+-------------------+----------------------------------------------------------------+
-| Method            | Best for                                                       |
-+===================+================================================================+
-| API               | Direct integration, transactional messages, custom logic       |
-+-------------------+----------------------------------------------------------------+
-| Flow Action       | Automated responses, call-triggered SMS, workflow integration  |
-+-------------------+----------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Method
+     - Best for
+   * - API
+     - Direct integration, transactional messages, custom logic
+   * - Flow Action
+     - Automated responses, call-triggered SMS, workflow integration
+
 
 
 Receiving Messages
@@ -291,14 +297,19 @@ Understanding message limits and encoding helps optimize delivery.
 
 **SMS Character Limits**
 
-+-------------------+------------------+----------------------------------------+
-| Encoding          | Single Message   | Concatenated (per segment)             |
-+===================+==================+========================================+
-| GSM-7 (standard)  | 160 characters   | 153 characters                         |
-+-------------------+------------------+----------------------------------------+
-| Unicode (emoji,   | 70 characters    | 67 characters                          |
-| non-Latin)        |                  |                                        |
-+-------------------+------------------+----------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Encoding
+     - Single Message
+     - Concatenated (per segment)
+   * - GSM-7 (standard)
+     - 160 characters
+     - 153 characters
+   * - Unicode (emoji, non-Latin)
+     - 70 characters
+     - 67 characters
+
 
 **Long Message Handling**
 
@@ -319,17 +330,20 @@ Understanding message limits and encoding helps optimize delivery.
 
 **MMS Media Types**
 
-+-------------------+----------------------------------+
-| Media Type        | Supported Formats                |
-+===================+==================================+
-| Images            | JPEG, PNG, GIF                   |
-+-------------------+----------------------------------+
-| Video             | MP4, 3GP                         |
-+-------------------+----------------------------------+
-| Audio             | MP3, WAV                         |
-+-------------------+----------------------------------+
-| Documents         | PDF, vCard                       |
-+-------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Media Type
+     - Supported Formats
+   * - Images
+     - JPEG, PNG, GIF
+   * - Video
+     - MP4, 3GP
+   * - Audio
+     - MP3, WAV
+   * - Documents
+     - PDF, vCard
+
 
 
 Common Scenarios
@@ -448,44 +462,46 @@ Troubleshooting
 
 **Message Not Delivered**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Status stays "sending"    | Check carrier connectivity; verify destination |
-|                           | number format (+E.164)                         |
-+---------------------------+------------------------------------------------+
-| Status "failed"           | Check error code; common issues: invalid       |
-|                           | number, carrier rejection, insufficient credit |
-+---------------------------+------------------------------------------------+
-| Delivered but not         | Recipient's phone may be off or out of range;  |
-| received                  | carrier may delay delivery                     |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Status stays "sending"
+     - Check carrier connectivity; verify destination number format (+E.164)
+   * - Status "failed"
+     - Check error code; common issues: invalid number, carrier rejection, insufficient credit
+   * - Delivered but not received
+     - Recipient's phone may be off or out of range; carrier may delay delivery
+
 
 **Inbound Messages Not Received**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| No webhook calls          | Verify webhook URL is configured and publicly  |
-|                           | accessible                                     |
-+---------------------------+------------------------------------------------+
-| Webhook returns error     | Ensure endpoint returns 200 OK within 5        |
-|                           | seconds                                        |
-+---------------------------+------------------------------------------------+
-| Missing messages          | Check webhook logs; implement idempotency      |
-|                           | using message ID                               |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - No webhook calls
+     - Verify webhook URL is configured and publicly accessible
+   * - Webhook returns error
+     - Ensure endpoint returns 200 OK within 5 seconds
+   * - Missing messages
+     - Check webhook logs; implement idempotency using message ID
+
 
 **Character Encoding Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Message truncated         | Check for Unicode characters; they reduce      |
-|                           | character limit to 70                          |
-+---------------------------+------------------------------------------------+
-| Strange characters        | Ensure UTF-8 encoding in API requests          |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Message truncated
+     - Check for Unicode characters; they reduce character limit to 70
+   * - Strange characters
+     - Ensure UTF-8 encoding in API requests
+
 
 
 Related Documentation

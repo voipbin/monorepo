@@ -393,6 +393,27 @@
 <section id="number-types">
 <h2>Number Types<a class="headerlink" href="#number-types" title="Link to this heading"></a></h2>
 <p>VoIPBIN supports various number types for different use cases.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>local</p></td>
+<td><p>Geographic numbers tied to a specific city or region</p></td>
+</tr>
+<tr class="row-odd"><td><p>toll-free</p></td>
+<td><p>Numbers that are free to call (e.g., 1-800)</p></td>
+</tr>
+<tr class="row-even"><td><p>mobile</p></td>
+<td><p>Mobile phone numbers (where available)</p></td>
+</tr>
+<tr class="row-odd"><td><p>virtual</p></td>
+<td><p>Virtual numbers with +899 prefix. No provider purchase required. Designed for non-PSTN callers such as AI calls, WebRTC calls, and internal routing.</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Normal vs Virtual Number Routing</strong></p>
 <p>Normal numbers are routed through an external provider (Telnyx/Twilio) from the PSTN, while virtual numbers are routed internally from non-PSTN callers (AI calls, WebRTC, SIP clients) without any provider involvement.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Normal</span> <span class="n">Number</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">g</span><span class="o">.</span> <span class="o">+</span><span class="mi">15551234567</span><span class="p">)</span>
@@ -594,12 +615,10 @@ Result:
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Number not available</p></td>
-<td><p>Try different region or type; number may have
-been provisioned by another customer</p></td>
+<td><p>Try different region or type; number may have been provisioned by another customer</p></td>
 </tr>
 <tr class="row-odd"><td><p>Provisioning failed</p></td>
-<td><p>Check account balance; verify number format;
-contact support if issue persists</p></td>
+<td><p>Check account balance; verify number format; contact support if issue persists</p></td>
 </tr>
 </tbody>
 </table>
@@ -612,16 +631,13 @@ contact support if issue persists</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Calls not connecting</p></td>
-<td><p>Check flow is assigned; verify flow is valid;
-test flow in isolation</p></td>
+<td><p>Check flow is assigned; verify flow is valid; test flow in isolation</p></td>
 </tr>
 <tr class="row-odd"><td><p>Messages not received</p></td>
-<td><p>Verify message_flow_id is set; check carrier
-routing; review webhook logs</p></td>
+<td><p>Verify message_flow_id is set; check carrier routing; review webhook logs</p></td>
 </tr>
 <tr class="row-even"><td><p>Wrong flow executing</p></td>
-<td><p>Verify correct flow ID is assigned to number;
-check for flow execution errors</p></td>
+<td><p>Verify correct flow ID is assigned to number; check for flow execution errors</p></td>
 </tr>
 </tbody>
 </table>

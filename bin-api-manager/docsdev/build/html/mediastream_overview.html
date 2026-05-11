@@ -321,6 +321,32 @@
 - Text-to-speech from external service
 - Audio announcements</p>
 <p><strong>Mode Comparison</strong></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>Bi-Directional</p></th>
+<th class="head"><p>Uni-Directional</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Audio Direction</p></td>
+<td><p>Both send and receive</p></td>
+<td><p>Send only (to call)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Initiation</p></td>
+<td><p>API call (GET /media_stream)</p></td>
+<td><p>Flow action (external_media_start</p></td>
+</tr>
+<tr class="row-even"><td><p>Connection</p></td>
+<td><p>Your app connects to VoIPBIN</p></td>
+<td><p>VoIPBIN connects to your server</p></td>
+</tr>
+<tr class="row-odd"><td><p>Best for</p></td>
+<td><p>Interactive applications</p></td>
+<td><p>Playback applications</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="encapsulation-types">
 <h2>Encapsulation Types<a class="headerlink" href="#encapsulation-types" title="Link to this heading"></a></h2>
@@ -355,10 +381,10 @@
 </div>
 <p><strong>RTP (Real-time Transport Protocol)</strong></p>
 <p>The standard protocol for audio/video over IP networks.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------------------+------------------+</span>
-<span class="o">|</span>   <span class="n">RTP</span> <span class="n">Header</span>     <span class="o">|</span>   <span class="n">Audio</span> <span class="n">Payload</span>  <span class="o">|</span>
-<span class="o">|</span>   <span class="p">(</span><span class="mi">12</span> <span class="nb">bytes</span><span class="p">)</span>     <span class="o">|</span>   <span class="p">(</span><span class="mi">160</span> <span class="nb">bytes</span><span class="p">)</span>    <span class="o">|</span>
-<span class="o">+------------------+------------------+</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="nb">list</span><span class="o">-</span><span class="n">table</span><span class="p">::</span>
+
+   <span class="o">*</span> <span class="o">-</span> <span class="n">RTP</span> <span class="n">Header</span> <span class="p">(</span><span class="mi">12</span> <span class="nb">bytes</span><span class="p">)</span>
+     <span class="o">-</span> <span class="n">Audio</span> <span class="n">Paylo</span> <span class="p">(</span><span class="mi">160</span> <span class="nb">bytes</span><span class="p">)</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -424,9 +450,10 @@
 <p><strong>Best for:</strong> Minimal overhead, simple audio processing, direct PCM access without parsing.</p>
 <p><strong>AudioSocket</strong></p>
 <p>Asterisk-specific protocol designed for simple audio streaming.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+------------------+------------------+</span>
-<span class="o">|</span> <span class="n">AudioSocket</span> <span class="n">Hdr</span>  <span class="o">|</span>   <span class="n">PCM</span> <span class="n">Audio</span>      <span class="o">|</span>
-<span class="o">+------------------+------------------+</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">..</span> <span class="nb">list</span><span class="o">-</span><span class="n">table</span><span class="p">::</span>
+
+   <span class="o">*</span> <span class="o">-</span> <span class="n">AudioSocket</span> <span class="n">H</span>
+     <span class="o">-</span> <span class="n">r</span>  <span class="o">|</span>   <span class="n">PCM</span> <span class="n">Audio</span>
 </pre></div>
 </div>
 <table class="docutils align-default">
@@ -695,15 +722,13 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Connection refused</p></td>
-<td><p>Verify call/conference is active and
-in “progressing” status</p></td>
+<td><p>Verify call/conference is active and in “progressing” status</p></td>
 </tr>
 <tr class="row-odd"><td><p>401 Unauthorized</p></td>
 <td><p>Check API token is valid and has permissions</p></td>
 </tr>
 <tr class="row-even"><td><p>Connection drops</p></td>
-<td><p>Implement reconnection logic; check network
-stability</p></td>
+<td><p>Implement reconnection logic; check network stability</p></td>
 </tr>
 </tbody>
 </table>
@@ -716,20 +741,16 @@ stability</p></td>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>No audio received</p></td>
-<td><p>Verify call is answered and audio is flowing;
-check encapsulation type</p></td>
+<td><p>Verify call is answered and audio is flowing; check encapsulation type</p></td>
 </tr>
 <tr class="row-odd"><td><p>Audio quality poor</p></td>
-<td><p>Check network latency; verify correct audio
-format; monitor packet loss</p></td>
+<td><p>Check network latency; verify correct audio format; monitor packet loss</p></td>
 </tr>
 <tr class="row-even"><td><p>Audio choppy</p></td>
-<td><p>Implement jitter buffer; send in consistent
-20ms chunks; check CPU usage</p></td>
+<td><p>Implement jitter buffer; send in consistent 20ms chunks; check CPU usage</p></td>
 </tr>
 <tr class="row-odd"><td><p>Can’t send audio</p></td>
-<td><p>Use binary WebSocket frames; verify audio
-format matches encapsulation type</p></td>
+<td><p>Use binary WebSocket frames; verify audio format matches encapsulation type</p></td>
 </tr>
 </tbody>
 </table>

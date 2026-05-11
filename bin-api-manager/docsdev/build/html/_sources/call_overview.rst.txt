@@ -95,27 +95,24 @@ Every call in VoIPBIN follows a predictable lifecycle from creation to terminati
 
 **State Descriptions**
 
-+---------------+------------------------------------------------------------------+
-| Status        | What is happening                                                |
-+===============+==================================================================+
-| dialing       | Call has been created. The system is attempting to reach the     |
-|               | destination through the phone network.                           |
-+---------------+------------------------------------------------------------------+
-| ringing       | The destination device is ringing. The person being called can   |
-|               | now answer.                                                      |
-+---------------+------------------------------------------------------------------+
-| progressing   | The call has been answered. Both parties can now hear each       |
-|               | other. Media (audio/video) is flowing.                           |
-+---------------+------------------------------------------------------------------+
-| terminating   | The system is ending the call. This happens when your            |
-|               | application hangs up or a flow action ends the call.             |
-+---------------+------------------------------------------------------------------+
-| canceling     | The caller is canceling before the destination answered.         |
-|               | Only happens for outgoing calls.                                 |
-+---------------+------------------------------------------------------------------+
-| hangup        | The call has ended. This is the final state - no further         |
-|               | changes are possible.                                            |
-+---------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Status
+     - What is happening
+   * - dialing
+     - Call has been created. The system is attempting to reach the destination through the phone network.
+   * - ringing
+     - The destination device is ringing. The person being called can now answer.
+   * - progressing
+     - The call has been answered. Both parties can now hear each other. Media (audio/video) is flowing.
+   * - terminating
+     - The system is ending the call. This happens when your application hangs up or a flow action ends the call.
+   * - canceling
+     - The caller is canceling before the destination answered. Only happens for outgoing calls.
+   * - hangup
+     - The call has ended. This is the final state - no further changes are possible.
+
 
 **Key Behaviors**
 
@@ -211,39 +208,41 @@ When a call ends, VoIPBIN tells you why it ended. This helps you build appropria
 
 **Hangup Reason Values**
 
-+-------------+------------------------------------------------------------------+
-| Reason      | What happened                                                    |
-+=============+==================================================================+
-| normal      | The call ended normally after a conversation. Someone hung up.  |
-+-------------+------------------------------------------------------------------+
-| failed      | The call never connected. Network issues prevented the call     |
-|             | from reaching the destination.                                  |
-+-------------+------------------------------------------------------------------+
-| busy        | The destination is already on another call.                     |
-+-------------+------------------------------------------------------------------+
-| cancel      | The caller hung up before the destination answered.             |
-+-------------+------------------------------------------------------------------+
-| timeout     | The call exceeded maximum allowed duration after being          |
-|             | answered.                                                       |
-+-------------+------------------------------------------------------------------+
-| noanswer    | The destination phone rang but nobody picked up.                |
-+-------------+------------------------------------------------------------------+
-| dialout     | VoIPBIN's dialing timeout expired before the destination        |
-|             | answered. Different from noanswer - this is our timeout.        |
-+-------------+------------------------------------------------------------------+
-| amd         | The Answering Machine Detection (AMD) action detected a         |
-|             | voicemail and hung up according to your settings.               |
-+-------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Reason
+     - What happened
+   * - normal
+     - The call ended normally after a conversation. Someone hung up.
+   * - failed
+     - The call never connected. Network issues prevented the call from reaching the destination.
+   * - busy
+     - The destination is already on another call.
+   * - cancel
+     - The caller hung up before the destination answered.
+   * - timeout
+     - The call exceeded maximum allowed duration after being answered.
+   * - noanswer
+     - The destination phone rang but nobody picked up.
+   * - dialout
+     - VoIPBIN's dialing timeout expired before the destination answered. Different from noanswer - this is our timeout.
+   * - amd
+     - The Answering Machine Detection (AMD) action detected a voicemail and hung up according to your settings.
+
 
 **Hangup By Values**
 
-+-----------+--------------------------------------------------------------------+
-| Value     | What it means                                                      |
-+===========+====================================================================+
-| remote    | The other party hung up first. You were still in the call.        |
-+-----------+--------------------------------------------------------------------+
-| local     | Your application or flow action ended the call.                   |
-+-----------+--------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Value
+     - What it means
+   * - remote
+     - The other party hung up first. You were still in the call.
+   * - local
+     - Your application or flow action ended the call.
+
 
 **Common Scenarios**
 
@@ -455,17 +454,25 @@ Call chaining supports more than two parties. Each chained call connects to the 
           [Chaining]              v
                             [Conference]
 
-+-------------------+----------------------------------+----------------------------------+
-| Aspect            | Call Chaining                    | Conference                       |
-+===================+==================================+==================================+
-| Parties           | Sequential (transfer model)      | Simultaneous (meeting model)     |
-+-------------------+----------------------------------+----------------------------------+
-| Audio             | Bridged between pairs            | Mixed for all participants       |
-+-------------------+----------------------------------+----------------------------------+
-| Master Control    | Master hangup ends all           | Host controls conference         |
-+-------------------+----------------------------------+----------------------------------+
-| Best For          | Transfers, escalation, queues    | Meetings, group calls            |
-+-------------------+----------------------------------+----------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Aspect
+     - Call Chaining
+     - Conference
+   * - Parties
+     - Sequential (transfer model)
+     - Simultaneous (meeting model)
+   * - Audio
+     - Bridged between pairs
+     - Mixed for all participants
+   * - Master Control
+     - Master hangup ends all
+     - Host controls conference
+   * - Best For
+     - Transfers, escalation, queues
+     - Meetings, group calls
+
 
 
 Timestamps Explained
@@ -486,19 +493,22 @@ Each call tracks important moments in its lifecycle:
        Call created              Phone started           Call answered            Call ended
                                    ringing
 
-+------------------+--------------------------------------------------------------+
-| Timestamp        | When it's set                                                |
-+==================+==============================================================+
-| tm_create        | When the call object was created in VoIPBIN                  |
-+------------------+--------------------------------------------------------------+
-| tm_ringing       | When the destination phone started ringing                   |
-+------------------+--------------------------------------------------------------+
-| tm_progressing   | When the call was answered                                   |
-+------------------+--------------------------------------------------------------+
-| tm_hangup        | When the call ended                                          |
-+------------------+--------------------------------------------------------------+
-| tm_update        | Last time any call property changed                          |
-+------------------+--------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Timestamp
+     - When it's set
+   * - tm_create
+     - When the call object was created in VoIPBIN
+   * - tm_ringing
+     - When the destination phone started ringing
+   * - tm_progressing
+     - When the call was answered
+   * - tm_hangup
+     - When the call ended
+   * - tm_update
+     - Last time any call property changed
+
 
 **Calculating Durations**
 
@@ -554,19 +564,28 @@ When an outgoing call fails during dialing or ringing, VoIPBIN can automatically
 
 Not all failures trigger failover. VoIPBIN only tries the next route when recovery is possible:
 
-+------------------------+----------+------------------------------------------------+
-| Hangup Reason          | Failover | Why                                            |
-+========================+==========+================================================+
-| failed                 | Yes      | Network issue - another route might work       |
-+------------------------+----------+------------------------------------------------+
-| busy                   | No       | The person is busy - trying again won't help   |
-+------------------------+----------+------------------------------------------------+
-| noanswer               | No       | They didn't answer - their choice              |
-+------------------------+----------+------------------------------------------------+
-| cancel                 | No       | Caller cancelled - no need to retry            |
-+------------------------+----------+------------------------------------------------+
-| normal                 | No       | Call succeeded - nothing to retry              |
-+------------------------+----------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Hangup Reason
+     - Failover
+     - Why
+   * - failed
+     - Yes
+     - Network issue - another route might work
+   * - busy
+     - No
+     - The person is busy - trying again won't help
+   * - noanswer
+     - No
+     - They didn't answer - their choice
+   * - cancel
+     - No
+     - Caller cancelled - no need to retry
+   * - normal
+     - No
+     - Call succeeded - nothing to retry
+
 
 **No Failover Cases**
 
@@ -704,23 +723,25 @@ You can control whether the caller ID is shown or hidden on outgoing PSTN calls.
 
 **Where anonymous caller ID can be set:**
 
-+-------------------------------------------+----------------------------------------------+-------------------------------+
-| Outbound call path                        | Where to set ``anonymous``                   | Default                       |
-+===========================================+==============================================+===============================+
-| API-initiated call                        | ``anonymous`` field in ``POST               | ``"auto"``                    |
-|                                           | https://api.voipbin.net/v1.0/calls``        |                               |
-|                                           | request body                                |                               |
-+-------------------------------------------+----------------------------------------------+-------------------------------+
-| Flow ``connect`` action                   | ``anonymous`` field in the ``connect``       | ``"auto"``                    |
-|                                           | action's ``option`` object                   |                               |
-+-------------------------------------------+----------------------------------------------+-------------------------------+
-| Flow ``call`` action                      | ``anonymous`` field in the ``call``          | ``"auto"``                    |
-|                                           | action's ``option`` object                   |                               |
-+-------------------------------------------+----------------------------------------------+-------------------------------+
-| Registered endpoint outbound call         | Automatic — inherited from the incoming      | ``"auto"`` (always)           |
-| (SIP phone dialing out via VoIPBIN)       | SIP ``Privacy`` header. Cannot be            |                               |
-|                                           | overridden by the user.                      |                               |
-+-------------------------------------------+----------------------------------------------+-------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Outbound call path
+     - Where to set ``anonymous``
+     - Default
+   * - API-initiated call
+     - ``anonymous`` field in ``POST https://api.voipbin.net/v1.0/calls`` request body
+     - ``"auto"``
+   * - Flow ``connect`` action
+     - ``anonymous`` field in the ``connect`` action's ``option`` object
+     - ``"auto"``
+   * - Flow ``call`` action
+     - ``anonymous`` field in the ``call`` action's ``option`` object
+     - ``"auto"``
+   * - Registered endpoint outbound call (SIP phone dialing out via VoIPBIN)
+     - Automatic — inherited from the incoming SIP ``Privacy`` header. Cannot be overridden by the user.
+     - ``"auto"`` (always)
+
 
 **Allowed values:**
 
@@ -801,19 +822,22 @@ The VoIPBIN system have robust error handling mechanisms to gracefully manage su
 
 **Common Error Scenarios**
 
-+----------------------+------------------------------------------------------------------+
-| Scenario             | What happens                                                     |
-+======================+==================================================================+
-| Network unreachable  | Call fails immediately with hangup_reason: "failed"             |
-+----------------------+------------------------------------------------------------------+
-| Destination busy     | Call ends with hangup_reason: "busy" - no retry                 |
-+----------------------+------------------------------------------------------------------+
-| No answer timeout    | Call ends with hangup_reason: "noanswer" after ring timeout     |
-+----------------------+------------------------------------------------------------------+
-| Dial timeout         | Call ends with hangup_reason: "dialout" - our timeout expired   |
-+----------------------+------------------------------------------------------------------+
-| Call rejected        | Call ends with hangup_reason: "noanswer" - destination refused  |
-+----------------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Scenario
+     - What happens
+   * - Network unreachable
+     - Call fails immediately with hangup_reason: "failed"
+   * - Destination busy
+     - Call ends with hangup_reason: "busy" - no retry
+   * - No answer timeout
+     - Call ends with hangup_reason: "noanswer" after ring timeout
+   * - Dial timeout
+     - Call ends with hangup_reason: "dialout" - our timeout expired
+   * - Call rejected
+     - Call ends with hangup_reason: "noanswer" - destination refused
+
 
 
 Call concept
@@ -855,43 +879,44 @@ Troubleshooting
 
 **Call Creation Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Call stuck in "dialing"   | Check destination number is valid E.164 format;|
-|                           | verify route exists for destination             |
-+---------------------------+------------------------------------------------+
-| Call immediately hangs up | Check ``hangup_reason`` field: ``failed`` means |
-|                           | network issue; ``busy`` means destination is on |
-|                           | another call                                   |
-+---------------------------+------------------------------------------------+
-| No flow executing after   | Verify ``flow_id`` is set on the call or on the|
-| call answers              | number configuration via ``GET /numbers``       |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Call stuck in "dialing"
+     - Check destination number is valid E.164 format; verify route exists for destination
+   * - Call immediately hangs up
+     - Check ``hangup_reason`` field: ``failed`` means network issue; ``busy`` means destination is on another call
+   * - No flow executing after call answers
+     - Verify ``flow_id`` is set on the call or on the number configuration via ``GET /numbers``
+
 
 **Media Control Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Hold/mute not working     | Verify call status is ``progressing``; media    |
-|                           | controls only work on answered calls            |
-+---------------------------+------------------------------------------------+
-| Recording not starting    | Check call is in ``progressing`` state; verify  |
-|                           | billing account has sufficient balance          |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Hold/mute not working
+     - Verify call status is ``progressing``; media controls only work on answered calls
+   * - Recording not starting
+     - Check call is in ``progressing`` state; verify billing account has sufficient balance
+
 
 **Call Chaining Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Chained calls not created | Verify master call is in ``dialing``,           |
-|                           | ``ringing``, or ``progressing`` state           |
-+---------------------------+------------------------------------------------+
-| All calls ended           | Master call hangup cascades to all chained      |
-| unexpectedly              | calls; check master call ``hangup_reason``      |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Chained calls not created
+     - Verify master call is in ``dialing``, ``ringing``, or ``progressing`` state
+   * - All calls ended unexpectedly
+     - Master call hangup cascades to all chained calls; check master call ``hangup_reason``
+
 
 
 Related Documentation

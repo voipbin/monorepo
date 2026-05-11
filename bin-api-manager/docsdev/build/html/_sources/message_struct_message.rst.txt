@@ -90,12 +90,14 @@ Type
 ----
 Message's type.
 
-+------------+------------------------------------------------------------------+
-| Type       | Description                                                      |
-+============+==================================================================+
-| sms        | Standard SMS text message. Limited to 160 characters per segment |
-|            | (GSM-7 encoding) or 70 characters (Unicode encoding).           |
-+------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Type
+     - Description
+   * - sms
+     - Standard SMS text message. Limited to 160 characters per segment (GSM-7 encoding) or 70 characters (Unicode encoding).
+
 
 .. _message-struct-message-direction:
 
@@ -103,12 +105,13 @@ Direction
 ---------
 Message's direction.
 
-+------------+------------------------------------------------------------------+
-| Direction  | Description                                                      |
-+============+==================================================================+
-| inbound    | Incoming message received from an external sender to your        |
-|            | VoIPBIN number. Delivered to your application via webhook.       |
-+------------+------------------------------------------------------------------+
-| outbound   | Outgoing message sent from your application via the VoIPBIN API  |
-|            | to an external recipient.                                        |
-+------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Direction
+     - Description
+   * - inbound
+     - Incoming message received from an external sender to your VoIPBIN number. Delivered to your application via webhook.
+   * - outbound
+     - Outgoing message sent from your application via the VoIPBIN API to an external recipient.
+

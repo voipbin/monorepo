@@ -84,32 +84,34 @@ Every email moves through states from composition to delivery.
 
 **State Descriptions**
 
-+---------------+------------------------------------------------------------------+
-| State         | What's happening                                                 |
-+===============+==================================================================+
-| (empty)       | Email has no status yet                                          |
-+---------------+------------------------------------------------------------------+
-| initiated     | Email has been initiated and submitted for processing             |
-+---------------+------------------------------------------------------------------+
-| processed     | Email has been received and is being processed by the provider   |
-+---------------+------------------------------------------------------------------+
-| delivered     | Email was accepted by the recipient's mail server                |
-+---------------+------------------------------------------------------------------+
-| open          | Recipient opened the email                                       |
-+---------------+------------------------------------------------------------------+
-| click         | Recipient clicked a link in the email                            |
-+---------------+------------------------------------------------------------------+
-| bounce        | Email bounced (permanent or temporary delivery failure)          |
-+---------------+------------------------------------------------------------------+
-| dropped       | Provider dropped the email (invalid recipient, spam report, or   |
-|               | blocked IP)                                                      |
-+---------------+------------------------------------------------------------------+
-| deferred      | Provider has temporarily deferred delivery; will retry later     |
-+---------------+------------------------------------------------------------------+
-| unsubscribe   | Recipient unsubscribed from the email list                       |
-+---------------+------------------------------------------------------------------+
-| spamreport    | Recipient marked the email as spam                               |
-+---------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - State
+     - What's happening
+   * - (empty)
+     - Email has no status yet
+   * - initiated
+     - Email has been initiated and submitted for processing
+   * - processed
+     - Email has been received and is being processed by the provider
+   * - delivered
+     - Email was accepted by the recipient's mail server
+   * - open
+     - Recipient opened the email
+   * - click
+     - Recipient clicked a link in the email
+   * - bounce
+     - Email bounced (permanent or temporary delivery failure)
+   * - dropped
+     - Provider dropped the email (invalid recipient, spam report, or blocked IP)
+   * - deferred
+     - Provider has temporarily deferred delivery; will retry later
+   * - unsubscribe
+     - Recipient unsubscribed from the email list
+   * - spamreport
+     - Recipient marked the email as spam
+
 
 
 Sending Emails
@@ -223,25 +225,28 @@ Understanding email structure helps you create effective messages.
 
 **Email Fields**
 
-+-------------------+------------------------------------------------------------------+
-| Field             | Description                                                      |
-+===================+==================================================================+
-| from              | Sender email address and optional display name                   |
-+-------------------+------------------------------------------------------------------+
-| to                | List of recipient email addresses                                |
-+-------------------+------------------------------------------------------------------+
-| cc                | Carbon copy recipients (visible to all)                          |
-+-------------------+------------------------------------------------------------------+
-| bcc               | Blind carbon copy recipients (hidden from others)                |
-+-------------------+------------------------------------------------------------------+
-| subject           | Email subject line                                               |
-+-------------------+------------------------------------------------------------------+
-| content.text      | Plain text version of the email body                             |
-+-------------------+------------------------------------------------------------------+
-| content.html      | HTML version of the email body                                   |
-+-------------------+------------------------------------------------------------------+
-| attachments       | List of file attachments                                         |
-+-------------------+------------------------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Field
+     - Description
+   * - from
+     - Sender email address and optional display name
+   * - to
+     - List of recipient email addresses
+   * - cc
+     - Carbon copy recipients (visible to all)
+   * - bcc
+     - Blind carbon copy recipients (hidden from others)
+   * - subject
+     - Email subject line
+   * - content.text
+     - Plain text version of the email body
+   * - content.html
+     - HTML version of the email body
+   * - attachments
+     - List of file attachments
+
 
 
 Content Best Practices
@@ -272,19 +277,20 @@ Create emails that render well and avoid spam filters.
 
 **Content Guidelines**
 
-+---------------------------+------------------------------------------------+
-| Do                        | Don't                                          |
-+===========================+================================================+
-| Use inline CSS styles    | Use external stylesheets                       |
-+---------------------------+------------------------------------------------+
-| Use table-based layouts  | Rely on CSS floats or flexbox                  |
-+---------------------------+------------------------------------------------+
-| Include plain text       | Send HTML-only emails                          |
-| version                  |                                                |
-+---------------------------+------------------------------------------------+
-| Test across email        | Assume all clients render the same             |
-| clients                  |                                                |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Do
+     - Don't
+   * - Use inline CSS styles
+     - Use external stylesheets
+   * - Use table-based layouts
+     - Rely on CSS floats or flexbox
+   * - Include plain text version
+     - Send HTML-only emails
+   * - Test across email clients
+     - Assume all clients render the same
+
 
 
 Common Scenarios
@@ -408,39 +414,46 @@ Troubleshooting
 
 **Delivery Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Email bounced             | Check recipient address validity; verify       |
-|                           | mailbox exists                                 |
-+---------------------------+------------------------------------------------+
-| Marked as spam            | Review content for spam triggers; check        |
-|                           | sender reputation                              |
-+---------------------------+------------------------------------------------+
-| Delayed delivery          | Check sending rate; verify no throttling       |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Email bounced
+     - Check recipient address validity; verify mailbox exists
+   * - Marked as spam
+     - Review content for spam triggers; check sender reputation
+   * - Delayed delivery
+     - Check sending rate; verify no throttling
+
 
 **Rendering Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| HTML not displaying       | Use inline CSS; avoid external resources       |
-+---------------------------+------------------------------------------------+
-| Images not showing        | Use absolute URLs; include alt text            |
-+---------------------------+------------------------------------------------+
-| Layout broken             | Use table-based layouts; test across clients   |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - HTML not displaying
+     - Use inline CSS; avoid external resources
+   * - Images not showing
+     - Use absolute URLs; include alt text
+   * - Layout broken
+     - Use table-based layouts; test across clients
+
 
 **Attachment Issues**
 
-+---------------------------+------------------------------------------------+
-| Symptom                   | Solution                                       |
-+===========================+================================================+
-| Attachment blocked        | Avoid executable files; use common formats     |
-+---------------------------+------------------------------------------------+
-| File too large            | Compress files; use file hosting links         |
-+---------------------------+------------------------------------------------+
+.. list-table::
+   :header-rows: 1
+
+   * - Symptom
+     - Solution
+   * - Attachment blocked
+     - Avoid executable files; use common formats
+   * - File too large
+     - Compress files; use file hosting links
+
 
 
 Related Documentation
