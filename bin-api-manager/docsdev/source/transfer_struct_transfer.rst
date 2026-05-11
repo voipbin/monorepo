@@ -1,7 +1,7 @@
 .. _transfer-struct-transfer:
 
-Transfer
-========
+Transfer Struct
+===============
 
 .. _transfer-struct-transfer-transfer:
 
