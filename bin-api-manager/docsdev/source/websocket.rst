@@ -7,6 +7,9 @@ Stream real-time events from VoIPBIN services over a persistent WebSocket connec
 
 **API Reference:** `Websocket endpoints <https://api.voipbin.net/redoc/#tag/Websocket>`_
 
-.. include:: websocket_overview.rst
-.. include:: websocket_struct.rst
-.. include:: websocket_tutorial.rst
+.. toctree::
+   :maxdepth: 2
+
+   websocket_overview
+   websocket_struct
+   websocket_tutorial

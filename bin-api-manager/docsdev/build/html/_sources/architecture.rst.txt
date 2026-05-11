@@ -14,13 +14,16 @@ Deep dive into VoIPBIN's internal architecture, microservices, communication pat
 
    VoIPBIN uses RabbitMQ RPC for all inter-service communication, not HTTP. When making API calls, use ``https://api.voipbin.net/v1.0/`` as the base URL. The API gateway (bin-api-manager) handles authentication and routes requests internally via RabbitMQ to the appropriate backend service.
 
-.. include:: architecture_overview.rst
-.. include:: architecture_backend.rst
-.. include:: architecture_communication.rst
-.. include:: architecture_data.rst
-.. include:: architecture_dataflow.rst
-.. include:: architecture_rtc.rst
-.. include:: architecture_flow.rst
-.. include:: architecture_sequences.rst
-.. include:: architecture_deployment.rst
-.. include:: architecture_security.rst
+.. toctree::
+   :maxdepth: 2
+
+   architecture_overview
+   architecture_backend
+   architecture_communication
+   architecture_data
+   architecture_dataflow
+   architecture_rtc
+   architecture_flow
+   architecture_sequences
+   architecture_deployment
+   architecture_security
