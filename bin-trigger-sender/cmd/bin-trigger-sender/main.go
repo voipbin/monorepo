@@ -119,9 +119,12 @@ func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) e
 		return fmt.Errorf("marshal request: %w", err)
 	}
 
-	err = ch.PublishWithContext(context.Background(), "", queue, false, false,
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutMs)*time.Millisecond)
+	defer cancel()
+
+	err = ch.PublishWithContext(ctx, "", queue, false, false,
 		amqp.Publishing{
-			ContentType: "text/plain",
+			ContentType: "application/json",
 			ReplyTo:     replyQ.Name,
 			Body:        body,
 		})
@@ -129,9 +132,6 @@ func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) e
 		return fmt.Errorf("publish: %w", err)
 	}
 	log.Infof("Sent request to queue=%s uri=%s method=%s", queue, uri, method)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutMs)*time.Millisecond)
-	defer cancel()
 
 	select {
 	case <-ctx.Done():
@@ -145,6 +145,7 @@ func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) e
 		if res.StatusCode < 200 || res.StatusCode >= 300 {
 			return fmt.Errorf("non-2xx response: %d", res.StatusCode)
 		}
+		log.Infof("Request completed successfully")
 		return nil
 	}
 }
