@@ -46,6 +46,7 @@ workflows:
             bin-timeline-manager/.*     run-bin-timeline-manager true
             bin-transcribe-manager/.*   run-bin-transcribe-manager true
             bin-transfer-manager/.*     run-bin-transfer-manager true
+            bin-trigger-sender/.*       run-bin-trigger-sender true
             bin-tts-manager/.*          run-bin-tts-manager true
             bin-webhook-manager/.*      run-bin-webhook-manager true
 

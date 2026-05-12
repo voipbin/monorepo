@@ -147,6 +147,10 @@ parameters:
     type: boolean
     default: false
 
+  run-bin-trigger-sender:
+    type: boolean
+    default: false
+
   run-bin-tts-manager:
     type: boolean
     default: false
@@ -700,6 +704,19 @@ workflows:
           <<: *context_production
           requires:
             - bin-transfer-manager-build
+
+  bin-trigger-sender:
+    when: << pipeline.parameters.run-bin-trigger-sender >>
+    jobs:
+      - build-approval:
+          type: approval
+      - bin-trigger-sender-test:
+          requires:
+            - build-approval
+      - bin-trigger-sender-build:
+          <<: *context_production
+          requires:
+            - bin-trigger-sender-test
 
   bin-tts-manager:
     when: << pipeline.parameters.run-bin-tts-manager >>
@@ -1617,6 +1634,23 @@ jobs:
           project-repository: bin-transfer-manager
           image-name: transfer-manager
           source-directory: bin-transfer-manager
+
+  # bin-trigger-sender
+  bin-trigger-sender-test:
+    docker: *go_image
+    resource_class: small
+    steps:
+      - go-test:
+          source-directory: bin-trigger-sender
+
+  bin-trigger-sender-build:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - docker-build:
+          project-id: voipbin
+          project-repository: bin-trigger-sender
+          source-directory: bin-trigger-sender
 
   # bin-tts-manager
   bin-tts-manager-test:
