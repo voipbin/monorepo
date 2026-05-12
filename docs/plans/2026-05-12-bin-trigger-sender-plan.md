@@ -183,7 +183,16 @@ go mod tidy
 
 Expected: `go.sum` created, no errors.
 
-**Step 5: Commit skeleton**
+**Step 5: Verify build before committing**
+
+```bash
+cd bin-trigger-sender
+go mod tidy && go mod vendor && go build ./...
+```
+
+Expected: compiles cleanly with no errors. (Tests come in Task 2 — `go test ./...` is not required here.)
+
+**Step 6: Commit skeleton**
 
 ```bash
 git add bin-trigger-sender/
@@ -368,7 +377,16 @@ docker build -t bin-trigger-sender:local -f bin-trigger-sender/Dockerfile .
 
 Expected: build succeeds, image contains `/app/bin/bin-trigger-sender`.
 
-**Step 3: Commit**
+**Step 3: Run full verification before committing** (no Go source changed since Task 2, but confirm nothing broke)
+
+```bash
+cd bin-trigger-sender
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+Expected: all pass.
+
+**Step 4: Commit**
 
 ```bash
 git add bin-trigger-sender/Dockerfile
@@ -449,7 +467,16 @@ bin-trigger-sender/.*       run-bin-trigger-sender true
 
 Keep it in alphabetical order with the other `bin-*` entries.
 
-**Step 5: Commit**
+**Step 5: Run full verification before committing** (CircleCI YAML only changed — confirm Go build still clean)
+
+```bash
+cd bin-trigger-sender
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+Expected: all pass.
+
+**Step 6: Commit**
 
 ```bash
 git add .circleci/
@@ -467,22 +494,8 @@ git commit -m "NOJIRA-Add-bin-trigger-sender
 
 **Step 1: Edit `bin-number-manager/k8s/cronjob.yml`**
 
-Replace:
-```yaml
-        spec:
-          imagePullSecrets:
-          - name: gitlab-auth
-          restartPolicy: OnFailure
-          containers:
-          - name: request-sender
-            image: registry.gitlab.com/voipbin/bin-manager/request-sender:latest
-            imagePullPolicy: IfNotPresent
-            ...
-            command:
-            - /app/request-sender
-```
+Replace the entire `template.spec` section with the following (preserve the `env:` block and all command flags unchanged — only the `imagePullSecrets`, `name`, `image`, `imagePullPolicy`, and first `command` entry change):
 
-With:
 ```yaml
         spec:
           restartPolicy: OnFailure
@@ -490,17 +503,39 @@ With:
           - name: bin-trigger-sender
             image: voipbin/bin-trigger-sender:latest
             imagePullPolicy: Always
-            ...
+            env:
+            - name: RABBITMQ_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: RABBITMQ_ADDRESS
             command:
             - /app/bin/bin-trigger-sender
+            - -rabbit_addr
+            - $(RABBITMQ_ADDRESS)
+            - -queue
+            - 'bin-manager.number-manager.request'
+            - -uri
+            - '/v1/numbers/renew'
+            - -method
+            - 'POST'
+            - -data_type
+            - 'application/json'
+            - -data
+            - '{"days":28}'
+            - -timeout
+            - '3000'
+            - -delay
+            - '0'
 ```
 
-Key changes:
-- Removed `imagePullSecrets` block (public Docker Hub image needs no auth)
+Key changes from the original:
+- Removed `imagePullSecrets` block — Docker Hub public image needs no auth
+- Changed container `name` from `request-sender` to `bin-trigger-sender`
 - Changed `image` to `voipbin/bin-trigger-sender:latest`
-- Changed `imagePullPolicy` from `IfNotPresent` to `Always` (required for `:latest` to pick up new builds)
-- Renamed container from `request-sender` to `bin-trigger-sender`
-- **Updated `command` from `/app/request-sender` to `/app/bin/bin-trigger-sender`** — the Dockerfile places the binary at `/app/bin/`; failing to update this causes every CronJob run to fail with "executable not found"
+- Changed `imagePullPolicy` from `IfNotPresent` to `Always` (required so `:latest` picks up new builds)
+- Updated first `command` entry from `/app/request-sender` to `/app/bin/bin-trigger-sender` (Dockerfile places binary at `/app/bin/`; failing to update this causes every run to fail with "executable not found")
+- `env:` block and all flag args are **unchanged**
 
 **Step 2: Verify the full updated file looks correct**
 
@@ -510,7 +545,16 @@ cat bin-number-manager/k8s/cronjob.yml
 
 Expected: no `imagePullSecrets`, image is `voipbin/bin-trigger-sender:latest`, `imagePullPolicy: Always`, command is `/app/bin/bin-trigger-sender`.
 
-**Step 3: Commit**
+**Step 3: Run full verification for bin-number-manager before committing** (CronJob YAML only changed — confirm Go build still clean)
+
+```bash
+cd bin-number-manager
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+Expected: all pass.
+
+**Step 4: Commit**
 
 ```bash
 git add bin-number-manager/k8s/cronjob.yml
