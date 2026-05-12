@@ -294,13 +294,14 @@ func TestBuildRequest_setsRequestID(t *testing.T) {
 	}
 }
 
-// TestRunTimeout verifies run returns an error when no reply arrives within the timeout.
-// It exercises the timeout path without a live RabbitMQ by injecting a closed channel.
-func TestRunTimeout(t *testing.T) {
-	// run() with a 1 ms timeout against a non-existent broker should error quickly.
-	err := run("amqp://127.0.0.1:1", "queue", "/v1/test", "POST", "application/json", "", 1)
+// TestRunDialFailure verifies run returns an error when RabbitMQ is unreachable.
+// Note: the ctx.Done() timeout branch inside run requires a live broker to exercise
+// (inject a msgs channel that never sends). That path is not unit-tested here; it
+// is covered by integration testing against a real broker.
+func TestRunDialFailure(t *testing.T) {
+	err := run("amqp://127.0.0.1:1", "queue", "/v1/test", "POST", "application/json", "", 5000)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected error for unreachable broker, got nil")
 	}
 }
 ```
@@ -386,7 +387,7 @@ git commit -m "NOJIRA-Add-bin-trigger-sender
 
 **Step 1: Add the pipeline parameter to `config_work.yml`**
 
-Find the `parameters:` block (around line 90). Add after the last `run-bin-*` parameter (keep alphabetical order — add between `run-bin-tag-manager` and `run-bin-timeline-manager`, or at the correct alphabetical position for `trigger`):
+Find the `parameters:` block (around line 90). Add in alphabetical order — `trigger` sorts after `transfer` and before `tts`, so insert after `run-bin-transfer-manager`, before `run-bin-tts-manager`:
 
 ```yaml
   run-bin-trigger-sender:
@@ -396,7 +397,7 @@ Find the `parameters:` block (around line 90). Add after the last `run-bin-*` pa
 
 **Step 2: Add the workflow to `config_work.yml`**
 
-Find the `bin-number-manager` workflow section (around line 457). Add the `bin-trigger-sender` workflow in alphabetical order (between `bin-timeline-manager` and `bin-transcribe-manager`, or correct alphabetical position):
+Find the workflow section. Add `bin-trigger-sender` in alphabetical order — insert after `bin-transfer-manager`, before `bin-tts-manager`:
 
 ```yaml
   bin-trigger-sender:
@@ -417,7 +418,7 @@ Note: No `bin-trigger-sender-release` — this is not a running GKE service. The
 
 **Step 3: Add the job definitions to `config_work.yml`**
 
-Find the `# bin-number-manager` job comment (around line 1215). Add `# bin-trigger-sender` job definitions in alphabetical order (near `bin-timeline-manager` or between `bin-tag-manager` and `bin-timeline-manager`):
+Find the job definitions section. Add `# bin-trigger-sender` in alphabetical order — insert after the `bin-transfer-manager` jobs, before `bin-tts-manager`:
 
 ```yaml
   # bin-trigger-sender
@@ -527,7 +528,7 @@ git commit -m "NOJIRA-Add-bin-trigger-sender
 
 ```bash
 cd bin-trigger-sender
-go mod tidy && go mod vendor && go test ./... && golangci-lint run -v --timeout 5m
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
 ```
 
 Expected: all green.
