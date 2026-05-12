@@ -717,6 +717,8 @@ workflows:
           <<: *context_production
           requires:
             - bin-trigger-sender-test
+      # No release job: CronJob uses imagePullPolicy: Always + :latest,
+      # so new images are picked up automatically at the next scheduled run.
 
   bin-tts-manager:
     when: << pipeline.parameters.run-bin-tts-manager >>

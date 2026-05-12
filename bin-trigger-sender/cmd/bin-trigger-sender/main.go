@@ -121,9 +121,10 @@ func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) e
 
 	err = ch.PublishWithContext(ctx, "", queue, false, false,
 		amqp.Publishing{
-			ContentType: "application/json",
-			ReplyTo:     replyQ.Name,
-			Body:        body,
+			ContentType:   "application/json",
+			CorrelationId: "bin-trigger-sender-cronjob",
+			ReplyTo:       replyQ.Name,
+			Body:          body,
 		})
 	if err != nil {
 		return fmt.Errorf("publish: %w", err)
