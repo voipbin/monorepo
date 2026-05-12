@@ -6,10 +6,7 @@ import (
 )
 
 func TestBuildRequest_basic(t *testing.T) {
-	req, err := buildRequest("/v1/numbers/renew", "POST", "application/json", `{"days":28}`)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	req := buildRequest("/v1/numbers/renew", "POST", "application/json", `{"days":28}`)
 	if req.URI != "/v1/numbers/renew" {
 		t.Errorf("URI: got %q, want %q", req.URI, "/v1/numbers/renew")
 	}
@@ -26,23 +23,23 @@ func TestBuildRequest_basic(t *testing.T) {
 	if data["days"] != 28 {
 		t.Errorf("data.days: got %d, want 28", data["days"])
 	}
+	if req.RequestID != "bin-trigger-sender-cronjob" {
+		t.Errorf("RequestID: got %q, want %q", req.RequestID, "bin-trigger-sender-cronjob")
+	}
+	if req.DataType != "application/json" {
+		t.Errorf("DataType: got %q, want %q", req.DataType, "application/json")
+	}
 }
 
 func TestBuildRequest_emptyData(t *testing.T) {
-	req, err := buildRequest("/v1/numbers/renew", "POST", "application/json", "")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	req := buildRequest("/v1/numbers/renew", "POST", "application/json", "")
 	if req.Data != nil {
 		t.Errorf("expected nil Data for empty input, got %s", req.Data)
 	}
 }
 
 func TestBuildRequest_marshalsToJSON(t *testing.T) {
-	req, err := buildRequest("/v1/numbers/renew", "POST", "application/json", `{"days":28}`)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	req := buildRequest("/v1/numbers/renew", "POST", "application/json", `{"days":28}`)
 	b, err := json.Marshal(req)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -56,13 +53,6 @@ func TestBuildRequest_marshalsToJSON(t *testing.T) {
 	}
 	if m["request_id"] != "bin-trigger-sender-cronjob" {
 		t.Errorf("request_id: got %v", m["request_id"])
-	}
-}
-
-func TestBuildRequest_setsRequestID(t *testing.T) {
-	req, _ := buildRequest("/v1/numbers/renew", "POST", "application/json", "")
-	if req.RequestID != "bin-trigger-sender-cronjob" {
-		t.Errorf("RequestID: got %q, want %q", req.RequestID, "bin-trigger-sender-cronjob")
 	}
 }
 

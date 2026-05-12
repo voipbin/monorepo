@@ -64,7 +64,7 @@ func main() {
 	}
 }
 
-func buildRequest(uri, method, dataType, data string) (*request, error) {
+func buildRequest(uri, method, dataType, data string) *request {
 	req := request{
 		URI:       uri,
 		Method:    method,
@@ -75,7 +75,7 @@ func buildRequest(uri, method, dataType, data string) (*request, error) {
 	if data != "" {
 		req.Data = json.RawMessage(data)
 	}
-	return &req, nil
+	return &req
 }
 
 func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) error {
@@ -109,10 +109,7 @@ func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) e
 		return fmt.Errorf("consume reply queue: %w", err)
 	}
 
-	req, err := buildRequest(uri, method, dataType, data)
-	if err != nil {
-		return fmt.Errorf("build request: %w", err)
-	}
+	req := buildRequest(uri, method, dataType, data)
 
 	body, err := json.Marshal(req)
 	if err != nil {
