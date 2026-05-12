@@ -64,6 +64,20 @@ func main() {
 	}
 }
 
+func buildRequest(uri, method, dataType, data string) (*request, error) {
+	req := request{
+		URI:       uri,
+		Method:    method,
+		Publisher: "bin-trigger-sender",
+		DataType:  dataType,
+		RequestID: "bin-trigger-sender-cronjob",
+	}
+	if data != "" {
+		req.Data = json.RawMessage(data)
+	}
+	return &req, nil
+}
+
 func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) error {
 	conn, err := amqp.Dial(rabbitAddr)
 	if err != nil {
@@ -95,14 +109,9 @@ func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) e
 		return fmt.Errorf("consume reply queue: %w", err)
 	}
 
-	req := request{
-		URI:       uri,
-		Method:    method,
-		Publisher: "bin-trigger-sender",
-		DataType:  dataType,
-	}
-	if data != "" {
-		req.Data = json.RawMessage(data)
+	req, err := buildRequest(uri, method, dataType, data)
+	if err != nil {
+		return fmt.Errorf("build request: %w", err)
 	}
 
 	body, err := json.Marshal(req)
