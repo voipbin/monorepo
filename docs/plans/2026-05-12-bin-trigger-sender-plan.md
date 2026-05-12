@@ -1,0 +1,532 @@
+# bin-trigger-sender Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Create `bin-trigger-sender` as a new monorepo subproject that sends a single RabbitMQ RPC request then exits, replacing the GitLab-hosted `request-sender` image in the `number-renew` CronJob.
+
+**Architecture:** Minimal Go CLI — parses flags, dials RabbitMQ via `amqp091-go`, publishes a `sock.Request` JSON message to the target queue, waits for the reply, logs the response status, and exits. No long-running server, no `bin-common-handler` dependency (keep it lightweight). The `sock.Request` struct is defined inline to avoid pulling in the entire shared library.
+
+**Tech Stack:** Go 1.25.3, `github.com/rabbitmq/amqp091-go`, `github.com/sirupsen/logrus`, Docker (Alpine), CircleCI
+
+---
+
+### Task 1: Create the subproject skeleton
+
+**Files:**
+- Create: `bin-trigger-sender/cmd/bin-trigger-sender/main.go`
+- Create: `bin-trigger-sender/go.mod`
+
+**Step 1: Create directory structure**
+
+```bash
+cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Add-bin-trigger-sender
+mkdir -p bin-trigger-sender/cmd/bin-trigger-sender
+```
+
+**Step 2: Create `bin-trigger-sender/go.mod`**
+
+```
+module monorepo/bin-trigger-sender
+
+go 1.25.3
+
+require (
+	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/sirupsen/logrus v1.9.4
+)
+```
+
+**Step 3: Create `bin-trigger-sender/cmd/bin-trigger-sender/main.go`** with the full implementation:
+
+```go
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"os"
+	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+	log "github.com/sirupsen/logrus"
+)
+
+// request mirrors monorepo/bin-common-handler/models/sock.Request
+type request struct {
+	URI       string          `json:"uri"`
+	Method    string          `json:"method"`
+	Publisher string          `json:"publisher"`
+	DataType  string          `json:"data_type"`
+	Data      json.RawMessage `json:"data,omitempty"`
+}
+
+// response mirrors monorepo/bin-common-handler/models/sock.Response
+type response struct {
+	StatusCode int             `json:"status_code"`
+	DataType   string          `json:"data_type"`
+	Data       json.RawMessage `json:"data,omitempty"`
+}
+
+func main() {
+	rabbitAddr := flag.String("rabbit_addr", "", "RabbitMQ address (amqp://...)")
+	queue      := flag.String("queue", "", "Target queue name")
+	uri        := flag.String("uri", "", "Request URI (e.g. /v1/numbers/renew)")
+	method     := flag.String("method", "POST", "Request method (POST, GET, ...)")
+	dataType   := flag.String("data_type", "application/json", "Content type")
+	data       := flag.String("data", "", "Request body as JSON string")
+	timeoutMs  := flag.Int("timeout", 5000, "Timeout in milliseconds")
+	delayMs    := flag.Int("delay", 0, "Delay before sending in milliseconds")
+	flag.Parse()
+
+	if *rabbitAddr == "" || *queue == "" || *uri == "" {
+		fmt.Fprintln(os.Stderr, "required: -rabbit_addr, -queue, -uri")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if *delayMs > 0 {
+		log.Infof("Delaying %d ms before sending", *delayMs)
+		time.Sleep(time.Duration(*delayMs) * time.Millisecond)
+	}
+
+	if err := run(*rabbitAddr, *queue, *uri, *method, *dataType, *data, *timeoutMs); err != nil {
+		log.Errorf("Failed: %v", err)
+		os.Exit(1)
+	}
+}
+
+func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) error {
+	conn, err := amqp.Dial(rabbitAddr)
+	if err != nil {
+		return fmt.Errorf("dial RabbitMQ: %w", err)
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return fmt.Errorf("open channel: %w", err)
+	}
+	defer ch.Close()
+
+	replyQ, err := ch.QueueDeclare("", false, true, true, false, nil)
+	if err != nil {
+		return fmt.Errorf("declare reply queue: %w", err)
+	}
+
+	msgs, err := ch.Consume(replyQ.Name, "", true, false, false, false, nil)
+	if err != nil {
+		return fmt.Errorf("consume reply queue: %w", err)
+	}
+
+	req := request{
+		URI:       uri,
+		Method:    method,
+		Publisher: "bin-trigger-sender",
+		DataType:  dataType,
+	}
+	if data != "" {
+		req.Data = json.RawMessage(data)
+	}
+
+	body, err := json.Marshal(req)
+	if err != nil {
+		return fmt.Errorf("marshal request: %w", err)
+	}
+
+	err = ch.PublishWithContext(context.Background(), "", queue, false, false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			ReplyTo:     replyQ.Name,
+			Body:        body,
+		})
+	if err != nil {
+		return fmt.Errorf("publish: %w", err)
+	}
+	log.Infof("Sent request to queue=%s uri=%s method=%s", queue, uri, method)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutMs)*time.Millisecond)
+	defer cancel()
+
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("timeout waiting for response after %d ms", timeoutMs)
+	case msg := <-msgs:
+		var res response
+		if err := json.Unmarshal(msg.Body, &res); err != nil {
+			return fmt.Errorf("unmarshal response: %w", err)
+		}
+		log.Infof("Response: status=%d data=%s", res.StatusCode, res.Data)
+		if res.StatusCode < 200 || res.StatusCode >= 300 {
+			return fmt.Errorf("non-2xx response: %d", res.StatusCode)
+		}
+		return nil
+	}
+}
+```
+
+**Step 4: Run go mod tidy to resolve dependencies**
+
+```bash
+cd bin-trigger-sender
+go mod tidy
+```
+
+Expected: `go.sum` created, no errors.
+
+**Step 5: Commit skeleton**
+
+```bash
+git add bin-trigger-sender/
+git commit -m "NOJIRA-Add-bin-trigger-sender
+
+- bin-trigger-sender: Add Go subproject skeleton with CLI implementation"
+```
+
+---
+
+### Task 2: Write and run tests
+
+**Files:**
+- Create: `bin-trigger-sender/cmd/bin-trigger-sender/main_test.go`
+
+**Step 1: Extract `run` into a testable unit**
+
+The `run` function requires a live RabbitMQ, so unit-test the request-building logic. Extract it into a helper:
+
+Add this function to `main.go` above `run`:
+
+```go
+func buildRequest(uri, method, dataType, data string) (*request, error) {
+	req := request{
+		URI:       uri,
+		Method:    method,
+		Publisher: "bin-trigger-sender",
+		DataType:  dataType,
+	}
+	if data != "" {
+		req.Data = json.RawMessage(data)
+	}
+	return &req, nil
+}
+```
+
+And replace the inline struct construction inside `run` with `buildRequest(uri, method, dataType, data)`.
+
+**Step 2: Write `main_test.go`**
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"testing"
+)
+
+func TestBuildRequest_basic(t *testing.T) {
+	req, err := buildRequest("/v1/numbers/renew", "POST", "application/json", `{"days":28}`)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if req.URI != "/v1/numbers/renew" {
+		t.Errorf("URI: got %q, want %q", req.URI, "/v1/numbers/renew")
+	}
+	if req.Method != "POST" {
+		t.Errorf("Method: got %q, want %q", req.Method, "POST")
+	}
+	if req.Publisher != "bin-trigger-sender" {
+		t.Errorf("Publisher: got %q, want %q", req.Publisher, "bin-trigger-sender")
+	}
+	var data map[string]int
+	if err := json.Unmarshal(req.Data, &data); err != nil {
+		t.Fatalf("Data unmarshal: %v", err)
+	}
+	if data["days"] != 28 {
+		t.Errorf("data.days: got %d, want 28", data["days"])
+	}
+}
+
+func TestBuildRequest_emptyData(t *testing.T) {
+	req, err := buildRequest("/v1/numbers/renew", "POST", "application/json", "")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if req.Data != nil {
+		t.Errorf("expected nil Data for empty input, got %s", req.Data)
+	}
+}
+
+func TestBuildRequest_marshalsToJSON(t *testing.T) {
+	req, err := buildRequest("/v1/numbers/renew", "POST", "application/json", `{"days":28}`)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	b, err := json.Marshal(req)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal(b, &m); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if m["publisher"] != "bin-trigger-sender" {
+		t.Errorf("publisher: got %v", m["publisher"])
+	}
+}
+```
+
+**Step 3: Run the tests**
+
+```bash
+cd bin-trigger-sender
+go test ./...
+```
+
+Expected: `ok  monorepo/bin-trigger-sender/cmd/bin-trigger-sender`
+
+**Step 4: Run the full verification workflow**
+
+```bash
+go mod tidy && go mod vendor && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+Expected: all pass, no lint errors.
+
+**Step 5: Commit**
+
+```bash
+git add bin-trigger-sender/
+git commit -m "NOJIRA-Add-bin-trigger-sender
+
+- bin-trigger-sender: Add unit tests for request builder"
+```
+
+---
+
+### Task 3: Add Dockerfile
+
+**Files:**
+- Create: `bin-trigger-sender/Dockerfile`
+
+**Step 1: Create `bin-trigger-sender/Dockerfile`** (mirrors `bin-number-manager/Dockerfile` exactly, only directory name differs):
+
+```dockerfile
+# build
+FROM public.ecr.aws/docker/library/golang:1.25-alpine AS build
+
+LABEL maintainer="Sungtae Kim <pchero21@gmail.com>"
+
+WORKDIR /app
+COPY ./ .
+RUN mkdir -p /app/bin
+RUN cd bin-trigger-sender && go mod vendor && go build -o /app/bin/ ./cmd/...
+
+# run
+FROM public.ecr.aws/docker/library/alpine:latest
+
+WORKDIR /app/bin/
+COPY --from=build /app/bin /app/bin
+```
+
+**Step 2: Verify Docker build locally** (optional but recommended):
+
+```bash
+cd ~/gitvoipbin/monorepo/.worktrees/NOJIRA-Add-bin-trigger-sender
+docker build -t bin-trigger-sender:local -f bin-trigger-sender/Dockerfile .
+```
+
+Expected: build succeeds, image contains `/app/bin/bin-trigger-sender`.
+
+**Step 3: Commit**
+
+```bash
+git add bin-trigger-sender/Dockerfile
+git commit -m "NOJIRA-Add-bin-trigger-sender
+
+- bin-trigger-sender: Add Dockerfile"
+```
+
+---
+
+### Task 4: Add CircleCI pipeline jobs
+
+**Files:**
+- Modify: `.circleci/config_work.yml`
+- Modify: `.circleci/config.yml`
+
+**Step 1: Add the pipeline parameter to `config_work.yml`**
+
+Find the `parameters:` block (around line 90). Add after the last `run-bin-*` parameter (keep alphabetical order — add between `run-bin-tag-manager` and `run-bin-timeline-manager`, or at the correct alphabetical position for `trigger`):
+
+```yaml
+  run-bin-trigger-sender:
+    type: boolean
+    default: false
+```
+
+**Step 2: Add the workflow to `config_work.yml`**
+
+Find the `bin-number-manager` workflow section (around line 457). Add the `bin-trigger-sender` workflow in alphabetical order (between `bin-timeline-manager` and `bin-transcribe-manager`, or correct alphabetical position):
+
+```yaml
+  bin-trigger-sender:
+    when: << pipeline.parameters.run-bin-trigger-sender >>
+    jobs:
+      - build-approval:
+          type: approval
+      - bin-trigger-sender-test:
+          requires:
+            - build-approval
+      - bin-trigger-sender-build:
+          <<: *context_production
+          requires:
+            - bin-trigger-sender-test
+```
+
+Note: No `bin-trigger-sender-release` — this is not a running GKE service. The CronJob is deployed as part of `bin-number-manager-release`.
+
+**Step 3: Add the job definitions to `config_work.yml`**
+
+Find the `# bin-number-manager` job comment (around line 1215). Add `# bin-trigger-sender` job definitions in alphabetical order (near `bin-timeline-manager` or between `bin-tag-manager` and `bin-timeline-manager`):
+
+```yaml
+  # bin-trigger-sender
+  bin-trigger-sender-test:
+    docker: *go_image
+    resource_class: small
+    steps:
+      - go-test:
+          source-directory: bin-trigger-sender
+
+  bin-trigger-sender-build:
+    docker: *gcp_image
+    resource_class: small
+    steps:
+      - docker-build:
+          project-id: voipbin
+          project-repository: bin-trigger-sender
+          source-directory: bin-trigger-sender
+```
+
+**Step 4: Add path-filter entry to `config.yml`**
+
+Find the path-filter table (around line 34 where `bin-number-manager/.*` appears). Add:
+
+```
+bin-trigger-sender/.*       run-bin-trigger-sender true
+```
+
+Keep it in alphabetical order with the other `bin-*` entries.
+
+**Step 5: Commit**
+
+```bash
+git add .circleci/
+git commit -m "NOJIRA-Add-bin-trigger-sender
+
+- circleci: Add test and build jobs for bin-trigger-sender"
+```
+
+---
+
+### Task 5: Update the CronJob to use the new image
+
+**Files:**
+- Modify: `bin-number-manager/k8s/cronjob.yml`
+
+**Step 1: Edit `bin-number-manager/k8s/cronjob.yml`**
+
+Replace:
+```yaml
+        spec:
+          imagePullSecrets:
+          - name: gitlab-auth
+          restartPolicy: OnFailure
+          containers:
+          - name: request-sender
+            image: registry.gitlab.com/voipbin/bin-manager/request-sender:latest
+            imagePullPolicy: IfNotPresent
+```
+
+With:
+```yaml
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: bin-trigger-sender
+            image: voipbin/bin-trigger-sender:latest
+            imagePullPolicy: Always
+```
+
+Key changes:
+- Removed `imagePullSecrets` block (public Docker Hub image needs no auth)
+- Changed `image` to `voipbin/bin-trigger-sender:latest`
+- Changed `imagePullPolicy` from `IfNotPresent` to `Always` (required for `:latest` to pick up new builds)
+- Renamed container from `request-sender` to `bin-trigger-sender`
+
+**Step 2: Verify the full updated file looks correct**
+
+```bash
+cat bin-number-manager/k8s/cronjob.yml
+```
+
+Expected: no `imagePullSecrets`, image is `voipbin/bin-trigger-sender:latest`, `imagePullPolicy: Always`.
+
+**Step 3: Commit**
+
+```bash
+git add bin-number-manager/k8s/cronjob.yml
+git commit -m "NOJIRA-Add-bin-trigger-sender
+
+- bin-number-manager: Update number-renew CronJob to use voipbin/bin-trigger-sender from Docker Hub
+- bin-number-manager: Remove gitlab-auth imagePullSecret (no longer needed)"
+```
+
+---
+
+### Task 6: Final verification and push
+
+**Step 1: Run the full verification from monorepo root** (bin-trigger-sender only — no cross-service deps)
+
+```bash
+cd bin-trigger-sender
+go mod tidy && go mod vendor && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+Expected: all green.
+
+**Step 2: Also verify bin-number-manager still passes** (we edited its cronjob.yml):
+
+```bash
+cd ../bin-number-manager
+go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+```
+
+Expected: all green.
+
+**Step 3: Check git log looks clean**
+
+```bash
+git log --oneline -6
+```
+
+**Step 4: Push and create PR**
+
+```bash
+git push -u origin NOJIRA-Add-bin-trigger-sender
+```
+
+Then create the PR via `gh pr create`.
+
+---
+
+### Post-merge: Retire the GitLab pipeline
+
+After the PR is merged and the first CI build pushes `voipbin/bin-trigger-sender:latest` to Docker Hub, verify the image is live:
+
+```bash
+docker pull voipbin/bin-trigger-sender:latest
+```
+
+Then retire the `request-sender` job in the GitLab `bin-manager` CI pipeline (GitLab-side work, outside this monorepo).
