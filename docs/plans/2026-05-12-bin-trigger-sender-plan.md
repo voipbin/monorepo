@@ -54,11 +54,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// request mirrors monorepo/bin-common-handler/models/sock.Request.
+// request is structurally compatible with monorepo/bin-common-handler/models/sock.Request.
+// Method is string here (vs sock.RequestMethod typedef) — wire format is identical.
 // RequestID is included for log correlation across the call chain.
 type request struct {
 	URI       string          `json:"uri"`
-	Method    string          `json:"method"`
+	Method    string          `json:"method"` // valid values: POST, GET, PUT, DELETE
 	Publisher string          `json:"publisher"`
 	DataType  string          `json:"data_type"`
 	Data      json.RawMessage `json:"data,omitempty"`
@@ -200,6 +201,8 @@ git commit -m "NOJIRA-Add-bin-trigger-sender
 
 - bin-trigger-sender: Add Go subproject skeleton with CLI implementation"
 ```
+
+Note: `git add bin-trigger-sender/` stages `go.sum` alongside `go.mod`. Do not omit `go.sum` — missing it causes `missing go.sum entry` errors in Docker builds.
 
 ---
 
