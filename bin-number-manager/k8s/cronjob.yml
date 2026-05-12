@@ -13,13 +13,11 @@ spec:
       activeDeadlineSeconds: 3600
       template:
         spec:
-          imagePullSecrets:
-          - name: gitlab-auth
           restartPolicy: OnFailure
           containers:
-          - name: request-sender
-            image: registry.gitlab.com/voipbin/bin-manager/request-sender:latest
-            imagePullPolicy: IfNotPresent
+          - name: bin-trigger-sender
+            image: voipbin/bin-trigger-sender:latest
+            imagePullPolicy: Always
             env:
             - name: RABBITMQ_ADDRESS
               valueFrom:
@@ -27,7 +25,7 @@ spec:
                   name: voipbin
                   key: RABBITMQ_ADDRESS
             command:
-            - /app/request-sender
+            - /app/bin/bin-trigger-sender
             - -rabbit_addr
             - $(RABBITMQ_ADDRESS)
             - -queue
