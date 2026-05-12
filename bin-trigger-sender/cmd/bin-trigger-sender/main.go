@@ -135,6 +135,9 @@ func run(rabbitAddr, queue, uri, method, dataType, data string, timeoutMs int) e
 	case <-ctx.Done():
 		return fmt.Errorf("timeout waiting for response after %d ms", timeoutMs)
 	case msg := <-msgs:
+		if msg.CorrelationId != "bin-trigger-sender-cronjob" {
+			return fmt.Errorf("unexpected CorrelationId on reply: %q", msg.CorrelationId)
+		}
 		var res response
 		if err := json.Unmarshal(msg.Body, &res); err != nil {
 			return fmt.Errorf("unmarshal response: %w", err)
