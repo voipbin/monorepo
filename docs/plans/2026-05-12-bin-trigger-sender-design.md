@@ -45,11 +45,10 @@ Follows the same conventions as other `bin-*` services. No `k8s/` subdirectory �
 
 ## CI Pipeline Changes (CircleCI)
 
-Add three jobs to `.circleci/config_work.yml` mirroring the pattern of every other `bin-*` service:
+Add **two** jobs to `.circleci/config_work.yml` (no `release` job — `bin-trigger-sender` is not a running GKE service; the CronJob is deployed as part of `bin-number-manager-release`):
 
 - **`bin-trigger-sender-test`** — `go test ./...`
 - **`bin-trigger-sender-build`** — `docker-build` orb: builds image, pushes `voipbin/bin-trigger-sender:<sha>` (and `:latest` on `main`) to Docker Hub using existing `$CC_DOCKERHUB_USERNAME`/`$CC_DOCKERHUB_PASSWORD` credentials
-- **`bin-trigger-sender-release`** — `docker-release` orb: deploys to GKE
 
 Wire into the existing path-filter workflow so jobs only run when `bin-trigger-sender/.*` files change.
 
@@ -62,22 +61,28 @@ imagePullSecrets:
 containers:
 - name: request-sender
   image: registry.gitlab.com/voipbin/bin-manager/request-sender:latest
+  imagePullPolicy: IfNotPresent
+command:
+- /app/request-sender
 
 # After
 # (imagePullSecrets removed — Docker Hub public image needs no auth)
 containers:
 - name: bin-trigger-sender
-  image: voipbin/bin-trigger-sender:<sha>
+  image: voipbin/bin-trigger-sender:latest
+  imagePullPolicy: Always
+command:
+- /app/bin/bin-trigger-sender
 ```
 
-Pin to the commit SHA tag, not `:latest`, to prevent unintended image drift.
+Use `:latest` with `imagePullPolicy: Always` so new builds are picked up automatically. The Dockerfile places the binary at `/app/bin/bin-trigger-sender` (not `/app/request-sender` — the `command` field must be updated or the CronJob will fail on every run).
 
 ## Security Posture
 
 | Risk | Mitigation |
 |------|-----------|
 | Public image (binary visible) | Acceptable — no secrets in image; it is a generic AMQP client |
-| Image drift / supply chain | Pin CronJob to SHA tag, not `:latest` |
+| Image drift / supply chain | `imagePullPolicy: Always` ensures latest build runs; acceptable for a low-frequency CronJob |
 | Docker Hub credential compromise | Existing `$CC_DOCKERHUB_USERNAME`/`$CC_DOCKERHUB_PASSWORD` already scoped to CI; no new credentials needed |
 
 ## Migration Steps (high-level)
@@ -85,7 +90,7 @@ Pin to the commit SHA tag, not `:latest`, to prevent unintended image drift.
 1. Create `bin-trigger-sender/` subproject — port or rewrite the `request-sender` Go source
 2. Add CircleCI jobs and path-filter entries
 3. Merge to `main`, verify image appears on Docker Hub
-4. Update `bin-number-manager/k8s/cronjob.yml` with new image + SHA tag
+4. Update `bin-number-manager/k8s/cronjob.yml` with new image, command path, and `imagePullPolicy: Always`
 5. Deploy and verify the `number-renew` CronJob pulls successfully
 6. Retire the GitLab `bin-manager/request-sender` pipeline
 
