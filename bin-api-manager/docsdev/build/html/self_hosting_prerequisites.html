@@ -641,14 +641,15 @@ after cloning the installer repo.</p>
 <ul class="simple">
 <li><p>A GCP project exists with <strong>billing enabled</strong>.</p></li>
 <li><p>The authenticated principal has Owner or Editor on the project, or the
-least-privilege set of twelve roles listed in
+least-privilege set of thirteen roles listed in
 <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (Compute Admin, Container Admin, Cloud
 SQL Admin, DNS Admin, Cloud KMS Admin, Secret Manager Admin, Service
 Account Admin, Service Account User, Project IAM Admin, Storage Admin,
-Service Usage Admin, IAP-Secured Tunnel User).</p></li>
+Service Usage Admin, IAP-Secured Tunnel User, OS Login, and OS Admin
+Login).</p></li>
 <li><p>You own a domain name. The installer uses
-<code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">admin.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">talk.&lt;domain&gt;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">meet.&lt;domain&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">sip.&lt;domain&gt;</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">hook.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">admin.&lt;domain&gt;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">talk.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">meet.&lt;domain&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">sip.&lt;domain&gt;</span></code>.</p></li>
 </ul>
 </section>
 <section id="gcp-quotas">

@@ -596,11 +596,30 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show the current pipeline state</span>
 ./voipbin-install<span class="w"> </span>status
 
+<span class="c1"># Show status as JSON (for scripting)</span>
+./voipbin-install<span class="w"> </span>status<span class="w"> </span>--json
+
+<span class="c1"># Verify deployment health (API, SIP, pods, TLS)</span>
+./voipbin-install<span class="w"> </span>verify
+
+<span class="c1"># Run only a specific health check</span>
+./voipbin-install<span class="w"> </span>verify<span class="w"> </span>--check<span class="w"> </span>http_health
+
 <span class="c1"># Re-render and apply just the K8s manifests after editing a value</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s_apply
 
 <span class="c1"># Re-render the Kamailio VM .env after editing group_vars</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible_run
+
+<span class="c1"># Show Kamailio TLS certificate status</span>
+./voipbin-install<span class="w"> </span>cert<span class="w"> </span>status
+
+<span class="c1"># Renew Kamailio TLS certificates</span>
+./voipbin-install<span class="w"> </span>cert<span class="w"> </span>renew
+
+<span class="c1"># Show help for any command</span>
+./voipbin-install<span class="w"> </span>--help
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--help
 
 <span class="c1"># Inspect what secrets are stored</span>
 sops<span class="w"> </span>--decrypt<span class="w"> </span>secrets.yaml
@@ -661,7 +680,7 @@ authenticated principal:</p>
 gcloud<span class="w"> </span>projects<span class="w"> </span>get-iam-policy<span class="w"> </span>PROJECT_ID
 </pre></div>
 </div>
-<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (12 roles).</p>
+<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (13 roles).</p>
 </section>
 <section id="ansible-iap-tunnel-connection-failed">
 <h3>Ansible: IAP tunnel connection failed<a class="headerlink" href="#ansible-iap-tunnel-connection-failed" title="Link to this heading">¶</a></h3>
@@ -729,8 +748,8 @@ permissions, and the connection name matches the Terraform output.</p>
 <p>Update your registrar’s NS records to point at those nameservers. NS
 delegation can take up to 48 hours.</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">manual</span></code>: pull the external LB IP from Terraform
-outputs and create A records for <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">admin</span></code>, <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">meet</span></code>,
-and <code class="docutils literal notranslate"><span class="pre">sip</span></code> subdomains at your DNS provider.</p>
+outputs and create A records for <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">hook</span></code>, <code class="docutils literal notranslate"><span class="pre">admin</span></code>, <code class="docutils literal notranslate"><span class="pre">talk</span></code>,
+<code class="docutils literal notranslate"><span class="pre">meet</span></code>, and <code class="docutils literal notranslate"><span class="pre">sip</span></code> subdomains at your DNS provider.</p>
 </section>
 <section id="sip-devices-cannot-register">
 <h3>SIP: devices cannot register<a class="headerlink" href="#sip-devices-cannot-register" title="Link to this heading">¶</a></h3>

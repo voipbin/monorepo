@@ -29,14 +29,15 @@ The installer refuses to proceed unless the following are true:
 
 - A GCP project exists with **billing enabled**.
 - The authenticated principal has Owner or Editor on the project, or the
-  least-privilege set of twelve roles listed in
+  least-privilege set of thirteen roles listed in
   ``config/gcp_iam_roles.yaml`` (Compute Admin, Container Admin, Cloud
   SQL Admin, DNS Admin, Cloud KMS Admin, Secret Manager Admin, Service
   Account Admin, Service Account User, Project IAM Admin, Storage Admin,
-  Service Usage Admin, IAP-Secured Tunnel User).
+  Service Usage Admin, IAP-Secured Tunnel User, OS Login, and OS Admin
+  Login).
 - You own a domain name. The installer uses
-  ``api.<domain>``, ``admin.<domain>``, ``talk.<domain>``,
-  ``meet.<domain>``, and ``sip.<domain>``.
+  ``api.<domain>``, ``hook.<domain>``, ``admin.<domain>``,
+  ``talk.<domain>``, ``meet.<domain>``, and ``sip.<domain>``.
 
 GCP quotas
 ----------

@@ -611,18 +611,33 @@ environment variables you typically need to adjust before the platform is
 ready for real traffic.</p>
 <section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
-<p>The installer is a three stage pipeline driven by the
+<p>The installer is an eight-stage pipeline driven by the
 <code class="docutils literal notranslate"><span class="pre">voipbin-install</span></code> CLI.</p>
+<p>The eight stages run in order when you execute <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>:</p>
 <ol class="arabic simple">
-<li><p><strong>Terraform</strong> provisions GCP infrastructure: a custom VPC, GKE cluster,
-Cloud SQL (MySQL 8.0), Kamailio and RTPEngine VMs, DNS zone, load
-balancers, KMS key ring for SOPS, and GCS buckets.</p></li>
-<li><p><strong>Ansible</strong> configures the Kamailio and RTPEngine VMs over an IAP
+<li><p><strong>terraform_init</strong> initializes the Terraform backend (GCS state bucket)
+and downloads providers.</p></li>
+<li><p><strong>reconcile_imports</strong> detects any GCP resources that already exist
+outside Terraform state and imports them, preventing 409 conflicts on
+resume.</p></li>
+<li><p><strong>terraform_apply</strong> provisions GCP infrastructure: a custom VPC, GKE
+cluster, Cloud SQL (MySQL 8.0), Kamailio and RTPEngine VMs, DNS zone,
+load balancers, KMS key ring for SOPS, and GCS buckets.</p></li>
+<li><p><strong>reconcile_outputs</strong> reads Terraform outputs (IPs, connection names)
+into <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> so later stages can consume them.</p></li>
+<li><p><strong>k8s_apply</strong> deploys VoIPBin services to the GKE cluster using
+manifests under <code class="docutils literal notranslate"><span class="pre">k8s/</span></code>, with placeholders substituted from Terraform
+outputs and SOPS-decrypted secrets.</p></li>
+<li><p><strong>reconcile_k8s_outputs</strong> reads Kubernetes load balancer IPs into
+<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p></li>
+<li><p><strong>cert_provision</strong> issues Kamailio TLS certificates.</p></li>
+<li><p><strong>ansible_run</strong> configures Kamailio and RTPEngine VMs over an IAP
 tunnel and renders their Docker Compose <code class="docutils literal notranslate"><span class="pre">.env</span></code> files from templates.</p></li>
-<li><p><strong>Kubernetes</strong> applies the manifests under <code class="docutils literal notranslate"><span class="pre">k8s/</span></code> to the GKE cluster
-with placeholders substituted from Terraform outputs and SOPS-decrypted
-secrets.</p></li>
 </ol>
+<p>The pipeline is resumable: if a stage fails, fix the issue and rerun
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>; it continues from where it left off. Run a
+single stage with <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">&lt;name&gt;</span></code> (for example
+<code class="docutils literal notranslate"><span class="pre">--stage</span> <span class="pre">ansible_run</span></code>).</p>
 <section id="what-gets-deployed">
 <h3>What gets deployed<a class="headerlink" href="#what-gets-deployed" title="Link to this heading">¶</a></h3>
 <p>A successful install produces:</p>
@@ -642,8 +657,13 @@ automated backups, Cloud SQL Proxy deployed as a sidecar in GKE.</p></li>
 <li><p><strong>Kubernetes workloads</strong>: backend microservices in the <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code>
 namespace, Asterisk in <code class="docutils literal notranslate"><span class="pre">voip</span></code>, Redis, RabbitMQ, ClickHouse, and Cloud
 SQL Proxy in <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code>, plus three frontend apps
-(<code class="docutils literal notranslate"><span class="pre">square-admin</span></code>, <code class="docutils literal notranslate"><span class="pre">square-talk</span></code>, <code class="docutils literal notranslate"><span class="pre">square-meet</span></code>) and an Ingress
-fronted by TLS certificates.</p></li>
+(<code class="docutils literal notranslate"><span class="pre">square-admin</span></code>, <code class="docutils literal notranslate"><span class="pre">square-talk</span></code>, <code class="docutils literal notranslate"><span class="pre">square-meet</span></code>) in the
+<code class="docutils literal notranslate"><span class="pre">square-manager</span></code> namespace.</p></li>
+<li><p><strong>DNS records</strong>: six A records are required. With <code class="docutils literal notranslate"><span class="pre">example.com</span></code> as
+your domain: <code class="docutils literal notranslate"><span class="pre">api.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">hook.example.com</span></code>,
+<code class="docutils literal notranslate"><span class="pre">admin.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">talk.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">meet.example.com</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">sip.example.com</span></code>. The first five point at the GKE load balancer IP
+and the last points at the Kamailio external load balancer IP.</p></li>
 </ul>
 </section>
 <section id="cost">
@@ -756,14 +776,15 @@ after cloning the installer repo.</p>
 <ul class="simple">
 <li><p>A GCP project exists with <strong>billing enabled</strong>.</p></li>
 <li><p>The authenticated principal has Owner or Editor on the project, or the
-least-privilege set of twelve roles listed in
+least-privilege set of thirteen roles listed in
 <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (Compute Admin, Container Admin, Cloud
 SQL Admin, DNS Admin, Cloud KMS Admin, Secret Manager Admin, Service
 Account Admin, Service Account User, Project IAM Admin, Storage Admin,
-Service Usage Admin, IAP-Secured Tunnel User).</p></li>
+Service Usage Admin, IAP-Secured Tunnel User, OS Login, and OS Admin
+Login).</p></li>
 <li><p>You own a domain name. The installer uses
-<code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">admin.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">talk.&lt;domain&gt;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">meet.&lt;domain&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">sip.&lt;domain&gt;</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">api.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">hook.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">admin.&lt;domain&gt;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">talk.&lt;domain&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">meet.&lt;domain&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">sip.&lt;domain&gt;</span></code>.</p></li>
 </ul>
 </section>
 <section id="gcp-quotas">
@@ -838,19 +859,19 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
 </div>
 <section id="init-interactive-wizard">
 <h3><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)<a class="headerlink" href="#init-interactive-wizard" title="Link to this heading">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">init</span></code> command runs a twelve-step bootstrap, in order:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">init</span></code> command runs a multi-step bootstrap, in order:</p>
 <ol class="arabic simple">
 <li><p>Preflight checks for the six local tools.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">gcloud</span></code> user auth and Application Default Credentials.</p></li>
-<li><p><strong>Seven wizard questions</strong>: GCP project ID, region, GKE cluster type
-(zonal or regional), TLS strategy (Let’s Encrypt, GCP-managed,
-self-signed, or BYO certificate), Docker image tag strategy (latest
-or pinned via <code class="docutils literal notranslate"><span class="pre">config/versions.yaml</span></code>), base domain name, and Cloud
-DNS mode (auto or manual).</p></li>
+<li><p><strong>Eight wizard questions</strong>: GCP project ID, region, GKE cluster type
+(zonal or regional), TLS strategy (<code class="docutils literal notranslate"><span class="pre">self-signed</span></code> or <code class="docutils literal notranslate"><span class="pre">byoc</span></code>),
+Docker image tag strategy (latest or pinned via
+<code class="docutils literal notranslate"><span class="pre">config/versions.yaml</span></code>), base domain name, Kamailio TLS cert mode
+(<code class="docutils literal notranslate"><span class="pre">self_signed</span></code> or <code class="docutils literal notranslate"><span class="pre">manual</span></code>), and Cloud DNS mode (auto or manual).</p></li>
 <li><p>Project existence and billing.</p></li>
 <li><p>Quota check against <code class="docutils literal notranslate"><span class="pre">config/gcp_quotas.yaml</span></code>.</p></li>
 <li><p>Enable sixteen GCP APIs.</p></li>
-<li><p>Create the <code class="docutils literal notranslate"><span class="pre">voipbin-installer</span></code> service account with twelve IAM
+<li><p>Create the <code class="docutils literal notranslate"><span class="pre">voipbin-installer</span></code> service account with thirteen IAM
 role bindings.</p></li>
 <li><p>Create a KMS key ring and crypto key.</p></li>
 <li><p>Generate six secrets (<code class="docutils literal notranslate"><span class="pre">jwt_key</span></code>, <code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code>,
@@ -861,6 +882,44 @@ bound to the KMS key.</p></li>
 <li><p>Save <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p></li>
 <li><p>Print a cost summary.</p></li>
 </ol>
+<section id="wizard-questions">
+<h4>Wizard questions<a class="headerlink" href="#wizard-questions" title="Link to this heading">¶</a></h4>
+<p>The eight questions and their accepted values:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Question</p></th>
+<th class="head"><p>Options / Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GCP project ID</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">my-voipbin-project</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Region</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">us-central1</span></code> (or any GCP region)</p></td>
+</tr>
+<tr class="row-even"><td><p>GKE cluster type</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">zonal</span></code> (cheaper) or <code class="docutils literal notranslate"><span class="pre">regional</span></code> (HA)</p></td>
+</tr>
+<tr class="row-odd"><td><p>TLS strategy</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">self-signed</span></code> or <code class="docutils literal notranslate"><span class="pre">byoc</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Docker image tag strategy</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">latest</span></code> or <code class="docutils literal notranslate"><span class="pre">pinned</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Domain name</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">voipbin.example.com</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Kamailio cert mode</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">self_signed</span></code> (auto) or <code class="docutils literal notranslate"><span class="pre">manual</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Cloud DNS mode</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">auto</span></code> (GCP manages DNS) or <code class="docutils literal notranslate"><span class="pre">manual</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <p>Useful flags:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>init<span class="w"> </span>--reconfigure<span class="w">          </span><span class="c1"># re-run the wizard</span>
 ./voipbin-install<span class="w"> </span>init<span class="w"> </span>--config<span class="w"> </span>path/to.yaml<span class="w">  </span><span class="c1"># import existing config</span>
@@ -883,40 +942,68 @@ destroyed or the GCP project is deleted, <code class="docutils literal notransla
 unrecoverable.</p>
 </div>
 </section>
-<section id="apply-three-stage-deploy">
-<h3><code class="docutils literal notranslate"><span class="pre">apply</span></code> (three-stage deploy)<a class="headerlink" href="#apply-three-stage-deploy" title="Link to this heading">¶</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code> executes the pipeline in order: Terraform,
-then Ansible, then Kubernetes. The pipeline checkpoints between stages,
-so if a run fails you can fix the problem and rerun the same command;
-it picks up from the failed stage.</p>
-<p>Useful flags:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--dry-run<span class="w">         </span><span class="c1"># plan, do not change</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--auto-approve<span class="w">    </span><span class="c1"># skip prompts</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>terraform<span class="w"> </span><span class="c1"># only run this stage</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s
-</pre></div>
-</div>
-<p>Expected duration on a fresh project:</p>
-<div class="table-wrapper docutils container">
+</section>
+<section id="apply-eight-stage-deploy">
+<h3><code class="docutils literal notranslate"><span class="pre">apply</span></code> (eight-stage deploy)<a class="headerlink" href="#apply-eight-stage-deploy" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code> executes eight pipeline stages in order. The
+pipeline checkpoints between stages, so if a run fails you can fix the
+problem and rerun the same command; it picks up from the failed stage.</p>
+<div class="table-wrapper colwidths-given docutils container">
 <table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 50.0%" />
+<col style="width: 25.0%" />
+</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Stage</p></th>
-<th class="head"><p>Duration</p></th>
+<th class="head"><p>What it does</p></th>
+<th class="head"><p>Typical duration</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Terraform</p></td>
-<td><p>12 to 18 minutes (GKE cluster creation dominates)</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">terraform_init</span></code></p></td>
+<td><p>Initialize Terraform backend (GCS state bucket)</p></td>
+<td><p>1 to 2 minutes</p></td>
 </tr>
-<tr class="row-odd"><td><p>Ansible</p></td>
-<td><p>5 to 8 minutes (waits for cloud-init on both VMs)</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reconcile_imports</span></code></p></td>
+<td><p>Import drifted GCP resources into Terraform state</p></td>
+<td><p>1 to 3 minutes</p></td>
 </tr>
-<tr class="row-even"><td><p>Kubernetes</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">terraform_apply</span></code></p></td>
+<td><p>Provision VPC, GKE, Cloud SQL, VMs</p></td>
+<td><p>12 to 18 minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reconcile_outputs</span></code></p></td>
+<td><p>Read Terraform outputs into <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></td>
+<td><p>under 1 minute</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">k8s_apply</span></code></p></td>
+<td><p>Deploy Kubernetes workloads to GKE</p></td>
 <td><p>3 to 5 minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reconcile_k8s_outputs</span></code></p></td>
+<td><p>Read Kubernetes LB IPs into <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code></p></td>
+<td><p>under 1 minute</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">cert_provision</span></code></p></td>
+<td><p>Issue Kamailio TLS certificates</p></td>
+<td><p>1 to 2 minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ansible_run</span></code></p></td>
+<td><p>Configure Kamailio and RTPEngine VMs</p></td>
+<td><p>5 to 8 minutes</p></td>
 </tr>
 </tbody>
 </table>
+</div>
+<p>Useful flags:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--dry-run<span class="w">               </span><span class="c1"># plan, do not change</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--auto-approve<span class="w">          </span><span class="c1"># skip prompts</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>terraform_init<span class="w">  </span><span class="c1"># only run this stage</span>
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s_apply
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible_run
+</pre></div>
 </div>
 </section>
 <section id="verify-health-check">
@@ -935,6 +1022,24 @@ manually.</p>
 <p>The SIP probe uses a TCP socket connect. If you need to verify UDP
 reachability for media or signalling, use a separate tool such as
 <code class="docutils literal notranslate"><span class="pre">nc</span> <span class="pre">-zuv</span></code> and the GCP firewall log stream.</p>
+</div>
+</section>
+<section id="status-deployment-overview">
+<h3><code class="docutils literal notranslate"><span class="pre">status</span></code> (deployment overview)<a class="headerlink" href="#status-deployment-overview" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> command shows a summary of the current deployment state:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>status<span class="w">            </span><span class="c1"># human-readable output</span>
+./voipbin-install<span class="w"> </span>status<span class="w"> </span>--json<span class="w">     </span><span class="c1"># machine-readable JSON</span>
+</pre></div>
+</div>
+</section>
+<section id="cert-certificate-management">
+<h3><code class="docutils literal notranslate"><span class="pre">cert</span></code> (certificate management)<a class="headerlink" href="#cert-certificate-management" title="Link to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">cert</span></code> subcommand manages Kamailio TLS certificates:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>cert<span class="w"> </span>status<span class="w">       </span><span class="c1"># show per-SAN cert expiry and mode</span>
+./voipbin-install<span class="w"> </span>cert<span class="w"> </span>renew<span class="w">        </span><span class="c1"># re-run cert_provision stage</span>
+./voipbin-install<span class="w"> </span>cert<span class="w"> </span>renew<span class="w"> </span>--force<span class="w">  </span><span class="c1"># force re-issuance even if not expired</span>
+./voipbin-install<span class="w"> </span>cert<span class="w"> </span>export-ca<span class="w"> </span>--out<span class="w"> </span>ca.pem<span class="w">  </span><span class="c1"># export self-signed CA</span>
+</pre></div>
 </div>
 </section>
 <section id="dns-step">
@@ -956,24 +1061,33 @@ if you chose <code class="docutils literal notranslate"><span class="pre">dns_mo
 <td><p>A</p></td>
 <td><p>External LB IP</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">admin.example.com</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">hook.example.com</span></code></p></td>
 <td><p>A</p></td>
 <td><p>External LB IP</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">talk.example.com</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">admin.example.com</span></code></p></td>
 <td><p>A</p></td>
 <td><p>External LB IP</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">meet.example.com</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">talk.example.com</span></code></p></td>
 <td><p>A</p></td>
 <td><p>External LB IP</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sip.example.com</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">meet.example.com</span></code></p></td>
 <td><p>A</p></td>
 <td><p>External LB IP</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sip.example.com</span></code></p></td>
+<td><p>A</p></td>
+<td><p>Kamailio external LB IP</p></td>
 </tr>
 </tbody>
 </table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">hook</span></code> subdomain is commonly missed. It is required for
+webhook ingress (HTTP and HTTPS callbacks from external providers).</p>
 </div>
 <p>DNS propagation can take up to 48 hours for NS delegation changes. Once
 records resolve, rerun <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">verify</span></code>.</p>
@@ -993,7 +1107,7 @@ at runtime, for a single CLI invocation (for example
 <span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
 <span class="nt">zone</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1-a</span>
 <span class="nt">gke_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zonal</span>
-<span class="nt">tls_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">letsencrypt</span>
+<span class="nt">tls_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">self-signed</span>
 <span class="nt">image_tag_strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pinned</span>
 <span class="nt">domain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">voipbin.example.com</span>
 <span class="nt">dns_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
@@ -1133,7 +1247,7 @@ rerun the relevant stage.</p>
 source IPs. Populate the list with <code class="docutils literal notranslate"><span class="pre">VOIPBIN_PSTN_WHITELIST_IPS</span></code> and
 rerun the Ansible stage:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">VOIPBIN_PSTN_WHITELIST_IPS</span><span class="o">=</span><span class="s2">&quot;203.0.113.10,198.51.100.4&quot;</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible_run
 </pre></div>
 </div>
 <p>The value flows through <code class="docutils literal notranslate"><span class="pre">ansible/group_vars/all.yml</span></code> into the Kamailio
@@ -1153,7 +1267,7 @@ auth database.</p></li>
 </ul>
 <p>Set them via Ansible extra vars or by editing
 <code class="docutils literal notranslate"><span class="pre">ansible/group_vars/kamailio.yml</span></code> and rerunning
-<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">ansible</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">ansible_run</span></code>.</p>
 </section>
 <section id="rtpengine-port-range">
 <h4>RTPEngine port range<a class="headerlink" href="#rtpengine-port-range" title="Link to this heading">¶</a></h4>
@@ -1165,22 +1279,34 @@ sure the firewall rule matches.</p>
 </section>
 <section id="tls-certificate-strategy">
 <h3>4. TLS certificate strategy<a class="headerlink" href="#tls-certificate-strategy" title="Link to this heading">¶</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> chosen in the wizard governs how certificates are
-issued:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">letsencrypt</span></code>: cert-manager issues per-host certificates via
-HTTP-01 once DNS resolves. DNS must resolve first, otherwise the
-challenge fails and the certificate sits in <code class="docutils literal notranslate"><span class="pre">Pending</span></code>. Verify with
-<code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">certificate</span> <span class="pre">-A</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">gcp-managed</span></code>: a GCP-managed certificate is attached to the
-Ingress and provisioned by Google. Same DNS dependency.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">self-signed</span></code>: a self-signed certificate is installed immediately.
-Use only for staging or local-only deployments.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">byoc</span></code>: bring your own. Drop <code class="docutils literal notranslate"><span class="pre">tls.crt</span></code> and <code class="docutils literal notranslate"><span class="pre">tls.key</span></code> into the
-<code class="docutils literal notranslate"><span class="pre">voipbin-tls</span></code> Secret in <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> before
-<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">k8s</span></code>.</p></li>
+<p>The <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> chosen in the wizard governs how the frontend TLS
+certificate is managed. There are two valid values:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">self-signed</span></code> (default): on first <code class="docutils literal notranslate"><span class="pre">apply</span></code>, the installer generates
+a self-signed RSA-2048 certificate and stores it in the
+<code class="docutils literal notranslate"><span class="pre">voipbin-tls</span></code> Kubernetes Secret in both <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> and
+<code class="docutils literal notranslate"><span class="pre">square-manager</span></code> namespaces, and as base64-encoded env vars in
+<code class="docutils literal notranslate"><span class="pre">voipbin-secret</span></code>. Browsers will show a certificate warning until you
+replace it with a CA-issued cert. Use only for initial bring-up or
+internal testing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">byoc</span></code> (Bring Your Own Cert): the operator pre-creates the
+<code class="docutils literal notranslate"><span class="pre">voipbin-tls</span></code> Secret with a real CA-issued certificate before the
+<code class="docutils literal notranslate"><span class="pre">k8s_apply</span></code> stage. The installer detects populated SSL keys and
+skips its own writes. To use BYOC mode, create the secret in both
+namespaces before running apply:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>bin-manager<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>voipbin-tls<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cert<span class="o">=</span>/path/to/fullchain.pem<span class="w"> </span>--key<span class="o">=</span>/path/to/privkey.pem
+kubectl<span class="w"> </span>-n<span class="w"> </span>square-manager<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>voipbin-tls<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cert<span class="o">=</span>/path/to/fullchain.pem<span class="w"> </span>--key<span class="o">=</span>/path/to/privkey.pem
+</pre></div>
+</div>
+<p>Then run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s_apply
+</pre></div>
+</div>
+</li>
 </ul>
-<p>To change strategies after install, edit <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> in
+<p>To change strategy after install, edit <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> in
 <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and rerun apply.</p>
 </section>
 <section id="third-party-integrations">
@@ -1242,8 +1368,7 @@ the wizard, generated secrets, or operator overrides.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">gcp_project_id</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">region</span></code>, <code class="docutils literal notranslate"><span class="pre">zone</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">gke_type</span></code> (<code class="docutils literal notranslate"><span class="pre">zonal</span></code> or <code class="docutils literal notranslate"><span class="pre">regional</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">letsencrypt</span></code>, <code class="docutils literal notranslate"><span class="pre">gcp-managed</span></code>, <code class="docutils literal notranslate"><span class="pre">self-signed</span></code>,
-<code class="docutils literal notranslate"><span class="pre">byoc</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">self-signed</span></code> or <code class="docutils literal notranslate"><span class="pre">byoc</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">image_tag_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">latest</span></code> or <code class="docutils literal notranslate"><span class="pre">pinned</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">domain</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dns_mode</span></code> (<code class="docutils literal notranslate"><span class="pre">auto</span></code> or <code class="docutils literal notranslate"><span class="pre">manual</span></code>)</p></li>
@@ -1305,11 +1430,30 @@ substituted at apply time:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Show the current pipeline state</span>
 ./voipbin-install<span class="w"> </span>status
 
+<span class="c1"># Show status as JSON (for scripting)</span>
+./voipbin-install<span class="w"> </span>status<span class="w"> </span>--json
+
+<span class="c1"># Verify deployment health (API, SIP, pods, TLS)</span>
+./voipbin-install<span class="w"> </span>verify
+
+<span class="c1"># Run only a specific health check</span>
+./voipbin-install<span class="w"> </span>verify<span class="w"> </span>--check<span class="w"> </span>http_health
+
 <span class="c1"># Re-render and apply just the K8s manifests after editing a value</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s_apply
 
 <span class="c1"># Re-render the Kamailio VM .env after editing group_vars</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible_run
+
+<span class="c1"># Show Kamailio TLS certificate status</span>
+./voipbin-install<span class="w"> </span>cert<span class="w"> </span>status
+
+<span class="c1"># Renew Kamailio TLS certificates</span>
+./voipbin-install<span class="w"> </span>cert<span class="w"> </span>renew
+
+<span class="c1"># Show help for any command</span>
+./voipbin-install<span class="w"> </span>--help
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--help
 
 <span class="c1"># Inspect what secrets are stored</span>
 sops<span class="w"> </span>--decrypt<span class="w"> </span>secrets.yaml
@@ -1370,7 +1514,7 @@ authenticated principal:</p>
 gcloud<span class="w"> </span>projects<span class="w"> </span>get-iam-policy<span class="w"> </span>PROJECT_ID
 </pre></div>
 </div>
-<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (12 roles).</p>
+<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (13 roles).</p>
 </section>
 <section id="ansible-iap-tunnel-connection-failed">
 <h4>Ansible: IAP tunnel connection failed<a class="headerlink" href="#ansible-iap-tunnel-connection-failed" title="Link to this heading">¶</a></h4>
@@ -1438,8 +1582,8 @@ permissions, and the connection name matches the Terraform output.</p>
 <p>Update your registrar’s NS records to point at those nameservers. NS
 delegation can take up to 48 hours.</p>
 <p>When <code class="docutils literal notranslate"><span class="pre">dns_mode:</span> <span class="pre">manual</span></code>: pull the external LB IP from Terraform
-outputs and create A records for <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">admin</span></code>, <code class="docutils literal notranslate"><span class="pre">talk</span></code>, <code class="docutils literal notranslate"><span class="pre">meet</span></code>,
-and <code class="docutils literal notranslate"><span class="pre">sip</span></code> subdomains at your DNS provider.</p>
+outputs and create A records for <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">hook</span></code>, <code class="docutils literal notranslate"><span class="pre">admin</span></code>, <code class="docutils literal notranslate"><span class="pre">talk</span></code>,
+<code class="docutils literal notranslate"><span class="pre">meet</span></code>, and <code class="docutils literal notranslate"><span class="pre">sip</span></code> subdomains at your DNS provider.</p>
 </section>
 <section id="sip-devices-cannot-register">
 <h4>SIP: devices cannot register<a class="headerlink" href="#sip-devices-cannot-register" title="Link to this heading">¶</a></h4>
@@ -1571,9 +1715,14 @@ outputs.</p></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#install">Install</a><ul>
-<li><a class="reference internal" href="#init-interactive-wizard"><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)</a></li>
-<li><a class="reference internal" href="#apply-three-stage-deploy"><code class="docutils literal notranslate"><span class="pre">apply</span></code> (three-stage deploy)</a></li>
+<li><a class="reference internal" href="#init-interactive-wizard"><code class="docutils literal notranslate"><span class="pre">init</span></code> (interactive wizard)</a><ul>
+<li><a class="reference internal" href="#wizard-questions">Wizard questions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#apply-eight-stage-deploy"><code class="docutils literal notranslate"><span class="pre">apply</span></code> (eight-stage deploy)</a></li>
 <li><a class="reference internal" href="#verify-health-check"><code class="docutils literal notranslate"><span class="pre">verify</span></code> (health check)</a></li>
+<li><a class="reference internal" href="#status-deployment-overview"><code class="docutils literal notranslate"><span class="pre">status</span></code> (deployment overview)</a></li>
+<li><a class="reference internal" href="#cert-certificate-management"><code class="docutils literal notranslate"><span class="pre">cert</span></code> (certificate management)</a></li>
 <li><a class="reference internal" href="#dns-step">DNS step</a></li>
 </ul>
 </li>

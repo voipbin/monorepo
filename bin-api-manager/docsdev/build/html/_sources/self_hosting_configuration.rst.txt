@@ -19,7 +19,7 @@ Typical contents:
     region: us-central1
     zone: us-central1-a
     gke_type: zonal
-    tls_strategy: letsencrypt
+    tls_strategy: self-signed
     image_tag_strategy: pinned
     domain: voipbin.example.com
     dns_mode: auto
