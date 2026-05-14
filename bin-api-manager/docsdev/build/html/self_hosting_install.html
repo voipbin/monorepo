@@ -615,8 +615,8 @@ Docker image tag strategy (latest or pinned via
 <li><p>Project existence and billing.</p></li>
 <li><p>Quota check against <code class="docutils literal notranslate"><span class="pre">config/gcp_quotas.yaml</span></code>.</p></li>
 <li><p>Enable sixteen GCP APIs.</p></li>
-<li><p>Create the <code class="docutils literal notranslate"><span class="pre">voipbin-installer</span></code> service account with thirteen IAM
-role bindings.</p></li>
+<li><p>Create the <code class="docutils literal notranslate"><span class="pre">voipbin-installer</span></code> service account with the IAM role
+bindings defined in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code>.</p></li>
 <li><p>Create a KMS key ring and crypto key.</p></li>
 <li><p>Generate six secrets (<code class="docutils literal notranslate"><span class="pre">jwt_key</span></code>, <code class="docutils literal notranslate"><span class="pre">cloudsql_password</span></code>,
 <code class="docutils literal notranslate"><span class="pre">redis_password</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_user</span></code>, <code class="docutils literal notranslate"><span class="pre">rabbitmq_password</span></code>,

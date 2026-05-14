@@ -28,8 +28,8 @@ The ``init`` command runs a multi-step bootstrap, in order:
 4. Project existence and billing.
 5. Quota check against ``config/gcp_quotas.yaml``.
 6. Enable sixteen GCP APIs.
-7. Create the ``voipbin-installer`` service account with thirteen IAM
-   role bindings.
+7. Create the ``voipbin-installer`` service account with the IAM role
+   bindings defined in ``config/gcp_iam_roles.yaml``.
 8. Create a KMS key ring and crypto key.
 9. Generate six secrets (``jwt_key``, ``cloudsql_password``,
    ``redis_password``, ``rabbitmq_user``, ``rabbitmq_password``,
