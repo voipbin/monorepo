@@ -61,29 +61,69 @@ A successful install produces:
 Cost
 ----
 
-Estimated monthly costs for the minimal default sizing in
-``us-central1``:
+Estimated monthly costs in ``us-central1`` (on-demand, list price). Costs vary by
+region. You are responsible for all charges incurred on your GCP project.
 
-============================  ==============================
-Resource                       Cost (USD)
-============================  ==============================
-GKE control plane              $0 zonal, ~$73 regional
-GKE nodes (2x n1-standard-2)   ~$97
-Kamailio VM (f1-micro)         ~$6
-RTPEngine VM (f1-micro)        ~$6
-Cloud SQL (db-f1-micro)        ~$13
-Cloud NAT                      ~$10
-External IPs                   ~$8
-Network load balancers         ~$20
-DNS, GCS, KMS, disks           ~$6
-**Total**                      **~$170 zonal, ~$243 regional**
-============================  ==============================
+**Minimum config** (``gke_node_count=1``, ``kamailio_count=1``, ``rtpengine_count=1``):
 
-Costs vary by region. The figures above add up the line items in the
-table and are list-price snapshots, not committed-use prices; the
-installer's ``README.md`` may show a slightly different headline figure
-depending on which sizing snapshot it was last regenerated against. You
-are responsible for all charges incurred on your GCP project.
+.. list-table::
+   :header-rows: 1
+   :widths: 55 25
+
+   * - Resource
+     - Cost/mo (USD)
+   * - GKE Control Plane
+     - $0 zonal, ~$74 regional
+   * - GKE Node (1x n1-standard-2 + 100 GB disk)
+     - ~$213
+   * - Kamailio VM (1x f1-micro + 30 GB disk)
+     - ~$7
+   * - RTPEngine VM (1x f1-micro + 30 GB disk)
+     - ~$7
+   * - Cloud SQL MySQL db-f1-micro + 10 GB SSD
+     - ~$13
+   * - Static External IPs (8x in-use)
+     - ~$23
+   * - Load Balancers (Kamailio NLB 3 rules + K8s LB 5 services)
+     - ~$146
+   * - Cloud NAT gateway
+     - ~$32
+   * - Cloud DNS, GCS, KMS
+     - ~$1
+   * - **Total**
+     - **~$442 zonal / ~$516 regional**
+
+**Default config** (``gke_node_count=2``, ``kamailio_count=2``, ``rtpengine_count=2``):
+
+.. list-table::
+   :header-rows: 1
+   :widths: 55 25
+
+   * - Resource
+     - Cost/mo (USD)
+   * - GKE Control Plane
+     - $0 zonal, ~$74 regional
+   * - GKE Nodes (2x n1-standard-2 + 100 GB disks)
+     - ~$426
+   * - Kamailio VMs (2x f1-micro + 30 GB disks)
+     - ~$14
+   * - RTPEngine VMs (2x f1-micro + 30 GB disks)
+     - ~$14
+   * - Cloud SQL MySQL db-f1-micro + 10 GB SSD
+     - ~$13
+   * - Static External IPs (9x in-use)
+     - ~$26
+   * - Load Balancers (Kamailio NLB 3 rules + K8s LB 5 services)
+     - ~$146
+   * - Cloud NAT gateway
+     - ~$32
+   * - Cloud DNS, GCS, KMS
+     - ~$1
+   * - **Total**
+     - **~$672 zonal / ~$746 regional**
+
+These figures are on-demand list prices and do not include committed-use
+discounts, data egress, or usage beyond the included free tiers.
 
 .. warning::
 
