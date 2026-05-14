@@ -680,7 +680,7 @@ authenticated principal:</p>
 gcloud<span class="w"> </span>projects<span class="w"> </span>get-iam-policy<span class="w"> </span>PROJECT_ID
 </pre></div>
 </div>
-<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (13 roles).</p>
+<p>The minimum role set is in <code class="docutils literal notranslate"><span class="pre">config/gcp_iam_roles.yaml</span></code> (12 roles). The principal also needs <code class="docutils literal notranslate"><span class="pre">roles/compute.osLogin</span></code> and <code class="docutils literal notranslate"><span class="pre">roles/compute.osAdminLogin</span></code> for Ansible VM access.</p>
 </section>
 <section id="ansible-iap-tunnel-connection-failed">
 <h3>Ansible: IAP tunnel connection failed<a class="headerlink" href="#ansible-iap-tunnel-connection-failed" title="Link to this heading">¶</a></h3>

@@ -102,7 +102,7 @@ authenticated principal:
     gcloud auth list
     gcloud projects get-iam-policy PROJECT_ID
 
-The minimum role set is in ``config/gcp_iam_roles.yaml`` (13 roles).
+The minimum role set is in ``config/gcp_iam_roles.yaml`` (12 roles). The principal also needs ``roles/compute.osLogin`` and ``roles/compute.osAdminLogin`` for Ansible VM access.
 
 Ansible: IAP tunnel connection failed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
