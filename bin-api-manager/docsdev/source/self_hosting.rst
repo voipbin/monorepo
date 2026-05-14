@@ -1,7 +1,9 @@
 .. _self-hosting-main:
 
+.. _installation-main:
+
 ************
-Self-Hosting
+Installation
 ************
 
 .. note:: **AI Context**
