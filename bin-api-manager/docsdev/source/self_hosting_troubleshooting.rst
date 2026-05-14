@@ -9,11 +9,30 @@ Day-to-day commands
     # Show the current pipeline state
     ./voipbin-install status
 
+    # Show status as JSON (for scripting)
+    ./voipbin-install status --json
+
+    # Verify deployment health (API, SIP, pods, TLS)
+    ./voipbin-install verify
+
+    # Run only a specific health check
+    ./voipbin-install verify --check http_health
+
     # Re-render and apply just the K8s manifests after editing a value
-    ./voipbin-install apply --stage k8s
+    ./voipbin-install apply --stage k8s_apply
 
     # Re-render the Kamailio VM .env after editing group_vars
-    ./voipbin-install apply --stage ansible
+    ./voipbin-install apply --stage ansible_run
+
+    # Show Kamailio TLS certificate status
+    ./voipbin-install cert status
+
+    # Renew Kamailio TLS certificates
+    ./voipbin-install cert renew
+
+    # Show help for any command
+    ./voipbin-install --help
+    ./voipbin-install apply --help
 
     # Inspect what secrets are stored
     sops --decrypt secrets.yaml
@@ -83,7 +102,7 @@ authenticated principal:
     gcloud auth list
     gcloud projects get-iam-policy PROJECT_ID
 
-The minimum role set is in ``config/gcp_iam_roles.yaml`` (12 roles).
+The minimum role set is in ``config/gcp_iam_roles.yaml`` (12 roles). The principal also needs ``roles/compute.osLogin`` and ``roles/compute.osAdminLogin`` for Ansible VM access.
 
 Ansible: IAP tunnel connection failed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -159,8 +178,8 @@ Update your registrar's NS records to point at those nameservers. NS
 delegation can take up to 48 hours.
 
 When ``dns_mode: manual``: pull the external LB IP from Terraform
-outputs and create A records for ``api``, ``admin``, ``talk``, ``meet``,
-and ``sip`` subdomains at your DNS provider.
+outputs and create A records for ``api``, ``hook``, ``admin``, ``talk``,
+``meet``, and ``sip`` subdomains at your DNS provider.
 
 SIP: devices cannot register
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

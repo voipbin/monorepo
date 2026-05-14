@@ -650,7 +650,7 @@ rerun the relevant stage.</p>
 source IPs. Populate the list with <code class="docutils literal notranslate"><span class="pre">VOIPBIN_PSTN_WHITELIST_IPS</span></code> and
 rerun the Ansible stage:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">VOIPBIN_PSTN_WHITELIST_IPS</span><span class="o">=</span><span class="s2">&quot;203.0.113.10,198.51.100.4&quot;</span>
-./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible
+./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>ansible_run
 </pre></div>
 </div>
 <p>The value flows through <code class="docutils literal notranslate"><span class="pre">ansible/group_vars/all.yml</span></code> into the Kamailio
@@ -670,7 +670,7 @@ auth database.</p></li>
 </ul>
 <p>Set them via Ansible extra vars or by editing
 <code class="docutils literal notranslate"><span class="pre">ansible/group_vars/kamailio.yml</span></code> and rerunning
-<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">ansible</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">ansible_run</span></code>.</p>
 </section>
 <section id="rtpengine-port-range">
 <h3>RTPEngine port range<a class="headerlink" href="#rtpengine-port-range" title="Link to this heading">¶</a></h3>
@@ -682,22 +682,34 @@ sure the firewall rule matches.</p>
 </section>
 <section id="tls-certificate-strategy">
 <h2>4. TLS certificate strategy<a class="headerlink" href="#tls-certificate-strategy" title="Link to this heading">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> chosen in the wizard governs how certificates are
-issued:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">letsencrypt</span></code>: cert-manager issues per-host certificates via
-HTTP-01 once DNS resolves. DNS must resolve first, otherwise the
-challenge fails and the certificate sits in <code class="docutils literal notranslate"><span class="pre">Pending</span></code>. Verify with
-<code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">certificate</span> <span class="pre">-A</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">gcp-managed</span></code>: a GCP-managed certificate is attached to the
-Ingress and provisioned by Google. Same DNS dependency.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">self-signed</span></code>: a self-signed certificate is installed immediately.
-Use only for staging or local-only deployments.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">byoc</span></code>: bring your own. Drop <code class="docutils literal notranslate"><span class="pre">tls.crt</span></code> and <code class="docutils literal notranslate"><span class="pre">tls.key</span></code> into the
-<code class="docutils literal notranslate"><span class="pre">voipbin-tls</span></code> Secret in <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> before
-<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">k8s</span></code>.</p></li>
+<p>The <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> chosen in the wizard governs how the frontend TLS
+certificate is managed. There are two valid values:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">self-signed</span></code> (default): on first <code class="docutils literal notranslate"><span class="pre">apply</span></code>, the installer generates
+a self-signed RSA-2048 certificate and stores it in the
+<code class="docutils literal notranslate"><span class="pre">voipbin-tls</span></code> Kubernetes Secret in both <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code> and
+<code class="docutils literal notranslate"><span class="pre">square-manager</span></code> namespaces, and as base64-encoded env vars in
+<code class="docutils literal notranslate"><span class="pre">voipbin-secret</span></code>. Browsers will show a certificate warning until you
+replace it with a CA-issued cert. Use only for initial bring-up or
+internal testing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">byoc</span></code> (Bring Your Own Cert): the operator pre-creates the
+<code class="docutils literal notranslate"><span class="pre">voipbin-tls</span></code> Secret with a real CA-issued certificate before the
+<code class="docutils literal notranslate"><span class="pre">k8s_apply</span></code> stage. The installer detects populated SSL keys and
+skips its own writes. To use BYOC mode, create the secret in both
+namespaces before running apply:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>kubectl<span class="w"> </span>-n<span class="w"> </span>bin-manager<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>voipbin-tls<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cert<span class="o">=</span>/path/to/fullchain.pem<span class="w"> </span>--key<span class="o">=</span>/path/to/privkey.pem
+kubectl<span class="w"> </span>-n<span class="w"> </span>square-manager<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>voipbin-tls<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cert<span class="o">=</span>/path/to/fullchain.pem<span class="w"> </span>--key<span class="o">=</span>/path/to/privkey.pem
+</pre></div>
+</div>
+<p>Then run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./voipbin-install<span class="w"> </span>apply<span class="w"> </span>--stage<span class="w"> </span>k8s_apply
+</pre></div>
+</div>
+</li>
 </ul>
-<p>To change strategies after install, edit <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> in
+<p>To change strategy after install, edit <code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> in
 <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> and rerun apply.</p>
 </section>
 <section id="third-party-integrations">
@@ -759,8 +771,7 @@ the wizard, generated secrets, or operator overrides.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">gcp_project_id</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">region</span></code>, <code class="docutils literal notranslate"><span class="pre">zone</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">gke_type</span></code> (<code class="docutils literal notranslate"><span class="pre">zonal</span></code> or <code class="docutils literal notranslate"><span class="pre">regional</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">letsencrypt</span></code>, <code class="docutils literal notranslate"><span class="pre">gcp-managed</span></code>, <code class="docutils literal notranslate"><span class="pre">self-signed</span></code>,
-<code class="docutils literal notranslate"><span class="pre">byoc</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tls_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">self-signed</span></code> or <code class="docutils literal notranslate"><span class="pre">byoc</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">image_tag_strategy</span></code> (<code class="docutils literal notranslate"><span class="pre">latest</span></code> or <code class="docutils literal notranslate"><span class="pre">pinned</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">domain</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dns_mode</span></code> (<code class="docutils literal notranslate"><span class="pre">auto</span></code> or <code class="docutils literal notranslate"><span class="pre">manual</span></code>)</p></li>

@@ -591,18 +591,33 @@
         <article role="main" id="furo-main-content">
           <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
-<p>The installer is a three stage pipeline driven by the
+<p>The installer is an eight-stage pipeline driven by the
 <code class="docutils literal notranslate"><span class="pre">voipbin-install</span></code> CLI.</p>
+<p>The eight stages run in order when you execute <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>:</p>
 <ol class="arabic simple">
-<li><p><strong>Terraform</strong> provisions GCP infrastructure: a custom VPC, GKE cluster,
-Cloud SQL (MySQL 8.0), Kamailio and RTPEngine VMs, DNS zone, load
-balancers, KMS key ring for SOPS, and GCS buckets.</p></li>
-<li><p><strong>Ansible</strong> configures the Kamailio and RTPEngine VMs over an IAP
+<li><p><strong>terraform_init</strong> initializes the Terraform backend (GCS state bucket)
+and downloads providers.</p></li>
+<li><p><strong>reconcile_imports</strong> detects any GCP resources that already exist
+outside Terraform state and imports them, preventing 409 conflicts on
+resume.</p></li>
+<li><p><strong>terraform_apply</strong> provisions GCP infrastructure: a custom VPC, GKE
+cluster, Cloud SQL (MySQL 8.0), Kamailio and RTPEngine VMs, DNS zone,
+load balancers, KMS key ring for SOPS, and GCS buckets.</p></li>
+<li><p><strong>reconcile_outputs</strong> reads Terraform outputs (IPs, connection names)
+into <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> so later stages can consume them.</p></li>
+<li><p><strong>k8s_apply</strong> deploys VoIPBin services to the GKE cluster using
+manifests under <code class="docutils literal notranslate"><span class="pre">k8s/</span></code>, with placeholders substituted from Terraform
+outputs and SOPS-decrypted secrets.</p></li>
+<li><p><strong>reconcile_k8s_outputs</strong> reads Kubernetes load balancer IPs into
+<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>.</p></li>
+<li><p><strong>cert_provision</strong> issues Kamailio TLS certificates.</p></li>
+<li><p><strong>ansible_run</strong> configures Kamailio and RTPEngine VMs over an IAP
 tunnel and renders their Docker Compose <code class="docutils literal notranslate"><span class="pre">.env</span></code> files from templates.</p></li>
-<li><p><strong>Kubernetes</strong> applies the manifests under <code class="docutils literal notranslate"><span class="pre">k8s/</span></code> to the GKE cluster
-with placeholders substituted from Terraform outputs and SOPS-decrypted
-secrets.</p></li>
 </ol>
+<p>The pipeline is resumable: if a stage fails, fix the issue and rerun
+<code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span></code>; it continues from where it left off. Run a
+single stage with <code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">apply</span> <span class="pre">--stage</span> <span class="pre">&lt;name&gt;</span></code> (for example
+<code class="docutils literal notranslate"><span class="pre">--stage</span> <span class="pre">ansible_run</span></code>).</p>
 <section id="what-gets-deployed">
 <h2>What gets deployed<a class="headerlink" href="#what-gets-deployed" title="Link to this heading">¶</a></h2>
 <p>A successful install produces:</p>
@@ -622,60 +637,113 @@ automated backups, Cloud SQL Proxy deployed as a sidecar in GKE.</p></li>
 <li><p><strong>Kubernetes workloads</strong>: backend microservices in the <code class="docutils literal notranslate"><span class="pre">bin-manager</span></code>
 namespace, Asterisk in <code class="docutils literal notranslate"><span class="pre">voip</span></code>, Redis, RabbitMQ, ClickHouse, and Cloud
 SQL Proxy in <code class="docutils literal notranslate"><span class="pre">infrastructure</span></code>, plus three frontend apps
-(<code class="docutils literal notranslate"><span class="pre">square-admin</span></code>, <code class="docutils literal notranslate"><span class="pre">square-talk</span></code>, <code class="docutils literal notranslate"><span class="pre">square-meet</span></code>) and an Ingress
-fronted by TLS certificates.</p></li>
+(<code class="docutils literal notranslate"><span class="pre">square-admin</span></code>, <code class="docutils literal notranslate"><span class="pre">square-talk</span></code>, <code class="docutils literal notranslate"><span class="pre">square-meet</span></code>) in the
+<code class="docutils literal notranslate"><span class="pre">square-manager</span></code> namespace.</p></li>
+<li><p><strong>DNS records</strong>: six A records are required. With <code class="docutils literal notranslate"><span class="pre">example.com</span></code> as
+your domain: <code class="docutils literal notranslate"><span class="pre">api.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">hook.example.com</span></code>,
+<code class="docutils literal notranslate"><span class="pre">admin.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">talk.example.com</span></code>, <code class="docutils literal notranslate"><span class="pre">meet.example.com</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">sip.example.com</span></code>. The first five point at the GKE load balancer IP
+and the last points at the Kamailio external load balancer IP.</p></li>
 </ul>
 </section>
 <section id="cost">
 <h2>Cost<a class="headerlink" href="#cost" title="Link to this heading">¶</a></h2>
-<p>Estimated monthly costs for the minimal default sizing in
-<code class="docutils literal notranslate"><span class="pre">us-central1</span></code>:</p>
-<div class="table-wrapper docutils container">
+<p>Estimated monthly costs in <code class="docutils literal notranslate"><span class="pre">us-central1</span></code> (on-demand, list price). Costs vary by
+region. You are responsible for all charges incurred on your GCP project.</p>
+<p><strong>Minimum config</strong> (<code class="docutils literal notranslate"><span class="pre">gke_node_count=1</span></code>, <code class="docutils literal notranslate"><span class="pre">kamailio_count=1</span></code>, <code class="docutils literal notranslate"><span class="pre">rtpengine_count=1</span></code>):</p>
+<div class="table-wrapper colwidths-given docutils container">
 <table class="docutils align-default">
+<colgroup>
+<col style="width: 68.8%" />
+<col style="width: 31.2%" />
+</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Resource</p></th>
-<th class="head"><p>Cost (USD)</p></th>
+<th class="head"><p>Cost/mo (USD)</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>GKE control plane</p></td>
-<td><p>$0 zonal, ~$73 regional</p></td>
+<tr class="row-even"><td><p>GKE Control Plane</p></td>
+<td><p>$0 zonal, ~$74 regional</p></td>
 </tr>
-<tr class="row-odd"><td><p>GKE nodes (2x n1-standard-2)</p></td>
-<td><p>~$97</p></td>
+<tr class="row-odd"><td><p>GKE Node (1x n1-standard-2 + 100 GB disk)</p></td>
+<td><p>~$213</p></td>
 </tr>
-<tr class="row-even"><td><p>Kamailio VM (f1-micro)</p></td>
-<td><p>~$6</p></td>
+<tr class="row-even"><td><p>Kamailio VM (1x f1-micro + 30 GB disk)</p></td>
+<td><p>~$7</p></td>
 </tr>
-<tr class="row-odd"><td><p>RTPEngine VM (f1-micro)</p></td>
-<td><p>~$6</p></td>
+<tr class="row-odd"><td><p>RTPEngine VM (1x f1-micro + 30 GB disk)</p></td>
+<td><p>~$7</p></td>
 </tr>
-<tr class="row-even"><td><p>Cloud SQL (db-f1-micro)</p></td>
+<tr class="row-even"><td><p>Cloud SQL MySQL db-f1-micro + 10 GB SSD</p></td>
 <td><p>~$13</p></td>
 </tr>
-<tr class="row-odd"><td><p>Cloud NAT</p></td>
-<td><p>~$10</p></td>
+<tr class="row-odd"><td><p>Static External IPs (8x in-use)</p></td>
+<td><p>~$23</p></td>
 </tr>
-<tr class="row-even"><td><p>External IPs</p></td>
-<td><p>~$8</p></td>
+<tr class="row-even"><td><p>Load Balancers (Kamailio NLB 3 rules + K8s LB 5 services)</p></td>
+<td><p>~$146</p></td>
 </tr>
-<tr class="row-odd"><td><p>Network load balancers</p></td>
-<td><p>~$20</p></td>
+<tr class="row-odd"><td><p>Cloud NAT gateway</p></td>
+<td><p>~$32</p></td>
 </tr>
-<tr class="row-even"><td><p>DNS, GCS, KMS, disks</p></td>
-<td><p>~$6</p></td>
+<tr class="row-even"><td><p>Cloud DNS, GCS, KMS</p></td>
+<td><p>~$1</p></td>
 </tr>
 <tr class="row-odd"><td><p><strong>Total</strong></p></td>
-<td><p><strong>~$170 zonal, ~$243 regional</strong></p></td>
+<td><p><strong>~$442 zonal / ~$516 regional</strong></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Costs vary by region. The figures above add up the line items in the
-table and are list-price snapshots, not committed-use prices; the
-installer’s <code class="docutils literal notranslate"><span class="pre">README.md</span></code> may show a slightly different headline figure
-depending on which sizing snapshot it was last regenerated against. You
-are responsible for all charges incurred on your GCP project.</p>
+<p><strong>Default config</strong> (<code class="docutils literal notranslate"><span class="pre">gke_node_count=2</span></code>, <code class="docutils literal notranslate"><span class="pre">kamailio_count=2</span></code>, <code class="docutils literal notranslate"><span class="pre">rtpengine_count=2</span></code>):</p>
+<div class="table-wrapper colwidths-given docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 68.8%" />
+<col style="width: 31.2%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Resource</p></th>
+<th class="head"><p>Cost/mo (USD)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GKE Control Plane</p></td>
+<td><p>$0 zonal, ~$74 regional</p></td>
+</tr>
+<tr class="row-odd"><td><p>GKE Nodes (2x n1-standard-2 + 100 GB disks)</p></td>
+<td><p>~$426</p></td>
+</tr>
+<tr class="row-even"><td><p>Kamailio VMs (2x f1-micro + 30 GB disks)</p></td>
+<td><p>~$14</p></td>
+</tr>
+<tr class="row-odd"><td><p>RTPEngine VMs (2x f1-micro + 30 GB disks)</p></td>
+<td><p>~$14</p></td>
+</tr>
+<tr class="row-even"><td><p>Cloud SQL MySQL db-f1-micro + 10 GB SSD</p></td>
+<td><p>~$13</p></td>
+</tr>
+<tr class="row-odd"><td><p>Static External IPs (9x in-use)</p></td>
+<td><p>~$26</p></td>
+</tr>
+<tr class="row-even"><td><p>Load Balancers (Kamailio NLB 3 rules + K8s LB 5 services)</p></td>
+<td><p>~$146</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cloud NAT gateway</p></td>
+<td><p>~$32</p></td>
+</tr>
+<tr class="row-even"><td><p>Cloud DNS, GCS, KMS</p></td>
+<td><p>~$1</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Total</strong></p></td>
+<td><p><strong>~$672 zonal / ~$746 regional</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>These figures are on-demand list prices and do not include committed-use
+discounts, data egress, or usage beyond the included free tiers.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p><code class="docutils literal notranslate"><span class="pre">./voipbin-install</span> <span class="pre">destroy</span></code> is irreversible. It permanently deletes

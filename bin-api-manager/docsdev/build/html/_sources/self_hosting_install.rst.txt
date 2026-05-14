@@ -16,20 +16,20 @@ The happy path is three commands. They are idempotent and resumable.
 ``init`` (interactive wizard)
 -----------------------------
 
-The ``init`` command runs a twelve-step bootstrap, in order:
+The ``init`` command runs a multi-step bootstrap, in order:
 
 1. Preflight checks for the six local tools.
 2. ``gcloud`` user auth and Application Default Credentials.
-3. **Seven wizard questions**: GCP project ID, region, GKE cluster type
-   (zonal or regional), TLS strategy (Let's Encrypt, GCP-managed,
-   self-signed, or BYO certificate), Docker image tag strategy (latest
-   or pinned via ``config/versions.yaml``), base domain name, and Cloud
-   DNS mode (auto or manual).
+3. **Eight wizard questions**: GCP project ID, region, GKE cluster type
+   (zonal or regional), TLS strategy (``self-signed`` or ``byoc``),
+   Docker image tag strategy (latest or pinned via
+   ``config/versions.yaml``), base domain name, Kamailio TLS cert mode
+   (``self_signed`` or ``manual``), and Cloud DNS mode (auto or manual).
 4. Project existence and billing.
 5. Quota check against ``config/gcp_quotas.yaml``.
 6. Enable sixteen GCP APIs.
-7. Create the ``voipbin-installer`` service account with twelve IAM
-   role bindings.
+7. Create the ``voipbin-installer`` service account with the IAM role
+   bindings defined in ``config/gcp_iam_roles.yaml``.
 8. Create a KMS key ring and crypto key.
 9. Generate six secrets (``jwt_key``, ``cloudsql_password``,
    ``redis_password``, ``rabbitmq_user``, ``rabbitmq_password``,
@@ -38,6 +38,24 @@ The ``init`` command runs a twelve-step bootstrap, in order:
 10. Write ``.sops.yaml``.
 11. Save ``config.yaml``.
 12. Print a cost summary.
+
+Wizard questions
+~~~~~~~~~~~~~~~~
+
+The eight questions and their accepted values:
+
+==================================  ==========================================
+Question                            Options / Example
+==================================  ==========================================
+GCP project ID                      ``my-voipbin-project``
+Region                              ``us-central1`` (or any GCP region)
+GKE cluster type                    ``zonal`` (cheaper) or ``regional`` (HA)
+TLS strategy                        ``self-signed`` or ``byoc``
+Docker image tag strategy           ``latest`` or ``pinned``
+Domain name                         ``voipbin.example.com``
+Kamailio cert mode                  ``self_signed`` (auto) or ``manual``
+Cloud DNS mode                      ``auto`` (GCP manages DNS) or ``manual``
+==================================  ==========================================
 
 Useful flags:
 
@@ -62,33 +80,54 @@ The two files written are everything you need to reproduce the install:
    destroyed or the GCP project is deleted, ``secrets.yaml`` becomes
    unrecoverable.
 
-``apply`` (three-stage deploy)
+``apply`` (eight-stage deploy)
 ------------------------------
 
-``./voipbin-install apply`` executes the pipeline in order: Terraform,
-then Ansible, then Kubernetes. The pipeline checkpoints between stages,
-so if a run fails you can fix the problem and rerun the same command;
-it picks up from the failed stage.
+``./voipbin-install apply`` executes eight pipeline stages in order. The
+pipeline checkpoints between stages, so if a run fails you can fix the
+problem and rerun the same command; it picks up from the failed stage.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 50 25
+
+   * - Stage
+     - What it does
+     - Typical duration
+   * - ``terraform_init``
+     - Initialize Terraform backend (GCS state bucket)
+     - 1 to 2 minutes
+   * - ``reconcile_imports``
+     - Import drifted GCP resources into Terraform state
+     - 1 to 3 minutes
+   * - ``terraform_apply``
+     - Provision VPC, GKE, Cloud SQL, VMs
+     - 12 to 18 minutes
+   * - ``reconcile_outputs``
+     - Read Terraform outputs into ``config.yaml``
+     - under 1 minute
+   * - ``k8s_apply``
+     - Deploy Kubernetes workloads to GKE
+     - 3 to 5 minutes
+   * - ``reconcile_k8s_outputs``
+     - Read Kubernetes LB IPs into ``config.yaml``
+     - under 1 minute
+   * - ``cert_provision``
+     - Issue Kamailio TLS certificates
+     - 1 to 2 minutes
+   * - ``ansible_run``
+     - Configure Kamailio and RTPEngine VMs
+     - 5 to 8 minutes
 
 Useful flags:
 
 .. code-block:: bash
 
-    ./voipbin-install apply --dry-run         # plan, do not change
-    ./voipbin-install apply --auto-approve    # skip prompts
-    ./voipbin-install apply --stage terraform # only run this stage
-    ./voipbin-install apply --stage ansible
-    ./voipbin-install apply --stage k8s
-
-Expected duration on a fresh project:
-
-============================  ==============================================
-Stage                          Duration
-============================  ==============================================
-Terraform                      12 to 18 minutes (GKE cluster creation dominates)
-Ansible                        5 to 8 minutes (waits for cloud-init on both VMs)
-Kubernetes                     3 to 5 minutes
-============================  ==============================================
+    ./voipbin-install apply --dry-run               # plan, do not change
+    ./voipbin-install apply --auto-approve          # skip prompts
+    ./voipbin-install apply --stage terraform_init  # only run this stage
+    ./voipbin-install apply --stage k8s_apply
+    ./voipbin-install apply --stage ansible_run
 
 ``verify`` (health check)
 -------------------------
@@ -109,6 +148,28 @@ manually.
    reachability for media or signalling, use a separate tool such as
    ``nc -zuv`` and the GCP firewall log stream.
 
+``status`` (deployment overview)
+---------------------------------
+
+The ``status`` command shows a summary of the current deployment state:
+
+.. code-block:: bash
+
+    ./voipbin-install status            # human-readable output
+    ./voipbin-install status --json     # machine-readable JSON
+
+``cert`` (certificate management)
+----------------------------------
+
+The ``cert`` subcommand manages Kamailio TLS certificates:
+
+.. code-block:: bash
+
+    ./voipbin-install cert status       # show per-SAN cert expiry and mode
+    ./voipbin-install cert renew        # re-run cert_provision stage
+    ./voipbin-install cert renew --force  # force re-issuance even if not expired
+    ./voipbin-install cert export-ca --out ca.pem  # export self-signed CA
+
 DNS step
 --------
 
@@ -121,11 +182,17 @@ if you chose ``dns_mode: auto``. Required records, with
 Subdomain                     Type    Value
 ============================  ======  ========================
 ``api.example.com``           A       External LB IP
+``hook.example.com``          A       External LB IP
 ``admin.example.com``         A       External LB IP
 ``talk.example.com``          A       External LB IP
 ``meet.example.com``          A       External LB IP
-``sip.example.com``           A       External LB IP
+``sip.example.com``           A       Kamailio external LB IP
 ============================  ======  ========================
+
+.. note::
+
+   The ``hook`` subdomain is commonly missed. It is required for
+   webhook ingress (HTTP and HTTPS callbacks from external providers).
 
 DNS propagation can take up to 48 hours for NS delegation changes. Once
 records resolve, rerun ``./voipbin-install verify``.

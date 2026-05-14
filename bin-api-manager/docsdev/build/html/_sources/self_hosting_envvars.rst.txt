@@ -52,7 +52,7 @@ rerun the Ansible stage:
 .. code-block:: bash
 
     export VOIPBIN_PSTN_WHITELIST_IPS="203.0.113.10,198.51.100.4"
-    ./voipbin-install apply --stage ansible
+    ./voipbin-install apply --stage ansible_run
 
 The value flows through ``ansible/group_vars/all.yml`` into the Kamailio
 env template as ``PSTN_WHITELIST_IPS``.
@@ -72,7 +72,7 @@ holds SIP credentials:
 
 Set them via Ansible extra vars or by editing
 ``ansible/group_vars/kamailio.yml`` and rerunning
-``./voipbin-install apply --stage ansible``.
+``./voipbin-install apply --stage ansible_run``.
 
 RTPEngine port range
 ~~~~~~~~~~~~~~~~~~~~
@@ -85,22 +85,36 @@ sure the firewall rule matches.
 4. TLS certificate strategy
 ---------------------------
 
-The ``tls_strategy`` chosen in the wizard governs how certificates are
-issued:
+The ``tls_strategy`` chosen in the wizard governs how the frontend TLS
+certificate is managed. There are two valid values:
 
-- ``letsencrypt``: cert-manager issues per-host certificates via
-  HTTP-01 once DNS resolves. DNS must resolve first, otherwise the
-  challenge fails and the certificate sits in ``Pending``. Verify with
-  ``kubectl get certificate -A``.
-- ``gcp-managed``: a GCP-managed certificate is attached to the
-  Ingress and provisioned by Google. Same DNS dependency.
-- ``self-signed``: a self-signed certificate is installed immediately.
-  Use only for staging or local-only deployments.
-- ``byoc``: bring your own. Drop ``tls.crt`` and ``tls.key`` into the
-  ``voipbin-tls`` Secret in ``bin-manager`` before
-  ``./voipbin-install apply --stage k8s``.
+- ``self-signed`` (default): on first ``apply``, the installer generates
+  a self-signed RSA-2048 certificate and stores it in the
+  ``voipbin-tls`` Kubernetes Secret in both ``bin-manager`` and
+  ``square-manager`` namespaces, and as base64-encoded env vars in
+  ``voipbin-secret``. Browsers will show a certificate warning until you
+  replace it with a CA-issued cert. Use only for initial bring-up or
+  internal testing.
+- ``byoc`` (Bring Your Own Cert): the operator pre-creates the
+  ``voipbin-tls`` Secret with a real CA-issued certificate before the
+  ``k8s_apply`` stage. The installer detects populated SSL keys and
+  skips its own writes. To use BYOC mode, create the secret in both
+  namespaces before running apply:
 
-To change strategies after install, edit ``tls_strategy`` in
+  .. code-block:: bash
+
+      kubectl -n bin-manager create secret tls voipbin-tls \
+        --cert=/path/to/fullchain.pem --key=/path/to/privkey.pem
+      kubectl -n square-manager create secret tls voipbin-tls \
+        --cert=/path/to/fullchain.pem --key=/path/to/privkey.pem
+
+  Then run:
+
+  .. code-block:: bash
+
+      ./voipbin-install apply --stage k8s_apply
+
+To change strategy after install, edit ``tls_strategy`` in
 ``config.yaml`` and rerun apply.
 
 5. Third-party integrations
@@ -171,8 +185,7 @@ Wizard-sourced (``config.yaml``)
 - ``gcp_project_id``
 - ``region``, ``zone``
 - ``gke_type`` (``zonal`` or ``regional``)
-- ``tls_strategy`` (``letsencrypt``, ``gcp-managed``, ``self-signed``,
-  ``byoc``)
+- ``tls_strategy`` (``self-signed`` or ``byoc``)
 - ``image_tag_strategy`` (``latest`` or ``pinned``)
 - ``domain``
 - ``dns_mode`` (``auto`` or ``manual``)
