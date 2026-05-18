@@ -98,7 +98,8 @@ import (
 
 const (
 	TokenExpiration = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
-	BootExpiration  = time.Hour * 4      // direct boot token expiration time. 4 hours
+	BootExpiration      = time.Hour * 4 // direct boot token expiration time. 4 hours
+	DelegateExpiration  = time.Hour * 8 // delegate token expiration. 8 hours
 )
 
 // ServiceHandler is interface for service handle
@@ -150,6 +151,7 @@ type ServiceHandler interface {
 	AuthPasswordForgot(ctx context.Context, username string) error
 	AuthPasswordReset(ctx context.Context, token string, password string) error
 	AuthBoot(ctx context.Context, directHash string) (*BootResponse, error)
+	AuthDelegate(ctx context.Context, a *auth.AuthIdentity, targetCustomerID uuid.UUID, reason string) (*DelegateResponse, error)
 
 	// available numbers
 	AvailableNumberList(ctx context.Context, a *auth.AuthIdentity, size uint64, countryCode string, numType string) ([]*nmavailablenumber.WebhookMessage, error)
