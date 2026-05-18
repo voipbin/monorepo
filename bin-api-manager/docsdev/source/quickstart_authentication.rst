@@ -138,10 +138,14 @@ Response:
     {
         "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
         "customer_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "expire": "2026-05-19T06:00:00Z"
+        "expire": "2026-05-19T06:00:00.000000Z"
     }
 
 The returned delegate token is valid for **8 hours** and grants ``PermissionCustomerAdmin``-equivalent access scoped to the specified customer. Project-level permissions are not granted.
+
+.. note::
+
+   The ``expire`` field uses ISO 8601 UTC with microsecond precision (RFC3339Nano compatible, e.g. ``2026-05-19T06:00:00.000000Z``). Parsers that only accept ``time.RFC3339`` (without fractional seconds) must use ``time.RFC3339Nano`` or strip the fractional part before parsing.
 
 Request fields:
 

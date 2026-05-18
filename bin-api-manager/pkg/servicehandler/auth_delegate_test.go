@@ -3,6 +3,7 @@ package servicehandler
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
@@ -132,7 +133,7 @@ func Test_AuthDelegate(t *testing.T) {
 
 			identity:         superAdminIdentity,
 			targetCustomerID: customerID,
-			reason:           string(make([]byte, 201)),
+			reason:           strings.Repeat("a", 201),
 
 			expectErr: true,
 		},
