@@ -16,6 +16,7 @@ const (
 	TypeAgent     Type = "agent"
 	TypeAccesskey Type = "accesskey"
 	TypeDirect    Type = "direct"
+	TypeDelegate  Type = "delegate"
 )
 
 // AuthIdentity is the unified authentication identity for all request types.
@@ -23,9 +24,10 @@ type AuthIdentity struct {
 	Type        Type
 	CustomerID  uuid.UUID // always set — populated from agent, accesskey, or direct scope
 
-	Agent       *amagent.Agent         // non-nil for TypeAgent
-	Accesskey   *csaccesskey.Accesskey // non-nil for TypeAccesskey
-	DirectScope *DirectScope           // non-nil for TypeDirect
+	Agent         *amagent.Agent         // non-nil for TypeAgent
+	Accesskey     *csaccesskey.Accesskey // non-nil for TypeAccesskey
+	DirectScope   *DirectScope           // non-nil for TypeDirect
+	DelegateScope *DelegateScope         // non-nil for TypeDelegate
 }
 
 // DirectScope represents a resource-scoped JWT claim set.
@@ -34,6 +36,13 @@ type DirectScope struct {
 	ResourceType         string    `json:"resource_type"`
 	ResourceID           uuid.UUID `json:"resource_id"`
 	AllowedResourceTypes []string  `json:"allowed_resource_types"`
+}
+
+// DelegateScope represents a superadmin-issued delegate JWT claim set.
+type DelegateScope struct {
+	CustomerID uuid.UUID `json:"customer_id"`
+	IssuedBy   uuid.UUID `json:"issued_by"`
+	JTI        string    `json:"jti"`
 }
 
 // IsAgent returns true if the identity was created from an agent JWT.
@@ -51,6 +60,11 @@ func (a *AuthIdentity) IsDirect() bool {
 	return a.Type == TypeDirect
 }
 
+// IsDelegate returns true if the identity was created from a delegate JWT.
+func (a *AuthIdentity) IsDelegate() bool {
+	return a.Type == TypeDelegate
+}
+
 // HasPermission checks agent permissions.
 // Agent: delegates to Agent.HasPermission().
 // Accesskey: hardcoded CustomerAdmin (matches current behavior).
@@ -64,6 +78,11 @@ func (a *AuthIdentity) HasPermission(p amagent.Permission) bool {
 		return a.Agent.HasPermission(p)
 	case TypeAccesskey:
 		return (amagent.PermissionCustomerAdmin & p) != 0
+	case TypeDelegate:
+		// Delegate tokens grant PermissionCustomerAdmin-equivalent access.
+		// Explicitly excludes all project-level permissions.
+		return (amagent.PermissionCustomerAdmin&p) != 0 &&
+			(p&(amagent.PermissionProjectSuperAdmin|amagent.PermissionProjectAll)) == 0
 	default:
 		return false
 	}
@@ -119,6 +138,11 @@ func (a *AuthIdentity) DisplayName() string {
 			return "direct:" + a.DirectScope.ResourceType
 		}
 		return "direct"
+	case TypeDelegate:
+		if a.DelegateScope != nil {
+			return "delegate:" + a.DelegateScope.CustomerID.String()
+		}
+		return "delegate"
 	default:
 		return "unknown"
 	}
@@ -148,5 +172,14 @@ func NewDirectIdentity(scope *DirectScope) *AuthIdentity {
 		Type:        TypeDirect,
 		CustomerID:  scope.CustomerID,
 		DirectScope: scope,
+	}
+}
+
+// NewDelegateIdentity constructs an AuthIdentity from a delegate scope.
+func NewDelegateIdentity(scope *DelegateScope) *AuthIdentity {
+	return &AuthIdentity{
+		Type:          TypeDelegate,
+		CustomerID:    scope.CustomerID,
+		DelegateScope: scope,
 	}
 }
