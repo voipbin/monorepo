@@ -597,6 +597,115 @@ func TestAuthenticateWithMalformedAgentJSON(t *testing.T) {
 	}
 }
 
+func Test_buildJWTIdentity_Delegate(t *testing.T) {
+	customerID := "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+	issuedBy   := "11111111-1111-1111-1111-111111111111"
+	jti        := "some-jti-value"
+
+	tests := []struct {
+		name           string
+		authData       map[string]interface{}
+		expectErr      bool
+		expectType     auth.Type
+		expectCustomer string
+		expectJTI      string
+	}{
+		{
+			name: "valid delegate token",
+			authData: map[string]interface{}{
+				"type":        "delegate",
+				"aud":         "voipbin-api",
+				"customer_id": customerID,
+				"sub":         issuedBy,
+				"jti":         jti,
+			},
+			expectErr:      false,
+			expectType:     auth.TypeDelegate,
+			expectCustomer: customerID,
+			expectJTI:      jti,
+		},
+		{
+			name: "delegate token wrong aud rejected",
+			authData: map[string]interface{}{
+				"type":        "delegate",
+				"aud":         "wrong-audience",
+				"customer_id": customerID,
+				"sub":         issuedBy,
+				"jti":         jti,
+			},
+			expectErr: true,
+		},
+		{
+			name: "delegate token missing aud rejected",
+			authData: map[string]interface{}{
+				"type":        "delegate",
+				"customer_id": customerID,
+				"sub":         issuedBy,
+				"jti":         jti,
+			},
+			expectErr: true,
+		},
+		{
+			name: "delegate token missing customer_id rejected",
+			authData: map[string]interface{}{
+				"type": "delegate",
+				"aud":  "voipbin-api",
+				"sub":  issuedBy,
+				"jti":  jti,
+			},
+			expectErr: true,
+		},
+		{
+			name: "delegate token invalid customer_id rejected",
+			authData: map[string]interface{}{
+				"type":        "delegate",
+				"aud":         "voipbin-api",
+				"customer_id": "not-a-uuid",
+				"sub":         issuedBy,
+				"jti":         jti,
+			},
+			expectErr: true,
+		},
+		{
+			name: "unknown token type returns error",
+			authData: map[string]interface{}{
+				"type": "unknown-type-xyz",
+			},
+			expectErr: true,
+		},
+	}
+
+	log := logrus.NewEntry(logrus.New())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := buildJWTIdentity(log, tt.authData)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if res.Type != tt.expectType {
+				t.Errorf("Wrong Type. expect: %v, got: %v", tt.expectType, res.Type)
+			}
+			if res.CustomerID.String() != tt.expectCustomer {
+				t.Errorf("Wrong CustomerID. expect: %v, got: %v", tt.expectCustomer, res.CustomerID)
+			}
+			if tt.expectJTI != "" {
+				if res.DelegateScope == nil {
+					t.Fatal("DelegateScope is nil")
+				}
+				if res.DelegateScope.JTI != tt.expectJTI {
+					t.Errorf("Wrong JTI. expect: %v, got: %v", tt.expectJTI, res.DelegateScope.JTI)
+				}
+			}
+		})
+	}
+}
+
 func TestAuthConstants(t *testing.T) {
 	if authTypeNone != "" {
 		t.Errorf("authTypeNone should be empty string, got: %v", authTypeNone)
