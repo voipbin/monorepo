@@ -236,6 +236,7 @@ func runListenHTTP(serviceHandler servicehandler.ServiceHandler) {
 	authProtected.Use(middleware.Authenticate())
 	authProtected.POST("/unregister", service.PostAuthUnregister)
 	authProtected.DELETE("/unregister", service.DeleteAuthUnregister)
+	authProtected.POST("/delegate", service.PostDelegate)
 
 	appServer := server.NewServer(serviceHandler)
 
