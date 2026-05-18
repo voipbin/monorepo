@@ -138,6 +138,25 @@ func Test_AuthDelegate(t *testing.T) {
 			expectErr: true,
 		},
 		{
+			name: "reason at max length accepted",
+
+			identity:         superAdminIdentity,
+			targetCustomerID: customerID,
+			reason:           strings.Repeat("a", 200),
+
+			responseCustomer: activeCustomer,
+			expectErr:        false,
+		},
+		{
+			name: "reason with non-ASCII char rejected",
+
+			identity:         superAdminIdentity,
+			targetCustomerID: customerID,
+			reason:           "reason with accented é char",
+
+			expectErr: true,
+		},
+		{
 			name:             "deleted customer returns error",
 			identity:         superAdminIdentity,
 			targetCustomerID: customerID,
