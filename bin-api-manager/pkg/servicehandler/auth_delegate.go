@@ -3,7 +3,6 @@ package servicehandler
 import (
 	"context"
 	"fmt"
-	"unicode"
 
 	amagent "monorepo/bin-agent-manager/models/agent"
 	"monorepo/bin-api-manager/models/auth"
@@ -17,10 +16,10 @@ import (
 )
 
 var (
-	metricDelegateIssued = promauto.NewCounterVec(prometheus.CounterOpts{
+	metricDelegateIssued = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "auth_delegate_token_issued_total",
 		Help: "Total number of delegate tokens issued.",
-	}, []string{"issued_by_agent_id"})
+	})
 )
 
 // DelegateResponse is the response for POST /auth/delegate.
@@ -126,7 +125,7 @@ func (h *serviceHandler) AuthDelegate(ctx context.Context, a *auth.AuthIdentity,
 	}).Info("Delegate token issued")
 
 	// Emit metric
-	metricDelegateIssued.WithLabelValues(agentID.String()).Inc()
+	metricDelegateIssued.Inc()
 
 	return &DelegateResponse{
 		Token:      token,
@@ -135,7 +134,7 @@ func (h *serviceHandler) AuthDelegate(ctx context.Context, a *auth.AuthIdentity,
 	}, nil
 }
 
-// validateDelegateReason enforces reason field constraints: 10–200 printable chars, no control chars.
+// validateDelegateReason enforces reason field constraints: 10–200 bytes of printable ASCII (0x20–0x7E).
 func validateDelegateReason(reason string) error {
 	if len(reason) < 10 {
 		return fmt.Errorf("reason must be at least 10 characters")
@@ -144,8 +143,8 @@ func validateDelegateReason(reason string) error {
 		return fmt.Errorf("reason must be at most 200 characters")
 	}
 	for _, r := range reason {
-		if unicode.IsControl(r) {
-			return fmt.Errorf("reason must not contain control characters")
+		if r < 0x20 || r > 0x7E {
+			return fmt.Errorf("reason must contain only printable ASCII characters")
 		}
 	}
 	return nil

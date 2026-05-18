@@ -136,6 +136,19 @@ func Test_AuthDelegate(t *testing.T) {
 
 			expectErr: true,
 		},
+		{
+			name:             "deleted customer returns error",
+			identity:         superAdminIdentity,
+			targetCustomerID: customerID,
+			reason:           "investigating dropped call for customer",
+			responseCustomer: &cscustomer.Customer{
+				ID:     customerID,
+				Status: cscustomer.StatusDeleted,
+			},
+			responseCustomerErr: nil,
+
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -201,10 +214,11 @@ func Test_AuthDelegate(t *testing.T) {
 	}
 }
 
-// containsControlChar is a test helper mirroring validateDelegateReason's unicode.IsControl check.
+// containsControlChar is a test helper mirroring validateDelegateReason's printable ASCII check.
+// Returns true if the string contains any character outside the printable ASCII range (0x20–0x7E).
 func containsControlChar(s string) bool {
 	for _, r := range s {
-		if r >= 0 && r <= 0x1f || r == 0x7f || (r >= 0x80 && r <= 0x9f) {
+		if r < 0x20 || r > 0x7E {
 			return true
 		}
 	}
