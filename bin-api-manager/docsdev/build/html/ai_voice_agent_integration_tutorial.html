@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="RAG" href="rag.html"><link rel="prev" title="Overview" href="ai_voice_agent_integration_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2025.12.19 -->
         <title>Tutorial - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -761,8 +761,8 @@
 </div>
 <p><strong>Process in your AI backend:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Python example — webhook handler</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">import</span> <span class="nn">requests</span>
 
 <span class="n">VOIPBIN_TOKEN</span> <span class="o">=</span> <span class="s2">&quot;&lt;YOUR_AUTH_TOKEN&gt;&quot;</span>
 <span class="n">TRANSCRIBE_ID</span> <span class="o">=</span> <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440000&quot;</span>
@@ -771,7 +771,7 @@
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">handle_webhook</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">handle_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
@@ -792,7 +792,7 @@
 
     <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">call_your_llm</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">call_your_llm</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
     <span class="c1"># Replace with your actual LLM call</span>
     <span class="c1"># e.g., OpenAI, Anthropic, local model, etc.</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;I understand you need help with: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -803,7 +803,7 @@
 <h3>Step 6: Handle Interruptions<a class="headerlink" href="#step-6-handle-interruptions" title="Link to this heading">¶</a></h3>
 <p>If the caller speaks while TTS is playing, you receive a new <code class="docutils literal notranslate"><span class="pre">transcript_created</span></code> event. Flush the current playback before sending the new response.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">handle_webhook</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">handle_webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
@@ -853,9 +853,9 @@
 <section id="complete-python-example">
 <h3>Complete Python Example<a class="headerlink" href="#complete-python-example" title="Link to this heading">¶</a></h3>
 <p>This example combines all steps into a complete webhook server that implements a custom AI voice agent.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -866,7 +866,7 @@
 <span class="n">call_sessions</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/webhook&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">webhook</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">webhook</span><span class="p">():</span>
     <span class="n">payload</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
 
@@ -881,7 +881,7 @@
 
     <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}),</span> <span class="mi">200</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">handle_call_progressing</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">handle_call_progressing</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Call answered — start transcription and speaking.&quot;&quot;&quot;</span>
     <span class="n">call_id</span> <span class="o">=</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
 
@@ -921,7 +921,7 @@
         <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39;Hello, how can I help you today?&#39;</span><span class="p">}</span>
     <span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">handle_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">handle_transcript</span><span class="p">(</span><span class="n">transcript</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Process caller speech and respond.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;in&#39;</span><span class="p">:</span>
         <span class="k">return</span>
@@ -951,7 +951,7 @@
         <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">ai_response</span><span class="p">}</span>
     <span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">handle_call_hangup</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">handle_call_hangup</span><span class="p">(</span><span class="n">call</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean up sessions when call ends.&quot;&quot;&quot;</span>
     <span class="n">call_id</span> <span class="o">=</span> <span class="n">call</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
     <span class="n">session</span> <span class="o">=</span> <span class="n">call_sessions</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">call_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -963,7 +963,7 @@
             <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">VOIPBIN_BASE</span><span class="si">}</span><span class="s1">/speakings/</span><span class="si">{</span><span class="n">session</span><span class="p">[</span><span class="s2">&quot;speaking_id&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">/stop?token=</span><span class="si">{</span><span class="n">TOKEN</span><span class="si">}</span><span class="s1">&#39;</span>
         <span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">call_your_llm</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">call_your_llm</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Replace with your actual LLM integration.&quot;&quot;&quot;</span>
     <span class="c1"># Example: OpenAI, Anthropic, local model, etc.</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;I understand you said: </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">. Let me help you with that.&quot;</span>
@@ -1058,7 +1058,7 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
