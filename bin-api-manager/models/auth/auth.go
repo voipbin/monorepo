@@ -176,7 +176,11 @@ func NewDirectIdentity(scope *DirectScope) *AuthIdentity {
 }
 
 // NewDelegateIdentity constructs an AuthIdentity from a delegate scope.
+// Panics if scope is nil — callers must supply a non-nil scope.
 func NewDelegateIdentity(scope *DelegateScope) *AuthIdentity {
+	if scope == nil {
+		panic("NewDelegateIdentity: scope must not be nil")
+	}
 	return &AuthIdentity{
 		Type:          TypeDelegate,
 		CustomerID:    scope.CustomerID,

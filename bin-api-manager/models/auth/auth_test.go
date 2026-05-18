@@ -157,6 +157,7 @@ func Test_IsAgent(t *testing.T) {
 			AuthIdentity{Type: TypeDirect},
 			false,
 		},
+		{"delegate type returns false", AuthIdentity{Type: TypeDelegate}, false},
 	}
 
 	for _, tt := range tests {
@@ -192,6 +193,7 @@ func Test_IsAccesskey(t *testing.T) {
 			AuthIdentity{Type: TypeDirect},
 			false,
 		},
+		{"delegate type returns false", AuthIdentity{Type: TypeDelegate}, false},
 	}
 
 	for _, tt := range tests {
@@ -227,6 +229,7 @@ func Test_IsDirect(t *testing.T) {
 			AuthIdentity{Type: TypeAccesskey},
 			false,
 		},
+		{"delegate type returns false", AuthIdentity{Type: TypeDelegate}, false},
 	}
 
 	for _, tt := range tests {
@@ -593,21 +596,24 @@ func Test_NewDelegateIdentity(t *testing.T) {
 		expectType       Type
 		expectCustomerID uuid.UUID
 		expectJTI        string
+		expectIssuedBy   uuid.UUID
 	}
 
 	customerID := uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+	issuedByID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
 
 	tests := []test{
 		{
 			"normal",
 			&DelegateScope{
 				CustomerID: customerID,
-				IssuedBy:   uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+				IssuedBy:   issuedByID,
 				JTI:        "jti-value-123",
 			},
 			TypeDelegate,
 			customerID,
 			"jti-value-123",
+			issuedByID,
 		},
 	}
 
@@ -625,6 +631,9 @@ func Test_NewDelegateIdentity(t *testing.T) {
 			}
 			if res.DelegateScope.JTI != tt.expectJTI {
 				t.Errorf("Wrong JTI. expect: %v, got: %v", tt.expectJTI, res.DelegateScope.JTI)
+			}
+			if res.DelegateScope.IssuedBy != tt.scope.IssuedBy {
+				t.Errorf("Wrong IssuedBy. expect: %v, got: %v", tt.scope.IssuedBy, res.DelegateScope.IssuedBy)
 			}
 		})
 	}
@@ -675,6 +684,30 @@ func Test_HasPermission_Delegate(t *testing.T) {
 				},
 			},
 			amagent.PermissionProjectAll,
+			false,
+		},
+		{
+			"delegate denies PermissionAll",
+			AuthIdentity{
+				Type:       TypeDelegate,
+				CustomerID: customerID,
+				DelegateScope: &DelegateScope{
+					CustomerID: customerID,
+				},
+			},
+			amagent.PermissionAll,
+			false,
+		},
+		{
+			"delegate denies compound project+customer permission",
+			AuthIdentity{
+				Type:       TypeDelegate,
+				CustomerID: customerID,
+				DelegateScope: &DelegateScope{
+					CustomerID: customerID,
+				},
+			},
+			amagent.PermissionProjectSuperAdmin | amagent.PermissionCustomerAdmin,
 			false,
 		},
 	}
@@ -774,6 +807,14 @@ func Test_DisplayName(t *testing.T) {
 				DirectScope: nil,
 			},
 			"direct",
+		},
+		{
+			"delegate with nil DelegateScope",
+			AuthIdentity{
+				Type:          TypeDelegate,
+				DelegateScope: nil,
+			},
+			"delegate",
 		},
 		{
 			"unknown type",
