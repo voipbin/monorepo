@@ -16,7 +16,15 @@ if [[ -z "$COMMAND" ]]; then
     exit 0
 fi
 
-if echo "$COMMAND" | grep -q "gh pr merge"; then
+if echo "$COMMAND" | grep -qP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
+    # Allow when the command is prefixed with MERGE_AUTHORIZED=1.
+    # Claude must include this prefix only when the user has said
+    # "merge" (or equivalent) in the current turn.  Automated loops must
+    # never add this prefix on their own initiative.
+    if echo "$COMMAND" | grep -q "^MERGE_AUTHORIZED=1"; then
+        exit 0
+    fi
+
     echo ""
     echo "========================================================================"
     echo "  BLOCKED: gh pr merge requires explicit user permission"
@@ -27,6 +35,10 @@ if echo "$COMMAND" | grep -q "gh pr merge"; then
     echo ""
     echo "A review loop ends at approval — report the approval and STOP."
     echo "Do not merge. Wait for the user to authorize the merge."
+    echo ""
+    echo "When the user does authorize a merge, prefix the command with"
+    echo "MERGE_AUTHORIZED=1, e.g.:"
+    echo "  MERGE_AUTHORIZED=1 gh pr merge <pr> --squash --delete-branch"
     echo ""
     echo "========================================================================"
     echo ""
