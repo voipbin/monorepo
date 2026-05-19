@@ -16,15 +16,14 @@ if [[ -z "$COMMAND" ]]; then
     exit 0
 fi
 
-if echo "$COMMAND" | grep -qP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
-    # Allow when the command is prefixed with MERGE_AUTHORIZED=1.
-    # Claude must include this prefix only when the user has said
-    # "merge" (or equivalent) in the current turn.  Automated loops must
-    # never add this prefix on their own initiative.
-    if echo "$COMMAND" | grep -q "^MERGE_AUTHORIZED=1"; then
-        exit 0
-    fi
+# Allow when MERGE_AUTHORIZED=1 immediately precedes gh pr merge in command-position.
+# The combined PCRE matches the authorized form in one pass, preventing the newline
+# bypass that two separate greps would allow.
+if echo "$COMMAND" | grep -qP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*MERGE_AUTHORIZED=1\s+(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
+    exit 0
+fi
 
+if echo "$COMMAND" | grep -qP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
     echo ""
     echo "========================================================================"
     echo "  BLOCKED: gh pr merge requires explicit user permission"
