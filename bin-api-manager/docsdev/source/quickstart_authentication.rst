@@ -114,6 +114,56 @@ Troubleshooting (Boot):
     * **Cause:** The customer account associated with the direct hash is not active.
     * **Fix:** Contact the account owner to reactivate the customer account.
 
+Delegate Token (Platform Superadmin)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Platform superadmins can issue a short-lived **delegate token** that grants full customer-admin access to a specific customer account. This is used for support and investigation scenarios where a superadmin needs to act on behalf of a customer.
+
+**Requires:** ``PermissionProjectSuperAdmin``
+
+Send a ``POST`` request to ``https://api.voipbin.net/auth/delegate`` with a valid superadmin token, the target ``customer_id``, and a mandatory ``reason`` for the access.
+
+.. code::
+
+    $ curl --request POST 'https://api.voipbin.net/auth/delegate?token=<superadmin-token>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "customer_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "reason": "Investigating dropped call reported by customer support"
+        }'
+
+Response:
+
+.. code::
+
+    {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "customer_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "expire": "2026-05-19T06:00:00.000000Z"
+    }
+
+The returned delegate token is valid for **8 hours** and grants ``PermissionCustomerAdmin``-equivalent access scoped to the specified customer. Project-level permissions are not granted.
+
+.. note::
+
+   The ``expire`` field uses ISO 8601 UTC with microsecond precision (RFC3339Nano compatible, e.g. ``2026-05-19T06:00:00.000000Z``). Parsers that only accept ``time.RFC3339`` (without fractional seconds) must use ``time.RFC3339Nano`` or strip the fractional part before parsing.
+
+Request fields:
+
+* ``customer_id`` (String, Required) — UUID of the target customer account.
+* ``reason`` (String, Required) — Justification for the access. Must be 10–200 printable ASCII characters with no control characters. This is written to the audit log.
+
+Errors:
+
+* **400 Bad Request:** Request body is missing or malformed.
+* **401 Unauthorized:** Caller is not authenticated.
+* **403 Forbidden:** Caller lacks ``PermissionProjectSuperAdmin``, or the caller is already using a delegate token (recursive delegation is not permitted).
+* **404 Not Found:** Target customer does not exist or has been deleted.
+* **422 Unprocessable Entity:** ``customer_id`` is not a valid UUID, or ``reason`` fails validation.
+
+.. note::
+
+   All delegate token issuance events are logged with ``audit=true`` and include the issuer identity, target customer, reason, and token expiry. These logs form the audit trail for superadmin access.
+
 Using Credentials in API Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The query parameter name depends on which credential type you are using:

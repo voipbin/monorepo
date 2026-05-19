@@ -732,6 +732,21 @@ func (mr *MockServiceHandlerMockRecorder) AuthBoot(ctx, directHash any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthBoot", reflect.TypeOf((*MockServiceHandler)(nil).AuthBoot), ctx, directHash)
 }
 
+// AuthDelegate mocks base method.
+func (m *MockServiceHandler) AuthDelegate(ctx context.Context, a *auth.AuthIdentity, targetCustomerID uuid.UUID, reason string) (*DelegateResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AuthDelegate", ctx, a, targetCustomerID, reason)
+	ret0, _ := ret[0].(*DelegateResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AuthDelegate indicates an expected call of AuthDelegate.
+func (mr *MockServiceHandlerMockRecorder) AuthDelegate(ctx, a, targetCustomerID, reason any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AuthDelegate", reflect.TypeOf((*MockServiceHandler)(nil).AuthDelegate), ctx, a, targetCustomerID, reason)
+}
+
 // AuthJWTGenerate mocks base method.
 func (m *MockServiceHandler) AuthJWTGenerate(data map[string]any) (string, error) {
 	m.ctrl.T.Helper()

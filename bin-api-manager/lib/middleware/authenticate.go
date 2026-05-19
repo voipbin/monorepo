@@ -17,6 +17,7 @@ import (
 	cscustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,6 +25,8 @@ const (
 	authTypeNone      = ""
 	authTypeToken     = "token"
 	authTypeAccesskey = "accesskey"
+
+	delegateAudience = "voipbin-api"
 )
 
 func Authenticate() gin.HandlerFunc {
@@ -60,6 +63,11 @@ func Authenticate() gin.HandlerFunc {
 
 		c.Set("auth_identity", identity)
 
+		// For delegate tokens, annotate the request context with the JTI for audit tracing
+		if identity.IsDelegate() && identity.DelegateScope != nil {
+			c.Set("delegate_jti", identity.DelegateScope.JTI)
+		}
+
 		// Check if customer account is frozen
 		if isFrozenAccountBlocked(c, identity) {
 			return // response already sent by isFrozenAccountBlocked
@@ -85,7 +93,7 @@ func buildJWTIdentity(log *logrus.Entry, authData map[string]interface{}) (*auth
 	tokenType, _ := authData["type"].(string)
 
 	switch tokenType {
-	case "direct":
+	case string(auth.TypeDirect):
 		raw, ok := authData["direct"]
 		if !ok {
 			return nil, fmt.Errorf("direct token missing direct scope")
@@ -105,8 +113,32 @@ func buildJWTIdentity(log *logrus.Entry, authData map[string]interface{}) (*auth
 
 		return auth.NewDirectIdentity(&scope), nil
 
-	default:
-		// "agent" or missing (backward compat) — treat as agent token
+	case string(auth.TypeDelegate):
+		// aud is enforced only for delegate tokens — TypeAgent/TypeDirect predate aud claim
+		if aud, _ := authData["aud"].(string); aud != delegateAudience {
+			return nil, fmt.Errorf("delegate token: invalid audience %q", aud)
+		}
+		customerIDStr, ok := authData["customer_id"].(string)
+		if !ok || customerIDStr == "" {
+			return nil, fmt.Errorf("delegate token missing customer_id")
+		}
+		customerID, err := uuid.FromString(customerIDStr)
+		if err != nil {
+			return nil, fmt.Errorf("delegate token: invalid customer_id: %w", err)
+		}
+		issuedByStr, _ := authData["sub"].(string)
+		issuedBy, _ := uuid.FromString(issuedByStr)
+		jti, _ := authData["jti"].(string)
+
+		scope := &auth.DelegateScope{
+			CustomerID: customerID,
+			IssuedBy:   issuedBy,
+			JTI:        jti,
+		}
+		return auth.NewDelegateIdentity(scope), nil
+
+	case string(auth.TypeAgent), "":
+		// "agent" or missing type (backward compat) — treat as agent token
 		raw, ok := authData["agent"]
 		if !ok {
 			return nil, fmt.Errorf("token missing agent data")
@@ -125,6 +157,9 @@ func buildJWTIdentity(log *logrus.Entry, authData map[string]interface{}) (*auth
 		}
 
 		return auth.NewAgentIdentity(&a), nil
+
+	default:
+		return nil, fmt.Errorf("unknown token type: %q", tokenType)
 	}
 }
 

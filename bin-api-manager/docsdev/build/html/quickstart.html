@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="SDK(Software Development Kit)" href="sdk.html"><link rel="prev" title="Introduction" href="intro.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2025.12.19 -->
         <title>Quickstart - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -782,6 +782,50 @@
 </li>
 </ul>
 </section>
+<section id="delegate-token-platform-superadmin">
+<h4>Delegate Token (Platform Superadmin)<a class="headerlink" href="#delegate-token-platform-superadmin" title="Link to this heading">¶</a></h4>
+<p>Platform superadmins can issue a short-lived <strong>delegate token</strong> that grants full customer-admin access to a specific customer account. This is used for support and investigation scenarios where a superadmin needs to act on behalf of a customer.</p>
+<p><strong>Requires:</strong> <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code></p>
+<p>Send a <code class="docutils literal notranslate"><span class="pre">POST</span></code> request to <code class="docutils literal notranslate"><span class="pre">https://api.voipbin.net/auth/delegate</span></code> with a valid superadmin token, the target <code class="docutils literal notranslate"><span class="pre">customer_id</span></code>, and a mandatory <code class="docutils literal notranslate"><span class="pre">reason</span></code> for the access.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/auth/delegate?token=&lt;superadmin-token&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;customer_id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+        &quot;reason&quot;: &quot;Investigating dropped call reported by customer support&quot;
+    }&#39;
+</pre></div>
+</div>
+<p>Response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="s2">&quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;expire&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-05-19T06:00:00.000000Z&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The returned delegate token is valid for <strong>8 hours</strong> and grants <code class="docutils literal notranslate"><span class="pre">PermissionCustomerAdmin</span></code>-equivalent access scoped to the specified customer. Project-level permissions are not granted.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">expire</span></code> field uses ISO 8601 UTC with microsecond precision (RFC3339Nano compatible, e.g. <code class="docutils literal notranslate"><span class="pre">2026-05-19T06:00:00.000000Z</span></code>). Parsers that only accept <code class="docutils literal notranslate"><span class="pre">time.RFC3339</span></code> (without fractional seconds) must use <code class="docutils literal notranslate"><span class="pre">time.RFC3339Nano</span></code> or strip the fractional part before parsing.</p>
+</div>
+<p>Request fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (String, Required) — UUID of the target customer account.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reason</span></code> (String, Required) — Justification for the access. Must be 10–200 printable ASCII characters with no control characters. This is written to the audit log.</p></li>
+</ul>
+<p>Errors:</p>
+<ul class="simple">
+<li><p><strong>400 Bad Request:</strong> Request body is missing or malformed.</p></li>
+<li><p><strong>401 Unauthorized:</strong> Caller is not authenticated.</p></li>
+<li><p><strong>403 Forbidden:</strong> Caller lacks <code class="docutils literal notranslate"><span class="pre">PermissionProjectSuperAdmin</span></code>, or the caller is already using a delegate token (recursive delegation is not permitted).</p></li>
+<li><p><strong>404 Not Found:</strong> Target customer does not exist or has been deleted.</p></li>
+<li><p><strong>422 Unprocessable Entity:</strong> <code class="docutils literal notranslate"><span class="pre">customer_id</span></code> is not a valid UUID, or <code class="docutils literal notranslate"><span class="pre">reason</span></code> fails validation.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All delegate token issuance events are logged with <code class="docutils literal notranslate"><span class="pre">audit=true</span></code> and include the issuer identity, target customer, reason, and token expiry. These logs form the audit trail for superadmin access.</p>
+</div>
+</section>
 <section id="using-credentials-in-api-requests">
 <h4>Using Credentials in API Requests<a class="headerlink" href="#using-credentials-in-api-requests" title="Link to this heading">¶</a></h4>
 <p>The query parameter name depends on which credential type you are using:</p>
@@ -1031,13 +1075,13 @@
 </div>
 <p>The wildcard <code class="docutils literal notranslate"><span class="pre">*</span></code> subscribes to events from all resources of that type under your account.</p>
 <p><strong>Python example:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">websocket</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">websocket</span>
+<span class="kn">import</span> <span class="nn">json</span>
 
 <span class="n">token</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-token&gt;&quot;</span>
 <span class="n">customer_id</span> <span class="o">=</span> <span class="s2">&quot;&lt;your-customer-id&gt;&quot;</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;event_type&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">event_type</span><span class="p">:</span>
@@ -1049,7 +1093,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[EVENT] </span><span class="si">{</span><span class="n">event_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
         <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -1748,6 +1792,7 @@ $ sudo ./voipbin
 <li><a class="reference internal" href="#generate-a-token">Generate a Token</a></li>
 <li><a class="reference internal" href="#generate-an-accesskey">Generate an Accesskey</a></li>
 <li><a class="reference internal" href="#direct-token-boot">Direct Token (Boot)</a></li>
+<li><a class="reference internal" href="#delegate-token-platform-superadmin">Delegate Token (Platform Superadmin)</a></li>
 <li><a class="reference internal" href="#using-credentials-in-api-requests">Using Credentials in API Requests</a></li>
 <li><a class="reference internal" href="#id3">Troubleshooting</a></li>
 </ul>
@@ -1816,7 +1861,7 @@ $ sudo ./voipbin
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>

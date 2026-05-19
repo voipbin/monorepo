@@ -157,6 +157,7 @@ func Test_IsAgent(t *testing.T) {
 			AuthIdentity{Type: TypeDirect},
 			false,
 		},
+		{"delegate type returns false", AuthIdentity{Type: TypeDelegate}, false},
 	}
 
 	for _, tt := range tests {
@@ -192,6 +193,7 @@ func Test_IsAccesskey(t *testing.T) {
 			AuthIdentity{Type: TypeDirect},
 			false,
 		},
+		{"delegate type returns false", AuthIdentity{Type: TypeDelegate}, false},
 	}
 
 	for _, tt := range tests {
@@ -227,6 +229,7 @@ func Test_IsDirect(t *testing.T) {
 			AuthIdentity{Type: TypeAccesskey},
 			false,
 		},
+		{"delegate type returns false", AuthIdentity{Type: TypeDelegate}, false},
 	}
 
 	for _, tt := range tests {
@@ -586,6 +589,163 @@ func Test_AgentUsername(t *testing.T) {
 	}
 }
 
+func Test_NewDelegateIdentity(t *testing.T) {
+	type test struct {
+		name             string
+		scope            *DelegateScope
+		expectType       Type
+		expectCustomerID uuid.UUID
+		expectJTI        string
+		expectIssuedBy   uuid.UUID
+	}
+
+	customerID := uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+	issuedByID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+
+	tests := []test{
+		{
+			"normal",
+			&DelegateScope{
+				CustomerID: customerID,
+				IssuedBy:   issuedByID,
+				JTI:        "jti-value-123",
+			},
+			TypeDelegate,
+			customerID,
+			"jti-value-123",
+			issuedByID,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := NewDelegateIdentity(tt.scope)
+			if res.Type != tt.expectType {
+				t.Errorf("Wrong Type. expect: %v, got: %v", tt.expectType, res.Type)
+			}
+			if res.CustomerID != tt.expectCustomerID {
+				t.Errorf("Wrong CustomerID. expect: %v, got: %v", tt.expectCustomerID, res.CustomerID)
+			}
+			if res.DelegateScope == nil {
+				t.Fatal("DelegateScope is nil")
+			}
+			if res.DelegateScope.JTI != tt.expectJTI {
+				t.Errorf("Wrong JTI. expect: %v, got: %v", tt.expectJTI, res.DelegateScope.JTI)
+			}
+			if res.DelegateScope.IssuedBy != tt.scope.IssuedBy {
+				t.Errorf("Wrong IssuedBy. expect: %v, got: %v", tt.scope.IssuedBy, res.DelegateScope.IssuedBy)
+			}
+		})
+	}
+}
+
+func Test_HasPermission_Delegate(t *testing.T) {
+	type test struct {
+		name       string
+		identity   AuthIdentity
+		permission amagent.Permission
+		expectRes  bool
+	}
+
+	customerID := uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890")
+
+	tests := []test{
+		{
+			"delegate grants PermissionCustomerAdmin",
+			AuthIdentity{
+				Type:       TypeDelegate,
+				CustomerID: customerID,
+				DelegateScope: &DelegateScope{
+					CustomerID: customerID,
+				},
+			},
+			amagent.PermissionCustomerAdmin,
+			true,
+		},
+		{
+			"delegate denies PermissionProjectSuperAdmin",
+			AuthIdentity{
+				Type:       TypeDelegate,
+				CustomerID: customerID,
+				DelegateScope: &DelegateScope{
+					CustomerID: customerID,
+				},
+			},
+			amagent.PermissionProjectSuperAdmin,
+			false,
+		},
+		{
+			"delegate denies PermissionProjectAll",
+			AuthIdentity{
+				Type:       TypeDelegate,
+				CustomerID: customerID,
+				DelegateScope: &DelegateScope{
+					CustomerID: customerID,
+				},
+			},
+			amagent.PermissionProjectAll,
+			false,
+		},
+		{
+			"delegate denies PermissionAll",
+			AuthIdentity{
+				Type:       TypeDelegate,
+				CustomerID: customerID,
+				DelegateScope: &DelegateScope{
+					CustomerID: customerID,
+				},
+			},
+			amagent.PermissionAll,
+			false,
+		},
+		{
+			"delegate denies compound project+customer permission",
+			AuthIdentity{
+				Type:       TypeDelegate,
+				CustomerID: customerID,
+				DelegateScope: &DelegateScope{
+					CustomerID: customerID,
+				},
+			},
+			amagent.PermissionProjectSuperAdmin | amagent.PermissionCustomerAdmin,
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.identity.HasPermission(tt.permission)
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_IsDelegate(t *testing.T) {
+	type test struct {
+		name      string
+		identity  AuthIdentity
+		expectRes bool
+	}
+
+	tests := []test{
+		{"delegate type returns true", AuthIdentity{Type: TypeDelegate}, true},
+		{"agent type returns false", AuthIdentity{Type: TypeAgent}, false},
+		{"accesskey type returns false", AuthIdentity{Type: TypeAccesskey}, false},
+		{"direct type returns false", AuthIdentity{Type: TypeDirect}, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.identity.IsDelegate()
+			if res != tt.expectRes {
+				t.Errorf("Wrong match. expect: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
 func Test_DisplayName(t *testing.T) {
 	type test struct {
 		name       string
@@ -647,6 +807,14 @@ func Test_DisplayName(t *testing.T) {
 				DirectScope: nil,
 			},
 			"direct",
+		},
+		{
+			"delegate with nil DelegateScope",
+			AuthIdentity{
+				Type:          TypeDelegate,
+				DelegateScope: nil,
+			},
+			"delegate",
 		},
 		{
 			"unknown type",
