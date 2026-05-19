@@ -10,7 +10,7 @@
 set -euo pipefail
 
 INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null || true)
+COMMAND=$(printf '%s\n' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null || true)
 
 if [[ -z "$COMMAND" ]]; then
     exit 0
@@ -29,7 +29,7 @@ if printf '%s\0' "$COMMAND" | grep -zqP '(?:^|[;&|(])[ \t]*(?:\w+=\S+[ \t]+)*MER
     exit 0
 fi
 
-if printf '%s\0' "$COMMAND" | grep -zqP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
+if printf '%s\0' "$COMMAND" | grep -zqP '(?:^|[;&|(`)]\s*(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
     echo ""
     echo "========================================================================"
     echo "  BLOCKED: gh pr merge requires explicit user permission"
