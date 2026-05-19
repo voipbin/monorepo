@@ -16,14 +16,18 @@ if [[ -z "$COMMAND" ]]; then
     exit 0
 fi
 
+# Use printf+grep -z so the whole command string is treated as one record.
+# This makes ^ anchor to the start of the full string — not to each line —
+# which prevents heredoc body content from triggering a false positive.
+
 # Allow when MERGE_AUTHORIZED=1 immediately precedes gh pr merge in command-position.
 # The combined PCRE matches the authorized form in one pass, preventing the newline
 # bypass that two separate greps would allow.
-if echo "$COMMAND" | grep -qP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*MERGE_AUTHORIZED=1\s+(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
+if printf '%s\0' "$COMMAND" | grep -zqP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*MERGE_AUTHORIZED=1\s+(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
     exit 0
 fi
 
-if echo "$COMMAND" | grep -qP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
+if printf '%s\0' "$COMMAND" | grep -zqP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
     echo ""
     echo "========================================================================"
     echo "  BLOCKED: gh pr merge requires explicit user permission"
