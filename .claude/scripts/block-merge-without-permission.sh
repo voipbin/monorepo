@@ -16,14 +16,16 @@ if [[ -z "$COMMAND" ]]; then
     exit 0
 fi
 
-# Use printf+grep -z so the whole command string is treated as one record.
-# This makes ^ anchor to the start of the full string — not to each line —
-# which prevents heredoc body content from triggering a false positive.
+# Use printf+grep -z so the whole command string is treated as one record,
+# making ^ anchor to the very start of the string rather than to each line.
+# This prevents a heredoc body line that starts with the gh command text from
+# triggering a false positive.
 
-# Allow when MERGE_AUTHORIZED=1 immediately precedes gh pr merge in command-position.
-# The combined PCRE matches the authorized form in one pass, preventing the newline
-# bypass that two separate greps would allow.
-if printf '%s\0' "$COMMAND" | grep -zqP '(?:^|[;&|(])\s*(?:\w+=\S+\s+)*MERGE_AUTHORIZED=1\s+(?:\w+=\S+\s+)*gh\s+pr\s+merge\b'; then
+# ALLOW when MERGE_AUTHORIZED=1 immediately precedes gh pr merge in command-position
+# on the SAME LINE ([ \t]+ — no newlines).  Using \s+ instead would let an AI bypass
+# the guard by injecting a newline between the prefix and the command (PCRE \s matches \n).
+# Note: $(gh pr merge ...) is intentionally blocked — the subshell executes the command.
+if printf '%s\0' "$COMMAND" | grep -zqP '(?:^|[;&|(])[ \t]*(?:\w+=\S+[ \t]+)*MERGE_AUTHORIZED=1[ \t]+(?:\w+=\S+[ \t]+)*gh[ \t]+pr[ \t]+merge\b'; then
     exit 0
 fi
 
