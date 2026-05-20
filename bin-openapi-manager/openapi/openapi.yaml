@@ -3265,10 +3265,12 @@ components:
         - ""
         - message
         - line
+        - whatsapp
       x-enum-varnames:
         - ConversationManagerConversationTypeNone
         - ConversationManagerConversationTypeMessage
         - ConversationManagerConversationTypeLine
+        - ConversationManagerConversationTypeWhatsApp
     ConversationManagerConversation:
       type: object
       properties:

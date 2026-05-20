@@ -28,7 +28,8 @@ type whatsappPayload struct {
 			Value struct {
 				MessagingProduct string `json:"messaging_product"`
 				Metadata         struct {
-					PhoneNumberID string `json:"phone_number_id"`
+					PhoneNumberID     string `json:"phone_number_id"`
+					DisplayPhoneNumber string `json:"display_phone_number"`
 				} `json:"metadata"`
 				Messages []struct {
 					ID   string `json:"id"`   // wamid
@@ -99,7 +100,8 @@ func (h *whatsappHandler) Hook(ctx context.Context, ac *account.Account, rawData
 					continue
 				}
 
-				r, err := h.hookTextMessage(ctx, ac, msg.ID, msg.From, msg.Text.Body, senderNames[msg.From])
+				selfTarget := change.Value.Metadata.DisplayPhoneNumber
+				r, err := h.hookTextMessage(ctx, ac, msg.ID, msg.From, selfTarget, msg.Text.Body, senderNames[msg.From])
 				if err != nil {
 					log.Errorf("Could not handle WhatsApp text message. wamid: %s, err: %v", msg.ID, err)
 					continue
@@ -120,6 +122,7 @@ func (h *whatsappHandler) hookTextMessage(
 	ac *account.Account,
 	wamid string,
 	waID string,
+	selfTarget string,
 	text string,
 	senderName string,
 ) (*HookResult, error) {
@@ -143,7 +146,7 @@ func (h *whatsappHandler) hookTextMessage(
 	}
 
 	// --- Get or create conversation ---
-	cv, err := h.getOrCreateConversation(ctx, ac, waID, senderName)
+	cv, err := h.getOrCreateConversation(ctx, ac, waID, selfTarget, senderName)
 	if err != nil {
 		return nil, errors.Wrap(err, "hookTextMessage: get or create conversation")
 	}
@@ -179,6 +182,7 @@ func (h *whatsappHandler) getOrCreateConversation(
 	ctx context.Context,
 	ac *account.Account,
 	waID string,
+	selfTarget string,
 	senderName string,
 ) (*conversation.Conversation, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -209,7 +213,7 @@ func (h *whatsappHandler) getOrCreateConversation(
 	}
 	self := commonaddress.Address{
 		Type:       commonaddress.TypeWhatsApp,
-		Target:     "",
+		Target:     selfTarget,
 		TargetName: "Me",
 	}
 

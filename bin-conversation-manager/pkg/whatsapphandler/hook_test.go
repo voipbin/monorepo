@@ -204,6 +204,49 @@ func TestHook_ValidTextMessage_ExistingConversation(t *testing.T) {
 	}
 }
 
+func TestHook_NonTextMessageSkipped(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := whatsapphandler.NewWhatsAppHandler(mockReq)
+
+	appSecret := "skip-secret"
+	ac := makeAccount(appSecret)
+
+	rawData := []byte(`{
+		"entry": [{
+			"changes": [{
+				"value": {
+					"metadata": {"phone_number_id": "12345", "display_phone_number": "+10001112222"},
+					"contacts": [{"profile": {"name": "Dave"}}],
+					"messages": [{
+						"from": "+15557654321",
+						"id": "wamid.img1",
+						"type": "image",
+						"image": {"id": "img-handle-123"}
+					}]
+				}
+			}]
+		}]
+	}`)
+
+	// Compute valid HMAC signature
+	mac := hmac.New(sha256.New, []byte(appSecret))
+	mac.Write(rawData)
+	sig := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+
+	// No mock expectations — non-text messages are skipped entirely
+
+	results, err := h.Hook(context.Background(), ac, rawData, sig)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(results) != 0 {
+		t.Errorf("expected 0 results for non-text message, got %d", len(results))
+	}
+}
+
 func TestHook_CreateOnFirstMessage(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
