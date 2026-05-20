@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"monorepo/bin-api-manager/models/auth"
@@ -121,6 +122,7 @@ func (h *serviceHandler) ConversationAccountCreate(
 	secret string,
 	token string,
 	messageFlowID uuid.UUID,
+	providerData json.RawMessage,
 ) (*cvaccount.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ConversationAccountCreate",
@@ -138,7 +140,7 @@ func (h *serviceHandler) ConversationAccountCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.ConversationV1AccountCreate(ctx, a.CustomerID, accountType, name, detail, secret, token, messageFlowID)
+	tmp, err := h.reqHandler.ConversationV1AccountCreate(ctx, a.CustomerID, accountType, name, detail, secret, token, messageFlowID, providerData)
 	if err != nil {
 		log.Errorf("Could not create a new conversation account. err: %v", err)
 		return nil, errors.Wrap(err, "could not create a new conversation account")
