@@ -34,7 +34,7 @@ func Test_EmailV1Hooks(t *testing.T) {
 				URI:      "/v1/hooks",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/email/sendgrid","received_data":"eyJ2b2lwYmluX21lc3NhZ2VfaWQiOiAiMTJhNGI4YjAtMDA3YS0xMWYwLWE0OWItNmZhMjFjM2IyY2MzIn0="}`),
+				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/email/sendgrid","received_data":"eyJ2b2lwYmluX21lc3NhZ2VfaWQiOiAiMTJhNGI4YjAtMDA3YS0xMWYwLWE0OWItNmZhMjFjM2IyY2MzIn0=","received_method":"","received_signature":""}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,

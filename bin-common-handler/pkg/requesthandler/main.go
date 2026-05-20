@@ -887,7 +887,7 @@ type RequestHandler interface {
 	// conversation-manager account
 	ConversationV1AccountGet(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
 	ConversationV1AccountList(ctx context.Context, pageToken string, pageSize uint64, filters map[cvaccount.Field]any) ([]cvaccount.Account, error)
-	ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType cvaccount.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID) (*cvaccount.Account, error)
+	ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType cvaccount.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID, providerData json.RawMessage) (*cvaccount.Account, error)
 	ConversationV1AccountUpdate(ctx context.Context, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.Account, error)
 	ConversationV1AccountDelete(ctx context.Context, accountID uuid.UUID) (*cvaccount.Account, error)
 
@@ -908,6 +908,7 @@ type RequestHandler interface {
 
 	// conversation-manager hook
 	ConversationV1Hook(ctx context.Context, hm *hmhook.Hook) error
+	ConversationV1HookGet(ctx context.Context, hm *hmhook.Hook) (string, error)
 
 	// conversation-manager message
 	ConversationV1MessageGet(ctx context.Context, messageID uuid.UUID) (*cvmessage.Message, error)

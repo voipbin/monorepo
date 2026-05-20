@@ -203,6 +203,7 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 				DataType: ContentTypeJSON,
 				Data:     []byte(`{"customer_id":"2292b6c0-003e-11ee-9fb5-fff568769b60","type":"line","name":"test name","detail":"test detail","secret":"test secret","token":"test token","message_flow_id":"00000000-0000-0000-0000-000000000000"}`),
 			},
+			// Note: providerData is nil so omitempty omits it from JSON
 			expectRes: &cvaccount.Account{
 				Identity: identity.Identity{
 					ID: uuid.FromStringOrNil("22c10b42-003e-11ee-9d2b-5fc3b9f2d82a"),
@@ -225,7 +226,7 @@ func Test_ConversationV1AccountCreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.ConversationV1AccountCreate(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID)
+			res, err := reqHandler.ConversationV1AccountCreate(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

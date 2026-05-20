@@ -58,7 +58,7 @@ func Test_conversationPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(tt.req))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Conversation(gomock.Any(), gomock.Any()).Return(nil)
+			mockSvc.EXPECT().Conversation(gomock.Any(), gomock.Any()).Return("", nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -110,11 +110,61 @@ func Test_conversationPOST_ServiceHandlerError(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.target, bytes.NewBuffer(tt.req))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().Conversation(gomock.Any(), gomock.Any()).Return(fmt.Errorf("service handler error"))
+			mockSvc.EXPECT().Conversation(gomock.Any(), gomock.Any()).Return("", fmt.Errorf("service handler error"))
 
 			r.ServeHTTP(w, req)
 			if w.Code != tt.expectCode {
 				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectCode, w.Code)
+			}
+		})
+	}
+}
+
+func Test_conversationGET_Challenge(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+
+	tests := []struct {
+		name string
+
+		target     string
+		challenge  string
+		expectCode int
+		expectBody string
+	}{
+		{
+			name: "GET with challenge",
+
+			target:     "/v1.0/conversation/customers/id/whatsapp?hub.mode=subscribe&hub.challenge=abc123&hub.verify_token=token",
+			challenge:  "abc123",
+			expectCode: http.StatusOK,
+			expectBody: "abc123",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set(common.OBJServiceHandler, mockSvc)
+			})
+			setupServer(r)
+
+			req, _ := http.NewRequest("GET", tt.target, nil)
+
+			mockSvc.EXPECT().Conversation(gomock.Any(), gomock.Any()).Return(tt.challenge, nil)
+
+			r.ServeHTTP(w, req)
+			if w.Code != tt.expectCode {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectCode, w.Code)
+			}
+
+			if w.Body.String() != tt.expectBody {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectBody, w.Body.String())
 			}
 		})
 	}

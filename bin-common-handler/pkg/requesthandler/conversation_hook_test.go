@@ -42,7 +42,7 @@ func Test_ConversationV1Hook(t *testing.T) {
 				URI:      "/v1/hooks",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/conversation/customers/7a008138-ea75-11ec-a1ab-83428342ec10/line","received_data":"eyJkZXN0aW5hdGlvbiI6ICJVMTEyOTgyMTQxMTZlM2FmYmFkNDMyYjU3OTRhNmQzYTAifQ=="}`),
+				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/conversation/customers/7a008138-ea75-11ec-a1ab-83428342ec10/line","received_data":"eyJkZXN0aW5hdGlvbiI6ICJVMTEyOTgyMTQxMTZlM2FmYmFkNDMyYjU3OTRhNmQzYTAifQ==","received_method":"","received_signature":""}`),
 			},
 		},
 	}

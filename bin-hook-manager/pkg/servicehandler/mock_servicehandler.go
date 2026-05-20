@@ -56,11 +56,12 @@ func (mr *MockServiceHandlerMockRecorder) Billing(ctx, r any) *gomock.Call {
 }
 
 // Conversation mocks base method.
-func (m *MockServiceHandler) Conversation(ctx context.Context, r *http.Request) error {
+func (m *MockServiceHandler) Conversation(ctx context.Context, r *http.Request) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Conversation", ctx, r)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Conversation indicates an expected call of Conversation.

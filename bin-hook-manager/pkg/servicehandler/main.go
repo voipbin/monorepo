@@ -13,7 +13,7 @@ import (
 type ServiceHandler interface {
 	Email(ctx context.Context, r *http.Request) error
 	Message(ctx context.Context, r *http.Request) error
-	Conversation(ctx context.Context, r *http.Request) error
+	Conversation(ctx context.Context, r *http.Request) (string, error)
 	Billing(ctx context.Context, r *http.Request) error
 }
 

@@ -201,7 +201,7 @@ func runSendConversation(cmd *cobra.Command, args []string) error {
 
 	req, _ := http.NewRequest("POST", "http://"+uri, bytes.NewReader(data))
 	req.Host = uri
-	if err := handler.Conversation(context.Background(), req); err != nil {
+	if _, err := handler.Conversation(context.Background(), req); err != nil {
 		return errors.Wrap(err, "failed to send conversation webhook")
 	}
 

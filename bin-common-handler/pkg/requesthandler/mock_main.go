@@ -3375,18 +3375,18 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1TagRemove(ctx, contactID, tag
 }
 
 // ConversationV1AccountCreate mocks base method.
-func (m *MockRequestHandler) ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType account0.Type, name, detail, secret, token string, messageFlowID uuid.UUID) (*account0.Account, error) {
+func (m *MockRequestHandler) ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType account0.Type, name, detail, secret, token string, messageFlowID uuid.UUID, providerData json.RawMessage) (*account0.Account, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1AccountCreate", ctx, customerID, accountType, name, detail, secret, token, messageFlowID)
+	ret := m.ctrl.Call(m, "ConversationV1AccountCreate", ctx, customerID, accountType, name, detail, secret, token, messageFlowID, providerData)
 	ret0, _ := ret[0].(*account0.Account)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationV1AccountCreate indicates an expected call of ConversationV1AccountCreate.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountCreate(ctx, customerID, accountType, name, detail, secret, token, messageFlowID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ConversationV1AccountCreate(ctx, customerID, accountType, name, detail, secret, token, messageFlowID, providerData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountCreate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountCreate), ctx, customerID, accountType, name, detail, secret, token, messageFlowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1AccountCreate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1AccountCreate), ctx, customerID, accountType, name, detail, secret, token, messageFlowID, providerData)
 }
 
 // ConversationV1AccountDelete mocks base method.
@@ -3521,6 +3521,21 @@ func (m *MockRequestHandler) ConversationV1Hook(ctx context.Context, hm *hook.Ho
 func (mr *MockRequestHandlerMockRecorder) ConversationV1Hook(ctx, hm any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1Hook", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1Hook), ctx, hm)
+}
+
+// ConversationV1HookGet mocks base method.
+func (m *MockRequestHandler) ConversationV1HookGet(ctx context.Context, hm *hook.Hook) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConversationV1HookGet", ctx, hm)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConversationV1HookGet indicates an expected call of ConversationV1HookGet.
+func (mr *MockRequestHandlerMockRecorder) ConversationV1HookGet(ctx, hm any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1HookGet", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1HookGet), ctx, hm)
 }
 
 // ConversationV1MessageCreate mocks base method.
