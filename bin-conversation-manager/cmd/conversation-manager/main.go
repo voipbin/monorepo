@@ -127,7 +127,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Config) err
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler, whatsAppHandler)
 	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 
-	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler)
+	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler, whatsAppHandler)
 	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler, whatsAppHandler)
 
 	// run listen

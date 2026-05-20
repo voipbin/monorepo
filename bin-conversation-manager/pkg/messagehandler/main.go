@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 	"monorepo/bin-conversation-manager/pkg/linehandler"
 	"monorepo/bin-conversation-manager/pkg/smshandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 )
 
 // MessageHandler defiens
@@ -47,9 +48,10 @@ type messageHandler struct {
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	accountHandler accounthandler.AccountHandler
-	lineHandler    linehandler.LineHandler
-	smsHandler     smshandler.SMSHandler
+	accountHandler  accounthandler.AccountHandler
+	lineHandler     linehandler.LineHandler
+	smsHandler      smshandler.SMSHandler
+	whatsappHandler whatsapphandler.WhatsAppHandler
 }
 
 // NewMessageHandler returns a new ConversationHandler
@@ -59,14 +61,16 @@ func NewMessageHandler(
 	accountHandler accounthandler.AccountHandler,
 	lineHandler linehandler.LineHandler,
 	smsHandler smshandler.SMSHandler,
+	whatsappHandler whatsapphandler.WhatsAppHandler,
 ) MessageHandler {
 	return &messageHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
 		notifyHandler: notifyHandler,
 
-		accountHandler: accountHandler,
-		lineHandler:    lineHandler,
-		smsHandler:     smsHandler,
+		accountHandler:  accountHandler,
+		lineHandler:     lineHandler,
+		smsHandler:      smsHandler,
+		whatsappHandler: whatsappHandler,
 	}
 }
