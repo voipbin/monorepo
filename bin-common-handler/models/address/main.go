@@ -24,4 +24,5 @@ const (
 	TypeLine       Type = "line"       // target is naver line's id
 	TypeSIP        Type = "sip"        // target is sip destination
 	TypeTel        Type = "tel"        // target tel number
+	TypeWhatsApp   Type = "whatsapp"   // target is WhatsApp phone number
 )
