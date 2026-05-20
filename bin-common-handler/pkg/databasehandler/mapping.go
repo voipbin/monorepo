@@ -137,6 +137,14 @@ func convertValueForDB(value interface{}, conversionType string) (interface{}, e
 
 	// Explicit JSON conversion
 	if conversionType == "json" {
+		// Nil value (e.g. nil json.RawMessage) should be stored as SQL NULL, not the string "null"
+		if value == nil {
+			return nil, nil
+		}
+		rv := reflect.ValueOf(value)
+		if rv.Kind() == reflect.Slice && rv.IsNil() {
+			return nil, nil
+		}
 		jsonBytes, err := json.Marshal(value)
 		if err != nil {
 			return nil, fmt.Errorf("JSON marshal failed: %w", err)
