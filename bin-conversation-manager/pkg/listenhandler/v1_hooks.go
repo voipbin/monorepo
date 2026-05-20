@@ -26,7 +26,7 @@ func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request)
 	}
 	log.WithField("request", req).Debugf("Received hook request. request_uri: %s", req.ReceviedURI)
 
-	if errHook := h.conversationHandler.Hook(ctx, req.ReceviedURI, req.ReceivedData); errHook != nil {
+	if errHook := h.conversationHandler.Hook(ctx, req.ReceviedURI, req.ReceivedMethod, req.ReceivedSignature, req.ReceivedData); errHook != nil {
 		log.Errorf("Could not hook the message correctly. err: %v", errHook)
 	}
 

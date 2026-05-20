@@ -23,6 +23,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/linehandler"
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
 	"monorepo/bin-conversation-manager/pkg/smshandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -73,8 +74,9 @@ func initConversationHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler, re
 	lineHandler := linehandler.NewLineHandler(reqHandler)
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler)
 	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
+	whatsAppHandler := whatsapphandler.NewWhatsAppHandler(reqHandler)
 	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler)
-	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler)
+	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler, whatsAppHandler)
 
 	return conversationHandler, accountHandler, messageHandler, nil
 }

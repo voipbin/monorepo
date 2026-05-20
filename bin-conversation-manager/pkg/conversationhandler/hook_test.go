@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 	"monorepo/bin-conversation-manager/pkg/linehandler"
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 )
 
@@ -28,8 +29,10 @@ func Test_Hook(t *testing.T) {
 	tests := []struct {
 		name string
 
-		uri  string
-		data []byte
+		uri       string
+		method    string
+		signature string
+		data      []byte
 
 		expectAccountID uuid.UUID
 
@@ -38,9 +41,11 @@ func Test_Hook(t *testing.T) {
 		responseMessages []*message.Message
 	}{
 		{
-			name: "normal",
+			name: "normal line",
 
-			uri: "https://hook.voipbin.net/v1.0/conversation/accounts/e8f5795a-e6eb-11ec-bb81-c3cec34bd99c",
+			uri:       "https://hook.voipbin.net/v1.0/conversation/accounts/e8f5795a-e6eb-11ec-bb81-c3cec34bd99c",
+			method:    "POST",
+			signature: "",
 			data: []byte(`{
 				"destination": "U11298214116e3afbad432b5794a6d3a0",
 				"events": [
@@ -94,20 +99,22 @@ func Test_Hook(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
+			mockWhatsApp := whatsapphandler.NewMockWhatsAppHandler(mc)
 			h := &conversationHandler{
-				utilHandler:    mocKUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				accountHandler: mockAccount,
-				messageHandler: mockMessage,
-				lineHandler:    mockLine,
+				utilHandler:     mocKUtil,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				accountHandler:  mockAccount,
+				messageHandler:  mockMessage,
+				lineHandler:     mockLine,
+				whatsappHandler: mockWhatsApp,
 			}
 			ctx := context.Background()
 
 			mockAccount.EXPECT().Get(ctx, tt.expectAccountID).Return(tt.responseAccount, nil)
 			mockLine.EXPECT().Hook(ctx, tt.responseAccount, tt.data).Return([]*linehandler.HookResult{}, nil)
 
-			if err := h.Hook(ctx, tt.uri, tt.data); err != nil {
+			if err := h.Hook(ctx, tt.uri, tt.method, tt.signature, tt.data); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 		})
@@ -416,14 +423,16 @@ func Test_hookLine(t *testing.T) {
 			mockAccount := accounthandler.NewMockAccountHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
+			mockWhatsApp := whatsapphandler.NewMockWhatsAppHandler(mc)
 			h := &conversationHandler{
-				utilHandler:    mockUtil,
-				db:             mockDB,
-				notifyHandler:  mockNotify,
-				reqHandler:     mockReq,
-				accountHandler: mockAccount,
-				messageHandler: mockMessage,
-				lineHandler:    mockLine,
+				utilHandler:     mockUtil,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				reqHandler:      mockReq,
+				accountHandler:  mockAccount,
+				messageHandler:  mockMessage,
+				lineHandler:     mockLine,
+				whatsappHandler: mockWhatsApp,
 			}
 			ctx := context.Background()
 
@@ -491,6 +500,273 @@ func Test_hookLine(t *testing.T) {
 			} else {
 				if err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func Test_hookWhatsApp(t *testing.T) {
+
+	accountID := uuid.FromStringOrNil("aaaaaaaa-1111-1111-1111-111111111111")
+	convID := uuid.FromStringOrNil("bbbbbbbb-2222-2222-2222-222222222222")
+	custID := uuid.FromStringOrNil("cccccccc-3333-3333-3333-333333333333")
+	msgID := uuid.FromStringOrNil("dddddddd-4444-4444-4444-444444444444")
+
+	tests := []struct {
+		name string
+
+		account   *account.Account
+		data      []byte
+		signature string
+
+		responseHookResults []*whatsapphandler.HookResult
+
+		expectHookError error
+		expectError     bool
+	}{
+		{
+			name: "normal - whatsapp conversation type (flow mode no-op for unknown type)",
+
+			account: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				Type: account.TypeWhatsApp,
+			},
+			data:      []byte(`{}`),
+			signature: "sha256=abc",
+
+			responseHookResults: []*whatsapphandler.HookResult{
+				{
+					Conversation: &conversation.Conversation{
+						Identity: commonidentity.Identity{
+							ID:         convID,
+							CustomerID: custID,
+						},
+						Type:      conversation.TypeWhatsApp,
+						AccountID: accountID,
+					},
+					Message: &message.Message{
+						Identity: commonidentity.Identity{
+							ID:         msgID,
+							CustomerID: custID,
+						},
+						ConversationID: convID,
+					},
+				},
+			},
+
+			// TypeWhatsApp hits the default branch in runExecuteModeFlow (no-op, no RPCs)
+			expectError: false,
+		},
+		{
+			name: "normal - skips nil conversation or message",
+
+			account: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				Type: account.TypeWhatsApp,
+			},
+			data:      []byte(`{}`),
+			signature: "sha256=abc",
+
+			responseHookResults: []*whatsapphandler.HookResult{
+				{
+					Conversation: nil,
+					Message: &message.Message{
+						Identity: commonidentity.Identity{
+							ID: msgID,
+						},
+					},
+				},
+				{
+					Conversation: &conversation.Conversation{
+						Identity: commonidentity.Identity{
+							ID: convID,
+						},
+					},
+					Message: nil,
+				},
+			},
+
+			expectError: false,
+		},
+		{
+			name:            "hook returns error",
+			account:         &account.Account{Identity: commonidentity.Identity{ID: accountID}, Type: account.TypeWhatsApp},
+			data:            []byte(`{}`),
+			signature:       "sha256=abc",
+			expectHookError: fmt.Errorf("whatsapp hook failed"),
+			expectError:     true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			mockWhatsApp := whatsapphandler.NewMockWhatsAppHandler(mc)
+			h := &conversationHandler{
+				utilHandler:     mockUtil,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				reqHandler:      mockReq,
+				accountHandler:  mockAccount,
+				messageHandler:  mockMessage,
+				lineHandler:     mockLine,
+				whatsappHandler: mockWhatsApp,
+			}
+			ctx := context.Background()
+
+			if tt.expectHookError != nil {
+				mockWhatsApp.EXPECT().Hook(ctx, tt.account, tt.data, tt.signature).Return(nil, tt.expectHookError)
+			} else {
+				mockWhatsApp.EXPECT().Hook(ctx, tt.account, tt.data, tt.signature).Return(tt.responseHookResults, nil)
+			}
+
+			// Collect valid flow-mode results
+			err := h.hookWhatsApp(ctx, tt.account, tt.data, tt.signature)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+			}
+		})
+	}
+}
+
+func Test_HookVerify(t *testing.T) {
+
+	accountID := uuid.FromStringOrNil("e8f5795a-e6eb-11ec-bb81-c3cec34bd99c")
+
+	tests := []struct {
+		name string
+
+		uri         string
+		mode        string
+		verifyToken string
+		challenge   string
+
+		expectAccountID uuid.UUID
+
+		responseAccount         *account.Account
+		responseVerifyWebhook   string
+		responseVerifyWebhookOK bool
+
+		expectResult string
+		expectError  bool
+	}{
+		{
+			name: "normal whatsapp account",
+
+			uri:         "https://hook.voipbin.net/v1.0/conversation/accounts/e8f5795a-e6eb-11ec-bb81-c3cec34bd99c",
+			mode:        "subscribe",
+			verifyToken: "mytoken",
+			challenge:   "challenge123",
+
+			expectAccountID: accountID,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				Type: account.TypeWhatsApp,
+			},
+			responseVerifyWebhook:   "challenge123",
+			responseVerifyWebhookOK: true,
+
+			expectResult: "challenge123",
+			expectError:  false,
+		},
+		{
+			name: "non-whatsapp account returns error",
+
+			uri:         "https://hook.voipbin.net/v1.0/conversation/accounts/e8f5795a-e6eb-11ec-bb81-c3cec34bd99c",
+			mode:        "subscribe",
+			verifyToken: "mytoken",
+			challenge:   "challenge123",
+
+			expectAccountID: accountID,
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: accountID,
+				},
+				Type: account.TypeLine,
+			},
+
+			expectResult: "",
+			expectError:  true,
+		},
+		{
+			name: "short uri path returns error",
+
+			uri:         "https://hook.voipbin.net/v1.0",
+			mode:        "subscribe",
+			verifyToken: "mytoken",
+			challenge:   "challenge123",
+
+			expectResult: "",
+			expectError:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			mockLine := linehandler.NewMockLineHandler(mc)
+			mockWhatsApp := whatsapphandler.NewMockWhatsAppHandler(mc)
+			h := &conversationHandler{
+				utilHandler:     mockUtil,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				accountHandler:  mockAccount,
+				messageHandler:  mockMessage,
+				lineHandler:     mockLine,
+				whatsappHandler: mockWhatsApp,
+			}
+			ctx := context.Background()
+
+			if tt.responseAccount != nil {
+				mockAccount.EXPECT().Get(ctx, tt.expectAccountID).Return(tt.responseAccount, nil)
+
+				if tt.responseAccount.Type == account.TypeWhatsApp {
+					mockWhatsApp.EXPECT().VerifyWebhook(ctx, tt.responseAccount, tt.mode, tt.verifyToken, tt.challenge).Return(tt.responseVerifyWebhook, nil)
+				}
+			}
+
+			result, err := h.HookVerify(ctx, tt.uri, tt.mode, tt.verifyToken, tt.challenge)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Wrong match. expect: ok, got: %v", err)
+				}
+				if result != tt.expectResult {
+					t.Errorf("Wrong match. expect: %s, got: %s", tt.expectResult, result)
 				}
 			}
 		})

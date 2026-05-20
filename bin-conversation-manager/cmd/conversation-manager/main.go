@@ -32,6 +32,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
 	"monorepo/bin-conversation-manager/pkg/smshandler"
 	"monorepo/bin-conversation-manager/pkg/subscribehandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 )
 
 const (
@@ -124,9 +125,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Config) err
 	lineHandler := linehandler.NewLineHandler(reqHandler)
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler)
 	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
+	whatsAppHandler := whatsapphandler.NewWhatsAppHandler(reqHandler)
 
 	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler)
-	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler)
+	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler, whatsAppHandler)
 
 	// run listen
 	if err := runListen(sockHandler, accountHandler, conversationHandler, messageHandler); err != nil {

@@ -90,7 +90,7 @@ func Test_processV1HooksPost(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().Hook(gomock.Any(), tt.expectReceivedURI, tt.expectReceivedData)
+			mockConversation.EXPECT().Hook(gomock.Any(), tt.expectReceivedURI, gomock.Any(), gomock.Any(), tt.expectReceivedData)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

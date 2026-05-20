@@ -90,17 +90,32 @@ func (mr *MockConversationHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // Hook mocks base method.
-func (m *MockConversationHandler) Hook(ctx context.Context, uri string, data []byte) error {
+func (m *MockConversationHandler) Hook(ctx context.Context, uri, method, signature string, data []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Hook", ctx, uri, data)
+	ret := m.ctrl.Call(m, "Hook", ctx, uri, method, signature, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Hook indicates an expected call of Hook.
-func (mr *MockConversationHandlerMockRecorder) Hook(ctx, uri, data any) *gomock.Call {
+func (mr *MockConversationHandlerMockRecorder) Hook(ctx, uri, method, signature, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockConversationHandler)(nil).Hook), ctx, uri, data)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hook", reflect.TypeOf((*MockConversationHandler)(nil).Hook), ctx, uri, method, signature, data)
+}
+
+// HookVerify mocks base method.
+func (m *MockConversationHandler) HookVerify(ctx context.Context, uri, mode, verifyToken, challenge string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HookVerify", ctx, uri, mode, verifyToken, challenge)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HookVerify indicates an expected call of HookVerify.
+func (mr *MockConversationHandlerMockRecorder) HookVerify(ctx, uri, mode, verifyToken, challenge any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HookVerify", reflect.TypeOf((*MockConversationHandler)(nil).HookVerify), ctx, uri, mode, verifyToken, challenge)
 }
 
 // List mocks base method.
