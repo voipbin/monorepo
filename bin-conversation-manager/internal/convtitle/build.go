@@ -23,6 +23,8 @@ func channelLabel(t conversation.Type) string {
 		return "LINE"
 	case conversation.TypeMessage:
 		return "SMS"
+	case conversation.TypeWhatsApp:
+		return "WhatsApp"
 	default:
 		return string(t)
 	}
@@ -52,7 +54,8 @@ func peerName(peer commonaddress.Address) string {
 func humanReadableTarget(t commonaddress.Type) bool {
 	switch t {
 	case commonaddress.TypeTel, commonaddress.TypeEmail,
-		commonaddress.TypeSIP, commonaddress.TypeExtension:
+		commonaddress.TypeSIP, commonaddress.TypeExtension,
+		commonaddress.TypeWhatsApp:
 		return true
 	default:
 		return false
