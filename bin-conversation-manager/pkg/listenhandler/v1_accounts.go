@@ -168,6 +168,7 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 		string(account.FieldSecret),
 		string(account.FieldToken),
 		string(account.FieldMessageFlowID),
+		string(account.FieldProviderData),
 	}
 	filteredItems, err := requesthandler.GetFilteredItems(m, allowedItems)
 	if err != nil {
