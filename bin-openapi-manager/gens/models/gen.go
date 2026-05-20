@@ -1460,8 +1460,9 @@ func (e ContactManagerPhoneNumberType) Valid() bool {
 
 // Defines values for ConversationManagerAccountType.
 const (
-	ConversationManagerAccountTypeLine ConversationManagerAccountType = "line"
-	ConversationManagerAccountTypeSMS  ConversationManagerAccountType = "sms"
+	ConversationManagerAccountTypeLine     ConversationManagerAccountType = "line"
+	ConversationManagerAccountTypeSMS      ConversationManagerAccountType = "sms"
+	ConversationManagerAccountTypeWhatsApp ConversationManagerAccountType = "whatsapp"
 )
 
 // Valid indicates whether the value is a known member of the ConversationManagerAccountType enum.
@@ -1470,6 +1471,8 @@ func (e ConversationManagerAccountType) Valid() bool {
 	case ConversationManagerAccountTypeLine:
 		return true
 	case ConversationManagerAccountTypeSMS:
+		return true
+	case ConversationManagerAccountTypeWhatsApp:
 		return true
 	default:
 		return false
@@ -4668,6 +4671,9 @@ type ConversationManagerAccount struct {
 	// Name Name of the account.
 	Name *string `json:"name,omitempty"`
 
+	// ProviderData Platform-specific provider configuration. Write-only — never returned in GET responses or webhook payloads. Currently used for WhatsApp accounts only.
+	ProviderData *ConversationManagerAccountProviderData `json:"provider_data,omitempty"`
+
 	// Secret Webhook secret for signature verification. Write-only.
 	Secret *string `json:"secret,omitempty"`
 
@@ -4685,6 +4691,15 @@ type ConversationManagerAccount struct {
 
 	// Type Type of the account.
 	Type *ConversationManagerAccountType `json:"type,omitempty"`
+}
+
+// ConversationManagerAccountProviderData Platform-specific provider configuration. Write-only — never returned in GET responses or webhook payloads. Currently used for WhatsApp accounts only.
+type ConversationManagerAccountProviderData struct {
+	// AppSecret The Meta app secret for your WhatsApp Business App. Used to validate the X-Hub-Signature-256 header on inbound webhook requests from Meta.
+	AppSecret *string `json:"app_secret,omitempty"`
+
+	// PhoneNumberId The Meta phone number ID associated with your WhatsApp Business phone number. Found in Meta Business Manager under WhatsApp → Phone numbers.
+	PhoneNumberId *string `json:"phone_number_id,omitempty"`
 }
 
 // ConversationManagerAccountType Type of the account.
@@ -7522,8 +7537,11 @@ type PostConversationAccountsJSONBody struct {
 	Detail        string  `json:"detail"`
 	MessageFlowId *string `json:"message_flow_id,omitempty"`
 	Name          string  `json:"name"`
-	Secret        string  `json:"secret"`
-	Token         string  `json:"token"`
+
+	// ProviderData Platform-specific provider configuration. Write-only — never returned in GET responses or webhook payloads. Currently used for WhatsApp accounts only.
+	ProviderData *ConversationManagerAccountProviderData `json:"provider_data,omitempty"`
+	Secret       string                                  `json:"secret"`
+	Token        string                                  `json:"token"`
 
 	// Type Type of the account.
 	Type ConversationManagerAccountType `json:"type"`
@@ -7534,8 +7552,11 @@ type PutConversationAccountsIdJSONBody struct {
 	Detail        *string `json:"detail,omitempty"`
 	MessageFlowId *string `json:"message_flow_id,omitempty"`
 	Name          *string `json:"name,omitempty"`
-	Secret        *string `json:"secret,omitempty"`
-	Token         *string `json:"token,omitempty"`
+
+	// ProviderData Platform-specific provider configuration. Write-only — never returned in GET responses or webhook payloads. Currently used for WhatsApp accounts only.
+	ProviderData *ConversationManagerAccountProviderData `json:"provider_data,omitempty"`
+	Secret       *string                                 `json:"secret,omitempty"`
+	Token        *string                                 `json:"token,omitempty"`
 }
 
 // GetConversationsJSONBody defines parameters for GetConversations.

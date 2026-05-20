@@ -680,24 +680,27 @@
 <tr class="row-odd"><td><p>line</p></td>
 <td><p>LINE messaging platform</p></td>
 </tr>
+<tr class="row-even"><td><p>whatsapp</p></td>
+<td><p>WhatsApp Business messaging via Meta Cloud API</p></td>
+</tr>
 </tbody>
 </table>
 </div>
 <p><strong>Channel Selection</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>              Which channel?
                     |
-      +-------------+-------------+
-      |                           |
-      v                           v
-+-----------+               +-----------+
-|  message  |               |   line    |
-| (SMS/MMS) |               | messaging |
-+-----+-----+               +-----+-----+
-      |                           |
-      v                           v
-Short,                      Real-time,
-immediate                   interactive
-(&lt; 160 chars)               chat-based
+      +-------------+-------------+-----------+
+      |                           |           |
+      v                           v           v
++-----------+               +-----------+ +-----------+
+|  message  |               |   line    | | whatsapp  |
+| (SMS/MMS) |               | messaging | | (Meta API)|
++-----+-----+               +-----+-----+ +-----+-----+
+      |                           |             |
+      v                           v             v
+Short,                      Real-time,      Rich media,
+immediate                   interactive     global reach,
+(&lt; 160 chars)               chat-based      read receipts
 </pre></div>
 </div>
 </section>
@@ -1259,6 +1262,71 @@ Auto-generated titles apply only to conversations created automatically; convers
 </table>
 </div>
 </section>
+<section id="setting-up-a-whatsapp-conversation-account">
+<h2>Setting Up a WhatsApp Conversation Account<a class="headerlink" href="#setting-up-a-whatsapp-conversation-account" title="Link to this heading">¶</a></h2>
+<p>To receive and send WhatsApp messages through VoIPBIN, you must create a <code class="docutils literal notranslate"><span class="pre">whatsapp</span></code> conversation account and configure Meta Business Manager to forward events to VoIPBIN’s webhook endpoint.</p>
+<p><strong>Prerequisites</strong></p>
+<ul class="simple">
+<li><p>A Meta Business Manager account with a WhatsApp Business App set up.</p></li>
+<li><p>A Meta system user access token with <code class="docutils literal notranslate"><span class="pre">whatsapp_business_messaging</span></code> and <code class="docutils literal notranslate"><span class="pre">whatsapp_business_management</span></code> permissions.</p></li>
+<li><p>The phone number ID for the WhatsApp Business phone number you want to use. Found in Meta Business Manager under <strong>WhatsApp → Phone numbers</strong>.</p></li>
+<li><p>The Meta app secret for your app. Found in Meta Business Manager under <strong>App settings → Basic</strong>.</p></li>
+</ul>
+<p><strong>Step 1 — Create the conversation account</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl -X POST &#39;https://api.voipbin.net/v1.0/conversation_accounts?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data &#39;{
+        &quot;type&quot;: &quot;whatsapp&quot;,
+        &quot;name&quot;: &quot;My WhatsApp Account&quot;,
+        &quot;detail&quot;: &quot;WhatsApp Business account for customer support&quot;,
+        &quot;token&quot;: &quot;&lt;META_SYSTEM_USER_ACCESS_TOKEN&gt;&quot;,
+        &quot;secret&quot;: &quot;&lt;YOUR_WEBHOOK_VERIFY_TOKEN&gt;&quot;,
+        &quot;provider_data&quot;: {
+            &quot;phone_number_id&quot;: &quot;&lt;META_PHONE_NUMBER_ID&gt;&quot;,
+            &quot;app_secret&quot;: &quot;&lt;META_APP_SECRET&gt;&quot;
+        }
+    }&#39;
+
+{
+    &quot;id&quot;: &quot;a1b2c3d4-e5f6-7890-abcd-ef1234567890&quot;,
+    &quot;customer_id&quot;: &quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;,
+    &quot;type&quot;: &quot;whatsapp&quot;,
+    &quot;name&quot;: &quot;My WhatsApp Account&quot;,
+    &quot;detail&quot;: &quot;WhatsApp Business account for customer support&quot;,
+    &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
+    &quot;tm_create&quot;: &quot;2026-01-15T09:30:00.000000Z&quot;,
+    &quot;tm_update&quot;: &quot;2026-01-15T09:30:00.000000Z&quot;,
+    &quot;tm_delete&quot;: &quot;9999-01-01T00:00:00.000000Z&quot;
+}
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">token</span></code>, <code class="docutils literal notranslate"><span class="pre">secret</span></code>, and <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> are write-only fields — they are <strong>not</strong> returned in the response.</p>
+<p><strong>Step 2 — Note the account ID</strong></p>
+<p>Copy the <code class="docutils literal notranslate"><span class="pre">id</span></code> from the response (e.g., <code class="docutils literal notranslate"><span class="pre">a1b2c3d4-e5f6-7890-abcd-ef1234567890</span></code>). You will use it to construct your webhook URL.</p>
+<p><strong>Step 3 — Configure the webhook in Meta Business Manager</strong></p>
+<p>In Meta Business Manager, navigate to your WhatsApp app’s <strong>Webhooks</strong> settings and configure:</p>
+<ul class="simple">
+<li><p><strong>Callback URL</strong>: <code class="docutils literal notranslate"><span class="pre">https://hook.voipbin.net/v1.0/conversation/accounts/&lt;account_id&gt;</span></code>
+(replace <code class="docutils literal notranslate"><span class="pre">&lt;account_id&gt;</span></code> with the <code class="docutils literal notranslate"><span class="pre">id</span></code> from Step 2)</p></li>
+<li><p><strong>Verify token</strong>: The value you set in the <code class="docutils literal notranslate"><span class="pre">secret</span></code> field when creating the account.</p></li>
+<li><p><strong>Webhook fields to subscribe</strong>: <code class="docutils literal notranslate"><span class="pre">messages</span></code></p></li>
+</ul>
+<p>Meta will send a <code class="docutils literal notranslate"><span class="pre">GET</span></code> request to the callback URL to verify ownership. VoIPBIN handles this automatically using the <code class="docutils literal notranslate"><span class="pre">secret</span></code> you configured.</p>
+<p><strong>Step 4 — Verify the setup</strong></p>
+<p>Send a test WhatsApp message to your configured phone number. VoIPBIN will:</p>
+<ol class="arabic simple">
+<li><p>Receive the inbound webhook from Meta.</p></li>
+<li><p>Validate the <code class="docutils literal notranslate"><span class="pre">X-Hub-Signature-256</span></code> signature using the <code class="docutils literal notranslate"><span class="pre">app_secret</span></code> from <code class="docutils literal notranslate"><span class="pre">provider_data</span></code>.</p></li>
+<li><p>Create (or match) a conversation with <code class="docutils literal notranslate"><span class="pre">dialog_id</span></code> equal to the sender’s <code class="docutils literal notranslate"><span class="pre">wa_id</span></code> (E.164 number without <code class="docutils literal notranslate"><span class="pre">+</span></code>).</p></li>
+<li><p>Deliver a <code class="docutils literal notranslate"><span class="pre">conversation_message_created</span></code> webhook event to your application if a flow is configured.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> field is a write-only JSON object. Set it on create/update but never expect it in GET responses or webhook payloads. The <code class="docutils literal notranslate"><span class="pre">secret</span></code> field stores the Meta webhook verify token (not the app secret — that lives inside <code class="docutils literal notranslate"><span class="pre">provider_data.app_secret</span></code>). The <code class="docutils literal notranslate"><span class="pre">token</span></code> field stores the Meta system user access token used for outbound API calls.</p>
+<p>For <a class="reference internal" href="conversation_struct_account.html#conversation-struct-account-type"><span class="std std-ref">type field values</span></a> and additional WhatsApp-specific field details, see the <a class="reference internal" href="conversation_struct_account.html#conversation-struct-account"><span class="std std-ref">Account struct reference</span></a>.</p>
+</div>
+</section>
 <section id="related-documentation">
 <h2>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h2>
 <ul class="simple">
@@ -1344,6 +1412,7 @@ Auto-generated titles apply only to conversations created automatically; convers
 <li><a class="reference internal" href="#auto-generated-titles">Auto-Generated Titles</a></li>
 <li><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li><a class="reference internal" href="#setting-up-a-whatsapp-conversation-account">Setting Up a WhatsApp Conversation Account</a></li>
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 </ul>
 </li>
