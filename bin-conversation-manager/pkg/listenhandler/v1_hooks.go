@@ -19,7 +19,10 @@ func (h *listenHandler) processV1HooksGet(ctx context.Context, m *sock.Request) 
 		"request": m,
 	})
 
-	var req request.V1DataHooksPost // reuses the same model — embeds hmhook.Hook fields
+	// V1DataHooksPost is shared for both GET and POST: the hook-manager packs all hook
+	// metadata (received_uri, received_method, etc.) into the same struct regardless of
+	// the original HTTP method. There is no separate V1DataHooksGet type.
+	var req request.V1DataHooksPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Debugf("Could not unmarshal data. err: %v", err)
 		return simpleResponse(400), nil
@@ -66,6 +69,10 @@ func (h *listenHandler) processV1HooksPost(ctx context.Context, m *sock.Request)
 	}
 	log.WithField("request", req).Debugf("Received hook request. request_uri: %s", req.ReceviedURI)
 
+	// Always respond 200 to the caller regardless of Hook() outcome. Meta (and other
+	// platforms) interpret non-200 as "not delivered" and will retry. On HMAC or
+	// signature failure, Hook() discards the payload without persisting any data —
+	// returning 200 simply tells Meta not to retry a forged or replayed request.
 	if errHook := h.conversationHandler.Hook(ctx, req.ReceviedURI, req.ReceivedMethod, req.ReceivedSignature, req.ReceivedData); errHook != nil {
 		log.Errorf("Could not hook the message correctly. err: %v", errHook)
 	}
