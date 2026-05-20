@@ -4,6 +4,7 @@ package accounthandler
 
 import (
 	"context"
+	"encoding/json"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -15,11 +16,12 @@ import (
 	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 	"monorepo/bin-conversation-manager/pkg/linehandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 )
 
 // AccountHandler is interface for account handle
 type AccountHandler interface {
-	Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID) (*account.Account, error)
+	Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID, providerData json.RawMessage) (*account.Account, error)
 	Get(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	List(ctx context.Context, pageToken string, pageSize uint64, filters map[account.Field]any) ([]*account.Account, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[account.Field]any) (*account.Account, error)
@@ -34,7 +36,8 @@ type accountHandler struct {
 	reqHandler    requesthandler.RequestHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	lineHandler linehandler.LineHandler
+	lineHandler    linehandler.LineHandler
+	whatsappHandler whatsapphandler.WhatsAppHandler
 }
 
 var (
@@ -62,14 +65,16 @@ func NewAccountHandler(
 	reqHandler requesthandler.RequestHandler,
 	notifyHandler notifyhandler.NotifyHandler,
 	lineHandler linehandler.LineHandler,
+	whatsappHandler whatsapphandler.WhatsAppHandler,
 ) AccountHandler {
 
 	h := &accountHandler{
-		utilHandler:   utilhandler.NewUtilHandler(),
-		db:            db,
-		reqHandler:    reqHandler,
-		notifyHandler: notifyHandler,
-		lineHandler:   lineHandler,
+		utilHandler:     utilhandler.NewUtilHandler(),
+		db:              db,
+		reqHandler:      reqHandler,
+		notifyHandler:   notifyHandler,
+		lineHandler:     lineHandler,
+		whatsappHandler: whatsappHandler,
 	}
 
 	return h

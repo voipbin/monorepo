@@ -72,9 +72,9 @@ func initConversationHandlers(sqlDB *sql.DB, cache cachehandler.CacheHandler, re
 	db := dbhandler.NewHandler(sqlDB, cache)
 
 	lineHandler := linehandler.NewLineHandler(reqHandler)
-	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler)
-	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 	whatsAppHandler := whatsapphandler.NewWhatsAppHandler(reqHandler)
+	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler, whatsAppHandler)
+	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler)
 	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler, whatsAppHandler)
 
@@ -285,6 +285,7 @@ func runAccountCreate(cmd *cobra.Command, args []string) error {
 		secret,
 		token,
 		messageFlowID,
+		nil,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create account")

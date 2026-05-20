@@ -2,6 +2,7 @@ package accounthandler
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	reflect "reflect"
 	"testing"
@@ -17,6 +18,7 @@ import (
 	"monorepo/bin-conversation-manager/models/account"
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 	"monorepo/bin-conversation-manager/pkg/linehandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 )
 
 func Test_Create(t *testing.T) {
@@ -78,13 +80,15 @@ func Test_Create(t *testing.T) {
 			mockReq := requesthandler.NewMockRequestHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
+			mockWhatsApp := whatsapphandler.NewMockWhatsAppHandler(mc)
 
 			h := accountHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				lineHandler:   mockLine,
+				utilHandler:     mockUtil,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				notifyHandler:   mockNotify,
+				lineHandler:     mockLine,
+				whatsappHandler: mockWhatsApp,
 			}
 			ctx := context.Background()
 
@@ -94,7 +98,7 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AccountGet(ctx, tt.responseUUID).Return(tt.responseAccount, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAccount.CustomerID, account.EventTypeAccountCreated, tt.responseAccount)
 
-			res, err := h.Create(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID)
+			res, err := h.Create(ctx, tt.customerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID, json.RawMessage(nil))
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -258,12 +262,14 @@ func Test_Update(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 
 			mockLine := linehandler.NewMockLineHandler(mc)
+			mockWhatsApp := whatsapphandler.NewMockWhatsAppHandler(mc)
 
 			h := accountHandler{
-				db:            mockDB,
-				reqHandler:    mockReq,
-				notifyHandler: mockNotify,
-				lineHandler:   mockLine,
+				db:              mockDB,
+				reqHandler:      mockReq,
+				notifyHandler:   mockNotify,
+				lineHandler:     mockLine,
+				whatsappHandler: mockWhatsApp,
 			}
 			ctx := context.Background()
 
@@ -344,12 +350,14 @@ func Test_Delete(t *testing.T) {
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockLine := linehandler.NewMockLineHandler(mc)
+			mockWhatsApp := whatsapphandler.NewMockWhatsAppHandler(mc)
 
 			h := &accountHandler{
-				reqHandler:    mockReq,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-				lineHandler:   mockLine,
+				reqHandler:      mockReq,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				lineHandler:     mockLine,
+				whatsappHandler: mockWhatsApp,
 			}
 			ctx := context.Background()
 

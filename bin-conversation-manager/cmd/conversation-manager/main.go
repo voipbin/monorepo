@@ -123,9 +123,9 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Config) err
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConversationEvent, serviceName)
 
 	lineHandler := linehandler.NewLineHandler(reqHandler)
-	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler)
-	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 	whatsAppHandler := whatsapphandler.NewWhatsAppHandler(reqHandler)
+	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler, whatsAppHandler)
+	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 
 	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler)
 	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler, whatsAppHandler)

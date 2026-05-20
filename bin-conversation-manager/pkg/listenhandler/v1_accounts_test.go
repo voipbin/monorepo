@@ -227,7 +227,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken, tt.expectMessageFlowID).Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken, tt.expectMessageFlowID, gomock.Any()).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

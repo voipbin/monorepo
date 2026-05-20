@@ -26,6 +26,9 @@ func (h *accountHandler) setup(ctx context.Context, ac *account.Account) error {
 		// nothing to do
 		err = nil
 
+	case account.TypeWhatsApp:
+		err = h.whatsappHandler.Setup(ctx, ac)
+
 	default:
 		log.Errorf("Unsupported account type. account_type: %s", ac.Type)
 		err = fmt.Errorf("unsupported account type. account_type: %s", ac.Type)
@@ -52,6 +55,9 @@ func (h *accountHandler) teardown(ctx context.Context, ac *account.Account) {
 
 	case account.TypeSMS:
 		// nothing to do
+
+	case account.TypeWhatsApp:
+		// no-op: Meta has no programmatic webhook deregistration
 
 	default:
 		// unknown type, nothing to tear down
