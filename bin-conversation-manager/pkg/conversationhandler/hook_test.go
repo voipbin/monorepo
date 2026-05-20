@@ -522,11 +522,12 @@ func Test_hookWhatsApp(t *testing.T) {
 
 		responseHookResults []*whatsapphandler.HookResult
 
+		setup           func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler)
 		expectHookError error
 		expectError     bool
 	}{
 		{
-			name: "normal - whatsapp conversation type (flow mode no-op for unknown type)",
+			name: "normal - whatsapp conversation type triggers flow dispatch via runExecuteModeFlowWhatsApp",
 
 			account: &account.Account{
 				Identity: commonidentity.Identity{
@@ -557,7 +558,13 @@ func Test_hookWhatsApp(t *testing.T) {
 				},
 			},
 
-			// TypeWhatsApp hits the default branch in runExecuteModeFlow (no-op, no RPCs)
+			// account has no MessageFlowID, so no activeflow RPC is triggered.
+			setup: func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {
+				mockAccount.EXPECT().Get(gomock.Any(), accountID).Return(&account.Account{
+					Identity:      commonidentity.Identity{ID: accountID, CustomerID: custID},
+					MessageFlowID: uuid.Nil,
+				}, nil)
+			},
 			expectError: false,
 		},
 		{
@@ -627,6 +634,10 @@ func Test_hookWhatsApp(t *testing.T) {
 				whatsappHandler: mockWhatsApp,
 			}
 			ctx := context.Background()
+
+			if tt.setup != nil {
+				tt.setup(mockAccount, mockReq)
+			}
 
 			if tt.expectHookError != nil {
 				mockWhatsApp.EXPECT().Hook(ctx, tt.account, tt.data, tt.signature).Return(nil, tt.expectHookError)

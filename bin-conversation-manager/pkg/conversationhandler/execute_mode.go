@@ -37,13 +37,15 @@ func (h *conversationHandler) runExecuteModeAgent(ctx context.Context, cv *conve
 }
 
 // runExecuteModeFlow dispatches by conversation type. Each per-type runner fetches the type-specific
-// flow source (account for LINE, number for SMS) and calls executeActiveflow with the resolved flow id.
+// flow source (account for LINE/WhatsApp, number for SMS) and calls executeActiveflow with the resolved flow id.
 func (h *conversationHandler) runExecuteModeFlow(ctx context.Context, cv *conversation.Conversation, m *message.Message) error {
 	switch cv.Type {
 	case conversation.TypeLine:
 		return h.runExecuteModeFlowLine(ctx, cv, m)
 	case conversation.TypeMessage:
 		return h.runExecuteModeFlowMessage(ctx, cv, m)
+	case conversation.TypeWhatsApp:
+		return h.runExecuteModeFlowWhatsApp(ctx, cv, m)
 	default:
 		logrus.WithFields(logrus.Fields{
 			"func":            "runExecuteModeFlow",
@@ -79,6 +81,22 @@ func (h *conversationHandler) runExecuteModeFlowMessage(ctx context.Context, cv 
 	}
 	if errExecute := h.executeActiveflow(ctx, cv, m, num.MessageFlowID); errExecute != nil {
 		return errors.Wrapf(errExecute, "could not execute activeflow. number_id: %s", num.ID)
+	}
+	return nil
+}
+
+// runExecuteModeFlowWhatsApp fetches the account by cv.AccountID and triggers an activeflow
+// using account.MessageFlowID. Returns nil without side effects when AccountID is uuid.Nil.
+func (h *conversationHandler) runExecuteModeFlowWhatsApp(ctx context.Context, cv *conversation.Conversation, m *message.Message) error {
+	if cv.AccountID == uuid.Nil {
+		return nil
+	}
+	ac, errGet := h.accountHandler.Get(ctx, cv.AccountID)
+	if errGet != nil {
+		return errors.Wrapf(errGet, "could not get account. account_id: %s", cv.AccountID)
+	}
+	if errExecute := h.executeActiveflow(ctx, cv, m, ac.MessageFlowID); errExecute != nil {
+		return errors.Wrapf(errExecute, "could not execute activeflow. account_id: %s", ac.ID)
 	}
 	return nil
 }

@@ -325,13 +325,125 @@ func Test_runExecuteModeFlowMessage(t *testing.T) {
 
 // Test_runExecuteModeFlow_unsupportedTypeIsNoop verifies the default arm of the
 // dispatcher: a conversation with an unsupported type returns nil without
-// invoking any per-type runner. The TypeLine and TypeMessage paths are covered
-// by Test_runExecuteModeFlowLine and Test_runExecuteModeFlowMessage respectively.
+// invoking any per-type runner. The TypeLine, TypeMessage, and TypeWhatsApp paths are covered
+// by their respective Test_runExecuteModeFlow* functions.
 func Test_runExecuteModeFlow_unsupportedTypeIsNoop(t *testing.T) {
 	h := &conversationHandler{}
 	cv := &conversation.Conversation{Type: "unknown"}
 	m := &message.Message{}
 	if err := h.runExecuteModeFlow(context.Background(), cv, m); err != nil {
 		t.Errorf("expected nil for unsupported type, got: %v", err)
+	}
+}
+
+func Test_runExecuteModeFlowWhatsApp(t *testing.T) {
+	accountID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	flowID := uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+	convID := uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc")
+	custID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+	msgID := uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee")
+	afID := uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff")
+
+	tests := []struct {
+		name    string
+		cv      *conversation.Conversation
+		m       *message.Message
+		setup   func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler)
+		wantErr bool
+	}{
+		{
+			name: "valid whatsapp conversation with flow id -> executeActiveflow called",
+			cv: &conversation.Conversation{
+				Identity:  commonidentity.Identity{ID: convID, CustomerID: custID},
+				Type:      conversation.TypeWhatsApp,
+				AccountID: accountID,
+			},
+			m: &message.Message{
+				Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
+				ConversationID: convID,
+			},
+			setup: func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {
+				mockAccount.EXPECT().Get(gomock.Any(), accountID).Return(&account.Account{
+					Identity:      commonidentity.Identity{ID: accountID, CustomerID: custID},
+					MessageFlowID: flowID,
+				}, nil)
+				mockReq.EXPECT().FlowV1ActiveflowCreate(
+					gomock.Any(), uuid.Nil, custID, flowID,
+					fmactiveflow.ReferenceTypeConversation, convID, uuid.Nil,
+				).Return(&fmactiveflow.Activeflow{Identity: commonidentity.Identity{ID: afID}}, nil)
+				mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), afID, gomock.Any()).Return(nil)
+				mockReq.EXPECT().FlowV1ActiveflowExecute(gomock.Any(), afID).Return(nil)
+			},
+			wantErr: false,
+		},
+		{
+			name: "whatsapp conversation with nil account id -> short-circuit, no fetch",
+			cv: &conversation.Conversation{
+				Identity:  commonidentity.Identity{ID: convID, CustomerID: custID},
+				Type:      conversation.TypeWhatsApp,
+				AccountID: uuid.Nil,
+			},
+			m: &message.Message{
+				Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
+				ConversationID: convID,
+			},
+			setup:   func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {},
+			wantErr: false,
+		},
+		{
+			name: "whatsapp conversation, account fetch fails -> error returned",
+			cv: &conversation.Conversation{
+				Identity:  commonidentity.Identity{ID: convID, CustomerID: custID},
+				Type:      conversation.TypeWhatsApp,
+				AccountID: accountID,
+			},
+			m: &message.Message{
+				Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
+				ConversationID: convID,
+			},
+			setup: func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {
+				mockAccount.EXPECT().Get(gomock.Any(), accountID).Return(nil, errors.New("db down"))
+			},
+			wantErr: true,
+		},
+		{
+			name: "whatsapp conversation, account has no flow id -> no activeflow created, no error",
+			cv: &conversation.Conversation{
+				Identity:  commonidentity.Identity{ID: convID, CustomerID: custID},
+				Type:      conversation.TypeWhatsApp,
+				AccountID: accountID,
+			},
+			m: &message.Message{
+				Identity:       commonidentity.Identity{ID: msgID, CustomerID: custID},
+				ConversationID: convID,
+			},
+			setup: func(mockAccount *accounthandler.MockAccountHandler, mockReq *requesthandler.MockRequestHandler) {
+				mockAccount.EXPECT().Get(gomock.Any(), accountID).Return(&account.Account{
+					Identity:      commonidentity.Identity{ID: accountID, CustomerID: custID},
+					MessageFlowID: uuid.Nil,
+				}, nil)
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &conversationHandler{
+				accountHandler: mockAccount,
+				reqHandler:     mockReq,
+			}
+			tt.setup(mockAccount, mockReq)
+
+			err := h.runExecuteModeFlowWhatsApp(context.Background(), tt.cv, tt.m)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("got err = %v, wantErr = %v", err, tt.wantErr)
+			}
+		})
 	}
 }
