@@ -162,7 +162,7 @@ func Test_conversationAccountsPost(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ConversationAccountCreate(req.Context(), tt.agent, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken, gomock.Any()).Return(tt.responseAccount, nil)
+			mockSvc.EXPECT().ConversationAccountCreate(req.Context(), tt.agent, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken, gomock.Any(), gomock.Any()).Return(tt.responseAccount, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

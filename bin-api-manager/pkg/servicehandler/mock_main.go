@@ -11,6 +11,7 @@ package servicehandler
 
 import (
 	context "context"
+	json "encoding/json"
 	multipart "mime/multipart"
 	agent "monorepo/bin-agent-manager/models/agent"
 	ai "monorepo/bin-ai-manager/models/ai"
@@ -1891,18 +1892,18 @@ func (mr *MockServiceHandlerMockRecorder) ContactUpdate(ctx, a, contactID, first
 }
 
 // ConversationAccountCreate mocks base method.
-func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, a *auth.AuthIdentity, accountType account0.Type, name, detail, secret, token string, messageFlowID uuid.UUID) (*account0.WebhookMessage, error) {
+func (m *MockServiceHandler) ConversationAccountCreate(ctx context.Context, a *auth.AuthIdentity, accountType account0.Type, name, detail, secret, token string, messageFlowID uuid.UUID, providerData json.RawMessage) (*account0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationAccountCreate", ctx, a, accountType, name, detail, secret, token, messageFlowID)
+	ret := m.ctrl.Call(m, "ConversationAccountCreate", ctx, a, accountType, name, detail, secret, token, messageFlowID, providerData)
 	ret0, _ := ret[0].(*account0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationAccountCreate indicates an expected call of ConversationAccountCreate.
-func (mr *MockServiceHandlerMockRecorder) ConversationAccountCreate(ctx, a, accountType, name, detail, secret, token, messageFlowID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ConversationAccountCreate(ctx, a, accountType, name, detail, secret, token, messageFlowID, providerData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountCreate), ctx, a, accountType, name, detail, secret, token, messageFlowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationAccountCreate", reflect.TypeOf((*MockServiceHandler)(nil).ConversationAccountCreate), ctx, a, accountType, name, detail, secret, token, messageFlowID, providerData)
 }
 
 // ConversationAccountDelete mocks base method.

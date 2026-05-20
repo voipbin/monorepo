@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+
 	"monorepo/bin-api-manager/gens/openapi_server"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
@@ -87,6 +89,17 @@ func (h *server) PostConversationAccounts(c *gin.Context) {
 		messageFlowID = uuid.FromStringOrNil(*req.MessageFlowId)
 	}
 
+	var providerData json.RawMessage
+	if req.ProviderData != nil {
+		b, err := json.Marshal(req.ProviderData)
+		if err != nil {
+			log.Errorf("Could not marshal provider_data. err: %v", err)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_PROVIDER_DATA", "Could not encode provider_data."))
+			return
+		}
+		providerData = b
+	}
+
 	res, err := h.serviceHandler.ConversationAccountCreate(
 		c.Request.Context(),
 		a,
@@ -96,6 +109,7 @@ func (h *server) PostConversationAccounts(c *gin.Context) {
 		req.Secret,
 		req.Token,
 		messageFlowID,
+		providerData,
 	)
 	if err != nil {
 		log.Errorf("Could not create a conversation account. err: %v", err)
@@ -169,18 +183,37 @@ func (h *server) PutConversationAccountsId(c *gin.Context, id string) {
 		return
 	}
 
+	// provider_data is a nested object — extract before the generic field conversion
+	// which only handles primitive types (string, uuid, bool, int).
+	var providerData json.RawMessage
+	if req.ProviderData != nil {
+		b, err := json.Marshal(req.ProviderData)
+		if err != nil {
+			log.Errorf("Could not marshal provider_data. err: %v", err)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_PROVIDER_DATA", "Could not encode provider_data."))
+			return
+		}
+		providerData = b
+	}
+
 	raw, err := structToFilteredMap(req)
 	if err != nil {
 		log.Errorf("Could not convert fields. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "Could not convert request fields.").Wrap(err))
 		return
 	}
+	// Remove provider_data from the generic map — it was already extracted above as json.RawMessage.
+	delete(raw, "provider_data")
 
 	fields, err := cvaccount.ConvertStringMapToFieldMap(raw)
 	if err != nil {
 		log.Errorf("Could not convert fields. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "Could not convert request fields.").Wrap(err))
 		return
+	}
+
+	if providerData != nil {
+		fields[cvaccount.FieldProviderData] = providerData
 	}
 
 	res, err := h.serviceHandler.ConversationAccountUpdate(c.Request.Context(), a, target, fields)

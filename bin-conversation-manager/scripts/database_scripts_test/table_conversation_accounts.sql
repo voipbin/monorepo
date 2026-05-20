@@ -12,6 +12,8 @@ create table conversation_accounts(
   secret  text,
   token   text,
 
+  provider_data text,
+
   message_flow_id binary(16) NOT NULL DEFAULT (UNHEX(REPLACE('00000000-0000-0000-0000-000000000000', '-', ''))),
 
   -- timestamps

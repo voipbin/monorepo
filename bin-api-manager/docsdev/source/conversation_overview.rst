@@ -92,6 +92,8 @@ VoIPBIN supports multiple communication channels within a single conversation.
      - SMS/MMS text messages to mobile phones
    * - line
      - LINE messaging platform
+   * - whatsapp
+     - WhatsApp Business messaging via Meta Cloud API
 
 
 **Channel Selection**
@@ -100,18 +102,18 @@ VoIPBIN supports multiple communication channels within a single conversation.
 
                       Which channel?
                             |
-              +-------------+-------------+
-              |                           |
-              v                           v
-        +-----------+               +-----------+
-        |  message  |               |   line    |
-        | (SMS/MMS) |               | messaging |
-        +-----+-----+               +-----+-----+
-              |                           |
-              v                           v
-        Short,                      Real-time,
-        immediate                   interactive
-        (< 160 chars)               chat-based
+              +-------------+-------------+-----------+
+              |                           |           |
+              v                           v           v
+        +-----------+               +-----------+ +-----------+
+        |  message  |               |   line    | | whatsapp  |
+        | (SMS/MMS) |               | messaging | | (Meta API)|
+        +-----+-----+               +-----+-----+ +-----+-----+
+              |                           |             |
+              v                           v             v
+        Short,                      Real-time,      Rich media,
+        immediate                   interactive     global reach,
+        (< 160 chars)               chat-based      read receipts
 
 
 Conversation Lifecycle
@@ -668,6 +670,81 @@ Troubleshooting
    * - Delayed events
      - Check webhook endpoint performance; review retry queue
 
+
+
+Setting Up a WhatsApp Conversation Account
+------------------------------------------
+
+To receive and send WhatsApp messages through VoIPBIN, you must create a ``whatsapp`` conversation account and configure Meta Business Manager to forward events to VoIPBIN's webhook endpoint.
+
+**Prerequisites**
+
+- A Meta Business Manager account with a WhatsApp Business App set up.
+- A Meta system user access token with ``whatsapp_business_messaging`` and ``whatsapp_business_management`` permissions.
+- The phone number ID for the WhatsApp Business phone number you want to use. Found in Meta Business Manager under **WhatsApp → Phone numbers**.
+- The Meta app secret for your app. Found in Meta Business Manager under **App settings → Basic**.
+
+**Step 1 — Create the conversation account**
+
+.. code::
+
+    $ curl -X POST 'https://api.voipbin.net/v1.0/conversation_accounts?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "type": "whatsapp",
+            "name": "My WhatsApp Account",
+            "detail": "WhatsApp Business account for customer support",
+            "token": "<META_SYSTEM_USER_ACCESS_TOKEN>",
+            "secret": "<YOUR_WEBHOOK_VERIFY_TOKEN>",
+            "provider_data": {
+                "phone_number_id": "<META_PHONE_NUMBER_ID>",
+                "app_secret": "<META_APP_SECRET>"
+            }
+        }'
+
+    {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
+        "type": "whatsapp",
+        "name": "My WhatsApp Account",
+        "detail": "WhatsApp Business account for customer support",
+        "message_flow_id": "00000000-0000-0000-0000-000000000000",
+        "tm_create": "2026-01-15T09:30:00.000000Z",
+        "tm_update": "2026-01-15T09:30:00.000000Z",
+        "tm_delete": "9999-01-01T00:00:00.000000Z"
+    }
+
+Note that ``token``, ``secret``, and ``provider_data`` are write-only fields — they are **not** returned in the response.
+
+**Step 2 — Note the account ID**
+
+Copy the ``id`` from the response (e.g., ``a1b2c3d4-e5f6-7890-abcd-ef1234567890``). You will use it to construct your webhook URL.
+
+**Step 3 — Configure the webhook in Meta Business Manager**
+
+In Meta Business Manager, navigate to your WhatsApp app's **Webhooks** settings and configure:
+
+- **Callback URL**: ``https://hook.voipbin.net/v1.0/conversation/accounts/<account_id>``
+  (replace ``<account_id>`` with the ``id`` from Step 2)
+- **Verify token**: The value you set in the ``secret`` field when creating the account.
+- **Webhook fields to subscribe**: ``messages``
+
+Meta will send a ``GET`` request to the callback URL to verify ownership. VoIPBIN handles this automatically using the ``secret`` you configured.
+
+**Step 4 — Verify the setup**
+
+Send a test WhatsApp message to your configured phone number. VoIPBIN will:
+
+1. Receive the inbound webhook from Meta.
+2. Validate the ``X-Hub-Signature-256`` signature using the ``app_secret`` from ``provider_data``.
+3. Create (or match) a conversation with ``dialog_id`` equal to the sender's ``wa_id`` (E.164 number without ``+``).
+4. Deliver a ``conversation_message_created`` webhook event to your application if a flow is configured.
+
+.. note:: **AI Implementation Hint**
+
+   The ``provider_data`` field is a write-only JSON object. Set it on create/update but never expect it in GET responses or webhook payloads. The ``secret`` field stores the Meta webhook verify token (not the app secret — that lives inside ``provider_data.app_secret``). The ``token`` field stores the Meta system user access token used for outbound API calls.
+
+   For :ref:`type field values <conversation-struct-account-type>` and additional WhatsApp-specific field details, see the :ref:`Account struct reference <conversation-struct-account>`.
 
 
 Related Documentation

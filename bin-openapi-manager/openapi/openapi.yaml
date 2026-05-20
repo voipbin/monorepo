@@ -3168,9 +3168,11 @@ components:
       enum:
         - line
         - sms
+        - whatsapp
       x-enum-varnames:
         - ConversationManagerAccountTypeLine
         - ConversationManagerAccountTypeSMS
+        - ConversationManagerAccountTypeWhatsApp
     ConversationManagerAccount:
       type: object
       properties:
@@ -3208,6 +3210,8 @@ components:
           writeOnly: true
           description: API token for the messaging platform. Write-only.
           example: "xoxb_...redacted..."
+        provider_data:
+          $ref: '#/components/schemas/ConversationManagerAccountProviderData'
         message_flow_id:
           type: string
           format: uuid
@@ -3233,6 +3237,26 @@ components:
           description: Timestamp when the account was deleted.
           example: "2026-01-15T09:30:00.000000Z"
 
+    ConversationManagerAccountProviderData:
+      type: object
+      writeOnly: true
+      description: >
+        Platform-specific provider configuration. Write-only — never returned in GET responses or
+        webhook payloads. Currently used for WhatsApp accounts only.
+      properties:
+        phone_number_id:
+          type: string
+          description: >
+            The Meta phone number ID associated with your WhatsApp Business phone number.
+            Found in Meta Business Manager under WhatsApp → Phone numbers.
+          example: "1234567890123456"
+        app_secret:
+          type: string
+          description: >
+            The Meta app secret for your WhatsApp Business App. Used to validate the
+            X-Hub-Signature-256 header on inbound webhook requests from Meta.
+          example: "abc123def456...redacted..."
+
     ConversationManagerConversationType:
       type: string
       description: Type of the conversation.
@@ -3241,10 +3265,12 @@ components:
         - ""
         - message
         - line
+        - whatsapp
       x-enum-varnames:
         - ConversationManagerConversationTypeNone
         - ConversationManagerConversationTypeMessage
         - ConversationManagerConversationTypeLine
+        - ConversationManagerConversationTypeWhatsApp
     ConversationManagerConversation:
       type: object
       properties:

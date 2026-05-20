@@ -32,6 +32,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
 	"monorepo/bin-conversation-manager/pkg/smshandler"
 	"monorepo/bin-conversation-manager/pkg/subscribehandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 )
 
 const (
@@ -122,11 +123,12 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler, cfg *config.Config) err
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameConversationEvent, serviceName)
 
 	lineHandler := linehandler.NewLineHandler(reqHandler)
-	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler)
+	whatsAppHandler := whatsapphandler.NewWhatsAppHandler(reqHandler)
+	accountHandler := accounthandler.NewAccountHandler(db, reqHandler, notifyHandler, lineHandler, whatsAppHandler)
 	smsHandler := smshandler.NewSMSHandler(reqHandler, accountHandler)
 
-	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler)
-	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler)
+	messageHandler := messagehandler.NewMessageHandler(db, notifyHandler, accountHandler, lineHandler, smsHandler, whatsAppHandler)
+	conversationHandler := conversationhandler.NewConversationHandler(db, notifyHandler, reqHandler, accountHandler, messageHandler, lineHandler, smsHandler, whatsAppHandler)
 
 	// run listen
 	if err := runListen(sockHandler, accountHandler, conversationHandler, messageHandler); err != nil {

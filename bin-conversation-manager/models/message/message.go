@@ -82,7 +82,8 @@ const (
 type ReferenceType string
 
 const (
-	ReferenceTypeNone    ReferenceType = ""
-	ReferenceTypeMessage ReferenceType = "message" // sms, mms
-	ReferenceTypeLine    ReferenceType = "line"
+	ReferenceTypeNone      ReferenceType = ""
+	ReferenceTypeMessage   ReferenceType = "message" // sms, mms
+	ReferenceTypeLine      ReferenceType = "line"
+	ReferenceTypeWhatsApp  ReferenceType = "whatsapp"
 )

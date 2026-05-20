@@ -54,6 +54,8 @@ put:
               type: string
             token:
               type: string
+            provider_data:
+              $ref: '#/components/schemas/ConversationManagerAccountProviderData'
             message_flow_id:
               type: string
               format: uuid

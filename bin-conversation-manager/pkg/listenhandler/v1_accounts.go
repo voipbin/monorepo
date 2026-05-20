@@ -88,7 +88,7 @@ func (h *listenHandler) processV1AccountsPost(ctx context.Context, m *sock.Reque
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.accountHandler.Create(ctx, req.CustomerID, req.Type, req.Name, req.Detail, req.Secret, req.Token, req.MessageFlowID)
+	tmp, err := h.accountHandler.Create(ctx, req.CustomerID, req.Type, req.Name, req.Detail, req.Secret, req.Token, req.MessageFlowID, req.ProviderData)
 	if err != nil {
 		log.Errorf("Could not create the account. err: %v", err)
 		return nil, errors.Wrap(err, "could not create the account")
@@ -168,6 +168,7 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 		string(account.FieldSecret),
 		string(account.FieldToken),
 		string(account.FieldMessageFlowID),
+		string(account.FieldProviderData),
 	}
 	filteredItems, err := requesthandler.GetFilteredItems(m, allowedItems)
 	if err != nil {
@@ -179,10 +180,28 @@ func (h *listenHandler) processV1AccountsIDPut(ctx context.Context, m *sock.Requ
 		return simpleResponse(200), nil
 	}
 
+	// provider_data arrives as a nested JSON object (map[string]any) after generic
+	// deserialization. ConvertStringMapToFieldMap only handles primitive types, so
+	// extract it before the conversion and re-add it as json.RawMessage afterward.
+	var providerData json.RawMessage
+	if pd, ok := filteredItems[string(account.FieldProviderData)]; ok {
+		b, errMarshal := json.Marshal(pd)
+		if errMarshal != nil {
+			log.Errorf("Could not marshal provider_data. err: %v", errMarshal)
+			return nil, errMarshal
+		}
+		providerData = b
+		delete(filteredItems, string(account.FieldProviderData))
+	}
+
 	tmpFields, err := account.ConvertStringMapToFieldMap(filteredItems)
 	if err != nil {
 		log.Errorf("Could not convert field map. err: %v", err)
 		return nil, err
+	}
+
+	if providerData != nil {
+		tmpFields[account.FieldProviderData] = providerData
 	}
 
 	tmp, err := h.accountHandler.Update(ctx, id, tmpFields)

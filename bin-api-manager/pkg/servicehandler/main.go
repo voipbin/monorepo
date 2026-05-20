@@ -4,6 +4,7 @@ package servicehandler
 
 import (
 	"context"
+	"encoding/json"
 	multipart "mime/multipart"
 	"net/http"
 	"time"
@@ -467,6 +468,7 @@ type ServiceHandler interface {
 		secret string,
 		token string,
 		messageFlowID uuid.UUID,
+		providerData json.RawMessage,
 	) (*cvaccount.WebhookMessage, error)
 	ConversationAccountUpdate(ctx context.Context, a *auth.AuthIdentity, accountID uuid.UUID, fields map[cvaccount.Field]any) (*cvaccount.WebhookMessage, error)
 	ConversationAccountDelete(ctx context.Context, a *auth.AuthIdentity, accountID uuid.UUID) (*cvaccount.WebhookMessage, error)

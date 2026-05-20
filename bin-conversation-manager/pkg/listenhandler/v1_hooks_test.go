@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -11,6 +12,93 @@ import (
 
 	"monorepo/bin-conversation-manager/pkg/conversationhandler"
 )
+
+func Test_processV1HooksGet(t *testing.T) {
+	tests := []struct {
+		name string
+
+		request *sock.Request
+
+		hookVerifyResult string
+		hookVerifyErr    error
+
+		expectMode      string
+		expectToken     string
+		expectChallenge string
+		expectStatus    int
+	}{
+		{
+			name: "valid hub.mode=subscribe returns challenge",
+			request: &sock.Request{
+				URI:      "/v1/hooks",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"received_uri":"https://hook.voipbin.net/v1.0/conversation/accounts/e8f5795a-1234-11ee-aaaa-000000000000?hub.mode=subscribe&hub.verify_token=my-secret&hub.challenge=challenge-xyz"}`),
+			},
+
+			hookVerifyResult: "challenge-xyz",
+			hookVerifyErr:    nil,
+
+			expectMode:      "subscribe",
+			expectToken:     "my-secret",
+			expectChallenge: "challenge-xyz",
+			expectStatus:    200,
+		},
+		{
+			name: "HookVerify failure returns 403",
+			request: &sock.Request{
+				URI:      "/v1/hooks",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"received_uri":"https://hook.voipbin.net/v1.0/conversation/accounts/e8f5795a-1234-11ee-aaaa-000000000000?hub.mode=subscribe&hub.verify_token=wrong&hub.challenge=challenge-xyz"}`),
+			},
+
+			hookVerifyResult: "",
+			hookVerifyErr:    fmt.Errorf("verify_token mismatch"),
+
+			expectMode:      "subscribe",
+			expectToken:     "wrong",
+			expectChallenge: "challenge-xyz",
+			expectStatus:    403,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockConversation := conversationhandler.NewMockConversationHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:         mockSock,
+				conversationHandler: mockConversation,
+			}
+
+			mockConversation.EXPECT().HookVerify(
+				gomock.Any(),
+				gomock.Any(),
+				tt.expectMode,
+				tt.expectToken,
+				tt.expectChallenge,
+			).Return(tt.hookVerifyResult, tt.hookVerifyErr)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("Wrong status. expect: %d, got: %d", tt.expectStatus, res.StatusCode)
+			}
+
+			if tt.expectStatus == 200 && string(res.Data) != tt.hookVerifyResult {
+				t.Errorf("Wrong challenge. expect: %q, got: %q", tt.hookVerifyResult, string(res.Data))
+			}
+		})
+	}
+}
 
 func Test_processV1HooksPost(t *testing.T) {
 
@@ -90,7 +178,7 @@ func Test_processV1HooksPost(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().Hook(gomock.Any(), tt.expectReceivedURI, tt.expectReceivedData)
+			mockConversation.EXPECT().Hook(gomock.Any(), tt.expectReceivedURI, gomock.Any(), gomock.Any(), tt.expectReceivedData)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {

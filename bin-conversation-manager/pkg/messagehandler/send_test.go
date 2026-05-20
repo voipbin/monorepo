@@ -21,6 +21,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 	"monorepo/bin-conversation-manager/pkg/linehandler"
 	"monorepo/bin-conversation-manager/pkg/smshandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 )
 
 func Test_Send_sendLine(t *testing.T) {
@@ -209,6 +210,136 @@ func Test_Send_sendSMS(t *testing.T) {
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
 			mockSms.EXPECT().Send(ctx, tt.conversation, tt.responseUUIDSmsID, tt.text).Return(nil)
+
+			res, err := h.Send(ctx, tt.conversation, tt.text, tt.medias)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, tt.expectMessage) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectMessage, res)
+			}
+		})
+	}
+}
+
+func Test_Send_sendWhatsApp(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		conversation *conversation.Conversation
+		text         string
+		medias       []media.Media
+
+		responseAccount         *account.Account
+		responseUUID            uuid.UUID
+		responseWamid           string
+
+		expectCreateMessage     *message.Message
+		expectUpdateFields      map[message.Field]any
+		expectUpdateWamidFields map[message.Field]any
+		expectMessage           *message.Message
+	}{
+		{
+			name: "whatsapp text type",
+
+			conversation: &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b1a9c2d0-1234-11f0-aaaa-aaaaaaaaaaaa"),
+					CustomerID: uuid.FromStringOrNil("b2b0c3d1-1234-11f0-bbbb-bbbbbbbbbbbb"),
+				},
+				AccountID: uuid.FromStringOrNil("b3c1d4e2-1234-11f0-cccc-cccccccccccc"),
+				Type:      conversation.TypeWhatsApp,
+				DialogID:  "12345678901234",
+				Self: commonaddress.Address{
+					Target: "+15551234567",
+				},
+			},
+			text:   "hello from whatsapp",
+			medias: []media.Media{},
+
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b3c1d4e2-1234-11f0-cccc-cccccccccccc"),
+				},
+			},
+			responseUUID:  uuid.FromStringOrNil("b4d2e5f3-1234-11f0-dddd-dddddddddddd"),
+			responseWamid: "wamid.abc123xyz",
+
+			expectCreateMessage: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b4d2e5f3-1234-11f0-dddd-dddddddddddd"),
+					CustomerID: uuid.FromStringOrNil("b2b0c3d1-1234-11f0-bbbb-bbbbbbbbbbbb"),
+				},
+				ConversationID: uuid.FromStringOrNil("b1a9c2d0-1234-11f0-aaaa-aaaaaaaaaaaa"),
+				Direction:      message.DirectionOutgoing,
+				Status:         message.StatusProgressing,
+				ReferenceType:  message.ReferenceTypeWhatsApp,
+				ReferenceID:    uuid.Nil,
+				TransactionID:  "",
+				Text:           "hello from whatsapp",
+				Medias:         []media.Media{},
+			},
+			expectUpdateFields: map[message.Field]any{
+				message.FieldStatus: message.StatusDone,
+			},
+			expectUpdateWamidFields: map[message.Field]any{
+				message.FieldTransactionID: "wamid.abc123xyz",
+			},
+			expectMessage: &message.Message{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b4d2e5f3-1234-11f0-dddd-dddddddddddd"),
+					CustomerID: uuid.FromStringOrNil("b2b0c3d1-1234-11f0-bbbb-bbbbbbbbbbbb"),
+				},
+				ConversationID: uuid.FromStringOrNil("b1a9c2d0-1234-11f0-aaaa-aaaaaaaaaaaa"),
+				Direction:      message.DirectionOutgoing,
+				Status:         message.StatusProgressing,
+				ReferenceType:  message.ReferenceTypeWhatsApp,
+				ReferenceID:    uuid.Nil,
+				TransactionID:  "",
+				Text:           "hello from whatsapp",
+				Medias:         []media.Media{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockAccount := accounthandler.NewMockAccountHandler(mc)
+			mockWhatsapp := whatsapphandler.NewMockWhatsAppHandler(mc)
+			h := &messageHandler{
+				utilHandler:     mockUtil,
+				db:              mockDB,
+				notifyHandler:   mockNotify,
+				accountHandler:  mockAccount,
+				whatsappHandler: mockWhatsapp,
+			}
+			ctx := context.Background()
+
+			mockAccount.EXPECT().Get(ctx, tt.conversation.AccountID).Return(tt.responseAccount, nil)
+
+			// create
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			mockDB.EXPECT().MessageCreate(ctx, tt.expectCreateMessage).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.expectCreateMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectCreateMessage.CustomerID, message.EventTypeMessageCreated, tt.expectCreateMessage)
+
+			mockWhatsapp.EXPECT().Send(ctx, tt.conversation, tt.responseAccount, tt.text).Return(tt.responseWamid, nil)
+
+			// update status to done
+			mockDB.EXPECT().MessageUpdate(ctx, tt.expectCreateMessage.ID, tt.expectUpdateFields).Return(nil)
+			mockDB.EXPECT().MessageGet(ctx, tt.expectCreateMessage.ID).Return(tt.expectMessage, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageUpdated, tt.expectMessage)
+
+			// persist wamid
+			mockDB.EXPECT().MessageUpdate(ctx, tt.expectMessage.ID, tt.expectUpdateWamidFields).Return(nil)
 
 			res, err := h.Send(ctx, tt.conversation, tt.text, tt.medias)
 			if err != nil {

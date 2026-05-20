@@ -30,6 +30,9 @@ func (h *messageHandler) Send(ctx context.Context, cv *conversation.Conversation
 	case conversation.TypeMessage:
 		return h.sendSMS(ctx, cv, text, medias)
 
+	case conversation.TypeWhatsApp:
+		return h.sendWhatsApp(ctx, cv, text)
+
 	default:
 		log.Errorf("Unsupported reference type. reference_type: %s", cv.Type)
 		return nil, fmt.Errorf("unsupported reference type. reference_type: %s", cv.Type)
@@ -71,6 +74,60 @@ func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversat
 		return nil, errSend
 	}
 
+	return res, nil
+}
+
+// sendWhatsApp sends a message via the WhatsApp Business Cloud API.
+func (h *messageHandler) sendWhatsApp(ctx context.Context, cv *conversation.Conversation, text string) (*message.Message, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "sendWhatsApp",
+		"conversation_id": cv.ID,
+	})
+
+	ac, err := h.accountHandler.Get(ctx, cv.AccountID)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not get account")
+	}
+
+	tmp, err := h.Create(
+		ctx,
+		uuid.Nil,
+		cv.CustomerID,
+		cv.ID,
+		message.DirectionOutgoing,
+		message.StatusProgressing,
+		message.ReferenceTypeWhatsApp,
+		uuid.Nil,
+		"",
+		text,
+		[]media.Media{},
+	)
+	if err != nil {
+		log.Errorf("Could not create message. err: %v", err)
+		return nil, err
+	}
+
+	wamid, err := h.whatsappHandler.Send(ctx, cv, ac, text)
+	if err != nil {
+		log.Errorf("Could not send WhatsApp message. err: %v", err)
+		_, _ = h.UpdateStatus(ctx, tmp.ID, message.StatusFailed)
+		return nil, err
+	}
+
+	res, err := h.UpdateStatus(ctx, tmp.ID, message.StatusDone)
+	if err != nil {
+		log.Errorf("Could not update message status. err: %v", err)
+		return nil, err
+	}
+
+	// Persist wamid for deduplication and status correlation.
+	if errUpd := h.db.MessageUpdate(ctx, res.ID, map[message.Field]any{
+		message.FieldTransactionID: wamid,
+	}); errUpd != nil {
+		log.Warnf("Could not persist wamid. message_id: %s, wamid: %s, err: %v", res.ID, wamid, errUpd)
+	}
+
+	log.Debugf("Sent WhatsApp message. wamid: %s", wamid)
 	return res, nil
 }
 

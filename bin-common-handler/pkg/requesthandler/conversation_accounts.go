@@ -60,7 +60,7 @@ func (r *requestHandler) ConversationV1AccountList(ctx context.Context, pageToke
 // ConversationV1AccountCreate sends a request to conversation-manager
 // to create a account info.
 // it returns created account info if it succeed.
-func (r *requestHandler) ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType cvaccount.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID) (*cvaccount.Account, error) {
+func (r *requestHandler) ConversationV1AccountCreate(ctx context.Context, customerID uuid.UUID, accountType cvaccount.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID, providerData json.RawMessage) (*cvaccount.Account, error) {
 	uri := "/v1/accounts"
 
 	data := &cvrequest.V1DataAccountsPost{
@@ -71,6 +71,7 @@ func (r *requestHandler) ConversationV1AccountCreate(ctx context.Context, custom
 		Secret:        secret,
 		Token:         token,
 		MessageFlowID: messageFlowID,
+		ProviderData:  providerData,
 	}
 
 	m, err := json.Marshal(data)

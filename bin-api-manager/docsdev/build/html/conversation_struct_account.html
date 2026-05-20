@@ -635,9 +635,50 @@
 <tr class="row-odd"><td><p>sms</p></td>
 <td><p>SMS messaging account</p></td>
 </tr>
+<tr class="row-even"><td><p>whatsapp</p></td>
+<td><p>WhatsApp Business account (Meta Cloud API)</p></td>
+</tr>
 </tbody>
 </table>
 </div>
+</section>
+<section id="whatsapp-account-fields">
+<span id="conversation-struct-account-whatsapp"></span><h2>WhatsApp Account Fields<a class="headerlink" href="#whatsapp-account-fields" title="Link to this heading">¶</a></h2>
+<p>When creating a <code class="docutils literal notranslate"><span class="pre">whatsapp</span></code> account, the following write-only fields are required in addition to <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">detail</span></code>, and <code class="docutils literal notranslate"><span class="pre">message_flow_id</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">token</span></code> (string, write-only): The Meta system user access token. Used as the Bearer token when calling the Meta Cloud API to send outbound messages. Never returned in API responses.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">secret</span></code> (string, write-only): The webhook verify token. Echoed back verbatim during the Meta hub challenge (<code class="docutils literal notranslate"><span class="pre">GET</span></code> request from Meta to your webhook URL). Never returned in API responses.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provider_data</span></code> (object, write-only): WhatsApp-specific configuration. Never returned in API responses. Contains the following keys:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">phone_number_id</span></code> (string): The Meta phone number ID associated with your WhatsApp Business phone number. Found in Meta Business Manager under <strong>WhatsApp → Phone numbers</strong>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">app_secret</span></code> (string): The Meta app secret. Used to validate the <code class="docutils literal notranslate"><span class="pre">X-Hub-Signature-256</span></code> header on inbound webhook requests.</p></li>
+</ul>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">provider_data</span></code>, <code class="docutils literal notranslate"><span class="pre">token</span></code>, and <code class="docutils literal notranslate"><span class="pre">secret</span></code> are <strong>write-only</strong>. They are accepted on <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/conversation_accounts</span></code> and <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/conversation_accounts/{id}</span></code> but are <strong>never included</strong> in <code class="docutils literal notranslate"><span class="pre">GET</span></code> responses or webhook payloads.</p>
+</div>
+</section>
+<section id="whatsapp-webhook-url">
+<span id="conversation-struct-account-whatsapp-webhook"></span><h2>WhatsApp Webhook URL<a class="headerlink" href="#whatsapp-webhook-url" title="Link to this heading">¶</a></h2>
+<p>When configuring the webhook in Meta Business Manager, use the following URL pattern:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">hook</span><span class="o">.</span><span class="n">voipbin</span><span class="o">.</span><span class="n">net</span><span class="o">/</span><span class="n">v1</span><span class="mf">.0</span><span class="o">/</span><span class="n">conversation</span><span class="o">/</span><span class="n">accounts</span><span class="o">/</span><span class="p">{</span><span class="n">account_id</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">{account_id}</span></code> with the <code class="docutils literal notranslate"><span class="pre">id</span></code> returned when the account is created.</p>
+<p>Meta sends two types of requests to this URL:</p>
+<ol class="arabic simple">
+<li><p><strong>Hub challenge</strong> (<code class="docutils literal notranslate"><span class="pre">GET</span></code>): Sent by Meta to verify your endpoint. VoIPBIN responds automatically using the <code class="docutils literal notranslate"><span class="pre">secret</span></code> (verify token) you configured.</p></li>
+<li><p><strong>Inbound messages</strong> (<code class="docutils literal notranslate"><span class="pre">POST</span></code>): WhatsApp messages forwarded by Meta. VoIPBIN validates the <code class="docutils literal notranslate"><span class="pre">X-Hub-Signature-256</span></code> header using <code class="docutils literal notranslate"><span class="pre">app_secret</span></code> from <code class="docutils literal notranslate"><span class="pre">provider_data</span></code>.</p></li>
+</ol>
+<p><strong>Inbound message identifiers</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dialog_id</span></code>: Set to the sender’s WhatsApp ID (<code class="docutils literal notranslate"><span class="pre">wa_id</span></code>), which is their E.164 phone number without the leading <code class="docutils literal notranslate"><span class="pre">+</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">15551234567</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transaction_id</span></code>: Set to the WhatsApp message ID (<code class="docutils literal notranslate"><span class="pre">wamid</span></code>), a unique identifier assigned by Meta to each message.</p></li>
+</ul>
+<p><strong>Outbound messages</strong></p>
+<p>VoIPBIN sends outbound text messages via the Meta Cloud API using the <code class="docutils literal notranslate"><span class="pre">phone_number_id</span></code> from <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> and the <code class="docutils literal notranslate"><span class="pre">token</span></code> you configured. The <code class="docutils literal notranslate"><span class="pre">wamid</span></code> returned by Meta is stored as the conversation message’s <code class="docutils literal notranslate"><span class="pre">transaction_id</span></code>.</p>
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
@@ -718,6 +759,8 @@
 <li><a class="reference internal" href="#">Conversation Account</a><ul>
 <li><a class="reference internal" href="#account">Account</a></li>
 <li><a class="reference internal" href="#type">Type</a></li>
+<li><a class="reference internal" href="#whatsapp-account-fields">WhatsApp Account Fields</a></li>
+<li><a class="reference internal" href="#whatsapp-webhook-url">WhatsApp Webhook URL</a></li>
 <li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>

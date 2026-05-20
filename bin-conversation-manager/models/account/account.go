@@ -1,6 +1,7 @@
 package account
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -19,6 +20,8 @@ type Account struct {
 
 	Secret string `json:"secret,omitempty" db:"secret"` // secret
 	Token  string `json:"token,omitempty" db:"token"`   // usually api token
+
+	ProviderData json.RawMessage `json:"provider_data,omitempty" db:"provider_data,json"`
 
 	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty" db:"message_flow_id,uuid"`
 
@@ -43,6 +46,8 @@ const (
 	FieldSecret Field = "secret"
 	FieldToken  Field = "token"
 
+	FieldProviderData Field = "provider_data"
+
 	FieldMessageFlowID Field = "message_flow_id"
 
 	FieldTMCreate Field = "tm_create"
@@ -58,6 +63,13 @@ type Type string
 
 // list of types
 const (
-	TypeLine Type = "line"
-	TypeSMS  Type = "sms"
+	TypeLine     Type = "line"
+	TypeSMS      Type = "sms"
+	TypeWhatsApp Type = "whatsapp"
 )
+
+// WhatsAppProviderData holds WhatsApp-specific credentials stored in provider_data JSON.
+type WhatsAppProviderData struct {
+	PhoneNumberID string `json:"phone_number_id"`
+	AppSecret     string `json:"app_secret"`
+}

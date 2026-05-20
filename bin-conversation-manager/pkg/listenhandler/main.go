@@ -239,6 +239,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	////////////////////
 	// hooks
 	////////////////////
+	// GET /hooks (Meta hub challenge)
+	case regV1Hooks.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1HooksGet(ctx, m)
+		requestType = "/v1/hooks-get"
+
 	// POST /hooks
 	case regV1Hooks.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1HooksPost(ctx, m)

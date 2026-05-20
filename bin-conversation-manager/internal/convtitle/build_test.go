@@ -84,6 +84,34 @@ func Test_Build(t *testing.T) {
 			wantName:   "SMS · Alice (alice@example.com)",
 			wantDetail: "SMS conversation",
 		},
+		{
+			name:     "whatsapp with name and target",
+			convType: conversation.TypeWhatsApp,
+			peer: commonaddress.Address{
+				Type:       commonaddress.TypeWhatsApp,
+				Target:     "+15551234567",
+				TargetName: "Alice",
+			},
+			wantName:   "WhatsApp · Alice (+15551234567)",
+			wantDetail: "WhatsApp conversation",
+		},
+		{
+			name:     "whatsapp with target only",
+			convType: conversation.TypeWhatsApp,
+			peer: commonaddress.Address{
+				Type:   commonaddress.TypeWhatsApp,
+				Target: "+15551234567",
+			},
+			wantName:   "WhatsApp · +15551234567",
+			wantDetail: "WhatsApp conversation",
+		},
+		{
+			name:     "whatsapp with neither",
+			convType: conversation.TypeWhatsApp,
+			peer:     commonaddress.Address{Type: commonaddress.TypeWhatsApp},
+			wantName:   "WhatsApp · Unknown",
+			wantDetail: "WhatsApp conversation",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -107,6 +135,7 @@ func Test_humanReadableTarget(t *testing.T) {
 		{commonaddress.TypeEmail, true},
 		{commonaddress.TypeSIP, true},
 		{commonaddress.TypeExtension, true},
+		{commonaddress.TypeWhatsApp, true},
 		{commonaddress.TypeLine, false},
 		{commonaddress.TypeAgent, false},
 		{commonaddress.TypeAI, false},
@@ -118,6 +147,24 @@ func Test_humanReadableTarget(t *testing.T) {
 		t.Run(string(tt.addrType), func(t *testing.T) {
 			if got := humanReadableTarget(tt.addrType); got != tt.want {
 				t.Errorf("humanReadableTarget(%q) = %v, want %v", tt.addrType, got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_channelLabel(t *testing.T) {
+	tests := []struct {
+		convType conversation.Type
+		want     string
+	}{
+		{conversation.TypeMessage, "SMS"},
+		{conversation.TypeLine, "LINE"},
+		{conversation.TypeWhatsApp, "WhatsApp"},
+	}
+	for _, tt := range tests {
+		t.Run(string(tt.convType), func(t *testing.T) {
+			if got := channelLabel(tt.convType); got != tt.want {
+				t.Errorf("channelLabel(%q) = %q, want %q", tt.convType, got, tt.want)
 			}
 		})
 	}

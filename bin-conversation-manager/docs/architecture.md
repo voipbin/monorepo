@@ -47,7 +47,8 @@ ListenHandler routes over `bin-manager.conversation-manager.request`:
 | `GET /v1/conversations?` | List conversations (paginated) |
 | `GET/PUT/DELETE /v1/conversations/<uuid>` | Get / update / delete conversation |
 | `POST /v1/conversations` | Create conversation |
-| `POST /v1/hooks` | Incoming platform webhook (LINE, etc.) |
+| `GET /v1/hooks` | Meta hub challenge verification (WhatsApp) |
+| `POST /v1/hooks` | Incoming platform webhook (LINE, WhatsApp, etc.) |
 | `GET /v1/messages?` | List messages (paginated) |
 | `GET /v1/messages/<uuid>` | Get message |
 | `POST /v1/messages` | Create message record |

@@ -20,6 +20,7 @@ import (
 	"monorepo/bin-conversation-manager/pkg/linehandler"
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
 	"monorepo/bin-conversation-manager/pkg/smshandler"
+	"monorepo/bin-conversation-manager/pkg/whatsapphandler"
 )
 
 // ConversationHandler defines
@@ -39,7 +40,8 @@ type ConversationHandler interface {
 	// GetByTypeAndDialogID(ctx context.Context, conversationType conversation.Type, dialogID string) (*conversation.Conversation, error)
 	Update(ctx context.Context, id uuid.UUID, fields map[conversation.Field]any) (*conversation.Conversation, error)
 
-	Hook(ctx context.Context, uri string, data []byte) error
+	Hook(ctx context.Context, uri string, method string, signature string, data []byte) error
+	HookVerify(ctx context.Context, uri string, mode string, verifyToken string, challenge string) (string, error)
 	Event(ctx context.Context, conversationType conversation.Type, data []byte) error
 
 	MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error)
@@ -52,10 +54,11 @@ type conversationHandler struct {
 	notifyHandler notifyhandler.NotifyHandler
 	reqHandler    requesthandler.RequestHandler
 
-	accountHandler accounthandler.AccountHandler
-	messageHandler messagehandler.MessageHandler
-	lineHandler    linehandler.LineHandler
-	smsHandler     smshandler.SMSHandler
+	accountHandler  accounthandler.AccountHandler
+	messageHandler  messagehandler.MessageHandler
+	lineHandler     linehandler.LineHandler
+	smsHandler      smshandler.SMSHandler
+	whatsappHandler whatsapphandler.WhatsAppHandler
 }
 
 // NewConversationHandler returns a new ConversationHandler
@@ -67,6 +70,7 @@ func NewConversationHandler(
 	messageHandler messagehandler.MessageHandler,
 	lineHandler linehandler.LineHandler,
 	smsHandler smshandler.SMSHandler,
+	whatsappHandler whatsapphandler.WhatsAppHandler,
 ) ConversationHandler {
 	return &conversationHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
@@ -77,8 +81,9 @@ func NewConversationHandler(
 		accountHandler: accountHandler,
 		messageHandler: messageHandler,
 
-		lineHandler: lineHandler,
-		smsHandler:  smsHandler,
+		lineHandler:     lineHandler,
+		smsHandler:      smsHandler,
+		whatsappHandler: whatsappHandler,
 	}
 }
 

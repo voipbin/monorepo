@@ -227,7 +227,7 @@ func Test_processV1AccountsPost(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken, tt.expectMessageFlowID).Return(tt.responseAccount, nil)
+			mockAccount.EXPECT().Create(gomock.Any(), tt.expectCustomerID, tt.expectType, tt.expectName, tt.expectDetail, tt.expectSecret, tt.expectToken, tt.expectMessageFlowID, gomock.Any()).Return(tt.responseAccount, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -386,6 +386,32 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				account.FieldDetail: "test detail",
 				account.FieldSecret: "test secret",
 				account.FieldToken:  "test token",
+			},
+		},
+		{
+			name: "with provider_data",
+
+			request: &sock.Request{
+				URI:      "/v1/accounts/28d2d837-fecd-11ed-8139-dff04db7fa05",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"provider_data":{"phone_number_id":"1234567890","app_secret":"abc123"}}`),
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"28d2d837-fecd-11ed-8139-dff04db7fa05","customer_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("28d2d837-fecd-11ed-8139-dff04db7fa05"),
+				},
+			},
+
+			expectID: uuid.FromStringOrNil("28d2d837-fecd-11ed-8139-dff04db7fa05"),
+			expectedFields: map[account.Field]any{
+				// Fields contain provider_data as json.RawMessage — validated via gomock.Any()
 			},
 		},
 	}

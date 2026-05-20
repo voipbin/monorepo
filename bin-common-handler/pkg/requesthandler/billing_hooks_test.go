@@ -35,7 +35,7 @@ func Test_BillingV1PaddleHook(t *testing.T) {
 				URI:      "/v1/hooks/paddle",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/billing/paddle","received_data":"eyJldmVudF9pZCI6ImV2dF8wMDEiLCJldmVudF90eXBlIjoidHJhbnNhY3Rpb24uY29tcGxldGVkIn0="}`),
+				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/billing/paddle","received_data":"eyJldmVudF9pZCI6ImV2dF8wMDEiLCJldmVudF90eXBlIjoidHJhbnNhY3Rpb24uY29tcGxldGVkIn0=","received_method":"","received_signature":""}`),
 			},
 			response: &sock.Response{
 				StatusCode: 200,

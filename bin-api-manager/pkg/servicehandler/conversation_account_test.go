@@ -229,8 +229,8 @@ func Test_ConversationAccountCreate(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().ConversationV1AccountCreate(ctx, tt.agent.CustomerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID).Return(tt.response, nil)
-			res, err := h.ConversationAccountCreate(ctx, tt.agent, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID)
+			mockReq.EXPECT().ConversationV1AccountCreate(ctx, tt.agent.CustomerID, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID, gomock.Nil()).Return(tt.response, nil)
+			res, err := h.ConversationAccountCreate(ctx, tt.agent, tt.accountType, tt.accountName, tt.detail, tt.secret, tt.token, tt.messageFlowID, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

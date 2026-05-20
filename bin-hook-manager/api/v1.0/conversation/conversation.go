@@ -2,6 +2,7 @@ package conversation
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -26,11 +27,17 @@ func conversationPOST(c *gin.Context) {
 	)
 
 	serviceHandler := c.MustGet(common.OBJServiceHandler).(servicehandler.ServiceHandler)
-	if err := serviceHandler.Conversation(ctx, c.Request); err != nil {
+	challenge, err := serviceHandler.Conversation(ctx, c.Request)
+	if err != nil {
 		log.Errorf("Could not handle the message correctly. err: %v", err)
-		c.AbortWithStatus(500)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	c.AbortWithStatus(200)
+	if challenge != "" {
+		c.String(http.StatusOK, challenge)
+		return
+	}
+
+	c.AbortWithStatus(http.StatusOK)
 }

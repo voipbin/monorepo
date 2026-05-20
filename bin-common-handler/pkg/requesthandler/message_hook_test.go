@@ -42,7 +42,7 @@ func Test_MessageV1Hook(t *testing.T) {
 				URI:      "/v1/hooks",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/messages/telnyx","received_data":"eyJrZXkxIjoidmFsMSJ9"}`),
+				Data:     []byte(`{"received_uri":"hook.voipbin.net/v1.0/messages/telnyx","received_data":"eyJrZXkxIjoidmFsMSJ9","received_method":"","received_signature":""}`),
 			},
 		},
 	}

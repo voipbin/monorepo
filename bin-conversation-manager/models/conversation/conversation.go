@@ -67,7 +67,8 @@ type Type string
 
 // list of reference types
 const (
-	TypeNone    Type = ""
-	TypeMessage Type = "message" // sms, mms
-	TypeLine    Type = "line"
+	TypeNone     Type = ""
+	TypeMessage  Type = "message" // sms, mms
+	TypeLine     Type = "line"
+	TypeWhatsApp Type = "whatsapp"
 )

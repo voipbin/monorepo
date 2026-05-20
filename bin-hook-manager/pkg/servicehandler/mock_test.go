@@ -29,8 +29,8 @@ func TestMockServiceHandler(t *testing.T) {
 
 	// Test mock Conversation method
 	r1, _ := http.NewRequest("POST", "http://test.uri/conversation", strings.NewReader("test data"))
-	mockSvc.EXPECT().Conversation(ctx, r1).Return(nil)
-	if err := mockSvc.Conversation(ctx, r1); err != nil {
+	mockSvc.EXPECT().Conversation(ctx, r1).Return("", nil)
+	if _, err := mockSvc.Conversation(ctx, r1); err != nil {
 		t.Errorf("Mock Conversation failed: %v", err)
 	}
 
@@ -71,13 +71,13 @@ func TestMockServiceHandlerRecorder(t *testing.T) {
 	r3, _ := http.NewRequest("POST", "http://test.uri/messages", strings.NewReader("data"))
 	r4, _ := http.NewRequest("POST", "http://test.uri/billing/paddle", strings.NewReader("data"))
 
-	recorder.Conversation(ctx, r1).Return(nil)
+	recorder.Conversation(ctx, r1).Return("", nil)
 	recorder.Email(ctx, r2).Return(nil)
 	recorder.Message(ctx, r3).Return(nil)
 	recorder.Billing(ctx, r4).Return(nil)
 
 	// Execute the mocked calls
-	_ = mockSvc.Conversation(ctx, r1)
+	_, _ = mockSvc.Conversation(ctx, r1)
 	_ = mockSvc.Email(ctx, r2)
 	_ = mockSvc.Message(ctx, r3)
 	_ = mockSvc.Billing(ctx, r4)

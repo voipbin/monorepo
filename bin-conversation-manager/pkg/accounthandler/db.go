@@ -2,6 +2,7 @@ package accounthandler
 
 import (
 	"context"
+	"encoding/json"
 	stderrors "errors"
 	"fmt"
 
@@ -18,7 +19,7 @@ import (
 
 // Create is handy function for creating a confbridge.
 // it increases corresponded counter
-func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID) (*account.Account, error) {
+func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accountType account.Type, name string, detail string, secret string, token string, messageFlowID uuid.UUID, providerData json.RawMessage) (*account.Account, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
 		"customer_id": customerID,
@@ -44,6 +45,7 @@ func (h *accountHandler) Create(ctx context.Context, customerID uuid.UUID, accou
 		Secret:        secret,
 		Token:         token,
 		MessageFlowID: messageFlowID,
+		ProviderData:  providerData,
 	}
 
 	// setup the account
