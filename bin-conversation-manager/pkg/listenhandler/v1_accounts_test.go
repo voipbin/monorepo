@@ -388,6 +388,32 @@ func Test_processV1AccountsIDPut(t *testing.T) {
 				account.FieldToken:  "test token",
 			},
 		},
+		{
+			name: "with provider_data",
+
+			request: &sock.Request{
+				URI:      "/v1/accounts/28d2d837-fecd-11ed-8139-dff04db7fa05",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"provider_data":{"phone_number_id":"1234567890","app_secret":"abc123"}}`),
+			},
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"28d2d837-fecd-11ed-8139-dff04db7fa05","customer_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+			responseAccount: &account.Account{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("28d2d837-fecd-11ed-8139-dff04db7fa05"),
+				},
+			},
+
+			expectID: uuid.FromStringOrNil("28d2d837-fecd-11ed-8139-dff04db7fa05"),
+			expectedFields: map[account.Field]any{
+				// Fields contain provider_data as json.RawMessage — validated via gomock.Any()
+			},
+		},
 	}
 
 	for _, tt := range tests {

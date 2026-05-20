@@ -7372,6 +7372,9 @@
                   "token": {
                     "type": "string"
                   },
+                  "provider_data": {
+                    "$ref": "#/components/schemas/ConversationManagerAccountProviderData"
+                  },
                   "message_flow_id": {
                     "type": "string",
                     "format": "uuid",
@@ -7530,6 +7533,9 @@
                   },
                   "token": {
                     "type": "string"
+                  },
+                  "provider_data": {
+                    "$ref": "#/components/schemas/ConversationManagerAccountProviderData"
                   },
                   "message_flow_id": {
                     "type": "string",
@@ -22878,11 +22884,13 @@
         "example": "sms",
         "enum": [
           "line",
-          "sms"
+          "sms",
+          "whatsapp"
         ],
         "x-enum-varnames": [
           "ConversationManagerAccountTypeLine",
-          "ConversationManagerAccountTypeSMS"
+          "ConversationManagerAccountTypeSMS",
+          "ConversationManagerAccountTypeWhatsApp"
         ]
       },
       "ConversationManagerAccount": {
@@ -22929,6 +22937,9 @@
             "description": "API token for the messaging platform. Write-only.",
             "example": "xoxb_...redacted..."
           },
+          "provider_data": {
+            "$ref": "#/components/schemas/ConversationManagerAccountProviderData"
+          },
           "message_flow_id": {
             "type": "string",
             "format": "uuid",
@@ -22959,6 +22970,23 @@
           }
         }
       },
+      "ConversationManagerAccountProviderData": {
+        "type": "object",
+        "writeOnly": true,
+        "description": "Platform-specific provider configuration. Write-only — never returned in GET responses or webhook payloads. Currently used for WhatsApp accounts only.\n",
+        "properties": {
+          "phone_number_id": {
+            "type": "string",
+            "description": "The Meta phone number ID associated with your WhatsApp Business phone number. Found in Meta Business Manager under WhatsApp → Phone numbers.\n",
+            "example": "1234567890123456"
+          },
+          "app_secret": {
+            "type": "string",
+            "description": "The Meta app secret for your WhatsApp Business App. Used to validate the X-Hub-Signature-256 header on inbound webhook requests from Meta.\n",
+            "example": "abc123def456...redacted..."
+          }
+        }
+      },
       "ConversationManagerConversationType": {
         "type": "string",
         "description": "Type of the conversation.",
@@ -22966,12 +22994,14 @@
         "enum": [
           "",
           "message",
-          "line"
+          "line",
+          "whatsapp"
         ],
         "x-enum-varnames": [
           "ConversationManagerConversationTypeNone",
           "ConversationManagerConversationTypeMessage",
-          "ConversationManagerConversationTypeLine"
+          "ConversationManagerConversationTypeLine",
+          "ConversationManagerConversationTypeWhatsApp"
         ]
       },
       "ConversationManagerConversation": {

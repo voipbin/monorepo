@@ -55,3 +55,16 @@ func TestVerifyWebhook_WrongMode(t *testing.T) {
 		t.Fatal("expected error for wrong hub.mode")
 	}
 }
+
+func TestVerifyWebhook_EmptySecret(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	h := whatsapphandler.NewWhatsAppHandler(requesthandler.NewMockRequestHandler(mc))
+	ac := &account.Account{} // Secret is empty string
+
+	_, err := h.VerifyWebhook(context.Background(), ac, "subscribe", "", "challenge")
+	if err == nil {
+		t.Fatal("expected error when account has no verify_token configured")
+	}
+}
