@@ -2,6 +2,7 @@ package whatsapphandler
 
 import (
 	"context"
+	"crypto/subtle"
 	"fmt"
 
 	"monorepo/bin-conversation-manager/models/account"
@@ -13,7 +14,7 @@ func (h *whatsappHandler) VerifyWebhook(_ context.Context, ac *account.Account, 
 	if mode != "subscribe" {
 		return "", fmt.Errorf("whatsapphandler: unexpected hub.mode: %q", mode)
 	}
-	if verifyToken != ac.Secret {
+	if subtle.ConstantTimeCompare([]byte(verifyToken), []byte(ac.Secret)) != 1 {
 		return "", fmt.Errorf("whatsapphandler: hub.verify_token mismatch")
 	}
 	return challenge, nil

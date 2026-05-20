@@ -30,7 +30,7 @@ func (h *conversationHandler) Hook(ctx context.Context, uri string, method strin
 
 	// /v1.0/conversation/accounts/<account_id>
 	tmpVals := strings.Split(u.Path, "/")
-	if len(tmpVals) < 4 {
+	if len(tmpVals) < 5 {
 		log.Debugf("Wrong hook request. Could not get customerID.")
 		return fmt.Errorf("no customer info found")
 	}

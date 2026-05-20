@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -46,7 +46,6 @@ func (h *whatsappHandler) Send(ctx context.Context, cv *conversation.Conversatio
 
 	url := fmt.Sprintf("%s/%s/%s/messages", GraphAPIBase, graphAPIVersion, pd.PhoneNumberID)
 
-	httpClient := &http.Client{Timeout: 30 * time.Second}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return "", fmt.Errorf("whatsapphandler.Send: create request: %w", err)
@@ -54,14 +53,15 @@ func (h *whatsappHandler) Send(ctx context.Context, cv *conversation.Conversatio
 	req.Header.Set("Authorization", "Bearer "+ac.Token)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := httpClient.Do(req)
+	resp, err := h.httpClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("whatsapphandler.Send: http request: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("whatsapphandler.Send: API returned %d", resp.StatusCode)
+		errBody, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+		return "", fmt.Errorf("whatsapphandler.Send: API returned %d: %s", resp.StatusCode, errBody)
 	}
 
 	var result struct {

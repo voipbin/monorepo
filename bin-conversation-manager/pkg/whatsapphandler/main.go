@@ -4,6 +4,8 @@ package whatsapphandler
 
 import (
 	"context"
+	"net/http"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-conversation-manager/models/account"
@@ -28,9 +30,13 @@ type WhatsAppHandler interface {
 
 type whatsappHandler struct {
 	reqHandler requesthandler.RequestHandler
+	httpClient *http.Client
 }
 
 // NewWhatsAppHandler returns a new WhatsAppHandler.
 func NewWhatsAppHandler(reqHandler requesthandler.RequestHandler) WhatsAppHandler {
-	return &whatsappHandler{reqHandler: reqHandler}
+	return &whatsappHandler{
+		reqHandler: reqHandler,
+		httpClient: &http.Client{Timeout: 30 * time.Second},
+	}
 }
