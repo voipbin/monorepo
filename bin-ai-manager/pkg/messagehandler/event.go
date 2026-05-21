@@ -38,6 +38,73 @@ const backstopReplyText = "Sorry, I'm having trouble responding right now. Pleas
 // patch it to a no-op without paying real wall-clock time.
 var backstopGraceSleep = time.Sleep
 
+// resolveActiveAIIDFromAIcall returns the active AI UUID from an already-fetched AIcall.
+// For AssistanceTypeAI it is ac.AssistanceID directly.
+// For AssistanceTypeTeam it looks up the team and walks Members to find CurrentMemberID.
+// Returns uuid.Nil on any error (non-blocking: logs Warnf).
+func (h *messageHandler) resolveActiveAIIDFromAIcall(ctx context.Context, ac *aicall.AIcall) uuid.UUID {
+	switch ac.AssistanceType {
+	case aicall.AssistanceTypeAI:
+		return ac.AssistanceID
+
+	case aicall.AssistanceTypeTeam:
+		t, err := h.db.TeamGet(ctx, ac.AssistanceID)
+		if err != nil {
+			logrus.Warnf("resolveActiveAIIDFromAIcall: could not get team. team_id: %s, err: %v", ac.AssistanceID, err)
+			return uuid.Nil
+		}
+		for _, m := range t.Members {
+			if m.ID == ac.CurrentMemberID {
+				return m.AIID
+			}
+		}
+		logrus.Warnf("resolveActiveAIIDFromAIcall: CurrentMemberID not found in team. team_id: %s, member_id: %s", ac.AssistanceID, ac.CurrentMemberID)
+		return uuid.Nil
+
+	default:
+		return uuid.Nil
+	}
+}
+
+// resolveActiveAIID fetches the AIcall by ID, then delegates to resolveActiveAIIDFromAIcall.
+// Use this at call sites that only have the aicall UUID.
+// Returns uuid.Nil on any error (non-blocking: logs Warnf).
+func (h *messageHandler) resolveActiveAIID(ctx context.Context, aicallID uuid.UUID) uuid.UUID {
+	ac, err := h.reqHandler.AIV1AIcallGet(ctx, aicallID)
+	if err != nil {
+		logrus.Warnf("resolveActiveAIID: could not get aicall. aicall_id: %s, err: %v", aicallID, err)
+		return uuid.Nil
+	}
+	return h.resolveActiveAIIDFromAIcall(ctx, ac)
+}
+
+// resolveTeamMemberAIID resolves the active AI UUID for a specific team member,
+// independent of ac.CurrentMemberID. Used by EventPMTeamMemberSwitched where
+// the notification message is created before UpdateCurrentMemberID commits.
+// Returns uuid.Nil on any error (non-blocking: logs Warnf).
+func (h *messageHandler) resolveTeamMemberAIID(ctx context.Context, aicallID, memberID uuid.UUID) uuid.UUID {
+	ac, err := h.reqHandler.AIV1AIcallGet(ctx, aicallID)
+	if err != nil {
+		logrus.Warnf("resolveTeamMemberAIID: could not get aicall. aicall_id: %s, err: %v", aicallID, err)
+		return uuid.Nil
+	}
+	if ac.AssistanceType != aicall.AssistanceTypeTeam {
+		return uuid.Nil
+	}
+	t, err := h.db.TeamGet(ctx, ac.AssistanceID)
+	if err != nil {
+		logrus.Warnf("resolveTeamMemberAIID: could not get team. team_id: %s, err: %v", ac.AssistanceID, err)
+		return uuid.Nil
+	}
+	for _, m := range t.Members {
+		if m.ID == memberID {
+			return m.AIID
+		}
+	}
+	logrus.Warnf("resolveTeamMemberAIID: memberID not found in team. team_id: %s, member_id: %s", ac.AssistanceID, memberID)
+	return uuid.Nil
+}
+
 func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, evt *pmmessage.Message) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":  "EventPMMessageUserTranscription",

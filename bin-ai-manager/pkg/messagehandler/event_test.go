@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -1272,5 +1273,94 @@ func TestEventPMPipecatcallTerminated(t *testing.T) {
 				t.Errorf("backstopGraceSleep call count: want %d got %d", wantSleep, sleepCalled)
 			}
 		})
+	}
+}
+
+func TestResolveActiveAIIDFromAIcall_AI(t *testing.T) {
+	aiID := uuid.Must(uuid.NewV4())
+	ac := &aicall.AIcall{
+		AssistanceType: aicall.AssistanceTypeAI,
+		AssistanceID:   aiID,
+	}
+	h := &messageHandler{}
+	got := h.resolveActiveAIIDFromAIcall(context.Background(), ac)
+	if got != aiID {
+		t.Fatalf("expected %v, got %v", aiID, got)
+	}
+}
+
+func TestResolveActiveAIIDFromAIcall_Team(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	teamID := uuid.Must(uuid.NewV4())
+	memberID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+
+	ac := &aicall.AIcall{
+		AssistanceType:  aicall.AssistanceTypeTeam,
+		AssistanceID:    teamID,
+		CurrentMemberID: memberID,
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockDB.EXPECT().TeamGet(gomock.Any(), teamID).Return(&team.Team{
+		Members: []team.Member{{ID: memberID, AIID: aiID}},
+	}, nil)
+
+	h := &messageHandler{db: mockDB}
+	got := h.resolveActiveAIIDFromAIcall(context.Background(), ac)
+	if got != aiID {
+		t.Fatalf("expected %v, got %v", aiID, got)
+	}
+}
+
+func TestResolveActiveAIID_delegatesToFromAIcall(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	aicallID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	ac := &aicall.AIcall{
+		AssistanceType: aicall.AssistanceTypeAI,
+		AssistanceID:   aiID,
+	}
+
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+	h := &messageHandler{reqHandler: mockReq}
+	got := h.resolveActiveAIID(context.Background(), aicallID)
+	if got != aiID {
+		t.Fatalf("expected %v, got %v", aiID, got)
+	}
+}
+
+func TestResolveTeamMemberAIID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	aicallID := uuid.Must(uuid.NewV4())
+	teamID := uuid.Must(uuid.NewV4())
+	memberID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+
+	ac := &aicall.AIcall{
+		AssistanceType: aicall.AssistanceTypeTeam,
+		AssistanceID:   teamID,
+	}
+
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockDB.EXPECT().TeamGet(gomock.Any(), teamID).Return(&team.Team{
+		Members: []team.Member{{ID: memberID, AIID: aiID}},
+	}, nil)
+
+	h := &messageHandler{db: mockDB, reqHandler: mockReq}
+	got := h.resolveTeamMemberAIID(context.Background(), aicallID, memberID)
+	if got != aiID {
+		t.Fatalf("expected %v, got %v", aiID, got)
 	}
 }
