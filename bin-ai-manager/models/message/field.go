@@ -10,6 +10,7 @@ const (
 
 	FieldAIcallID     Field = "aicall_id"
 	FieldActiveflowID Field = "activeflow_id"
+	FieldActiveAIID   Field = "active_ai_id"
 
 	FieldDirection Field = "direction"
 	FieldRole      Field = "role"

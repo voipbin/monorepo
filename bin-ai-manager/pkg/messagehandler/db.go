@@ -54,6 +54,7 @@ func (h *messageHandler) Create(
 		},
 		AIcallID:     aicallID,
 		ActiveflowID: activeflowID,
+		ActiveAIID:   p.activeAIID,
 
 		Direction:  direction,
 		Role:       role,

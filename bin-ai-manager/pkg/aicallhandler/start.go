@@ -7,6 +7,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/team"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
@@ -227,7 +228,12 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	log.WithField("aicall", res).Debugf("AIcall ready. aicall_id: %s", res.ID)
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
-	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, res.CustomerID, res.ID, res.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
+	// TODO: for AssistanceTypeTeam this calls teamHandler.Get via resolveTeamMemberForSend above,
+	// and resolveActiveAIIDFromAIcall below calls it again. Same fix needed as send.go: refactor
+	// resolveTeamMemberForSend to accept an optionally pre-fetched *team.Team.
+	convUserActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, res)
+	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, res.CustomerID, res.ID, res.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "",
+		messagehandler.WithActiveAIID(convUserActiveAIID))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", res.ID)
 	}
@@ -472,7 +478,8 @@ func (h *aicallHandler) startInitMessages(ctx context.Context, a *ai.AI, c *aica
 	log.Debugf("Parsed parameter. aicall_id: %s", c.ID)
 
 	for _, msg := range messages {
-		tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "")
+		tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, msg, nil, "",
+			messagehandler.WithActiveAIID(a.ID))
 		if err != nil {
 			return errors.Wrapf(err, "could not create the init message to the ai. aicall_id: %s", c.ID)
 		}

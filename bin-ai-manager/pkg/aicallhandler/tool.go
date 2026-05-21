@@ -8,6 +8,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 	fmaction "monorepo/bin-flow-manager/models/action"
 
 	"github.com/gofrs/uuid"
@@ -37,7 +38,9 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 	}
 
 	// create a message for tool handle request
-	tmp, errCreate := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "")
+	toolCallActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
+	tmp, errCreate := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionIncoming, message.RoleAssistant, "", []message.ToolCall{*tool}, "",
+		messagehandler.WithActiveAIID(toolCallActiveAIID))
 	if errCreate != nil {
 		return nil, errors.Wrapf(errCreate, "could not create the tool message")
 	}
@@ -66,7 +69,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
 	}
 
-	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
+	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
@@ -93,6 +96,7 @@ func (h *aicallHandler) toolCreateResultMessage(
 	c *aicall.AIcall,
 	tool *message.ToolCall,
 	tmpContent *messageContent,
+	activeAIID uuid.UUID,
 ) (*message.Message, error) {
 
 	content, err := json.Marshal(tmpContent)
@@ -100,7 +104,8 @@ func (h *aicallHandler) toolCreateResultMessage(
 		return nil, errors.Wrapf(err, "could not marshal the tool result content")
 	}
 
-	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleTool, string(content), nil, tool.ID)
+	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleTool, string(content), nil, tool.ID,
+		messagehandler.WithActiveAIID(activeAIID))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}

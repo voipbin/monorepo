@@ -11,6 +11,33 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 )
 
+// resolveActiveAIIDFromAIcall returns the active AI UUID for the given AIcall.
+// For AssistanceTypeAI it returns ac.AssistanceID.
+// For AssistanceTypeTeam it walks the team members to find CurrentMemberID's AIID.
+// Returns uuid.Nil on any error (non-blocking: logs Warnf).
+func (h *aicallHandler) resolveActiveAIIDFromAIcall(ctx context.Context, ac *aicall.AIcall) uuid.UUID {
+	switch ac.AssistanceType {
+	case aicall.AssistanceTypeAI:
+		return ac.AssistanceID
+	case aicall.AssistanceTypeTeam:
+		t, err := h.teamHandler.Get(ctx, ac.AssistanceID)
+		if err != nil {
+			logrus.Warnf("resolveActiveAIIDFromAIcall: could not get team. team_id: %s, err: %v", ac.AssistanceID, err)
+			return uuid.Nil
+		}
+		for _, m := range t.Members {
+			if m.ID == ac.CurrentMemberID {
+				return m.AIID
+			}
+		}
+		logrus.Warnf("resolveActiveAIIDFromAIcall: CurrentMemberID not found in team. team_id: %s, member_id: %s", ac.AssistanceID, ac.CurrentMemberID)
+		return uuid.Nil
+	default:
+		logrus.Warnf("resolveActiveAIIDFromAIcall: unknown AssistanceType. type: %s", ac.AssistanceType)
+		return uuid.Nil
+	}
+}
+
 // isAIcallIdleExpired returns true if the AIcall has been idle longer than
 // the configured conversation idle timeout. Returns false when c is nil or
 // TMUpdate is nil (treated as freshly created).

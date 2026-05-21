@@ -559,6 +559,7 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 				tt.messageText,
 				nil,
 				"",
+				gomock.Any(),
 			).Return(tt.expectRes, nil)
 
 			// 2. interruptPreviousPipecatcall: ping-gated termination of previous pipecat session.
@@ -587,7 +588,14 @@ func Test_SendReferenceTypeOthers(t *testing.T) {
 				mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.responseUpdatedAIcall, nil)
 
 				// 5. team resolution (conditional)
+				//    resolveActiveAIIDFromAIcall (called before messageHandler.Create) also
+				//    calls teamHandler.Get for team-type aicalls, so there are TWO Get calls
+				//    for team cases: one for resolveActiveAIIDFromAIcall and one for
+				//    resolveTeamMemberForSend.
 				if tt.expectTeamGet {
+					// first call: resolveActiveAIIDFromAIcall (before messageHandler.Create)
+					mockTeam.EXPECT().Get(ctx, tt.aicall.AssistanceID).Return(tt.responseTeam, tt.responseTeamErr)
+					// second call: resolveTeamMemberForSend (after UpdatePipecatcallID)
 					mockTeam.EXPECT().Get(ctx, tt.aicall.AssistanceID).Return(tt.responseTeam, tt.responseTeamErr)
 				}
 
@@ -792,6 +800,7 @@ func Test_SendReferenceTypeCall(t *testing.T) {
 					tt.messageText,
 					nil,
 					"",
+					gomock.Any(),
 				).Return(tt.responseMessage, nil)
 
 				// 4. PipecatV1MessageSend — only if ping succeeded

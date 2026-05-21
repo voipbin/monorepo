@@ -12,6 +12,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -793,6 +794,10 @@ func TestEventPMMessageBotLLMIntermediate_field_mapping(t *testing.T) {
 			if wm.Sequence != 3 {
 				t.Errorf("expected Sequence 3, got %d", wm.Sequence)
 			}
+			// h has no reqHandler, so resolveActiveAIID short-circuits to uuid.Nil.
+			if wm.ActiveAIID != uuid.Nil {
+				t.Errorf("expected ActiveAIID uuid.Nil (no reqHandler), got %v", wm.ActiveAIID)
+			}
 		},
 	).Times(1)
 
@@ -1273,4 +1278,340 @@ func TestEventPMPipecatcallTerminated(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestResolveActiveAIIDFromAIcall_AI(t *testing.T) {
+	aiID := uuid.Must(uuid.NewV4())
+	ac := &aicall.AIcall{
+		AssistanceType: aicall.AssistanceTypeAI,
+		AssistanceID:   aiID,
+	}
+	h := &messageHandler{}
+	got := h.resolveActiveAIIDFromAIcall(context.Background(), ac)
+	if got != aiID {
+		t.Fatalf("expected %v, got %v", aiID, got)
+	}
+}
+
+func TestResolveActiveAIIDFromAIcall_Team(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	teamID := uuid.Must(uuid.NewV4())
+	memberID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+
+	ac := &aicall.AIcall{
+		AssistanceType:  aicall.AssistanceTypeTeam,
+		AssistanceID:    teamID,
+		CurrentMemberID: memberID,
+	}
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockDB.EXPECT().TeamGet(gomock.Any(), teamID).Return(&team.Team{
+		Members: []team.Member{{ID: memberID, AIID: aiID}},
+	}, nil)
+
+	h := &messageHandler{db: mockDB}
+	got := h.resolveActiveAIIDFromAIcall(context.Background(), ac)
+	if got != aiID {
+		t.Fatalf("expected %v, got %v", aiID, got)
+	}
+}
+
+func TestResolveActiveAIID_delegatesToFromAIcall(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	aicallID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	ac := &aicall.AIcall{
+		AssistanceType: aicall.AssistanceTypeAI,
+		AssistanceID:   aiID,
+	}
+
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+	h := &messageHandler{reqHandler: mockReq}
+	got := h.resolveActiveAIID(context.Background(), aicallID)
+	if got != aiID {
+		t.Fatalf("expected %v, got %v", aiID, got)
+	}
+}
+
+func TestResolveTeamMemberAIID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	aicallID := uuid.Must(uuid.NewV4())
+	teamID := uuid.Must(uuid.NewV4())
+	memberID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+
+	ac := &aicall.AIcall{
+		AssistanceType: aicall.AssistanceTypeTeam,
+		AssistanceID:   teamID,
+	}
+
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockDB.EXPECT().TeamGet(gomock.Any(), teamID).Return(&team.Team{
+		Members: []team.Member{{ID: memberID, AIID: aiID}},
+	}, nil)
+
+	h := &messageHandler{db: mockDB, reqHandler: mockReq}
+	got := h.resolveTeamMemberAIID(context.Background(), aicallID, memberID)
+	if got != aiID {
+		t.Fatalf("expected %v, got %v", aiID, got)
+	}
+}
+
+func TestResolveActiveAIIDFromAIcall_errors(t *testing.T) {
+	teamID := uuid.Must(uuid.NewV4())
+	memberID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+
+	tests := []struct {
+		name      string
+		ac        *aicall.AIcall
+		mockSetup func(*dbhandler.MockDBHandler)
+	}{
+		{
+			name: "team type — TeamGet error returns uuid.Nil",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: memberID,
+			},
+			mockSetup: func(m *dbhandler.MockDBHandler) {
+				m.EXPECT().TeamGet(gomock.Any(), teamID).Return(nil, errors.New("db error"))
+			},
+		},
+		{
+			name: "team type — member not found returns uuid.Nil",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: uuid.Must(uuid.NewV4()), // not in team
+			},
+			mockSetup: func(m *dbhandler.MockDBHandler) {
+				m.EXPECT().TeamGet(gomock.Any(), teamID).Return(&team.Team{
+					Members: []team.Member{{ID: memberID, AIID: aiID}},
+				}, nil)
+			},
+		},
+		{
+			name: "unknown AssistanceType returns uuid.Nil",
+			ac: &aicall.AIcall{
+				AssistanceType: "unknown",
+				AssistanceID:   teamID,
+			},
+			mockSetup: func(*dbhandler.MockDBHandler) {},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(ctrl)
+			tt.mockSetup(mockDB)
+
+			h := &messageHandler{db: mockDB}
+			got := h.resolveActiveAIIDFromAIcall(context.Background(), tt.ac)
+			if got != uuid.Nil {
+				t.Errorf("expected uuid.Nil, got %v", got)
+			}
+		})
+	}
+}
+
+func TestResolveActiveAIID_errors(t *testing.T) {
+	aicallID := uuid.Must(uuid.NewV4())
+
+	t.Run("nil reqHandler returns uuid.Nil", func(t *testing.T) {
+		h := &messageHandler{}
+		got := h.resolveActiveAIID(context.Background(), aicallID)
+		if got != uuid.Nil {
+			t.Errorf("expected uuid.Nil, got %v", got)
+		}
+	})
+
+	t.Run("AIcallGet error returns uuid.Nil", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(ctrl)
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(nil, errors.New("rpc error"))
+
+		h := &messageHandler{reqHandler: mockReq}
+		got := h.resolveActiveAIID(context.Background(), aicallID)
+		if got != uuid.Nil {
+			t.Errorf("expected uuid.Nil, got %v", got)
+		}
+	})
+}
+
+func TestResolveTeamMemberAIID_errors(t *testing.T) {
+	aicallID := uuid.Must(uuid.NewV4())
+	teamID := uuid.Must(uuid.NewV4())
+	memberID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+
+	t.Run("nil reqHandler returns uuid.Nil", func(t *testing.T) {
+		h := &messageHandler{}
+		got := h.resolveTeamMemberAIID(context.Background(), aicallID, memberID)
+		if got != uuid.Nil {
+			t.Errorf("expected uuid.Nil, got %v", got)
+		}
+	})
+
+	t.Run("AIcallGet error returns uuid.Nil", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mockReq := requesthandler.NewMockRequestHandler(ctrl)
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(nil, errors.New("rpc error"))
+
+		h := &messageHandler{reqHandler: mockReq}
+		got := h.resolveTeamMemberAIID(context.Background(), aicallID, memberID)
+		if got != uuid.Nil {
+			t.Errorf("expected uuid.Nil, got %v", got)
+		}
+	})
+
+	t.Run("wrong AssistanceType returns uuid.Nil", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ac := &aicall.AIcall{AssistanceType: aicall.AssistanceTypeAI, AssistanceID: teamID}
+		mockReq := requesthandler.NewMockRequestHandler(ctrl)
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+		h := &messageHandler{reqHandler: mockReq}
+		got := h.resolveTeamMemberAIID(context.Background(), aicallID, memberID)
+		if got != uuid.Nil {
+			t.Errorf("expected uuid.Nil, got %v", got)
+		}
+	})
+
+	t.Run("TeamGet error returns uuid.Nil", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ac := &aicall.AIcall{AssistanceType: aicall.AssistanceTypeTeam, AssistanceID: teamID}
+		mockReq := requesthandler.NewMockRequestHandler(ctrl)
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+		mockDB := dbhandler.NewMockDBHandler(ctrl)
+		mockDB.EXPECT().TeamGet(gomock.Any(), teamID).Return(nil, errors.New("db error"))
+
+		h := &messageHandler{db: mockDB, reqHandler: mockReq}
+		got := h.resolveTeamMemberAIID(context.Background(), aicallID, memberID)
+		if got != uuid.Nil {
+			t.Errorf("expected uuid.Nil, got %v", got)
+		}
+	})
+
+	t.Run("member not found returns uuid.Nil", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		ac := &aicall.AIcall{AssistanceType: aicall.AssistanceTypeTeam, AssistanceID: teamID}
+		mockReq := requesthandler.NewMockRequestHandler(ctrl)
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+		mockDB := dbhandler.NewMockDBHandler(ctrl)
+		mockDB.EXPECT().TeamGet(gomock.Any(), teamID).Return(&team.Team{
+			Members: []team.Member{{ID: uuid.Must(uuid.NewV4()), AIID: aiID}}, // different memberID
+		}, nil)
+
+		h := &messageHandler{db: mockDB, reqHandler: mockReq}
+		got := h.resolveTeamMemberAIID(context.Background(), aicallID, memberID)
+		if got != uuid.Nil {
+			t.Errorf("expected uuid.Nil, got %v", got)
+		}
+	})
+}
+
+func TestEventPMTeamMemberSwitched(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	customerID := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	teamID := uuid.Must(uuid.NewV4())
+	toMemberID := uuid.Must(uuid.NewV4())
+	fromMemberID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+	createdMsgID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.MemberSwitchedEvent{
+		CustomerID:             customerID,
+		PipecatcallReferenceID: aicallID,
+		ActiveflowID:           activeflowID,
+		TransitionFunctionName: "escalate",
+		FromMember: pmmessage.MemberInfo{
+			ID:          fromMemberID,
+			Name:        "Alice",
+			EngineModel: "openai.gpt-4o",
+		},
+		ToMember: pmmessage.MemberInfo{
+			ID:          toMemberID,
+			Name:        "Bob",
+			EngineModel: "openai.gpt-4o-mini",
+		},
+	}
+
+	// resolveTeamMemberAIID will call AIV1AIcallGet then TeamGet.
+	ac := &aicall.AIcall{
+		AssistanceType: aicall.AssistanceTypeTeam,
+		AssistanceID:   teamID,
+	}
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockDB.EXPECT().TeamGet(gomock.Any(), teamID).Return(&team.Team{
+		Members: []team.Member{{ID: toMemberID, AIID: aiID}},
+	}, nil)
+
+	// Capture the created message to verify ActiveAIID is set correctly.
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, m *message.Message) error {
+			if m.ActiveAIID != aiID {
+				t.Errorf("expected ActiveAIID %v, got %v", aiID, m.ActiveAIID)
+			}
+			if m.AIcallID != aicallID {
+				t.Errorf("expected AIcallID %v, got %v", aicallID, m.AIcallID)
+			}
+			if m.Role != message.RoleNotification {
+				t.Errorf("expected Role notification, got %s", m.Role)
+			}
+			m.ID = createdMsgID
+			return nil
+		},
+	).Times(1)
+
+	createdMsg := &message.Message{}
+	createdMsg.ID = createdMsgID
+	createdMsg.CustomerID = customerID
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(createdMsg, nil).Times(1)
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	h := &messageHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		reqHandler:    mockReq,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	h.EventPMTeamMemberSwitched(context.Background(), evt)
 }

@@ -15,6 +15,7 @@ Message
         "customer_id": "<string>",
         "aicall_id": "<string>",
         "activeflow_id": "<string>",
+        "active_ai_id": "<string>",
         "role": "<string>",
         "content": "<string>",
         "direction": "<string>",
@@ -27,6 +28,7 @@ Message
 * ``customer_id`` (UUID): The customer who owns this message. Obtained from the ``id`` field of ``GET /customers``.
 * ``aicall_id`` (UUID): The AI call session this message belongs to. Obtained from the ``id`` field of ``GET /aicalls``.
 * ``activeflow_id`` (UUID): The ID of the active flow associated with this message. Obtained from the ``id`` field of ``GET /activeflows``. Set to ``00000000-0000-0000-0000-000000000000`` if no active flow.
+* ``active_ai_id`` (UUID): The ID of the AI configuration that was active when this message was created. Obtained from the ``id`` field of ``GET /ais``. Set to ``00000000-0000-0000-0000-000000000000`` if no active AI.
 * ``role`` (enum string): The role of the message sender. See :ref:`Role <ai-struct-message-role>`.
 * ``content`` (string): The text content of the message.
 * ``direction`` (enum string): The direction of the message. See :ref:`Direction <ai-struct-message-direction>`.
@@ -76,6 +78,7 @@ Example
         "customer_id": "5e4a0680-804e-11ec-8477-2fea5968d85b",
         "aicall_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "activeflow_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+        "active_ai_id": "d4e5f6a7-b8c9-0123-def4-56789abcdef1",
         "role": "user",
         "content": "I would like to transfer to the sales department.",
         "direction": "incoming",
