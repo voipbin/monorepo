@@ -62,6 +62,7 @@ func (h *messageHandler) resolveActiveAIIDFromAIcall(ctx context.Context, ac *ai
 		return uuid.Nil
 
 	default:
+		logrus.Warnf("resolveActiveAIIDFromAIcall: unknown AssistanceType. type: %s", ac.AssistanceType)
 		return uuid.Nil
 	}
 }
