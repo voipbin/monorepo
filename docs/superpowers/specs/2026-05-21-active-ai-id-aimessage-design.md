@@ -63,36 +63,45 @@ Non-nullable with zero-UUID default. Historical rows will have `Nil`; all new ro
 - Add `WithActiveAIID(id uuid.UUID) CreateOption`
 - Set `m.ActiveAIID = p.activeAIID` inside `Create()`
 
-**New private helper `resolveActiveAIID`** — resolves the active AI UUID for a given AIcall ID. Non-blocking: logs a `Warnf` and returns `uuid.Nil` on any error so message creation continues uninterrupted.
+Three private helpers are introduced. All are non-blocking: they log `Warnf` and return `uuid.Nil` on any error so message creation is never interrupted.
+
+**`resolveActiveAIIDFromAIcall(ctx, ac *aicall.AIcall) uuid.UUID`** — core logic; takes an already-fetched AIcall to avoid redundant RPCs:
+
+```
+resolveActiveAIIDFromAIcall(ctx, ac) uuid.UUID:
+  switch ac.AssistanceType:
+    - AssistanceTypeAI:
+        return ac.AssistanceID
+    - AssistanceTypeTeam:
+        t := h.db.TeamGet(ctx, ac.AssistanceID)
+        → on error: logrus.Warnf + return uuid.Nil
+        for m in t.Members:
+          if m.ID == ac.CurrentMemberID: return m.AIID
+        → not found: logrus.Warnf + return uuid.Nil
+    - default: return uuid.Nil
+```
+
+**`resolveActiveAIID(ctx, aicallID uuid.UUID) uuid.UUID`** — thin wrapper for call sites that only have an aicall ID:
 
 ```
 resolveActiveAIID(ctx, aicallID) uuid.UUID:
-  1. Fetch AIcall via h.reqHandler.AIV1AIcallGet(ctx, aicallID)
-     → on error: logrus.Warnf + return uuid.Nil
-  2. Switch on aicall.AssistanceType:
-     - AssistanceTypeAI:
-         return aicall.AssistanceID
-     - AssistanceTypeTeam:
-         t := h.db.TeamGet(ctx, aicall.AssistanceID)
-         → on error: logrus.Warnf + return uuid.Nil
-         for m in t.Members:
-           if m.ID == aicall.CurrentMemberID: return m.AIID
-         → not found: logrus.Warnf + return uuid.Nil
-     - default: return uuid.Nil
+  ac := h.reqHandler.AIV1AIcallGet(ctx, aicallID)
+  → on error: logrus.Warnf + return uuid.Nil
+  return h.resolveActiveAIIDFromAIcall(ctx, ac)
 ```
 
-**New private helper `resolveTeamMemberAIID`** — for the `EventPMTeamMemberSwitched` case where the notification message is created *before* `UpdateCurrentMemberID` commits, so `resolveActiveAIID` (which reads `CurrentMemberID`) would return the outgoing member's AI ID instead of the incoming one. This helper takes the explicit incoming member ID.
+**`resolveTeamMemberAIID(ctx, aicallID, memberID uuid.UUID) uuid.UUID`** — for `EventPMTeamMemberSwitched` where the notification message is created *before* `UpdateCurrentMemberID` commits, so `CurrentMemberID` still reflects the outgoing member. This helper takes the explicit incoming member ID:
 
 ```
-resolveTeamMemberAIID(ctx, aicallID, memberID uuid.UUID) uuid.UUID:
-  1. Fetch AIcall via h.reqHandler.AIV1AIcallGet(ctx, aicallID)
-     → on error: logrus.Warnf + return uuid.Nil
-  2. If aicall.AssistanceType != AssistanceTypeTeam: return uuid.Nil
-  3. t := h.db.TeamGet(ctx, aicall.AssistanceID)
-     → on error: logrus.Warnf + return uuid.Nil
-  4. for m in t.Members:
-       if m.ID == memberID: return m.AIID
-     → not found: logrus.Warnf + return uuid.Nil
+resolveTeamMemberAIID(ctx, aicallID, memberID) uuid.UUID:
+  ac := h.reqHandler.AIV1AIcallGet(ctx, aicallID)
+  → on error: logrus.Warnf + return uuid.Nil
+  if ac.AssistanceType != AssistanceTypeTeam: return uuid.Nil
+  t := h.db.TeamGet(ctx, ac.AssistanceID)
+  → on error: logrus.Warnf + return uuid.Nil
+  for m in t.Members:
+    if m.ID == memberID: return m.AIID
+  → not found: logrus.Warnf + return uuid.Nil
 ```
 
 `TeamGet` is available on the existing `dbhandler.DBHandler` interface (backed by Redis cache), so no new dependencies are introduced.
@@ -106,13 +115,13 @@ Each handler resolves `active_ai_id` and passes it via `WithActiveAIID`:
 | Handler | Resolution source | Notes |
 |---|---|---|
 | `EventPMMessageUserTranscription` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` | |
-| `EventPMMessageBotLLM` — conversation path | Inline `resolveActiveAIIDFromAIcall(ctx, ac)` or equivalent switch on `ac.AssistanceType` using the already-fetched `ac` — **do not** call `resolveActiveAIID` again as that doubles the RPC | AIcall fetch already present at line 83 |
+| `EventPMMessageBotLLM` — conversation path | `resolveActiveAIIDFromAIcall(ctx, ac)` — uses the AIcall already fetched at line 83; avoids redundant self-RPC | |
 | `EventPMMessageBotLLM` — voice/task path (`ReferenceTypeAICall`) | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` | Requires adding AIcall fetch on this path |
 | `EventPMMessageBotLLM` — non-AICall path (early guard, line ~73) | `uuid.Nil` explicitly | `evt.PipecatcallReferenceID` is not an aicall ID here; resolution is impossible |
 | `EventPMMessageBotLLMIntermediate` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)`; set on `IntermediateWebhookMessage.ActiveAIID` directly | No DB write |
 | `EventPMMessageUserLLM` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` | |
 | `EventPMTeamMemberSwitched` | `resolveTeamMemberAIID(ctx, evt.PipecatcallReferenceID, evt.ToMember.ID)` | Cannot use `resolveActiveAIID` — notification message is created **before** `UpdateCurrentMemberID` commits, so `CurrentMemberID` still reflects the outgoing member |
-| `EventPMPipecatcallTerminated` | Resolve from already-fetched AIcall (`ac`) | AIcall fetch already present |
+| `EventPMPipecatcallTerminated` | `resolveActiveAIIDFromAIcall(ctx, ac)` — uses the AIcall already fetched in the handler; avoids redundant self-RPC | |
 
 #### `aicallhandler/` (`start.go`, `send.go`, `tool.go`)
 
@@ -123,7 +132,7 @@ In `send.go` and `tool.go`, `c` is `*aicall.AIcall` (not `*ai.AI`), so `c.ID` is
 | Call site | Resolution |
 |---|---|
 | `start.go:475` — system message (init prompt) | `WithActiveAIID(a.ID)` — `a *ai.AI` is the resolved AI config, always correct at creation time |
-| `start.go:230` — user message at conversation start | `resolveActiveAIID(ctx, res.ID)` — handles resumed team sessions where `CurrentMemberID` ≠ start member |
+| `start.go:230` — user message at conversation start | `resolveActiveAIIDFromAIcall(ctx, res)` — `res *aicall.AIcall` is already in scope; avoids redundant self-RPC; handles resumed team sessions where `CurrentMemberID` ≠ start member |
 | `send.go:47` — user message from explicit send | `resolveActiveAIID(ctx, c.ID)` — `c` is `*aicall.AIcall` |
 | `send.go:70` — user message from terminate-with-send path | `resolveActiveAIID(ctx, aicallID)` — aicall ID is the parameter |
 | `tool.go:40` — assistant message wrapping a tool call | `resolveActiveAIID(ctx, c.ID)` — `c` is `*aicall.AIcall` |
