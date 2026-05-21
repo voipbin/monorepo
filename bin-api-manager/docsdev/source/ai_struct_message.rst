@@ -28,7 +28,7 @@ Message
 * ``customer_id`` (UUID): The customer who owns this message. Obtained from the ``id`` field of ``GET /customers``.
 * ``aicall_id`` (UUID): The AI call session this message belongs to. Obtained from the ``id`` field of ``GET /aicalls``.
 * ``activeflow_id`` (UUID): The ID of the active flow associated with this message. Obtained from the ``id`` field of ``GET /activeflows``. Set to ``00000000-0000-0000-0000-000000000000`` if no active flow.
-* ``active_ai_id`` (UUID): The ID of the active AI configuration that processed this message. Obtained from the ``id`` field of ``GET /ais``. Set to ``00000000-0000-0000-0000-000000000000`` if no active AI.
+* ``active_ai_id`` (UUID): The ID of the AI configuration that was active when this message was created. Obtained from the ``id`` field of ``GET /ais``. Set to ``00000000-0000-0000-0000-000000000000`` if no active AI.
 * ``role`` (enum string): The role of the message sender. See :ref:`Role <ai-struct-message-role>`.
 * ``content`` (string): The text content of the message.
 * ``direction`` (enum string): The direction of the message. See :ref:`Direction <ai-struct-message-direction>`.

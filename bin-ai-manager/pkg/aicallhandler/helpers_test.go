@@ -12,10 +12,106 @@ import (
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/team"
+	"monorepo/bin-ai-manager/pkg/teamhandler"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
 )
+
+func Test_aicallHandler_resolveActiveAIIDFromAIcall(t *testing.T) {
+	aiID := uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000001")
+	teamID := uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-000000000002")
+	memberID := uuid.FromStringOrNil("cccccccc-0000-0000-0000-000000000003")
+	aiidForMember := uuid.FromStringOrNil("dddddddd-0000-0000-0000-000000000004")
+
+	tests := []struct {
+		name      string
+		ac        *aicall.AIcall
+		mockSetup func(th *teamhandler.MockTeamHandler)
+		want      uuid.UUID
+	}{
+		{
+			name: "AI type — returns AssistanceID directly without RPC",
+			ac: &aicall.AIcall{
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   aiID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler) {},
+			want:      aiID,
+		},
+		{
+			name: "Team type — member found",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: memberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Members: []team.Member{
+						{ID: memberID, AIID: aiidForMember},
+					},
+				}, nil)
+			},
+			want: aiidForMember,
+		},
+		{
+			name: "Team type — member not found returns uuid.Nil",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: uuid.FromStringOrNil("eeeeeeee-0000-0000-0000-000000000005"),
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Members: []team.Member{
+						{ID: memberID, AIID: aiidForMember},
+					},
+				}, nil)
+			},
+			want: uuid.Nil,
+		},
+		{
+			name: "Team type — TeamGet error returns uuid.Nil",
+			ac: &aicall.AIcall{
+				AssistanceType:  aicall.AssistanceTypeTeam,
+				AssistanceID:    teamID,
+				CurrentMemberID: memberID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(nil, errors.New("not found"))
+			},
+			want: uuid.Nil,
+		},
+		{
+			name: "Unknown AssistanceType returns uuid.Nil",
+			ac: &aicall.AIcall{
+				AssistanceType: "unknown",
+				AssistanceID:   aiID,
+			},
+			mockSetup: func(th *teamhandler.MockTeamHandler) {},
+			want:      uuid.Nil,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
+			tt.mockSetup(mockTeam)
+
+			h := &aicallHandler{teamHandler: mockTeam}
+			got := h.resolveActiveAIIDFromAIcall(context.Background(), tt.ac)
+			if got != tt.want {
+				t.Errorf("resolveActiveAIIDFromAIcall() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 func Test_aicallHandler_isAIcallReusable(t *testing.T) {
 	config.SetAIcallConversationIdleTimeoutHoursForTest(24)

@@ -70,6 +70,9 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
 	aicallID := c.ID
+	// TODO: for AssistanceTypeTeam this calls teamHandler.Get, and resolveTeamMemberForSend below
+	// calls it again. Eliminate the second RPC by refactoring resolveTeamMemberForSend to accept
+	// an optionally pre-fetched *team.Team, or by combining the two into a single team-fetch helper.
 	sendOtherActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
 	res, errTerminate := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, aicallID, c.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "",
 		messagehandler.WithActiveAIID(sendOtherActiveAIID))
