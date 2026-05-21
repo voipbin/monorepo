@@ -63,22 +63,36 @@ Non-nullable with zero-UUID default. Historical rows will have `Nil`; all new ro
 - Add `WithActiveAIID(id uuid.UUID) CreateOption`
 - Set `m.ActiveAIID = p.activeAIID` inside `Create()`
 
-**New private helper `resolveActiveAIID`** — resolves the active AI UUID for a given AIcall. Non-blocking: logs a warning and returns `uuid.Nil` on any error so message creation continues uninterrupted.
+**New private helper `resolveActiveAIID`** — resolves the active AI UUID for a given AIcall ID. Non-blocking: logs a `Warnf` and returns `uuid.Nil` on any error so message creation continues uninterrupted.
 
 ```
 resolveActiveAIID(ctx, aicallID) uuid.UUID:
   1. Fetch AIcall via h.reqHandler.AIV1AIcallGet(ctx, aicallID)
-     → on error: log + return uuid.Nil
+     → on error: logrus.Warnf + return uuid.Nil
   2. Switch on aicall.AssistanceType:
      - AssistanceTypeAI:
          return aicall.AssistanceID
      - AssistanceTypeTeam:
          t := h.db.TeamGet(ctx, aicall.AssistanceID)
-         → on error: log + return uuid.Nil
+         → on error: logrus.Warnf + return uuid.Nil
          for m in t.Members:
            if m.ID == aicall.CurrentMemberID: return m.AIID
-         → not found: log + return uuid.Nil
+         → not found: logrus.Warnf + return uuid.Nil
      - default: return uuid.Nil
+```
+
+**New private helper `resolveTeamMemberAIID`** — for the `EventPMTeamMemberSwitched` case where the notification message is created *before* `UpdateCurrentMemberID` commits, so `resolveActiveAIID` (which reads `CurrentMemberID`) would return the outgoing member's AI ID instead of the incoming one. This helper takes the explicit incoming member ID.
+
+```
+resolveTeamMemberAIID(ctx, aicallID, memberID uuid.UUID) uuid.UUID:
+  1. Fetch AIcall via h.reqHandler.AIV1AIcallGet(ctx, aicallID)
+     → on error: logrus.Warnf + return uuid.Nil
+  2. If aicall.AssistanceType != AssistanceTypeTeam: return uuid.Nil
+  3. t := h.db.TeamGet(ctx, aicall.AssistanceID)
+     → on error: logrus.Warnf + return uuid.Nil
+  4. for m in t.Members:
+       if m.ID == memberID: return m.AIID
+     → not found: logrus.Warnf + return uuid.Nil
 ```
 
 `TeamGet` is available on the existing `dbhandler.DBHandler` interface (backed by Redis cache), so no new dependencies are introduced.
@@ -89,39 +103,56 @@ resolveActiveAIID(ctx, aicallID) uuid.UUID:
 
 Each handler resolves `active_ai_id` and passes it via `WithActiveAIID`:
 
-| Handler | Resolution source |
-|---|---|
-| `EventPMMessageUserTranscription` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` |
-| `EventPMMessageBotLLM` | AIcall already fetched for conversation path; resolve from it. Add fetch for voice/task path. |
-| `EventPMMessageBotLLMIntermediate` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)`; set directly on `IntermediateWebhookMessage.ActiveAIID` (no DB write). |
-| `EventPMMessageUserLLM` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` |
-| `EventPMTeamMemberSwitched` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` — `MemberInfo` carries no `AIID`; rely on `CurrentMemberID` having been updated before the event is processed. |
-| `EventPMPipecatcallTerminated` | AIcall already fetched; resolve from it (same as BotLLM conversation path). |
+| Handler | Resolution source | Notes |
+|---|---|---|
+| `EventPMMessageUserTranscription` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` | |
+| `EventPMMessageBotLLM` — conversation path | Resolve from already-fetched AIcall (`ac`) | AIcall fetch is already present |
+| `EventPMMessageBotLLM` — voice/task path (`ReferenceTypeAICall`) | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` | Requires adding AIcall fetch on this path |
+| `EventPMMessageBotLLM` — non-AICall path (early guard, line ~73) | `uuid.Nil` explicitly | `evt.PipecatcallReferenceID` is not an aicall ID here; resolution is impossible |
+| `EventPMMessageBotLLMIntermediate` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)`; set on `IntermediateWebhookMessage.ActiveAIID` directly | No DB write |
+| `EventPMMessageUserLLM` | `resolveActiveAIID(ctx, evt.PipecatcallReferenceID)` | |
+| `EventPMTeamMemberSwitched` | `resolveTeamMemberAIID(ctx, evt.PipecatcallReferenceID, evt.ToMember.ID)` | Cannot use `resolveActiveAIID` — notification message is created **before** `UpdateCurrentMemberID` commits, so `CurrentMemberID` still reflects the outgoing member |
+| `EventPMPipecatcallTerminated` | Resolve from already-fetched AIcall (`ac`) | AIcall fetch already present |
 
 #### `aicallhandler/` (`start.go`, `send.go`, `tool.go`)
 
-All `h.messageHandler.Create(...)` call sites in `aicallhandler` already have the AI config `c` in scope (returned by `resolveAI`). Pass `WithActiveAIID(c.ID)` at each call site:
+In `start.go`, the resolved `*ai.AI` config `a` is in scope at line 475 (init prompt). At line 230 (`startReferenceTypeConversation`), `a` reflects the start member and may not represent the current active AI for a resumed team session — use `resolveActiveAIID` there instead.
 
-- `start.go:230` — user message created at call start
-- `start.go:475` — system message (init prompt)
-- `send.go:47` — user message from explicit send
-- `send.go:70` — user message from terminate-with-send path
-- `tool.go:40` — assistant message wrapping a tool call
-- `tool.go:103` — tool result message
+In `send.go` and `tool.go`, `c` is `*aicall.AIcall` (not `*ai.AI`), so `c.ID` is the **aicall UUID** — `WithActiveAIID(c.ID)` would store the wrong type. Use `resolveActiveAIID(ctx, c.ID)` at all these sites.
+
+| Call site | Resolution |
+|---|---|
+| `start.go:475` — system message (init prompt) | `WithActiveAIID(a.ID)` — `a *ai.AI` is the resolved AI config, always correct at creation time |
+| `start.go:230` — user message at conversation start | `resolveActiveAIID(ctx, res.ID)` — handles resumed team sessions where `CurrentMemberID` ≠ start member |
+| `send.go:47` — user message from explicit send | `resolveActiveAIID(ctx, c.ID)` — `c` is `*aicall.AIcall` |
+| `send.go:70` — user message from terminate-with-send path | `resolveActiveAIID(ctx, aicallID)` — aicall ID is the parameter |
+| `tool.go:40` — assistant message wrapping a tool call | `resolveActiveAIID(ctx, c.ID)` — `c` is `*aicall.AIcall` |
+| `tool.go:103` — tool result message | `resolveActiveAIID(ctx, c.ID)` — `c` is `*aicall.AIcall` |
 
 ### 5. RST documentation (`bin-api-manager/docsdev/source/`)
 
-Update the aimessage struct documentation to include `active_ai_id` with a description. Rebuild HTML after editing.
+Update `ai_struct_message.rst` to include `active_ai_id` with a description. After editing, perform a clean rebuild and force-add the built HTML (as required by the monorepo CLAUDE.md):
+
+```bash
+cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build
+git add -f bin-api-manager/docsdev/build/
+```
+
+Commit the RST source and built HTML together in the same commit as the Go changes.
 
 ## Invariants
 
 - `active_ai_id` is always the UUID of an `ai` resource (never a team UUID).
-- `active_ai_id` may be `uuid.Nil` for historical rows (before this migration) and for any future edge cases where resolution fails.
+- `active_ai_id` may be `uuid.Nil` for historical rows (before this migration), for the non-AICall early-guard path in `EventPMMessageBotLLM`, and for any future edge cases where resolution fails. When `uuid.Nil`, the field is **omitted** from webhook JSON (due to `omitempty`) rather than serialised as the zero UUID string. Consumers must treat an absent field as equivalent to no active AI being identifiable.
 - The field is present on all message roles (`user`, `assistant`, `system`, `tool`, `notification`).
 - The field is present in both `aimessage_created` and `aimessage_intermediate` webhook events.
+- All error paths in `resolveActiveAIID` and `resolveTeamMemberAIID` log at `Warnf` level (not `Errorf`) since `uuid.Nil` is an accepted degraded outcome, not a failure.
+- `FieldActiveAIID` is added for completeness but filtering `MessageList` by `active_ai_id` is **not** added in this scope — no API change to the list endpoint.
+- Mock regeneration (`go generate ./...`) is not required: `WithActiveAIID` and the helpers are unexported additions that do not change the `MessageHandler` interface.
 
 ## Out of scope
 
 - Adding `active_ai_id` to AIcall itself (Approach B considered and rejected — unnecessary broader change).
 - Propagating AI ID through pipecat-manager events (Approach C considered and rejected — out of scope for this change).
 - Backfilling historical rows — left as `uuid.Nil`.
+- Filtering `MessageList` by `active_ai_id` — deferred to a future change if needed.
