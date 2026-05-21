@@ -40,7 +40,7 @@ func TestCreateOptions_WithActiveAIID(t *testing.T) {
 	var p createParams
 	WithActiveAIID(aiID)(&p)
 	if p.activeAIID != aiID {
-		t.Fatalf("WithActiveAIID not applied: got %s", p.activeAIID)
+		t.Fatalf("WithActiveAIID not applied: got %v", p.activeAIID)
 	}
 }
 

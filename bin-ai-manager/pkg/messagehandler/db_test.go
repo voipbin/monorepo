@@ -120,7 +120,11 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.expectMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectMessage.CustomerID, message.EventTypeMessageCreated, tt.expectMessage)
 
-			res, err := h.Create(ctx, uuid.Nil, tt.customerID, tt.aicallID, tt.activeflowID, tt.direction, tt.role, tt.content, tt.toolCalls, tt.toolCallID, WithActiveAIID(tt.activeAIID))
+			opts := []CreateOption{}
+			if tt.activeAIID != uuid.Nil {
+				opts = append(opts, WithActiveAIID(tt.activeAIID))
+			}
+			res, err := h.Create(ctx, uuid.Nil, tt.customerID, tt.aicallID, tt.activeflowID, tt.direction, tt.role, tt.content, tt.toolCalls, tt.toolCallID, opts...)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
