@@ -69,7 +69,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		return nil, fmt.Errorf("unknown tool call: %s", tool.Function.Name)
 	}
 
-	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent)
+	msg, err := h.toolCreateResultMessage(ctx, c, tool, tmpMessageContent, toolCallActiveAIID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
@@ -96,6 +96,7 @@ func (h *aicallHandler) toolCreateResultMessage(
 	c *aicall.AIcall,
 	tool *message.ToolCall,
 	tmpContent *messageContent,
+	activeAIID uuid.UUID,
 ) (*message.Message, error) {
 
 	content, err := json.Marshal(tmpContent)
@@ -103,9 +104,8 @@ func (h *aicallHandler) toolCreateResultMessage(
 		return nil, errors.Wrapf(err, "could not marshal the tool result content")
 	}
 
-	toolResultActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
 	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleTool, string(content), nil, tool.ID,
-		messagehandler.WithActiveAIID(toolResultActiveAIID))
+		messagehandler.WithActiveAIID(activeAIID))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the tool message")
 	}
