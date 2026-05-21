@@ -87,6 +87,9 @@ func (h *messageHandler) resolveActiveAIID(ctx context.Context, aicallID uuid.UU
 // the notification message is created before UpdateCurrentMemberID commits.
 // Returns uuid.Nil on any error (non-blocking: logs Warnf).
 func (h *messageHandler) resolveTeamMemberAIID(ctx context.Context, aicallID, memberID uuid.UUID) uuid.UUID {
+	if h.reqHandler == nil {
+		return uuid.Nil
+	}
 	ac, err := h.reqHandler.AIV1AIcallGet(ctx, aicallID)
 	if err != nil {
 		logrus.Warnf("resolveTeamMemberAIID: could not get aicall. aicall_id: %s, err: %v", aicallID, err)
