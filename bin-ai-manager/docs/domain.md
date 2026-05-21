@@ -36,6 +36,7 @@ Individual message within an AIcall conversation. Persisted in MySQL for context
 
 - `role`: `system` | `user` | `assistant` | `tool`
 - `direction`: `inbound` | `outbound`
+- `active_ai_id` — UUID of the AI configuration that was active when the message was created; `uuid.Nil` for user-originated messages in team sessions where the active AI is unknown
 - Supports tool call payloads for function-calling workflows
 
 ### Summary
