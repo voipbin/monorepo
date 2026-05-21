@@ -35,6 +35,15 @@ func TestCreateOptions_apply(t *testing.T) {
 	}
 }
 
+func TestCreateOptions_WithActiveAIID(t *testing.T) {
+	aiID := uuid.Must(uuid.NewV4())
+	var p createParams
+	WithActiveAIID(aiID)(&p)
+	if p.activeAIID != aiID {
+		t.Fatalf("WithActiveAIID not applied: got %s", p.activeAIID)
+	}
+}
+
 // messageWithPCC returns a gomock matcher that asserts the *message.Message
 // argument has the expected PipecatcallID and DeliveryStatus fields.
 func messageWithPCC(pcID uuid.UUID, status message.DeliveryStatus) gomock.Matcher {

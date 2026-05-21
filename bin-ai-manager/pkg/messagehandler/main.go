@@ -25,6 +25,7 @@ type CreateOption func(*createParams)
 type createParams struct {
 	pipecatcallID  uuid.UUID
 	deliveryStatus message.DeliveryStatus
+	activeAIID     uuid.UUID
 }
 
 // WithPipecatcallID sets the pipecatcall ID on createParams.
@@ -35,6 +36,11 @@ func WithPipecatcallID(id uuid.UUID) CreateOption {
 // WithDeliveryStatus sets the delivery status on createParams.
 func WithDeliveryStatus(s message.DeliveryStatus) CreateOption {
 	return func(p *createParams) { p.deliveryStatus = s }
+}
+
+// WithActiveAIID sets the active AI ID on createParams.
+func WithActiveAIID(id uuid.UUID) CreateOption {
+	return func(p *createParams) { p.activeAIID = id }
 }
 
 type MessageHandler interface {
