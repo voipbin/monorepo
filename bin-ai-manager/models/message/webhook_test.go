@@ -76,6 +76,33 @@ func TestConvertWebhookMessage(t *testing.T) {
 				}
 			},
 		},
+		{
+			name: "converts_message_with_active_ai_id",
+			message: &Message{
+				Identity: identity.Identity{
+					ID:         uuid.Must(uuid.NewV4()),
+					CustomerID: uuid.Must(uuid.NewV4()),
+				},
+				AIcallID:     uuid.Must(uuid.NewV4()),
+				ActiveflowID: uuid.Must(uuid.NewV4()),
+				ActiveAIID:   uuid.Must(uuid.NewV4()),
+				Role:         RoleAssistant,
+				Content:      "Test message with AI",
+				Direction:    DirectionOutgoing,
+				TMCreate:     ptrTime(time.Now()),
+			},
+			checkFunc: func(t *testing.T, wh *WebhookMessage, m *Message) {
+				if wh.ActiveAIID != m.ActiveAIID {
+					t.Errorf("Wrong ActiveAIID. expect: %s, got: %s", m.ActiveAIID, wh.ActiveAIID)
+				}
+				if wh.AIcallID != m.AIcallID {
+					t.Errorf("Wrong AIcallID. expect: %s, got: %s", m.AIcallID, wh.AIcallID)
+				}
+				if wh.ActiveflowID != m.ActiveflowID {
+					t.Errorf("Wrong ActiveflowID. expect: %s, got: %s", m.ActiveflowID, wh.ActiveflowID)
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {

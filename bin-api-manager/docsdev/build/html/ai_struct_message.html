@@ -598,6 +598,7 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;aicall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;active_ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -612,6 +613,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this message. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">aicall_id</span></code> (UUID): The AI call session this message belongs to. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/aicalls</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> (UUID): The ID of the active flow associated with this message. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no active flow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">active_ai_id</span></code> (UUID): The ID of the active AI configuration that processed this message. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/ais</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no active AI.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">role</span></code> (enum string): The role of the message sender. See <a class="reference internal" href="#ai-struct-message-role"><span class="std std-ref">Role</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">content</span></code> (string): The text content of the message.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (enum string): The direction of the message. See <a class="reference internal" href="#ai-struct-message-direction"><span class="std std-ref">Direction</span></a>.</p></li>
@@ -681,6 +683,7 @@
     <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;5e4a0680-804e-11ec-8477-2fea5968d85b&quot;</span><span class="p">,</span>
     <span class="s2">&quot;aicall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
     <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;c3d4e5f6-a7b8-9012-cdef-123456789012&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;active_ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d4e5f6a7-b8c9-0123-def4-56789abcdef1&quot;</span><span class="p">,</span>
     <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
     <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;I would like to transfer to the sales department.&quot;</span><span class="p">,</span>
     <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;incoming&quot;</span><span class="p">,</span>
