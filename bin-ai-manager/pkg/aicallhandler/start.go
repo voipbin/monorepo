@@ -228,6 +228,9 @@ func (h *aicallHandler) startReferenceTypeConversation(
 	log.WithField("aicall", res).Debugf("AIcall ready. aicall_id: %s", res.ID)
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
+	// TODO: for AssistanceTypeTeam this calls teamHandler.Get via resolveTeamMemberForSend above,
+	// and resolveActiveAIIDFromAIcall below calls it again. Same fix needed as send.go: refactor
+	// resolveTeamMemberForSend to accept an optionally pre-fetched *team.Team.
 	convUserActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, res)
 	tmp, err := h.messageHandler.Create(ctx, uuid.Nil, res.CustomerID, res.ID, res.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "",
 		messagehandler.WithActiveAIID(convUserActiveAIID))
