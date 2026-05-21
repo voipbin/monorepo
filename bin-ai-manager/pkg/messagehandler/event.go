@@ -71,6 +71,9 @@ func (h *messageHandler) resolveActiveAIIDFromAIcall(ctx context.Context, ac *ai
 // Use this at call sites that only have the aicall UUID.
 // Returns uuid.Nil on any error (non-blocking: logs Warnf).
 func (h *messageHandler) resolveActiveAIID(ctx context.Context, aicallID uuid.UUID) uuid.UUID {
+	if h.reqHandler == nil {
+		return uuid.Nil
+	}
 	ac, err := h.reqHandler.AIV1AIcallGet(ctx, aicallID)
 	if err != nil {
 		logrus.Warnf("resolveActiveAIID: could not get aicall. aicall_id: %s, err: %v", aicallID, err)
@@ -116,7 +119,9 @@ func (h *messageHandler) EventPMMessageUserTranscription(ctx context.Context, ev
 		return
 	}
 
-	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	activeAIID := h.resolveActiveAIID(ctx, evt.PipecatcallReferenceID)
+	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "",
+		WithActiveAIID(activeAIID))
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -157,8 +162,10 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 
 	// Voice / task: keep existing behavior — persist, no delivery.
 	if ac.ReferenceType != aicall.ReferenceTypeConversation {
+		activeAIID := h.resolveActiveAIIDFromAIcall(ctx, ac)
 		tmp, errCreate := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
-			message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "")
+			message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "",
+			WithActiveAIID(activeAIID))
 		if errCreate != nil {
 			log.Errorf("Could not create the message. err: %v", errCreate)
 			return
@@ -179,10 +186,12 @@ func (h *messageHandler) EventPMMessageBotLLM(ctx context.Context, evt *pmmessag
 	// Persist the assistant message (only after guard #1 passes).
 	// Mark delivery_status='pending' so a guard-#2 failure or send failure leaves the
 	// row 'pending' and the periodic backstop can later finalize/cleanup the message.
+	activeAIID := h.resolveActiveAIIDFromAIcall(ctx, ac)
 	tmp, err := h.Create(ctx, evt.ID, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID,
 		message.DirectionIncoming, message.RoleAssistant, evt.Text, nil, "",
 		WithPipecatcallID(evt.PipecatcallID),
-		WithDeliveryStatus(message.DeliveryStatusPending))
+		WithDeliveryStatus(message.DeliveryStatusPending),
+		WithActiveAIID(activeAIID))
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -256,6 +265,7 @@ func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, e
 		return
 	}
 
+	activeAIID := h.resolveActiveAIID(ctx, evt.PipecatcallReferenceID)
 	webhookMsg := &message.IntermediateWebhookMessage{
 		Identity: identity.Identity{
 			ID:         evt.ID,
@@ -263,6 +273,7 @@ func (h *messageHandler) EventPMMessageBotLLMIntermediate(ctx context.Context, e
 		},
 		AIcallID:     evt.PipecatcallReferenceID,
 		ActiveflowID: evt.ActiveflowID,
+		ActiveAIID:   activeAIID,
 		Role:         message.RoleAssistant,
 		Content:      evt.Text,
 		Direction:    message.DirectionIncoming,
@@ -279,7 +290,9 @@ func (h *messageHandler) EventPMMessageUserLLM(ctx context.Context, evt *pmmessa
 		"event": evt,
 	})
 
-	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "")
+	activeAIID := h.resolveActiveAIID(ctx, evt.PipecatcallReferenceID)
+	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleUser, evt.Text, nil, "",
+		WithActiveAIID(activeAIID))
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return
@@ -324,7 +337,9 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 		return
 	}
 
-	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleNotification, string(contentBytes), nil, "")
+	activeAIID := h.resolveTeamMemberAIID(ctx, evt.PipecatcallReferenceID, evt.ToMember.ID)
+	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleNotification, string(contentBytes), nil, "",
+		WithActiveAIID(activeAIID))
 	if err != nil {
 		log.Errorf("Could not create the notification message. err: %v", err)
 		return
@@ -396,10 +411,12 @@ func (h *messageHandler) EventPMPipecatcallTerminated(ctx context.Context, evt *
 	// on purpose: a duplicated pipecatcall_terminated event after retry will see
 	// the existing row via MessageAssistantReplyExists and short-circuit at the
 	// "skipped_seen" branch above, preventing dual delivery.
+	activeAIID := h.resolveActiveAIIDFromAIcall(ctx, ac)
 	msg, err := h.Create(ctx, uuid.Nil, ac.CustomerID, ac.ID, ac.ActiveflowID,
 		message.DirectionIncoming, message.RoleAssistant, backstopReplyText, nil, "",
 		WithPipecatcallID(evt.ID),
-		WithDeliveryStatus(message.DeliveryStatusDelivered))
+		WithDeliveryStatus(message.DeliveryStatusDelivered),
+		WithActiveAIID(activeAIID))
 	if err != nil {
 		promBackstopReplyTotal.WithLabelValues("failed").Inc()
 		return errors.Wrap(err, "could not persist backstop message")
