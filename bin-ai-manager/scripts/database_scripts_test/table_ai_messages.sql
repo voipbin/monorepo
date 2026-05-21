@@ -13,6 +13,9 @@ create table ai_messages(
   tool_calls    json,
   tool_call_id  varchar(255),
 
+  -- active ai
+  active_ai_id  binary(16),
+
   -- delivery tracking
   pipecatcall_id  binary(16),
   delivery_status varchar(16) not null default 'delivered',

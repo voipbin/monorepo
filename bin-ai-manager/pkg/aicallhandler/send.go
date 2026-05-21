@@ -4,6 +4,7 @@ import (
 	"context"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/pkg/messagehandler"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -44,7 +45,9 @@ func (h *aicallHandler) SendReferenceTypeCall(ctx context.Context, c *aicall.AIc
 		return nil, errors.Errorf("pipecat pod for this aicall is no longer reachable. host_id: %s, pipecatcall_id: %s", pc.HostID, pc.ID)
 	}
 
-	res, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
+	sendCallActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
+	res, err := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, c.ID, c.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "",
+		messagehandler.WithActiveAIID(sendCallActiveAIID))
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create the message. aicall_id: %s", c.ID)
 	}
@@ -67,7 +70,9 @@ func (h *aicallHandler) SendReferenceTypeOthers(ctx context.Context, c *aicall.A
 
 	// note: after create a new aicall, we need to create a new message for the conversation message
 	aicallID := c.ID
-	res, errTerminate := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, aicallID, c.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "")
+	sendOtherActiveAIID := h.resolveActiveAIIDFromAIcall(ctx, c)
+	res, errTerminate := h.messageHandler.Create(ctx, uuid.Nil, c.CustomerID, aicallID, c.ActiveflowID, message.DirectionOutgoing, message.RoleUser, messageText, nil, "",
+		messagehandler.WithActiveAIID(sendOtherActiveAIID))
 	if errTerminate != nil {
 		return nil, errors.Wrapf(errTerminate, "could not create the message. aicall_id: %s", aicallID)
 	}

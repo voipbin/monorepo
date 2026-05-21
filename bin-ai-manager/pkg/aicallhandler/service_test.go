@@ -205,6 +205,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 					tt.expectMessageTexts[i],
 					nil,
 					"",
+					gomock.Any(),
 				).Return(&message.Message{}, nil)
 			}
 
@@ -406,7 +407,7 @@ func Test_ServiceStart_serviceStartReferenceTypeConversation(t *testing.T) {
 			}).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAIcall.ID).Return(tt.responseAIcall, nil)
 
-			mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, tt.responseAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageText, nil, "").Return(&message.Message{}, nil)
+			mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.responseAIcall.CustomerID, tt.responseAIcall.ID, tt.responseAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleUser, tt.expectMessageText, nil, "", gomock.Any()).Return(&message.Message{}, nil)
 
 			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
 
@@ -584,6 +585,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 					tt.expectMessageTexts[i],
 					nil,
 					"",
+					gomock.Any(),
 				).Return(&message.Message{}, nil)
 			}
 
