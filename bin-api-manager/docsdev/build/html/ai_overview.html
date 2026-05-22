@@ -362,8 +362,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#common-scenarios">Common Scenarios</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ai-prompt-history">AI Prompt History</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_tool.html">Tool Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_message.html">AI Message</a></li>
@@ -1481,10 +1483,35 @@ for errors; verify WebSocket stability</p></td>
 </table>
 </div>
 </section>
+<section id="ai-prompt-history">
+<h1>AI Prompt History<a class="headerlink" href="#ai-prompt-history" title="Link to this heading">¶</a></h1>
+<p>The prompt history tracks every distinct <code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> value that has been set on an AI
+configuration over time. A new history entry is created automatically whenever
+<code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> changes via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/ais</span></code> or <code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code>. History entries are
+read-only; to restore a previous prompt, read the desired entry and submit it via
+<code class="docutils literal notranslate"><span class="pre">PUT</span> <span class="pre">/ais/{id}</span></code>.</p>
+<section id="list-prompt-history">
+<h2>List prompt history<a class="headerlink" href="#list-prompt-history" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/ais/{ai_id}/prompt_histories</span></code></p>
+<p>Returns a list of <code class="docutils literal notranslate"><span class="pre">AIPromptHistory</span></code> objects for the specified AI, newest first.</p>
+<p><strong>Query parameters</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">page_size</span></code> (integer, optional): Maximum number of entries to return per page.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page_token</span></code> (string, optional): Pagination token returned in a previous response.</p></li>
+</ul>
+</section>
+<section id="get-a-single-prompt-history-entry">
+<h2>Get a single prompt history entry<a class="headerlink" href="#get-a-single-prompt-history-entry" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/ais/{ai_id}/prompt_histories/{history_id}</span></code></p>
+<p>Returns a single <code class="docutils literal notranslate"><span class="pre">AIPromptHistory</span></code> object.</p>
+<p>For the full struct definition, see <a class="reference internal" href="ai_struct_aiprompthistory.html#ai-struct-aiprompthistory"><span class="std std-ref">AIPromptHistory</span></a>.</p>
+</section>
+</section>
 <section id="related-documentation">
 <h1>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="ai_struct_ai.html#ai-struct-ai"><span class="std std-ref">AI Structure</span></a> - AI configuration options</p></li>
+<li><p><a class="reference internal" href="ai_struct_aiprompthistory.html#ai-struct-aiprompthistory"><span class="std std-ref">AI Prompt History Structure</span></a> - Prompt history struct fields</p></li>
 <li><p><a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a> - Available tool documentation</p></li>
 <li><p><a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a> - Speech-to-text languages</p></li>
 <li><p><a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Flow Actions</span></a> - ai_talk action configuration</p></li>
