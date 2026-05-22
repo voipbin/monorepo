@@ -70,6 +70,8 @@ func (p *Participant) ConvertWebhookMessage() *WebhookMessage {
 
 Note: the existing write path in `pkg/dbhandler/participant.go` calls `.Bytes()` manually for `ai_id`/`aicall_id`. The new read path uses `commondatabasehandler.ScanRow` (reflection-based), which requires the `,uuid` tag.
 
+Note: `Participant` deliberately does NOT embed `identity.Identity`. Monorepo convention requires `identity.Identity` for standard entities, but `ai_aicall_participants` is a composite-key join row (no separate `id`, no `customer_id`) over a table already created by PR #934. This is an intentional exception.
+
 ## Architecture
 
 The change spans four services, always modified top-to-bottom:
@@ -145,10 +147,10 @@ bin-ai-manager       (listenhandler/ + participanthandler/ + dbhandler/ + models
 - `pkg/listenhandler/main.go`:
   - Add `participantHandler participanthandler.ParticipantHandler` field to `listenHandler` struct.
   - Extend `NewListenHandler` signature with a `participantHandler participanthandler.ParticipantHandler` arg (positional, after existing args).
-  - Add two new regex patterns. No trailing `$` — the URI may include a query string (`?page_size=...`), so the pattern must match with `(\?|$)` or simply leave the end unanchored, consistent with existing patterns like `regV1AIcallsID`:
+  - Add two new regex patterns. Anchor with `(\?|$)` — this matches both the no-query-string form (`/participants` at end of URI) and the form with pagination params (`/participants?page_size=100`), while preventing false matches on future routes like `/participants_xyz`. Do NOT leave the pattern unanchored (prefix-hazard) and do NOT use bare `\?` (breaks calls with no query string). Existing list patterns use `\?` only because they always have query params; sub-resource list patterns should use `(\?|$)`:
     ```go
-    regV1AIcallsIDParticipants = regexp.MustCompile("/v1/aicalls/" + regUUID + "/participants")
-    regV1AIsIDParticipants     = regexp.MustCompile("/v1/ais/" + regUUID + "/participants")
+    regV1AIcallsIDParticipants = regexp.MustCompile("/v1/aicalls/" + regUUID + `/participants(\?|$)`)
+    regV1AIsIDParticipants     = regexp.MustCompile("/v1/ais/" + regUUID + `/participants(\?|$)`)
     ```
   - Add two new `case` entries in the dispatch switch.
   - Update `bin-ai-manager/docs/architecture.md` routing table in the same commit.
@@ -192,14 +194,14 @@ bin-ai-manager       (listenhandler/ + participanthandler/ + dbhandler/ + models
   func (h *serviceHandler) AIcallParticipantGets(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, size uint64, token string) ([]*amparticipant.WebhookMessage, error) {
       // 1. Fetch aicall to get customerID (uses existing private aicallGet helper)
       aicall, err := h.aicallGet(ctx, aicallID)
-      // 2. Permission check — same as AIcallGet
+      // 2. Permission check — matches AIcallGet exactly (pkg/servicehandler/aicall.go:203-209)
       switch {
       case a.IsAgent() || a.IsAccesskey():
           if !h.hasPermission(ctx, a, aicall.CustomerID, PermissionCustomerAdmin|PermissionCustomerManager) { ... }
       case a.IsDirect():
           // HasAllowedResourceType("aicall") — there is no "ai" direct resource type
           if !a.HasAllowedResourceType("aicall") { ... }
-          if a.DirectScope.ResourceID != aicallID { ... }
+          if aicall.CustomerID != a.CustomerID { ... }  // same as AIcallGet: customer-level scope, not resource-ID scope
       }
       // 3. RPC call
       tmps, err := h.reqHandler.AIV1AIcallParticipantList(ctx, aicallID, token, size)
@@ -234,9 +236,9 @@ The two endpoints have different permission models:
 
 **`AIcallParticipantGets` (scoped to aicall):**
 1. Fetch aicall without auth check (`aicallGet` private helper).
-2. Check caller:
+2. Check caller — mirrors `AIcallGet` exactly (`pkg/servicehandler/aicall.go:203-209`):
    - **Agent/Accesskey**: `PermissionCustomerAdmin | PermissionCustomerManager` on `aicall.CustomerID`.
-   - **Direct token**: `a.HasAllowedResourceType("aicall")` plus `a.DirectScope.ResourceID == aicallID`. Note: server base URL has `/v1.0`; there is no `"ai"` direct resource type (`boot.go:20-23` maps `dmdirect.ResourceTypeAI → {"aicall"}`).
+   - **Direct token**: `a.HasAllowedResourceType("aicall")` then `aicall.CustomerID != a.CustomerID`. Direct tokens for the "aicall" resource type are customer-scoped, not resource-ID-scoped — matches the existing `AIcallGet` check. (No `"ai"` direct resource type exists; `boot.go:20-23` maps `dmdirect.ResourceTypeAI → {"aicall"}`.
 
 **`AIParticipantGets` (scoped to AI agent):**
 1. Check caller: **Direct token → return `ErrDirectAccessNotSupported` immediately.** All AI resource methods in `pkg/servicehandler/ai.go` uniformly reject direct tokens — `AIParticipantGets` must match.
