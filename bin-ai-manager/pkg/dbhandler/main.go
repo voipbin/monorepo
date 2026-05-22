@@ -52,6 +52,9 @@ type DBHandler interface {
 	TeamGet(ctx context.Context, id uuid.UUID) (*team.Team, error)
 	TeamList(ctx context.Context, size uint64, token string, filters map[team.Field]any) ([]*team.Team, error)
 	TeamUpdate(ctx context.Context, id uuid.UUID, fields map[team.Field]any) error
+
+	// Participant
+	ParticipantCreate(ctx context.Context, aicallID uuid.UUID, aiID uuid.UUID) error
 }
 
 // handler database handler

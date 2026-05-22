@@ -292,6 +292,20 @@ func (mr *MockDBHandlerMockRecorder) MessageUpdateDeliveryStatus(ctx, id, status
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageUpdateDeliveryStatus", reflect.TypeOf((*MockDBHandler)(nil).MessageUpdateDeliveryStatus), ctx, id, status)
 }
 
+// ParticipantCreate mocks base method.
+func (m *MockDBHandler) ParticipantCreate(ctx context.Context, aicallID, aiID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParticipantCreate", ctx, aicallID, aiID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ParticipantCreate indicates an expected call of ParticipantCreate.
+func (mr *MockDBHandlerMockRecorder) ParticipantCreate(ctx, aicallID, aiID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantCreate", reflect.TypeOf((*MockDBHandler)(nil).ParticipantCreate), ctx, aicallID, aiID)
+}
+
 // SummaryCreate mocks base method.
 func (m *MockDBHandler) SummaryCreate(ctx context.Context, c *summary.Summary) error {
 	m.ctrl.T.Helper()
