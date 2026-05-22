@@ -197,18 +197,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIList(ctx, pageToken, pageSize, f
 }
 
 // AIV1AIParticipantList mocks base method.
-func (m *MockRequestHandler) AIV1AIParticipantList(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*participant.WebhookMessage, error) {
+func (m *MockRequestHandler) AIV1AIParticipantList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]*participant.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIParticipantList", ctx, aiID, size, token)
+	ret := m.ctrl.Call(m, "AIV1AIParticipantList", ctx, aiID, pageToken, pageSize)
 	ret0, _ := ret[0].([]*participant.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIParticipantList indicates an expected call of AIV1AIParticipantList.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIParticipantList(ctx, aiID, size, token any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIParticipantList(ctx, aiID, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIParticipantList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIParticipantList), ctx, aiID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIParticipantList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIParticipantList), ctx, aiID, pageToken, pageSize)
 }
 
 // AIV1AIPromptHistoryGet mocks base method.
@@ -302,18 +302,18 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIcallList(ctx, pageToken, pageSiz
 }
 
 // AIV1AIcallParticipantList mocks base method.
-func (m *MockRequestHandler) AIV1AIcallParticipantList(ctx context.Context, aicallID uuid.UUID, size uint64, token string) ([]*participant.WebhookMessage, error) {
+func (m *MockRequestHandler) AIV1AIcallParticipantList(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64) ([]*participant.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIV1AIcallParticipantList", ctx, aicallID, size, token)
+	ret := m.ctrl.Call(m, "AIV1AIcallParticipantList", ctx, aicallID, pageToken, pageSize)
 	ret0, _ := ret[0].([]*participant.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIV1AIcallParticipantList indicates an expected call of AIV1AIcallParticipantList.
-func (mr *MockRequestHandlerMockRecorder) AIV1AIcallParticipantList(ctx, aicallID, size, token any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallParticipantList(ctx, aicallID, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallParticipantList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallParticipantList), ctx, aicallID, size, token)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallParticipantList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallParticipantList), ctx, aicallID, pageToken, pageSize)
 }
 
 // AIV1AIcallStart mocks base method.

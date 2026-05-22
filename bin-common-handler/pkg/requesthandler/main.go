@@ -287,8 +287,8 @@ type RequestHandler interface {
 	AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*ammessage.Message, error)
 
 	// ai-manager participant
-	AIV1AIcallParticipantList(ctx context.Context, aicallID uuid.UUID, size uint64, token string) ([]*amparticipant.WebhookMessage, error)
-	AIV1AIParticipantList(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*amparticipant.WebhookMessage, error)
+	AIV1AIcallParticipantList(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64) ([]*amparticipant.WebhookMessage, error)
+	AIV1AIParticipantList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]*amparticipant.WebhookMessage, error)
 
 	// ai-manager service
 	AIV1ServiceTypeAIcallStart(
