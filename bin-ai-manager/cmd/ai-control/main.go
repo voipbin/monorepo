@@ -464,8 +464,8 @@ func initAIcallHandler() (aicallhandler.AIcallHandler, error) {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameAIEvent, serviceName)
 
-	// For these operations, we don't need aiHandler and messageHandler
-	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil), nil
+	// For these operations, we don't need aiHandler, messageHandler, or participantHandler
+	return aicallhandler.NewAIcallHandler(reqHandler, notifyHandler, dbHandler, nil, nil, nil, nil), nil
 }
 
 func cmdAIcallGet() *cobra.Command {

@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/teamhandler"
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -177,6 +178,119 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				Status:         aicall.StatusInitiating,
 			},
 		},
+		{
+			name: "with participant handler",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				},
+				EngineModel: "openai.gpt-5",
+				InitPrompt:  "hello, this is init prompt message.",
+				TTSType:     ai.TTSTypeElevenLabs,
+				TTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
+				STTType:     ai.STTTypeDeepgram,
+				STTLanguage: "en-US",
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+			activeflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+			referenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+
+			responseConfbridge: &cmconfbridge.Confbridge{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				},
+			},
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("b4e5c7ae-b539-11f0-ac68-c38f244d145b"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("b6cd01d0-d785-467f-9069-684e46cc2644"),
+			responseAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b6cd01d0-d785-467f-9069-684e46cc2644"),
+					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				AITTSType:      ai.TTSTypeElevenLabs,
+				AITTSVoiceID:   "21m00Tcm4TlvDq8ikWAM",
+				AISTTType:      ai.STTTypeDeepgram,
+				ActiveflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+				ReferenceType:  aicall.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				PipecatcallID:  uuid.FromStringOrNil("b4e5c7ae-b539-11f0-ac68-c38f244d145b"),
+				STTLanguage:    "en-US",
+				Status:         aicall.StatusInitiating,
+			},
+			responseMessages: []*message.Message{
+				{
+					Role:    "assistant",
+					Content: "test assistant message.",
+				},
+			},
+			responsePipecatcall: &pmpipecatcall.Pipecatcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("b4e5c7ae-b539-11f0-ac68-c38f244d145b"),
+				},
+			},
+
+			expectAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b6cd01d0-d785-467f-9069-684e46cc2644"),
+					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+				AIEngineModel:  "openai.gpt-5",
+				ActiveflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+				ReferenceType:  aicall.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				PipecatcallID:  uuid.FromStringOrNil("b4e5c7ae-b539-11f0-ac68-c38f244d145b"),
+				STTLanguage:    "en-US",
+				Status:         aicall.StatusInitiating,
+			},
+			expectVariables: map[string]string{
+				variableID:            "b6cd01d0-d785-467f-9069-684e46cc2644",
+				variableAIID:          "a4107e6e-f06d-11ef-9b7a-03c848b3bb41",
+				variableAIEngineModel: "openai.gpt-5",
+				variableConfbridgeID:  "ec6d153d-dd5a-4eef-bc27-8fcebe100704",
+				variableSTTLanguage:   "en-US",
+				variablePipecatcallID: "b4e5c7ae-b539-11f0-ac68-c38f244d145b",
+			},
+			expectLLMType: pmpipecatcall.LLMType("openai.gpt-5"),
+			expectLLMMessages: &message.Message{
+				Role:    message.RoleSystem,
+				Content: "hello, this is init prompt message.",
+			},
+			expectPipecatcallMessages: []map[string]any{
+				{"role": "assistant", "content": "test assistant message."},
+			},
+			expectTTSType:    pmpipecatcall.TTSTypeElevenLabs,
+			expectTTSVoiceID: "21m00Tcm4TlvDq8ikWAM",
+			expectSTTType:    pmpipecatcall.STTTypeDeepgram,
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b6cd01d0-d785-467f-9069-684e46cc2644"),
+					CustomerID: uuid.FromStringOrNil("483054da-13f5-42de-a785-dc20598726c1"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("a4107e6e-f06d-11ef-9b7a-03c848b3bb41"),
+				AIEngineModel:  ai.EngineModel("openai.gpt-5"),
+				AITTSType:      ai.TTSTypeElevenLabs,
+				AITTSVoiceID:   "21m00Tcm4TlvDq8ikWAM",
+				AISTTType:      ai.STTTypeDeepgram,
+				ActiveflowID:   uuid.FromStringOrNil("a47265a2-f06d-11ef-8317-2bf92ae88a9d"),
+				ReferenceType:  aicall.ReferenceTypeCall,
+				ReferenceID:    uuid.FromStringOrNil("a4a663fc-f06d-11ef-aeb9-6b2d8f0da3ac"),
+				ConfbridgeID:   uuid.FromStringOrNil("ec6d153d-dd5a-4eef-bc27-8fcebe100704"),
+				PipecatcallID:  uuid.FromStringOrNil("b4e5c7ae-b539-11f0-ac68-c38f244d145b"),
+				STTLanguage:    "en-US",
+				Status:         aicall.StatusInitiating,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -200,6 +314,11 @@ func Test_startReferenceTypeCall(t *testing.T) {
 				db:             mockDB,
 				aiHandler:      mockAI,
 				messageHandler: mockMessage,
+			}
+			if tt.name == "with participant handler" {
+				mockParticipant := participanthandler.NewMockParticipantHandler(mc)
+				mockParticipant.EXPECT().Create(gomock.Any(), gomock.Any(), tt.ai.ID).Return(nil).Times(1)
+				h.participantHandler = mockParticipant
 			}
 			ctx := context.Background()
 
