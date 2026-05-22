@@ -49,6 +49,8 @@ func TestCreate(t *testing.T) {
 				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
+				// initPrompt is "Test prompt" (non-empty) → history recorded
+				m.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
 			wantError: false,
 		},
@@ -134,6 +136,8 @@ func TestCreate(t *testing.T) {
 				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
+				// initPrompt is "Test prompt" (non-empty) → history recorded
+				m.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
 			wantError: false,
 		},
@@ -151,6 +155,8 @@ func TestCreate(t *testing.T) {
 				r.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "a1b2c3d4e5f6"}, nil).Times(1)
 				m.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(testAI, nil).Times(1)
+				// initPrompt is "Test prompt" (non-empty) → history recorded
+				m.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
 			wantError: false,
 		},
@@ -235,8 +241,10 @@ func TestUpdate(t *testing.T) {
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				updatedAI := &ai.AI{Name: "Updated AI"}
 				updatedAI.ID = uuid.Must(uuid.NewV4())
+				// pre-fetch (initPrompt is non-empty "Updated prompt") + post-update in dbUpdate
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(updatedAI, nil).Times(2)
 				m.EXPECT().AIUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(updatedAI, nil).Times(1)
+				m.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
 			wantError: false,
 		},
@@ -287,6 +295,10 @@ func TestUpdate(t *testing.T) {
 			ttsType:     ai.TTSTypeOpenAI,
 			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
+				// pre-fetch succeeds (initPrompt is non-empty "Updated prompt"), then AIUpdate fails
+				currentAI := &ai.AI{}
+				currentAI.ID = uuid.Must(uuid.NewV4())
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(currentAI, nil).Times(1)
 				m.EXPECT().AIUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("update failed")).Times(1)
 			},
 			wantError: true,
@@ -317,8 +329,10 @@ func TestUpdate(t *testing.T) {
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				updatedAI := &ai.AI{Name: "Updated AI with VAD"}
 				updatedAI.ID = uuid.Must(uuid.NewV4())
+				// pre-fetch (initPrompt non-empty) + post-update in dbUpdate
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(updatedAI, nil).Times(2)
 				m.EXPECT().AIUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(updatedAI, nil).Times(1)
+				m.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
 			wantError: false,
 		},
@@ -333,8 +347,10 @@ func TestUpdate(t *testing.T) {
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				updatedAI := &ai.AI{Name: "Updated AI with Smart Turn", SmartTurnEnabled: true}
 				updatedAI.ID = uuid.Must(uuid.NewV4())
+				// pre-fetch (initPrompt non-empty) + post-update in dbUpdate
+				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(updatedAI, nil).Times(2)
 				m.EXPECT().AIUpdate(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
-				m.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(updatedAI, nil).Times(1)
+				m.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
 			},
 			wantError: false,
 		},
@@ -353,6 +369,7 @@ func TestUpdate(t *testing.T) {
 			h := &aiHandler{
 				db:            mockDB,
 				notifyHandler: mockNotify,
+				utilHandler:   utilhandler.NewUtilHandler(),
 			}
 
 			result, err := h.Update(
@@ -389,6 +406,304 @@ func TestUpdate(t *testing.T) {
 				t.Error("Update() returned nil result when expecting success")
 			}
 		})
+	}
+}
+
+func TestCreate_RecordsPromptHistory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	createdAI := &ai.AI{Name: "Helpful AI"}
+	createdAI.ID = uuid.Must(uuid.NewV4())
+
+	mockReq.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&dmdirect.Direct{Hash: "abc123"}, nil).Times(1)
+	mockDB.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(createdAI, nil).Times(1)
+	mockDB.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"Helpful AI",
+		"",
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"key",
+		uuid.Nil,
+		"You are helpful.",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		nil,
+		nil,
+		false,
+	)
+	if err != nil {
+		t.Errorf("Create() unexpected error: %v", err)
+	}
+}
+
+func TestCreate_EmptyPrompt_NoHistory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	createdAI := &ai.AI{Name: "AI no prompt"}
+	createdAI.ID = uuid.Must(uuid.NewV4())
+
+	mockReq.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&dmdirect.Direct{Hash: "abc123"}, nil).Times(1)
+	mockDB.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(createdAI, nil).Times(1)
+	// AIPromptHistoryCreate must NOT be called
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"AI no prompt",
+		"",
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"key",
+		uuid.Nil,
+		"",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		nil,
+		nil,
+		false,
+	)
+	if err != nil {
+		t.Errorf("Create() unexpected error: %v", err)
+	}
+}
+
+func TestUpdate_NewPrompt_RecordsHistory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	aiID := uuid.Must(uuid.NewV4())
+	currentAI := &ai.AI{Name: "My AI"}
+	currentAI.ID = aiID
+	currentAI.InitPrompt = "old prompt"
+
+	updatedAI := &ai.AI{Name: "My AI"}
+	updatedAI.ID = aiID
+	updatedAI.InitPrompt = "new prompt"
+
+	// First AIGet is pre-fetch (before dbUpdate), second is post-update (inside dbUpdate)
+	gomock.InOrder(
+		mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(currentAI, nil).Times(1),
+		mockDB.EXPECT().AIUpdate(gomock.Any(), aiID, gomock.Any()).Return(nil).Times(1),
+		mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(updatedAI, nil).Times(1),
+		mockDB.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1),
+	)
+
+	h := &aiHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Update(
+		context.Background(),
+		aiID,
+		"My AI",
+		"",
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"key",
+		uuid.Nil,
+		"new prompt",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		nil,
+		nil,
+		false,
+	)
+	if err != nil {
+		t.Errorf("Update() unexpected error: %v", err)
+	}
+}
+
+func TestUpdate_SamePrompt_NoHistory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	aiID := uuid.Must(uuid.NewV4())
+	currentAI := &ai.AI{Name: "My AI"}
+	currentAI.ID = aiID
+	currentAI.InitPrompt = "same prompt"
+
+	updatedAI := &ai.AI{Name: "My AI"}
+	updatedAI.ID = aiID
+	updatedAI.InitPrompt = "same prompt"
+
+	// First AIGet is pre-fetch, second is post-update (inside dbUpdate); no AIPromptHistoryCreate
+	gomock.InOrder(
+		mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(currentAI, nil).Times(1),
+		mockDB.EXPECT().AIUpdate(gomock.Any(), aiID, gomock.Any()).Return(nil).Times(1),
+		mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(updatedAI, nil).Times(1),
+	)
+
+	h := &aiHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Update(
+		context.Background(),
+		aiID,
+		"My AI",
+		"",
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"key",
+		uuid.Nil,
+		"same prompt",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		nil,
+		nil,
+		false,
+	)
+	if err != nil {
+		t.Errorf("Update() unexpected error: %v", err)
+	}
+}
+
+func TestUpdate_EmptyPrompt_NoPreFetch_NoHistory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	aiID := uuid.Must(uuid.NewV4())
+	updatedAI := &ai.AI{Name: "My AI"}
+	updatedAI.ID = aiID
+
+	// No pre-fetch AIGet (empty prompt skips it); only post-update AIGet inside dbUpdate
+	// No AIPromptHistoryCreate
+	mockDB.EXPECT().AIUpdate(gomock.Any(), aiID, gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(updatedAI, nil).Times(1)
+
+	h := &aiHandler{
+		db:            mockDB,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Update(
+		context.Background(),
+		aiID,
+		"My AI",
+		"",
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"key",
+		uuid.Nil,
+		"",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		nil,
+		nil,
+		false,
+	)
+	if err != nil {
+		t.Errorf("Update() unexpected error: %v", err)
+	}
+}
+
+func TestCreate_HistoryFails_CreateSucceeds(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	createdAI := &ai.AI{Name: "AI with history failure"}
+	createdAI.ID = uuid.Must(uuid.NewV4())
+
+	mockReq.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(&dmdirect.Direct{Hash: "abc123"}, nil).Times(1)
+	mockDB.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(createdAI, nil).Times(1)
+	// History create fails, but Create should still succeed (best-effort)
+	mockDB.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(errors.New("history db error")).Times(1)
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	result, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"AI with history failure",
+		"",
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"key",
+		uuid.Nil,
+		"Some prompt",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		nil,
+		nil,
+		false,
+	)
+	if err != nil {
+		t.Errorf("Create() should succeed even when history fails, got error: %v", err)
+	}
+	if result == nil {
+		t.Error("Create() returned nil result when expecting success")
 	}
 }
 
