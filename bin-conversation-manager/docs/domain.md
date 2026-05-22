@@ -5,9 +5,10 @@
 ### Account
 Platform-specific credentials for sending messages. Stored in `conversation_accounts` table.
 
-- `type`: `sms` | `line`
-- `secret` — LINE channel secret or SMS provider credential
-- `token` — LINE channel access token
+- `type`: `sms` | `line` | `whatsapp`
+- `secret` — LINE channel secret, SMS provider credential, or WhatsApp webhook verify token (write-only)
+- `token` — LINE channel access token or Meta system user access token (write-only)
+- `provider_data` — platform-specific JSON blob; for `whatsapp` contains `phone_number_id` (Meta phone number ID) and `app_secret` (HMAC signing key for inbound webhook validation). Returned in API responses.
 
 ### Conversation
 A communication thread between two parties. Persisted in `conversation_conversations` table.
