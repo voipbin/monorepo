@@ -23,10 +23,10 @@ func Test_AIPromptHistoryGetsByAIID(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent  *auth.AuthIdentity
-		aiID   uuid.UUID
-		size   uint64
-		token  string
+		agent *auth.AuthIdentity
+		aiID  uuid.UUID
+		size  uint64
+		token string
 
 		responseAI      *amai.AI
 		responseHistory []amaiprompthistory.AIPromptHistory

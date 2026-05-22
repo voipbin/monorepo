@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"go.uber.org/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
