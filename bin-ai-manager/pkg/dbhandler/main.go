@@ -13,6 +13,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/models/team"
@@ -26,6 +27,10 @@ type DBHandler interface {
 	AIGet(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	AIList(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error)
 	AIUpdate(ctx context.Context, id uuid.UUID, fields map[ai.Field]any) error
+
+	AIPromptHistoryCreate(ctx context.Context, h *aiprompthistory.AIPromptHistory) error
+	AIPromptHistoryGet(ctx context.Context, id uuid.UUID) (*aiprompthistory.AIPromptHistory, error)
+	AIPromptHistoryGetsByAIID(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*aiprompthistory.AIPromptHistory, error)
 
 	AIcallCreate(ctx context.Context, cb *aicall.AIcall) error
 	AIcallDelete(ctx context.Context, id uuid.UUID) error

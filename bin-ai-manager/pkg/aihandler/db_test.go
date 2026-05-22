@@ -119,6 +119,9 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().AICreate(ctx, tt.expectAI).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)
+			// initPrompt is non-empty → prompt history recorded (best-effort, UUID generated for history entry)
+			mockUtil.EXPECT().UUIDCreate().Return(uuid.Must(uuid.NewV4()))
+			mockDB.EXPECT().AIPromptHistoryCreate(ctx, gomock.Any()).Return(nil)
 
 			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, "", nil, nil, false)
 			if err != nil {
@@ -373,9 +376,14 @@ func Test_Update(t *testing.T) {
 
 			ctx := context.Background()
 
+			// pre-fetch (initPrompt is non-empty) then update then post-fetch in dbUpdate
+			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
 			mockDB.EXPECT().AIUpdate(ctx, tt.id, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.id).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeUpdated, tt.responseAI)
+			// responseAI.InitPrompt is "" which differs from initPrompt "new init prompt" → history recorded
+			mockUtil.EXPECT().UUIDCreate().Return(uuid.Must(uuid.NewV4()))
+			mockDB.EXPECT().AIPromptHistoryCreate(ctx, gomock.Any()).Return(nil)
 
 			res, err := h.Update(
 				ctx,

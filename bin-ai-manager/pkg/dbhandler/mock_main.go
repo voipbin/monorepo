@@ -13,6 +13,7 @@ import (
 	context "context"
 	ai "monorepo/bin-ai-manager/models/ai"
 	aicall "monorepo/bin-ai-manager/models/aicall"
+	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	message "monorepo/bin-ai-manager/models/message"
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
@@ -102,6 +103,50 @@ func (m *MockDBHandler) AIList(ctx context.Context, size uint64, token string, f
 func (mr *MockDBHandlerMockRecorder) AIList(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIList", reflect.TypeOf((*MockDBHandler)(nil).AIList), ctx, size, token, filters)
+}
+
+// AIPromptHistoryCreate mocks base method.
+func (m *MockDBHandler) AIPromptHistoryCreate(ctx context.Context, h *aiprompthistory.AIPromptHistory) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptHistoryCreate", ctx, h)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIPromptHistoryCreate indicates an expected call of AIPromptHistoryCreate.
+func (mr *MockDBHandlerMockRecorder) AIPromptHistoryCreate(ctx, h any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptHistoryCreate", reflect.TypeOf((*MockDBHandler)(nil).AIPromptHistoryCreate), ctx, h)
+}
+
+// AIPromptHistoryGet mocks base method.
+func (m *MockDBHandler) AIPromptHistoryGet(ctx context.Context, id uuid.UUID) (*aiprompthistory.AIPromptHistory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptHistoryGet", ctx, id)
+	ret0, _ := ret[0].(*aiprompthistory.AIPromptHistory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptHistoryGet indicates an expected call of AIPromptHistoryGet.
+func (mr *MockDBHandlerMockRecorder) AIPromptHistoryGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptHistoryGet", reflect.TypeOf((*MockDBHandler)(nil).AIPromptHistoryGet), ctx, id)
+}
+
+// AIPromptHistoryGetsByAIID mocks base method.
+func (m *MockDBHandler) AIPromptHistoryGetsByAIID(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*aiprompthistory.AIPromptHistory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptHistoryGetsByAIID", ctx, aiID, size, token)
+	ret0, _ := ret[0].([]*aiprompthistory.AIPromptHistory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptHistoryGetsByAIID indicates an expected call of AIPromptHistoryGetsByAIID.
+func (mr *MockDBHandlerMockRecorder) AIPromptHistoryGetsByAIID(ctx, aiID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptHistoryGetsByAIID", reflect.TypeOf((*MockDBHandler)(nil).AIPromptHistoryGetsByAIID), ctx, aiID, size, token)
 }
 
 // AIUpdate mocks base method.

@@ -15,6 +15,7 @@ import (
 	agent "monorepo/bin-agent-manager/models/agent"
 	ai "monorepo/bin-ai-manager/models/ai"
 	aicall "monorepo/bin-ai-manager/models/aicall"
+	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	message "monorepo/bin-ai-manager/models/message"
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
@@ -192,6 +193,36 @@ func (m *MockRequestHandler) AIV1AIList(ctx context.Context, pageToken string, p
 func (mr *MockRequestHandlerMockRecorder) AIV1AIList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIList), ctx, pageToken, pageSize, filters)
+}
+
+// AIV1AIPromptHistoryGet mocks base method.
+func (m *MockRequestHandler) AIV1AIPromptHistoryGet(ctx context.Context, aiID, historyID uuid.UUID) (*aiprompthistory.AIPromptHistory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIPromptHistoryGet", ctx, aiID, historyID)
+	ret0, _ := ret[0].(*aiprompthistory.AIPromptHistory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIPromptHistoryGet indicates an expected call of AIV1AIPromptHistoryGet.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptHistoryGet(ctx, aiID, historyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptHistoryGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptHistoryGet), ctx, aiID, historyID)
+}
+
+// AIV1AIPromptHistoryList mocks base method.
+func (m *MockRequestHandler) AIV1AIPromptHistoryList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]aiprompthistory.AIPromptHistory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIPromptHistoryList", ctx, aiID, pageToken, pageSize)
+	ret0, _ := ret[0].([]aiprompthistory.AIPromptHistory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIPromptHistoryList indicates an expected call of AIV1AIPromptHistoryList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptHistoryList(ctx, aiID, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptHistoryList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptHistoryList), ctx, aiID, pageToken, pageSize)
 }
 
 // AIV1AIUpdate mocks base method.

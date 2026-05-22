@@ -29,6 +29,7 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amteam "monorepo/bin-ai-manager/models/team"
@@ -223,6 +224,10 @@ type RequestHandler interface {
 		sttLanguage string,
 		toolNames []amtool.ToolName,
 	) (*amai.AI, error)
+
+	// ai-manager prompt histories
+	AIV1AIPromptHistoryList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]amaiprompthistory.AIPromptHistory, error)
+	AIV1AIPromptHistoryGet(ctx context.Context, aiID uuid.UUID, historyID uuid.UUID) (*amaiprompthistory.AIPromptHistory, error)
 
 	// ai-manager team
 	AIV1TeamGet(ctx context.Context, teamID uuid.UUID) (*amteam.Team, error)

@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"monorepo/bin-ai-manager/models/ai"
-	"monorepo/bin-ai-manager/models/tool"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aiprompthistory"
+	"monorepo/bin-ai-manager/models/tool"
+	"monorepo/bin-common-handler/models/identity"
 )
 
 func (h *aiHandler) Create(
@@ -52,6 +55,19 @@ func (h *aiHandler) Create(
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
 
+	if initPrompt != "" {
+		if errHistory := h.db.AIPromptHistoryCreate(ctx, &aiprompthistory.AIPromptHistory{
+			Identity: identity.Identity{
+				ID:         h.utilHandler.UUIDCreate(),
+				CustomerID: res.CustomerID,
+			},
+			AIID:   res.ID,
+			Prompt: initPrompt,
+		}); errHistory != nil {
+			logrus.WithField("func", "Create").Errorf("Could not create prompt history. err: %v", errHistory)
+		}
+	}
+
 	return res, nil
 }
 
@@ -91,9 +107,33 @@ func (h *aiHandler) Update(
 		return nil, fmt.Errorf("invalid vad_config: %w", err)
 	}
 
+	// Pre-fetch the current AI to detect prompt change (only when initPrompt is non-empty)
+	var preUpdateAI *ai.AI
+	if initPrompt != "" {
+		var errGet error
+		preUpdateAI, errGet = h.db.AIGet(ctx, id)
+		if errGet != nil {
+			return nil, errors.Wrapf(errGet, "could not get current ai for prompt history")
+		}
+	}
+
 	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
+	}
+
+	// Record history if prompt changed
+	if preUpdateAI != nil && initPrompt != preUpdateAI.InitPrompt {
+		if errHistory := h.db.AIPromptHistoryCreate(ctx, &aiprompthistory.AIPromptHistory{
+			Identity: identity.Identity{
+				ID:         h.utilHandler.UUIDCreate(),
+				CustomerID: preUpdateAI.CustomerID,
+			},
+			AIID:   preUpdateAI.ID,
+			Prompt: initPrompt,
+		}); errHistory != nil {
+			logrus.WithField("func", "Update").Errorf("Could not create prompt history. err: %v", errHistory)
+		}
 	}
 
 	return res, nil

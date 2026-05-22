@@ -30,6 +30,7 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amteam "monorepo/bin-ai-manager/models/team"
@@ -98,9 +99,9 @@ import (
 )
 
 const (
-	TokenExpiration = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
-	BootExpiration      = time.Hour * 4 // direct boot token expiration time. 4 hours
-	DelegateExpiration  = time.Hour * 8 // delegate token expiration. 8 hours
+	TokenExpiration    = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
+	BootExpiration     = time.Hour * 4      // direct boot token expiration time. 4 hours
+	DelegateExpiration = time.Hour * 8      // delegate token expiration. 8 hours
 )
 
 // ServiceHandler is interface for service handle
@@ -288,6 +289,10 @@ type ServiceHandler interface {
 		toolNames []amtool.ToolName,
 	) (*amai.WebhookMessage, error)
 	AIDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error)
+
+	// ai prompt history handlers
+	AIPromptHistoryGetsByAIID(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, size uint64, token string) ([]*amaiprompthistory.AIPromptHistory, error)
+	AIPromptHistoryGet(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, historyID uuid.UUID) (*amaiprompthistory.AIPromptHistory, error)
 
 	// team handlers
 	TeamCreate(ctx context.Context, a *auth.AuthIdentity, name string, detail string, startMemberID uuid.UUID, members []amteam.Member, parameter map[string]any) (*amteam.WebhookMessage, error)

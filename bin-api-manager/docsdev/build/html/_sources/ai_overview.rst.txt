@@ -768,10 +768,41 @@ Troubleshooting
 +---------------------------+------------------------------------------------+
 
 
+AI Prompt History
+=================
+
+The prompt history tracks every distinct ``init_prompt`` value that has been set on an AI
+configuration over time. A new history entry is created automatically whenever
+``init_prompt`` changes via ``POST /ais`` or ``PUT /ais/{id}``. History entries are
+read-only; to restore a previous prompt, read the desired entry and submit it via
+``PUT /ais/{id}``.
+
+List prompt history
+-------------------
+
+``GET https://api.voipbin.net/v1.0/ais/{ai_id}/prompt_histories``
+
+Returns a list of ``AIPromptHistory`` objects for the specified AI, newest first.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per page.
+* ``page_token`` (string, optional): Pagination token returned in a previous response.
+
+Get a single prompt history entry
+----------------------------------
+
+``GET https://api.voipbin.net/v1.0/ais/{ai_id}/prompt_histories/{history_id}``
+
+Returns a single ``AIPromptHistory`` object.
+
+For the full struct definition, see :ref:`AIPromptHistory <ai-struct-aiprompthistory>`.
+
 Related Documentation
 =====================
 
 - :ref:`AI Structure <ai-struct-ai>` - AI configuration options
+- :ref:`AI Prompt History Structure <ai-struct-aiprompthistory>` - Prompt history struct fields
 - :ref:`Tool Functions <ai-struct-tool>` - Available tool documentation
 - :ref:`Transcribe Overview <transcribe-overview>` - Speech-to-text languages
 - :ref:`Flow Actions <flow-struct-action>` - ai_talk action configuration

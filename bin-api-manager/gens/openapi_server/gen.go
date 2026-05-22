@@ -1164,6 +1164,24 @@ type AIManagerAI struct {
 // AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 type AIManagerAIEngineModel string
 
+// AIManagerAIPromptHistory defines model for AIManagerAIPromptHistory.
+type AIManagerAIPromptHistory struct {
+	// AiId The ID of the AI this history entry belongs to. Returned from the `GET /ais` response.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Id The unique identifier of the prompt history entry.
+	Id *string `json:"id,omitempty"`
+
+	// Prompt The init_prompt value at this point in time.
+	Prompt *string `json:"prompt,omitempty"`
+
+	// TmCreate The time this history entry was recorded.
+	TmCreate *string `json:"tm_create,omitempty"`
+}
+
 // AIManagerAISTTType Speech-to-text provider type.
 type AIManagerAISTTType string
 
@@ -4892,6 +4910,15 @@ type PutAisIdJSONBody struct {
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
 
+// GetAisIdPromptHistoriesParams defines parameters for GetAisIdPromptHistories.
+type GetAisIdPromptHistoriesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetAisummariesParams defines parameters for GetAisummaries.
 type GetAisummariesParams struct {
 	// PageSize Number of results to return per page.
@@ -7163,6 +7190,12 @@ type ServerInterface interface {
 	// Regenerate direct hash for AI
 	// (POST /ais/{id}/direct-hash-regenerate)
 	PostAisIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
+	// List AI prompt history entries.
+	// (GET /ais/{id}/prompt_histories)
+	GetAisIdPromptHistories(c *gin.Context, id string, params GetAisIdPromptHistoriesParams)
+	// Get a single AI prompt history entry.
+	// (GET /ais/{id}/prompt_histories/{history_id})
+	GetAisIdPromptHistoriesHistoryId(c *gin.Context, id string, historyId string)
 	// Gets a list of ai summaries.
 	// (GET /aisummaries)
 	GetAisummaries(c *gin.Context, params GetAisummariesParams)
@@ -8999,6 +9032,82 @@ func (siw *ServerInterfaceWrapper) PostAisIdDirectHashRegenerate(c *gin.Context)
 	}
 
 	siw.Handler.PostAisIdDirectHashRegenerate(c, id)
+}
+
+// GetAisIdPromptHistories operation middleware
+func (siw *ServerInterfaceWrapper) GetAisIdPromptHistories(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAisIdPromptHistoriesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAisIdPromptHistories(c, id, params)
+}
+
+// GetAisIdPromptHistoriesHistoryId operation middleware
+func (siw *ServerInterfaceWrapper) GetAisIdPromptHistoriesHistoryId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "history_id" -------------
+	var historyId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "history_id", c.Param("history_id"), &historyId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter history_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAisIdPromptHistoriesHistoryId(c, id, historyId)
 }
 
 // GetAisummaries operation middleware
@@ -16532,6 +16641,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/ais/:id", wrapper.GetAisId)
 	router.PUT(options.BaseURL+"/ais/:id", wrapper.PutAisId)
 	router.POST(options.BaseURL+"/ais/:id/direct-hash-regenerate", wrapper.PostAisIdDirectHashRegenerate)
+	router.GET(options.BaseURL+"/ais/:id/prompt_histories", wrapper.GetAisIdPromptHistories)
+	router.GET(options.BaseURL+"/ais/:id/prompt_histories/:history_id", wrapper.GetAisIdPromptHistoriesHistoryId)
 	router.GET(options.BaseURL+"/aisummaries", wrapper.GetAisummaries)
 	router.POST(options.BaseURL+"/aisummaries", wrapper.PostAisummaries)
 	router.DELETE(options.BaseURL+"/aisummaries/:id", wrapper.DeleteAisummariesId)
@@ -18846,6 +18957,123 @@ func (response PostAisIdDirectHashRegenerate404JSONResponse) VisitPostAisIdDirec
 type PostAisIdDirectHashRegenerate500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostAisIdDirectHashRegenerate500JSONResponse) VisitPostAisIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistoriesRequestObject struct {
+	Id     string `json:"id"`
+	Params GetAisIdPromptHistoriesParams
+}
+
+type GetAisIdPromptHistoriesResponseObject interface {
+	VisitGetAisIdPromptHistoriesResponse(w http.ResponseWriter) error
+}
+
+type GetAisIdPromptHistories200JSONResponse []AIManagerAIPromptHistory
+
+func (response GetAisIdPromptHistories200JSONResponse) VisitGetAisIdPromptHistoriesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistories400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetAisIdPromptHistories400JSONResponse) VisitGetAisIdPromptHistoriesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistories401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAisIdPromptHistories401JSONResponse) VisitGetAisIdPromptHistoriesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistories403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetAisIdPromptHistories403JSONResponse) VisitGetAisIdPromptHistoriesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistories500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAisIdPromptHistories500JSONResponse) VisitGetAisIdPromptHistoriesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistoriesHistoryIdRequestObject struct {
+	Id        string `json:"id"`
+	HistoryId string `json:"history_id"`
+}
+
+type GetAisIdPromptHistoriesHistoryIdResponseObject interface {
+	VisitGetAisIdPromptHistoriesHistoryIdResponse(w http.ResponseWriter) error
+}
+
+type GetAisIdPromptHistoriesHistoryId200JSONResponse AIManagerAIPromptHistory
+
+func (response GetAisIdPromptHistoriesHistoryId200JSONResponse) VisitGetAisIdPromptHistoriesHistoryIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistoriesHistoryId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetAisIdPromptHistoriesHistoryId400JSONResponse) VisitGetAisIdPromptHistoriesHistoryIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistoriesHistoryId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAisIdPromptHistoriesHistoryId401JSONResponse) VisitGetAisIdPromptHistoriesHistoryIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistoriesHistoryId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetAisIdPromptHistoriesHistoryId403JSONResponse) VisitGetAisIdPromptHistoriesHistoryIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistoriesHistoryId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetAisIdPromptHistoriesHistoryId404JSONResponse) VisitGetAisIdPromptHistoriesHistoryIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdPromptHistoriesHistoryId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAisIdPromptHistoriesHistoryId500JSONResponse) VisitGetAisIdPromptHistoriesHistoryIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -36030,6 +36258,12 @@ type StrictServerInterface interface {
 	// Regenerate direct hash for AI
 	// (POST /ais/{id}/direct-hash-regenerate)
 	PostAisIdDirectHashRegenerate(ctx context.Context, request PostAisIdDirectHashRegenerateRequestObject) (PostAisIdDirectHashRegenerateResponseObject, error)
+	// List AI prompt history entries.
+	// (GET /ais/{id}/prompt_histories)
+	GetAisIdPromptHistories(ctx context.Context, request GetAisIdPromptHistoriesRequestObject) (GetAisIdPromptHistoriesResponseObject, error)
+	// Get a single AI prompt history entry.
+	// (GET /ais/{id}/prompt_histories/{history_id})
+	GetAisIdPromptHistoriesHistoryId(ctx context.Context, request GetAisIdPromptHistoriesHistoryIdRequestObject) (GetAisIdPromptHistoriesHistoryIdResponseObject, error)
 	// Gets a list of ai summaries.
 	// (GET /aisummaries)
 	GetAisummaries(ctx context.Context, request GetAisummariesRequestObject) (GetAisummariesResponseObject, error)
@@ -38021,6 +38255,62 @@ func (sh *strictHandler) PostAisIdDirectHashRegenerate(ctx *gin.Context, id open
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostAisIdDirectHashRegenerateResponseObject); ok {
 		if err := validResponse.VisitPostAisIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAisIdPromptHistories operation middleware
+func (sh *strictHandler) GetAisIdPromptHistories(ctx *gin.Context, id string, params GetAisIdPromptHistoriesParams) {
+	var request GetAisIdPromptHistoriesRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAisIdPromptHistories(ctx, request.(GetAisIdPromptHistoriesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAisIdPromptHistories")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAisIdPromptHistoriesResponseObject); ok {
+		if err := validResponse.VisitGetAisIdPromptHistoriesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAisIdPromptHistoriesHistoryId operation middleware
+func (sh *strictHandler) GetAisIdPromptHistoriesHistoryId(ctx *gin.Context, id string, historyId string) {
+	var request GetAisIdPromptHistoriesHistoryIdRequestObject
+
+	request.Id = id
+	request.HistoryId = historyId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAisIdPromptHistoriesHistoryId(ctx, request.(GetAisIdPromptHistoriesHistoryIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAisIdPromptHistoriesHistoryId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAisIdPromptHistoriesHistoryIdResponseObject); ok {
+		if err := validResponse.VisitGetAisIdPromptHistoriesHistoryIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
