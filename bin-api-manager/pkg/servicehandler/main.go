@@ -31,6 +31,7 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	ammessage "monorepo/bin-ai-manager/models/message"
+	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amteam "monorepo/bin-ai-manager/models/team"
 	amtool "monorepo/bin-ai-manager/models/tool"
@@ -288,6 +289,10 @@ type ServiceHandler interface {
 		toolNames []amtool.ToolName,
 	) (*amai.WebhookMessage, error)
 	AIDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error)
+
+	// ai prompt history handlers
+	AIPromptHistoryGetsByAIID(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, size uint64, token string) ([]*amaiprompthistory.AIPromptHistory, error)
+	AIPromptHistoryGet(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, historyID uuid.UUID) (*amaiprompthistory.AIPromptHistory, error)
 
 	// team handlers
 	TeamCreate(ctx context.Context, a *auth.AuthIdentity, name string, detail string, startMemberID uuid.UUID, members []amteam.Member, parameter map[string]any) (*amteam.WebhookMessage, error)
