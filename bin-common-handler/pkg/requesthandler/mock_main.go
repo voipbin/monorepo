@@ -17,6 +17,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	message "monorepo/bin-ai-manager/models/message"
+	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
 	tool "monorepo/bin-ai-manager/models/tool"
@@ -80,7 +81,7 @@ import (
 	tag "monorepo/bin-tag-manager/models/tag"
 	chat "monorepo/bin-talk-manager/models/chat"
 	message3 "monorepo/bin-talk-manager/models/message"
-	participant "monorepo/bin-talk-manager/models/participant"
+	participant0 "monorepo/bin-talk-manager/models/participant"
 	event "monorepo/bin-timeline-manager/models/event"
 	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -195,6 +196,21 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIList(ctx, pageToken, pageSize, f
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIList), ctx, pageToken, pageSize, filters)
 }
 
+// AIV1AIParticipantList mocks base method.
+func (m *MockRequestHandler) AIV1AIParticipantList(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*participant.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIParticipantList", ctx, aiID, size, token)
+	ret0, _ := ret[0].([]*participant.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIParticipantList indicates an expected call of AIV1AIParticipantList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIParticipantList(ctx, aiID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIParticipantList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIParticipantList), ctx, aiID, size, token)
+}
+
 // AIV1AIPromptHistoryGet mocks base method.
 func (m *MockRequestHandler) AIV1AIPromptHistoryGet(ctx context.Context, aiID, historyID uuid.UUID) (*aiprompthistory.AIPromptHistory, error) {
 	m.ctrl.T.Helper()
@@ -283,6 +299,21 @@ func (m *MockRequestHandler) AIV1AIcallList(ctx context.Context, pageToken strin
 func (mr *MockRequestHandlerMockRecorder) AIV1AIcallList(ctx, pageToken, pageSize, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallList), ctx, pageToken, pageSize, filters)
+}
+
+// AIV1AIcallParticipantList mocks base method.
+func (m *MockRequestHandler) AIV1AIcallParticipantList(ctx context.Context, aicallID uuid.UUID, size uint64, token string) ([]*participant.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIcallParticipantList", ctx, aicallID, size, token)
+	ret0, _ := ret[0].([]*participant.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIcallParticipantList indicates an expected call of AIV1AIcallParticipantList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIcallParticipantList(ctx, aicallID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIcallParticipantList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIcallParticipantList), ctx, aicallID, size, token)
 }
 
 // AIV1AIcallStart mocks base method.
@@ -6460,7 +6491,7 @@ func (mr *MockRequestHandlerMockRecorder) TagV1TagUpdate(ctx, tagID, name, detai
 }
 
 // TalkV1ChatCreate mocks base method.
-func (m *MockRequestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name, detail, creatorType string, creatorID uuid.UUID, participants []participant.ParticipantInput) (*chat.Chat, error) {
+func (m *MockRequestHandler) TalkV1ChatCreate(ctx context.Context, customerID uuid.UUID, chatType chat.Type, name, detail, creatorType string, creatorID uuid.UUID, participants []participant0.ParticipantInput) (*chat.Chat, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ChatCreate", ctx, customerID, chatType, name, detail, creatorType, creatorID, participants)
 	ret0, _ := ret[0].(*chat.Chat)
@@ -6625,10 +6656,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1MessageReactionCreate(ctx, messa
 }
 
 // TalkV1ParticipantCreate mocks base method.
-func (m *MockRequestHandler) TalkV1ParticipantCreate(ctx context.Context, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*participant.Participant, error) {
+func (m *MockRequestHandler) TalkV1ParticipantCreate(ctx context.Context, talkID uuid.UUID, ownerType string, ownerID uuid.UUID) (*participant0.Participant, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ParticipantCreate", ctx, talkID, ownerType, ownerID)
-	ret0, _ := ret[0].(*participant.Participant)
+	ret0, _ := ret[0].(*participant0.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -6640,10 +6671,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ParticipantCreate(ctx, talkID, o
 }
 
 // TalkV1ParticipantDelete mocks base method.
-func (m *MockRequestHandler) TalkV1ParticipantDelete(ctx context.Context, talkID, participantID uuid.UUID) (*participant.Participant, error) {
+func (m *MockRequestHandler) TalkV1ParticipantDelete(ctx context.Context, talkID, participantID uuid.UUID) (*participant0.Participant, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ParticipantDelete", ctx, talkID, participantID)
-	ret0, _ := ret[0].(*participant.Participant)
+	ret0, _ := ret[0].(*participant0.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -6655,10 +6686,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ParticipantDelete(ctx, talkID, p
 }
 
 // TalkV1ParticipantList mocks base method.
-func (m *MockRequestHandler) TalkV1ParticipantList(ctx context.Context, talkID uuid.UUID) ([]*participant.Participant, error) {
+func (m *MockRequestHandler) TalkV1ParticipantList(ctx context.Context, talkID uuid.UUID) ([]*participant0.Participant, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ParticipantList", ctx, talkID)
-	ret0, _ := ret[0].([]*participant.Participant)
+	ret0, _ := ret[0].([]*participant0.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -6670,10 +6701,10 @@ func (mr *MockRequestHandlerMockRecorder) TalkV1ParticipantList(ctx, talkID any)
 }
 
 // TalkV1ParticipantListWithFilters mocks base method.
-func (m *MockRequestHandler) TalkV1ParticipantListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*participant.Participant, error) {
+func (m *MockRequestHandler) TalkV1ParticipantListWithFilters(ctx context.Context, filters map[string]any, pageToken string, pageSize uint64) ([]*participant0.Participant, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TalkV1ParticipantListWithFilters", ctx, filters, pageToken, pageSize)
-	ret0, _ := ret[0].([]*participant.Participant)
+	ret0, _ := ret[0].([]*participant0.Participant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
