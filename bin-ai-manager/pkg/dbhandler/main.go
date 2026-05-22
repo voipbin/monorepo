@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/message"
+	"monorepo/bin-ai-manager/models/participant"
 	"monorepo/bin-ai-manager/models/summary"
 	"monorepo/bin-ai-manager/models/team"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
@@ -60,6 +61,8 @@ type DBHandler interface {
 
 	// Participant
 	ParticipantCreate(ctx context.Context, aicallID uuid.UUID, aiID uuid.UUID) error
+	ParticipantListByAIcallID(ctx context.Context, aicallID uuid.UUID, size uint64, token string) ([]*participant.Participant, error)
+	ParticipantListByAIID(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*participant.Participant, error)
 }
 
 // handler database handler

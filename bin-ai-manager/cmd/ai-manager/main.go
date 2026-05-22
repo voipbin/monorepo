@@ -127,7 +127,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiprompthistoryHandler, messageHandler, summaryHandler, teamHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiprompthistoryHandler, messageHandler, summaryHandler, teamHandler, participantHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -184,6 +184,7 @@ func runListen(
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
 	teamHandler teamhandler.TeamHandler,
+	participantHandler participanthandler.ParticipantHandler,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	toolHandler := toolhandler.NewToolHandler()
@@ -200,6 +201,7 @@ func runListen(
 		summaryHandler,
 		toolHandler,
 		teamHandler,
+		participantHandler,
 	)
 
 	// run

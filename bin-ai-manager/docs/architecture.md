@@ -54,6 +54,8 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `POST /v1/aicalls` | Start AI call session |
 | `POST /v1/aicalls/<uuid>/terminate` | Terminate AI call |
 | `POST /v1/aicalls/<uuid>/tool_execute` | Execute LLM tool (called by pipecat-manager) |
+| `GET /v1/aicalls/<uuid>/participants(\?|$)` | List participants of an AI call (paginated) |
+| `GET /v1/ais/<uuid>/participants(\?|$)` | List AI calls an AI agent participated in (paginated) |
 | `GET /v1/messages?` | List messages |
 | `GET/POST /v1/messages/<uuid>` | Get / create message |
 | `POST /v1/services/type/aicall` | Create AI call service (used by flow-manager) |

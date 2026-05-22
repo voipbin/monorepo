@@ -44,6 +44,14 @@ Async LLM-generated summary of an AIcall's message history.
 
 Status: `processing` → `done` | `failed`
 
+### Participant
+A join row recording which AI agent participated in which AIcall. Stored in `ai_aicall_participants` (created by PR #934). Composite primary key `(ai_id, aicall_id)` — no separate `id` or `customer_id` column.
+
+Key fields:
+- `ai_id` — UUID of the AI configuration that participated
+- `aicall_id` — UUID of the AIcall session
+- `tm_create` — timestamp of first participation
+
 ### Team
 AI team configuration grouping multiple AI agents for routing or escalation scenarios.
 

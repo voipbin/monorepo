@@ -31,6 +31,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	ammessage "monorepo/bin-ai-manager/models/message"
+	amparticipant "monorepo/bin-ai-manager/models/participant"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amteam "monorepo/bin-ai-manager/models/team"
 	amtool "monorepo/bin-ai-manager/models/tool"
@@ -284,6 +285,10 @@ type RequestHandler interface {
 	) (*ammessage.Message, error)
 	AIV1MessageGet(ctx context.Context, messageID uuid.UUID) (*ammessage.Message, error)
 	AIV1MessageDelete(ctx context.Context, messageID uuid.UUID) (*ammessage.Message, error)
+
+	// ai-manager participant
+	AIV1AIcallParticipantList(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64) ([]*amparticipant.WebhookMessage, error)
+	AIV1AIParticipantList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]*amparticipant.WebhookMessage, error)
 
 	// ai-manager service
 	AIV1ServiceTypeAIcallStart(

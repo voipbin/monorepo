@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
 	"monorepo/bin-ai-manager/pkg/teamhandler"
 	"monorepo/bin-ai-manager/pkg/toolhandler"
@@ -54,6 +55,7 @@ type listenHandler struct {
 	summaryHandler         summaryhandler.SummaryHandler
 	toolHandler            toolhandler.ToolHandler
 	teamHandler            teamhandler.TeamHandler
+	participantHandler     participanthandler.ParticipantHandler
 }
 
 var (
@@ -65,6 +67,7 @@ var (
 	regV1AIsGet                    = regexp.MustCompile(`/v1/ais\?`)
 	regV1AIs                       = regexp.MustCompile("/v1/ais$")
 	regV1AIsIDDirectHashRegenerate = regexp.MustCompile("/v1/ais/" + regUUID + "/direct-hash-regenerate$")
+	regV1AIsIDParticipants         = regexp.MustCompile("/v1/ais/" + regUUID + `/participants(\?|$)`)
 	regV1AIsID                     = regexp.MustCompile("/v1/ais/" + regUUID + "$")
 
 	// prompt histories
@@ -72,11 +75,12 @@ var (
 	regV1AIsIDPromptHistoriesIDGet = regexp.MustCompile("/v1/ais/" + regUUID + "/prompt_histories/" + regUUID + "$")
 
 	// aicalls
-	regV1AIcallsGet           = regexp.MustCompile(`/v1/aicalls\?`)
-	regV1AIcalls              = regexp.MustCompile(`/v1/aicalls$`)
-	regV1AIcallsID            = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
-	regV1AIcallsIDTerminate   = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
-	regV1AIcallsIDToolExecute = regexp.MustCompile("/v1/aicalls/" + regUUID + "/tool_execute$")
+	regV1AIcallsGet                 = regexp.MustCompile(`/v1/aicalls\?`)
+	regV1AIcalls                    = regexp.MustCompile(`/v1/aicalls$`)
+	regV1AIcallsIDParticipants      = regexp.MustCompile("/v1/aicalls/" + regUUID + `/participants(\?|$)`)
+	regV1AIcallsID                  = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
+	regV1AIcallsIDTerminate         = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
+	regV1AIcallsIDToolExecute       = regexp.MustCompile("/v1/aicalls/" + regUUID + "/tool_execute$")
 
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
@@ -173,6 +177,7 @@ func NewListenHandler(
 	summaryHandler summaryhandler.SummaryHandler,
 	toolHandler toolhandler.ToolHandler,
 	teamHandler teamhandler.TeamHandler,
+	participantHandler participanthandler.ParticipantHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:   sockHandler,
@@ -188,6 +193,7 @@ func NewListenHandler(
 		summaryHandler:         summaryHandler,
 		toolHandler:            toolHandler,
 		teamHandler:            teamHandler,
+		participantHandler:     participantHandler,
 	}
 
 	return h
@@ -249,6 +255,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		response, err = h.processV1AIsIDDirectHashRegenerate(ctx, m)
 		requestType = "/v1/ais/<ai-id>/direct-hash-regenerate"
 
+	// GET /ais/<ai-id>/participants
+	case regV1AIsIDParticipants.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIsIDParticipantsGet(ctx, m)
+		requestType = "/v1/ais/<ai-id>/participants"
+
 	// GET /ais/<ai-id>
 	case regV1AIsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		response, err = h.processV1AIsIDGet(ctx, m)
@@ -286,6 +297,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIcalls.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AIcallsPost(ctx, m)
 		requestType = "/v1/aicalls"
+
+	// GET /aicalls/<aicall-id>/participants
+	case regV1AIcallsIDParticipants.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIcallsIDParticipantsGet(ctx, m)
+		requestType = "/v1/aicalls/<aicall-id>/participants"
 
 	// GET /aicalls/<aicall-id>
 	case regV1AIcallsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:

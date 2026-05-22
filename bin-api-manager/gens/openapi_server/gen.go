@@ -1320,6 +1320,18 @@ type AIManagerMessageDirection string
 // AIManagerMessageRole Role of the entity in the conversation.
 type AIManagerMessageRole string
 
+// AIManagerParticipant defines model for AIManagerParticipant.
+type AIManagerParticipant struct {
+	// AiId The unique identifier of the AI agent. Returned from the `GET /ais` response.
+	AiId *openapi_types.UUID `json:"ai_id,omitempty"`
+
+	// AicallId The unique identifier of the AI call. Returned from the `GET /aicalls` response.
+	AicallId *openapi_types.UUID `json:"aicall_id,omitempty"`
+
+	// TmCreate The timestamp when the participation was recorded.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+}
+
 // AIManagerSummary defines model for AIManagerSummary.
 type AIManagerSummary struct {
 	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
@@ -4806,6 +4818,15 @@ type PostAicallsJSONBody struct {
 	ReferenceType AIManagerAIcallReferenceType `json:"reference_type"`
 }
 
+// GetAicallsIdParticipantsParams defines parameters for GetAicallsIdParticipants.
+type GetAicallsIdParticipantsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetAimessagesParams defines parameters for GetAimessages.
 type GetAimessagesParams struct {
 	// PageSize Number of results to return per page.
@@ -4908,6 +4929,15 @@ type PutAisIdJSONBody struct {
 
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
+}
+
+// GetAisIdParticipantsParams defines parameters for GetAisIdParticipants.
+type GetAisIdParticipantsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetAisIdPromptHistoriesParams defines parameters for GetAisIdPromptHistories.
@@ -7160,6 +7190,9 @@ type ServerInterface interface {
 	// Get details of a specific ai call
 	// (GET /aicalls/{id})
 	GetAicallsId(c *gin.Context, id string)
+	// List participants of an AI call
+	// (GET /aicalls/{id}/participants)
+	GetAicallsIdParticipants(c *gin.Context, id openapi_types.UUID, params GetAicallsIdParticipantsParams)
 	// Retrieve a list of aicall messages
 	// (GET /aimessages)
 	GetAimessages(c *gin.Context, params GetAimessagesParams)
@@ -7190,6 +7223,9 @@ type ServerInterface interface {
 	// Regenerate direct hash for AI
 	// (POST /ais/{id}/direct-hash-regenerate)
 	PostAisIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
+	// List AI calls an AI agent participated in
+	// (GET /ais/{id}/participants)
+	GetAisIdParticipants(c *gin.Context, id openapi_types.UUID, params GetAisIdParticipantsParams)
 	// List AI prompt history entries.
 	// (GET /ais/{id}/prompt_histories)
 	GetAisIdPromptHistories(c *gin.Context, id string, params GetAisIdPromptHistoriesParams)
@@ -8781,6 +8817,49 @@ func (siw *ServerInterfaceWrapper) GetAicallsId(c *gin.Context) {
 	siw.Handler.GetAicallsId(c, id)
 }
 
+// GetAicallsIdParticipants operation middleware
+func (siw *ServerInterfaceWrapper) GetAicallsIdParticipants(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAicallsIdParticipantsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAicallsIdParticipants(c, id, params)
+}
+
 // GetAimessages operation middleware
 func (siw *ServerInterfaceWrapper) GetAimessages(c *gin.Context) {
 
@@ -9032,6 +9111,49 @@ func (siw *ServerInterfaceWrapper) PostAisIdDirectHashRegenerate(c *gin.Context)
 	}
 
 	siw.Handler.PostAisIdDirectHashRegenerate(c, id)
+}
+
+// GetAisIdParticipants operation middleware
+func (siw *ServerInterfaceWrapper) GetAisIdParticipants(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAisIdParticipantsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAisIdParticipants(c, id, params)
 }
 
 // GetAisIdPromptHistories operation middleware
@@ -16631,6 +16753,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aicalls", wrapper.PostAicalls)
 	router.DELETE(options.BaseURL+"/aicalls/:id", wrapper.DeleteAicallsId)
 	router.GET(options.BaseURL+"/aicalls/:id", wrapper.GetAicallsId)
+	router.GET(options.BaseURL+"/aicalls/:id/participants", wrapper.GetAicallsIdParticipants)
 	router.GET(options.BaseURL+"/aimessages", wrapper.GetAimessages)
 	router.POST(options.BaseURL+"/aimessages", wrapper.PostAimessages)
 	router.DELETE(options.BaseURL+"/aimessages/:id", wrapper.DeleteAimessagesId)
@@ -16641,6 +16764,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/ais/:id", wrapper.GetAisId)
 	router.PUT(options.BaseURL+"/ais/:id", wrapper.PutAisId)
 	router.POST(options.BaseURL+"/ais/:id/direct-hash-regenerate", wrapper.PostAisIdDirectHashRegenerate)
+	router.GET(options.BaseURL+"/ais/:id/participants", wrapper.GetAisIdParticipants)
 	router.GET(options.BaseURL+"/ais/:id/prompt_histories", wrapper.GetAisIdPromptHistories)
 	router.GET(options.BaseURL+"/ais/:id/prompt_histories/:history_id", wrapper.GetAisIdPromptHistoriesHistoryId)
 	router.GET(options.BaseURL+"/aisummaries", wrapper.GetAisummaries)
@@ -18424,6 +18548,73 @@ func (response GetAicallsId500JSONResponse) VisitGetAicallsIdResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetAicallsIdParticipantsRequestObject struct {
+	Id     openapi_types.UUID `json:"id"`
+	Params GetAicallsIdParticipantsParams
+}
+
+type GetAicallsIdParticipantsResponseObject interface {
+	VisitGetAicallsIdParticipantsResponse(w http.ResponseWriter) error
+}
+
+type GetAicallsIdParticipants200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                 `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerParticipant `json:"result,omitempty"`
+}
+
+func (response GetAicallsIdParticipants200JSONResponse) VisitGetAicallsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAicallsIdParticipants400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetAicallsIdParticipants400JSONResponse) VisitGetAicallsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAicallsIdParticipants401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAicallsIdParticipants401JSONResponse) VisitGetAicallsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAicallsIdParticipants403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetAicallsIdParticipants403JSONResponse) VisitGetAicallsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAicallsIdParticipants404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetAicallsIdParticipants404JSONResponse) VisitGetAicallsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAicallsIdParticipants500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAicallsIdParticipants500JSONResponse) VisitGetAicallsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetAimessagesRequestObject struct {
 	Params GetAimessagesParams
 }
@@ -18957,6 +19148,73 @@ func (response PostAisIdDirectHashRegenerate404JSONResponse) VisitPostAisIdDirec
 type PostAisIdDirectHashRegenerate500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PostAisIdDirectHashRegenerate500JSONResponse) VisitPostAisIdDirectHashRegenerateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdParticipantsRequestObject struct {
+	Id     openapi_types.UUID `json:"id"`
+	Params GetAisIdParticipantsParams
+}
+
+type GetAisIdParticipantsResponseObject interface {
+	VisitGetAisIdParticipantsResponse(w http.ResponseWriter) error
+}
+
+type GetAisIdParticipants200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                 `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerParticipant `json:"result,omitempty"`
+}
+
+func (response GetAisIdParticipants200JSONResponse) VisitGetAisIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdParticipants400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetAisIdParticipants400JSONResponse) VisitGetAisIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdParticipants401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAisIdParticipants401JSONResponse) VisitGetAisIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdParticipants403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetAisIdParticipants403JSONResponse) VisitGetAisIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdParticipants404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetAisIdParticipants404JSONResponse) VisitGetAisIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAisIdParticipants500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAisIdParticipants500JSONResponse) VisitGetAisIdParticipantsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -36228,6 +36486,9 @@ type StrictServerInterface interface {
 	// Get details of a specific ai call
 	// (GET /aicalls/{id})
 	GetAicallsId(ctx context.Context, request GetAicallsIdRequestObject) (GetAicallsIdResponseObject, error)
+	// List participants of an AI call
+	// (GET /aicalls/{id}/participants)
+	GetAicallsIdParticipants(ctx context.Context, request GetAicallsIdParticipantsRequestObject) (GetAicallsIdParticipantsResponseObject, error)
 	// Retrieve a list of aicall messages
 	// (GET /aimessages)
 	GetAimessages(ctx context.Context, request GetAimessagesRequestObject) (GetAimessagesResponseObject, error)
@@ -36258,6 +36519,9 @@ type StrictServerInterface interface {
 	// Regenerate direct hash for AI
 	// (POST /ais/{id}/direct-hash-regenerate)
 	PostAisIdDirectHashRegenerate(ctx context.Context, request PostAisIdDirectHashRegenerateRequestObject) (PostAisIdDirectHashRegenerateResponseObject, error)
+	// List AI calls an AI agent participated in
+	// (GET /ais/{id}/participants)
+	GetAisIdParticipants(ctx context.Context, request GetAisIdParticipantsRequestObject) (GetAisIdParticipantsResponseObject, error)
 	// List AI prompt history entries.
 	// (GET /ais/{id}/prompt_histories)
 	GetAisIdPromptHistories(ctx context.Context, request GetAisIdPromptHistoriesRequestObject) (GetAisIdPromptHistoriesResponseObject, error)
@@ -37972,6 +38236,34 @@ func (sh *strictHandler) GetAicallsId(ctx *gin.Context, id string) {
 	}
 }
 
+// GetAicallsIdParticipants operation middleware
+func (sh *strictHandler) GetAicallsIdParticipants(ctx *gin.Context, id openapi_types.UUID, params GetAicallsIdParticipantsParams) {
+	var request GetAicallsIdParticipantsRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAicallsIdParticipants(ctx, request.(GetAicallsIdParticipantsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAicallsIdParticipants")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAicallsIdParticipantsResponseObject); ok {
+		if err := validResponse.VisitGetAicallsIdParticipantsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // GetAimessages operation middleware
 func (sh *strictHandler) GetAimessages(ctx *gin.Context, params GetAimessagesParams) {
 	var request GetAimessagesRequestObject
@@ -38255,6 +38547,34 @@ func (sh *strictHandler) PostAisIdDirectHashRegenerate(ctx *gin.Context, id open
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostAisIdDirectHashRegenerateResponseObject); ok {
 		if err := validResponse.VisitPostAisIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAisIdParticipants operation middleware
+func (sh *strictHandler) GetAisIdParticipants(ctx *gin.Context, id openapi_types.UUID, params GetAisIdParticipantsParams) {
+	var request GetAisIdParticipantsRequestObject
+
+	request.Id = id
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAisIdParticipants(ctx, request.(GetAisIdParticipantsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAisIdParticipants")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAisIdParticipantsResponseObject); ok {
+		if err := validResponse.VisitGetAisIdParticipantsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

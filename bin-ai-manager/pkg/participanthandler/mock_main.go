@@ -11,6 +11,7 @@ package participanthandler
 
 import (
 	context "context"
+	participant "monorepo/bin-ai-manager/models/participant"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -53,4 +54,34 @@ func (m *MockParticipantHandler) Create(ctx context.Context, aicallID, aiID uuid
 func (mr *MockParticipantHandlerMockRecorder) Create(ctx, aicallID, aiID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockParticipantHandler)(nil).Create), ctx, aicallID, aiID)
+}
+
+// ListByAIID mocks base method.
+func (m *MockParticipantHandler) ListByAIID(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*participant.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByAIID", ctx, aiID, size, token)
+	ret0, _ := ret[0].([]*participant.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByAIID indicates an expected call of ListByAIID.
+func (mr *MockParticipantHandlerMockRecorder) ListByAIID(ctx, aiID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAIID", reflect.TypeOf((*MockParticipantHandler)(nil).ListByAIID), ctx, aiID, size, token)
+}
+
+// ListByAIcallID mocks base method.
+func (m *MockParticipantHandler) ListByAIcallID(ctx context.Context, aicallID uuid.UUID, size uint64, token string) ([]*participant.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByAIcallID", ctx, aicallID, size, token)
+	ret0, _ := ret[0].([]*participant.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByAIcallID indicates an expected call of ListByAIcallID.
+func (mr *MockParticipantHandlerMockRecorder) ListByAIcallID(ctx, aicallID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByAIcallID", reflect.TypeOf((*MockParticipantHandler)(nil).ListByAIcallID), ctx, aicallID, size, token)
 }

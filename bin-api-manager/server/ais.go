@@ -306,3 +306,54 @@ func (h *server) PostAisIdDirectHashRegenerate(c *gin.Context, id openapi_types.
 
 	c.JSON(200, res)
 }
+
+func (h *server) GetAisIdParticipants(c *gin.Context, id openapi_types.UUID, params openapi_server.GetAisIdParticipantsParams) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetAisIdParticipants",
+		"request_address": c.ClientIP(),
+		"ai_id":           id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"auth": a,
+	})
+
+	aiID := uuid.UUID(id)
+
+	pageSize := uint64(100)
+	if params.PageSize != nil {
+		pageSize = uint64(*params.PageSize)
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	tmps, err := h.serviceHandler.AIParticipantGets(c.Request.Context(), a, aiID, pageToken, pageSize)
+	if err != nil {
+		log.Errorf("Could not get AI participants list. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	nextToken := ""
+	if len(tmps) > 0 {
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
+	}
+
+	res := GenerateListResponse(tmps, nextToken)
+	c.JSON(200, res)
+}

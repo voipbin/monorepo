@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"github.com/sirupsen/logrus"
 )
 
@@ -158,5 +159,56 @@ func (h *server) DeleteAicallsId(c *gin.Context, id string) {
 		return
 	}
 
+	c.JSON(200, res)
+}
+
+func (h *server) GetAicallsIdParticipants(c *gin.Context, id openapi_types.UUID, params openapi_server.GetAicallsIdParticipantsParams) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "GetAicallsIdParticipants",
+		"request_address": c.ClientIP(),
+		"aicall_id":       id,
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{
+		"auth": a,
+	})
+
+	aicallID := uuid.UUID(id)
+
+	pageSize := uint64(100)
+	if params.PageSize != nil {
+		pageSize = uint64(*params.PageSize)
+	}
+	if pageSize <= 0 || pageSize > 100 {
+		pageSize = 100
+		log.Debugf("Invalid requested page size. Set to default. page_size: %d", pageSize)
+	}
+
+	pageToken := ""
+	if params.PageToken != nil {
+		pageToken = *params.PageToken
+	}
+
+	tmps, err := h.serviceHandler.AIcallParticipantGets(c.Request.Context(), a, aicallID, pageToken, pageSize)
+	if err != nil {
+		log.Errorf("Could not get aicall participants list. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	nextToken := ""
+	if len(tmps) > 0 {
+		if tmps[len(tmps)-1].TMCreate != nil {
+			nextToken = tmps[len(tmps)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+		}
+	}
+
+	res := GenerateListResponse(tmps, nextToken)
 	c.JSON(200, res)
 }
