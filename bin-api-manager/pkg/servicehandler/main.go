@@ -30,8 +30,8 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
-	ammessage "monorepo/bin-ai-manager/models/message"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
+	ammessage "monorepo/bin-ai-manager/models/message"
 	amsummary "monorepo/bin-ai-manager/models/summary"
 	amteam "monorepo/bin-ai-manager/models/team"
 	amtool "monorepo/bin-ai-manager/models/tool"
@@ -99,9 +99,9 @@ import (
 )
 
 const (
-	TokenExpiration = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
-	BootExpiration      = time.Hour * 4 // direct boot token expiration time. 4 hours
-	DelegateExpiration  = time.Hour * 8 // delegate token expiration. 8 hours
+	TokenExpiration    = time.Hour * 24 * 7 // default token expiration time. 1 week(7 days)
+	BootExpiration     = time.Hour * 4      // direct boot token expiration time. 4 hours
+	DelegateExpiration = time.Hour * 8      // delegate token expiration. 8 hours
 )
 
 // ServiceHandler is interface for service handle
