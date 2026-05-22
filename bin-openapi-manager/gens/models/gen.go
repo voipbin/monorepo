@@ -3471,6 +3471,18 @@ type AIManagerMessageDirection string
 // AIManagerMessageRole Role of the entity in the conversation.
 type AIManagerMessageRole string
 
+// AIManagerParticipant defines model for AIManagerParticipant.
+type AIManagerParticipant struct {
+	// AiId The unique identifier of the AI agent. Returned from the `GET /ais` response.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// AicallId The unique identifier of the AI call. Returned from the `GET /aicalls` response.
+	AicallId *string `json:"aicall_id,omitempty"`
+
+	// TmCreate The timestamp when the participation was recorded.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+}
+
 // AIManagerSummary defines model for AIManagerSummary.
 type AIManagerSummary struct {
 	// ActiveflowId The unique identifier of the activeflow. Returned from the `GET /activeflows` response.
@@ -6957,6 +6969,15 @@ type PostAicallsJSONBody struct {
 	ReferenceType AIManagerAIcallReferenceType `json:"reference_type"`
 }
 
+// GetAicallsIdParticipantsParams defines parameters for GetAicallsIdParticipants.
+type GetAicallsIdParticipantsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
 // GetAimessagesParams defines parameters for GetAimessages.
 type GetAimessagesParams struct {
 	// PageSize Number of results to return per page.
@@ -7059,6 +7080,15 @@ type PutAisIdJSONBody struct {
 
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
+}
+
+// GetAisIdParticipantsParams defines parameters for GetAisIdParticipants.
+type GetAisIdParticipantsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
 // GetAisIdPromptHistoriesParams defines parameters for GetAisIdPromptHistories.
