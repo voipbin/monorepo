@@ -2596,6 +2596,12 @@ components:
           x-go-type: string
           description: "The unique identifier of the activeflow. Returned from the `GET /activeflows` response."
           example: "550e8400-e29b-41d4-a716-446655440000"
+        active_ai_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the AI configuration that was active when this message was created. Returned from the `GET /ais` response."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
         role:
           $ref: '#/components/schemas/AIManagerMessageRole'
           description: Role of the entity in the conversation.
