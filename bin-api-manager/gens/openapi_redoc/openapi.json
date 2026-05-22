@@ -22405,14 +22405,12 @@
           "ai_id": {
             "type": "string",
             "format": "uuid",
-            "x-go-type": "string",
             "description": "The unique identifier of the AI agent. Returned from the `GET /ais` response.",
             "example": "22222222-2222-2222-2222-222222222222"
           },
           "aicall_id": {
             "type": "string",
             "format": "uuid",
-            "x-go-type": "string",
             "description": "The unique identifier of the AI call. Returned from the `GET /aicalls` response.",
             "example": "11111111-1111-1111-1111-111111111111"
           },

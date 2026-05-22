@@ -183,6 +183,10 @@ func Test_ParticipantCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				_, _ = dbTest.Exec("DELETE FROM ai_aicall_participants WHERE aicall_id = ?", tt.input.aicallID.Bytes())
+			})
+
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 

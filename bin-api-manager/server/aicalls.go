@@ -179,12 +179,7 @@ func (h *server) GetAicallsIdParticipants(c *gin.Context, id openapi_types.UUID,
 		"auth": a,
 	})
 
-	aicallID, err := uuid.FromString(id.String())
-	if err != nil {
-		log.Errorf("Invalid aicall ID format. err: %v", err)
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
-		return
-	}
+	aicallID := uuid.UUID(id)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {

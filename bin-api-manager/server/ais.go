@@ -324,12 +324,7 @@ func (h *server) GetAisIdParticipants(c *gin.Context, id openapi_types.UUID, par
 		"auth": a,
 	})
 
-	aiID, err := uuid.FromString(id.String())
-	if err != nil {
-		log.Errorf("Invalid AI ID format. err: %v", err)
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID.").Wrap(err))
-		return
-	}
+	aiID := uuid.UUID(id)
 
 	pageSize := uint64(100)
 	if params.PageSize != nil {

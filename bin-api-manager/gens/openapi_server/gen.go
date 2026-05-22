@@ -1323,10 +1323,10 @@ type AIManagerMessageRole string
 // AIManagerParticipant defines model for AIManagerParticipant.
 type AIManagerParticipant struct {
 	// AiId The unique identifier of the AI agent. Returned from the `GET /ais` response.
-	AiId *string `json:"ai_id,omitempty"`
+	AiId *openapi_types.UUID `json:"ai_id,omitempty"`
 
 	// AicallId The unique identifier of the AI call. Returned from the `GET /aicalls` response.
-	AicallId *string `json:"aicall_id,omitempty"`
+	AicallId *openapi_types.UUID `json:"aicall_id,omitempty"`
 
 	// TmCreate The timestamp when the participation was recorded.
 	TmCreate *time.Time `json:"tm_create,omitempty"`
