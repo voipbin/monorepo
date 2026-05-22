@@ -15,6 +15,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	message "monorepo/bin-ai-manager/models/message"
+	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
 	reflect "reflect"
@@ -349,6 +350,36 @@ func (m *MockDBHandler) ParticipantCreate(ctx context.Context, aicallID, aiID uu
 func (mr *MockDBHandlerMockRecorder) ParticipantCreate(ctx, aicallID, aiID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantCreate", reflect.TypeOf((*MockDBHandler)(nil).ParticipantCreate), ctx, aicallID, aiID)
+}
+
+// ParticipantListByAIID mocks base method.
+func (m *MockDBHandler) ParticipantListByAIID(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*participant.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParticipantListByAIID", ctx, aiID, size, token)
+	ret0, _ := ret[0].([]*participant.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParticipantListByAIID indicates an expected call of ParticipantListByAIID.
+func (mr *MockDBHandlerMockRecorder) ParticipantListByAIID(ctx, aiID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantListByAIID", reflect.TypeOf((*MockDBHandler)(nil).ParticipantListByAIID), ctx, aiID, size, token)
+}
+
+// ParticipantListByAIcallID mocks base method.
+func (m *MockDBHandler) ParticipantListByAIcallID(ctx context.Context, aicallID uuid.UUID, size uint64, token string) ([]*participant.Participant, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParticipantListByAIcallID", ctx, aicallID, size, token)
+	ret0, _ := ret[0].([]*participant.Participant)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParticipantListByAIcallID indicates an expected call of ParticipantListByAIcallID.
+func (mr *MockDBHandlerMockRecorder) ParticipantListByAIcallID(ctx, aicallID, size, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParticipantListByAIcallID", reflect.TypeOf((*MockDBHandler)(nil).ParticipantListByAIcallID), ctx, aicallID, size, token)
 }
 
 // SummaryCreate mocks base method.
