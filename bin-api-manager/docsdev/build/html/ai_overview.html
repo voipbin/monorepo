@@ -363,6 +363,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#best-practices">Best Practices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ai-prompt-history">AI Prompt History</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ai-participants">AI Participants</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
@@ -1506,6 +1507,33 @@ read-only; to restore a previous prompt, read the desired entry and submit it vi
 <p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/ais/{ai_id}/prompt_histories/{history_id}</span></code></p>
 <p>Returns a single <code class="docutils literal notranslate"><span class="pre">AIPromptHistory</span></code> object.</p>
 <p>For the full struct definition, see <a class="reference internal" href="ai_struct_aiprompthistory.html#ai-struct-aiprompthistory"><span class="std std-ref">AIPromptHistory</span></a>.</p>
+</section>
+</section>
+<section id="ai-participants">
+<h1>AI Participants<a class="headerlink" href="#ai-participants" title="Link to this heading">¶</a></h1>
+<p>Participants track the individual legs (callers, agents, etc.) that are part of
+an AI call session. Use these endpoints to inspect who is active in a given
+session or to list all sessions a particular AI agent is involved in.</p>
+<section id="list-participants-for-an-ai-call">
+<h2>List participants for an AI call<a class="headerlink" href="#list-participants-for-an-ai-call" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/aicalls/{aicall_id}/participants</span></code></p>
+<p>Returns a list of participant objects for the specified AI call.</p>
+<p><strong>Query parameters</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">page_size</span></code> (integer, optional): Maximum number of entries to return per page.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page_token</span></code> (string, optional): Pagination token returned in a previous response.</p></li>
+</ul>
+</section>
+<section id="list-participants-for-an-ai-agent">
+<h2>List participants for an AI agent<a class="headerlink" href="#list-participants-for-an-ai-agent" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/ais/{ai_id}/participants</span></code></p>
+<p>Returns a list of participant objects across all AI call sessions associated
+with the specified AI agent.</p>
+<p><strong>Query parameters</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">page_size</span></code> (integer, optional): Maximum number of entries to return per page.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page_token</span></code> (string, optional): Pagination token returned in a previous response.</p></li>
+</ul>
 </section>
 </section>
 <section id="related-documentation">

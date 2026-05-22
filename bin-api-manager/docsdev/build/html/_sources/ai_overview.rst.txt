@@ -798,6 +798,38 @@ Returns a single ``AIPromptHistory`` object.
 
 For the full struct definition, see :ref:`AIPromptHistory <ai-struct-aiprompthistory>`.
 
+AI Participants
+===============
+
+Participants track the individual legs (callers, agents, etc.) that are part of
+an AI call session. Use these endpoints to inspect who is active in a given
+session or to list all sessions a particular AI agent is involved in.
+
+List participants for an AI call
+---------------------------------
+
+``GET https://api.voipbin.net/v1.0/aicalls/{aicall_id}/participants``
+
+Returns a list of participant objects for the specified AI call.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per page.
+* ``page_token`` (string, optional): Pagination token returned in a previous response.
+
+List participants for an AI agent
+-----------------------------------
+
+``GET https://api.voipbin.net/v1.0/ais/{ai_id}/participants``
+
+Returns a list of participant objects across all AI call sessions associated
+with the specified AI agent.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per page.
+* ``page_token`` (string, optional): Pagination token returned in a previous response.
+
 Related Documentation
 =====================
 
