@@ -1732,3 +1732,66 @@ func TestEventPMTeamMemberSwitched_participant_skipped_when_nil_ai(t *testing.T)
 
 	h.EventPMTeamMemberSwitched(context.Background(), evt)
 }
+
+func TestEventPMTeamMemberSwitched_participant_create_error(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	customerID := uuid.Must(uuid.NewV4())
+	aicallID := uuid.Must(uuid.NewV4())
+	teamID := uuid.Must(uuid.NewV4())
+	toMemberID := uuid.Must(uuid.NewV4())
+	fromMemberID := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	activeflowID := uuid.Must(uuid.NewV4())
+	createdMsgID := uuid.Must(uuid.NewV4())
+
+	evt := &pmmessage.MemberSwitchedEvent{
+		CustomerID:             customerID,
+		PipecatcallReferenceID: aicallID,
+		ActiveflowID:           activeflowID,
+		TransitionFunctionName: "escalate",
+		FromMember:             pmmessage.MemberInfo{ID: fromMemberID, Name: "Alice", EngineModel: "openai.gpt-4o"},
+		ToMember:               pmmessage.MemberInfo{ID: toMemberID, Name: "Bob", EngineModel: "openai.gpt-4o-mini"},
+	}
+
+	ac := &aicall.AIcall{
+		AssistanceType: aicall.AssistanceTypeTeam,
+		AssistanceID:   teamID,
+	}
+
+	mockReq := requesthandler.NewMockRequestHandler(ctrl)
+	mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockDB.EXPECT().TeamGet(gomock.Any(), teamID).Return(&team.Team{
+		Members: []team.Member{{ID: toMemberID, AIID: aiID}},
+	}, nil)
+	mockDB.EXPECT().MessageCreate(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, m *message.Message) error {
+			m.ID = createdMsgID
+			return nil
+		},
+	).Times(1)
+	createdMsg := &message.Message{}
+	createdMsg.ID = createdMsgID
+	createdMsg.CustomerID = customerID
+	mockDB.EXPECT().MessageGet(gomock.Any(), gomock.Any()).Return(createdMsg, nil).Times(1)
+
+	mockNotify := notifyhandler.NewMockNotifyHandler(ctrl)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	mockParticipant := participanthandler.NewMockParticipantHandler(ctrl)
+	// Create returns an error; the handler must log a warning and continue, not panic or return early.
+	mockParticipant.EXPECT().Create(gomock.Any(), aicallID, aiID).Return(errors.New("db error")).Times(1)
+
+	h := &messageHandler{
+		db:                 mockDB,
+		notifyHandler:      mockNotify,
+		reqHandler:         mockReq,
+		utilHandler:        utilhandler.NewUtilHandler(),
+		participantHandler: mockParticipant,
+	}
+
+	h.EventPMTeamMemberSwitched(context.Background(), evt)
+}
