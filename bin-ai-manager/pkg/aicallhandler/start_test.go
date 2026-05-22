@@ -2176,6 +2176,73 @@ func Test_startAIcallByMessaging(t *testing.T) {
 			},
 		},
 		{
+			name: "with participant handler",
+
+			ai: &ai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+					CustomerID: uuid.FromStringOrNil("f9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				EngineModel: ai.EngineModelOpenaiGPT5,
+				TTSType:     ai.TTSTypeElevenLabs,
+				TTSVoiceID:  "21m00Tcm4TlvDq8ikWAM",
+				STTType:     ai.STTTypeDeepgram,
+				STTLanguage: "en-US",
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("f10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+			activeflowID:   uuid.FromStringOrNil("f34140c8-b659-11f0-be3a-5fc8a6759b80"),
+			referenceType:  aicall.ReferenceTypeConversation,
+			referenceID:    uuid.FromStringOrNil("f3662e38-b659-11f0-820a-833195d45f7e"),
+
+			isTask: false,
+
+			responseUUIDPipecatcallID: uuid.FromStringOrNil("f3af613e-b659-11f0-9a72-e3e004fae386"),
+			responseUUIDAIcallID:      uuid.FromStringOrNil("f3af613e-b659-11f0-9a72-e3e004fae386"),
+
+			expectAIcall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f3af613e-b659-11f0-9a72-e3e004fae386"),
+					CustomerID: uuid.FromStringOrNil("f9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("f10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+				AIEngineModel:  ai.EngineModelOpenaiGPT5,
+				ActiveflowID:   uuid.FromStringOrNil("f34140c8-b659-11f0-be3a-5fc8a6759b80"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("f3662e38-b659-11f0-820a-833195d45f7e"),
+				PipecatcallID:  uuid.FromStringOrNil("f3af613e-b659-11f0-9a72-e3e004fae386"),
+				Status:         aicall.StatusInitiating,
+				STTLanguage:    "en-US",
+			},
+			expectVariables: map[string]string{
+				"voipbin.aicall.ai_engine_model": string(ai.EngineModelOpenaiGPT5),
+				"voipbin.aicall.ai_id":           "f10ecf94-b659-11f0-b8ef-13f90dff9ee8",
+				"voipbin.aicall.confbridge_id":   uuid.Nil.String(),
+				"voipbin.aicall.id":              "f3af613e-b659-11f0-9a72-e3e004fae386",
+				"voipbin.aicall.stt_language":        "en-US",
+				"voipbin.aicall.pipecatcall_id":  "f3af613e-b659-11f0-9a72-e3e004fae386",
+			},
+			expectMessageTexts: []string{
+				defaultCommonAIcallSystemPrompt,
+			},
+			expectRes: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("f3af613e-b659-11f0-9a72-e3e004fae386"),
+					CustomerID: uuid.FromStringOrNil("f9be93b6-b659-11f0-b961-b32ce4769d7c"),
+				},
+				AssistanceType: aicall.AssistanceTypeAI,
+				AssistanceID:   uuid.FromStringOrNil("f10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+				AIEngineModel:  ai.EngineModelOpenaiGPT5,
+				ActiveflowID:   uuid.FromStringOrNil("f34140c8-b659-11f0-be3a-5fc8a6759b80"),
+				ReferenceType:  aicall.ReferenceTypeConversation,
+				ReferenceID:    uuid.FromStringOrNil("f3662e38-b659-11f0-820a-833195d45f7e"),
+				PipecatcallID:  uuid.FromStringOrNil("f3af613e-b659-11f0-9a72-e3e004fae386"),
+				Status:         aicall.StatusInitiating,
+				STTLanguage:    "en-US",
+			},
+		},
+		{
 			name: "messaging path with task flag",
 
 			ai: &ai.AI{
@@ -2286,6 +2353,12 @@ func Test_startAIcallByMessaging(t *testing.T) {
 			}
 			for _, m := range tt.expectMessageTexts {
 				mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "", gomock.Any()).Return(&message.Message{}, nil)
+			}
+
+			if tt.name == "with participant handler" {
+				mockParticipant := participanthandler.NewMockParticipantHandler(mc)
+				mockParticipant.EXPECT().Create(gomock.Any(), gomock.Any(), tt.ai.ID).Return(nil).Times(1)
+				h.participantHandler = mockParticipant
 			}
 
 			res, err := h.startAIcallByMessaging(ctx, tt.ai, tt.assistanceType, tt.assistanceID, tt.activeflowID, tt.referenceType, tt.referenceID, tt.isTask, tt.teamParameter, tt.currentMemberID)
