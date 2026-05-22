@@ -32,7 +32,7 @@ Both return a paginated JSON response using the standard `CommonPagination` enve
 
 Pagination follows the existing cursor pattern used by messages, summaries, and aicalls:
 - `page_token` is a `tm_create` timestamp (ISO 8601); results before that token are returned. Empty `page_token` defaults to `TimeGetCurTime()` in the dbhandler (matching `MessageList`).
-- `page_size` defaults to 20, max 100
+- `page_size` defaults to 100, max 100 (matching `GetAicalls`/`GetAis` in `server/aicalls.go` and `server/ais.go`)
 - `next_page_token` is computed in the server handler from the last item's `TMCreate` (same as `server/aicalls.go`). It is absent when the result set is empty.
 
 ## Data Model
@@ -91,11 +91,11 @@ bin-ai-manager       (listenhandler/ + participanthandler/ + dbhandler/ + models
 - `openapi/paths/ais/id_participants.yaml` — `GET /ais/{id}/participants` spec, same shape.
 
 **Modified `openapi/openapi.yaml`:**
-- Add the two new path `$ref` entries under `paths:` (matching the pattern at lines 7241/7246):
+- Add the two new path `$ref` entries under `paths:` (matching the pattern at lines 7241/7246 — note: NO `/v1` prefix; the server base URL `https://api.voipbin.net/v1.0` already supplies the prefix):
   ```yaml
-  /v1/aicalls/{id}/participants:
+  /aicalls/{id}/participants:
     $ref: './paths/aicalls/id_participants.yaml'
-  /v1/ais/{id}/participants:
+  /ais/{id}/participants:
     $ref: './paths/ais/id_participants.yaml'
   ```
 - Add `AIManagerParticipant` schema component: `{ ai_id: string (UUID), aicall_id: string (UUID), tm_create: string (datetime) }`.
@@ -145,7 +145,7 @@ bin-ai-manager       (listenhandler/ + participanthandler/ + dbhandler/ + models
 - `pkg/listenhandler/main.go`:
   - Add `participantHandler participanthandler.ParticipantHandler` field to `listenHandler` struct.
   - Extend `NewListenHandler` signature with a `participantHandler participanthandler.ParticipantHandler` arg (positional, after existing args).
-  - Add two new regex patterns (no `$` — match with or without query string):
+  - Add two new regex patterns. No trailing `$` — the URI may include a query string (`?page_size=...`), so the pattern must match with `(\?|$)` or simply leave the end unanchored, consistent with existing patterns like `regV1AIcallsID`:
     ```go
     regV1AIcallsIDParticipants = regexp.MustCompile("/v1/aicalls/" + regUUID + "/participants")
     regV1AIsIDParticipants     = regexp.MustCompile("/v1/ais/" + regUUID + "/participants")
@@ -157,7 +157,11 @@ bin-ai-manager       (listenhandler/ + participanthandler/ + dbhandler/ + models
 
 - `pkg/listenhandler/v1_ais.go` — add `processV1AIsIDParticipantsGet`: same shape; AI UUID from `uriItems[3]`, call `participantHandler.ListByAIID`.
 
-- `cmd/ai-manager/main.go` — update the `NewListenHandler` call (around line 186) to pass the already-declared `participantHandler` local var (declared around line 120). Also update `bin-ai-manager/docs/domain.md` to mention the `Participant` model.
+- `cmd/ai-manager/main.go` — two-part wiring change:
+  1. Add `participantHandler participanthandler.ParticipantHandler` parameter to `runListen()` function signature (around line 175). `participantHandler` is declared in `run()` scope (around line 120) but `runListen()` is a separate function — it cannot see `run()`'s locals.
+  2. Update the `runListen(...)` call site inside `run()` (around line 126) to pass `participantHandler` as the additional argument.
+  3. Inside `runListen()`, pass `participantHandler` to the `NewListenHandler(...)` call (around line 186).
+  Also update `bin-ai-manager/docs/domain.md` to mention the `Participant` model.
 
 ### bin-common-handler
 
@@ -193,8 +197,9 @@ bin-ai-manager       (listenhandler/ + participanthandler/ + dbhandler/ + models
       case a.IsAgent() || a.IsAccesskey():
           if !h.hasPermission(ctx, a, aicall.CustomerID, PermissionCustomerAdmin|PermissionCustomerManager) { ... }
       case a.IsDirect():
-          if !a.HasAllowedResourceType("aicall") { ... }  // "aicall", NOT "ai"
-          if aicall.CustomerID != a.CustomerID { ... }
+          // HasAllowedResourceType("aicall") — there is no "ai" direct resource type
+          if !a.HasAllowedResourceType("aicall") { ... }
+          if a.DirectScope.ResourceID != aicallID { ... }
       }
       // 3. RPC call
       tmps, err := h.reqHandler.AIV1AIcallParticipantList(ctx, aicallID, token, size)
@@ -207,24 +212,36 @@ bin-ai-manager       (listenhandler/ + participanthandler/ + dbhandler/ + models
   }
 
   func (h *serviceHandler) AIParticipantGets(...) ([]*amparticipant.WebhookMessage, error) {
-      // Fetch AI via existing aiGet helper; check HasAllowedResourceType("aicall") for direct tokens
-      // (there is no "ai" resource type for direct tokens — only "aicall")
+      // Direct tokens: return ErrDirectAccessNotSupported — ALL AI resource methods in
+      // pkg/servicehandler/ai.go uniformly reject direct tokens (lines 52, 121, 156, 232, 260, 312).
+      // AIParticipantGets follows this same pattern for consistency.
+      if a.IsDirect() {
+          return nil, ErrDirectAccessNotSupported
+      }
+      // Agent/Accesskey: fetch AI via existing aiGet helper, then check
+      // PermissionCustomerAdmin | PermissionCustomerManager on ai.CustomerID.
   }
   ```
 
 **Modified files:**
 - `pkg/servicehandler/main.go` — add both methods to `ServiceHandler` interface.
-- `server/aicalls.go` — add `GetAicallsIdParticipants(c *gin.Context, id string, params GetAicallsIdParticipantsParams)`: parse UUID, resolve page size (default 20, max 100), call servicehandler, use `GenerateListResponse` to wrap with `next_page_token` computed from last item's `TMCreate`.
+- `server/aicalls.go` — add `GetAicallsIdParticipants(c *gin.Context, id string, params GetAicallsIdParticipantsParams)`: parse UUID, resolve page size (default 100, max 100 — same logic as `GetAicalls` lines 66-72), call servicehandler, use `GenerateListResponse` to wrap with `next_page_token` computed from last item's `TMCreate`.
 - `server/ais.go` — add `GetAisIdParticipants`: same shape.
 
 ## Permission Model
 
-Both endpoints follow the existing two-level pattern:
+The two endpoints have different permission models:
 
-1. Fetch parent resource without auth check (private helpers: `aicallGet` / `aiGet`).
-2. Check caller ownership:
-   - **Agent/Accesskey**: `PermissionCustomerAdmin | PermissionCustomerManager` on the resource's `customerID`.
-   - **Direct token**: `a.HasAllowedResourceType("aicall")` for **both** endpoints — there is no `"ai"` direct resource type in this codebase. Confirmed at `bin-api-manager/pkg/servicehandler/boot.go:20-23` where `dmdirect.ResourceTypeAI` maps to allowed type `"aicall"`. Additionally check `a.DirectScope.ResourceID == aicallID` (for the aicall endpoint) or `a.CustomerID == ai.CustomerID` (for the AI endpoint).
+**`AIcallParticipantGets` (scoped to aicall):**
+1. Fetch aicall without auth check (`aicallGet` private helper).
+2. Check caller:
+   - **Agent/Accesskey**: `PermissionCustomerAdmin | PermissionCustomerManager` on `aicall.CustomerID`.
+   - **Direct token**: `a.HasAllowedResourceType("aicall")` plus `a.DirectScope.ResourceID == aicallID`. Note: server base URL has `/v1.0`; there is no `"ai"` direct resource type (`boot.go:20-23` maps `dmdirect.ResourceTypeAI → {"aicall"}`).
+
+**`AIParticipantGets` (scoped to AI agent):**
+1. Check caller: **Direct token → return `ErrDirectAccessNotSupported` immediately.** All AI resource methods in `pkg/servicehandler/ai.go` uniformly reject direct tokens — `AIParticipantGets` must match.
+2. Fetch AI without auth check (`aiGet` private helper).
+3. **Agent/Accesskey**: `PermissionCustomerAdmin | PermissionCustomerManager` on `ai.CustomerID`.
 
 ## Error Handling
 
