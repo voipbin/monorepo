@@ -65,6 +65,8 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `GET /v1/teams?` | List AI teams |
 | `GET/POST /v1/teams/<uuid>` | Get / create AI team |
 | `POST /v1/teams/<uuid>/direct-hash-regenerate` | Regenerate team secret hash |
+| `GET /v1/ais/<uuid>/prompt_histories` | List prompt history for an AI |
+| `GET /v1/ais/<uuid>/prompt_histories/<uuid>` | Get single AI prompt history entry |
 
 ## Event Subscriptions
 

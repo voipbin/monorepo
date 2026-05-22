@@ -107,6 +107,26 @@ User phone → Asterisk (8kHz RTP)
 
 `bin-ai-manager` does **not** handle audio directly. It owns session state and tool dispatch; `bin-pipecat-manager` owns the audio pipeline.
 
+### AIPromptHistory
+
+Immutable record of a single `init_prompt` value for an AI at a point in time.
+
+**Table:** `ai_ai_prompt_histories`
+
+| Field       | Type   | Notes                                           |
+|-------------|--------|-------------------------------------------------|
+| id          | UUID   | PK                                              |
+| customer_id | UUID   | Copied from parent AI at insert time            |
+| ai_id       | UUID   | FK → ai_ais.id                                  |
+| prompt      | string | The init_prompt value at this point in time     |
+| tm_create   | time   | Set by dbhandler; immutable after creation      |
+
+No `tm_update` or `tm_delete` — rows are append-only.
+
+**Write path:** `aihandler.Create` and `aihandler.Update` insert rows after the AI DB write succeeds. Insert is best-effort (failure is logged; AI operation succeeds).
+
+**Empty prompt:** No row is inserted when `init_prompt == ""`.
+
 ## Soft-Delete Pattern
 
 All entities use `tm_delete = "9999-01-01 00:00:00.000000"` for active records. Deleted records receive the actual deletion timestamp, preserving history for audit and message replay.
