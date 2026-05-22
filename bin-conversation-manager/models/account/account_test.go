@@ -160,6 +160,11 @@ func TestTypeConstants(t *testing.T) {
 			constant: TypeSMS,
 			expected: "sms",
 		},
+		{
+			name:     "type_whatsapp",
+			constant: TypeWhatsApp,
+			expected: "whatsapp",
+		},
 	}
 
 	for _, tt := range tests {

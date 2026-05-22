@@ -708,13 +708,17 @@ To receive and send WhatsApp messages through VoIPBIN, you must create a ``whats
         "type": "whatsapp",
         "name": "My WhatsApp Account",
         "detail": "WhatsApp Business account for customer support",
+        "provider_data": {
+            "phone_number_id": "<META_PHONE_NUMBER_ID>",
+            "app_secret": "<META_APP_SECRET>"
+        },
         "message_flow_id": "00000000-0000-0000-0000-000000000000",
         "tm_create": "2026-01-15T09:30:00.000000Z",
         "tm_update": "2026-01-15T09:30:00.000000Z",
         "tm_delete": "9999-01-01T00:00:00.000000Z"
     }
 
-Note that ``token``, ``secret``, and ``provider_data`` are write-only fields — they are **not** returned in the response.
+Note that ``token`` and ``secret`` are write-only fields — they are **not** returned in the response. ``provider_data`` is returned in both ``POST`` (create) and ``GET`` responses.
 
 **Step 2 — Note the account ID**
 
@@ -742,7 +746,7 @@ Send a test WhatsApp message to your configured phone number. VoIPBIN will:
 
 .. note:: **AI Implementation Hint**
 
-   The ``provider_data`` field is a write-only JSON object. Set it on create/update but never expect it in GET responses or webhook payloads. The ``secret`` field stores the Meta webhook verify token (not the app secret — that lives inside ``provider_data.app_secret``). The ``token`` field stores the Meta system user access token used for outbound API calls.
+   The ``provider_data`` field is a JSON object returned in GET responses. Set it on create/update. The ``secret`` field stores the Meta webhook verify token (not the app secret — that lives inside ``provider_data.app_secret``) and is write-only. The ``token`` field stores the Meta system user access token used for outbound API calls and is also write-only.
 
    For :ref:`type field values <conversation-struct-account-type>` and additional WhatsApp-specific field details, see the :ref:`Account struct reference <conversation-struct-account>`.
 

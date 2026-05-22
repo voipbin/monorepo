@@ -18,6 +18,8 @@ type WebhookMessage struct {
 	Name   string `json:"name,omitempty"`
 	Detail string `json:"detail,omitempty"`
 
+	ProviderData json.RawMessage `json:"provider_data,omitempty"`
+
 	MessageFlowID uuid.UUID `json:"message_flow_id,omitempty"`
 
 	TMCreate *time.Time `json:"tm_create"`
@@ -34,6 +36,8 @@ func (h *Account) ConvertWebhookMessage() *WebhookMessage {
 
 		Name:   h.Name,
 		Detail: h.Detail,
+
+		ProviderData: h.ProviderData,
 
 		MessageFlowID: h.MessageFlowID,
 

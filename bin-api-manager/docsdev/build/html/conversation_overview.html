@@ -1293,6 +1293,10 @@ Auto-generated titles apply only to conversations created automatically; convers
     &quot;type&quot;: &quot;whatsapp&quot;,
     &quot;name&quot;: &quot;My WhatsApp Account&quot;,
     &quot;detail&quot;: &quot;WhatsApp Business account for customer support&quot;,
+    &quot;provider_data&quot;: {
+        &quot;phone_number_id&quot;: &quot;&lt;META_PHONE_NUMBER_ID&gt;&quot;,
+        &quot;app_secret&quot;: &quot;&lt;META_APP_SECRET&gt;&quot;
+    },
     &quot;message_flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;tm_create&quot;: &quot;2026-01-15T09:30:00.000000Z&quot;,
     &quot;tm_update&quot;: &quot;2026-01-15T09:30:00.000000Z&quot;,
@@ -1300,7 +1304,7 @@ Auto-generated titles apply only to conversations created automatically; convers
 }
 </pre></div>
 </div>
-<p>Note that <code class="docutils literal notranslate"><span class="pre">token</span></code>, <code class="docutils literal notranslate"><span class="pre">secret</span></code>, and <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> are write-only fields — they are <strong>not</strong> returned in the response.</p>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">token</span></code> and <code class="docutils literal notranslate"><span class="pre">secret</span></code> are write-only fields — they are <strong>not</strong> returned in the response. <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> is returned in both <code class="docutils literal notranslate"><span class="pre">POST</span></code> (create) and <code class="docutils literal notranslate"><span class="pre">GET</span></code> responses.</p>
 <p><strong>Step 2 — Note the account ID</strong></p>
 <p>Copy the <code class="docutils literal notranslate"><span class="pre">id</span></code> from the response (e.g., <code class="docutils literal notranslate"><span class="pre">a1b2c3d4-e5f6-7890-abcd-ef1234567890</span></code>). You will use it to construct your webhook URL.</p>
 <p><strong>Step 3 — Configure the webhook in Meta Business Manager</strong></p>
@@ -1323,7 +1327,7 @@ Auto-generated titles apply only to conversations created automatically; convers
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> field is a write-only JSON object. Set it on create/update but never expect it in GET responses or webhook payloads. The <code class="docutils literal notranslate"><span class="pre">secret</span></code> field stores the Meta webhook verify token (not the app secret — that lives inside <code class="docutils literal notranslate"><span class="pre">provider_data.app_secret</span></code>). The <code class="docutils literal notranslate"><span class="pre">token</span></code> field stores the Meta system user access token used for outbound API calls.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">provider_data</span></code> field is a JSON object returned in GET responses. Set it on create/update. The <code class="docutils literal notranslate"><span class="pre">secret</span></code> field stores the Meta webhook verify token (not the app secret — that lives inside <code class="docutils literal notranslate"><span class="pre">provider_data.app_secret</span></code>) and is write-only. The <code class="docutils literal notranslate"><span class="pre">token</span></code> field stores the Meta system user access token used for outbound API calls and is also write-only.</p>
 <p>For <a class="reference internal" href="conversation_struct_account.html#conversation-struct-account-type"><span class="std std-ref">type field values</span></a> and additional WhatsApp-specific field details, see the <a class="reference internal" href="conversation_struct_account.html#conversation-struct-account"><span class="std std-ref">Account struct reference</span></a>.</p>
 </div>
 </section>
