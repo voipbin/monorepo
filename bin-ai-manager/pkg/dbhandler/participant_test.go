@@ -55,6 +55,10 @@ func Test_ParticipantListByAIcallID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				_, _ = dbTest.Exec("DELETE FROM ai_aicall_participants WHERE aicall_id = ?", aicallID.Bytes())
+			})
+
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
@@ -115,6 +119,10 @@ func Test_ParticipantListByAIID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				_, _ = dbTest.Exec("DELETE FROM ai_aicall_participants WHERE ai_id = ?", aiID.Bytes())
+			})
+
 			mc := gomock.NewController(t)
 			defer mc.Finish()
 
