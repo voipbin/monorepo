@@ -1,7 +1,7 @@
 """add_ai_ai_prompt_histories
 
 Revision ID: ece6ccf25201
-Revises: ef130bcf8401
+Revises: 1eef6c730e85
 Create Date: 2026-05-22 15:45:43.096255
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'ece6ccf25201'
-down_revision = 'ef130bcf8401'
+down_revision = '1eef6c730e85'
 branch_labels = None
 depends_on = None
 
