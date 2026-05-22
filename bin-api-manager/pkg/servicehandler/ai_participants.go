@@ -51,7 +51,7 @@ func (h *serviceHandler) AIParticipantGets(ctx context.Context, a *auth.AuthIden
 	// verify the caller has access to the ai
 	tmp, err := h.aiGet(ctx, aiID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get ai info: %w", err)
+		return nil, fmt.Errorf("%w: could not get ai info", err)
 	}
 
 	switch {
