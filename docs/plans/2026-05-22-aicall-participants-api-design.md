@@ -15,7 +15,7 @@ GET /v1/aicalls/{id}/participants?page_size=N&page_token=T
 GET /v1/ais/{id}/participants?page_size=N&page_token=T
 ```
 
-Both return a paginated JSON response using the standard `CommonPagination` envelope (same shape as `/v1/aicalls` and `/v1/messages`):
+Both return a paginated JSON response to the HTTP caller using the standard `CommonPagination` envelope (assembled at the `bin-api-manager` server layer via `GenerateListResponse`, same shape as `/v1/aicalls` and `/v1/messages`). Note: over the internal RPC hop between `bin-api-manager` and `bin-ai-manager`, the listenhandler returns a **bare JSON array** (no envelope); the `bin-common-handler` reqHandler unmarshals this with `parseResponse(tmp, &res)` into `[]participant.Participant`.
 
 ```json
 {
@@ -172,13 +172,22 @@ bin-ai-manager       (listenhandler/ + participanthandler/ + dbhandler/ + models
   ```go
   func (r *requestHandler) AIV1AIcallParticipantList(ctx context.Context, aicallID uuid.UUID, pageToken string, pageSize uint64) ([]participant.Participant, error) {
       uri := fmt.Sprintf("/v1/aicalls/%s/participants?page_token=%s&page_size=%d", aicallID, url.QueryEscape(pageToken), pageSize)
-      tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/aicalls/participants", requestTimeoutDefault, 0, ContentTypeJSON, nil)
-      // parse response into []participant.Participant
+      // action string follows the uniform <...-id> placeholder convention used across all 30+ AI RPC calls
+      tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/aicalls/<aicall-id>/participants", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+      // parse with shared parseResponse helper: json.Unmarshal(tmp.Data, &res)
+      // Note: ai-manager listenhandler returns a BARE JSON array (not CommonPagination envelope);
+      // the {result, next_page_token} envelope is assembled only at the bin-api-manager server layer.
+      var res []participant.Participant
+      if err := parseResponse(tmp, &res); err != nil { return nil, err }
+      return res, nil
   }
 
   func (r *requestHandler) AIV1AIParticipantList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]participant.Participant, error) {
       uri := fmt.Sprintf("/v1/ais/%s/participants?page_token=%s&page_size=%d", aiID, url.QueryEscape(pageToken), pageSize)
-      // same pattern
+      tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodGet, "ai/ais/<ai-id>/participants", requestTimeoutDefault, 0, ContentTypeJSON, nil)
+      var res []participant.Participant
+      if err := parseResponse(tmp, &res); err != nil { return nil, err }
+      return res, nil
   }
   ```
   Return type is `[]participant.Participant` (value slice), matching the convention of `AIV1AIcallList` (`ai_aicalls.go:52`).
