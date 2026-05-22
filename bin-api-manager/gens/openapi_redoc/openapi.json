@@ -2103,6 +2103,115 @@
         }
       }
     },
+    "/ais/{id}/prompt_histories": {
+      "get": {
+        "summary": "List AI prompt history entries.",
+        "description": "Returns a paginated list of historical init_prompt values for the specified AI, newest first.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the AI. Returned from the `GET /ais` response."
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of AI prompt history entries.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AIManagerAIPromptHistory"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/ais/{id}/prompt_histories/{history_id}": {
+      "get": {
+        "summary": "Get a single AI prompt history entry.",
+        "description": "Retrieves a specific historical init_prompt entry by its ID.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the AI. Returned from the `GET /ais` response."
+          },
+          {
+            "name": "history_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the prompt history entry. Returned from the `GET /ais/{id}/prompt_histories` response."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Details of the requested prompt history entry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAIPromptHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/ais": {
       "get": {
         "summary": "Gets a list of ais.",
@@ -21507,6 +21616,44 @@
             "maximum": 1,
             "default": 0.6,
             "example": 0.6
+          }
+        }
+      },
+      "AIManagerAIPromptHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the prompt history entry.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the associated customer. Returned from the `GET /customers` response.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "ai_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The ID of the AI this history entry belongs to. Returned from the `GET /ais` response.",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "The init_prompt value at this point in time.",
+            "example": "You are a helpful customer support assistant."
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "The time this history entry was recorded.",
+            "example": "2026-05-22T10:00:00.000000Z"
           }
         }
       },
