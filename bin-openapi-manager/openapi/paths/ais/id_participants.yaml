@@ -9,12 +9,14 @@ get:
       required: true
       schema:
         type: string
-      description: The ID of the AI agent.
+        format: uuid
+        example: "22222222-2222-2222-2222-222222222222"
+      description: "The unique identifier of the AI agent. Returned from the `POST /ais` or `GET /ais` response."
     - $ref: '#/components/parameters/PageSize'
     - $ref: '#/components/parameters/PageToken'
   responses:
     '200':
-      description: A paginated list of participants.
+      description: A paginated list of participation records for the specified AI agent.
       content:
         application/json:
           schema:
