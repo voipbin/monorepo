@@ -2005,6 +2005,37 @@ components:
           default: 0.6
           example: 0.6
 
+    AIManagerAIPromptHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the prompt history entry.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the associated customer. Returned from the `GET /customers` response."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        ai_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The ID of the AI this history entry belongs to. Returned from the `GET /ais` response."
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        prompt:
+          type: string
+          description: The init_prompt value at this point in time.
+          example: "You are a helpful customer support assistant."
+        tm_create:
+          type: string
+          format: date-time
+          description: The time this history entry was recorded.
+          example: "2026-05-22T10:00:00.000000Z"
+
     AIManagerAI:
       type: object
       properties:
@@ -7246,6 +7277,10 @@ paths:
     $ref: './paths/ais/id.yaml'
   /ais/{id}/direct-hash-regenerate:
     $ref: './paths/ais/id_direct_hash_regenerate.yaml'
+  /ais/{id}/prompt_histories:
+    $ref: './paths/ais/id_prompt_histories.yaml'
+  /ais/{id}/prompt_histories/{history_id}:
+    $ref: './paths/ais/id_prompt_histories_id.yaml'
   /ais:
     $ref: './paths/ais/main.yaml'
 

@@ -1,0 +1,31 @@
+get:
+  summary: List AI prompt history entries.
+  description: Returns a paginated list of historical init_prompt values for the specified AI, newest first.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: "The ID of the AI. Returned from the `GET /ais` response."
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+  responses:
+    '200':
+      description: A list of AI prompt history entries.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AIManagerAIPromptHistory'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'
