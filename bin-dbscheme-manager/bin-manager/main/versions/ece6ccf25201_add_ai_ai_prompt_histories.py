@@ -18,15 +18,16 @@ depends_on = None
 
 def upgrade():
     op.execute("""
-        CREATE TABLE ai_ai_prompt_histories (
+        CREATE TABLE IF NOT EXISTS ai_ai_prompt_histories (
+            -- Append-only: no tm_update or tm_delete (rows are immutable history)
             id          BINARY(16)   NOT NULL,
             customer_id BINARY(16)   NOT NULL,
             ai_id       BINARY(16)   NOT NULL,
             prompt      LONGTEXT     NOT NULL DEFAULT '',
             tm_create   DATETIME(6)  NOT NULL,
             PRIMARY KEY (id),
-            KEY idx_ai_ai_prompt_histories_ai_id (ai_id),
-            KEY idx_ai_ai_prompt_histories_customer_id (customer_id)
+            INDEX idx_ai_ai_prompt_histories_ai_id_tm_create (ai_id, tm_create),
+            INDEX idx_ai_ai_prompt_histories_customer_id (customer_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     """)
 
