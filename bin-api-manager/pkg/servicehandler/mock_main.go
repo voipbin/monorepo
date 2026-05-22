@@ -18,6 +18,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	message "monorepo/bin-ai-manager/models/message"
+	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
 	team "monorepo/bin-ai-manager/models/team"
 	tool "monorepo/bin-ai-manager/models/tool"
@@ -65,7 +66,7 @@ import (
 	tag "monorepo/bin-tag-manager/models/tag"
 	chat "monorepo/bin-talk-manager/models/chat"
 	message2 "monorepo/bin-talk-manager/models/message"
-	participant "monorepo/bin-talk-manager/models/participant"
+	participant0 "monorepo/bin-talk-manager/models/participant"
 	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
@@ -176,6 +177,21 @@ func (m *MockServiceHandler) AIGetsByCustomerID(ctx context.Context, a *auth.Aut
 func (mr *MockServiceHandlerMockRecorder) AIGetsByCustomerID(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AIGetsByCustomerID), ctx, a, size, token)
+}
+
+// AIParticipantGets mocks base method.
+func (m *MockServiceHandler) AIParticipantGets(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, pageToken string, pageSize uint64) ([]*participant.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIParticipantGets", ctx, a, aiID, pageToken, pageSize)
+	ret0, _ := ret[0].([]*participant.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIParticipantGets indicates an expected call of AIParticipantGets.
+func (mr *MockServiceHandlerMockRecorder) AIParticipantGets(ctx, a, aiID, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIParticipantGets", reflect.TypeOf((*MockServiceHandler)(nil).AIParticipantGets), ctx, a, aiID, pageToken, pageSize)
 }
 
 // AIPromptHistoryGet mocks base method.
@@ -341,6 +357,21 @@ func (m *MockServiceHandler) AIcallGetsByCustomerID(ctx context.Context, a *auth
 func (mr *MockServiceHandlerMockRecorder) AIcallGetsByCustomerID(ctx, a, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AIcallGetsByCustomerID), ctx, a, size, token)
+}
+
+// AIcallParticipantGets mocks base method.
+func (m *MockServiceHandler) AIcallParticipantGets(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, pageToken string, pageSize uint64) ([]*participant.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallParticipantGets", ctx, a, aicallID, pageToken, pageSize)
+	ret0, _ := ret[0].([]*participant.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIcallParticipantGets indicates an expected call of AIcallParticipantGets.
+func (mr *MockServiceHandlerMockRecorder) AIcallParticipantGets(ctx, a, aicallID, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallParticipantGets", reflect.TypeOf((*MockServiceHandler)(nil).AIcallParticipantGets), ctx, a, aicallID, pageToken, pageSize)
 }
 
 // AImessageCreate mocks base method.
@@ -4428,7 +4459,7 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChannelList(ctx, a, si
 }
 
 // ServiceAgentTalkChatCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *auth.AuthIdentity, talkType chat.Type, name, detail string, participants []participant.ParticipantInput) (*chat.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatCreate(ctx context.Context, a *auth.AuthIdentity, talkType chat.Type, name, detail string, participants []participant0.ParticipantInput) (*chat.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChatCreate", ctx, a, talkType, name, detail, participants)
 	ret0, _ := ret[0].(*chat.WebhookMessage)
@@ -4473,10 +4504,10 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkChatGet(ctx, a, chatID
 }
 
 // ServiceAgentTalkChatJoin mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkChatJoin(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*participant.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkChatJoin(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) (*participant0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkChatJoin", ctx, a, chatID)
-	ret0, _ := ret[0].(*participant.WebhookMessage)
+	ret0, _ := ret[0].(*participant0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4593,10 +4624,10 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkMessageReactionCreate(
 }
 
 // ServiceAgentTalkParticipantCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) (*participant.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkParticipantCreate(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID, ownerType string, ownerID uuid.UUID) (*participant0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkParticipantCreate", ctx, a, chatID, ownerType, ownerID)
-	ret0, _ := ret[0].(*participant.WebhookMessage)
+	ret0, _ := ret[0].(*participant0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4608,10 +4639,10 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantCreate(ctx,
 }
 
 // ServiceAgentTalkParticipantDelete mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, a *auth.AuthIdentity, chatID, participantID uuid.UUID) (*participant.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkParticipantDelete(ctx context.Context, a *auth.AuthIdentity, chatID, participantID uuid.UUID) (*participant0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkParticipantDelete", ctx, a, chatID, participantID)
-	ret0, _ := ret[0].(*participant.WebhookMessage)
+	ret0, _ := ret[0].(*participant0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -4623,10 +4654,10 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentTalkParticipantDelete(ctx,
 }
 
 // ServiceAgentTalkParticipantList mocks base method.
-func (m *MockServiceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) ([]*participant.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentTalkParticipantList(ctx context.Context, a *auth.AuthIdentity, chatID uuid.UUID) ([]*participant0.WebhookMessage, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ServiceAgentTalkParticipantList", ctx, a, chatID)
-	ret0, _ := ret[0].([]*participant.WebhookMessage)
+	ret0, _ := ret[0].([]*participant0.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
