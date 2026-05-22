@@ -44,7 +44,7 @@ func (h *listenHandler) processV1AIsIDPromptHistoriesGet(ctx context.Context, m 
 	tmp, err := h.aiprompthistoryHandler.List(ctx, aiID, pageSize, pageToken)
 	if err != nil {
 		log.Debugf("Could not get items. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

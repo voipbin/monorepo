@@ -62,10 +62,10 @@ var (
 	//// v1
 
 	// ais
-	regV1AIsGet                      = regexp.MustCompile(`/v1/ais\?`)
-	regV1AIs                         = regexp.MustCompile("/v1/ais$")
-	regV1AIsIDDirectHashRegenerate   = regexp.MustCompile("/v1/ais/" + regUUID + "/direct-hash-regenerate$")
-	regV1AIsID                       = regexp.MustCompile("/v1/ais/" + regUUID + "$")
+	regV1AIsGet                    = regexp.MustCompile(`/v1/ais\?`)
+	regV1AIs                       = regexp.MustCompile("/v1/ais$")
+	regV1AIsIDDirectHashRegenerate = regexp.MustCompile("/v1/ais/" + regUUID + "/direct-hash-regenerate$")
+	regV1AIsID                     = regexp.MustCompile("/v1/ais/" + regUUID + "$")
 
 	// prompt histories
 	regV1AIsIDPromptHistoriesGet   = regexp.MustCompile(`/v1/ais/` + regUUID + `/prompt_histories\?`)
@@ -97,10 +97,10 @@ var (
 	regV1Tools = regexp.MustCompile("/v1/tools$")
 
 	// teams
-	regV1TeamsGet                      = regexp.MustCompile(`/v1/teams\?`)
-	regV1Teams                         = regexp.MustCompile("/v1/teams$")
-	regV1TeamsIDDirectHashRegenerate   = regexp.MustCompile("/v1/teams/" + regUUID + "/direct-hash-regenerate$")
-	regV1TeamsID                       = regexp.MustCompile("/v1/teams/" + regUUID + "$")
+	regV1TeamsGet                    = regexp.MustCompile(`/v1/teams\?`)
+	regV1Teams                       = regexp.MustCompile("/v1/teams$")
+	regV1TeamsIDDirectHashRegenerate = regexp.MustCompile("/v1/teams/" + regUUID + "/direct-hash-regenerate$")
+	regV1TeamsID                     = regexp.MustCompile("/v1/teams/" + regUUID + "$")
 )
 
 var (
