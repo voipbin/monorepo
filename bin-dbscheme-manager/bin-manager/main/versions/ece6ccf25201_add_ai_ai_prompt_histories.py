@@ -23,7 +23,7 @@ def upgrade():
             id          BINARY(16)   NOT NULL,
             customer_id BINARY(16)   NOT NULL,
             ai_id       BINARY(16)   NOT NULL,
-            prompt      LONGTEXT     NOT NULL DEFAULT '',
+            prompt      LONGTEXT     NOT NULL,
             tm_create   DATETIME(6)  NOT NULL,
             PRIMARY KEY (id),
             INDEX idx_ai_ai_prompt_histories_ai_id_tm_create (ai_id, tm_create),
