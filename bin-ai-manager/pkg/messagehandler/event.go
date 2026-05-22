@@ -348,6 +348,16 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 		return
 	}
 	log.WithField("message", tmp).Debugf("Created member-switched notification message.")
+
+	if h.participantHandler != nil {
+		if activeAIID == uuid.Nil {
+			log.Warnf("Could not resolve AI ID for new member — skipping participant write. aicall_id: %s, member_id: %s",
+				evt.PipecatcallReferenceID, evt.ToMember.ID)
+		} else if err := h.participantHandler.Create(ctx, evt.PipecatcallReferenceID, activeAIID); err != nil {
+			log.Warnf("Could not record aicall participant. aicall_id: %s, ai_id: %s, err: %v",
+				evt.PipecatcallReferenceID, activeAIID, err)
+		}
+	}
 }
 
 // EventPMPipecatcallTerminated is the backstop entrypoint for the
