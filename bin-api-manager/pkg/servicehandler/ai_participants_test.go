@@ -210,6 +210,58 @@ func Test_AIParticipantGets(t *testing.T) {
 			expectErr: true,
 			expectRes: nil,
 		},
+		{
+			name: "permission_denied_insufficient_permission",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent, // lacks Admin/Manager
+			}),
+			aiID:      uuid.FromStringOrNil("c06c1d3a-f31c-11ef-8b45-8782c358d446"),
+			pageToken: "2020-09-20T03:23:20.995000Z",
+			pageSize:  10,
+
+			responseAI: &amai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c06c1d3a-f31c-11ef-8b45-8782c358d446"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"), // same customer
+				},
+			},
+			responseAIErr:        nil,
+			responseParticipants: nil,
+
+			expectErr: true,
+			expectRes: nil,
+		},
+		{
+			name: "permission_denied_wrong_customer",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			aiID:      uuid.FromStringOrNil("c07c1d3a-f31c-11ef-8b45-8782c358d446"),
+			pageToken: "2020-09-20T03:23:20.995000Z",
+			pageSize:  10,
+
+			responseAI: &amai.AI{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c07c1d3a-f31c-11ef-8b45-8782c358d446"),
+					CustomerID: uuid.FromStringOrNil("aaaaaaaa-8e5f-11ee-97b2-cfe7337b701c"), // different customer
+				},
+			},
+			responseAIErr:        nil,
+			responseParticipants: nil,
+
+			expectErr: true,
+			expectRes: nil,
+		},
 	}
 
 	for _, tt := range tests {

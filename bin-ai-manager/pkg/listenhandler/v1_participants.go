@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-ai-manager/models/participant"
 	"monorepo/bin-common-handler/models/sock"
 )
 
@@ -46,7 +47,12 @@ func (h *listenHandler) processV1AIcallsIDParticipantsGet(ctx context.Context, m
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(tmp)
+	// convert to WebhookMessage before marshaling
+	out := make([]*participant.WebhookMessage, len(tmp))
+	for i, p := range tmp {
+		out[i] = p.ConvertWebhookMessage()
+	}
+	data, err := json.Marshal(out)
 	if err != nil {
 		log.Errorf("Could not marshal the response. err: %v", err)
 		return simpleResponse(500), nil
@@ -88,7 +94,12 @@ func (h *listenHandler) processV1AIsIDParticipantsGet(ctx context.Context, m *so
 		return simpleResponse(500), nil
 	}
 
-	data, err := json.Marshal(tmp)
+	// convert to WebhookMessage before marshaling
+	out := make([]*participant.WebhookMessage, len(tmp))
+	for i, p := range tmp {
+		out[i] = p.ConvertWebhookMessage()
+	}
+	data, err := json.Marshal(out)
 	if err != nil {
 		log.Errorf("Could not marshal the response. err: %v", err)
 		return simpleResponse(500), nil
