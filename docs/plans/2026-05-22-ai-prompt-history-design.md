@@ -110,9 +110,9 @@ DROP TABLE IF EXISTS ai_ai_prompt_histories;
 
 ## Write Path (`bin-ai-manager`)
 
-History rows are written from the **public methods in `aihandler/chatbot.go`** (`Create` and `Update`), after input validation and after the DB write completes. This placement is consistent with where webhook publish (`notifyHandler.PublishWebhookEvent`) is called — at the coordination level, not inside the private `db.go` methods.
+History rows are written from the **public methods in `aihandler/chatbot.go`** (`Create` and `Update`), after the private DB methods return. This is the only feasible location: inserting in `chatbot.go` after `dbCreate` returns is the only place where both the input `initPrompt` parameter and the newly created AI's identity are in scope together. The private `db.go` methods do not carry this coupling responsibility.
 
-**Error handling:** `AIPromptHistoryCreate` is a best-effort side effect — if it fails, the failure is logged and the overall operation succeeds. The AI update is not rolled back. This matches the webhook publish pattern.
+**Error handling:** `AIPromptHistoryCreate` is a best-effort side effect — if it fails, the failure is logged and the overall operation succeeds. The AI update is not rolled back.
 
 ### DBHandler interface change (`pkg/dbhandler/main.go`)
 
@@ -164,6 +164,8 @@ else:
 ```
 
 **Temporal constraint:** The pre-fetch `AIGet` call **must** happen before `h.dbUpdate` to read the pre-update value. After `dbUpdate`, the cache holds the new value.
+
+**Concurrent update race:** Between `AIGet` (pre-fetch) and `dbUpdate`, a concurrent update could change `init_prompt`. In that narrow window, the comparison may produce a duplicate history row or miss an entry. This is accepted for v1 — the window is narrow and the consequence is a harmless duplicate, not data loss.
 
 ---
 
@@ -253,6 +255,7 @@ func (h *handler) AIPromptHistoryGet(ctx context.Context, id uuid.UUID) (*aiprom
 // AIPromptHistoryGetsByAIID returns entries for the given AI, newest first.
 // Token is a tm_create timestamp string cursor (WHERE tm_create < token ORDER BY tm_create DESC),
 // matching the cursor convention used by AIList, MessageList, SummaryList, etc.
+// When token == "", fallback to h.utilHandler.TimeGetCurTime() — matching all other list methods.
 // No cache — same rationale as AIPromptHistoryGet.
 func (h *handler) AIPromptHistoryGetsByAIID(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*aiprompthistory.AIPromptHistory, error)
 ```
@@ -297,12 +300,14 @@ Response: single `AIPromptHistory` JSON object.
 
 ### `bin-common-handler/pkg/requesthandler/ai_ai_prompt_histories.go` (new file)
 
-Following the pattern of `ai_ais.go`:
+Following the pattern of `ai_ais.go`. Note: requesthandler list methods return **value slices** (`[]Type`, not `[]*Type`) — JSON is deserialized into `var res []Type` at this layer, matching `AIV1AIList`, `AIV1SummaryList`, etc.:
 
 ```go
-func (r *requestHandler) AIV1AIPromptHistoryList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]*amaiprompthistory.AIPromptHistory, error)
+func (r *requestHandler) AIV1AIPromptHistoryList(ctx context.Context, aiID uuid.UUID, pageToken string, pageSize uint64) ([]amaiprompthistory.AIPromptHistory, error)
 func (r *requestHandler) AIV1AIPromptHistoryGet(ctx context.Context, aiID uuid.UUID, historyID uuid.UUID) (*amaiprompthistory.AIPromptHistory, error)
 ```
+
+**`bin-common-handler` admission rule:** These methods are added to requesthandler following the same pattern as all other AI sub-resource methods (`AIV1SummaryList`, `AIV1MessageGetsByAIcallID`), which also have a single current consumer (`bin-api-manager`). The precedent exists; the admission rule is satisfied by the existing pattern convention for requesthandler AI methods.
 
 ### `bin-openapi-manager/openapi/paths/ais/` (new files)
 
@@ -321,6 +326,8 @@ AIPromptHistoryGet(ctx, aiID, historyID) (*amaiprompthistory.AIPromptHistory, er
 ```
 
 HTTP handler (`server/`): calls the service layer, serializes the raw `AIPromptHistory` struct directly. Justified deviation from the `ConvertWebhookMessage()` convention: all `AIPromptHistory` fields are appropriate for external consumers, and no `WebhookMessage` conversion layer exists for this entity. Document this deviation in a comment at the call site.
+
+**Permission check:** `bin-api-manager` must gate both endpoints with the existing customer ownership check on the parent AI (equivalent to `AIGet` with auth), confirming the caller owns `ai_id` before fetching its history. Follow the `hasPermission` pattern used by all other AI sub-resource endpoints.
 
 ---
 
