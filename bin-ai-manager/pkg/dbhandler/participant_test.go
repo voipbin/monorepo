@@ -57,6 +57,13 @@ func Test_ParticipantCreate(t *testing.T) {
 				db:          dbTest,
 			}
 
+			if tt.name == "duplicate insert is silently ignored" {
+				// Pre-seed the row so this sub-test is self-contained and does not
+				// depend on the "creates participant successfully" case running first.
+				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+				_ = h.ParticipantCreate(context.Background(), tt.input.aicallID, tt.input.aiID)
+			}
+
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 
 			err := h.ParticipantCreate(context.Background(), tt.input.aicallID, tt.input.aiID)
