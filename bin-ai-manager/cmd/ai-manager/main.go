@@ -22,6 +22,7 @@ import (
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
@@ -120,8 +121,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
+	utilHandler := utilhandler.NewUtilHandler()
+	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
+
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, messageHandler, summaryHandler, teamHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiprompthistoryHandler, messageHandler, summaryHandler, teamHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -174,6 +178,7 @@ func runListen(
 	sockHandler sockhandler.SockHandler,
 	aiHandler aihandler.AIHandler,
 	aicallhandler aicallhandler.AIcallHandler,
+	aiprompthistoryHandler aiprompthistoryhandler.AIPromptHistoryHandler,
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
 	teamHandler teamhandler.TeamHandler,
@@ -188,6 +193,7 @@ func runListen(
 		utilHandler,
 		aiHandler,
 		aicallhandler,
+		aiprompthistoryHandler,
 		messageHandler,
 		summaryHandler,
 		toolHandler,
