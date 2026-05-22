@@ -8,6 +8,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
+	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -76,6 +77,7 @@ type messageHandler struct {
 
 	engineOpenaiHandler     engine_openai_handler.EngineOpenaiHandler
 	engineDialogflowHandler engine_dialogflow_handler.EngineDialogflowHandler
+	participantHandler      participanthandler.ParticipantHandler
 }
 
 var (
@@ -104,6 +106,7 @@ func NewMessageHandler(
 
 	engineOpenaiHandler engine_openai_handler.EngineOpenaiHandler,
 	engineDialogflowHandler engine_dialogflow_handler.EngineDialogflowHandler,
+	participantHandler participanthandler.ParticipantHandler,
 ) MessageHandler {
 
 	return &messageHandler{
@@ -114,5 +117,6 @@ func NewMessageHandler(
 
 		engineOpenaiHandler:     engineOpenaiHandler,
 		engineDialogflowHandler: engineDialogflowHandler,
+		participantHandler:      participantHandler,
 	}
 }

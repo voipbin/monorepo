@@ -29,6 +29,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
 	"monorepo/bin-ai-manager/pkg/listenhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	"monorepo/bin-ai-manager/pkg/participanthandler"
 	"monorepo/bin-ai-manager/pkg/subscribehandler"
 	"monorepo/bin-ai-manager/pkg/summaryhandler"
 	"monorepo/bin-ai-manager/pkg/teamhandler"
@@ -117,8 +118,9 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	engineOpenaiHandler := engine_openai_handler.NewEngineOpenaiHandler(cfg.EngineKeyChatGPT)
 	engineDialogflowHandler := engine_dialogflow_handler.NewEngineDialogflowHandler()
 
-	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler)
-	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler)
+	participantHandler := participanthandler.New(db)
+	messageHandler := messagehandler.NewMessageHandler(requestHandler, notifyHandler, db, engineOpenaiHandler, engineDialogflowHandler, participantHandler)
+	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler, participantHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
 	utilHandler := utilhandler.NewUtilHandler()

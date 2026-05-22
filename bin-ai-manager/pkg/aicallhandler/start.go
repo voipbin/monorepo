@@ -535,6 +535,12 @@ func (h *aicallHandler) startAIcallByRealtime(
 	}
 	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
 
+	if h.participantHandler != nil {
+		if err := h.participantHandler.Create(ctx, res.ID, a.ID); err != nil {
+			log.Warnf("Could not record aicall participant. aicall_id: %s, ai_id: %s, err: %v", res.ID, a.ID, err)
+		}
+	}
+
 	// set activeflow variables
 	if errSet := h.setActiveflowVariables(ctx, res); errSet != nil {
 		return nil, errors.Wrapf(errSet, "could not set the activeflow variables for aicall. aicall_id: %s", res.ID)
@@ -578,6 +584,12 @@ func (h *aicallHandler) startAIcallByMessaging(
 		return nil, errors.Wrap(err, "Could not create aicall.")
 	}
 	log.WithField("aicall", res).Debugf("Created aicall. aicall_id: %s", res.ID)
+
+	if h.participantHandler != nil {
+		if err := h.participantHandler.Create(ctx, res.ID, a.ID); err != nil {
+			log.Warnf("Could not record aicall participant. aicall_id: %s, ai_id: %s, err: %v", res.ID, a.ID, err)
+		}
+	}
 
 	// set activeflow variables
 	if errSet := h.setActiveflowVariables(ctx, res); errSet != nil {
