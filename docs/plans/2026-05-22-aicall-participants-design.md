@@ -192,7 +192,11 @@ incomplete evaluation aggregate but must never block AIcall creation or message 
 `messageHandler` structs. The concrete `participanthandler.New(db)` instance is
 passed in at the call sites in `cmd/` where both handlers are constructed. Both
 `cmd/ai-manager/main.go` and `cmd/ai-control/main.go` construct `NewAIcallHandler`
-and must be updated to pass the new `participantHandler` argument.
+and must be updated to pass the new `participantHandler` argument. In
+`cmd/ai-control/main.go`, pass `nil` for `participantHandler` — consistent with the
+existing `nil` arguments for `aiHandler`, `teamHandler`, and `messageHandler` at that
+call site, since the CLI only exercises read/delete paths that never trigger participant
+writes.
 
 **`NewAIcallHandler` new signature (add `participantHandler` after existing args):**
 ```go
