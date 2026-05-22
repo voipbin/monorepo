@@ -3,6 +3,7 @@ package listenhandler
 import (
 	reflect "reflect"
 	"testing"
+	"time"
 
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
@@ -12,7 +13,9 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/participant"
 	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/participanthandler"
 )
 
 func Test_processV1AIsGet(t *testing.T) {
@@ -401,6 +404,66 @@ func Test_processV1AIsIDPut(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1AIsIDParticipantsGet(t *testing.T) {
+	aicallID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	aiID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	now := time.Now().UTC()
+
+	tests := []struct {
+		name      string
+		request   *sock.Request
+		mockSetup func(mockParticipant *participanthandler.MockParticipantHandler)
+		expectRes *sock.Response
+	}{
+		{
+			name: "returns participants list",
+			request: &sock.Request{
+				URI:    "/v1/ais/22222222-2222-2222-2222-222222222222/participants?page_size=5",
+				Method: sock.RequestMethodGet,
+			},
+			mockSetup: func(mockParticipant *participanthandler.MockParticipantHandler) {
+				mockParticipant.EXPECT().ListByAIID(gomock.Any(), aiID, uint64(5), "").Return([]*participant.Participant{
+					{AIID: aiID, AIcallID: aicallID, TMCreate: &now},
+				}, nil).Times(1)
+			},
+			expectRes: &sock.Response{StatusCode: 200, DataType: "application/json"},
+		},
+		{
+			name: "returns 404 on invalid UUID (no route match)",
+			request: &sock.Request{
+				URI:    "/v1/ais/bad-uuid/participants",
+				Method: sock.RequestMethodGet,
+			},
+			mockSetup: func(mockParticipant *participanthandler.MockParticipantHandler) {},
+			expectRes: &sock.Response{StatusCode: 404},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockParticipant := participanthandler.NewMockParticipantHandler(mc)
+			tt.mockSetup(mockParticipant)
+
+			h := &listenHandler{
+				sockHandler:        mockSock,
+				participantHandler: mockParticipant,
+			}
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Fatalf("expected no error, got: %v", err)
+			}
+			if res.StatusCode != tt.expectRes.StatusCode {
+				t.Fatalf("expected status %d, got %d", tt.expectRes.StatusCode, res.StatusCode)
 			}
 		})
 	}
