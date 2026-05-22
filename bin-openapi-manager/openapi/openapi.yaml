@@ -2033,6 +2033,7 @@ components:
         tm_create:
           type: string
           format: date-time
+          x-go-type: string
           description: The time this history entry was recorded.
           example: "2026-05-22T10:00:00.000000Z"
 

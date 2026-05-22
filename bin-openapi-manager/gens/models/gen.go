@@ -3330,7 +3330,7 @@ type AIManagerAIPromptHistory struct {
 	Prompt *string `json:"prompt,omitempty"`
 
 	// TmCreate The time this history entry was recorded.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
+	TmCreate *string `json:"tm_create,omitempty"`
 }
 
 // AIManagerAISTTType Speech-to-text provider type.
