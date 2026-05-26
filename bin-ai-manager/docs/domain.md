@@ -9,6 +9,7 @@ Key fields:
 - `engine_type` — provider identifier (see engine list below)
 - `engine_model` — format `<target>.<model>` e.g. `openai.gpt-4o`, `grok.grok-3`, `dialogflow.cx`
 - `init_prompt` — system prompt injected at session start
+- `current_prompt_history_id` — UUID pointing to the `ai_ai_prompt_histories` row that reflects the init_prompt at this moment; `uuid.Nil` when no history has been recorded yet. Updated atomically with every prompt change/clear. Exposed in webhook events.
 - `tool_names` — list of LLM tool names enabled for this AI
 - `tts_type`, `stt_type` — voice provider selection
 - `voice_gender`, `voice_language` — TTS voice selection parameters
@@ -30,6 +31,18 @@ Key fields:
 - `confbridge_id` — conference bridge hosting the call audio
 - `pipecatcall_id` — pipecat session ID for real-time audio
 - `host_id` — IP of the pipecat pod owning the session (for per-pod routing)
+- `metadata` — JSON map written at call-start. Currently carries one key: `prompt_snapshots` (a `[]PromptSnapshot` capturing the AI/team prompt versions active when the call began). Future keys may be added without schema migration.
+
+#### PromptSnapshot
+
+Embedded in `AIcall.Metadata["prompt_snapshots"]`. One entry per AI agent at call-start.
+
+| Field | Type | Notes |
+|---|---|---|
+| `ai_id` | UUID | AI configuration that supplied the prompt |
+| `prompt_history_id` | UUID | `current_prompt_history_id` of that AI at call-start; `uuid.Nil` if no history |
+| `prompt` | string | Resolved (variable-substituted) init_prompt value |
+| `member_id` | UUID | Team member ID; `uuid.Nil` for single-AI calls |
 
 ### Message
 Individual message within an AIcall conversation. Persisted in MySQL for context replay and summaries.
@@ -131,7 +144,9 @@ Immutable record of a single `init_prompt` value for an AI at a point in time.
 
 No `tm_update` or `tm_delete` — rows are append-only.
 
-**Write path:** `aihandler.Create` and `aihandler.Update` insert rows after the AI DB write succeeds. Insert is best-effort (failure is logged; AI operation succeeds).
+**Write path:** `aihandler.Create` and `aihandler.Update` insert rows after the AI DB write succeeds. The history row `id` is pre-generated before the AI write so that `ai_ais.current_prompt_history_id` and the new `ai_ai_prompt_histories` row share the same UUID atomically. Insert is best-effort (failure is logged; AI operation succeeds).
+
+**Prompt cleared:** When `init_prompt` is set to `""`, `current_prompt_history_id` is reset to `uuid.Nil` and no history row is created.
 
 **Empty prompt:** No row is inserted when `init_prompt == ""`.
 
