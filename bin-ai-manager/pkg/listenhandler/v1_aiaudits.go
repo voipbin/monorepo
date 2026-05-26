@@ -83,6 +83,12 @@ func (h *listenHandler) processV1AIAuditsGet(ctx context.Context, m *sock.Reques
 		return simpleResponse(400), nil
 	}
 
+	log = log.WithFields(logrus.Fields{
+		"size":    pageSize,
+		"token":   pageToken,
+		"filters": typedFilters,
+	})
+
 	list, err := h.aiauditHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not list aiaudits. err: %v", err)

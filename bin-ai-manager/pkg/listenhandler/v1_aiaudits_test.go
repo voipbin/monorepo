@@ -77,6 +77,44 @@ func Test_processV1AIAuditsPost(t *testing.T) {
 				StatusCode: 400,
 			},
 		},
+		{
+			name: "rate_limit_exceeded_returns_429",
+			request: &sock.Request{
+				URI:      "/v1/aiaudits",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"a0000000-0000-0000-0000-000000000001","aicall_id":"a0000000-0000-0000-0000-000000000002","language":"en-US"}`),
+			},
+
+			responseRecords: nil,
+			responseErr:     &rateLimitExceededError{},
+
+			expectedCustomerID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			expectedAIcallID:   uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000002"),
+			expectedLanguage:   "en-US",
+			expectedRes: &sock.Response{
+				StatusCode: 429,
+			},
+		},
+		{
+			name: "already_progressing_returns_409",
+			request: &sock.Request{
+				URI:      "/v1/aiaudits",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"a0000000-0000-0000-0000-000000000001","aicall_id":"a0000000-0000-0000-0000-000000000002","language":"en-US"}`),
+			},
+
+			responseRecords: nil,
+			responseErr:     &alreadyProgressingError{},
+
+			expectedCustomerID: uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000001"),
+			expectedAIcallID:   uuid.FromStringOrNil("a0000000-0000-0000-0000-000000000002"),
+			expectedLanguage:   "en-US",
+			expectedRes: &sock.Response{
+				StatusCode: 409,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -252,4 +290,18 @@ type notTerminatedError struct{}
 
 func (e *notTerminatedError) Error() string {
 	return "aicall not terminated: current status progressing"
+}
+
+// rateLimitExceededError simulates a "rate limit exceeded" error from Create.
+type rateLimitExceededError struct{}
+
+func (e *rateLimitExceededError) Error() string {
+	return "rate limit exceeded: too many audit requests"
+}
+
+// alreadyProgressingError simulates an "audit already progressing" error from Create.
+type alreadyProgressingError struct{}
+
+func (e *alreadyProgressingError) Error() string {
+	return "audit already progressing: previous audit not yet completed"
 }
