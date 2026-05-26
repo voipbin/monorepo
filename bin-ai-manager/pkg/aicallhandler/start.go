@@ -11,7 +11,6 @@ import (
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	cmcustomer "monorepo/bin-customer-manager/models/customer"
 	pmpipecatcall "monorepo/bin-pipecat-manager/models/pipecatcall"
-	"sync"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -100,7 +99,6 @@ func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) 
 		}(m)
 	}
 
-	var mu sync.Mutex
 	res := make(map[uuid.UUID]*ai.AI, len(t.Members))
 	for range t.Members {
 		r := <-ch
@@ -109,9 +107,7 @@ func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) 
 				Warnf("Could not get AI for team member — skipping. member_id: %s, err: %v", r.memberID, r.err)
 			continue
 		}
-		mu.Lock()
 		res[r.memberID] = r.ai
-		mu.Unlock()
 	}
 
 	return res, nil
