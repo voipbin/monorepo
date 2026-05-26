@@ -136,44 +136,49 @@ The key principle: **pre-generate both IDs before any write**, write the AI row 
 
 **AI Create (`aihandler.Create`):**
 
-```
-aiID := utilHandler.UUIDCreate()   // pre-generate AI ID
+`dbCreate` generates the AI's own ID internally. To carry `CurrentPromptHistoryID` into `dbCreate`, add `currentPromptHistoryID uuid.UUID` as a new parameter to `dbCreate` (it is a private method; its only callers are within `aihandler`). `dbCreate` sets the field on the `ai.AI` struct before calling `h.db.AICreate`.
 
+```
 if initPrompt != "" {
-    historyID := utilHandler.UUIDCreate()   // pre-generate history ID (only when needed)
-    1. dbCreate(ctx, ..., ID: aiID, CurrentPromptHistoryID: historyID, InitPrompt: initPrompt)
-    2. AIPromptHistoryCreate(ctx, {ID: historyID, AIID: aiID, CustomerID: ..., Prompt: initPrompt})
+    historyID := utilHandler.UUIDCreate()   // pre-generate history ID
+    1. result := dbCreate(ctx, ..., currentPromptHistoryID: historyID, InitPrompt: initPrompt)
+       // dbCreate generates result.ID internally; writes row with CurrentPromptHistoryID = historyID
+    2. AIPromptHistoryCreate(ctx, {ID: historyID, AIID: result.ID, CustomerID: ..., Prompt: initPrompt})
 } else {
-    dbCreate(ctx, ..., ID: aiID, CurrentPromptHistoryID: uuid.Nil, InitPrompt: "")
+    dbCreate(ctx, ..., currentPromptHistoryID: uuid.Nil, InitPrompt: "")
     // no history row
 }
 ```
 
-**AI Update (`aihandler.Update`) — prompt changed to non-empty:**
+**AI Update (`aihandler.Update`) — restructuring required:**
 
-The existing `dbUpdate` wrapper in `aihandler/chatbot.go` uses positional parameters and must not be given a new parameter (that would require updating all call sites). Instead, for the branches that set `current_prompt_history_id`, call `h.db.AIUpdate` directly using the field-map variant:
+The current `Update()` calls `dbUpdate` unconditionally for all cases. This must be restructured: the changed and cleared branches **replace** `dbUpdate` entirely with `h.db.AIUpdate` (the field-map variant), so that `current_prompt_history_id` is written atomically with `init_prompt` in a single DB call. `dbUpdate` is only used for the unchanged branch.
+
+**Branch: prompt changed to non-empty —** do NOT call `dbUpdate`; call `h.db.AIUpdate` directly:
 
 ```
 historyID := utilHandler.UUIDCreate()   // pre-generate history ID
 
 1. h.db.AIUpdate(ctx, id, map[ai.Field]any{
+       // include all fields that dbUpdate writes (name, detail, engine model, etc.)
        ai.FieldInitPrompt:             newPrompt,
        ai.FieldCurrentPromptHistoryID: historyID,
    })
 2. AIPromptHistoryCreate(ctx, {ID: historyID, AIID: id, CustomerID: ..., Prompt: newPrompt})
 ```
 
-**AI Update — prompt explicitly cleared to empty string (`newPrompt == ""`):**
+**Branch: prompt explicitly cleared to empty string (`newPrompt == ""`) —** do NOT call `dbUpdate`; call `h.db.AIUpdate` directly:
 
 ```
 h.db.AIUpdate(ctx, id, map[ai.Field]any{
+    // include all fields that dbUpdate writes
     ai.FieldInitPrompt:             "",
     ai.FieldCurrentPromptHistoryID: uuid.Nil,
 })
 // no history row; CurrentPromptHistoryID reset to zero UUID
 ```
 
-**AI Update — prompt unchanged:** use the existing `dbUpdate` wrapper as-is; `current_prompt_history_id` untouched.
+**Branch: prompt unchanged —** use the existing `dbUpdate` wrapper as-is; `current_prompt_history_id` is not written (untouched in DB).
 
 **Error handling:** `AIPromptHistoryCreate` failures are non-fatal (consistent with the existing pattern). Log and continue. If it fails, `current_prompt_history_id` points to a non-existent row; the AI's `init_prompt` remains the source of truth.
 
@@ -268,7 +273,7 @@ Both functions gain a `metadata map[string]any` parameter included in the SQL IN
 
 The metadata is built **inside** `startAIcallByRealtime()` and `startAIcallByMessaging()` (as shown in Section C) and then passed to `Create()`/`CreateByMessaging()`. The start functions themselves do **not** gain a metadata parameter — they produce metadata internally.
 
-`StartTask()` calls `startAIcallByMessaging()` and is **not** affected by this change: it does not pass metadata in, nor does it need to. The metadata building is self-contained inside `startAIcallByMessaging()`.
+`StartTask()` requires **no code changes** — snapshot building is self-contained inside `startAIcallByMessaging()`, so the call from `StartTask` works correctly without modification.
 
 ---
 
@@ -299,7 +304,7 @@ ALTER TABLE ai_aicalls DROP COLUMN metadata;
 
 Note: `DEFAULT (JSON_OBJECT())` requires MySQL 8.0.13+. If the deployment target is MySQL 5.7 or MySQL 8.0 < 8.0.13, use `DEFAULT '{}'` (MySQL coerces the string to JSON for a JSON column). Verify the target version before choosing the default syntax.
 
-The two tables (`ai_ais` and `ai_aicalls`) are independent — there is no foreign-key dependency between these migrations. They are generated sequentially via two `alembic revision` commands, and Alembic automatically chains `down_revision` in the order they are created. Run Migration 1 first, then Migration 2.
+The two tables (`ai_ais` and `ai_aicalls`) are independent — there is no foreign-key dependency between these migrations. They are generated sequentially via two `alembic revision` commands, and Alembic automatically chains `down_revision` in the order they are created. Run Migration 1 first, then Migration 2. Before committing, verify that Migration 2's `down_revision` field matches Migration 1's revision ID to confirm correct chaining.
 
 ---
 
