@@ -624,7 +624,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<ul class="simple">
+<ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID): The AI call’s unique identifier. Returned when creating via flow action or listing via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/aicalls</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">customer_id</span></code> (UUID): The customer who owns this AI call. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/customers</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">assistance_type</span></code> (enum string): The type of AI assistance. See <a class="reference internal" href="#aicall-struct-aicall-assistance-type"><span class="std std-ref">Assistance Type</span></a>.</p></li>
@@ -643,7 +643,18 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">current_member_id</span></code> (UUID): The ID of the current member in the conference bridge.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The AI call’s current status. See <a class="reference internal" href="#aicall-struct-aicall-status"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stt_language</span></code> (string): The BCP47 language code used for speech-to-text (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (object): Internal metadata associated with this AI call, including prompt snapshots captured at call initiation. May be null if no metadata is present.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (object): Generic key-value store attached to this AIcall. At call start time the
+key <code class="docutils literal notranslate"><span class="pre">prompt_snapshots</span></code> holds an array of <code class="docutils literal notranslate"><span class="pre">PromptSnapshot</span></code> objects (one per AI participant).
+Additional audit or operational data may appear under other keys in future releases.</p>
+<p><strong>PromptSnapshot fields:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ai_id</span></code> (string/UUID): ID of the AI configuration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prompt_history_id</span></code> (string/UUID): ID of the <code class="docutils literal notranslate"><span class="pre">ai_ai_prompt_histories</span></code> entry in effect
+at call start. Zero UUID if no history entry exists yet.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code> (string): Final variable-substituted <code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> as sent to the LLM.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">member_id</span></code> (string/UUID): Team member UUID for team calls; zero UUID for single-AI calls.</p></li>
+</ul>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_end</span></code> (string, ISO 8601): Timestamp when the AI call ended.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when this AI call was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to this AI call.</p></li>
