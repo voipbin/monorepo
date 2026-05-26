@@ -2847,7 +2847,25 @@ components:
         evaluation:
           type: object
           nullable: true
+          additionalProperties: true
           description: Full structured evaluation output. Null until completed.
+          example:
+            overall_score: 4
+            dimensions:
+              helpfulness:
+                score: 4
+                reason: "Provided clear and helpful answers."
+              accuracy:
+                score: 4
+                reason: "Responses were factually correct."
+              tone:
+                score: 5
+                reason: "Maintained professional and empathetic tone."
+              goal_completion:
+                score: 4
+                reason: "Successfully resolved the customer's issue."
+              tool_usage: null
+            summary: "The AI assistant performed well overall."
         language:
           type: string
           description: BCP47 language code used for audit output.
@@ -2855,7 +2873,7 @@ components:
         error:
           type: string
           description: Failure reason if status is failed.
-          example: ""
+          example: "LLM API quota exceeded"
         tm_create:
           type: string
           format: date-time
@@ -2873,6 +2891,7 @@ components:
           type: string
           format: date-time
           x-go-type: string
+          nullable: true
           description: Timestamp when the audit was deleted.
           example: "2026-01-15T09:30:00.000000Z"
 
