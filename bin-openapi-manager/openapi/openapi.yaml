@@ -2789,6 +2789,93 @@ components:
           description: Timestamp when the summary was deleted.
           example: "2026-01-15T09:30:00.000000Z"
 
+    AIManagerAIAuditStatus:
+      type: string
+      description: Status of the AI audit.
+      example: "progressing"
+      enum:
+        - "progressing"
+        - "completed"
+        - "failed"
+      x-enum-varnames:
+        - AIManagerAIAuditStatusProgressing
+        - AIManagerAIAuditStatusCompleted
+        - AIManagerAIAuditStatusFailed
+
+    AIManagerAIAudit:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the audit.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The customer who owns this audit.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        aicall_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The AI call that was audited. Returned from the `GET /aicalls` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        ai_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The AI participant that was evaluated. Returned from the `GET /ais` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        prompt_history_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The prompt version active during the call.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        status:
+          $ref: '#/components/schemas/AIManagerAIAuditStatus'
+        overall_score:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 5
+          description: Overall score (1-5) independently assessed by the LLM. Null until completed.
+          example: 4
+        evaluation:
+          type: object
+          nullable: true
+          description: Full structured evaluation output. Null until completed.
+        language:
+          type: string
+          description: BCP47 language code used for audit output.
+          example: "en-US"
+        error:
+          type: string
+          description: Failure reason if status is failed.
+          example: ""
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the audit was created.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          nullable: true
+          description: Timestamp when the audit was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the audit was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
+
 
 #########################################
 # Common
@@ -7358,6 +7445,11 @@ paths:
     $ref: './paths/aisummaries/id.yaml'
   /aisummaries:
     $ref: './paths/aisummaries/main.yaml'
+
+  /aiaudits/{id}:
+    $ref: './paths/aiaudits/id.yaml'
+  /aiaudits:
+    $ref: './paths/aiaudits/main.yaml'
 
   /teams/{id}:
     $ref: './paths/teams/id.yaml'
