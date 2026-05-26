@@ -2086,13 +2086,15 @@ func Test_startAIcallByRealtime(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			// buildPromptSnapshots -> resolveAIForTeam for team-typed calls
+			// buildPromptSnapshots -> resolveAIForTeam for team-typed calls.
+			// The team handler uses the caller ctx; AI fetches use a decoupled fetchCtx,
+			// so match them with gomock.Any().
 			if tt.assistanceType == aicall.AssistanceTypeTeam {
 				mockTeam.EXPECT().Get(ctx, tt.assistanceID).Return(&team.Team{
 					Members: tt.teamMembers,
 				}, nil)
 				for _, m := range tt.teamMembers {
-					mockAI.EXPECT().Get(ctx, m.AIID).Return(tt.teamMemberAIs[m.AIID], nil)
+					mockAI.EXPECT().Get(gomock.Any(), m.AIID).Return(tt.teamMemberAIs[m.AIID], nil)
 				}
 			}
 

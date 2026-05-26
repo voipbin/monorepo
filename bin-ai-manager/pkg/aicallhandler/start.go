@@ -3,6 +3,7 @@ package aicallhandler
 import (
 	"context"
 	"fmt"
+	"time"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
@@ -91,10 +92,15 @@ func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) 
 		err      error
 	}
 
+	// Decouple from the caller's deadline: member AI fetches are best-effort for
+	// snapshot observability and must not all fail when the outer RPC times out.
+	fetchCtx, fetchCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer fetchCancel()
+
 	ch := make(chan memberResult, len(t.Members))
 	for _, m := range t.Members {
 		go func(m team.Member) {
-			a, errGet := h.aiHandler.Get(ctx, m.AIID)
+			a, errGet := h.aiHandler.Get(fetchCtx, m.AIID)
 			ch <- memberResult{memberID: m.ID, ai: a, err: errGet}
 		}(m)
 	}

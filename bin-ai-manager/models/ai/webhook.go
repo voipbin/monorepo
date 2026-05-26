@@ -23,7 +23,8 @@ type WebhookMessage struct {
 	EngineKey   string         `json:"engine_key,omitempty"`
 	RagID       uuid.UUID      `json:"rag_id,omitempty"`
 
-	InitPrompt string `json:"init_prompt,omitempty"`
+	InitPrompt             string    `json:"init_prompt,omitempty"`
+	CurrentPromptHistoryID uuid.UUID `json:"current_prompt_history_id"`
 
 	TTSType    TTSType `json:"tts_type,omitempty"`
 	TTSVoiceID string  `json:"tts_voice_id,omitempty"`
@@ -56,7 +57,8 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		EngineKey:   h.EngineKey,
 		RagID:       h.RagID,
 
-		InitPrompt: h.InitPrompt,
+		InitPrompt:             h.InitPrompt,
+		CurrentPromptHistoryID: h.CurrentPromptHistoryID,
 
 		TTSType:    h.TTSType,
 		TTSVoiceID: h.TTSVoiceID,
