@@ -94,11 +94,10 @@ func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) 
 
 	ch := make(chan memberResult, len(t.Members))
 	for _, m := range t.Members {
-		m := m
-		go func() {
+		go func(m team.Member) {
 			a, errGet := h.aiHandler.Get(ctx, m.AIID)
 			ch <- memberResult{memberID: m.ID, ai: a, err: errGet}
-		}()
+		}(m)
 	}
 
 	var mu sync.Mutex
