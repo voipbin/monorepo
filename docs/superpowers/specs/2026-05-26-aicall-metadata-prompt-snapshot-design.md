@@ -62,8 +62,10 @@ metadata JSON NOT NULL DEFAULT '{}'
 ### Go model — `models/ai/main.go`
 
 ```go
-CurrentPromptHistoryID uuid.UUID `json:"current_prompt_history_id,omitempty" db:"current_prompt_history_id,uuid"`
+CurrentPromptHistoryID uuid.UUID `json:"current_prompt_history_id" db:"current_prompt_history_id,uuid"`
 ```
+
+Note: `omitempty` is intentionally absent — `uuid.UUID` is `[16]byte` and Go's std JSON encoder does not omit zero-value fixed-size arrays. The zero UUID is the valid "no history" sentinel.
 
 ### Go model — `models/aicall/main.go`
 
@@ -113,10 +115,10 @@ The key principle: **pre-generate both IDs before any write**, write the AI row 
 **AI Create (`aihandler.Create`):**
 
 ```
-aiID      := utilHandler.UUIDCreate()   // pre-generate AI ID
-historyID := utilHandler.UUIDCreate()   // pre-generate history ID
+aiID := utilHandler.UUIDCreate()   // pre-generate AI ID
 
 if initPrompt != "" {
+    historyID := utilHandler.UUIDCreate()   // pre-generate history ID (only when needed)
     1. dbCreate(ctx, ..., ID: aiID, CurrentPromptHistoryID: historyID, InitPrompt: initPrompt)
     2. AIPromptHistoryCreate(ctx, {ID: historyID, AIID: aiID, CustomerID: ..., Prompt: initPrompt})
 } else {
@@ -125,13 +127,20 @@ if initPrompt != "" {
 }
 ```
 
-**AI Update (`aihandler.Update`) — prompt changed:**
+**AI Update (`aihandler.Update`) — prompt changed to non-empty:**
 
 ```
 historyID := utilHandler.UUIDCreate()   // pre-generate history ID
 
 1. dbUpdate(ctx, id, {..., InitPrompt: newPrompt, CurrentPromptHistoryID: historyID})
 2. AIPromptHistoryCreate(ctx, {ID: historyID, AIID: id, CustomerID: ..., Prompt: newPrompt})
+```
+
+**AI Update — prompt explicitly cleared to empty string (`newPrompt == ""`):**
+
+```
+1. dbUpdate(ctx, id, {..., InitPrompt: "", CurrentPromptHistoryID: uuid.Nil})
+// no history row; CurrentPromptHistoryID reset to zero UUID
 ```
 
 **AI Update — prompt unchanged:** `dbUpdate` only; `current_prompt_history_id` untouched.
@@ -142,36 +151,38 @@ historyID := utilHandler.UUIDCreate()   // pre-generate history ID
 
 ### B. New `resolveAIForTeam()` in `aicallhandler`
 
-To avoid fetching the team twice, `resolveAI()` is changed to also return the `*team.Team` it already fetches internally for team calls (nil for non-team calls). The returned team is then passed directly to `resolveAIForTeam()`.
+`resolveAI()` is **not** modified. Its existing four-value return signature — `(*ai.AI, map[string]any, uuid.UUID, error)` (returning start-member AI, team parameter map, currentMemberID, error) — is preserved to avoid breaking the call sites in `Start()` and `StartTask()`.
+
+`resolveAIForTeam()` is a new, standalone helper that takes the team ID and fetches the team independently:
 
 ```go
-// resolveAI returns (startMemberAI, team, error).
-// team is non-nil only for AssistanceTypeTeam.
-func (h *aicallHandler) resolveAI(ctx context.Context, c *aicall.AIcall) (*ai.AI, *team.Team, error)
-
 // resolveAIForTeam fetches all team members' AI configs, keyed by member ID.
-// t must be the *team.Team already fetched by resolveAI — never calls teamHandler.Get again.
-func (h *aicallHandler) resolveAIForTeam(ctx context.Context, t *team.Team) (map[uuid.UUID]*ai.AI, error)
+// It calls teamHandler.Get once internally. For team calls this means teamHandler.Get
+// is called twice total (once inside resolveAI, once here) — an acceptable trade-off
+// that can be eliminated in a later refactor.
+func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) (map[uuid.UUID]*ai.AI, error)
 ```
 
-- `resolveAIForTeam` receives the `*team.Team` from `resolveAI()` and uses its `Members` slice directly.
+- Calls `teamHandler.Get(ctx, teamID)` to get the team and its `Members` slice.
 - Fetches each member's AI via `aiHandler.Get(ctx, m.AIID)` in parallel (goroutines + `sync.WaitGroup`).
+- **Concurrency-safe map construction**: use a `sync.Mutex`-protected `map[uuid.UUID]*ai.AI` (or equivalent channel-collect pattern) to safely accumulate results from goroutines. A data race on a plain map is not acceptable.
 - Returns `map[memberID → *ai.AI]` and an error.
-- **Partial failure handling**: if one or more member AI fetches fail, log a warning for each failure and return the partial map (excluding failed members) with a nil error. The call start continues with whatever snapshots were collectible. A total failure (nil team pointer or empty Members) returns an error and aborts call start.
+- **No `StartMemberID` fallback**: unlike `resolveTeamMemberAI()`, this function fetches every member by its explicit `AIID` and does not fall back to a default member AI.
+- **Partial failure handling**: if one or more member AI fetches fail, log a warning for each failure and return the partial map (excluding failed members) with a nil error. The call start continues with whatever snapshots were collectible. A total failure (e.g. `teamHandler.Get` itself fails) returns an error and aborts call start.
 - Called only for `AssistanceTypeTeam`.
 
 ---
 
 ### C. Build `[]PromptSnapshot` at call start
 
-In both `startAIcallByRealtime()` and `startAIcallByMessaging()`, after `resolveAI()` returns (now returning `a, t, err`) and before `Create()`:
+In both `startAIcallByRealtime()` and `startAIcallByMessaging()`, after `resolveAI()` returns and before `Create()`. `activeflowID` used for snapshot building is the same `activeflowID` value passed to `Create()` — do not read it from the returned AIcall record post-create.
 
 **`activeflowID == uuid.Nil` behavior:** When `activeflowID` is nil (e.g. in `startReferenceTypeNone`), `getInitPrompt()` returns the raw, un-substituted `init_prompt` text without calling `FlowV1VariableSubstitute`. The `PromptSnapshot.Prompt` field stores this raw text. This is the intended behavior — the snapshot captures whatever prompt was actually in effect.
 
 **Single-AI call (`AssistanceTypeAI`):**
 
 ```go
-// a, t, err := h.resolveAI(ctx, c)   ← t is nil for single-AI
+// a, _, _, err := h.resolveAI(ctx, assistanceType, assistanceID)
 substitutedPrompt := h.getInitPrompt(ctx, a, activeflowID)
 snapshots := []aicall.PromptSnapshot{
     {
@@ -186,8 +197,8 @@ snapshots := []aicall.PromptSnapshot{
 **Team call (`AssistanceTypeTeam`):**
 
 ```go
-// a, t, err := h.resolveAI(ctx, c)   ← t is the already-fetched *team.Team
-memberAIs, err := h.resolveAIForTeam(ctx, t)  // reuses t, no second teamHandler.Get
+// a, _, _, err := h.resolveAI(ctx, assistanceType, assistanceID)
+memberAIs, err := h.resolveAIForTeam(ctx, assistanceID)  // independent call, fetches team once
 // err → return error
 
 snapshots := make([]aicall.PromptSnapshot, 0, len(memberAIs))
@@ -211,6 +222,10 @@ metadata := map[string]any{
 ```
 
 Note: `getInitPrompt()` is called here for each AI, and called again inside `startInitMessages()` for the start member — two RPC calls to `FlowV1VariableSubstitute` for that AI. Acceptable now; can be eliminated in a later refactor by passing the substituted prompt into `startInitMessages()`.
+
+Note on empty prompts: when `a.InitPrompt == ""` (AI has no prompt configured), `getInitPrompt()` returns `""` regardless of `activeflowID`. The `PromptSnapshot.Prompt` field will be `""`. Writing a snapshot with an empty prompt is intentional — it records that the AI had no prompt at call start.
+
+**`ReferenceTypeTask` path (`StartTask`):** `StartTask()` calls `startAIcallByMessaging()` which contains the metadata-building logic. Task-based AIcalls therefore also capture prompt snapshots. This is intentional.
 
 **Conversation reuse path (`startReferenceTypeConversation`):** When an AIcall is reused from an existing conversation, no new AIcall record is created. The metadata on the existing AIcall record is left unchanged (it was captured at original creation time). No new snapshot is written on reuse.
 
@@ -251,6 +266,8 @@ ALTER TABLE ai_aicalls
 ALTER TABLE ai_aicalls DROP COLUMN metadata;
 ```
 
+Note: `DEFAULT (JSON_OBJECT())` requires MySQL 8.0.13+. If the deployment target is MySQL 5.7 or MySQL 8.0 < 8.0.13, use `DEFAULT '{}'` (MySQL coerces the string to JSON for a JSON column). Verify the target version before choosing the default syntax.
+
 The two tables (`ai_ais` and `ai_aicalls`) are independent — there is no foreign-key dependency between these migrations. They are generated sequentially via two `alembic revision` commands, and Alembic automatically chains `down_revision` in the order they are created. Run Migration 1 first, then Migration 2.
 
 ---
@@ -261,6 +278,16 @@ The two tables (`ai_ais` and `ai_aicalls`) are independent — there is no forei
 - `GET /aicalls/{id}` response: expose `metadata` (customers see `prompt_snapshots` under it).
 - Webhook events (`aicall.start`, `aicall.end`, etc.): expose `metadata` via `WebhookMessage`.
 - No new endpoints required.
+
+**OpenAPI spec changes (step 9):**
+
+The OpenAPI spec lives in `bin-openapi-manager/` (generates Go types via `go generate` / oapi-codegen). Two schema additions are required:
+
+1. In the `AI` schema object: add `current_prompt_history_id` as `type: string, format: uuid, example: "00000000-0000-0000-0000-000000000000"`.
+2. In the `AIcall` schema object: add `metadata` as `type: object, additionalProperties: true` (free-form JSON map).
+3. Also add `PromptSnapshot` as a named schema component with fields: `ai_id` (string/uuid), `prompt_history_id` (string/uuid), `prompt` (string), `member_id` (string/uuid).
+
+After editing the spec YAML, run `go generate ./...` inside `bin-openapi-manager` to regenerate Go types, then update `bin-api-manager` to reference the new types. Both services need the full verification workflow run.
 
 ---
 
@@ -274,7 +301,8 @@ The two tables (`ai_ais` and `ai_aicalls`) are independent — there is no forei
 - `aicallhandler`: extend `startAIcallByRealtime` and `startAIcallByMessaging` tests:
   - Single-AI call → `Metadata` contains one `PromptSnapshot` with correct fields
   - Team call → `Metadata` contains one `PromptSnapshot` per member, all with `MemberID` set
-  - `resolveAIForTeam` → unit test for parallel fetch and map construction
+  - `StartTask` + `AssistanceTypeTeam` → `Metadata` contains one `PromptSnapshot` per team member
+  - `resolveAIForTeam` → unit test for parallel fetch, concurrency-safe map construction, partial-failure behavior
 - Existing tests must continue to pass (no regression).
 
 ---
@@ -287,7 +315,7 @@ The two tables (`ai_ais` and `ai_aicalls`) are independent — there is no forei
 4. `models/aicall/webhook.go` — expose `Metadata`
 5. `pkg/dbhandler/` — `AICreate` / `AIUpdate` accept `current_prompt_history_id`; `AIcallCreate` accepts `metadata`
 6. `pkg/aihandler/` — update `Create` and `Update` write sequence
-7. `pkg/aicallhandler/` — update `resolveAI` signature; add `resolveAIForTeam`; update `startAIcallByRealtime` / `startAIcallByMessaging` / `Create` / `CreateByMessaging`
+7. `pkg/aicallhandler/` — add `resolveAIForTeam` (no `resolveAI` signature change); update `startAIcallByRealtime` / `startAIcallByMessaging` / `Create` / `CreateByMessaging`
 8. RST docs update — edit `bin-api-manager/docsdev/source/` for new `current_prompt_history_id` and `metadata` fields; clean rebuild (`rm -rf build && python3 -m sphinx -M html source build`); force-add build output
 9. OpenAPI spec update (`bin-api-manager`)
 10. Tests
