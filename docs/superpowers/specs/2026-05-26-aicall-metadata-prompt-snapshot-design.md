@@ -67,6 +67,14 @@ CurrentPromptHistoryID uuid.UUID `json:"current_prompt_history_id" db:"current_p
 
 Note: `omitempty` is intentionally absent — `uuid.UUID` is `[16]byte` and Go's std JSON encoder does not omit zero-value fixed-size arrays. The zero UUID is the valid "no history" sentinel.
 
+### Go model — `models/ai/field.go`
+
+Add the new field constant so `AIUpdate` field-map calls can reference it:
+
+```go
+FieldCurrentPromptHistoryID Field = "current_prompt_history_id"
+```
+
 ### Go model — `models/aicall/main.go`
 
 ```go
@@ -91,6 +99,20 @@ type AIcall struct {
     // ... existing fields unchanged ...
     Metadata map[string]any `json:"metadata,omitempty" db:"metadata,json"`
 }
+```
+
+### Go model — `models/aicall/field.go`
+
+Add the field constant for future update calls and test mock setup:
+
+```go
+FieldMetadata Field = "metadata"
+```
+
+**JSON scanning note:** The DB column defaults to `'{}'` / `JSON_OBJECT()`. When scanned via `commondatabasehandler.ScanRow` with `db:"metadata,json"`, an empty JSON object scans as an empty (but non-nil) `map[string]any{}`. In Go's `encoding/json`, `omitempty` only omits a map field when the map is **nil** — a non-nil empty map is not omitted. Therefore, pre-migration AIcalls (and any AIcall with no metadata written) will always produce `"metadata": {}` in API and webhook JSON output, never an absent field. This is the intended behavior — the field is always present.
+
+```go
+// remainder of models/aicall/main.go unchanged
 ```
 
 ### Go model — `models/aicall/webhook.go`
@@ -129,21 +151,29 @@ if initPrompt != "" {
 
 **AI Update (`aihandler.Update`) — prompt changed to non-empty:**
 
+The existing `dbUpdate` wrapper in `aihandler/chatbot.go` uses positional parameters and must not be given a new parameter (that would require updating all call sites). Instead, for the branches that set `current_prompt_history_id`, call `h.db.AIUpdate` directly using the field-map variant:
+
 ```
 historyID := utilHandler.UUIDCreate()   // pre-generate history ID
 
-1. dbUpdate(ctx, id, {..., InitPrompt: newPrompt, CurrentPromptHistoryID: historyID})
+1. h.db.AIUpdate(ctx, id, map[ai.Field]any{
+       ai.FieldInitPrompt:             newPrompt,
+       ai.FieldCurrentPromptHistoryID: historyID,
+   })
 2. AIPromptHistoryCreate(ctx, {ID: historyID, AIID: id, CustomerID: ..., Prompt: newPrompt})
 ```
 
 **AI Update — prompt explicitly cleared to empty string (`newPrompt == ""`):**
 
 ```
-1. dbUpdate(ctx, id, {..., InitPrompt: "", CurrentPromptHistoryID: uuid.Nil})
+h.db.AIUpdate(ctx, id, map[ai.Field]any{
+    ai.FieldInitPrompt:             "",
+    ai.FieldCurrentPromptHistoryID: uuid.Nil,
+})
 // no history row; CurrentPromptHistoryID reset to zero UUID
 ```
 
-**AI Update — prompt unchanged:** `dbUpdate` only; `current_prompt_history_id` untouched.
+**AI Update — prompt unchanged:** use the existing `dbUpdate` wrapper as-is; `current_prompt_history_id` untouched.
 
 **Error handling:** `AIPromptHistoryCreate` failures are non-fatal (consistent with the existing pattern). Log and continue. If it fails, `current_prompt_history_id` points to a non-existent row; the AI's `init_prompt` remains the source of truth.
 
@@ -169,6 +199,7 @@ func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) 
 - Returns `map[memberID → *ai.AI]` and an error.
 - **No `StartMemberID` fallback**: unlike `resolveTeamMemberAI()`, this function fetches every member by its explicit `AIID` and does not fall back to a default member AI.
 - **Partial failure handling**: if one or more member AI fetches fail, log a warning for each failure and return the partial map (excluding failed members) with a nil error. The call start continues with whatever snapshots were collectible. A total failure (e.g. `teamHandler.Get` itself fails) returns an error and aborts call start.
+- **All-members-fail case**: if every member AI fetch fails, `resolveAIForTeam` returns an empty (non-nil) map and nil error. The caller builds an empty `[]PromptSnapshot{}`, and `Create()` proceeds with `metadata: {"prompt_snapshots": []}`. This is accepted behavior — call creation is not blocked by snapshot collection failures.
 - Called only for `AssistanceTypeTeam`.
 
 ---
@@ -310,13 +341,23 @@ After editing the spec YAML, run `go generate ./...` inside `bin-openapi-manager
 ## Implementation Order
 
 1. Alembic migrations (schema first)
-2. `models/ai/main.go` — add `CurrentPromptHistoryID`
-3. `models/aicall/main.go` — add `Metadata`, `PromptSnapshot`, `MetaKeyPromptSnapshots`
-4. `models/aicall/webhook.go` — expose `Metadata`
+2. `models/ai/main.go` — add `CurrentPromptHistoryID`; `models/ai/field.go` — add `FieldCurrentPromptHistoryID`
+3. `models/aicall/main.go` — add `Metadata`, `PromptSnapshot`, `MetaKeyPromptSnapshots`; `models/aicall/field.go` — add `FieldMetadata`
+4. `models/aicall/webhook.go` — expose `Metadata` in `WebhookMessage` and `ConvertWebhookMessage()`
 5. `pkg/dbhandler/` — `AICreate` / `AIUpdate` accept `current_prompt_history_id`; `AIcallCreate` accepts `metadata`
-6. `pkg/aihandler/` — update `Create` and `Update` write sequence
+6. `pkg/aihandler/` — update `Create` and `Update` write sequence (use `h.db.AIUpdate` field-map for prompt-change branches)
 7. `pkg/aicallhandler/` — add `resolveAIForTeam` (no `resolveAI` signature change); update `startAIcallByRealtime` / `startAIcallByMessaging` / `Create` / `CreateByMessaging`
-8. RST docs update — edit `bin-api-manager/docsdev/source/` for new `current_prompt_history_id` and `metadata` fields; clean rebuild (`rm -rf build && python3 -m sphinx -M html source build`); force-add build output
-9. OpenAPI spec update (`bin-api-manager`)
-10. Tests
-11. Full verification: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
+8. RST docs update — edit `bin-api-manager/docsdev/source/` for new `current_prompt_history_id` and `metadata` fields; clean rebuild (`cd bin-api-manager/docsdev && rm -rf build && python3 -m sphinx -M html source build`); force-add build output (`git add -f bin-api-manager/docsdev/build/`)
+9. OpenAPI spec update:
+   a. Edit YAML in `bin-openapi-manager/` (add `current_prompt_history_id`, `metadata`, `PromptSnapshot` schema)
+   b. `cd bin-openapi-manager && go generate ./...` — regenerate Go types
+   c. Run full verification for `bin-openapi-manager`: `go mod tidy && go mod vendor && go test ./... && golangci-lint run -v --timeout 5m`
+   d. Update `bin-api-manager` to reference the regenerated types
+   e. Run full verification for `bin-api-manager`: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
+10. Tests (add/extend in `bin-ai-manager`)
+11. Full verification for `bin-ai-manager`:
+    ```bash
+    cd bin-ai-manager
+    go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m
+    ```
+    Also run verification for any other service whose `go.mod` references were updated.
