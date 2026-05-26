@@ -333,7 +333,8 @@ func Test_startReferenceTypeCall(t *testing.T) {
 			mockMessage.EXPECT().Create(ctx, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes().Return(&message.Message{}, nil)
 
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, tt.expectVariables).Return(nil)
-			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.responseAIcall.ActiveflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
+			// startInitMessages + buildPromptSnapshots both substitute the AI init prompt
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.responseAIcall.ActiveflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil).Times(2)
 
 			// startPipecatcall
 			mockMessage.EXPECT().List(ctx, uint64(100), gomock.Any(), gomock.Any()).Return(tt.responseMessages, nil)
@@ -1829,6 +1830,11 @@ func Test_startAIcallByRealtime(t *testing.T) {
 		teamParameter   map[string]any
 		currentMemberID uuid.UUID
 
+		// teamMembers + teamMemberAIs drive the team mock setup for
+		// AssistanceTypeTeam cases (used by buildPromptSnapshots -> resolveAIForTeam).
+		teamMembers   []team.Member
+		teamMemberAIs map[uuid.UUID]*ai.AI
+
 		responseUUIDPipecatcallID uuid.UUID
 		responseUUIDAIcallID      uuid.UUID
 
@@ -1878,6 +1884,15 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				Status:   aicall.StatusInitiating,
 
 				STTLanguage: "en-US",
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID:   uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+							Prompt: "You are a helpful assistant.",
+						},
+					},
+				},
 			},
 			expectVariables: map[string]string{
 				"voipbin.aicall.ai_engine_model": "",
@@ -1909,6 +1924,15 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				Status:   aicall.StatusInitiating,
 
 				STTLanguage: "en-US",
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID:   uuid.FromStringOrNil("b30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+							Prompt: "You are a helpful assistant.",
+						},
+					},
+				},
 			},
 		},
 		{
@@ -1938,6 +1962,21 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				"team_only":  "team_data",
 			},
 
+			teamMembers: []team.Member{
+				{
+					ID:   uuid.FromStringOrNil("c5111111-b659-11f0-b8ef-13f90dff9ee8"),
+					AIID: uuid.FromStringOrNil("c5222222-b659-11f0-b8ef-13f90dff9ee8"),
+				},
+			},
+			teamMemberAIs: map[uuid.UUID]*ai.AI{
+				uuid.FromStringOrNil("c5222222-b659-11f0-b8ef-13f90dff9ee8"): {
+					Identity: commonidentity.Identity{
+						ID:         uuid.FromStringOrNil("c5222222-b659-11f0-b8ef-13f90dff9ee8"),
+						CustomerID: uuid.FromStringOrNil("c9be93b6-b659-11f0-b961-b32ce4769d7c"),
+					},
+				},
+			},
+
 			responseUUIDPipecatcallID: uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
 			responseUUIDAIcallID:      uuid.FromStringOrNil("c3af613e-b659-11f0-9a72-e3e004fae386"),
 
@@ -1963,6 +2002,15 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				Status:   aicall.StatusInitiating,
 
 				STTLanguage: "ko-KR",
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID:     uuid.FromStringOrNil("c5222222-b659-11f0-b8ef-13f90dff9ee8"),
+							MemberID: uuid.FromStringOrNil("c5111111-b659-11f0-b8ef-13f90dff9ee8"),
+						},
+					},
+				},
 			},
 			expectVariables: map[string]string{
 				"voipbin.aicall.ai_engine_model": "",
@@ -1999,6 +2047,15 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				Status:   aicall.StatusInitiating,
 
 				STTLanguage: "ko-KR",
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID:     uuid.FromStringOrNil("c5222222-b659-11f0-b8ef-13f90dff9ee8"),
+							MemberID: uuid.FromStringOrNil("c5111111-b659-11f0-b8ef-13f90dff9ee8"),
+						},
+					},
+				},
 			},
 		},
 	}
@@ -2015,6 +2072,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
 			mockAI := aihandler.NewMockAIHandler(mc)
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
 			mockMessage := messagehandler.NewMockMessageHandler(mc)
 
 			h := &aicallHandler{
@@ -2023,9 +2081,20 @@ func Test_startAIcallByRealtime(t *testing.T) {
 				notifyHandler:  mockNotify,
 				db:             mockDB,
 				aiHandler:      mockAI,
+				teamHandler:    mockTeam,
 				messageHandler: mockMessage,
 			}
 			ctx := context.Background()
+
+			// buildPromptSnapshots -> resolveAIForTeam for team-typed calls
+			if tt.assistanceType == aicall.AssistanceTypeTeam {
+				mockTeam.EXPECT().Get(ctx, tt.assistanceID).Return(&team.Team{
+					Members: tt.teamMembers,
+				}, nil)
+				for _, m := range tt.teamMembers {
+					mockAI.EXPECT().Get(ctx, m.AIID).Return(tt.teamMemberAIs[m.AIID], nil)
+				}
+			}
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDPipecatcallID)
 
@@ -2038,9 +2107,9 @@ func Test_startAIcallByRealtime(t *testing.T) {
 			// setActiveflowVariables
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectAIcall.ActiveflowID, tt.expectVariables).Return(nil)
 
-			// startInitMessages
+			// startInitMessages + buildPromptSnapshots both substitute the AI init prompt
 			if tt.ai.InitPrompt != "" {
-				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil).Times(2)
 			}
 			// parameter substitution
 			if tt.expectAIcall.Parameter != nil {
@@ -2141,6 +2210,15 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				Status:   aicall.StatusInitiating,
 
 				STTLanguage: "en-US",
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID:   uuid.FromStringOrNil("d30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+							Prompt: "You are a helpful assistant.",
+						},
+					},
+				},
 			},
 			expectVariables: map[string]string{
 				"voipbin.aicall.ai_engine_model": string(ai.EngineModelOpenaiGPT5),
@@ -2173,6 +2251,15 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				Status:   aicall.StatusInitiating,
 
 				STTLanguage: "en-US",
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID:   uuid.FromStringOrNil("d30ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+							Prompt: "You are a helpful assistant.",
+						},
+					},
+				},
 			},
 		},
 		{
@@ -2214,6 +2301,13 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				PipecatcallID:  uuid.FromStringOrNil("f3af613e-b659-11f0-9a72-e3e004fae386"),
 				Status:         aicall.StatusInitiating,
 				STTLanguage:    "en-US",
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID: uuid.FromStringOrNil("f10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+						},
+					},
+				},
 			},
 			expectVariables: map[string]string{
 				"voipbin.aicall.ai_engine_model": string(ai.EngineModelOpenaiGPT5),
@@ -2240,6 +2334,13 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				PipecatcallID:  uuid.FromStringOrNil("f3af613e-b659-11f0-9a72-e3e004fae386"),
 				Status:         aicall.StatusInitiating,
 				STTLanguage:    "en-US",
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID: uuid.FromStringOrNil("f10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+						},
+					},
+				},
 			},
 		},
 		{
@@ -2280,6 +2381,14 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				PipecatcallID: uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
 
 				Status: aicall.StatusInitiating,
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID: uuid.FromStringOrNil("e40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+						},
+					},
+				},
 			},
 			expectVariables: map[string]string{
 				"voipbin.aicall.ai_engine_model": string(ai.EngineModelOpenaiGPT5),
@@ -2308,6 +2417,14 @@ func Test_startAIcallByMessaging(t *testing.T) {
 				PipecatcallID: uuid.FromStringOrNil("e3af613e-b659-11f0-9a72-e3e004fae386"),
 
 				Status: aicall.StatusInitiating,
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID: uuid.FromStringOrNil("e40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
+						},
+					},
+				},
 			},
 		},
 	}
@@ -2347,9 +2464,9 @@ func Test_startAIcallByMessaging(t *testing.T) {
 			// setActiveflowVariables
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectAIcall.ActiveflowID, tt.expectVariables).Return(nil)
 
-			// startInitMessages
+			// startInitMessages + buildPromptSnapshots both substitute the init prompt
 			if tt.ai.InitPrompt != "" {
-				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil)
+				mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.ai.InitPrompt).Return(tt.ai.InitPrompt, nil).Times(2)
 			}
 			for _, m := range tt.expectMessageTexts {
 				mockMessage.EXPECT().Create(ctx, uuid.Nil, tt.expectAIcall.CustomerID, tt.expectAIcall.ID, tt.expectAIcall.ActiveflowID, message.DirectionOutgoing, message.RoleSystem, m, nil, "", gomock.Any()).Return(&message.Message{}, nil)
@@ -3220,6 +3337,113 @@ func Test_mergeParameters(t *testing.T) {
 			res := mergeParameters(tt.aiParam, tt.teamParam)
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("expected: %v, got: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_resolveAIForTeam(t *testing.T) {
+	teamID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	member1ID := uuid.FromStringOrNil("22222222-0000-0000-0000-000000000002")
+	member2ID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000003")
+	ai1ID := uuid.FromStringOrNil("44444444-0000-0000-0000-000000000004")
+	ai2ID := uuid.FromStringOrNil("55555555-0000-0000-0000-000000000005")
+
+	tests := []struct {
+		name string
+
+		teamID uuid.UUID
+
+		mockSetup func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler)
+
+		expectCount int
+		expectKeys  []uuid.UUID
+		expectErr   bool
+	}{
+		{
+			name:   "both_members_succeed_returns_full_map",
+			teamID: teamID,
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Members: []team.Member{
+						{ID: member1ID, AIID: ai1ID},
+						{ID: member2ID, AIID: ai2ID},
+					},
+				}, nil)
+				ah.EXPECT().Get(gomock.Any(), ai1ID).Return(&ai.AI{
+					Identity: commonidentity.Identity{ID: ai1ID},
+				}, nil)
+				ah.EXPECT().Get(gomock.Any(), ai2ID).Return(&ai.AI{
+					Identity: commonidentity.Identity{ID: ai2ID},
+				}, nil)
+			},
+			expectCount: 2,
+			expectKeys:  []uuid.UUID{member1ID, member2ID},
+			expectErr:   false,
+		},
+		{
+			name:   "one_member_ai_fetch_fails_returns_partial_map",
+			teamID: teamID,
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Members: []team.Member{
+						{ID: member1ID, AIID: ai1ID},
+						{ID: member2ID, AIID: ai2ID},
+					},
+				}, nil)
+				ah.EXPECT().Get(gomock.Any(), ai1ID).Return(&ai.AI{
+					Identity: commonidentity.Identity{ID: ai1ID},
+				}, nil)
+				ah.EXPECT().Get(gomock.Any(), ai2ID).Return(nil, errors.New("ai fetch failed"))
+			},
+			expectCount: 1,
+			expectKeys:  []uuid.UUID{member1ID},
+			expectErr:   false,
+		},
+		{
+			name:   "teamhandler_get_fails_returns_error",
+			teamID: teamID,
+			mockSetup: func(th *teamhandler.MockTeamHandler, ah *aihandler.MockAIHandler) {
+				th.EXPECT().Get(gomock.Any(), teamID).Return(nil, errors.New("team fetch failed"))
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+			tt.mockSetup(mockTeam, mockAI)
+
+			h := &aicallHandler{
+				teamHandler: mockTeam,
+				aiHandler:   mockAI,
+			}
+			ctx := context.Background()
+
+			res, err := h.resolveAIForTeam(ctx, tt.teamID)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if len(res) != tt.expectCount {
+				t.Errorf("Wrong match. expect count: %d, got: %d", tt.expectCount, len(res))
+			}
+			for _, k := range tt.expectKeys {
+				if _, ok := res[k]; !ok {
+					t.Errorf("Wrong match. expected key %s not found in result map", k)
+				}
 			}
 		})
 	}
