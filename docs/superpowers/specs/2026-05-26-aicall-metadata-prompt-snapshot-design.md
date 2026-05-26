@@ -72,12 +72,13 @@ CurrentPromptHistoryID uuid.UUID `json:"current_prompt_history_id,omitempty" db:
 // AI participant at AIcall start time.
 type PromptSnapshot struct {
     AIID            uuid.UUID `json:"ai_id"`
-    PromptHistoryID uuid.UUID `json:"prompt_history_id,omitempty"` // zero UUID ("00000000-...") means no history recorded yet
-    Prompt          string    `json:"prompt"`                      // variable-substituted final prompt
-    MemberID        uuid.UUID `json:"member_id,omitempty"`         // team AIcall only
+    PromptHistoryID uuid.UUID `json:"prompt_history_id"` // zero UUID ("00000000-...") means no history recorded yet
+    Prompt          string    `json:"prompt"`            // variable-substituted final prompt; raw text when activeflowID is nil
+    MemberID        uuid.UUID `json:"member_id"`         // zero UUID for single-AI calls; member UUID for team calls
 }
-// Note: uuid.UUID is [16]byte; Go's omitempty does not omit zero-value fixed-size arrays.
-// Consumers must check for "00000000-0000-0000-0000-000000000000" to detect "no history".
+// Note: uuid.UUID is [16]byte; Go's omitempty does NOT omit zero-value fixed-size arrays,
+// so omitempty is intentionally absent. Consumers must check for
+// "00000000-0000-0000-0000-000000000000" to detect "no history" or "no member".
 // This matches the existing codebase convention (e.g. ConfbridgeID in webhook.go).
 
 // MetaKeyPromptSnapshots is the metadata key for prompt snapshots.
@@ -141,33 +142,43 @@ historyID := utilHandler.UUIDCreate()   // pre-generate history ID
 
 ### B. New `resolveAIForTeam()` in `aicallhandler`
 
+To avoid fetching the team twice, `resolveAI()` is changed to also return the `*team.Team` it already fetches internally for team calls (nil for non-team calls). The returned team is then passed directly to `resolveAIForTeam()`.
+
 ```go
+// resolveAI returns (startMemberAI, team, error).
+// team is non-nil only for AssistanceTypeTeam.
+func (h *aicallHandler) resolveAI(ctx context.Context, c *aicall.AIcall) (*ai.AI, *team.Team, error)
+
 // resolveAIForTeam fetches all team members' AI configs, keyed by member ID.
-// Used at AIcall start to build prompt snapshots for every team member.
-func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) (map[uuid.UUID]*ai.AI, error)
+// t must be the *team.Team already fetched by resolveAI — never calls teamHandler.Get again.
+func (h *aicallHandler) resolveAIForTeam(ctx context.Context, t *team.Team) (map[uuid.UUID]*ai.AI, error)
 ```
 
-- Calls `teamHandler.Get(ctx, teamID)` to get the team and its `Members` slice.
+- `resolveAIForTeam` receives the `*team.Team` from `resolveAI()` and uses its `Members` slice directly.
 - Fetches each member's AI via `aiHandler.Get(ctx, m.AIID)` in parallel (goroutines + `sync.WaitGroup`).
 - Returns `map[memberID → *ai.AI]` and an error.
-- **Partial failure handling**: if one or more member AI fetches fail, log a warning for each failure and return the partial map (excluding failed members) with a nil error. The call start continues with whatever snapshots were collectible. A total failure (e.g. `teamHandler.Get` itself fails) returns an error and aborts call start.
+- **Partial failure handling**: if one or more member AI fetches fail, log a warning for each failure and return the partial map (excluding failed members) with a nil error. The call start continues with whatever snapshots were collectible. A total failure (nil team pointer or empty Members) returns an error and aborts call start.
 - Called only for `AssistanceTypeTeam`.
 
 ---
 
 ### C. Build `[]PromptSnapshot` at call start
 
-In both `startAIcallByRealtime()` and `startAIcallByMessaging()`, after `resolveAI()` returns and before `Create()`:
+In both `startAIcallByRealtime()` and `startAIcallByMessaging()`, after `resolveAI()` returns (now returning `a, t, err`) and before `Create()`:
+
+**`activeflowID == uuid.Nil` behavior:** When `activeflowID` is nil (e.g. in `startReferenceTypeNone`), `getInitPrompt()` returns the raw, un-substituted `init_prompt` text without calling `FlowV1VariableSubstitute`. The `PromptSnapshot.Prompt` field stores this raw text. This is the intended behavior — the snapshot captures whatever prompt was actually in effect.
 
 **Single-AI call (`AssistanceTypeAI`):**
 
 ```go
+// a, t, err := h.resolveAI(ctx, c)   ← t is nil for single-AI
 substitutedPrompt := h.getInitPrompt(ctx, a, activeflowID)
 snapshots := []aicall.PromptSnapshot{
     {
         AIID:            a.ID,
-        PromptHistoryID: a.CurrentPromptHistoryID, // zero UUID → omitted in JSON
+        PromptHistoryID: a.CurrentPromptHistoryID,
         Prompt:          substitutedPrompt,
+        // MemberID: uuid.Nil (zero value, serialized as "00000000-...")
     },
 }
 ```
@@ -175,7 +186,8 @@ snapshots := []aicall.PromptSnapshot{
 **Team call (`AssistanceTypeTeam`):**
 
 ```go
-memberAIs, err := h.resolveAIForTeam(ctx, assistanceID)
+// a, t, err := h.resolveAI(ctx, c)   ← t is the already-fetched *team.Team
+memberAIs, err := h.resolveAIForTeam(ctx, t)  // reuses t, no second teamHandler.Get
 // err → return error
 
 snapshots := make([]aicall.PromptSnapshot, 0, len(memberAIs))
@@ -200,13 +212,17 @@ metadata := map[string]any{
 
 Note: `getInitPrompt()` is called here for each AI, and called again inside `startInitMessages()` for the start member — two RPC calls to `FlowV1VariableSubstitute` for that AI. Acceptable now; can be eliminated in a later refactor by passing the substituted prompt into `startInitMessages()`.
 
+**Conversation reuse path (`startReferenceTypeConversation`):** When an AIcall is reused from an existing conversation, no new AIcall record is created. The metadata on the existing AIcall record is left unchanged (it was captured at original creation time). No new snapshot is written on reuse.
+
 ---
 
 ### D. `Create()` / `CreateByMessaging()` — accept `metadata`
 
 Both functions gain a `metadata map[string]any` parameter included in the SQL INSERT. The `Metadata` field on the returned `AIcall` is populated from the written value.
 
-Callers: only `startAIcallByRealtime()` and `startAIcallByMessaging()` — both already being modified in this change.
+The metadata is built **inside** `startAIcallByRealtime()` and `startAIcallByMessaging()` (as shown in Section C) and then passed to `Create()`/`CreateByMessaging()`. The start functions themselves do **not** gain a metadata parameter — they produce metadata internally.
+
+`StartTask()` calls `startAIcallByMessaging()` and is **not** affected by this change: it does not pass metadata in, nor does it need to. The metadata building is self-contained inside `startAIcallByMessaging()`.
 
 ---
 
@@ -235,7 +251,7 @@ ALTER TABLE ai_aicalls
 ALTER TABLE ai_aicalls DROP COLUMN metadata;
 ```
 
-Migration 2 depends on Migration 1 (`down_revision` chains correctly via `alembic revision`).
+The two tables (`ai_ais` and `ai_aicalls`) are independent — there is no foreign-key dependency between these migrations. They are generated sequentially via two `alembic revision` commands, and Alembic automatically chains `down_revision` in the order they are created. Run Migration 1 first, then Migration 2.
 
 ---
 
@@ -271,7 +287,8 @@ Migration 2 depends on Migration 1 (`down_revision` chains correctly via `alembi
 4. `models/aicall/webhook.go` — expose `Metadata`
 5. `pkg/dbhandler/` — `AICreate` / `AIUpdate` accept `current_prompt_history_id`; `AIcallCreate` accepts `metadata`
 6. `pkg/aihandler/` — update `Create` and `Update` write sequence
-7. `pkg/aicallhandler/` — add `resolveAIForTeam`, update `startAIcallByRealtime` / `startAIcallByMessaging` / `Create` / `CreateByMessaging`
-8. OpenAPI spec update (`bin-api-manager`)
-9. Tests
-10. Full verification: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
+7. `pkg/aicallhandler/` — update `resolveAI` signature; add `resolveAIForTeam`; update `startAIcallByRealtime` / `startAIcallByMessaging` / `Create` / `CreateByMessaging`
+8. RST docs update — edit `bin-api-manager/docsdev/source/` for new `current_prompt_history_id` and `metadata` fields; clean rebuild (`rm -rf build && python3 -m sphinx -M html source build`); force-add build output
+9. OpenAPI spec update (`bin-api-manager`)
+10. Tests
+11. Full verification: `go mod tidy && go mod vendor && go generate ./... && go test ./... && golangci-lint run -v --timeout 5m`
