@@ -183,22 +183,8 @@ func (h *aiHandler) dbUpdate(
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
 ) (*ai.AI, error) {
-	fields := map[ai.Field]any{
-		ai.FieldName:             name,
-		ai.FieldDetail:           detail,
-		ai.FieldEngineModel:      engineModel,
-		ai.FieldParameter:        parameter,
-		ai.FieldEngineKey:        engineKey,
-		ai.FieldRagID:            ragID,
-		ai.FieldInitPrompt:       initPrompt,
-		ai.FieldTTSType:          ttsType,
-		ai.FieldTTSVoiceID:       ttsVoice,
-		ai.FieldSTTType:          sttType,
-		ai.FieldSTTLanguage:      sttLanguage,
-		ai.FieldToolNames:        toolNames,
-		ai.FieldVADConfig:        vadConfig,
-		ai.FieldSmartTurnEnabled: smartTurnEnabled,
-	}
+	fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
+		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
