@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-26
 **Branch:** NOJIRA-Add-aicall-metadata-prompt-version-tracking
-**Status:** Draft
+**Status:** Approved (5-round review, 2026-05-26)
 
 ---
 
@@ -167,7 +167,7 @@ historyID := utilHandler.UUIDCreate()   // pre-generate history ID
 2. AIPromptHistoryCreate(ctx, {ID: historyID, AIID: id, CustomerID: ..., Prompt: newPrompt})
 ```
 
-**Branch: prompt explicitly cleared to empty string (`newPrompt == ""`) —** do NOT call `dbUpdate`; call `h.db.AIUpdate` directly:
+**Branch: prompt explicitly cleared to empty string (`newPrompt == ""` AND `preUpdateAI.InitPrompt != ""`) —** requires a pre-fetch of the current AI to distinguish from "unchanged-empty" (see below). Do NOT call `dbUpdate`; call `h.db.AIUpdate` directly. The pre-fetch result can be shared with the changed branch (fetch once, use across all three branches):
 
 ```
 h.db.AIUpdate(ctx, id, map[ai.Field]any{
@@ -178,7 +178,7 @@ h.db.AIUpdate(ctx, id, map[ai.Field]any{
 // no history row; CurrentPromptHistoryID reset to zero UUID
 ```
 
-**Branch: prompt unchanged —** use the existing `dbUpdate` wrapper as-is; `current_prompt_history_id` is not written (untouched in DB).
+**Branch: prompt unchanged** (`newPrompt == ""` AND `preUpdateAI.InitPrompt == ""`, or `newPrompt == preUpdateAI.InitPrompt`) — use the existing `dbUpdate` wrapper as-is; `current_prompt_history_id` is not written (untouched in DB).
 
 **Error handling:** `AIPromptHistoryCreate` failures are non-fatal (consistent with the existing pattern). Log and continue. If it fails, `current_prompt_history_id` points to a non-existent row; the AI's `init_prompt` remains the source of truth.
 
@@ -269,7 +269,7 @@ Note on empty prompts: when `a.InitPrompt == ""` (AI has no prompt configured), 
 
 ### D. `Create()` / `CreateByMessaging()` — accept `metadata`
 
-Both functions gain a `metadata map[string]any` parameter included in the SQL INSERT. The `Metadata` field on the returned `AIcall` is populated from the written value.
+Both functions gain `metadata map[string]any` as their **last parameter**, included in the SQL INSERT. The `Metadata` field on the returned `AIcall` is populated from the written value. The only callers of each function are `startAIcallByRealtime` (calls `h.Create`) and `startAIcallByMessaging` (calls `h.CreateByMessaging`) — both updated in step 7.
 
 The metadata is built **inside** `startAIcallByRealtime()` and `startAIcallByMessaging()` (as shown in Section C) and then passed to `Create()`/`CreateByMessaging()`. The start functions themselves do **not** gain a metadata parameter — they produce metadata internally.
 
