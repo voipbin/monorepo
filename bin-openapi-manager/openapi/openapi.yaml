@@ -2037,6 +2037,32 @@ components:
           description: The time this history entry was recorded.
           example: "2026-05-22T10:00:00.000000Z"
 
+    AIManagerPromptSnapshot:
+      type: object
+      properties:
+        ai_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The ID of the AI this snapshot belongs to.
+          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        prompt_history_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: UUID of the prompt history entry. Zero UUID means no history entry exists yet.
+          example: "00000000-0000-0000-0000-000000000000"
+        prompt:
+          type: string
+          description: Variable-substituted init_prompt as sent to the LLM.
+          example: "You are a helpful customer support assistant."
+        member_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: Zero UUID for single-AI calls; team member UUID for team calls.
+          example: "00000000-0000-0000-0000-000000000000"
+
     AIManagerAI:
       type: object
       properties:
@@ -2082,6 +2108,14 @@ components:
           type: string
           description: Initial prompt to configure the AI's behavior.
           example: "You are a helpful customer support assistant."
+        current_prompt_history_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: >
+            UUID of the most-recent prompt history entry.
+            Zero UUID means no versioned history has been recorded yet.
+          example: "00000000-0000-0000-0000-000000000000"
         tts_type:
           $ref: '#/components/schemas/AIManagerAITTSType'
           description: Text-to-speech provider type.
@@ -2491,6 +2525,12 @@ components:
           type: string
           description: "STT language copied from AI config at creation time."
           example: "en-US"
+        metadata:
+          type: object
+          additionalProperties: true
+          description: >
+            Generic key-value store. Contains prompt_snapshots (array of PromptSnapshot)
+            at call start time.
         tm_end:
           type: string
           format: date-time

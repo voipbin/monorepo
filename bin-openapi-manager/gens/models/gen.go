@@ -3251,6 +3251,9 @@ func (e GetTimelinesResourceTypeResourceIdEventsParamsResourceType) Valid() bool
 
 // AIManagerAI defines model for AIManagerAI.
 type AIManagerAI struct {
+	// CurrentPromptHistoryId UUID of the most-recent prompt history entry. Zero UUID means no versioned history has been recorded yet.
+	CurrentPromptHistoryId *string `json:"current_prompt_history_id,omitempty"`
+
 	// CustomerId The unique identifier of the associated customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
@@ -3380,6 +3383,9 @@ type AIManagerAIcall struct {
 	// Id The unique identifier of the AI call.
 	Id *string `json:"id,omitempty"`
 
+	// Metadata Generic key-value store. Contains prompt_snapshots (array of PromptSnapshot) at call start time.
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+
 	// Parameter Merged key-value parameter data from AI and team configuration.
 	Parameter *map[string]interface{} `json:"parameter,omitempty"`
 
@@ -3484,6 +3490,21 @@ type AIManagerParticipant struct {
 
 	// TmCreate The timestamp when the participation was recorded.
 	TmCreate *time.Time `json:"tm_create,omitempty"`
+}
+
+// AIManagerPromptSnapshot defines model for AIManagerPromptSnapshot.
+type AIManagerPromptSnapshot struct {
+	// AiId The ID of the AI this snapshot belongs to.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// MemberId Zero UUID for single-AI calls; team member UUID for team calls.
+	MemberId *string `json:"member_id,omitempty"`
+
+	// Prompt Variable-substituted init_prompt as sent to the LLM.
+	Prompt *string `json:"prompt,omitempty"`
+
+	// PromptHistoryId UUID of the prompt history entry. Zero UUID means no history entry exists yet.
+	PromptHistoryId *string `json:"prompt_history_id,omitempty"`
 }
 
 // AIManagerSummary defines model for AIManagerSummary.
