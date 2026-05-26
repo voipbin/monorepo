@@ -29,6 +29,7 @@ AIcall
         "current_member_id": "<string>",
         "status": "<string>",
         "stt_language": "<string>",
+        "metadata": {},
         "tm_end": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
@@ -53,6 +54,7 @@ AIcall
 * ``current_member_id`` (UUID): The ID of the current member in the conference bridge.
 * ``status`` (enum string): The AI call's current status. See :ref:`Status <aicall-struct-aicall-status>`.
 * ``stt_language`` (string): The BCP47 language code used for speech-to-text (e.g., ``en-US``, ``ko-KR``).
+* ``metadata`` (object): Internal metadata associated with this AI call, including prompt snapshots captured at call initiation. May be null if no metadata is present.
 * ``tm_end`` (string, ISO 8601): Timestamp when the AI call ended.
 * ``tm_create`` (string, ISO 8601): Timestamp when this AI call was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to this AI call.

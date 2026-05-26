@@ -182,6 +182,23 @@ func TestCreateWebhookEvent(t *testing.T) {
 	}
 }
 
+func TestConvertWebhookMessage_includesMetadata(t *testing.T) {
+	h := &AIcall{
+		Metadata: map[string]any{
+			MetaKeyPromptSnapshots: []PromptSnapshot{
+				{Prompt: "hello world"},
+			},
+		},
+	}
+	msg := h.ConvertWebhookMessage()
+	if msg.Metadata == nil {
+		t.Fatal("expected Metadata to be non-nil in WebhookMessage")
+	}
+	if _, ok := msg.Metadata[MetaKeyPromptSnapshots]; !ok {
+		t.Errorf("expected %q key in Metadata", MetaKeyPromptSnapshots)
+	}
+}
+
 func ptrTime(t time.Time) *time.Time {
 	return &t
 }

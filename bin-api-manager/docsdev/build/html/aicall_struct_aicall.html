@@ -616,6 +616,7 @@
     <span class="s2">&quot;current_member_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;stt_language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;tm_end&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -642,6 +643,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">current_member_id</span></code> (UUID): The ID of the current member in the conference bridge.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The AI call’s current status. See <a class="reference internal" href="#aicall-struct-aicall-status"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">stt_language</span></code> (string): The BCP47 language code used for speech-to-text (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code> (object): Internal metadata associated with this AI call, including prompt snapshots captured at call initiation. May be null if no metadata is present.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_end</span></code> (string, ISO 8601): Timestamp when the AI call ended.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when this AI call was created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_update</span></code> (string, ISO 8601): Timestamp of the last update to this AI call.</p></li>
