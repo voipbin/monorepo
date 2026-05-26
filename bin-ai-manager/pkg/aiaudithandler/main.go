@@ -199,12 +199,12 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 	finalErr := ""
 
 	defer func() {
+		defer func() { <-h.semaphore }() // released after all cleanup
 		if r := recover(); r != nil {
 			log.Errorf("panic in runAuditJob: %v", r)
 			finalErr = string(aiaudit.ErrorEvaluatorUnavailable)
 			finalStatus = aiaudit.StatusFailed
 		}
-		<-h.semaphore
 		writeCtx, writeCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer writeCancel()
 		_, dbErr := h.db.AIAuditUpdateFinal(writeCtx, recordID, finalStatus, finalScore, finalEvalJSON, finalErr)
