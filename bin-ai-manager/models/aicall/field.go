@@ -32,6 +32,8 @@ const (
 
 	FieldSTTLanguage Field = "stt_language"
 
+	FieldMetadata Field = "metadata"
+
 	FieldTMEnd    Field = "tm_end"
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
