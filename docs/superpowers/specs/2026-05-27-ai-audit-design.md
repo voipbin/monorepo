@@ -1,7 +1,7 @@
 # AI Audit Feature — Design Spec
 
 **Date:** 2026-05-27
-**Status:** Draft
+**Status:** Approved
 
 ---
 
@@ -95,11 +95,12 @@ The upsert (`INSERT ... ON DUPLICATE KEY UPDATE`) targets the `(aicall_id, ai_id
 **`summary`** is a 3–5 sentence freeform narrative covering: overall impression, the strongest moment in the conversation, the weakest moment, and one concrete suggestion for improving the AI's prompt or behaviour.
 
 **Response field validation:** The parser enforces:
-- `overall_score` must be a numeric value in `[1.0, 5.0]` that rounds to an integer (Gemini may return `4.0` instead of `4`; both are accepted). Values outside range or non-numeric → `"invalid_evaluator_response"`
+- `overall_score` must be a numeric value equal to a whole number in `[1, 5]` (Gemini may return `4.0` instead of `4`; both are accepted, but `4.5` is rejected because `4.5 != int(4.5)`). Values outside range, fractional, or non-numeric → `"invalid_evaluator_response"`
 - Each `reason` field ≤ 2000 characters
 - `summary` ≤ 5000 characters
 - Each individual message content is truncated to 4000 characters before prompt construction to bound total prompt size
 - If any field fails validation: status `failed`, error `"invalid_evaluator_response"`
+- Unknown top-level keys in the JSON response are silently stripped by the parser; only the documented fields are read
 
 ---
 
@@ -122,7 +123,7 @@ All four endpoints use the same authorization pattern established by existing ha
 
 ### WebhookMessage
 
-The `models/aicallaudit/` package exposes a `WebhookMessage` struct and `ConvertWebhookMessage()` method per the project convention. All API responses use `WebhookMessage`, not the internal struct. Internal-only fields (if any added during implementation) are stripped by `ConvertWebhookMessage()`.
+The `models/aiaudit/` package exposes a `WebhookMessage` struct and `ConvertWebhookMessage()` method per the project convention. All API responses use `WebhookMessage`, not the internal struct. Internal-only fields (if any added during implementation) are stripped by `ConvertWebhookMessage()`.
 
 ### `POST /v1/aiaudits`
 
@@ -230,6 +231,7 @@ The audit Gemini calls use `ENGINE_KEY_CHATGPT` (the shared OpenAI-compatible AP
 Each goroutine runs within a global semaphore (capped at 100 concurrent goroutines platform-wide) and with `context.WithTimeout(30s)` to prevent Gemini call leaks.
 
 1. Load `aicall.metadata["prompt_snapshots"]` → find the snapshot where `ai_id` matches.
+   - If `metadata["prompt_snapshots"]` is absent, null, or not a valid JSON array: set status `failed`, error `"invalid_call_metadata"`; stop.
    - If no snapshot with a matching `ai_id` is found: set status `failed`, error `"prompt_snapshot_not_found"`; stop.
    - If `prompt_history_id` is zero UUID: set status `failed`, error `"prompt_snapshot_has_no_history_id"`; stop.
 2. Load messages for this aicall, scoped by assistance type:
@@ -329,6 +331,7 @@ A new `pkg/geminiaudithandler/` package inside `bin-ai-manager` handles:
 | Customer has ≥ 10 in-flight audit jobs | `POST /v1/aiaudits` returns `429` |
 | Any `(aicall_id, ai_id)` audit currently `progressing` | `POST /v1/aiaudits` returns `409` (detected via conditional upsert result) |
 | `aicall` has no messages | Audit runs; Gemini evaluates based on prompt alone; summary notes the empty conversation |
+| `metadata["prompt_snapshots"]` absent, null, or malformed | Status `failed`, error: `"invalid_call_metadata"` |
 | No prompt snapshot found for AI | Status `failed`, error: `"prompt_snapshot_not_found"` |
 | Prompt snapshot has zero UUID `prompt_history_id` | Status `failed`, error: `"prompt_snapshot_has_no_history_id"` |
 | Gemini returns invalid JSON | Retry once; if still invalid → status `failed`, error: `"invalid_evaluator_response"` |
