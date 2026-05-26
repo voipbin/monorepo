@@ -147,7 +147,7 @@ Returns a single audit record by ID.
 
 ### `DELETE /v1/aiaudits/{id}`
 
-Soft-deletes the audit record. After deletion the user may re-trigger via `POST /v1/aiaudits`.
+Soft-deletes the audit record. Note: re-running `POST /v1/aiaudits` for the same call already overwrites the existing result — DELETE is for when the user wants to discard an audit entirely rather than replace it.
 
 ---
 
