@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/aiaudithandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
@@ -50,6 +51,7 @@ type listenHandler struct {
 
 	aiHandler              aihandler.AIHandler
 	aicallHandler          aicallhandler.AIcallHandler
+	aiauditHandler         aiaudithandler.AIAuditHandler
 	aiprompthistoryHandler aiprompthistoryhandler.AIPromptHistoryHandler
 	messageHandler         messagehandler.MessageHandler
 	summaryHandler         summaryhandler.SummaryHandler
@@ -81,6 +83,11 @@ var (
 	regV1AIcallsID                  = regexp.MustCompile("/v1/aicalls/" + regUUID + "$")
 	regV1AIcallsIDTerminate         = regexp.MustCompile("/v1/aicalls/" + regUUID + "/terminate$")
 	regV1AIcallsIDToolExecute       = regexp.MustCompile("/v1/aicalls/" + regUUID + "/tool_execute$")
+
+	// aiaudits
+	regV1AIAuditsGet = regexp.MustCompile(`/v1/aiaudits\?`)
+	regV1AIAudits    = regexp.MustCompile(`/v1/aiaudits$`)
+	regV1AIAuditsID  = regexp.MustCompile("/v1/aiaudits/" + regUUID + "$")
 
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
@@ -172,6 +179,7 @@ func NewListenHandler(
 
 	aiHandler aihandler.AIHandler,
 	aicallHandler aicallhandler.AIcallHandler,
+	aiauditHandler aiaudithandler.AIAuditHandler,
 	aiprompthistoryHandler aiprompthistoryhandler.AIPromptHistoryHandler,
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
@@ -188,6 +196,7 @@ func NewListenHandler(
 
 		aiHandler:              aiHandler,
 		aicallHandler:          aicallHandler,
+		aiauditHandler:         aiauditHandler,
 		aiprompthistoryHandler: aiprompthistoryHandler,
 		messageHandler:         messageHandler,
 		summaryHandler:         summaryHandler,
@@ -322,6 +331,29 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIcallsIDToolExecute.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1AIcallsIDToolExecutePost(ctx, m)
 		requestType = "/v1/aicalls/<aicall-id>/tool_execute"
+
+	///////////////
+	// aiaudits
+	///////////////
+	// GET /aiaudits
+	case regV1AIAuditsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIAuditsGet(ctx, m)
+		requestType = "/v1/aiaudits"
+
+	// POST /aiaudits
+	case regV1AIAudits.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIAuditsPost(ctx, m)
+		requestType = "/v1/aiaudits"
+
+	// GET /aiaudits/<id>
+	case regV1AIAuditsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIAuditsIDGet(ctx, m)
+		requestType = "/v1/aiaudits/<id>"
+
+	// DELETE /aiaudits/<id>
+	case regV1AIAuditsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1AIAuditsIDDelete(ctx, m)
+		requestType = "/v1/aiaudits/<id>"
 
 	///////////////
 	// messages

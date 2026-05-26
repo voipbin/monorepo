@@ -150,6 +150,32 @@ No `tm_update` or `tm_delete` — rows are append-only.
 
 **Empty prompt:** No row is inserted when `init_prompt == ""`.
 
+### AIAudit
+
+On-demand quality audit of a single AI agent's performance in one AIcall. Created by `POST /v1/aiaudits`; the handler spawns a background Gemini evaluation goroutine and returns immediately with status `progressing`.
+
+**Table:** `ai_ai_audits`
+
+| Field | Type | Notes |
+|---|---|---|
+| id | UUID | PK |
+| customer_id | UUID | Copied from the AIcall at creation time |
+| aicall_id | UUID | FK → ai_aicalls.id |
+| ai_id | UUID | FK → ai_ais.id |
+| prompt_history_id | UUID | Snapshot of the AI's prompt history at call-start; `uuid.Nil` if unavailable |
+| status | string | `progressing` → `completed` \| `failed` |
+| overall_score | *int | 0–100 composite score; `null` while progressing or on failure |
+| evaluation | JSON | Per-dimension breakdown from Gemini; `null` while progressing |
+| language | string | BCP 47 tag (e.g. `en-US`) used for the evaluation prompt |
+| error | string | Canonicalized error code on failure (see `aiaudit.Error` constants) |
+| tm_create / tm_update / tm_delete | time | Standard audit timestamps |
+
+**Error codes:** `invalid_call_metadata`, `prompt_snapshot_not_found`, `prompt_snapshot_has_no_history_id`, `invalid_evaluator_response`, `evaluator_unavailable`, `cancelled`
+
+**Concurrency limits:** global cap of 100 in-flight evaluations; per-customer cap of 10.
+
+**Stale sweep:** On service startup, any `progressing` audits older than 5 minutes are marked `failed` to recover from crashed goroutines.
+
 ## Soft-Delete Pattern
 
 All entities use `tm_delete = "9999-01-01 00:00:00.000000"` for active records. Deleted records receive the actual deletion timestamp, preserving history for audit and message replay.
