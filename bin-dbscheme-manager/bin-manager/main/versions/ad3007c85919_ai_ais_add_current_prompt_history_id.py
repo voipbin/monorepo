@@ -20,7 +20,7 @@ def upgrade():
     op.execute(
         "ALTER TABLE ai_ais "
         "ADD COLUMN current_prompt_history_id BINARY(16) NOT NULL "
-        "DEFAULT (X'00000000000000000000000000000000')"
+        "DEFAULT 0x00000000000000000000000000000000"
     )
 
 
