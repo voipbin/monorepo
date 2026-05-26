@@ -29,6 +29,7 @@ AIcall
         "current_member_id": "<string>",
         "status": "<string>",
         "stt_language": "<string>",
+        "metadata": {},
         "tm_end": "<string>",
         "tm_create": "<string>",
         "tm_update": "<string>",
@@ -53,6 +54,17 @@ AIcall
 * ``current_member_id`` (UUID): The ID of the current member in the conference bridge.
 * ``status`` (enum string): The AI call's current status. See :ref:`Status <aicall-struct-aicall-status>`.
 * ``stt_language`` (string): The BCP47 language code used for speech-to-text (e.g., ``en-US``, ``ko-KR``).
+* ``metadata`` (object): Generic key-value store attached to this AIcall. At call start time the
+  key ``prompt_snapshots`` holds an array of ``PromptSnapshot`` objects (one per AI participant).
+  Additional audit or operational data may appear under other keys in future releases.
+
+  **PromptSnapshot fields:**
+
+  * ``ai_id`` (string/UUID): ID of the AI configuration.
+  * ``prompt_history_id`` (string/UUID): ID of the ``ai_ai_prompt_histories`` entry in effect
+    at call start. Zero UUID if no history entry exists yet.
+  * ``prompt`` (string): Final variable-substituted ``init_prompt`` as sent to the LLM.
+  * ``member_id`` (string/UUID): Team member UUID for team calls; zero UUID for single-AI calls.
 * ``tm_end`` (string, ISO 8601): Timestamp when the AI call ended.
 * ``tm_create`` (string, ISO 8601): Timestamp when this AI call was created.
 * ``tm_update`` (string, ISO 8601): Timestamp of the last update to this AI call.

@@ -27,6 +27,8 @@ create table ai_ais(
 
   tool_names  json,           -- enabled tools for this AI
 
+  current_prompt_history_id  binary(16),   -- current prompt history id
+
   direct_id     binary(16),     -- direct id
   direct_hash   varchar(255),   -- direct hash
 

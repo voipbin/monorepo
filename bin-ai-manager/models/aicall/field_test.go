@@ -91,6 +91,11 @@ func TestFieldConstants(t *testing.T) {
 			expected: "stt_language",
 		},
 		{
+			name:     "field_metadata",
+			constant: FieldMetadata,
+			expected: "metadata",
+		},
+		{
 			name:     "field_tm_end",
 			constant: FieldTMEnd,
 			expected: "tm_end",

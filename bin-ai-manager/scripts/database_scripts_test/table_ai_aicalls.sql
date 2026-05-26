@@ -26,6 +26,8 @@ create table ai_aicalls(
   gender    varchar(255), -- gender
   stt_language  varchar(255), -- stt language
 
+  metadata  json,   -- metadata
+
   -- timestamps
   tm_end    datetime(6),  --
   tm_create datetime(6),  --

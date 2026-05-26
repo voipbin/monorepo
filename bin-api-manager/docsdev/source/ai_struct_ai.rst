@@ -20,6 +20,7 @@ AI
         "engine_key": "<string>",
         "rag_id": "<string>",
         "init_prompt": "<string>",
+        "current_prompt_history_id": "<string>",
         "tts_type": "<string>",
         "tts_voice_id": "<string>",
         "stt_type": "<string>",
@@ -47,6 +48,10 @@ AI
 * ``engine_key`` (String, Required): The API key for the LLM provider. Must be a valid key from the provider's dashboard.
 * ``rag_id`` (UUID, Optional): The knowledge base ID for the ``search_knowledge`` tool. Obtained from the ``id`` field of ``GET https://api.voipbin.net/v1.0/rags``. When set, the AI assistant can search this knowledge base during voice calls. Set to ``00000000-0000-0000-0000-000000000000`` or omit to disable.
 * ``init_prompt`` (String, Required): The system prompt that defines the AI's behavior, persona, and instructions. No enforced length limit.
+* ``current_prompt_history_id`` (string/UUID): UUID of the most-recent ``ai_ai_prompt_histories``
+  entry for this AI. Included in webhook events so callers can correlate each AI event with the
+  exact prompt version that was active. Zero UUID (``00000000-0000-0000-0000-000000000000``) means
+  no versioned prompt history has been recorded yet.
 * ``tts_type`` (enum string, Required): Text-to-Speech provider. See :ref:`TTS Types <ai-struct-ai-tts_type>`.
 * ``tts_voice_id`` (String, Optional): Voice ID for the selected TTS provider. If omitted, the default voice for the chosen TTS type is used. See default voices in :ref:`TTS Types <ai-struct-ai-tts_type>`.
 * ``stt_type`` (enum string, Required): Speech-to-Text provider. See :ref:`STT Types <ai-struct-ai-stt_type>`.

@@ -3,6 +3,7 @@ package aicallhandler
 import (
 	"context"
 	"fmt"
+	"time"
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
@@ -73,6 +74,87 @@ func (h *aicallHandler) resolveAI(ctx context.Context, assistanceType aicall.Ass
 
 	default:
 		return nil, nil, uuid.Nil, fmt.Errorf("unsupported assistance type: %s", assistanceType)
+	}
+}
+
+// resolveAIForTeam fetches all team members' AI configs, keyed by member UUID.
+// Partial-failure: if individual member AI fetches fail, logs a warning and returns the partial map.
+// Only a teamHandler.Get failure is fatal.
+func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) (map[uuid.UUID]*ai.AI, error) {
+	t, err := h.teamHandler.Get(ctx, teamID)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get team for resolveAIForTeam. team_id: %s", teamID)
+	}
+
+	type memberResult struct {
+		memberID uuid.UUID
+		ai       *ai.AI
+		err      error
+	}
+
+	// Decouple from the caller's deadline: member AI fetches are best-effort for
+	// snapshot observability and must not all fail when the outer RPC times out.
+	fetchCtx, fetchCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer fetchCancel()
+
+	ch := make(chan memberResult, len(t.Members))
+	for _, m := range t.Members {
+		go func(m team.Member) {
+			a, errGet := h.aiHandler.Get(fetchCtx, m.AIID)
+			ch <- memberResult{memberID: m.ID, ai: a, err: errGet}
+		}(m)
+	}
+
+	res := make(map[uuid.UUID]*ai.AI, len(t.Members))
+	for range t.Members {
+		r := <-ch
+		if r.err != nil {
+			logrus.WithField("func", "resolveAIForTeam").
+				Warnf("Could not get AI for team member — skipping. member_id: %s, err: %v", r.memberID, r.err)
+			continue
+		}
+		res[r.memberID] = r.ai
+	}
+
+	return res, nil
+}
+
+// buildPromptSnapshots constructs the []PromptSnapshot to store in AIcall.Metadata at call start.
+// For AssistanceTypeAI: one snapshot for the single AI config.
+// For AssistanceTypeTeam: one snapshot per team member (partial-failure-tolerant via resolveAIForTeam).
+func (h *aicallHandler) buildPromptSnapshots(ctx context.Context, a *ai.AI, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID) []aicall.PromptSnapshot {
+	switch assistanceType {
+	case aicall.AssistanceTypeAI:
+		substituted := h.getInitPrompt(ctx, a, activeflowID)
+		return []aicall.PromptSnapshot{
+			{
+				AIID:            a.ID,
+				PromptHistoryID: a.CurrentPromptHistoryID,
+				Prompt:          substituted,
+			},
+		}
+
+	case aicall.AssistanceTypeTeam:
+		memberAIs, err := h.resolveAIForTeam(ctx, assistanceID)
+		if err != nil {
+			logrus.WithField("func", "buildPromptSnapshots").
+				Errorf("Could not resolve team AIs — storing empty snapshots. err: %v", err)
+			return []aicall.PromptSnapshot{}
+		}
+		snapshots := make([]aicall.PromptSnapshot, 0, len(memberAIs))
+		for memberID, memberAI := range memberAIs {
+			substituted := h.getInitPrompt(ctx, memberAI, activeflowID)
+			snapshots = append(snapshots, aicall.PromptSnapshot{
+				AIID:            memberAI.ID,
+				PromptHistoryID: memberAI.CurrentPromptHistoryID,
+				Prompt:          substituted,
+				MemberID:        memberID,
+			})
+		}
+		return snapshots
+
+	default:
+		return []aicall.PromptSnapshot{}
 	}
 }
 
@@ -528,7 +610,12 @@ func (h *aicallHandler) startAIcallByRealtime(
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
-	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, confbridgeID, pipecatcallID, currentMemberID, parameter)
+	snapshots := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
+	metadata := map[string]any{
+		aicall.MetaKeyPromptSnapshots: snapshots,
+	}
+	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
+		confbridgeID, pipecatcallID, currentMemberID, parameter, metadata)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")
@@ -578,7 +665,12 @@ func (h *aicallHandler) startAIcallByMessaging(
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
-	res, err := h.CreateByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID, pipecatcallID, currentMemberID, parameter)
+	snapshots := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
+	metadata := map[string]any{
+		aicall.MetaKeyPromptSnapshots: snapshots,
+	}
+	res, err := h.CreateByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
+		pipecatcallID, currentMemberID, parameter, metadata)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create aicall.")

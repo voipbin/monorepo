@@ -56,6 +56,8 @@ type AI struct {
 
 	InitPrompt string `json:"init_prompt,omitempty" db:"init_prompt"`
 
+	CurrentPromptHistoryID uuid.UUID `json:"current_prompt_history_id" db:"current_prompt_history_id,uuid"`
+
 	TTSType    TTSType `json:"tts_type,omitempty" db:"tts_type"`
 	TTSVoiceID string  `json:"tts_voice_id,omitempty" db:"tts_voice_id"`
 

@@ -18,6 +18,8 @@ const (
 
 	FieldInitPrompt Field = "init_prompt"
 
+	FieldCurrentPromptHistoryID Field = "current_prompt_history_id"
+
 	FieldTTSType    Field = "tts_type"
 	FieldTTSVoiceID Field = "tts_voice_id"
 

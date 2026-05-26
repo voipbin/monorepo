@@ -28,16 +28,17 @@ func Test_Create(t *testing.T) {
 		aiName      string
 		detail      string
 		engineModel ai.EngineModel
-		parameter  map[string]any
+		parameter   map[string]any
 		engineKey   string
 		initPrompt  string
 		ttsType     ai.TTSType
 		ttsVoiceID  string
 		sttType     ai.STTType
 
-		responseUUID   uuid.UUID
-		responseDirect *dmdirect.Direct
-		responseAI     *ai.AI
+		responseHistoryUUID uuid.UUID
+		responseUUID        uuid.UUID
+		responseDirect      *dmdirect.Direct
+		responseAI          *ai.AI
 
 		expectAI *ai.AI
 	}{
@@ -57,7 +58,9 @@ func Test_Create(t *testing.T) {
 			ttsVoiceID: "test-voice-id",
 			sttType:    ai.STTTypeDeepgram,
 
-			responseUUID: uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
+			// initPrompt is non-empty → history ID is generated first (in Create), then the AI ID (in dbCreate)
+			responseHistoryUUID: uuid.FromStringOrNil("c1c1c1c1-2222-2222-2222-222222222222"),
+			responseUUID:        uuid.FromStringOrNil("8dedbf26-a70d-11ed-be65-3ba04faa629b"),
 			responseDirect: &dmdirect.Direct{
 				Identity: identity.Identity{
 					ID:         uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
@@ -84,13 +87,14 @@ func Test_Create(t *testing.T) {
 				Parameter: map[string]any{
 					"key1": "val1",
 				},
-				EngineKey:  "test engine service key",
-				InitPrompt: "test init prompt",
-				TTSType:    ai.TTSTypeCartesia,
-				TTSVoiceID: "test-voice-id",
-				STTType:    ai.STTTypeDeepgram,
-				DirectID:   uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
-				DirectHash: "abc123def456",
+				EngineKey:              "test engine service key",
+				InitPrompt:             "test init prompt",
+				CurrentPromptHistoryID: uuid.FromStringOrNil("c1c1c1c1-2222-2222-2222-222222222222"),
+				TTSType:                ai.TTSTypeCartesia,
+				TTSVoiceID:             "test-voice-id",
+				STTType:                ai.STTTypeDeepgram,
+				DirectID:               uuid.FromStringOrNil("d1d1d1d1-1111-1111-1111-111111111111"),
+				DirectHash:             "abc123def456",
 			},
 		},
 	}
@@ -114,13 +118,16 @@ func Test_Create(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			// initPrompt is non-empty → the history UUID is generated first (Create), then the AI UUID (dbCreate)
+			gomock.InOrder(
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseHistoryUUID),
+				mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID),
+			)
 			mockReq.EXPECT().DirectV1DirectCreate(ctx, tt.customerID, dmdirect.ResourceTypeAI, tt.responseUUID).Return(tt.responseDirect, nil)
 			mockDB.EXPECT().AICreate(ctx, tt.expectAI).Return(nil)
 			mockDB.EXPECT().AIGet(ctx, tt.responseUUID).Return(tt.responseAI, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAI.CustomerID, ai.EventTypeCreated, tt.responseAI)
-			// initPrompt is non-empty → prompt history recorded (best-effort, UUID generated for history entry)
-			mockUtil.EXPECT().UUIDCreate().Return(uuid.Must(uuid.NewV4()))
+			// prompt history recorded (best-effort) using the pre-generated history UUID
 			mockDB.EXPECT().AIPromptHistoryCreate(ctx, gomock.Any()).Return(nil)
 
 			res, err := h.Create(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, "", nil, nil, false)
@@ -324,7 +331,7 @@ func Test_Update(t *testing.T) {
 		aiName      string
 		detail      string
 		engineModel ai.EngineModel
-		parameter  map[string]any
+		parameter   map[string]any
 		engineKey   string
 		initPrompt  string
 		ttsType     ai.TTSType

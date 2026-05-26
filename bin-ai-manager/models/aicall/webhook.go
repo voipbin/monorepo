@@ -38,6 +38,8 @@ type WebhookMessage struct {
 
 	STTLanguage string `json:"stt_language,omitempty"`
 
+	Metadata map[string]any `json:"metadata,omitempty"`
+
 	TMEnd    *time.Time `json:"tm_end"`
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
@@ -72,6 +74,8 @@ func (h *AIcall) ConvertWebhookMessage() *WebhookMessage {
 		Status: h.Status,
 
 		STTLanguage: h.STTLanguage,
+
+		Metadata: h.Metadata,
 
 		TMEnd:    h.TMEnd,
 		TMCreate: h.TMCreate,

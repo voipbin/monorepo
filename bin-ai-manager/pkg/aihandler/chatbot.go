@@ -50,7 +50,15 @@ func (h *aiHandler) Create(
 		return nil, fmt.Errorf("invalid vad_config: %w", err)
 	}
 
-	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
+	// Pre-generate the history ID so we can write it into the AI row at creation time
+	var currentPromptHistoryID uuid.UUID
+	if initPrompt != "" {
+		currentPromptHistoryID = h.utilHandler.UUIDCreate()
+	}
+
+	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID,
+		initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled,
+		currentPromptHistoryID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
@@ -58,7 +66,7 @@ func (h *aiHandler) Create(
 	if initPrompt != "" {
 		if errHistory := h.db.AIPromptHistoryCreate(ctx, &aiprompthistory.AIPromptHistory{
 			Identity: identity.Identity{
-				ID:         h.utilHandler.UUIDCreate(),
+				ID:         currentPromptHistoryID,
 				CustomerID: res.CustomerID,
 			},
 			AIID:   res.ID,
@@ -107,34 +115,57 @@ func (h *aiHandler) Update(
 		return nil, fmt.Errorf("invalid vad_config: %w", err)
 	}
 
-	// Pre-fetch the current AI to detect prompt change (only when initPrompt is non-empty)
-	var preUpdateAI *ai.AI
-	if initPrompt != "" {
-		var errGet error
-		preUpdateAI, errGet = h.db.AIGet(ctx, id)
-		if errGet != nil {
-			return nil, errors.Wrapf(errGet, "could not get current ai for prompt history")
+	// Pre-fetch unconditionally so all three branches can detect changes.
+	preUpdateAI, errGet := h.db.AIGet(ctx, id)
+	if errGet != nil {
+		return nil, errors.Wrapf(errGet, "could not get current ai for update")
+	}
+
+	promptChanged := initPrompt != "" && initPrompt != preUpdateAI.InitPrompt
+	promptCleared := initPrompt == "" && preUpdateAI.InitPrompt != ""
+
+	switch {
+	case promptChanged:
+		historyID := h.utilHandler.UUIDCreate()
+		fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
+		fields[ai.FieldCurrentPromptHistoryID] = historyID
+		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
+			return nil, errors.Wrapf(err, "could not update ai")
 		}
-	}
-
-	res, err := h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, ragID, initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
-	if err != nil {
-		return nil, errors.Wrapf(err, "could not update ai")
-	}
-
-	// Record history if prompt changed
-	if preUpdateAI != nil && initPrompt != preUpdateAI.InitPrompt {
+		res, err := h.db.AIGet(ctx, id)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get updated ai")
+		}
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
 		if errHistory := h.db.AIPromptHistoryCreate(ctx, &aiprompthistory.AIPromptHistory{
 			Identity: identity.Identity{
-				ID:         h.utilHandler.UUIDCreate(),
-				CustomerID: preUpdateAI.CustomerID,
+				ID:         historyID,
+				CustomerID: res.CustomerID,
 			},
-			AIID:   preUpdateAI.ID,
+			AIID:   id,
 			Prompt: initPrompt,
 		}); errHistory != nil {
 			logrus.WithField("func", "Update").Errorf("Could not create prompt history. err: %v", errHistory)
 		}
-	}
+		return res, nil
 
-	return res, nil
+	case promptCleared:
+		fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, "",
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
+		fields[ai.FieldCurrentPromptHistoryID] = uuid.Nil
+		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
+			return nil, errors.Wrapf(err, "could not update ai (clear prompt)")
+		}
+		res, err := h.db.AIGet(ctx, id)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not get updated ai")
+		}
+		h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
+		return res, nil
+
+	default: // prompt unchanged
+		return h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
+	}
 }

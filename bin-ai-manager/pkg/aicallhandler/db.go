@@ -31,6 +31,7 @@ func (h *aicallHandler) Create(
 	pipecatcallID uuid.UUID,
 	currentMemberID uuid.UUID,
 	parameter map[string]any,
+	metadata map[string]any,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "Create",
@@ -65,6 +66,8 @@ func (h *aicallHandler) Create(
 		CurrentMemberID: currentMemberID,
 
 		STTLanguage: c.STTLanguage,
+
+		Metadata: metadata,
 
 		Status: aicall.StatusInitiating,
 	}
@@ -102,6 +105,7 @@ func (h *aicallHandler) CreateByMessaging(
 	pipecatcallID uuid.UUID,
 	currentMemberID uuid.UUID,
 	parameter map[string]any,
+	metadata map[string]any,
 ) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "CreateByMessaging",
@@ -131,6 +135,8 @@ func (h *aicallHandler) CreateByMessaging(
 		CurrentMemberID: currentMemberID,
 
 		STTLanguage: c.STTLanguage,
+
+		Metadata: metadata,
 
 		Status: aicall.StatusInitiating,
 	}

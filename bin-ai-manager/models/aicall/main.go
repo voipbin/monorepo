@@ -9,6 +9,18 @@ import (
 	"monorepo/bin-common-handler/models/identity"
 )
 
+// PromptSnapshot records the prompt version and final substituted text for one
+// AI participant at AIcall start time.
+type PromptSnapshot struct {
+	AIID            uuid.UUID `json:"ai_id"`
+	PromptHistoryID uuid.UUID `json:"prompt_history_id"` // zero UUID = no history recorded yet
+	Prompt          string    `json:"prompt"`
+	MemberID        uuid.UUID `json:"member_id"` // zero UUID for single-AI calls
+}
+
+// MetaKeyPromptSnapshots is the Metadata map key for the prompt snapshot slice.
+const MetaKeyPromptSnapshots = "prompt_snapshots"
+
 // AIcall define
 type AIcall struct {
 	identity.Identity
@@ -36,6 +48,8 @@ type AIcall struct {
 	Status Status `json:"status,omitempty" db:"status"`
 
 	STTLanguage string `json:"stt_language,omitempty" db:"stt_language"`
+
+	Metadata map[string]any `json:"metadata,omitempty" db:"metadata,json"`
 
 	TMEnd    *time.Time `json:"tm_end" db:"tm_end"`
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`

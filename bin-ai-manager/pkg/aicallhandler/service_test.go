@@ -112,6 +112,15 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 
 				STTLanguage:    "en-US",
 				Status:         aicall.StatusInitiating,
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID:   uuid.FromStringOrNil("90560847-44bf-44ee-a28e-b7e86a488450"),
+							Prompt: "hello, this is init prompt message.",
+						},
+					},
+				},
 			},
 			expectMessageTexts: []string{
 				defaultCommonAIcallSystemPrompt,
@@ -191,7 +200,8 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.expectAIcall.ActiveflowID, gomock.Any()).Return(nil)
 
-			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.expectAIcall.ActiveflowID, tt.responseAI.InitPrompt).Return(tt.responseAI.InitPrompt, nil)
+			// startInitMessages + buildPromptSnapshots both substitute the AI init prompt
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.expectAIcall.ActiveflowID, tt.responseAI.InitPrompt).Return(tt.responseAI.InitPrompt, nil).Times(2)
 
 			for i := range 2 {
 				mockMessage.EXPECT().Create(
@@ -506,6 +516,15 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 				ReferenceType:  aicall.ReferenceTypeTask,
 				PipecatcallID:  uuid.FromStringOrNil("c4c99736-b885-11f0-b96c-436111319838"),
 				Status:         aicall.StatusInitiating,
+
+				Metadata: map[string]any{
+					aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+						{
+							AIID:   uuid.FromStringOrNil("48021ad4-d70c-11f0-9a63-c38f93e192a7"),
+							Prompt: "hello, this is init prompt message.",
+						},
+					},
+				},
 			},
 			expectMessageTexts: []string{
 				defaultCommonAItaskSystemPrompt,
@@ -571,8 +590,8 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
 
-			// startInitMessages
-			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.responseAI.InitPrompt).Return(tt.responseAI.InitPrompt, nil)
+			// startInitMessages + buildPromptSnapshots both substitute the AI init prompt
+			mockReq.EXPECT().FlowV1VariableSubstitute(ctx, tt.activeflowID, tt.responseAI.InitPrompt).Return(tt.responseAI.InitPrompt, nil).Times(2)
 			for i := range 2 {
 				mockMessage.EXPECT().Create(
 					ctx,

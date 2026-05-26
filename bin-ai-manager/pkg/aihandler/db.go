@@ -38,6 +38,7 @@ func (h *aiHandler) dbCreate(
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
+	currentPromptHistoryID uuid.UUID,
 ) (*ai.AI, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func": "dbCreate",
@@ -68,6 +69,8 @@ func (h *aiHandler) dbCreate(
 		RagID:       ragID,
 
 		InitPrompt: initPrompt,
+
+		CurrentPromptHistoryID: currentPromptHistoryID,
 
 		TTSType:    ttsType,
 		TTSVoiceID: ttsVoiceID,
@@ -180,22 +183,8 @@ func (h *aiHandler) dbUpdate(
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
 ) (*ai.AI, error) {
-	fields := map[ai.Field]any{
-		ai.FieldName:             name,
-		ai.FieldDetail:           detail,
-		ai.FieldEngineModel:      engineModel,
-		ai.FieldParameter:        parameter,
-		ai.FieldEngineKey:        engineKey,
-		ai.FieldRagID:            ragID,
-		ai.FieldInitPrompt:       initPrompt,
-		ai.FieldTTSType:          ttsType,
-		ai.FieldTTSVoiceID:       ttsVoice,
-		ai.FieldSTTType:          sttType,
-		ai.FieldSTTLanguage:      sttLanguage,
-		ai.FieldToolNames:        toolNames,
-		ai.FieldVADConfig:        vadConfig,
-		ai.FieldSmartTurnEnabled: smartTurnEnabled,
-	}
+	fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
+		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
@@ -208,4 +197,38 @@ func (h *aiHandler) dbUpdate(
 	h.notifyHandler.PublishWebhookEvent(ctx, res.CustomerID, ai.EventTypeUpdated, res)
 
 	return res, nil
+}
+
+// buildUpdateFields builds the AI field map used for AIUpdate calls.
+func (h *aiHandler) buildUpdateFields(
+	name, detail string,
+	engineModel ai.EngineModel,
+	parameter map[string]any,
+	engineKey string,
+	ragID uuid.UUID,
+	initPrompt string,
+	ttsType ai.TTSType,
+	ttsVoiceID string,
+	sttType ai.STTType,
+	sttLanguage string,
+	toolNames []tool.ToolName,
+	vadConfig *ai.VADConfig,
+	smartTurnEnabled bool,
+) map[ai.Field]any {
+	return map[ai.Field]any{
+		ai.FieldName:             name,
+		ai.FieldDetail:           detail,
+		ai.FieldEngineModel:      engineModel,
+		ai.FieldParameter:        parameter,
+		ai.FieldEngineKey:        engineKey,
+		ai.FieldRagID:            ragID,
+		ai.FieldInitPrompt:       initPrompt,
+		ai.FieldTTSType:          ttsType,
+		ai.FieldTTSVoiceID:       ttsVoiceID,
+		ai.FieldSTTType:          sttType,
+		ai.FieldSTTLanguage:      sttLanguage,
+		ai.FieldToolNames:        toolNames,
+		ai.FieldVADConfig:        vadConfig,
+		ai.FieldSmartTurnEnabled: smartTurnEnabled,
+	}
 }

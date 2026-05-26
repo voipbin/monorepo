@@ -3,6 +3,7 @@ package aihandler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/gofrs/uuid"
@@ -11,6 +12,7 @@ import (
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
 	"monorepo/bin-ai-manager/models/ai"
+	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -610,7 +612,7 @@ func TestUpdate_SamePrompt_NoHistory(t *testing.T) {
 	}
 }
 
-func TestUpdate_EmptyPrompt_NoPreFetch_NoHistory(t *testing.T) {
+func TestUpdate_EmptyPrompt_AlreadyEmpty_NoHistory(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -619,13 +621,15 @@ func TestUpdate_EmptyPrompt_NoPreFetch_NoHistory(t *testing.T) {
 	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 	aiID := uuid.Must(uuid.NewV4())
+	// existing prompt already empty → empty update is "prompt unchanged", falls to dbUpdate
 	updatedAI := &ai.AI{Name: "My AI"}
 	updatedAI.ID = aiID
 
-	// No pre-fetch AIGet (empty prompt skips it); only post-update AIGet inside dbUpdate
-	// No AIPromptHistoryCreate
+	// Always pre-fetch now; then dbUpdate does AIUpdate + post-update AIGet.
+	// No AIPromptHistoryCreate (prompt unchanged, both empty)
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(updatedAI, nil).Times(1) // pre-fetch
 	mockDB.EXPECT().AIUpdate(gomock.Any(), aiID, gomock.Any()).Return(nil).Times(1)
-	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(updatedAI, nil).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(updatedAI, nil).Times(1) // post-update inside dbUpdate
 
 	h := &aiHandler{
 		db:            mockDB,
@@ -704,6 +708,239 @@ func TestCreate_HistoryFails_CreateSucceeds(t *testing.T) {
 	}
 	if result == nil {
 		t.Error("Create() returned nil result when expecting success")
+	}
+}
+
+func TestCreate_WithPrompt_SetsCurrentHistoryIDAtomically(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	var capturedAI *ai.AI
+
+	mockReq.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "abc123"}, nil).Times(1)
+	mockDB.EXPECT().AICreate(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, a *ai.AI) error {
+			if a.CurrentPromptHistoryID == uuid.Nil {
+				return fmt.Errorf("expected CurrentPromptHistoryID to be set, got uuid.Nil")
+			}
+			capturedAI = a
+			return nil
+		},
+	).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID) (*ai.AI, error) {
+			return capturedAI, nil
+		},
+	).Times(1)
+	mockDB.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(_ context.Context, h *aiprompthistory.AIPromptHistory) error {
+			if h.ID != capturedAI.CurrentPromptHistoryID {
+				return fmt.Errorf("expected history ID=%v to match CurrentPromptHistoryID=%v", h.ID, capturedAI.CurrentPromptHistoryID)
+			}
+			return nil
+		},
+	).Times(1)
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"AI with prompt",
+		"",
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"key",
+		uuid.Nil,
+		"initial system prompt",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		nil,
+		nil,
+		false,
+	)
+	if err != nil {
+		t.Errorf("Create() unexpected error: %v", err)
+	}
+}
+
+func TestCreate_WithoutPrompt_NoCurrentHistoryID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+
+	createdAI := &ai.AI{Name: "AI no prompt"}
+	createdAI.ID = uuid.Must(uuid.NewV4())
+
+	mockReq.EXPECT().DirectV1DirectCreate(gomock.Any(), gomock.Any(), dmdirect.ResourceTypeAI, gomock.Any()).Return(&dmdirect.Direct{Hash: "abc123"}, nil).Times(1)
+	mockDB.EXPECT().AICreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), gomock.Any()).Return(createdAI, nil).Times(1)
+	// AIPromptHistoryCreate must NOT be called
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   utilhandler.NewUtilHandler(),
+	}
+
+	_, err := h.Create(
+		context.Background(),
+		uuid.Must(uuid.NewV4()),
+		"AI no prompt",
+		"",
+		ai.EngineModelOpenaiGPT5,
+		nil,
+		"key",
+		uuid.Nil,
+		"",
+		ai.TTSTypeNone,
+		"",
+		ai.STTTypeNone,
+		"",
+		nil,
+		nil,
+		false,
+	)
+	if err != nil {
+		t.Errorf("Create() unexpected error: %v", err)
+	}
+}
+
+func TestUpdate_promptChangedCreatesHistoryAndSetsID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	aiID := uuid.Must(uuid.NewV4())
+	newHistoryID := uuid.Must(uuid.NewV4())
+	existing := &ai.AI{InitPrompt: "old prompt"}
+	existing.ID = aiID
+	existing.CustomerID = uuid.Must(uuid.NewV4())
+
+	mockUtil.EXPECT().UUIDCreate().Return(newHistoryID).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(existing, nil).Times(1) // pre-fetch
+	mockDB.EXPECT().AIUpdate(gomock.Any(), aiID, gomock.Any()).DoAndReturn(
+		func(_ context.Context, id uuid.UUID, fields map[ai.Field]any) error {
+			v, ok := fields[ai.FieldCurrentPromptHistoryID]
+			if !ok || v != newHistoryID {
+				return fmt.Errorf("expected FieldCurrentPromptHistoryID=%v, got %v", newHistoryID, v)
+			}
+			return nil
+		},
+	).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(existing, nil).Times(1) // post-update
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), ai.EventTypeUpdated, gomock.Any()).Times(1)
+	mockDB.EXPECT().AIPromptHistoryCreate(gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   mockUtil,
+	}
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+		"new prompt", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestUpdate_promptClearedResetsID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	aiID := uuid.Must(uuid.NewV4())
+	existing := &ai.AI{InitPrompt: "old prompt"}
+	existing.ID = aiID
+	existing.CustomerID = uuid.Must(uuid.NewV4())
+
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(existing, nil).Times(1) // pre-fetch
+	mockDB.EXPECT().AIUpdate(gomock.Any(), aiID, gomock.Any()).DoAndReturn(
+		func(_ context.Context, id uuid.UUID, fields map[ai.Field]any) error {
+			v, ok := fields[ai.FieldCurrentPromptHistoryID]
+			if !ok {
+				return fmt.Errorf("expected FieldCurrentPromptHistoryID in fields for cleared prompt")
+			}
+			if v != uuid.Nil {
+				return fmt.Errorf("expected FieldCurrentPromptHistoryID=uuid.Nil for cleared prompt, got %v", v)
+			}
+			return nil
+		},
+	).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(existing, nil).Times(1) // post-update
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), ai.EventTypeUpdated, gomock.Any()).Times(1)
+	// AIPromptHistoryCreate MUST NOT be called
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   mockUtil,
+	}
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+		"", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestUpdate_promptUnchangedDoesNotCreateHistory(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+
+	aiID := uuid.Must(uuid.NewV4())
+	same := "same prompt"
+	existing := &ai.AI{InitPrompt: same}
+	existing.ID = aiID
+	existing.CustomerID = uuid.Must(uuid.NewV4())
+
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(existing, nil).Times(1) // pre-fetch
+	mockDB.EXPECT().AIUpdate(gomock.Any(), aiID, gomock.Any()).Return(nil).Times(1)
+	mockDB.EXPECT().AIGet(gomock.Any(), aiID).Return(existing, nil).Times(1) // post-update (inside dbUpdate)
+	mockNotify.EXPECT().PublishWebhookEvent(gomock.Any(), gomock.Any(), ai.EventTypeUpdated, gomock.Any()).Times(1)
+	// AIPromptHistoryCreate MUST NOT be called
+
+	h := &aiHandler{
+		db:            mockDB,
+		reqHandler:    mockReq,
+		notifyHandler: mockNotify,
+		utilHandler:   mockUtil,
+	}
+	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
+		same, ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
