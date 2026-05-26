@@ -8,6 +8,7 @@ type FieldStruct struct {
 	CustomerID   uuid.UUID `filter:"customer_id"`
 	AIcallID     uuid.UUID `filter:"aicall_id"`
 	ActiveflowID uuid.UUID `filter:"activeflow_id"`
+	ActiveAIID   uuid.UUID `filter:"active_ai_id"`
 	Direction    Direction `filter:"direction"`
 	Role         Role      `filter:"role"`
 	Deleted      bool      `filter:"deleted"`
