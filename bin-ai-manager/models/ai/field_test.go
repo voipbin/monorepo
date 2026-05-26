@@ -51,6 +51,11 @@ func TestFieldConstants(t *testing.T) {
 			expected: "init_prompt",
 		},
 		{
+			name:     "field_current_prompt_history_id",
+			constant: FieldCurrentPromptHistoryID,
+			expected: "current_prompt_history_id",
+		},
+		{
 			name:     "field_tts_type",
 			constant: FieldTTSType,
 			expected: "tts_type",
