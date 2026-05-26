@@ -160,8 +160,11 @@ func (h *aiauditHandler) Create(ctx context.Context, customerID uuid.UUID, aical
 			aiaudit.FieldDeleted:  false,
 		}
 		reloaded, listErr := h.db.AIAuditList(ctx, 1, "", reloadFilters)
-		if listErr != nil || len(reloaded) == 0 {
-			return nil, fmt.Errorf("could not reload audit record for ai_id %s: %v", aiID, listErr)
+		if listErr != nil {
+			return nil, fmt.Errorf("could not reload audit record for ai_id %s: %w", aiID, listErr)
+		}
+		if len(reloaded) == 0 {
+			return nil, fmt.Errorf("no audit record found for ai_id %s in aicall %s after upsert", aiID, aicallID)
 		}
 		record := reloaded[0]
 		results = append(results, record)
@@ -177,7 +180,6 @@ func (h *aiauditHandler) Create(ctx context.Context, customerID uuid.UUID, aical
 func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac *aicall.AIcall, aiID uuid.UUID, language string) {
 	// Acquire global semaphore.
 	h.semaphore <- struct{}{}
-	defer func() { <-h.semaphore }()
 
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "aiauditHandler.runAuditJob",
@@ -197,7 +199,15 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 	finalErr := ""
 
 	defer func() {
-		_, dbErr := h.db.AIAuditUpdateFinal(context.Background(), recordID, finalStatus, finalScore, finalEvalJSON, finalErr)
+		if r := recover(); r != nil {
+			log.Errorf("panic in runAuditJob: %v", r)
+			finalErr = string(aiaudit.ErrorEvaluatorUnavailable)
+			finalStatus = aiaudit.StatusFailed
+		}
+		<-h.semaphore
+		writeCtx, writeCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer writeCancel()
+		_, dbErr := h.db.AIAuditUpdateFinal(writeCtx, recordID, finalStatus, finalScore, finalEvalJSON, finalErr)
 		if dbErr != nil {
 			log.WithError(dbErr).Error("could not write final audit result")
 		}
@@ -260,6 +270,9 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 	// Step 6: Build transcript and call Gemini.
 	var truncated bool
 	transcript := buildTranscript(msgs, &truncated)
+	if truncated {
+		log.Warnf("transcript truncated to %d messages for audit %s", maxMessages, recordID)
+	}
 	hasTools := hasToolCalls(msgs)
 
 	result, rawJSON, evalErr := h.geminiHandler.Evaluate(geminiCtx, snapshot.Prompt, transcript, language, hasTools)
