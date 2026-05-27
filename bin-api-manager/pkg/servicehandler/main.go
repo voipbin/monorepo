@@ -30,6 +30,7 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
@@ -344,6 +345,12 @@ type ServiceHandler interface {
 	AISummaryGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amsummary.WebhookMessage, error)
 	AISummaryGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amsummary.WebhookMessage, error)
 	AISummaryDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amsummary.WebhookMessage, error)
+
+	// ai audit handlers
+	AIAuditCreate(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, language string) ([]*amaiaudit.WebhookMessage, error)
+	AIAuditGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, aicallID, aiID uuid.UUID) ([]*amaiaudit.WebhookMessage, error)
+	AIAuditGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaiaudit.WebhookMessage, error)
+	AIAuditDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaiaudit.WebhookMessage, error)
 
 	// conference handlers
 	ConferenceCreate(

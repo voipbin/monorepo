@@ -18,6 +18,13 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AIManagerAIAuditStatus.
+const (
+	AIManagerAIAuditStatusCompleted   AIManagerAIAuditStatus = "completed"
+	AIManagerAIAuditStatusFailed      AIManagerAIAuditStatus = "failed"
+	AIManagerAIAuditStatusProgressing AIManagerAIAuditStatus = "progressing"
+)
+
 // Defines values for AIManagerAIEngineModel.
 const (
 	AIManagerAIEngineModelGeminiGemini2Dot0Flash AIManagerAIEngineModel = "gemini.gemini-2.0-flash"
@@ -1163,6 +1170,51 @@ type AIManagerAI struct {
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
+
+// AIManagerAIAudit defines model for AIManagerAIAudit.
+type AIManagerAIAudit struct {
+	// AiId The AI participant that was evaluated. Returned from the `GET /ais` response.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// AicallId The AI call that was audited. Returned from the `GET /aicalls` response.
+	AicallId *string `json:"aicall_id,omitempty"`
+
+	// CustomerId The customer who owns this audit.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Error Failure reason if status is failed.
+	Error *string `json:"error,omitempty"`
+
+	// Evaluation Full structured evaluation output. Null until completed.
+	Evaluation *map[string]interface{} `json:"evaluation"`
+
+	// Id The unique identifier of the audit.
+	Id *string `json:"id,omitempty"`
+
+	// Language BCP47 language code used for audit output.
+	Language *string `json:"language,omitempty"`
+
+	// OverallScore Overall score (1-5) independently assessed by the LLM. Null until completed.
+	OverallScore *int `json:"overall_score"`
+
+	// PromptHistoryId The prompt version active during the call.
+	PromptHistoryId *string `json:"prompt_history_id,omitempty"`
+
+	// Status Status of the AI audit.
+	Status *AIManagerAIAuditStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the audit was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the audit was deleted.
+	TmDelete *string `json:"tm_delete"`
+
+	// TmUpdate Timestamp when the audit was last updated.
+	TmUpdate *string `json:"tm_update"`
+}
+
+// AIManagerAIAuditStatus Status of the AI audit.
+type AIManagerAIAuditStatus string
 
 // AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 type AIManagerAIEngineModel string
@@ -4821,6 +4873,30 @@ type GetAggregatedEventsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetAiauditsParams defines parameters for GetAiaudits.
+type GetAiauditsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// AicallId Filter by AI call ID.
+	AicallId *openapi_types.UUID `form:"aicall_id,omitempty" json:"aicall_id,omitempty"`
+
+	// AiId Filter by AI ID.
+	AiId *openapi_types.UUID `form:"ai_id,omitempty" json:"ai_id,omitempty"`
+}
+
+// PostAiauditsJSONBody defines parameters for PostAiaudits.
+type PostAiauditsJSONBody struct {
+	// AicallId The ID of the AI call to audit.
+	AicallId string `json:"aicall_id"`
+
+	// Language BCP47 language code for audit output (e.g. "en-US", "ko-KR"). Defaults to the call's stt_language or "en-US".
+	Language *string `json:"language,omitempty"`
+}
+
 // GetAicallsParams defines parameters for GetAicalls.
 type GetAicallsParams struct {
 	// PageSize Number of results to return per page.
@@ -6777,6 +6853,9 @@ type PutAgentsIdStatusJSONRequestBody PutAgentsIdStatusJSONBody
 // PutAgentsIdTagIdsJSONRequestBody defines body for PutAgentsIdTagIds for application/json ContentType.
 type PutAgentsIdTagIdsJSONRequestBody PutAgentsIdTagIdsJSONBody
 
+// PostAiauditsJSONRequestBody defines body for PostAiaudits for application/json ContentType.
+type PostAiauditsJSONRequestBody PostAiauditsJSONBody
+
 // PostAicallsJSONRequestBody defines body for PostAicalls for application/json ContentType.
 type PostAicallsJSONRequestBody PostAicallsJSONBody
 
@@ -7202,6 +7281,18 @@ type ServerInterface interface {
 	// Get aggregated timeline events
 	// (GET /aggregated-events)
 	GetAggregatedEvents(c *gin.Context, params GetAggregatedEventsParams)
+	// Gets a list of AI audits.
+	// (GET /aiaudits)
+	GetAiaudits(c *gin.Context, params GetAiauditsParams)
+	// Trigger an AI audit for a completed AI call.
+	// (POST /aiaudits)
+	PostAiaudits(c *gin.Context)
+	// Delete an AI audit.
+	// (DELETE /aiaudits/{id})
+	DeleteAiauditsId(c *gin.Context, id openapi_types.UUID)
+	// Get an AI audit by ID.
+	// (GET /aiaudits/{id})
+	GetAiauditsId(c *gin.Context, id openapi_types.UUID)
 	// Gets a list of ai calls
 	// (GET /aicalls)
 	GetAicalls(c *gin.Context, params GetAicallsParams)
@@ -8744,6 +8835,117 @@ func (siw *ServerInterfaceWrapper) GetAggregatedEvents(c *gin.Context) {
 	}
 
 	siw.Handler.GetAggregatedEvents(c, params)
+}
+
+// GetAiaudits operation middleware
+func (siw *ServerInterfaceWrapper) GetAiaudits(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAiauditsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "aicall_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "aicall_id", c.Request.URL.Query(), &params.AicallId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter aicall_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "ai_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "ai_id", c.Request.URL.Query(), &params.AiId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter ai_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAiaudits(c, params)
+}
+
+// PostAiaudits operation middleware
+func (siw *ServerInterfaceWrapper) PostAiaudits(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAiaudits(c)
+}
+
+// DeleteAiauditsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteAiauditsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteAiauditsId(c, id)
+}
+
+// GetAiauditsId operation middleware
+func (siw *ServerInterfaceWrapper) GetAiauditsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAiauditsId(c, id)
 }
 
 // GetAicalls operation middleware
@@ -16773,6 +16975,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/agents/:id/status", wrapper.PutAgentsIdStatus)
 	router.PUT(options.BaseURL+"/agents/:id/tag_ids", wrapper.PutAgentsIdTagIds)
 	router.GET(options.BaseURL+"/aggregated-events", wrapper.GetAggregatedEvents)
+	router.GET(options.BaseURL+"/aiaudits", wrapper.GetAiaudits)
+	router.POST(options.BaseURL+"/aiaudits", wrapper.PostAiaudits)
+	router.DELETE(options.BaseURL+"/aiaudits/:id", wrapper.DeleteAiauditsId)
+	router.GET(options.BaseURL+"/aiaudits/:id", wrapper.GetAiauditsId)
 	router.GET(options.BaseURL+"/aicalls", wrapper.GetAicalls)
 	router.POST(options.BaseURL+"/aicalls", wrapper.PostAicalls)
 	router.DELETE(options.BaseURL+"/aicalls/:id", wrapper.DeleteAicallsId)
@@ -18359,6 +18565,242 @@ func (response GetAggregatedEvents404JSONResponse) VisitGetAggregatedEventsRespo
 type GetAggregatedEvents500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetAggregatedEvents500JSONResponse) VisitGetAggregatedEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiauditsRequestObject struct {
+	Params GetAiauditsParams
+}
+
+type GetAiauditsResponseObject interface {
+	VisitGetAiauditsResponse(w http.ResponseWriter) error
+}
+
+type GetAiaudits200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string             `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerAIAudit `json:"result,omitempty"`
+}
+
+func (response GetAiaudits200JSONResponse) VisitGetAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiaudits401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAiaudits401JSONResponse) VisitGetAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiaudits500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAiaudits500JSONResponse) VisitGetAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAiauditsRequestObject struct {
+	Body *PostAiauditsJSONRequestBody
+}
+
+type PostAiauditsResponseObject interface {
+	VisitPostAiauditsResponse(w http.ResponseWriter) error
+}
+
+type PostAiaudits202JSONResponse struct {
+	Result *[]AIManagerAIAudit `json:"result,omitempty"`
+}
+
+func (response PostAiaudits202JSONResponse) VisitPostAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(202)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAiaudits400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostAiaudits400JSONResponse) VisitPostAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAiaudits401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostAiaudits401JSONResponse) VisitPostAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAiaudits404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostAiaudits404JSONResponse) VisitPostAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAiaudits409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostAiaudits409JSONResponse) VisitPostAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAiaudits429JSONResponse struct{ TooManyRequestsJSONResponse }
+
+func (response PostAiaudits429JSONResponse) VisitPostAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAiaudits500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostAiaudits500JSONResponse) VisitPostAiauditsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAiauditsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteAiauditsIdResponseObject interface {
+	VisitDeleteAiauditsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteAiauditsId200JSONResponse AIManagerAIAudit
+
+func (response DeleteAiauditsId200JSONResponse) VisitDeleteAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAiauditsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteAiauditsId400JSONResponse) VisitDeleteAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAiauditsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteAiauditsId401JSONResponse) VisitDeleteAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAiauditsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteAiauditsId403JSONResponse) VisitDeleteAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAiauditsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteAiauditsId404JSONResponse) VisitDeleteAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAiauditsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteAiauditsId500JSONResponse) VisitDeleteAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiauditsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetAiauditsIdResponseObject interface {
+	VisitGetAiauditsIdResponse(w http.ResponseWriter) error
+}
+
+type GetAiauditsId200JSONResponse AIManagerAIAudit
+
+func (response GetAiauditsId200JSONResponse) VisitGetAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiauditsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetAiauditsId400JSONResponse) VisitGetAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiauditsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAiauditsId401JSONResponse) VisitGetAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiauditsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetAiauditsId403JSONResponse) VisitGetAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiauditsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetAiauditsId404JSONResponse) VisitGetAiauditsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAiauditsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAiauditsId500JSONResponse) VisitGetAiauditsIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -36498,6 +36940,18 @@ type StrictServerInterface interface {
 	// Get aggregated timeline events
 	// (GET /aggregated-events)
 	GetAggregatedEvents(ctx context.Context, request GetAggregatedEventsRequestObject) (GetAggregatedEventsResponseObject, error)
+	// Gets a list of AI audits.
+	// (GET /aiaudits)
+	GetAiaudits(ctx context.Context, request GetAiauditsRequestObject) (GetAiauditsResponseObject, error)
+	// Trigger an AI audit for a completed AI call.
+	// (POST /aiaudits)
+	PostAiaudits(ctx context.Context, request PostAiauditsRequestObject) (PostAiauditsResponseObject, error)
+	// Delete an AI audit.
+	// (DELETE /aiaudits/{id})
+	DeleteAiauditsId(ctx context.Context, request DeleteAiauditsIdRequestObject) (DeleteAiauditsIdResponseObject, error)
+	// Get an AI audit by ID.
+	// (GET /aiaudits/{id})
+	GetAiauditsId(ctx context.Context, request GetAiauditsIdRequestObject) (GetAiauditsIdResponseObject, error)
 	// Gets a list of ai calls
 	// (GET /aicalls)
 	GetAicalls(ctx context.Context, request GetAicallsRequestObject) (GetAicallsResponseObject, error)
@@ -38139,6 +38593,120 @@ func (sh *strictHandler) GetAggregatedEvents(ctx *gin.Context, params GetAggrega
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAggregatedEventsResponseObject); ok {
 		if err := validResponse.VisitGetAggregatedEventsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAiaudits operation middleware
+func (sh *strictHandler) GetAiaudits(ctx *gin.Context, params GetAiauditsParams) {
+	var request GetAiauditsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAiaudits(ctx, request.(GetAiauditsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAiaudits")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAiauditsResponseObject); ok {
+		if err := validResponse.VisitGetAiauditsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAiaudits operation middleware
+func (sh *strictHandler) PostAiaudits(ctx *gin.Context) {
+	var request PostAiauditsRequestObject
+
+	var body PostAiauditsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAiaudits(ctx, request.(PostAiauditsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAiaudits")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAiauditsResponseObject); ok {
+		if err := validResponse.VisitPostAiauditsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteAiauditsId operation middleware
+func (sh *strictHandler) DeleteAiauditsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteAiauditsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteAiauditsId(ctx, request.(DeleteAiauditsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteAiauditsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteAiauditsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteAiauditsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAiauditsId operation middleware
+func (sh *strictHandler) GetAiauditsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetAiauditsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAiauditsId(ctx, request.(GetAiauditsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAiauditsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAiauditsIdResponseObject); ok {
+		if err := validResponse.VisitGetAiauditsIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

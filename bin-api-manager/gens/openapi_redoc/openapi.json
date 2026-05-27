@@ -2709,6 +2709,238 @@
         }
       }
     },
+    "/aiaudits/{id}": {
+      "get": {
+        "summary": "Get an AI audit by ID.",
+        "description": "Returns a single AI audit record.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The AI audit ID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The AI audit record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAIAudit"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an AI audit.",
+        "description": "Soft-deletes an AI audit record. The associated aicall is not affected.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The AI audit ID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted AI audit record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AIManagerAIAudit"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/aiaudits": {
+      "get": {
+        "summary": "Gets a list of AI audits.",
+        "description": "Retrieves a paginated list of AI audit records for the authenticated customer.",
+        "tags": [
+          "AI"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          },
+          {
+            "name": "aicall_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Filter by AI call ID."
+          },
+          {
+            "name": "ai_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Filter by AI ID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of AI audits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/AIManagerAIAudit"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Trigger an AI audit for a completed AI call.",
+        "description": "Evaluates each AI participant in the specified call asynchronously using Gemini. Returns 202 Accepted immediately; poll GET /aiaudits/{id} for completion.\n",
+        "tags": [
+          "AI"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "aicall_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "x-go-type": "string",
+                    "description": "The ID of the AI call to audit."
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "BCP47 language code for audit output (e.g. \"en-US\", \"ko-KR\"). Defaults to the call's stt_language or \"en-US\"."
+                  }
+                },
+                "required": [
+                  "aicall_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Audit jobs accepted and running in background.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AIManagerAIAudit"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/teams/{id}": {
       "get": {
         "summary": "Get team details.",
@@ -22678,6 +22910,134 @@
             "format": "date-time",
             "x-go-type": "string",
             "description": "Timestamp when the summary was deleted.",
+            "example": "2026-01-15T09:30:00.000000Z"
+          }
+        }
+      },
+      "AIManagerAIAuditStatus": {
+        "type": "string",
+        "description": "Status of the AI audit.",
+        "example": "progressing",
+        "enum": [
+          "progressing",
+          "completed",
+          "failed"
+        ],
+        "x-enum-varnames": [
+          "AIManagerAIAuditStatusProgressing",
+          "AIManagerAIAuditStatusCompleted",
+          "AIManagerAIAuditStatusFailed"
+        ]
+      },
+      "AIManagerAIAudit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the audit.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The customer who owns this audit.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "aicall_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The AI call that was audited. Returned from the `GET /aicalls` response.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "ai_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The AI participant that was evaluated. Returned from the `GET /ais` response.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "prompt_history_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The prompt version active during the call.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AIManagerAIAuditStatus"
+          },
+          "overall_score": {
+            "type": "integer",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Overall score (1-5) independently assessed by the LLM. Null until completed.",
+            "example": 4
+          },
+          "evaluation": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "Full structured evaluation output. Null until completed.",
+            "example": {
+              "overall_score": 4,
+              "dimensions": {
+                "helpfulness": {
+                  "score": 4,
+                  "reason": "Provided clear and helpful answers."
+                },
+                "accuracy": {
+                  "score": 4,
+                  "reason": "Responses were factually correct."
+                },
+                "tone": {
+                  "score": 5,
+                  "reason": "Maintained professional and empathetic tone."
+                },
+                "goal_completion": {
+                  "score": 4,
+                  "reason": "Successfully resolved the customer's issue."
+                },
+                "tool_usage": null
+              },
+              "summary": "The AI assistant performed well overall."
+            }
+          },
+          "language": {
+            "type": "string",
+            "description": "BCP47 language code used for audit output.",
+            "example": "en-US"
+          },
+          "error": {
+            "type": "string",
+            "description": "Failure reason if status is failed.",
+            "example": "LLM API quota exceeded"
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "Timestamp when the audit was created.",
+            "example": "2026-01-15T09:30:00.000000Z"
+          },
+          "tm_update": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "nullable": true,
+            "description": "Timestamp when the audit was last updated.",
+            "example": "2026-01-15T09:30:00.000000Z"
+          },
+          "tm_delete": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "nullable": true,
+            "description": "Timestamp when the audit was deleted.",
             "example": "2026-01-15T09:30:00.000000Z"
           }
         }
