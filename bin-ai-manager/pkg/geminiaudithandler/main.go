@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	openai "github.com/sashabaranov/go-openai"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -229,9 +230,11 @@ func (h *geminiAuditHandler) ParseEvaluationResponse(data []byte) (*EvaluationRe
 // Retries once on invalid JSON before returning error.
 func (h *geminiAuditHandler) Evaluate(ctx context.Context, promptText, transcript, language string, hasTools bool) (*EvaluationResponse, json.RawMessage, error) {
 	fullPrompt := h.BuildPrompt(promptText, transcript, language, false)
+	logrus.Debugf("gemini Evaluate: model=%s prompt_len=%d transcript_len=%d language=%s hasTools=%v", geminiModel, len(promptText), len(transcript), language, hasTools)
 
 	var lastParseErr error
 	for attempt := 0; attempt < 2; attempt++ {
+		logrus.Debugf("gemini Evaluate: attempt=%d calling API", attempt)
 		resp, err := h.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 			Model: geminiModel,
 			Messages: []openai.ChatCompletionMessage{
@@ -239,18 +242,23 @@ func (h *geminiAuditHandler) Evaluate(ctx context.Context, promptText, transcrip
 			},
 		})
 		if err != nil {
+			logrus.Debugf("gemini Evaluate: attempt=%d API error: %v", attempt, err)
 			return nil, nil, fmt.Errorf("gemini API error: %w", err)
 		}
 
+		logrus.Debugf("gemini Evaluate: attempt=%d got %d choice(s)", attempt, len(resp.Choices))
 		if len(resp.Choices) == 0 {
 			return nil, nil, fmt.Errorf("gemini returned no choices")
 		}
 
 		lastRaw := []byte(resp.Choices[0].Message.Content)
+		logrus.Debugf("gemini Evaluate: attempt=%d raw_response_len=%d", attempt, len(lastRaw))
 		parsed, parseErr := h.ParseEvaluationResponse(lastRaw)
 		if parseErr == nil {
+			logrus.Debugf("gemini Evaluate: attempt=%d parse succeeded score=%d", attempt, parsed.OverallScore)
 			return parsed, lastRaw, nil
 		}
+		logrus.Debugf("gemini Evaluate: attempt=%d parse failed: %v; will retry", attempt, parseErr)
 		lastParseErr = parseErr
 	}
 
