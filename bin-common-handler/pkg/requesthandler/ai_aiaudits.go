@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/gofrs/uuid"
-	"github.com/pkg/errors"
-
 	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	amrequest "monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-common-handler/models/sock"
+
+	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
 
 // AIV1AIAuditCreate sends a request to ai-manager to trigger audit jobs for an aicall.
