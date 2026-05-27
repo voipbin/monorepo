@@ -31,7 +31,7 @@ func (h *listenHandler) processV1AIAuditsPost(ctx context.Context, m *sock.Reque
 
 	records, err := h.aiauditHandler.Create(ctx, req.CustomerID, req.AIcallID, req.Language)
 	if err != nil {
-		log.Debugf("Could not create aiaudit. err: %v", err)
+		log.Errorf("Could not create aiaudit. err: %v", err)
 		errStr := err.Error()
 		switch {
 		case strings.Contains(errStr, "rate limit exceeded"):
@@ -91,8 +91,8 @@ func (h *listenHandler) processV1AIAuditsGet(ctx context.Context, m *sock.Reques
 
 	list, err := h.aiauditHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
-		log.Debugf("Could not list aiaudits. err: %v", err)
-		return simpleResponse(500), nil
+		log.Errorf("Could not list aiaudits. err: %v", err)
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(list)
@@ -123,7 +123,7 @@ func (h *listenHandler) processV1AIAuditsIDGet(ctx context.Context, m *sock.Requ
 
 	record, err := h.aiauditHandler.Get(ctx, id)
 	if err != nil {
-		log.Debugf("Could not get aiaudit. err: %v", err)
+		log.Errorf("Could not get aiaudit. err: %v", err)
 		return errorResponse(err), nil
 	}
 
@@ -155,7 +155,7 @@ func (h *listenHandler) processV1AIAuditsIDDelete(ctx context.Context, m *sock.R
 
 	record, err := h.aiauditHandler.Delete(ctx, id)
 	if err != nil {
-		log.Debugf("Could not delete aiaudit. err: %v", err)
+		log.Errorf("Could not delete aiaudit. err: %v", err)
 		return errorResponse(err), nil
 	}
 

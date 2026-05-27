@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	aiauditTable           = "ai_ai_audits"
-	aiauditSoftDeleteEpoch = "9999-01-01 00:00:00.000000"
+	aiauditTable = "ai_ai_audits"
 )
 
 // AIAuditUpsert inserts a new audit row or resets an existing non-progressing one.
@@ -32,17 +31,17 @@ func (h *handler) AIAuditUpsert(ctx context.Context, a *aiaudit.AIAudit) (int64,
 		INSERT INTO %s
 			(id, customer_id, aicall_id, ai_id, prompt_history_id, status, overall_score, evaluation, language, error, tm_create, tm_update, tm_delete)
 		VALUES
-			(?, ?, ?, ?, ?, 'progressing', NULL, NULL, ?, NULL, ?, NULL, '%s')
+			(?, ?, ?, ?, ?, 'progressing', NULL, NULL, ?, NULL, ?, NULL, NULL)
 		ON DUPLICATE KEY UPDATE
 			status            = IF(status = 'progressing', status, 'progressing'),
-			tm_delete         = '%s',
+			tm_delete         = NULL,
 			overall_score     = NULL,
 			evaluation        = NULL,
 			error             = NULL,
 			language          = VALUES(language),
 			prompt_history_id = VALUES(prompt_history_id),
 			tm_update         = NULL
-	`, aiauditTable, aiauditSoftDeleteEpoch, aiauditSoftDeleteEpoch)
+	`, aiauditTable)
 
 	result, err := h.db.ExecContext(ctx, query,
 		a.ID.Bytes(),
@@ -71,7 +70,10 @@ func (h *handler) aiauditGetFromDB(id uuid.UUID) (*aiaudit.AIAudit, error) {
 
 	query, args, err := sq.Select(cols...).
 		From(aiauditTable).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.And{
+			sq.Eq{"id": id.Bytes()},
+			sq.Eq{"tm_delete": nil},
+		}).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("aiauditGetFromDB: could not build query. err: %v", err)
@@ -151,22 +153,33 @@ func (h *handler) AIAuditDelete(ctx context.Context, id uuid.UUID) error {
 			"tm_update": ts,
 			"tm_delete": ts,
 		}).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.And{
+			sq.Eq{"id": id.Bytes()},
+			sq.Eq{"tm_delete": nil},
+		}).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("AIAuditDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.ExecContext(ctx, query, args...)
+	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIAuditDelete: could not execute. err: %v", err)
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("AIAuditDelete: could not get rows affected. err: %v", err)
+	}
+	if n == 0 {
+		return ErrNotFound
 	}
 
 	return nil
 }
 
 // AIAuditUpdateFinal writes the goroutine's final result atomically.
-// Only updates rows where status='progressing' AND tm_delete='9999-01-01' to
+// Only updates rows where status='progressing' AND tm_delete IS NULL to
 // prevent overwriting a 'failed' status set by the stale recovery sweep.
 // Returns rowsAffected: 0 means the record was already soft-deleted or swept.
 func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string) (int64, error) {
@@ -180,8 +193,8 @@ func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status a
 	query := fmt.Sprintf(`
 		UPDATE %s
 		SET status = ?, overall_score = ?, evaluation = ?, error = ?, tm_update = ?
-		WHERE id = ? AND tm_delete = '%s' AND status = 'progressing'
-	`, aiauditTable, aiauditSoftDeleteEpoch)
+		WHERE id = ? AND tm_delete IS NULL AND status = 'progressing'
+	`, aiauditTable)
 
 	result, err := h.db.ExecContext(ctx, query,
 		string(status),
@@ -207,8 +220,8 @@ func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status a
 func (h *handler) AIAuditCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error) {
 	query := fmt.Sprintf(`
 		SELECT COUNT(*) FROM %s
-		WHERE customer_id = ? AND status = 'progressing' AND tm_delete = '%s'
-	`, aiauditTable, aiauditSoftDeleteEpoch)
+		WHERE customer_id = ? AND status = 'progressing' AND tm_delete IS NULL
+	`, aiauditTable)
 
 	row := h.db.QueryRowContext(ctx, query, customerID.Bytes())
 
