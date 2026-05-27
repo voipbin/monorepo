@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -177,6 +178,8 @@ func Test_ProcessTerminate(t *testing.T) {
 				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.responseAicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			}
 
+			now := time.Now()
+			mockUtil.EXPECT().TimeNow().Return(&now)
 			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAicall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.responseAicall.ID).Return(tt.responseAicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAicall.CustomerID, aicall.EventTypeStatusTerminated, tt.responseAicall)

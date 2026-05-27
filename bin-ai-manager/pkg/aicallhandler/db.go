@@ -315,6 +315,10 @@ func (h *aicallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status a
 	fields := map[aicall.Field]any{
 		aicall.FieldStatus: status,
 	}
+	if status == aicall.StatusTerminated {
+		now := h.utilHandler.TimeNow()
+		fields[aicall.FieldTMEnd] = now
+	}
 	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
 		return nil, errors.Wrapf(errUpdate, "could not update the status to terminating. aicall_id: %s", id)
 	}
