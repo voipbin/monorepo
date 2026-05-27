@@ -7442,6 +7442,8 @@ paths:
 
   /aicalls/{id}:
     $ref: './paths/aicalls/id.yaml'
+  /aicalls/{id}/terminate:
+    $ref: './paths/aicalls/id_terminate.yaml'
   /aicalls/{id}/participants:
     $ref: './paths/aicalls/id_participants.yaml'
   /aicalls:

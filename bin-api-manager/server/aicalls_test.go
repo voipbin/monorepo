@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"monorepo/bin-api-manager/gens/openapi_server"
 	"monorepo/bin-api-manager/lib/middleware"
 	"monorepo/bin-api-manager/models/auth"
+	"monorepo/bin-api-manager/pkg/serviceerrors"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -381,4 +383,95 @@ func Test_aicallsIDDelete_InvalidID(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assertErrorResponse(t, w, cerrors.StatusInvalidArgument, "INVALID_ID")
+}
+
+func Test_aicallsIDTerminate(t *testing.T) {
+	tests := []struct {
+		name  string
+		agent *auth.AuthIdentity
+
+		reqQuery string
+
+		responseAIcall *amaicall.WebhookMessage
+		responseErr    error
+
+		expectAIcallID uuid.UUID
+		expectStatus   int
+		expectRes      string
+	}{
+		{
+			name: "normal",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/aicalls/e8b2f6c4-1234-5678-abcd-9f0a1b2c3d4e/terminate",
+
+			responseAIcall: &amaicall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e8b2f6c4-1234-5678-abcd-9f0a1b2c3d4e"),
+				},
+			},
+
+			expectAIcallID: uuid.FromStringOrNil("e8b2f6c4-1234-5678-abcd-9f0a1b2c3d4e"),
+			expectStatus:   http.StatusOK,
+			expectRes:      `{"id":"e8b2f6c4-1234-5678-abcd-9f0a1b2c3d4e","customer_id":"00000000-0000-0000-0000-000000000000","assistance_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","confbridge_id":"00000000-0000-0000-0000-000000000000","current_member_id":"00000000-0000-0000-0000-000000000000","tm_end":null,"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "permission denied",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/aicalls/e8b2f6c4-1234-5678-abcd-9f0a1b2c3d4e/terminate",
+
+			responseErr: fmt.Errorf("%w: user has no permission", serviceerrors.ErrPermissionDenied),
+
+			expectAIcallID: uuid.FromStringOrNil("e8b2f6c4-1234-5678-abcd-9f0a1b2c3d4e"),
+			expectStatus:   http.StatusForbidden,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(middleware.RequestID())
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", tt.agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", tt.reqQuery, nil)
+			mockSvc.EXPECT().AIcallTerminate(gomock.Any(), tt.agent, tt.expectAIcallID).Return(tt.responseAIcall, tt.responseErr)
+
+			r.ServeHTTP(w, req)
+
+			if tt.responseErr != nil {
+				assertErrorResponse(t, w, cerrors.StatusPermissionDenied, "PERMISSION_DENIED")
+				return
+			}
+
+			if w.Code != tt.expectStatus {
+				t.Errorf("Wrong match. expect: %d, got: %d", tt.expectStatus, w.Code)
+			}
+
+			if w.Body.String() != tt.expectRes {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, w.Body)
+			}
+		})
+	}
 }

@@ -242,3 +242,33 @@ func (h *serviceHandler) AIcallDelete(ctx context.Context, a *auth.AuthIdentity,
 	res := tmp.ConvertWebhookMessage()
 	return res, nil
 }
+
+// AIcallTerminate terminates the aicall.
+func (h *serviceHandler) AIcallTerminate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaicall.WebhookMessage, error) {
+	c, err := h.aicallGet(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not get aicall info")
+	}
+
+	switch {
+	case a.IsAgent() || a.IsAccesskey():
+		if !h.hasPermission(ctx, a, c.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+			return nil, serviceerrors.ErrPermissionDenied
+		}
+	case a.IsDirect():
+		if !a.HasAllowedResourceType("aicall") {
+			return nil, fmt.Errorf("%w: direct token does not allow this resource type", serviceerrors.ErrPermissionDenied)
+		}
+		if c.CustomerID != a.CustomerID {
+			return nil, fmt.Errorf("%w: resource not in token scope", serviceerrors.ErrPermissionDenied)
+		}
+	}
+
+	tmp, err := h.reqHandler.AIV1AIcallTerminate(ctx, id)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not terminate the aicall")
+	}
+
+	res := tmp.ConvertWebhookMessage()
+	return res, nil
+}

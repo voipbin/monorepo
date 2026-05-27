@@ -162,6 +162,31 @@ func (h *server) DeleteAicallsId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
+func (h *server) PostAicallsIdTerminate(c *gin.Context, id openapi_types.UUID) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":            "PostAicallsIdTerminate",
+		"request_address": c.ClientIP(),
+	})
+
+	a, ok := getAuthIdentity(c)
+	if !ok {
+		log.Errorf("Could not find auth identity.")
+		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
+		return
+	}
+	log = log.WithFields(logrus.Fields{"auth": a})
+
+	target := uuid.UUID(id)
+	res, err := h.serviceHandler.AIcallTerminate(c.Request.Context(), a, target)
+	if err != nil {
+		log.Errorf("Could not terminate the aicall. err: %v", err)
+		abortWithServiceError(c, err)
+		return
+	}
+
+	c.JSON(200, res)
+}
+
 func (h *server) GetAicallsIdParticipants(c *gin.Context, id openapi_types.UUID, params openapi_server.GetAicallsIdParticipantsParams) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "GetAicallsIdParticipants",

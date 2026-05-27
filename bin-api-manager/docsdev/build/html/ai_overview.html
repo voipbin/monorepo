@@ -364,6 +364,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ai-prompt-history">AI Prompt History</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ai-participants">AI Participants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#terminate-ai-call">Terminate AI Call</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ai-audit">AI Audit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
@@ -1536,6 +1537,29 @@ with the specified AI agent.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">page_size</span></code> (integer, optional): Maximum number of entries to return per page.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">page_token</span></code> (string, optional): Pagination token returned in a previous response.</p></li>
 </ul>
+</section>
+</section>
+<section id="terminate-ai-call">
+<h1>Terminate AI Call<a class="headerlink" href="#terminate-ai-call" title="Link to this heading">¶</a></h1>
+<p>Use this endpoint to forcefully end an in-progress AI call session. Once
+terminated, the session status transitions to <code class="docutils literal notranslate"><span class="pre">terminated</span></code> and no further
+AI interactions occur on the associated call leg.</p>
+<section id="terminate-a-session">
+<h2>Terminate a session<a class="headerlink" href="#terminate-a-session" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aicalls/{id}/terminate</span></code></p>
+<p>Terminates an in-progress AI call session immediately.</p>
+<p><strong>Path parameters</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID, required): The UUID of the AI call session to terminate.</p></li>
+</ul>
+<p><strong>Response</strong> — 200 OK</p>
+<p>Returns the updated AI call object reflecting the terminated state.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="o">&lt;</span><span class="n">AIManagerAIcall</span> <span class="nb">object</span><span class="o">&gt;</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>For the full struct definition, see <a class="reference internal" href="aicall_struct_aicall.html#aicall-struct-aicall"><span class="std std-ref">AIcall</span></a>.</p>
 </section>
 </section>
 <section id="ai-audit">

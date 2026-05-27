@@ -1,0 +1,31 @@
+post:
+  summary: Terminate a specific ai call
+  description: Terminates an active AI call identified by its ID. The call must be in a progressing state. Use this endpoint to end an ongoing AI call session before it completes naturally.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: "11111111-1111-1111-1111-111111111111"
+      description: The ID of the ai call to terminate.
+  responses:
+    '200':
+      description: The aicall was successfully terminated.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIcall'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

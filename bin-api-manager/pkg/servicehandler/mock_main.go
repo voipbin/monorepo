@@ -435,6 +435,21 @@ func (mr *MockServiceHandlerMockRecorder) AIcallParticipantGets(ctx, a, aicallID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallParticipantGets", reflect.TypeOf((*MockServiceHandler)(nil).AIcallParticipantGets), ctx, a, aicallID, pageToken, pageSize)
 }
 
+// AIcallTerminate mocks base method.
+func (m *MockServiceHandler) AIcallTerminate(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aicall.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIcallTerminate", ctx, a, id)
+	ret0, _ := ret[0].(*aicall.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIcallTerminate indicates an expected call of AIcallTerminate.
+func (mr *MockServiceHandlerMockRecorder) AIcallTerminate(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIcallTerminate", reflect.TypeOf((*MockServiceHandler)(nil).AIcallTerminate), ctx, a, id)
+}
+
 // AImessageCreate mocks base method.
 func (m *MockServiceHandler) AImessageCreate(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, role message.Role, content string) (*message.WebhookMessage, error) {
 	m.ctrl.T.Helper()
