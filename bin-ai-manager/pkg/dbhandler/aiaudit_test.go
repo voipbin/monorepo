@@ -46,6 +46,37 @@ func insertTestAudit(t *testing.T, a *aiaudit.AIAudit, status aiaudit.Status, tm
 	}
 }
 
+func Test_AIAuditGet_ReturnNotFoundForSoftDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+
+	ctx := context.Background()
+	tm := time.Date(2024, 6, 1, 10, 0, 0, 0, time.UTC)
+
+	a := &aiaudit.AIAudit{
+		Identity:        identity.Identity{ID: uuid.FromStringOrNil("aaaa0005-0005-0005-0005-000000000001"), CustomerID: uuid.FromStringOrNil("bbbb0005-0005-0005-0005-000000000001")},
+		AIcallID:        uuid.FromStringOrNil("cccc0005-0005-0005-0005-000000000001"),
+		AIID:            uuid.FromStringOrNil("dddd0005-0005-0005-0005-000000000001"),
+		PromptHistoryID: uuid.FromStringOrNil("eeee0005-0005-0005-0005-000000000001"),
+		Language:        "en-US",
+	}
+	insertTestAudit(t, a, aiaudit.StatusProgressing, &tm, &tm) // soft-deleted
+
+	_, err := h.AIAuditGet(ctx, a.ID)
+	if err != ErrNotFound {
+		t.Errorf("expected ErrNotFound for soft-deleted record, got %v", err)
+	}
+}
+
 func Test_AIAuditGet_ReturnsTMDeleteNull(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

@@ -123,7 +123,7 @@ func (h *listenHandler) processV1AIAuditsIDGet(ctx context.Context, m *sock.Requ
 
 	record, err := h.aiauditHandler.Get(ctx, id)
 	if err != nil {
-		log.Debugf("Could not get aiaudit. err: %v", err)
+		log.Errorf("Could not get aiaudit. err: %v", err)
 		return errorResponse(err), nil
 	}
 
@@ -155,7 +155,7 @@ func (h *listenHandler) processV1AIAuditsIDDelete(ctx context.Context, m *sock.R
 
 	record, err := h.aiauditHandler.Delete(ctx, id)
 	if err != nil {
-		log.Debugf("Could not delete aiaudit. err: %v", err)
+		log.Errorf("Could not delete aiaudit. err: %v", err)
 		return errorResponse(err), nil
 	}
 

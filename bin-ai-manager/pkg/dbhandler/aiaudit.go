@@ -70,7 +70,10 @@ func (h *handler) aiauditGetFromDB(id uuid.UUID) (*aiaudit.AIAudit, error) {
 
 	query, args, err := sq.Select(cols...).
 		From(aiauditTable).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.And{
+			sq.Eq{"id": id.Bytes()},
+			sq.Eq{"tm_delete": nil},
+		}).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("aiauditGetFromDB: could not build query. err: %v", err)
