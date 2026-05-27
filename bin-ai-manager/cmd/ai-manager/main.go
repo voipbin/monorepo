@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"os"
 	"os/signal"
@@ -21,12 +22,14 @@ import (
 
 	"monorepo/bin-ai-manager/internal/config"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/aiaudithandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
+	"monorepo/bin-ai-manager/pkg/geminiaudithandler"
 	"monorepo/bin-ai-manager/pkg/listenhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
@@ -126,8 +129,11 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
+	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(cfg.EngineKeyChatGPT))
+	aiauditHandler.SweepStaleAudits(context.Background())
+
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiprompthistoryHandler, messageHandler, summaryHandler, teamHandler, participantHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, messageHandler, summaryHandler, teamHandler, participantHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -180,6 +186,7 @@ func runListen(
 	sockHandler sockhandler.SockHandler,
 	aiHandler aihandler.AIHandler,
 	aicallhandler aicallhandler.AIcallHandler,
+	aiauditHandler aiaudithandler.AIAuditHandler,
 	aiprompthistoryHandler aiprompthistoryhandler.AIPromptHistoryHandler,
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
@@ -196,6 +203,7 @@ func runListen(
 		utilHandler,
 		aiHandler,
 		aicallhandler,
+		aiauditHandler,
 		aiprompthistoryHandler,
 		messageHandler,
 		summaryHandler,

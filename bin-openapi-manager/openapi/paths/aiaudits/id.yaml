@@ -1,0 +1,61 @@
+get:
+  summary: Get an AI audit by ID.
+  description: Returns a single AI audit record.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The AI audit ID.
+  responses:
+    '200':
+      description: The AI audit record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIAudit'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Delete an AI audit.
+  description: Soft-deletes an AI audit record. The associated aicall is not affected.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The AI audit ID.
+  responses:
+    '200':
+      description: The deleted AI audit record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIAudit'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

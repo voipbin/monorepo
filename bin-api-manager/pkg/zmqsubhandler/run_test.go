@@ -178,6 +178,7 @@ func Test_recevieMessage_context_canceled(t *testing.T) {
 			if errBind := sockPub.Bind(zmq4.PUB, sockAddress); errBind != nil {
 				t.Errorf("Could not bind the zmq socket. err: %v", errBind)
 			}
+			defer sockPub.Terminate()
 			ctx, cancel := context.WithCancel(context.Background())
 
 			// init socket subscribe
@@ -185,6 +186,7 @@ func Test_recevieMessage_context_canceled(t *testing.T) {
 			if errConnect := sockSub.Connect(zmq4.SUB, sockAddress); errConnect != nil {
 				t.Errorf("Could not connect the zmq socket. err: %v", errConnect)
 			}
+			defer sockSub.Terminate()
 
 			h := &zmqSubHandler{
 				sock: sockSub,

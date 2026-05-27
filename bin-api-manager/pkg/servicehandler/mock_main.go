@@ -15,6 +15,7 @@ import (
 	multipart "mime/multipart"
 	agent "monorepo/bin-agent-manager/models/agent"
 	ai "monorepo/bin-ai-manager/models/ai"
+	aiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	message "monorepo/bin-ai-manager/models/message"
@@ -102,6 +103,66 @@ func NewMockServiceHandler(ctrl *gomock.Controller) *MockServiceHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServiceHandler) EXPECT() *MockServiceHandlerMockRecorder {
 	return m.recorder
+}
+
+// AIAuditCreate mocks base method.
+func (m *MockServiceHandler) AIAuditCreate(ctx context.Context, a *auth.AuthIdentity, aicallID uuid.UUID, language string) ([]*aiaudit.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditCreate", ctx, a, aicallID, language)
+	ret0, _ := ret[0].([]*aiaudit.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditCreate indicates an expected call of AIAuditCreate.
+func (mr *MockServiceHandlerMockRecorder) AIAuditCreate(ctx, a, aicallID, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditCreate", reflect.TypeOf((*MockServiceHandler)(nil).AIAuditCreate), ctx, a, aicallID, language)
+}
+
+// AIAuditDelete mocks base method.
+func (m *MockServiceHandler) AIAuditDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aiaudit.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditDelete", ctx, a, id)
+	ret0, _ := ret[0].(*aiaudit.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditDelete indicates an expected call of AIAuditDelete.
+func (mr *MockServiceHandlerMockRecorder) AIAuditDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditDelete", reflect.TypeOf((*MockServiceHandler)(nil).AIAuditDelete), ctx, a, id)
+}
+
+// AIAuditGet mocks base method.
+func (m *MockServiceHandler) AIAuditGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aiaudit.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditGet", ctx, a, id)
+	ret0, _ := ret[0].(*aiaudit.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditGet indicates an expected call of AIAuditGet.
+func (mr *MockServiceHandlerMockRecorder) AIAuditGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditGet", reflect.TypeOf((*MockServiceHandler)(nil).AIAuditGet), ctx, a, id)
+}
+
+// AIAuditGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) AIAuditGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, aicallID, aiID uuid.UUID) ([]*aiaudit.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditGetsByCustomerID", ctx, a, size, token, aicallID, aiID)
+	ret0, _ := ret[0].([]*aiaudit.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditGetsByCustomerID indicates an expected call of AIAuditGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) AIAuditGetsByCustomerID(ctx, a, size, token, aicallID, aiID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AIAuditGetsByCustomerID), ctx, a, size, token, aicallID, aiID)
 }
 
 // AICreate mocks base method.

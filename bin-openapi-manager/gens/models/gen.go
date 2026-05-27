@@ -9,6 +9,27 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// Defines values for AIManagerAIAuditStatus.
+const (
+	AIManagerAIAuditStatusCompleted   AIManagerAIAuditStatus = "completed"
+	AIManagerAIAuditStatusFailed      AIManagerAIAuditStatus = "failed"
+	AIManagerAIAuditStatusProgressing AIManagerAIAuditStatus = "progressing"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerAIAuditStatus enum.
+func (e AIManagerAIAuditStatus) Valid() bool {
+	switch e {
+	case AIManagerAIAuditStatusCompleted:
+		return true
+	case AIManagerAIAuditStatusFailed:
+		return true
+	case AIManagerAIAuditStatusProgressing:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerAIEngineModel.
 const (
 	AIManagerAIEngineModelGeminiGemini2Dot0Flash AIManagerAIEngineModel = "gemini.gemini-2.0-flash"
@@ -3314,6 +3335,51 @@ type AIManagerAI struct {
 	// VadConfig Voice Activity Detection configuration. Omitted fields use Pipecat defaults (confidence=0.7, start_secs=0.2, stop_secs=0.2, min_volume=0.6).
 	VadConfig *AIManagerVADConfig `json:"vad_config,omitempty"`
 }
+
+// AIManagerAIAudit defines model for AIManagerAIAudit.
+type AIManagerAIAudit struct {
+	// AiId The AI participant that was evaluated. Returned from the `GET /ais` response.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// AicallId The AI call that was audited. Returned from the `GET /aicalls` response.
+	AicallId *string `json:"aicall_id,omitempty"`
+
+	// CustomerId The customer who owns this audit.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Error Failure reason if status is failed.
+	Error *string `json:"error,omitempty"`
+
+	// Evaluation Full structured evaluation output. Null until completed.
+	Evaluation *map[string]interface{} `json:"evaluation,omitempty"`
+
+	// Id The unique identifier of the audit.
+	Id *string `json:"id,omitempty"`
+
+	// Language BCP47 language code used for audit output.
+	Language *string `json:"language,omitempty"`
+
+	// OverallScore Overall score (1-5) independently assessed by the LLM. Null until completed.
+	OverallScore *int `json:"overall_score,omitempty"`
+
+	// PromptHistoryId The prompt version active during the call.
+	PromptHistoryId *string `json:"prompt_history_id,omitempty"`
+
+	// Status Status of the AI audit.
+	Status *AIManagerAIAuditStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the audit was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the audit was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the audit was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// AIManagerAIAuditStatus Status of the AI audit.
+type AIManagerAIAuditStatus string
 
 // AIManagerAIEngineModel Model of the AI engine. Uses target.model format (e.g., openai.gpt-5). The target prefix identifies the provider, and the model name follows after the dot.
 type AIManagerAIEngineModel string
@@ -6972,6 +7038,30 @@ type GetAggregatedEventsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetAiauditsParams defines parameters for GetAiaudits.
+type GetAiauditsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// AicallId Filter by AI call ID.
+	AicallId *openapi_types.UUID `form:"aicall_id,omitempty" json:"aicall_id,omitempty"`
+
+	// AiId Filter by AI ID.
+	AiId *openapi_types.UUID `form:"ai_id,omitempty" json:"ai_id,omitempty"`
+}
+
+// PostAiauditsJSONBody defines parameters for PostAiaudits.
+type PostAiauditsJSONBody struct {
+	// AicallId The ID of the AI call to audit.
+	AicallId string `json:"aicall_id"`
+
+	// Language BCP47 language code for audit output (e.g. "en-US", "ko-KR"). Defaults to the call's stt_language or "en-US".
+	Language *string `json:"language,omitempty"`
+}
+
 // GetAicallsParams defines parameters for GetAicalls.
 type GetAicallsParams struct {
 	// PageSize Number of results to return per page.
@@ -8927,6 +9017,9 @@ type PutAgentsIdStatusJSONRequestBody PutAgentsIdStatusJSONBody
 
 // PutAgentsIdTagIdsJSONRequestBody defines body for PutAgentsIdTagIds for application/json ContentType.
 type PutAgentsIdTagIdsJSONRequestBody PutAgentsIdTagIdsJSONBody
+
+// PostAiauditsJSONRequestBody defines body for PostAiaudits for application/json ContentType.
+type PostAiauditsJSONRequestBody PostAiauditsJSONBody
 
 // PostAicallsJSONRequestBody defines body for PostAicalls for application/json ContentType.
 type PostAicallsJSONRequestBody PostAicallsJSONBody

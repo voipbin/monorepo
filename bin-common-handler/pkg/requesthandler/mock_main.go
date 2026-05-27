@@ -14,6 +14,7 @@ import (
 	json "encoding/json"
 	agent "monorepo/bin-agent-manager/models/agent"
 	ai "monorepo/bin-ai-manager/models/ai"
+	aiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	message "monorepo/bin-ai-manager/models/message"
@@ -119,6 +120,66 @@ func NewMockRequestHandler(ctrl *gomock.Controller) *MockRequestHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockRequestHandler) EXPECT() *MockRequestHandlerMockRecorder {
 	return m.recorder
+}
+
+// AIV1AIAuditCreate mocks base method.
+func (m *MockRequestHandler) AIV1AIAuditCreate(ctx context.Context, customerID, aicallID uuid.UUID, language string) ([]*aiaudit.AIAudit, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIAuditCreate", ctx, customerID, aicallID, language)
+	ret0, _ := ret[0].([]*aiaudit.AIAudit)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIAuditCreate indicates an expected call of AIV1AIAuditCreate.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIAuditCreate(ctx, customerID, aicallID, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIAuditCreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIAuditCreate), ctx, customerID, aicallID, language)
+}
+
+// AIV1AIAuditDelete mocks base method.
+func (m *MockRequestHandler) AIV1AIAuditDelete(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIAuditDelete", ctx, id)
+	ret0, _ := ret[0].(*aiaudit.AIAudit)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIAuditDelete indicates an expected call of AIV1AIAuditDelete.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIAuditDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIAuditDelete", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIAuditDelete), ctx, id)
+}
+
+// AIV1AIAuditGet mocks base method.
+func (m *MockRequestHandler) AIV1AIAuditGet(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIAuditGet", ctx, id)
+	ret0, _ := ret[0].(*aiaudit.AIAudit)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIAuditGet indicates an expected call of AIV1AIAuditGet.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIAuditGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIAuditGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIAuditGet), ctx, id)
+}
+
+// AIV1AIAuditList mocks base method.
+func (m *MockRequestHandler) AIV1AIAuditList(ctx context.Context, pageToken string, pageSize uint64, filters map[aiaudit.Field]any) ([]*aiaudit.AIAudit, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIAuditList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]*aiaudit.AIAudit)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIAuditList indicates an expected call of AIV1AIAuditList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIAuditList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIAuditList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIAuditList), ctx, pageToken, pageSize, filters)
 }
 
 // AIV1AICreate mocks base method.

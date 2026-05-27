@@ -1,0 +1,87 @@
+get:
+  summary: Gets a list of AI audits.
+  description: Retrieves a paginated list of AI audit records for the authenticated customer.
+  tags:
+    - AI
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: aicall_id
+      in: query
+      schema:
+        type: string
+        format: uuid
+      description: Filter by AI call ID.
+    - name: ai_id
+      in: query
+      schema:
+        type: string
+        format: uuid
+      description: Filter by AI ID.
+  responses:
+    '200':
+      description: A list of AI audits.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIManagerAIAudit'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Trigger an AI audit for a completed AI call.
+  description: >
+    Evaluates each AI participant in the specified call asynchronously using Gemini.
+    Returns 202 Accepted immediately; poll GET /aiaudits/{id} for completion.
+  tags:
+    - AI
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            aicall_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: The ID of the AI call to audit.
+            language:
+              type: string
+              description: BCP47 language code for audit output (e.g. "en-US", "ko-KR"). Defaults to the call's stt_language or "en-US".
+          required:
+            - aicall_id
+  responses:
+    '202':
+      description: Audit jobs accepted and running in background.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              result:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AIManagerAIAudit'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '429':
+      $ref: '#/components/responses/TooManyRequests'
+    '500':
+      $ref: '#/components/responses/InternalError'

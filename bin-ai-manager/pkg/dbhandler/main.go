@@ -5,6 +5,7 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -13,6 +14,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aicall"
+	"monorepo/bin-ai-manager/models/aiaudit"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/participant"
@@ -52,6 +54,13 @@ type DBHandler interface {
 	SummaryDelete(ctx context.Context, id uuid.UUID) error
 	SummaryList(ctx context.Context, size uint64, token string, filters map[summary.Field]any) ([]*summary.Summary, error)
 	SummaryUpdate(ctx context.Context, id uuid.UUID, fields map[summary.Field]any) error
+
+	AIAuditUpsert(ctx context.Context, a *aiaudit.AIAudit) (rowsAffected int64, err error)
+	AIAuditGet(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error)
+	AIAuditList(ctx context.Context, size uint64, token string, filters map[aiaudit.Field]any) ([]*aiaudit.AIAudit, error)
+	AIAuditDelete(ctx context.Context, id uuid.UUID) error
+	AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string) (rowsAffected int64, err error)
+	AIAuditCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error)
 
 	TeamCreate(ctx context.Context, t *team.Team) error
 	TeamDelete(ctx context.Context, id uuid.UUID) error

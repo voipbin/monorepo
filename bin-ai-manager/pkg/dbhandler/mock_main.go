@@ -11,7 +11,9 @@ package dbhandler
 
 import (
 	context "context"
+	json "encoding/json"
 	ai "monorepo/bin-ai-manager/models/ai"
+	aiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	message "monorepo/bin-ai-manager/models/message"
@@ -46,6 +48,95 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// AIAuditCountProgressing mocks base method.
+func (m *MockDBHandler) AIAuditCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditCountProgressing", ctx, customerID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditCountProgressing indicates an expected call of AIAuditCountProgressing.
+func (mr *MockDBHandlerMockRecorder) AIAuditCountProgressing(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditCountProgressing", reflect.TypeOf((*MockDBHandler)(nil).AIAuditCountProgressing), ctx, customerID)
+}
+
+// AIAuditDelete mocks base method.
+func (m *MockDBHandler) AIAuditDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIAuditDelete indicates an expected call of AIAuditDelete.
+func (mr *MockDBHandlerMockRecorder) AIAuditDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditDelete", reflect.TypeOf((*MockDBHandler)(nil).AIAuditDelete), ctx, id)
+}
+
+// AIAuditGet mocks base method.
+func (m *MockDBHandler) AIAuditGet(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditGet", ctx, id)
+	ret0, _ := ret[0].(*aiaudit.AIAudit)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditGet indicates an expected call of AIAuditGet.
+func (mr *MockDBHandlerMockRecorder) AIAuditGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditGet", reflect.TypeOf((*MockDBHandler)(nil).AIAuditGet), ctx, id)
+}
+
+// AIAuditList mocks base method.
+func (m *MockDBHandler) AIAuditList(ctx context.Context, size uint64, token string, filters map[aiaudit.Field]any) ([]*aiaudit.AIAudit, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditList", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*aiaudit.AIAudit)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditList indicates an expected call of AIAuditList.
+func (mr *MockDBHandlerMockRecorder) AIAuditList(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditList", reflect.TypeOf((*MockDBHandler)(nil).AIAuditList), ctx, size, token, filters)
+}
+
+// AIAuditUpdateFinal mocks base method.
+func (m *MockDBHandler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditUpdateFinal", ctx, id, status, overallScore, evaluation, errStr)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditUpdateFinal indicates an expected call of AIAuditUpdateFinal.
+func (mr *MockDBHandlerMockRecorder) AIAuditUpdateFinal(ctx, id, status, overallScore, evaluation, errStr any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditUpdateFinal", reflect.TypeOf((*MockDBHandler)(nil).AIAuditUpdateFinal), ctx, id, status, overallScore, evaluation, errStr)
+}
+
+// AIAuditUpsert mocks base method.
+func (m *MockDBHandler) AIAuditUpsert(ctx context.Context, a *aiaudit.AIAudit) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAuditUpsert", ctx, a)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIAuditUpsert indicates an expected call of AIAuditUpsert.
+func (mr *MockDBHandlerMockRecorder) AIAuditUpsert(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditUpsert", reflect.TypeOf((*MockDBHandler)(nil).AIAuditUpsert), ctx, a)
 }
 
 // AICreate mocks base method.

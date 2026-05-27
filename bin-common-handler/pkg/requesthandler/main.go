@@ -29,6 +29,7 @@ import (
 
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
+	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
@@ -326,6 +327,12 @@ type RequestHandler interface {
 	) (*amsummary.Summary, error)
 	AIV1SummaryGet(ctx context.Context, summaryID uuid.UUID) (*amsummary.Summary, error)
 	AIV1SummaryDelete(ctx context.Context, aiID uuid.UUID) (*amsummary.Summary, error)
+
+	// ai-manager aiaudit
+	AIV1AIAuditCreate(ctx context.Context, customerID uuid.UUID, aicallID uuid.UUID, language string) ([]*amaiaudit.AIAudit, error)
+	AIV1AIAuditList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaiaudit.Field]any) ([]*amaiaudit.AIAudit, error)
+	AIV1AIAuditGet(ctx context.Context, id uuid.UUID) (*amaiaudit.AIAudit, error)
+	AIV1AIAuditDelete(ctx context.Context, id uuid.UUID) (*amaiaudit.AIAudit, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error

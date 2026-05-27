@@ -830,10 +830,80 @@ with the specified AI agent.
 * ``page_size`` (integer, optional): Maximum number of entries to return per page.
 * ``page_token`` (string, optional): Pagination token returned in a previous response.
 
+AI Audit
+========
+
+The AI Audit feature evaluates how well the AI assistant performed during a
+completed call session. Triggering an audit sends the call transcript and the
+prompt snapshot used during the call to an LLM-based evaluator, which returns
+a numeric score and structured feedback. Use audits to monitor AI quality over
+time and identify calls that need attention.
+
+Audit evaluation is asynchronous. After triggering, poll the audit record
+until ``status`` changes from ``progressing`` to ``completed`` or ``failed``.
+
+Trigger an audit
+----------------
+
+``POST https://api.voipbin.net/v1.0/aiaudits``
+
+Requests the creation of one or more audit records for a completed AI call.
+
+**Request body**
+
+.. code::
+
+    {
+        "aicall_id": "<UUID of the AI call to audit>",
+        "language": "<BCP47 language code, e.g. en-US>"
+    }
+
+* ``aicall_id`` (UUID, required): The call session to evaluate. Must belong to the authenticated customer.
+* ``language`` (string, optional): Language for the evaluator. Defaults to the AI configuration's language if omitted.
+
+**Response** — 202 Accepted
+
+.. code::
+
+    {
+        "result": [ <AIAudit object>, ... ]
+    }
+
+List audits
+-----------
+
+``GET https://api.voipbin.net/v1.0/aiaudits``
+
+Returns a paginated list of audit records owned by the authenticated customer.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per page (1–100, default 100).
+* ``page_token`` (string, optional): Pagination token returned in a previous response.
+* ``aicall_id`` (UUID, optional): Filter by AI call session.
+* ``ai_id`` (UUID, optional): Filter by AI configuration.
+
+Get a single audit
+------------------
+
+``GET https://api.voipbin.net/v1.0/aiaudits/{id}``
+
+Returns the audit record for the given ID.
+
+Delete an audit
+---------------
+
+``DELETE https://api.voipbin.net/v1.0/aiaudits/{id}``
+
+Soft-deletes the audit record. The record is retained but marked as deleted and excluded from future list responses.
+
+See :ref:`AI Audit Structure <ai-struct-aiaudit>` for the full field reference.
+
 Related Documentation
 =====================
 
 - :ref:`AI Structure <ai-struct-ai>` - AI configuration options
+- :ref:`AI Audit Structure <ai-struct-aiaudit>` - AI audit struct fields
 - :ref:`AI Prompt History Structure <ai-struct-aiprompthistory>` - Prompt history struct fields
 - :ref:`Tool Functions <ai-struct-tool>` - Available tool documentation
 - :ref:`Transcribe Overview <transcribe-overview>` - Speech-to-text languages
