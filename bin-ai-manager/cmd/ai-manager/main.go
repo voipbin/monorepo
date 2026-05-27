@@ -129,6 +129,9 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
+	if cfg.GoogleAPIKey == "" {
+		logrus.Warn("GOOGLE_API_KEY is not configured; Gemini audit evaluation will fail at runtime")
+	}
 	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(cfg.GoogleAPIKey))
 	aiauditHandler.SweepStaleAudits(context.Background())
 
