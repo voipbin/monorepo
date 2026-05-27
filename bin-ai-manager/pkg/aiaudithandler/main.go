@@ -288,6 +288,11 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		}
 		return
 	}
+	if result == nil {
+		log.Error("gemini handler returned nil result with nil error — evaluator contract violated")
+		finalErr = string(aiaudit.ErrorEvaluatorUnavailable)
+		return
+	}
 
 	// Step 7: Success.
 	score := result.OverallScore

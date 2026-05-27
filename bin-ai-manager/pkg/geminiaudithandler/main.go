@@ -230,6 +230,7 @@ func (h *geminiAuditHandler) ParseEvaluationResponse(data []byte) (*EvaluationRe
 func (h *geminiAuditHandler) Evaluate(ctx context.Context, promptText, transcript, language string, hasTools bool) (*EvaluationResponse, json.RawMessage, error) {
 	fullPrompt := h.BuildPrompt(promptText, transcript, language, false)
 
+	var lastParseErr error
 	for attempt := 0; attempt < 2; attempt++ {
 		resp, err := h.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 			Model: geminiModel,
@@ -250,7 +251,8 @@ func (h *geminiAuditHandler) Evaluate(ctx context.Context, promptText, transcrip
 		if parseErr == nil {
 			return parsed, lastRaw, nil
 		}
+		lastParseErr = parseErr
 	}
 
-	return nil, nil, fmt.Errorf("invalid_evaluator_response after retry")
+	return nil, nil, fmt.Errorf("invalid_evaluator_response after retry: %w", lastParseErr)
 }
