@@ -12,6 +12,7 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `redis_password` | `REDIS_PASSWORD` | Redis auth | no |
 | `redis_database` | `REDIS_DATABASE` | Redis DB index | no |
 | `engine_key_chatgpt` | `ENGINE_KEY_CHATGPT` | OpenAI API key | yes |
+| `google_api_key` | `GOOGLE_API_KEY` | Google API key for Gemini audit evaluation | yes |
 | `aicall_conversation_idle_timeout_hours` | `AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS` | Hours before idle AIcall expires | no |
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |

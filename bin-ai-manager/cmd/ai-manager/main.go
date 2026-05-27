@@ -129,7 +129,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
-	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(cfg.EngineKeyChatGPT))
+	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(cfg.GoogleAPIKey))
 	aiauditHandler.SweepStaleAudits(context.Background())
 
 	// run listen

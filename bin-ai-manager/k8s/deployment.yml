@@ -58,6 +58,11 @@ spec:
                 secretKeyRef:
                   name: voipbin
                   key: OPENAI_API_KEY
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: GOOGLE_API_KEY
             - name: CLICKHOUSE_ADDRESS
               valueFrom:
                 secretKeyRef:

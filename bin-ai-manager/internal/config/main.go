@@ -28,6 +28,7 @@ type Config struct {
 	RedisPassword           string // RedisPassword is the password used for authenticating to the Redis server.
 	RedisDatabase           int    // RedisDatabase is the numeric Redis logical database index to select, not a name.
 	EngineKeyChatGPT        string // EngineKeyChatGPT is the API key for ChatGPT engine.
+	GoogleAPIKey            string // GoogleAPIKey is the Google API key used for Gemini audit evaluation.
 
 	AIcallConversationIdleTimeoutHours int // Idle timeout (hours) after which a conversation-typed AIcall is treated as expired and a new one is created on the next inbound message.
 }
@@ -55,6 +56,7 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("redis_password", "", "Redis password")
 	f.Int("redis_database", 0, "Redis database index")
 	f.String("engine_key_chatgpt", "", "Engine key for chatgpt")
+	f.String("google_api_key", "", "Google API key for Gemini audit evaluation")
 	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
 
 	bindings := map[string]string{
@@ -66,6 +68,7 @@ func bindConfig(cmd *cobra.Command) error {
 		"redis_password":            "REDIS_PASSWORD",
 		"redis_database":            "REDIS_DATABASE",
 		"engine_key_chatgpt":        "ENGINE_KEY_CHATGPT",
+		"google_api_key":            "GOOGLE_API_KEY",
 
 		"aicall_conversation_idle_timeout_hours": "AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS",
 	}
@@ -101,6 +104,7 @@ func LoadGlobalConfig() {
 			RedisPassword:           viper.GetString("redis_password"),
 			RedisDatabase:           viper.GetInt("redis_database"),
 			EngineKeyChatGPT:        viper.GetString("engine_key_chatgpt"),
+			GoogleAPIKey:            viper.GetString("google_api_key"),
 
 			AIcallConversationIdleTimeoutHours: viper.GetInt("aicall_conversation_idle_timeout_hours"),
 		}
