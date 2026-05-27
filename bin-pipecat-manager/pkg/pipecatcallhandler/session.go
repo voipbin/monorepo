@@ -102,20 +102,34 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 	// runner eventually exits on its own (~3 s timeout).
 	pc.Cancel()
 
-	// Wait until the Asterisk connection is fully established (or context cancelled)
-	// before closing it, so we don't race with SetConnAst on the call path.
+	// Resolve the Asterisk connection safely.
+	// ConnAst must only be read after receiving from ConnAstReady (which is closed
+	// by SetConnAst after writing ConnAst). Reading via Ctx.Done() would race with
+	// a concurrent SetConnAst write, so we avoid it.
+	//
+	// Double-select pattern: prefer ConnAstReady when both channels are ready
+	// simultaneously (established session + context just cancelled). Fall through
+	// to the blocking select only when ConnAstReady is not yet closed.
 	if pc.ConnAstReady != nil {
-		select {
-		case <-pc.ConnAstReady:
-		case <-pc.Ctx.Done():
-		}
-	}
-
-	if pc.ConnAst != nil {
-		if errClose := pc.ConnAst.Close(); errClose != nil {
-			log.Errorf("Could not close the asterisk connection. err: %v", errClose)
-		} else {
-			log.Infof("Closed the asterisk connection.")
+		connAst := func() *websocket.Conn {
+			select {
+			case <-pc.ConnAstReady:
+				return pc.ConnAst
+			default:
+			}
+			select {
+			case <-pc.ConnAstReady:
+				return pc.ConnAst
+			case <-pc.Ctx.Done():
+				return nil
+			}
+		}()
+		if connAst != nil {
+			if errClose := connAst.Close(); errClose != nil {
+				log.Errorf("Could not close the asterisk connection. err: %v", errClose)
+			} else {
+				log.Infof("Closed the asterisk connection.")
+			}
 		}
 	}
 

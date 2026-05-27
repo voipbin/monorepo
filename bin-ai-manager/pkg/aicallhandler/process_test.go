@@ -8,6 +8,7 @@ import (
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -98,8 +99,9 @@ func Test_ProcessTerminate(t *testing.T) {
 
 		id uuid.UUID
 
-		responseAicall      *aicall.AIcall
-		responsePipecatcall *pmpipecatcall.Pipecatcall
+		responseAicall         *aicall.AIcall
+		responsePipecatcall    *pmpipecatcall.Pipecatcall
+		pipecatcallGetErr      error // non-nil to simulate stale/missing pipecatcall
 	}{
 		{
 			name: "normal - reference type is task",
@@ -141,6 +143,26 @@ func Test_ProcessTerminate(t *testing.T) {
 				HostID: "host-12345",
 			},
 		},
+		{
+			// Stale aicall: pipecatcall_id is set but the pipecatcall no longer exists.
+			// ProcessTerminate should skip the terminate RPC and continue to StatusTerminated.
+			name: "stale aicall - pipecatcall not found",
+
+			id: uuid.FromStringOrNil("e1a2b3c4-d9d8-11f0-bf0e-13aea4f95ca9"),
+
+			responseAicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e1a2b3c4-d9d8-11f0-bf0e-13aea4f95ca9"),
+				},
+				PipecatcallID: uuid.FromStringOrNil("f1a2b3c4-d9d8-11f0-9dfe-4b563d93e22c"),
+				ReferenceType: aicall.ReferenceTypeTask,
+			},
+			pipecatcallGetErr: &cerrors.VoipbinError{
+				Status:  cerrors.StatusNotFound,
+				Reason:  "PIPECATCALL_NOT_FOUND",
+				Message: "The pipecat call was not found.",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -170,8 +192,12 @@ func Test_ProcessTerminate(t *testing.T) {
 			}
 
 			if tt.responseAicall.PipecatcallID != uuid.Nil {
-				mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.responseAicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
-				mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID).Return(tt.responsePipecatcall, nil)
+				if tt.pipecatcallGetErr != nil {
+					mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.responseAicall.PipecatcallID).Return(nil, tt.pipecatcallGetErr)
+				} else {
+					mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.responseAicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
+					mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID).Return(tt.responsePipecatcall, nil)
+				}
 			}
 
 			if tt.responseAicall.ConfbridgeID != uuid.Nil {
