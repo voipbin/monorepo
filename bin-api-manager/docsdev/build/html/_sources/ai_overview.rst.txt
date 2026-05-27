@@ -850,12 +850,14 @@ Terminates an in-progress AI call session immediately.
 
 **Response** — 200 OK
 
-Returns the updated AI call object reflecting the terminated state.
+Returns the terminated AI call object.
 
 .. code::
 
     {
-        "result": { <AIManagerAIcall object> }
+        "id": "<uuid>",
+        "customer_id": "<uuid>",
+        ...
     }
 
 For the full struct definition, see :ref:`AIcall <aicall-struct-aicall>`.
