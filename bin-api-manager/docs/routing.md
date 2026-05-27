@@ -317,6 +317,10 @@ Public endpoints — no authentication required.
 | POST | `/aicalls` | bin-ai-manager | Create AI call session |
 | GET | `/aicalls/:id` | bin-ai-manager | Get AI call session |
 | DELETE | `/aicalls/:id` | bin-ai-manager | Delete AI call session |
+| POST | `/aiaudits` | bin-ai-manager | Trigger AI audit |
+| GET | `/aiaudits` | bin-ai-manager | List AI audits |
+| GET | `/aiaudits/:id` | bin-ai-manager | Get AI audit |
+| DELETE | `/aiaudits/:id` | bin-ai-manager | Delete AI audit |
 | GET | `/aisummaries` | bin-ai-manager | List AI summaries |
 | POST | `/aisummaries` | bin-ai-manager | Create AI summary |
 | GET | `/aisummaries/:id` | bin-ai-manager | Get AI summary |

@@ -364,6 +364,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ai-prompt-history">AI Prompt History</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ai-participants">AI Participants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ai-audit">AI Audit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
@@ -371,6 +372,7 @@
 <li class="toctree-l2"><a class="reference internal" href="aicall_struct_aicall.html">AIcall</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_message.html">AI Message</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_summary.html">AI Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_struct_aiaudit.html">AI Audit</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_participant.html">AI Call Participant</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_tutorial.html">Tutorial</a></li>
 </ul>
@@ -1536,10 +1538,66 @@ with the specified AI agent.</p>
 </ul>
 </section>
 </section>
+<section id="ai-audit">
+<h1>AI Audit<a class="headerlink" href="#ai-audit" title="Link to this heading">¶</a></h1>
+<p>The AI Audit feature evaluates how well the AI assistant performed during a
+completed call session. Triggering an audit sends the call transcript and the
+prompt snapshot used during the call to an LLM-based evaluator, which returns
+a numeric score and structured feedback. Use audits to monitor AI quality over
+time and identify calls that need attention.</p>
+<p>Audit evaluation is asynchronous. After triggering, poll the audit record
+until <code class="docutils literal notranslate"><span class="pre">status</span></code> changes from <code class="docutils literal notranslate"><span class="pre">progressing</span></code> to <code class="docutils literal notranslate"><span class="pre">completed</span></code> or <code class="docutils literal notranslate"><span class="pre">failed</span></code>.</p>
+<section id="trigger-an-audit">
+<h2>Trigger an audit<a class="headerlink" href="#trigger-an-audit" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aiaudits</span></code></p>
+<p>Requests the creation of one or more audit records for a completed AI call.</p>
+<p><strong>Request body</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;aicall_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;UUID of the AI call to audit&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;BCP47 language code, e.g. en-US&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">aicall_id</span></code> (UUID, required): The call session to evaluate. Must belong to the authenticated customer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">language</span></code> (string, optional): Language for the evaluator. Defaults to the AI configuration’s language if omitted.</p></li>
+</ul>
+<p><strong>Response</strong> — 202 Accepted</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="o">&lt;</span><span class="n">AIAudit</span> <span class="nb">object</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span> <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="list-audits">
+<h2>List audits<a class="headerlink" href="#list-audits" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/aiaudits</span></code></p>
+<p>Returns a paginated list of audit records owned by the authenticated customer.</p>
+<p><strong>Query parameters</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">page_size</span></code> (integer, optional): Maximum number of entries to return per page (1–100, default 100).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page_token</span></code> (string, optional): Pagination token returned in a previous response.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">aicall_id</span></code> (UUID, optional): Filter by AI call session.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ai_id</span></code> (UUID, optional): Filter by AI configuration.</p></li>
+</ul>
+</section>
+<section id="get-a-single-audit">
+<h2>Get a single audit<a class="headerlink" href="#get-a-single-audit" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/aiaudits/{id}</span></code></p>
+<p>Returns the audit record for the given ID.</p>
+</section>
+<section id="delete-an-audit">
+<h2>Delete an audit<a class="headerlink" href="#delete-an-audit" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">https://api.voipbin.net/v1.0/aiaudits/{id}</span></code></p>
+<p>Soft-deletes the audit record. The record is retained but marked as deleted and excluded from future list responses.</p>
+<p>See <a class="reference internal" href="ai_struct_aiaudit.html#ai-struct-aiaudit"><span class="std std-ref">AI Audit Structure</span></a> for the full field reference.</p>
+</section>
+</section>
 <section id="related-documentation">
 <h1>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="ai_struct_ai.html#ai-struct-ai"><span class="std std-ref">AI Structure</span></a> - AI configuration options</p></li>
+<li><p><a class="reference internal" href="ai_struct_aiaudit.html#ai-struct-aiaudit"><span class="std std-ref">AI Audit Structure</span></a> - AI audit struct fields</p></li>
 <li><p><a class="reference internal" href="ai_struct_aiprompthistory.html#ai-struct-aiprompthistory"><span class="std std-ref">AI Prompt History Structure</span></a> - Prompt history struct fields</p></li>
 <li><p><a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a> - Available tool documentation</p></li>
 <li><p><a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a> - Speech-to-text languages</p></li>
