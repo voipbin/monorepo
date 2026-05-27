@@ -318,7 +318,9 @@ func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipe
 	// so partial replies are published as a final message_bot_llm event. Safe
 	// no-op when no flush is armed; safe when a normal-stop closer raced us
 	// (CAS + sync.Once preserve first-writer-wins).
+	log.Debugf("Flushing and finalizing. pipecatcall_id: %s", pc.ID)
 	h.flushAndFinalize(se)
+	log.Debugf("Flush done. Publishing terminated event. pipecatcall_id: %s", pc.ID)
 
 	// Publish the pipecatcall_terminated event exactly once per pipecatcall.
 	// Use context.Background() because SessionStop below will cancel se.Ctx
@@ -332,6 +334,7 @@ func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipe
 		)
 	}
 
+	log.Debugf("Handling reference type cleanup. reference_type: %s, pipecatcall_id: %s", pc.ReferenceType, pc.ID)
 	switch pc.ReferenceType {
 	case pipecatcall.ReferenceTypeCall:
 		if errTerminate := h.terminateReferenceTypeCall(ctx, pc); errTerminate != nil {
@@ -350,6 +353,7 @@ func (h *pipecatcallHandler) terminate(ctx context.Context, pc *pipecatcall.Pipe
 		log.Debugf("No action needed to stop for reference type: %v", pc.ReferenceType)
 	}
 
+	log.Debugf("Reference type cleanup done. Stopping session. pipecatcall_id: %s", pc.ID)
 	h.SessionStop(pc.ID)
 	log.Infof("Pipecatcall terminated. pipecatcall_id: %s", pc.ID)
 }

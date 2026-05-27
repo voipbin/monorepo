@@ -111,6 +111,7 @@ func (h *listenHandler) processV1PipecatcallsIDStopPost(ctx context.Context, m *
 	}
 	id := uuid.FromStringOrNil(uriItems[3])
 
+	log.Debugf("Received stop request. pipecatcall_id: %s", id)
 	tmp, err := h.pipecatcallHandler.Terminate(ctx, id)
 	if err != nil {
 		return simpleResponse(500), nil

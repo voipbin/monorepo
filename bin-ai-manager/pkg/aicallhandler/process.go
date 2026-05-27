@@ -65,6 +65,7 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 
 	if tmp.PipecatcallID != uuid.Nil {
 		// terminate the pipecatcall
+		log.Debugf("Getting pipecatcall. pipecatcall_id: %s", tmp.PipecatcallID)
 		pc, err := h.reqHandler.PipecatV1PipecatcallGet(ctx, tmp.PipecatcallID)
 		if err != nil {
 			var ve *cerrors.VoipbinError
@@ -75,12 +76,12 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 				return nil, errors.Wrap(err, "could not get the pipecatcall correctly")
 			}
 		} else {
-			log.WithField("pipecatcall", pc).Debugf("Terminating the pipecatcall. pipecatcall_id: %s", pc.ID)
+			log.Debugf("Got pipecatcall. Sending terminate RPC. pipecatcall_id: %s, host_id: %s", pc.ID, pc.HostID)
 			tmpPC, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
 			if err != nil {
 				log.Errorf("Could not terminate the pipecatcall. err: %v", err)
 			} else {
-				log.WithField("pipecatcall", tmpPC).Debugf("Terminated the pipecatcall. pipecatcall_id: %s", tmpPC.ID)
+				log.Debugf("Pipecatcall terminate RPC completed. pipecatcall_id: %s", tmpPC.ID)
 			}
 		}
 	}
