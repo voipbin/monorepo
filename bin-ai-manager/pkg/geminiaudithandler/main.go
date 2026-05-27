@@ -226,6 +226,24 @@ func (h *geminiAuditHandler) ParseEvaluationResponse(data []byte) (*EvaluationRe
 	return resp, nil
 }
 
+// stripMarkdownFence removes a surrounding ```json ... ``` or ``` ... ``` code
+// fence that some LLMs wrap around JSON responses.
+func stripMarkdownFence(data []byte) []byte {
+	s := strings.TrimSpace(string(data))
+	if !strings.HasPrefix(s, "```") {
+		return data
+	}
+	// Drop the opening fence line (e.g. "```json" or "```").
+	if idx := strings.IndexByte(s[3:], '\n'); idx >= 0 {
+		s = s[3+idx+1:]
+	} else {
+		s = s[3:]
+	}
+	// Drop the closing fence.
+	s = strings.TrimSuffix(strings.TrimSpace(s), "```")
+	return []byte(strings.TrimSpace(s))
+}
+
 // Evaluate runs the full evaluation: builds prompt, calls Gemini, parses response.
 // Retries once on invalid JSON before returning error.
 func (h *geminiAuditHandler) Evaluate(ctx context.Context, promptText, transcript, language string, hasTools bool) (*EvaluationResponse, json.RawMessage, error) {
@@ -251,7 +269,7 @@ func (h *geminiAuditHandler) Evaluate(ctx context.Context, promptText, transcrip
 			return nil, nil, fmt.Errorf("gemini returned no choices")
 		}
 
-		lastRaw := []byte(resp.Choices[0].Message.Content)
+		lastRaw := stripMarkdownFence([]byte(resp.Choices[0].Message.Content))
 		logrus.Debugf("gemini Evaluate: attempt=%d raw_response_len=%d", attempt, len(lastRaw))
 		parsed, parseErr := h.ParseEvaluationResponse(lastRaw)
 		if parseErr == nil {
