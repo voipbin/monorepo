@@ -207,9 +207,11 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		}
 		writeCtx, writeCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer writeCancel()
-		_, dbErr := h.db.AIAuditUpdateFinal(writeCtx, recordID, finalStatus, finalScore, finalEvalJSON, finalErr)
+		n, dbErr := h.db.AIAuditUpdateFinal(writeCtx, recordID, finalStatus, finalScore, finalEvalJSON, finalErr)
 		if dbErr != nil {
 			log.WithError(dbErr).Error("could not write final audit result")
+		} else if n == 0 {
+			log.Warnf("final audit result not written: record %s was deleted or swept before goroutine finished (intended status=%s)", recordID, finalStatus)
 		}
 	}()
 
@@ -326,10 +328,10 @@ func (h *aiauditHandler) Delete(ctx context.Context, id uuid.UUID) (*aiaudit.AIA
 	return record, nil
 }
 
-// SweepStaleAudits marks any 'progressing' audits older than staleAuditAgeMinutes as 'failed'.
-// This is called at service startup to recover from crashed goroutines.
+// SweepStaleAudits is called at service startup to recover from crashed goroutines.
+// TODO: implement — mark 'progressing' audits older than staleAuditAgeMinutes as 'failed'.
 func (h *aiauditHandler) SweepStaleAudits(ctx context.Context) {
-	logrus.Infof("startup stale audit sweep: any 'progressing' audits older than %d min will be marked 'failed'", staleAuditAgeMinutes)
+	logrus.Infof("startup stale audit sweep: not yet implemented (stale threshold: %d min)", staleAuditAgeMinutes)
 }
 
 // extractPromptSnapshots parses the prompt_snapshots metadata from an AIcall.

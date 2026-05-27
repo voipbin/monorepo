@@ -156,9 +156,17 @@ func (h *handler) AIAuditDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("AIAuditDelete: could not build query. err: %v", err)
 	}
 
-	_, err = h.db.ExecContext(ctx, query, args...)
+	result, err := h.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("AIAuditDelete: could not execute. err: %v", err)
+	}
+
+	n, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("AIAuditDelete: could not get rows affected. err: %v", err)
+	}
+	if n == 0 {
+		return ErrNotFound
 	}
 
 	return nil

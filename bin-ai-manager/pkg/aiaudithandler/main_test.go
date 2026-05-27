@@ -7,12 +7,81 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/aiaudit"
 	"monorepo/bin-ai-manager/pkg/aiaudithandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/geminiaudithandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
+
+func TestCreate_HappyPath(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDB := dbhandler.NewMockDBHandler(ctrl)
+	mockGemini := geminiaudithandler.NewMockGeminiAuditHandler(ctrl)
+
+	customerID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	aicallID := uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")
+	aiID := uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-cccccccccccc")
+	auditID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd")
+	promptHistoryID := uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee")
+
+	ac := &aicall.AIcall{
+		Identity: commonidentity.Identity{
+			ID:         aicallID,
+			CustomerID: customerID,
+		},
+		AssistanceType: aicall.AssistanceTypeAI,
+		AssistanceID:   aiID,
+		Status:         aicall.StatusTerminated,
+		Metadata: map[string]any{
+			aicall.MetaKeyPromptSnapshots: []aicall.PromptSnapshot{
+				{
+					AIID:            aiID,
+					PromptHistoryID: promptHistoryID,
+					Prompt:          "You are a helpful assistant.",
+				},
+			},
+		},
+	}
+
+	expectedAudit := &aiaudit.AIAudit{
+		Identity: commonidentity.Identity{
+			ID:         auditID,
+			CustomerID: customerID,
+		},
+		AIcallID: aicallID,
+		AIID:     aiID,
+		Status:   aiaudit.StatusProgressing,
+	}
+
+	mockDB.EXPECT().AIcallGet(gomock.Any(), aicallID).Return(ac, nil)
+	mockDB.EXPECT().AIAuditCountProgressing(gomock.Any(), customerID).Return(int64(0), nil)
+	mockDB.EXPECT().AIAuditUpsert(gomock.Any(), gomock.Any()).Return(int64(1), nil)
+	mockDB.EXPECT().AIAuditList(gomock.Any(), uint64(1), "", gomock.Any()).Return([]*aiaudit.AIAudit{expectedAudit}, nil)
+
+	// Background goroutine may call these; AnyTimes to prevent test flakiness.
+	mockDB.EXPECT().MessageList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
+	mockGemini.EXPECT().Evaluate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil, nil).AnyTimes()
+	mockDB.EXPECT().AIAuditUpdateFinal(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(int64(1), nil).AnyTimes()
+
+	h := aiaudithandler.NewAIAuditHandler(mockDB, mockGemini)
+	got, err := h.Create(context.Background(), customerID, aicallID, "en-US")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("expected 1 audit record, got %d", len(got))
+	}
+	if got[0].ID != auditID {
+		t.Errorf("expected audit ID %s, got %s", auditID, got[0].ID)
+	}
+	if got[0].Status != aiaudit.StatusProgressing {
+		t.Errorf("expected status %s, got %s", aiaudit.StatusProgressing, got[0].Status)
+	}
+}
 
 func TestAIAuditHandlerInterfaceExists(t *testing.T) {
 	var _ aiaudithandler.AIAuditHandler = nil
