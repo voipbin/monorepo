@@ -317,6 +317,8 @@ Public endpoints — no authentication required.
 | POST | `/aicalls` | bin-ai-manager | Create AI call session |
 | GET | `/aicalls/:id` | bin-ai-manager | Get AI call session |
 | DELETE | `/aicalls/:id` | bin-ai-manager | Delete AI call session |
+| GET | `/aicalls/:id/participants` | bin-ai-manager | List AI call participants |
+| POST | `/aicalls/:id/terminate` | bin-ai-manager | Terminate AI call session |
 | POST | `/aiaudits` | bin-ai-manager | Trigger AI audit |
 | GET | `/aiaudits` | bin-ai-manager | List AI audits |
 | GET | `/aiaudits/:id` | bin-ai-manager | Get AI audit |

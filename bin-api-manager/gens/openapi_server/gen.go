@@ -7308,6 +7308,9 @@ type ServerInterface interface {
 	// List participants of an AI call
 	// (GET /aicalls/{id}/participants)
 	GetAicallsIdParticipants(c *gin.Context, id openapi_types.UUID, params GetAicallsIdParticipantsParams)
+	// Terminate a specific ai call
+	// (POST /aicalls/{id}/terminate)
+	PostAicallsIdTerminate(c *gin.Context, id openapi_types.UUID)
 	// Retrieve a list of aicall messages
 	// (GET /aimessages)
 	GetAimessages(c *gin.Context, params GetAimessagesParams)
@@ -9084,6 +9087,30 @@ func (siw *ServerInterfaceWrapper) GetAicallsIdParticipants(c *gin.Context) {
 	}
 
 	siw.Handler.GetAicallsIdParticipants(c, id, params)
+}
+
+// PostAicallsIdTerminate operation middleware
+func (siw *ServerInterfaceWrapper) PostAicallsIdTerminate(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAicallsIdTerminate(c, id)
 }
 
 // GetAimessages operation middleware
@@ -16984,6 +17011,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/aicalls/:id", wrapper.DeleteAicallsId)
 	router.GET(options.BaseURL+"/aicalls/:id", wrapper.GetAicallsId)
 	router.GET(options.BaseURL+"/aicalls/:id/participants", wrapper.GetAicallsIdParticipants)
+	router.POST(options.BaseURL+"/aicalls/:id/terminate", wrapper.PostAicallsIdTerminate)
 	router.GET(options.BaseURL+"/aimessages", wrapper.GetAimessages)
 	router.POST(options.BaseURL+"/aimessages", wrapper.PostAimessages)
 	router.DELETE(options.BaseURL+"/aimessages/:id", wrapper.DeleteAimessagesId)
@@ -19075,6 +19103,68 @@ func (response GetAicallsIdParticipants404JSONResponse) VisitGetAicallsIdPartici
 type GetAicallsIdParticipants500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetAicallsIdParticipants500JSONResponse) VisitGetAicallsIdParticipantsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAicallsIdTerminateRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostAicallsIdTerminateResponseObject interface {
+	VisitPostAicallsIdTerminateResponse(w http.ResponseWriter) error
+}
+
+type PostAicallsIdTerminate200JSONResponse AIManagerAIcall
+
+func (response PostAicallsIdTerminate200JSONResponse) VisitPostAicallsIdTerminateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAicallsIdTerminate400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostAicallsIdTerminate400JSONResponse) VisitPostAicallsIdTerminateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAicallsIdTerminate401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostAicallsIdTerminate401JSONResponse) VisitPostAicallsIdTerminateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAicallsIdTerminate403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostAicallsIdTerminate403JSONResponse) VisitPostAicallsIdTerminateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAicallsIdTerminate404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostAicallsIdTerminate404JSONResponse) VisitPostAicallsIdTerminateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAicallsIdTerminate500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostAicallsIdTerminate500JSONResponse) VisitPostAicallsIdTerminateResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -36967,6 +37057,9 @@ type StrictServerInterface interface {
 	// List participants of an AI call
 	// (GET /aicalls/{id}/participants)
 	GetAicallsIdParticipants(ctx context.Context, request GetAicallsIdParticipantsRequestObject) (GetAicallsIdParticipantsResponseObject, error)
+	// Terminate a specific ai call
+	// (POST /aicalls/{id}/terminate)
+	PostAicallsIdTerminate(ctx context.Context, request PostAicallsIdTerminateRequestObject) (PostAicallsIdTerminateResponseObject, error)
 	// Retrieve a list of aicall messages
 	// (GET /aimessages)
 	GetAimessages(ctx context.Context, request GetAimessagesRequestObject) (GetAimessagesResponseObject, error)
@@ -38849,6 +38942,33 @@ func (sh *strictHandler) GetAicallsIdParticipants(ctx *gin.Context, id openapi_t
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAicallsIdParticipantsResponseObject); ok {
 		if err := validResponse.VisitGetAicallsIdParticipantsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAicallsIdTerminate operation middleware
+func (sh *strictHandler) PostAicallsIdTerminate(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostAicallsIdTerminateRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAicallsIdTerminate(ctx, request.(PostAicallsIdTerminateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAicallsIdTerminate")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAicallsIdTerminateResponseObject); ok {
+		if err := validResponse.VisitPostAicallsIdTerminateResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

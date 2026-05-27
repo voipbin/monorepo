@@ -830,6 +830,38 @@ with the specified AI agent.
 * ``page_size`` (integer, optional): Maximum number of entries to return per page.
 * ``page_token`` (string, optional): Pagination token returned in a previous response.
 
+Terminate AI Call
+=================
+
+Use this endpoint to forcefully end an in-progress AI call session. Once
+terminated, the session status transitions to ``terminated`` and no further
+AI interactions occur on the associated call leg.
+
+Terminate a session
+-------------------
+
+``POST https://api.voipbin.net/v1.0/aicalls/{id}/terminate``
+
+Terminates an in-progress AI call session immediately.
+
+**Path parameters**
+
+* ``id`` (UUID, required): The UUID of the AI call session to terminate.
+
+**Response** — 200 OK
+
+Returns the terminated AI call object.
+
+.. code::
+
+    {
+        "id": "<uuid>",
+        "customer_id": "<uuid>",
+        ...
+    }
+
+For the full struct definition, see :ref:`AIcall <aicall-struct-aicall>`.
+
 AI Audit
 ========
 

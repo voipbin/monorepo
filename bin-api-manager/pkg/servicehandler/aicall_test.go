@@ -2,6 +2,7 @@ package servicehandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -381,6 +382,194 @@ func Test_AIcallDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
+			if !reflect.DeepEqual(res, tt.expectRes) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_AIcallTerminate(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		agent    *auth.AuthIdentity
+		aicallID uuid.UUID
+
+		responseAicall    *amaicall.AIcall
+		responseAicallErr error
+
+		expectTerminateCall  bool
+		responseTerminate    *amaicall.AIcall
+		responseTerminateErr error
+
+		wantErr   bool
+		expectRes *amaicall.WebhookMessage
+	}{
+		{
+			name: "normal - agent with CustomerAdmin",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			aicallID: uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+
+			responseAicall: &amaicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+
+			expectTerminateCall: true,
+			responseTerminate: &amaicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+
+			wantErr: false,
+			expectRes: &amaicall.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+		},
+		{
+			name: "aicallGet failure",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			aicallID: uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+
+			responseAicallErr: fmt.Errorf("not found"),
+
+			wantErr: true,
+		},
+		{
+			name: "agent permission denied",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAgent,
+			}),
+			aicallID: uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+
+			responseAicall: &amaicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+
+			wantErr: true,
+		},
+		{
+			name: "direct token - resource type not allowed",
+
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				AllowedResourceTypes: []string{"call"},
+			}),
+			aicallID: uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+
+			responseAicall: &amaicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+
+			wantErr: true,
+		},
+		{
+			name: "direct token - customer ID mismatch",
+
+			agent: auth.NewDirectIdentity(&auth.DirectScope{
+				CustomerID:           uuid.FromStringOrNil("aaaaaaaa-0000-0000-0000-000000000000"),
+				AllowedResourceTypes: []string{"aicall"},
+			}),
+			aicallID: uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+
+			responseAicall: &amaicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+
+			wantErr: true,
+		},
+		{
+			name: "RPC failure",
+
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			aicallID: uuid.FromStringOrNil("f201d402-4596-47cf-87b9-bc6d234d286a"),
+
+			responseAicall: &amaicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("b35fcdb7-f3ee-4534-b6fa-24d78b437356"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			},
+
+			expectTerminateCall:  true,
+			responseTerminateErr: fmt.Errorf("rpc error"),
+
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			h := serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+			ctx := context.Background()
+
+			mockReq.EXPECT().AIV1AIcallGet(ctx, tt.aicallID).Return(tt.responseAicall, tt.responseAicallErr)
+			if tt.expectTerminateCall {
+				mockReq.EXPECT().AIV1AIcallTerminate(ctx, tt.aicallID).Return(tt.responseTerminate, tt.responseTerminateErr)
+			}
+
+			res, err := h.AIcallTerminate(ctx, tt.agent, tt.aicallID)
+			if tt.wantErr {
+				if err == nil {
+					t.Errorf("Wrong match. expect: error, got: nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
