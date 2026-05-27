@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -201,7 +202,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 	defer func() {
 		defer func() { <-h.semaphore }() // released after all cleanup
 		if r := recover(); r != nil {
-			log.Errorf("panic in runAuditJob: %v", r)
+			log.Errorf("panic in runAuditJob: %v\n%s", r, debug.Stack())
 			finalErr = string(aiaudit.ErrorEvaluatorUnavailable)
 			finalStatus = aiaudit.StatusFailed
 		}

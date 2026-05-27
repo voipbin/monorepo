@@ -128,7 +128,7 @@ func Test_AIAuditUpdateFinal_OnlyUpdatesWhenNotDeleted(t *testing.T) {
 
 	score := 85
 
-	// Live record: should update (1 row affected).
+	// Live record: should update (1 row affected) and final state verified.
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	n, err := h.AIAuditUpdateFinal(ctx, liveID, aiaudit.StatusCompleted, &score, nil, "")
 	if err != nil {
@@ -138,7 +138,19 @@ func Test_AIAuditUpdateFinal_OnlyUpdatesWhenNotDeleted(t *testing.T) {
 		t.Errorf("expected 1 row updated for live record, got %d", n)
 	}
 
-	// Soft-deleted record: must return 0 rows.
+	// Verify the live record was actually mutated in DB.
+	got, getErr := h.AIAuditGet(ctx, liveID)
+	if getErr != nil {
+		t.Fatalf("AIAuditGet after update error = %v", getErr)
+	}
+	if got.Status != aiaudit.StatusCompleted {
+		t.Errorf("expected status completed after UpdateFinal, got %s", got.Status)
+	}
+	if got.OverallScore == nil || *got.OverallScore != score {
+		t.Errorf("expected overall_score=%d after UpdateFinal, got %v", score, got.OverallScore)
+	}
+
+	// Soft-deleted record: must return 0 rows and remain unchanged.
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	n, err = h.AIAuditUpdateFinal(ctx, deletedID, aiaudit.StatusCompleted, &score, nil, "")
 	if err != nil {
@@ -146,6 +158,65 @@ func Test_AIAuditUpdateFinal_OnlyUpdatesWhenNotDeleted(t *testing.T) {
 	}
 	if n != 0 {
 		t.Errorf("expected 0 rows updated for soft-deleted record, got %d", n)
+	}
+}
+
+func Test_AIAuditList_ExcludesSoftDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+
+	ctx := context.Background()
+	tm := time.Date(2024, 6, 1, 10, 0, 0, 0, time.UTC)
+	// Token after the seeded records so they appear in the result window.
+	token := "2024-06-01 13:00:00.000000"
+
+	customerID := uuid.FromStringOrNil("bbbb0004-0004-0004-0004-000000000001")
+	aicallID := uuid.FromStringOrNil("cccc0004-0004-0004-0004-000000000001")
+
+	liveAudit := &aiaudit.AIAudit{
+		Identity:        identity.Identity{ID: uuid.FromStringOrNil("aaaa0004-0004-0004-0004-000000000001"), CustomerID: customerID},
+		AIcallID:        aicallID,
+		AIID:            uuid.FromStringOrNil("dddd0004-0004-0004-0004-000000000001"),
+		PromptHistoryID: uuid.FromStringOrNil("eeee0004-0004-0004-0004-000000000001"),
+		Language:        "en-US",
+	}
+	deletedAudit := &aiaudit.AIAudit{
+		Identity:        identity.Identity{ID: uuid.FromStringOrNil("aaaa0004-0004-0004-0004-000000000002"), CustomerID: customerID},
+		AIcallID:        aicallID,
+		AIID:            uuid.FromStringOrNil("dddd0004-0004-0004-0004-000000000002"),
+		PromptHistoryID: uuid.FromStringOrNil("eeee0004-0004-0004-0004-000000000002"),
+		Language:        "en-US",
+	}
+
+	insertTestAudit(t, liveAudit, aiaudit.StatusProgressing, nil, &tm)
+	insertTestAudit(t, deletedAudit, aiaudit.StatusProgressing, &tm, &tm)
+
+	filters := map[aiaudit.Field]any{
+		aiaudit.FieldAIcallID: aicallID,
+		aiaudit.FieldDeleted:  false,
+	}
+
+	list, err := h.AIAuditList(ctx, 100, token, filters)
+	if err != nil {
+		t.Fatalf("AIAuditList error = %v", err)
+	}
+	if len(list) != 1 {
+		t.Fatalf("expected 1 record (live only), got %d", len(list))
+	}
+	if list[0].ID != liveAudit.ID {
+		t.Errorf("expected live audit ID %s, got %s", liveAudit.ID, list[0].ID)
+	}
+	if list[0].TMDelete != nil {
+		t.Errorf("returned record has non-nil tm_delete: %v", list[0].TMDelete)
 	}
 }
 

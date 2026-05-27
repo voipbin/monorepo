@@ -150,7 +150,10 @@ func (h *handler) AIAuditDelete(ctx context.Context, id uuid.UUID) error {
 			"tm_update": ts,
 			"tm_delete": ts,
 		}).
-		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.And{
+			sq.Eq{"id": id.Bytes()},
+			sq.Eq{"tm_delete": nil},
+		}).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("AIAuditDelete: could not build query. err: %v", err)
