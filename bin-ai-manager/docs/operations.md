@@ -17,7 +17,9 @@ All flags support equivalent `UPPER_SNAKE_CASE` environment variables.
 | `prometheus_endpoint` | `PROMETHEUS_ENDPOINT` | Metrics path | `/metrics` |
 | `prometheus_listen_address` | `PROMETHEUS_LISTEN_ADDRESS` | Metrics listen address | `:2112` |
 
-Engine-specific API keys (Dialogflow service account, Grok, Gemini, Anthropic, etc.) follow the same env-var pattern.
+Engine-specific API keys (Dialogflow service account, Grok, Anthropic, etc.) follow the same env-var pattern.
+
+**Note:** Gemini audit evaluation uses `GOOGLE_API_KEY` (a `AIza...` Google API key), not `ENGINE_KEY_CHATGPT`. The audit model is `gemini-2.5-flash`.
 
 ## Prometheus Metrics
 

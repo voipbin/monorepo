@@ -334,10 +334,34 @@ func (h *aiauditHandler) Delete(ctx context.Context, id uuid.UUID) (*aiaudit.AIA
 	return record, nil
 }
 
-// SweepStaleAudits is called at service startup to recover from crashed goroutines.
-// TODO: implement — mark 'progressing' audits older than staleAuditAgeMinutes as 'failed'.
+// SweepStaleAudits marks any 'progressing' audit older than staleAuditAgeMinutes as
+// failed. Called at service startup to recover records orphaned by pod restarts.
 func (h *aiauditHandler) SweepStaleAudits(ctx context.Context) {
-	logrus.Infof("startup stale audit sweep: not yet implemented (stale threshold: %d min)", staleAuditAgeMinutes)
+	staleBefore := h.utilHandler.TimeGetCurTimeAdd(-staleAuditAgeMinutes * time.Minute)
+	filters := map[aiaudit.Field]any{
+		aiaudit.FieldStatus:  aiaudit.StatusProgressing,
+		aiaudit.FieldDeleted: false,
+	}
+
+	stale, err := h.db.AIAuditList(ctx, 1000, staleBefore, filters)
+	if err != nil {
+		logrus.WithError(err).Error("startup stale audit sweep: failed to list stale audits")
+		return
+	}
+
+	if len(stale) == 0 {
+		logrus.Infof("startup stale audit sweep: no stale audits found (threshold: %d min)", staleAuditAgeMinutes)
+		return
+	}
+
+	logrus.Infof("startup stale audit sweep: found %d stale audit(s), marking as failed", len(stale))
+	for _, a := range stale {
+		if _, dbErr := h.db.AIAuditUpdateFinal(ctx, a.ID, aiaudit.StatusFailed, nil, nil, string(aiaudit.ErrorEvaluatorUnavailable)); dbErr != nil {
+			logrus.WithError(dbErr).Errorf("startup stale audit sweep: failed to mark audit %s as failed", a.ID)
+		} else {
+			logrus.Infof("startup stale audit sweep: marked audit %s as failed (aicall_id=%s)", a.ID, a.AIcallID)
+		}
+	}
 }
 
 // extractPromptSnapshots parses the prompt_snapshots metadata from an AIcall.

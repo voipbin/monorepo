@@ -14,7 +14,7 @@ import (
 
 const (
 	geminiEndpoint = "https://generativelanguage.googleapis.com/v1beta/openai/"
-	geminiModel    = "gemini-2.0-flash"
+	geminiModel    = "gemini-2.5-flash"
 )
 
 // EvaluationDimension holds score and reasoning for one audit dimension.
