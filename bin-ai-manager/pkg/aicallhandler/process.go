@@ -79,7 +79,13 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 			log.Debugf("Got pipecatcall. Sending terminate RPC. pipecatcall_id: %s, host_id: %s", pc.ID, pc.HostID)
 			tmpPC, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
 			if err != nil {
-				log.Errorf("Could not terminate the pipecatcall. err: %v", err)
+				var ve *cerrors.VoipbinError
+				if stderrors.As(err, &ve) && ve.Status == cerrors.StatusNotFound {
+					// pipecatcall already gone by the time the terminate RPC arrived; benign
+					log.Debugf("Pipecatcall already gone during terminate RPC. pipecatcall_id: %s", pc.ID)
+				} else {
+					log.Errorf("Could not terminate the pipecatcall. err: %v", err)
+				}
 			} else {
 				log.Debugf("Pipecatcall terminate RPC completed. pipecatcall_id: %s", tmpPC.ID)
 			}

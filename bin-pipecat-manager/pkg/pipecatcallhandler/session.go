@@ -121,6 +121,14 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 			case <-pc.ConnAstReady:
 				return pc.ConnAst
 			case <-pc.Ctx.Done():
+				// Re-drain ConnAstReady: if both fired simultaneously and the
+				// scheduler chose Ctx.Done(), a concurrent SetConnAst may have
+				// written ConnAst — closing it here prevents a socket leak.
+				select {
+				case <-pc.ConnAstReady:
+					return pc.ConnAst
+				default:
+				}
 				return nil
 			}
 		}()

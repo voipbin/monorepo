@@ -114,7 +114,8 @@ func (h *listenHandler) processV1PipecatcallsIDStopPost(ctx context.Context, m *
 	log.Debugf("Received stop request. pipecatcall_id: %s", id)
 	tmp, err := h.pipecatcallHandler.Terminate(ctx, id)
 	if err != nil {
-		return simpleResponse(500), nil
+		log.Debugf("Could not terminate pipecatcall. err: %v", err)
+		return nil, err
 	}
 
 	data, err := json.Marshal(tmp)

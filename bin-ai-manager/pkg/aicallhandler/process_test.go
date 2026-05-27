@@ -163,6 +163,27 @@ func Test_ProcessTerminate(t *testing.T) {
 				Message: "The pipecat call was not found.",
 			},
 		},
+		{
+			// Stale aicall with a live confbridge: pipecatcall not found, but confbridge
+			// still exists and must still be terminated.
+			name: "stale aicall - pipecatcall not found, confbridge present",
+
+			id: uuid.FromStringOrNil("a1b2c3d4-d9d8-11f0-bf0e-13aea4f95ca9"),
+
+			responseAicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-d9d8-11f0-bf0e-13aea4f95ca9"),
+				},
+				ConfbridgeID:  uuid.FromStringOrNil("b1b2c3d4-d9d8-11f0-b6e2-73784ba2c3f2"),
+				PipecatcallID: uuid.FromStringOrNil("c1b2c3d4-d9d8-11f0-9dfe-4b563d93e22c"),
+				ReferenceType: aicall.ReferenceTypeTask,
+			},
+			pipecatcallGetErr: &cerrors.VoipbinError{
+				Status:  cerrors.StatusNotFound,
+				Reason:  "PIPECATCALL_NOT_FOUND",
+				Message: "The pipecat call was not found.",
+			},
+		},
 	}
 
 	for _, tt := range tests {
