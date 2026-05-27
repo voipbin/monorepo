@@ -310,13 +310,17 @@ func (h *aicallHandler) UpdateCurrentMemberID(ctx context.Context, id uuid.UUID,
 	return res, nil
 }
 
-// UpdateStatusTerminating updates the status to terminating
+// UpdateStatus updates the aicall status and emits the corresponding webhook event.
 func (h *aicallHandler) UpdateStatus(ctx context.Context, id uuid.UUID, status aicall.Status) (*aicall.AIcall, error) {
 	fields := map[aicall.Field]any{
 		aicall.FieldStatus: status,
 	}
+	if status == aicall.StatusTerminated {
+		now := h.utilHandler.TimeNow()
+		fields[aicall.FieldTMEnd] = now
+	}
 	if errUpdate := h.db.AIcallUpdate(ctx, id, fields); errUpdate != nil {
-		return nil, errors.Wrapf(errUpdate, "could not update the status to terminating. aicall_id: %s", id)
+		return nil, errors.Wrapf(errUpdate, "could not update the aicall status. aicall_id: %s", id)
 	}
 
 	res, err := h.Get(ctx, id)

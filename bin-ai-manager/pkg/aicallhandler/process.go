@@ -2,12 +2,14 @@ package aicallhandler
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/aicall"
+	cerrors "monorepo/bin-common-handler/models/errors"
 )
 
 // ProcessStart starts a aicall process
@@ -63,17 +65,30 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 
 	if tmp.PipecatcallID != uuid.Nil {
 		// terminate the pipecatcall
+		log.Debugf("Getting pipecatcall. pipecatcall_id: %s", tmp.PipecatcallID)
 		pc, err := h.reqHandler.PipecatV1PipecatcallGet(ctx, tmp.PipecatcallID)
 		if err != nil {
-			return nil, errors.Wrap(err, "could not get the pipecatcall correctly")
-		}
-
-		log.WithField("pipecatcall", pc).Debugf("Terminating the pipecatcall. pipecatcall_id: %s", pc.ID)
-		tmpPC, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
-		if err != nil {
-			log.Errorf("Could not terminate the pipecatcall. err: %v", err)
+			var ve *cerrors.VoipbinError
+			if stderrors.As(err, &ve) && ve.Status == cerrors.StatusNotFound {
+				// pipecat call already gone (e.g. stale aicall); treat as already terminated
+				log.Debugf("Pipecatcall not found, treating as already terminated. pipecatcall_id: %s", tmp.PipecatcallID)
+			} else {
+				return nil, errors.Wrap(err, "could not get the pipecatcall correctly")
+			}
 		} else {
-			log.WithField("pipecatcall", tmpPC).Debugf("Terminated the pipecatcall. pipecatcall_id: %s", tmpPC.ID)
+			log.Debugf("Got pipecatcall. Sending terminate RPC. pipecatcall_id: %s, host_id: %s", pc.ID, pc.HostID)
+			tmpPC, err := h.reqHandler.PipecatV1PipecatcallTerminate(ctx, pc.HostID, pc.ID)
+			if err != nil {
+				var ve *cerrors.VoipbinError
+				if stderrors.As(err, &ve) && ve.Status == cerrors.StatusNotFound {
+					// pipecatcall already gone by the time the terminate RPC arrived; benign
+					log.Debugf("Pipecatcall already gone during terminate RPC. pipecatcall_id: %s", pc.ID)
+				} else {
+					log.Errorf("Could not terminate the pipecatcall. err: %v", err)
+				}
+			} else {
+				log.Debugf("Pipecatcall terminate RPC completed. pipecatcall_id: %s", tmpPC.ID)
+			}
 		}
 	}
 

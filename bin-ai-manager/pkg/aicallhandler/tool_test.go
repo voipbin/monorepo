@@ -513,6 +513,7 @@ func Test_toolHandleServiceStop(t *testing.T) {
 				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.aicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
 			}
 
+			mockUtil.EXPECT().TimeNow().DoAndReturn(func() *time.Time { now := time.Now(); return &now })
 			mockDB.EXPECT().AIcallUpdate(ctx, tt.aicall.ID, gomock.Any()).Return(nil)
 			mockDB.EXPECT().AIcallGet(ctx, tt.aicall.ID).Return(tt.aicall, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.aicall.CustomerID, aicall.EventTypeStatusTerminated, tt.aicall)

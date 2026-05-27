@@ -1034,6 +1034,7 @@ func Test_startReferenceTypeConversation(t *testing.T) {
 				m.db.EXPECT().AIcallGetByReferenceID(ctx, gomock.Any()).Return(existingIdle, nil)
 
 				// idle-expiry branch: UpdateStatus(StatusTerminated) on the OLD AIcall
+				m.util.EXPECT().TimeNow().DoAndReturn(func() *time.Time { now := time.Now(); return &now })
 				m.db.EXPECT().AIcallUpdate(ctx, oldAIcallID, gomock.Any()).Return(nil)
 				m.db.EXPECT().AIcallGet(ctx, oldAIcallID).Return(terminatedOld, nil)
 				m.notify.EXPECT().PublishWebhookEvent(ctx, terminatedOld.CustomerID, aicall.EventTypeStatusTerminated, terminatedOld)

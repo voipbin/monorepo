@@ -96,24 +96,48 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 		log.Warnf("Session had %d dropped audio frames. pipecatcall_id: %s", dropped, id)
 	}
 
-	// Wait for Asterisk connection to be ready (or context cancelled) before closing
-	if pc.ConnAstReady != nil {
-		select {
-		case <-pc.ConnAstReady:
-		case <-pc.Ctx.Done():
-		}
-	}
-
-	// Cancel the session context so any in-flight goroutines (e.g. the flush
-	// goroutine waiting on pc.Ctx.Done()) unblock before we tear down the
-	// Asterisk connection. Mirrors the deferred cleanup in start.go.
+	// Cancel the session context first. For non-Asterisk paths (task/conversation),
+	// ConnAstReady is never closed, so the wait below must escape via Ctx.Done().
+	// Calling Cancel here makes that immediate instead of blocking until the Python
+	// runner eventually exits on its own (~3 s timeout).
 	pc.Cancel()
 
-	if pc.ConnAst != nil {
-		if errClose := pc.ConnAst.Close(); errClose != nil {
-			log.Errorf("Could not close the asterisk connection. err: %v", errClose)
-		} else {
-			log.Infof("Closed the asterisk connection.")
+	// Resolve the Asterisk connection safely.
+	// ConnAst must only be read after receiving from ConnAstReady (which is closed
+	// by SetConnAst after writing ConnAst). Reading via Ctx.Done() would race with
+	// a concurrent SetConnAst write, so we avoid it.
+	//
+	// Double-select pattern: prefer ConnAstReady when both channels are ready
+	// simultaneously (established session + context just cancelled). Fall through
+	// to the blocking select only when ConnAstReady is not yet closed.
+	if pc.ConnAstReady != nil {
+		connAst := func() *websocket.Conn {
+			select {
+			case <-pc.ConnAstReady:
+				return pc.ConnAst
+			default:
+			}
+			select {
+			case <-pc.ConnAstReady:
+				return pc.ConnAst
+			case <-pc.Ctx.Done():
+				// Re-drain ConnAstReady: if both fired simultaneously and the
+				// scheduler chose Ctx.Done(), a concurrent SetConnAst may have
+				// written ConnAst — closing it here prevents a socket leak.
+				select {
+				case <-pc.ConnAstReady:
+					return pc.ConnAst
+				default:
+				}
+				return nil
+			}
+		}()
+		if connAst != nil {
+			if errClose := connAst.Close(); errClose != nil {
+				log.Errorf("Could not close the asterisk connection. err: %v", errClose)
+			} else {
+				log.Infof("Closed the asterisk connection.")
+			}
 		}
 	}
 

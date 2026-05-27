@@ -4,9 +4,11 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	cmconfbridge "monorepo/bin-call-manager/models/confbridge"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -97,9 +99,23 @@ func Test_ProcessTerminate(t *testing.T) {
 
 		id uuid.UUID
 
-		responseAicall      *aicall.AIcall
-		responsePipecatcall *pmpipecatcall.Pipecatcall
+		responseAicall         *aicall.AIcall
+		responsePipecatcall    *pmpipecatcall.Pipecatcall
+		pipecatcallGetErr      error // non-nil to simulate stale/missing pipecatcall
 	}{
+		{
+			// Already-terminated: idempotency guard returns early without any further RPCs.
+			name: "already terminated - no-op",
+
+			id: uuid.FromStringOrNil("f0f0f0f0-d9d8-11f0-bf0e-13aea4f95ca9"),
+
+			responseAicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("f0f0f0f0-d9d8-11f0-bf0e-13aea4f95ca9"),
+				},
+				Status: aicall.StatusTerminated,
+			},
+		},
 		{
 			name: "normal - reference type is task",
 
@@ -140,6 +156,47 @@ func Test_ProcessTerminate(t *testing.T) {
 				HostID: "host-12345",
 			},
 		},
+		{
+			// Stale aicall: pipecatcall_id is set but the pipecatcall no longer exists.
+			// ProcessTerminate should skip the terminate RPC and continue to StatusTerminated.
+			name: "stale aicall - pipecatcall not found",
+
+			id: uuid.FromStringOrNil("e1a2b3c4-d9d8-11f0-bf0e-13aea4f95ca9"),
+
+			responseAicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("e1a2b3c4-d9d8-11f0-bf0e-13aea4f95ca9"),
+				},
+				PipecatcallID: uuid.FromStringOrNil("f1a2b3c4-d9d8-11f0-9dfe-4b563d93e22c"),
+				ReferenceType: aicall.ReferenceTypeTask,
+			},
+			pipecatcallGetErr: &cerrors.VoipbinError{
+				Status:  cerrors.StatusNotFound,
+				Reason:  "PIPECATCALL_NOT_FOUND",
+				Message: "The pipecat call was not found.",
+			},
+		},
+		{
+			// Stale aicall with a live confbridge: pipecatcall not found, but confbridge
+			// still exists and must still be terminated.
+			name: "stale aicall - pipecatcall not found, confbridge present",
+
+			id: uuid.FromStringOrNil("a1b2c3d4-d9d8-11f0-bf0e-13aea4f95ca9"),
+
+			responseAicall: &aicall.AIcall{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-d9d8-11f0-bf0e-13aea4f95ca9"),
+				},
+				ConfbridgeID:  uuid.FromStringOrNil("b1b2c3d4-d9d8-11f0-b6e2-73784ba2c3f2"),
+				PipecatcallID: uuid.FromStringOrNil("c1b2c3d4-d9d8-11f0-9dfe-4b563d93e22c"),
+				ReferenceType: aicall.ReferenceTypeTask,
+			},
+			pipecatcallGetErr: &cerrors.VoipbinError{
+				Status:  cerrors.StatusNotFound,
+				Reason:  "PIPECATCALL_NOT_FOUND",
+				Message: "The pipecat call was not found.",
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -163,23 +220,32 @@ func Test_ProcessTerminate(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AIcallGet(ctx, tt.id).Return(tt.responseAicall, nil)
-			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID, 0).Return(nil)
-			if tt.responseAicall.ReferenceType != aicall.ReferenceTypeCall {
-				mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID).Return(nil)
-			}
 
-			if tt.responseAicall.PipecatcallID != uuid.Nil {
-				mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.responseAicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
-				mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID).Return(tt.responsePipecatcall, nil)
-			}
+			if tt.responseAicall.Status != aicall.StatusTerminated {
+				mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID, 0).Return(nil)
+				if tt.responseAicall.ReferenceType != aicall.ReferenceTypeCall {
+					mockReq.EXPECT().FlowV1ActiveflowContinue(ctx, tt.responseAicall.ActiveflowID, tt.responseAicall.ID).Return(nil)
+				}
 
-			if tt.responseAicall.ConfbridgeID != uuid.Nil {
-				mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.responseAicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
-			}
+				if tt.responseAicall.PipecatcallID != uuid.Nil {
+					if tt.pipecatcallGetErr != nil {
+						mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.responseAicall.PipecatcallID).Return(nil, tt.pipecatcallGetErr)
+					} else {
+						mockReq.EXPECT().PipecatV1PipecatcallGet(ctx, tt.responseAicall.PipecatcallID).Return(tt.responsePipecatcall, nil)
+						mockReq.EXPECT().PipecatV1PipecatcallTerminate(ctx, tt.responsePipecatcall.HostID, tt.responsePipecatcall.ID).Return(tt.responsePipecatcall, nil)
+					}
+				}
 
-			mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAicall.ID, gomock.Any()).Return(nil)
-			mockDB.EXPECT().AIcallGet(ctx, tt.responseAicall.ID).Return(tt.responseAicall, nil)
-			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAicall.CustomerID, aicall.EventTypeStatusTerminated, tt.responseAicall)
+				if tt.responseAicall.ConfbridgeID != uuid.Nil {
+					mockReq.EXPECT().CallV1ConfbridgeTerminate(ctx, tt.responseAicall.ConfbridgeID).Return(&cmconfbridge.Confbridge{}, nil)
+				}
+
+				now := time.Now()
+				mockUtil.EXPECT().TimeNow().Return(&now)
+				mockDB.EXPECT().AIcallUpdate(ctx, tt.responseAicall.ID, gomock.Any()).Return(nil)
+				mockDB.EXPECT().AIcallGet(ctx, tt.responseAicall.ID).Return(tt.responseAicall, nil)
+				mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseAicall.CustomerID, aicall.EventTypeStatusTerminated, tt.responseAicall)
+			}
 
 			res, err := h.ProcessTerminate(ctx, tt.id)
 			if err != nil {
