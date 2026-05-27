@@ -96,18 +96,20 @@ func (h *pipecatcallHandler) SessionStop(id uuid.UUID) {
 		log.Warnf("Session had %d dropped audio frames. pipecatcall_id: %s", dropped, id)
 	}
 
-	// Wait for Asterisk connection to be ready (or context cancelled) before closing
+	// Cancel the session context first. For non-Asterisk paths (task/conversation),
+	// ConnAstReady is never closed, so the wait below must escape via Ctx.Done().
+	// Calling Cancel here makes that immediate instead of blocking until the Python
+	// runner eventually exits on its own (~3 s timeout).
+	pc.Cancel()
+
+	// Wait until the Asterisk connection is fully established (or context cancelled)
+	// before closing it, so we don't race with SetConnAst on the call path.
 	if pc.ConnAstReady != nil {
 		select {
 		case <-pc.ConnAstReady:
 		case <-pc.Ctx.Done():
 		}
 	}
-
-	// Cancel the session context so any in-flight goroutines (e.g. the flush
-	// goroutine waiting on pc.Ctx.Done()) unblock before we tear down the
-	// Asterisk connection. Mirrors the deferred cleanup in start.go.
-	pc.Cancel()
 
 	if pc.ConnAst != nil {
 		if errClose := pc.ConnAst.Close(); errClose != nil {
