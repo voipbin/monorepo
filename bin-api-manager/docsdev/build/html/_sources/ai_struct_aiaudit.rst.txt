@@ -19,6 +19,7 @@ AIAudit
         "status": "<string>",
         "overall_score": <integer or null>,
         "evaluation": <object or null>,
+        "message_ids": <array of strings or null>,
         "language": "<string>",
         "error": "<string>",
         "tm_create": "<string>",
@@ -34,6 +35,7 @@ AIAudit
 * ``status`` (enum string): The audit's current processing status. See :ref:`Status <ai-struct-aiaudit-status>`.
 * ``overall_score`` (integer, nullable): A numeric score summarising the evaluation, typically 1–5. Null while status is ``progressing``.
 * ``evaluation`` (object, nullable): Structured evaluation detail produced by the evaluator. The exact schema depends on the configured evaluator. Null while status is ``progressing``.
+* ``message_ids`` (array of strings, nullable): Ordered list of message IDs (newest-first) that were evaluated by Gemini. Null while ``progressing``, on failure, or for audits completed before this feature was introduced. Present and non-empty on successful completion for calls that have messages.
 * ``language`` (string): The BCP47 language code used for the evaluation (e.g., ``en-US``, ``ko-KR``).
 * ``error`` (enum string): Machine-readable error code set when status is ``failed``. Empty otherwise. See :ref:`Error <ai-struct-aiaudit-error>`.
 * ``tm_create`` (string, ISO 8601): Timestamp when this audit record was created.
@@ -42,7 +44,7 @@ AIAudit
 
 .. note:: **Audit Processing**
 
-   Audit evaluation is asynchronous. After triggering an audit, poll the record until ``status`` changes from ``progressing`` to ``completed`` or ``failed``. The ``overall_score`` and ``evaluation`` fields will be populated only when status is ``completed``.
+   Audit evaluation is asynchronous. After triggering an audit, poll the record until ``status`` changes from ``progressing`` to ``completed`` or ``failed``. The ``overall_score``, ``evaluation``, and ``message_ids`` fields will be populated only when status is ``completed``.
 
 .. _ai-struct-aiaudit-status:
 
@@ -95,6 +97,10 @@ Example
             "accuracy": 4,
             "resolution": 3
         },
+        "message_ids": [
+            "550e8400-e29b-41d4-a716-446655440001",
+            "550e8400-e29b-41d4-a716-446655440002"
+        ],
         "language": "en-US",
         "error": "",
         "tm_create": "2024-03-01T10:05:00.000000Z",

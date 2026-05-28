@@ -40,6 +40,7 @@ type AIAudit struct {
 	Status       Status          `json:"status,omitempty"  db:"status"`
 	OverallScore *int            `json:"overall_score"     db:"overall_score"`
 	Evaluation   json.RawMessage `json:"evaluation"        db:"evaluation,json"`
+	MessageIDs   []uuid.UUID     `json:"message_ids,omitempty" db:"message_ids,json"`
 	Language     string          `json:"language,omitempty" db:"language"`
 	Error        string          `json:"error,omitempty"   db:"error"`
 

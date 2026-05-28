@@ -161,7 +161,7 @@ func Test_AIAuditUpdateFinal_OnlyUpdatesWhenNotDeleted(t *testing.T) {
 
 	// Live record: should update (1 row affected) and final state verified.
 	mockUtil.EXPECT().TimeNow().Return(curTime)
-	n, err := h.AIAuditUpdateFinal(ctx, liveID, aiaudit.StatusCompleted, &score, nil, "")
+	n, err := h.AIAuditUpdateFinal(ctx, liveID, aiaudit.StatusCompleted, &score, nil, "", nil)
 	if err != nil {
 		t.Fatalf("AIAuditUpdateFinal (live) error = %v", err)
 	}
@@ -183,7 +183,7 @@ func Test_AIAuditUpdateFinal_OnlyUpdatesWhenNotDeleted(t *testing.T) {
 
 	// Soft-deleted record: must return 0 rows and remain unchanged.
 	mockUtil.EXPECT().TimeNow().Return(curTime)
-	n, err = h.AIAuditUpdateFinal(ctx, deletedID, aiaudit.StatusCompleted, &score, nil, "")
+	n, err = h.AIAuditUpdateFinal(ctx, deletedID, aiaudit.StatusCompleted, &score, nil, "", nil)
 	if err != nil {
 		t.Fatalf("AIAuditUpdateFinal (deleted) error = %v", err)
 	}
@@ -248,6 +248,71 @@ func Test_AIAuditList_ExcludesSoftDeleted(t *testing.T) {
 	}
 	if list[0].TMDelete != nil {
 		t.Errorf("returned record has non-nil tm_delete: %v", list[0].TMDelete)
+	}
+}
+
+func Test_AIAuditUpdateFinal_StoresMessageIDs(t *testing.T) {
+	curTime := func() *time.Time {
+		t := time.Date(2024, 6, 2, 12, 0, 0, 0, time.UTC)
+		return &t
+	}()
+
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+
+	ctx := context.Background()
+	tm := time.Date(2024, 6, 2, 10, 0, 0, 0, time.UTC)
+
+	auditID := uuid.FromStringOrNil("aaaa0010-0010-0010-0010-000000000001")
+	customerID := uuid.FromStringOrNil("bbbb0010-0010-0010-0010-000000000001")
+	msgID1 := uuid.FromStringOrNil("cccc0010-0010-0010-0010-000000000001")
+	msgID2 := uuid.FromStringOrNil("cccc0010-0010-0010-0010-000000000002")
+
+	a := &aiaudit.AIAudit{
+		Identity:        identity.Identity{ID: auditID, CustomerID: customerID},
+		AIcallID:        uuid.FromStringOrNil("dddd0010-0010-0010-0010-000000000001"),
+		AIID:            uuid.FromStringOrNil("eeee0010-0010-0010-0010-000000000001"),
+		PromptHistoryID: uuid.FromStringOrNil("ffff0010-0010-0010-0010-000000000001"),
+		Language:        "en-US",
+	}
+	insertTestAudit(t, a, aiaudit.StatusProgressing, nil, &tm)
+
+	score := 90
+	msgIDs := []uuid.UUID{msgID1, msgID2}
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	n, err := h.AIAuditUpdateFinal(ctx, auditID, aiaudit.StatusCompleted, &score, nil, "", msgIDs)
+	if err != nil {
+		t.Fatalf("AIAuditUpdateFinal error = %v", err)
+	}
+	if n != 1 {
+		t.Errorf("expected 1 row updated, got %d", n)
+	}
+
+	got, getErr := h.AIAuditGet(ctx, auditID)
+	if getErr != nil {
+		t.Fatalf("AIAuditGet after update error = %v", getErr)
+	}
+	if got.Status != aiaudit.StatusCompleted {
+		t.Errorf("expected status completed, got %s", got.Status)
+	}
+	if len(got.MessageIDs) != 2 {
+		t.Fatalf("expected 2 message IDs, got %d", len(got.MessageIDs))
+	}
+	if got.MessageIDs[0] != msgID1 {
+		t.Errorf("expected MessageIDs[0] = %s, got %s", msgID1, got.MessageIDs[0])
+	}
+	if got.MessageIDs[1] != msgID2 {
+		t.Errorf("expected MessageIDs[1] = %s, got %s", msgID2, got.MessageIDs[1])
 	}
 }
 

@@ -199,6 +199,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 	var finalScore *int
 	var finalEvalJSON json.RawMessage
 	finalErr := ""
+	var finalMsgIDs []uuid.UUID // nil unless audit completes successfully
 
 	defer func() {
 		defer func() { <-h.semaphore }() // released after all cleanup
@@ -210,7 +211,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		log.Debugf("writing final audit result: status=%s score=%v err=%q", finalStatus, finalScore, finalErr)
 		writeCtx, writeCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer writeCancel()
-		n, dbErr := h.db.AIAuditUpdateFinal(writeCtx, recordID, finalStatus, finalScore, finalEvalJSON, finalErr)
+		n, dbErr := h.db.AIAuditUpdateFinal(writeCtx, recordID, finalStatus, finalScore, finalEvalJSON, finalErr, finalMsgIDs)
 		if dbErr != nil {
 			log.WithError(dbErr).Error("could not write final audit result")
 		} else if n == 0 {
@@ -267,6 +268,10 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		return
 	}
 	log.Debugf("step4: loaded %d message(s)", len(msgs))
+	msgIDs := make([]uuid.UUID, len(msgs))
+	for i, m := range msgs {
+		msgIDs[i] = m.ID
+	}
 
 	// Step 5: Check context cancellation before calling Gemini.
 	select {
@@ -308,6 +313,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 	finalStatus = aiaudit.StatusCompleted
 	finalScore = &score
 	finalEvalJSON = rawJSON
+	finalMsgIDs = msgIDs // only assigned on success; nil on every failure path
 }
 
 // Get returns a single audit record by ID.
@@ -365,7 +371,7 @@ func (h *aiauditHandler) SweepStaleAudits(ctx context.Context) {
 
 	logrus.Infof("startup stale audit sweep: found %d stale audit(s), marking as failed", len(stale))
 	for _, a := range stale {
-		if _, dbErr := h.db.AIAuditUpdateFinal(ctx, a.ID, aiaudit.StatusFailed, nil, nil, string(aiaudit.ErrorEvaluatorUnavailable)); dbErr != nil {
+		if _, dbErr := h.db.AIAuditUpdateFinal(ctx, a.ID, aiaudit.StatusFailed, nil, nil, string(aiaudit.ErrorEvaluatorUnavailable), nil); dbErr != nil {
 			logrus.WithError(dbErr).Errorf("startup stale audit sweep: failed to mark audit %s as failed", a.ID)
 		} else {
 			logrus.Infof("startup stale audit sweep: marked audit %s as failed (aicall_id=%s)", a.ID, a.AIcallID)
