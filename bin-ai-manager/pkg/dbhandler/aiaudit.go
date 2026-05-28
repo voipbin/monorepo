@@ -37,7 +37,7 @@ func (h *handler) AIAuditUpsert(ctx context.Context, a *aiaudit.AIAudit) (int64,
 			tm_delete         = NULL,
 			overall_score     = NULL,
 			evaluation        = NULL,
-			message_ids       = NULL,
+			message_ids       = NULL,   -- must reset: prevents stale IDs from a prior completed run surviving into a new audit cycle
 			error             = NULL,
 			language          = VALUES(language),
 			prompt_history_id = VALUES(prompt_history_id),
