@@ -129,7 +129,10 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
-	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(cfg.EngineKeyChatGPT))
+	if cfg.GoogleAPIKey == "" {
+		logrus.Error("GOOGLE_API_KEY is not configured; all Gemini audit requests will fail with evaluator_unavailable")
+	}
+	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(cfg.GoogleAPIKey))
 	aiauditHandler.SweepStaleAudits(context.Background())
 
 	// run listen

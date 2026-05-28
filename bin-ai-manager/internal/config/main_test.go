@@ -30,6 +30,7 @@ func TestGet(t *testing.T) {
 				RedisPassword:                      "secret",
 				RedisDatabase:                      1,
 				EngineKeyChatGPT:                   "sk-test-key",
+				GoogleAPIKey:                       "AIza-test-key",
 				AIcallConversationIdleTimeoutHours: 48,
 			},
 		},
@@ -64,6 +65,9 @@ func TestGet(t *testing.T) {
 			}
 			if res.EngineKeyChatGPT != tt.setupConfig.EngineKeyChatGPT {
 				t.Errorf("Wrong EngineKeyChatGPT. expect: %s, got: %s", tt.setupConfig.EngineKeyChatGPT, res.EngineKeyChatGPT)
+			}
+			if res.GoogleAPIKey != tt.setupConfig.GoogleAPIKey {
+				t.Errorf("Wrong GoogleAPIKey. expect: %s, got: %s", tt.setupConfig.GoogleAPIKey, res.GoogleAPIKey)
 			}
 			if res.AIcallConversationIdleTimeoutHours != tt.setupConfig.AIcallConversationIdleTimeoutHours {
 				t.Errorf("Wrong AIcallConversationIdleTimeoutHours. expect: %d, got: %d", tt.setupConfig.AIcallConversationIdleTimeoutHours, res.AIcallConversationIdleTimeoutHours)
@@ -127,6 +131,9 @@ func TestBootstrap(t *testing.T) {
 			}
 			if rootCmd.PersistentFlags().Lookup("engine_key_chatgpt") == nil {
 				t.Errorf("Expected engine_key_chatgpt flag to be registered")
+			}
+			if rootCmd.PersistentFlags().Lookup("google_api_key") == nil {
+				t.Errorf("Expected google_api_key flag to be registered")
 			}
 			flagAIcallIdle := rootCmd.PersistentFlags().Lookup("aicall_conversation_idle_timeout_hours")
 			if flagAIcallIdle == nil {

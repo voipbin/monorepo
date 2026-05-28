@@ -20,7 +20,9 @@ AI conversation orchestration service. Manages AI configurations, active call se
 
 ## CRITICAL: engine_key_chatgpt
 
-The config flag is `engine_key_chatgpt` / env `ENGINE_KEY_CHATGPT` (not `openai_api_key`). This key is also used for other OpenAI-compatible providers (Grok, Gemini via base URL override). Do not rename it.
+The config flag is `engine_key_chatgpt` / env `ENGINE_KEY_CHATGPT` (not `openai_api_key`). This key is used for OpenAI and other OpenAI-compatible providers (e.g. Grok). Do not rename it.
+
+**Gemini audit uses a separate key.** The `geminiaudithandler` requires a Google API key (`AIza...`), configured via `google_api_key` / env `GOOGLE_API_KEY`. This is distinct from `ENGINE_KEY_CHATGPT` which holds an OpenAI-style key (`sk-...`).
 
 ## Common commands
 

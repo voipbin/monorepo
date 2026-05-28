@@ -188,6 +188,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		"ai_id":     aiID,
 		"aicall_id": ac.ID,
 	})
+	log.Debugf("audit job started; semaphore acquired (timeout=%ds)", geminiTimeoutSeconds)
 
 	// Create timeout context.
 	geminiCtx, cancel := context.WithTimeout(ctx, geminiTimeoutSeconds*time.Second)
@@ -206,6 +207,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 			finalErr = string(aiaudit.ErrorEvaluatorUnavailable)
 			finalStatus = aiaudit.StatusFailed
 		}
+		log.Debugf("writing final audit result: status=%s score=%v err=%q", finalStatus, finalScore, finalErr)
 		writeCtx, writeCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer writeCancel()
 		n, dbErr := h.db.AIAuditUpdateFinal(writeCtx, recordID, finalStatus, finalScore, finalEvalJSON, finalErr)
@@ -213,6 +215,8 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 			log.WithError(dbErr).Error("could not write final audit result")
 		} else if n == 0 {
 			log.Warnf("final audit result not written: record %s was deleted or swept before goroutine finished (intended status=%s)", recordID, finalStatus)
+		} else {
+			log.Debugf("final audit result written: status=%s", finalStatus)
 		}
 	}()
 
@@ -223,6 +227,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		finalErr = string(aiaudit.ErrorInvalidCallMetadata)
 		return
 	}
+	log.Debugf("step1: extracted %d prompt snapshot(s)", len(snapshots))
 
 	// Step 2: Find the snapshot for this AI.
 	var snapshot *aicall.PromptSnapshot
@@ -237,6 +242,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		finalErr = string(aiaudit.ErrorPromptSnapshotNotFound)
 		return
 	}
+	log.Debugf("step2: found prompt snapshot prompt_history_id=%s prompt_len=%d", snapshot.PromptHistoryID, len(snapshot.Prompt))
 
 	// Step 3: Require a valid PromptHistoryID.
 	if snapshot.PromptHistoryID == uuid.Nil {
@@ -260,6 +266,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		finalErr = string(aiaudit.ErrorEvaluatorUnavailable)
 		return
 	}
+	log.Debugf("step4: loaded %d message(s)", len(msgs))
 
 	// Step 5: Check context cancellation before calling Gemini.
 	select {
@@ -277,6 +284,7 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		log.Warnf("transcript truncated to %d messages for audit %s", maxMessages, recordID)
 	}
 	hasTools := hasToolCalls(msgs)
+	log.Debugf("step6: transcript built len=%d truncated=%v hasTools=%v; calling Gemini", len(transcript), truncated, hasTools)
 
 	result, rawJSON, evalErr := h.geminiHandler.Evaluate(geminiCtx, snapshot.Prompt, transcript, language, hasTools)
 	if evalErr != nil {
@@ -288,8 +296,14 @@ func (h *aiauditHandler) runAuditJob(ctx context.Context, recordID uuid.UUID, ac
 		}
 		return
 	}
+	if result == nil {
+		log.Error("gemini handler returned nil result with nil error — evaluator contract violated")
+		finalErr = string(aiaudit.ErrorEvaluatorUnavailable)
+		return
+	}
 
 	// Step 7: Success.
+	log.Debugf("step7: gemini evaluation complete score=%d raw_len=%d", result.OverallScore, len(rawJSON))
 	score := result.OverallScore
 	finalStatus = aiaudit.StatusCompleted
 	finalScore = &score
@@ -329,10 +343,34 @@ func (h *aiauditHandler) Delete(ctx context.Context, id uuid.UUID) (*aiaudit.AIA
 	return record, nil
 }
 
-// SweepStaleAudits is called at service startup to recover from crashed goroutines.
-// TODO: implement — mark 'progressing' audits older than staleAuditAgeMinutes as 'failed'.
+// SweepStaleAudits marks any 'progressing' audit older than staleAuditAgeMinutes as
+// failed. Called at service startup to recover records orphaned by pod restarts.
 func (h *aiauditHandler) SweepStaleAudits(ctx context.Context) {
-	logrus.Infof("startup stale audit sweep: not yet implemented (stale threshold: %d min)", staleAuditAgeMinutes)
+	staleBefore := h.utilHandler.TimeGetCurTimeAdd(-staleAuditAgeMinutes * time.Minute)
+	filters := map[aiaudit.Field]any{
+		aiaudit.FieldStatus:  aiaudit.StatusProgressing,
+		aiaudit.FieldDeleted: false,
+	}
+
+	stale, err := h.db.AIAuditList(ctx, 1000, staleBefore, filters)
+	if err != nil {
+		logrus.WithError(err).Error("startup stale audit sweep: failed to list stale audits")
+		return
+	}
+
+	if len(stale) == 0 {
+		logrus.Infof("startup stale audit sweep: no stale audits found (threshold: %d min)", staleAuditAgeMinutes)
+		return
+	}
+
+	logrus.Infof("startup stale audit sweep: found %d stale audit(s), marking as failed", len(stale))
+	for _, a := range stale {
+		if _, dbErr := h.db.AIAuditUpdateFinal(ctx, a.ID, aiaudit.StatusFailed, nil, nil, string(aiaudit.ErrorEvaluatorUnavailable)); dbErr != nil {
+			logrus.WithError(dbErr).Errorf("startup stale audit sweep: failed to mark audit %s as failed", a.ID)
+		} else {
+			logrus.Infof("startup stale audit sweep: marked audit %s as failed (aicall_id=%s)", a.ID, a.AIcallID)
+		}
+	}
 }
 
 // extractPromptSnapshots parses the prompt_snapshots metadata from an AIcall.
