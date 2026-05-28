@@ -340,9 +340,10 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 		return
 	}
 
-	activeAIID := h.resolveTeamMemberAIID(ctx, evt.PipecatcallReferenceID, evt.ToMember.ID)
+	fromAIID := h.resolveTeamMemberAIID(ctx, evt.PipecatcallReferenceID, evt.FromMember.ID)
+	toAIID := h.resolveTeamMemberAIID(ctx, evt.PipecatcallReferenceID, evt.ToMember.ID)
 	tmp, err := h.Create(ctx, uuid.Nil, evt.CustomerID, evt.PipecatcallReferenceID, evt.ActiveflowID, message.DirectionOutgoing, message.RoleNotification, string(contentBytes), nil, "",
-		WithActiveAIID(activeAIID))
+		WithActiveAIID(fromAIID))
 	if err != nil {
 		log.Errorf("Could not create the notification message. err: %v", err)
 		return
@@ -350,12 +351,12 @@ func (h *messageHandler) EventPMTeamMemberSwitched(ctx context.Context, evt *pmm
 	log.WithField("message", tmp).Debugf("Created member-switched notification message.")
 
 	if h.participantHandler != nil {
-		if activeAIID == uuid.Nil {
+		if toAIID == uuid.Nil {
 			log.Warnf("Could not resolve AI ID for new member — skipping participant write. aicall_id: %s, member_id: %s",
 				evt.PipecatcallReferenceID, evt.ToMember.ID)
-		} else if err := h.participantHandler.Create(ctx, evt.PipecatcallReferenceID, activeAIID); err != nil {
+		} else if err := h.participantHandler.Create(ctx, evt.PipecatcallReferenceID, toAIID); err != nil {
 			log.Warnf("Could not record aicall participant. aicall_id: %s, ai_id: %s, err: %v",
-				evt.PipecatcallReferenceID, activeAIID, err)
+				evt.PipecatcallReferenceID, toAIID, err)
 		}
 	}
 }
