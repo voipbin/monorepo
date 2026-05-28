@@ -10,6 +10,7 @@ CREATE TABLE ai_ai_audits (
   status        varchar(16)  NOT NULL DEFAULT 'progressing',
   overall_score int,
   evaluation    text,
+  message_ids   text,
   language      varchar(16)  NOT NULL DEFAULT '',
   error         varchar(255) NOT NULL DEFAULT '',
 

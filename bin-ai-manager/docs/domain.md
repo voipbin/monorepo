@@ -166,6 +166,7 @@ On-demand quality audit of a single AI agent's performance in one AIcall. Create
 | status | string | `progressing` → `completed` \| `failed` |
 | overall_score | *int | 0–100 composite score; `null` while progressing or on failure |
 | evaluation | JSON | Per-dimension breakdown from Gemini; `null` while progressing |
+| message_ids | JSON | Ordered array of message IDs (newest-first) included in the Gemini transcript; `null` while progressing, on failure, or for historical records |
 | language | string | BCP 47 tag (e.g. `en-US`) used for the evaluation prompt |
 | error | string | Canonicalized error code on failure (see `aiaudit.Error` constants) |
 | tm_create / tm_update / tm_delete | time | Standard audit timestamps |

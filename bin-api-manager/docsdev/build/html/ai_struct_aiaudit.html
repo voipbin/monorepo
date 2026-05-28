@@ -609,6 +609,7 @@
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;overall_score&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">integer</span> <span class="ow">or</span> <span class="n">null</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;evaluation&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="nb">object</span> <span class="ow">or</span> <span class="n">null</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="s2">&quot;message_ids&quot;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">array</span> <span class="n">of</span> <span class="n">strings</span> <span class="ow">or</span> <span class="n">null</span><span class="o">&gt;</span><span class="p">,</span>
     <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -626,6 +627,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The audit’s current processing status. See <a class="reference internal" href="#ai-struct-aiaudit-status"><span class="std std-ref">Status</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">overall_score</span></code> (integer, nullable): A numeric score summarising the evaluation, typically 1–5. Null while status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">evaluation</span></code> (object, nullable): Structured evaluation detail produced by the evaluator. The exact schema depends on the configured evaluator. Null while status is <code class="docutils literal notranslate"><span class="pre">progressing</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">message_ids</span></code> (array of strings, nullable): Ordered list of message IDs (newest-first) that were evaluated by Gemini. Null while <code class="docutils literal notranslate"><span class="pre">progressing</span></code>, on failure, or for audits completed before this feature was introduced. Present and non-empty on successful completion for calls that have messages.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">language</span></code> (string): The BCP47 language code used for the evaluation (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">error</span></code> (enum string): Machine-readable error code set when status is <code class="docutils literal notranslate"><span class="pre">failed</span></code>. Empty otherwise. See <a class="reference internal" href="#ai-struct-aiaudit-error"><span class="std std-ref">Error</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when this audit record was created.</p></li>
@@ -635,7 +637,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Audit Processing</strong></p>
-<p>Audit evaluation is asynchronous. After triggering an audit, poll the record until <code class="docutils literal notranslate"><span class="pre">status</span></code> changes from <code class="docutils literal notranslate"><span class="pre">progressing</span></code> to <code class="docutils literal notranslate"><span class="pre">completed</span></code> or <code class="docutils literal notranslate"><span class="pre">failed</span></code>. The <code class="docutils literal notranslate"><span class="pre">overall_score</span></code> and <code class="docutils literal notranslate"><span class="pre">evaluation</span></code> fields will be populated only when status is <code class="docutils literal notranslate"><span class="pre">completed</span></code>.</p>
+<p>Audit evaluation is asynchronous. After triggering an audit, poll the record until <code class="docutils literal notranslate"><span class="pre">status</span></code> changes from <code class="docutils literal notranslate"><span class="pre">progressing</span></code> to <code class="docutils literal notranslate"><span class="pre">completed</span></code> or <code class="docutils literal notranslate"><span class="pre">failed</span></code>. The <code class="docutils literal notranslate"><span class="pre">overall_score</span></code>, <code class="docutils literal notranslate"><span class="pre">evaluation</span></code>, and <code class="docutils literal notranslate"><span class="pre">message_ids</span></code> fields will be populated only when status is <code class="docutils literal notranslate"><span class="pre">completed</span></code>.</p>
 </div>
 </section>
 <section id="status">
@@ -710,6 +712,10 @@
         <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
         <span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="mi">3</span>
     <span class="p">},</span>
+    <span class="s2">&quot;message_ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440001&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;550e8400-e29b-41d4-a716-446655440002&quot;</span>
+    <span class="p">],</span>
     <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en-US&quot;</span><span class="p">,</span>
     <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-01T10:05:00.000000Z&quot;</span><span class="p">,</span>

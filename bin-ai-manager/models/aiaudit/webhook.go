@@ -18,6 +18,7 @@ type WebhookMessage struct {
 	Status          Status          `json:"status,omitempty"`
 	OverallScore    *int            `json:"overall_score"`
 	Evaluation      json.RawMessage `json:"evaluation"`
+	MessageIDs      []uuid.UUID     `json:"message_ids,omitempty"`
 	Language        string          `json:"language,omitempty"`
 	Error           string          `json:"error,omitempty"`
 
@@ -36,6 +37,7 @@ func (a *AIAudit) ConvertWebhookMessage() *WebhookMessage {
 		Status:          a.Status,
 		OverallScore:    a.OverallScore,
 		Evaluation:      a.Evaluation,
+		MessageIDs:      a.MessageIDs,
 		Language:        a.Language,
 		Error:           a.Error,
 		TMCreate:        a.TMCreate,

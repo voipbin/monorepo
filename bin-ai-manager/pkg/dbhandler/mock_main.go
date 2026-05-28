@@ -110,18 +110,18 @@ func (mr *MockDBHandlerMockRecorder) AIAuditList(ctx, size, token, filters any) 
 }
 
 // AIAuditUpdateFinal mocks base method.
-func (m *MockDBHandler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string) (int64, error) {
+func (m *MockDBHandler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string, messageIDs []uuid.UUID) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AIAuditUpdateFinal", ctx, id, status, overallScore, evaluation, errStr)
+	ret := m.ctrl.Call(m, "AIAuditUpdateFinal", ctx, id, status, overallScore, evaluation, errStr, messageIDs)
 	ret0, _ := ret[0].(int64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AIAuditUpdateFinal indicates an expected call of AIAuditUpdateFinal.
-func (mr *MockDBHandlerMockRecorder) AIAuditUpdateFinal(ctx, id, status, overallScore, evaluation, errStr any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) AIAuditUpdateFinal(ctx, id, status, overallScore, evaluation, errStr, messageIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditUpdateFinal", reflect.TypeOf((*MockDBHandler)(nil).AIAuditUpdateFinal), ctx, id, status, overallScore, evaluation, errStr)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAuditUpdateFinal", reflect.TypeOf((*MockDBHandler)(nil).AIAuditUpdateFinal), ctx, id, status, overallScore, evaluation, errStr, messageIDs)
 }
 
 // AIAuditUpsert mocks base method.

@@ -37,6 +37,7 @@ func (h *handler) AIAuditUpsert(ctx context.Context, a *aiaudit.AIAudit) (int64,
 			tm_delete         = NULL,
 			overall_score     = NULL,
 			evaluation        = NULL,
+			message_ids       = NULL,   -- must reset: prevents stale IDs from a prior completed run surviving into a new audit cycle
 			error             = NULL,
 			language          = VALUES(language),
 			prompt_history_id = VALUES(prompt_history_id),
@@ -182,7 +183,7 @@ func (h *handler) AIAuditDelete(ctx context.Context, id uuid.UUID) error {
 // Only updates rows where status='progressing' AND tm_delete IS NULL to
 // prevent overwriting a 'failed' status set by the stale recovery sweep.
 // Returns rowsAffected: 0 means the record was already soft-deleted or swept.
-func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string) (int64, error) {
+func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string, messageIDs []uuid.UUID) (int64, error) {
 	ts := h.utilHandler.TimeNow()
 
 	var evalJSON sql.NullString
@@ -190,19 +191,29 @@ func (h *handler) AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status a
 		evalJSON = sql.NullString{String: string(evaluation), Valid: true}
 	}
 
+	var msgIDsJSON sql.NullString
+	if len(messageIDs) > 0 {
+		b, err := json.Marshal(messageIDs)
+		if err != nil {
+			return 0, fmt.Errorf("AIAuditUpdateFinal: could not marshal message_ids: %v", err)
+		}
+		msgIDsJSON = sql.NullString{String: string(b), Valid: true}
+	}
+
 	query := fmt.Sprintf(`
 		UPDATE %s
-		SET status = ?, overall_score = ?, evaluation = ?, error = ?, tm_update = ?
+		SET status = ?, overall_score = ?, evaluation = ?, message_ids = ?, error = ?, tm_update = ?
 		WHERE id = ? AND tm_delete IS NULL AND status = 'progressing'
 	`, aiauditTable)
 
 	result, err := h.db.ExecContext(ctx, query,
-		string(status),
-		overallScore,
-		evalJSON,
-		errStr,
-		ts,
-		id.Bytes(),
+		string(status),  // 1
+		overallScore,    // 2
+		evalJSON,        // 3
+		msgIDsJSON,      // 4
+		errStr,          // 5
+		ts,              // 6
+		id.Bytes(),      // 7 (WHERE)
 	)
 	if err != nil {
 		return 0, fmt.Errorf("AIAuditUpdateFinal: could not execute. err: %v", err)

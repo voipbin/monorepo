@@ -59,7 +59,7 @@ type DBHandler interface {
 	AIAuditGet(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error)
 	AIAuditList(ctx context.Context, size uint64, token string, filters map[aiaudit.Field]any) ([]*aiaudit.AIAudit, error)
 	AIAuditDelete(ctx context.Context, id uuid.UUID) error
-	AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string) (rowsAffected int64, err error)
+	AIAuditUpdateFinal(ctx context.Context, id uuid.UUID, status aiaudit.Status, overallScore *int, evaluation json.RawMessage, errStr string, messageIDs []uuid.UUID) (rowsAffected int64, err error)
 	AIAuditCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error)
 
 	TeamCreate(ctx context.Context, t *team.Team) error

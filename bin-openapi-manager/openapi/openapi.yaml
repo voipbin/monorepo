@@ -2866,6 +2866,20 @@ components:
                 reason: "Successfully resolved the customer's issue."
               tool_usage: null
             summary: "The AI assistant performed well overall."
+        message_ids:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: >
+            Ordered list of message IDs (newest-first) that were evaluated by Gemini.
+            Null while progressing, on failure, or for audits completed before this feature.
+            Present and non-empty on successful completion for calls with messages.
+          example:
+            - "550e8400-e29b-41d4-a716-446655440001"
+            - "550e8400-e29b-41d4-a716-446655440002"
         language:
           type: string
           description: BCP47 language code used for audit output.

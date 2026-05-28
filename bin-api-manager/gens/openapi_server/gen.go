@@ -1194,6 +1194,9 @@ type AIManagerAIAudit struct {
 	// Language BCP47 language code used for audit output.
 	Language *string `json:"language,omitempty"`
 
+	// MessageIds Ordered list of message IDs (newest-first) that were evaluated by Gemini. Null while progressing, on failure, or for audits completed before this feature. Present and non-empty on successful completion for calls with messages.
+	MessageIds *[]string `json:"message_ids"`
+
 	// OverallScore Overall score (1-5) independently assessed by the LLM. Null until completed.
 	OverallScore *int `json:"overall_score"`
 
