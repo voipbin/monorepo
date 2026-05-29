@@ -48,6 +48,13 @@ func (h *aipromptproposalHandler) Accept(ctx context.Context, customerID uuid.UU
 	err = h.db.AIAcceptProposal(ctx, id, newHistoryID, p.ProposedPrompt)
 	switch {
 	case err == nil:
+	case errors.Is(err, dbhandler.ErrProposalAlreadyAccepted):
+		// Concurrent Accept won the race — return idempotent success with the already-applied state.
+		post, gErr := h.db.AIPromptProposalGet(ctx, id)
+		if gErr != nil {
+			return nil, fmt.Errorf("could not reload already-accepted proposal: %w", gErr)
+		}
+		return post, nil
 	case errors.Is(err, dbhandler.ErrPromptVersionDrifted):
 		if _, uerr := h.db.AIPromptProposalUpdateExpired(ctx, id, string(aipromptproposal.ErrorPromptVersionDrifted)); uerr != nil {
 			log.WithError(uerr).Error("could not mark proposal expired after drift")

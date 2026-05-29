@@ -16,8 +16,9 @@ const aipromptproposalTable = "ai_ai_prompt_proposals"
 
 // Sentinel errors specific to AIAcceptProposal.
 var (
-	ErrPromptVersionDrifted  = fmt.Errorf("prompt_version_drifted")
-	ErrProposalNotAcceptable = fmt.Errorf("proposal_not_acceptable")
+	ErrPromptVersionDrifted    = fmt.Errorf("prompt_version_drifted")
+	ErrProposalNotAcceptable   = fmt.Errorf("proposal_not_acceptable")
+	ErrProposalAlreadyAccepted = fmt.Errorf("proposal_already_accepted")
 )
 
 // AIPromptProposalCreate inserts a new proposal row with status='progressing'.
@@ -248,6 +249,10 @@ func (h *handler) AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, ne
 	}
 	if pTMDelete.Valid {
 		err = ErrNotFound
+		return err
+	}
+	if pStatus == string(aipromptproposal.StatusAccepted) {
+		err = ErrProposalAlreadyAccepted
 		return err
 	}
 	if pStatus != string(aipromptproposal.StatusCompleted) {
