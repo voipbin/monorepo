@@ -931,12 +931,145 @@ Soft-deletes the audit record. The record is retained but marked as deleted and 
 
 See :ref:`AI Audit Structure <ai-struct-aiaudit>` for the full field reference.
 
+AI Prompt Improvement Proposals
+===============================
+
+VoIPbin can analyze multiple completed AI audits for a single AI and generate
+an improved system prompt that addresses the failure patterns the audits
+surfaced. The improved prompt is produced by Gemini 2.5 Pro and returned for
+human review; nothing is applied to the live AI until you explicitly accept
+the proposal.
+
+Proposal generation is asynchronous. After triggering, poll the proposal
+record until ``status`` changes from ``progressing`` to ``completed`` (or
+``failed``), then either ``accept`` to apply the new prompt or ``reject`` to
+dismiss it.
+
+Workflow
+--------
+
+1. Run audits via the AI Audit API on completed AI calls.
+2. ``POST https://api.voipbin.net/v1.0/aipromptproposals`` with the target
+   AI's id and a list of audit ids. VoIPbin returns ``202 Accepted`` and a
+   proposal record in ``progressing`` status; generation runs asynchronously
+   via Gemini 2.5 Pro.
+3. Poll ``GET https://api.voipbin.net/v1.0/aipromptproposals/{id}`` until
+   ``status`` is ``completed``. The record now contains ``original_prompt``,
+   ``proposed_prompt``, and a ``rationale``. Render the diff client-side from
+   ``original_prompt`` vs. ``proposed_prompt``.
+4. To apply: ``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/accept``.
+   VoIPbin writes a new ``AIPromptHistory`` row and updates the AI's
+   ``init_prompt`` in a single transaction. The proposal status becomes
+   ``accepted``.
+5. To dismiss: ``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/reject``
+   (status becomes ``rejected``) or ``DELETE`` the proposal (soft-deletes).
+
+Create a proposal
+-----------------
+
+``POST https://api.voipbin.net/v1.0/aipromptproposals``
+
+Submits a set of completed audits and asks VoIPbin to generate an improved
+``init_prompt`` for the target AI.
+
+**Request body**
+
+.. code::
+
+    {
+        "ai_id": "<UUID of the AI to improve>",
+        "audit_ids": ["<UUID>", "<UUID>", "..."],
+        "language": "<BCP47 language code, e.g. en-US>"
+    }
+
+* ``ai_id`` (UUID, required): The AI configuration whose ``init_prompt``
+  should be improved. Must belong to the authenticated customer.
+* ``audit_ids`` (array of UUIDs, required): Between 1 and 20 audit records to
+  use as evidence. All audits must be for the target AI AND for the AI's
+  current prompt version.
+* ``language`` (string, optional): Language for the generation prompt.
+  Defaults to the AI configuration's language if omitted.
+
+**Response** — 202 Accepted
+
+Returns the proposal record in ``progressing`` status. ``proposed_prompt``
+and ``rationale`` are empty until generation completes.
+
+List proposals
+--------------
+
+``GET https://api.voipbin.net/v1.0/aipromptproposals``
+
+Returns a paginated list of proposal records owned by the authenticated
+customer.
+
+**Query parameters**
+
+* ``page_size`` (integer, optional): Maximum number of entries to return per
+  page (1–100, default 100).
+* ``page_token`` (string, optional): Pagination token returned in a previous
+  response.
+* ``ai_id`` (UUID, optional): Filter by AI configuration.
+
+Get a single proposal
+---------------------
+
+``GET https://api.voipbin.net/v1.0/aipromptproposals/{id}``
+
+Returns the proposal record for the given ID. Use this endpoint to poll for
+generation completion.
+
+Accept a proposal
+-----------------
+
+``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/accept``
+
+Applies ``proposed_prompt`` to the AI's ``init_prompt`` in a single
+transaction. A new ``AIPromptHistory`` row is created and its id is written
+back to the proposal as ``applied_prompt_history_id``. The proposal status
+becomes ``accepted``.
+
+Reject a proposal
+-----------------
+
+``POST https://api.voipbin.net/v1.0/aipromptproposals/{id}/reject``
+
+Marks the proposal as ``rejected`` without modifying the AI. Use this to
+record an explicit decision to dismiss the suggestion.
+
+Delete a proposal
+-----------------
+
+``DELETE https://api.voipbin.net/v1.0/aipromptproposals/{id}``
+
+Soft-deletes the proposal record. The record is retained but marked as
+deleted and excluded from future list responses.
+
+Constraints
+-----------
+
+* All selected audits MUST be for the target AI AND for the AI's current
+  prompt version. Mismatches cause ``POST /v1.0/aipromptproposals`` to return
+  ``400`` with the offending audit ids in the error message.
+* If the AI's ``init_prompt`` is updated between create and accept, the
+  proposal becomes ``expired`` and accept returns ``409``.
+* If any source audit is deleted between create and accept, accept returns
+  ``409 audit set invalidated``.
+* Up to 20 audits per proposal.
+* Up to 3 ``progressing`` proposals per customer at once. Exceeding returns
+  ``429``.
+
+See :ref:`AI Prompt Proposal Structure <ai-struct-aipromptproposal>` for the
+full field reference, and :ref:`ai-tutorial-prompt-proposal` for an
+end-to-end walkthrough.
+
 Related Documentation
 =====================
 
 - :ref:`AI Structure <ai-struct-ai>` - AI configuration options
 - :ref:`AI Audit Structure <ai-struct-aiaudit>` - AI audit struct fields
 - :ref:`AI Prompt History Structure <ai-struct-aiprompthistory>` - Prompt history struct fields
+- :ref:`AI Prompt Proposal Structure <ai-struct-aipromptproposal>` - AI prompt improvement proposal struct fields
 - :ref:`Tool Functions <ai-struct-tool>` - Available tool documentation
 - :ref:`Transcribe Overview <transcribe-overview>` - Speech-to-text languages
 - :ref:`Flow Actions <flow-struct-action>` - ai_talk action configuration

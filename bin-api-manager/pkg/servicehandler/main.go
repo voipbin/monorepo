@@ -32,6 +32,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
+	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
 	amsummary "monorepo/bin-ai-manager/models/summary"
@@ -352,6 +353,14 @@ type ServiceHandler interface {
 	AIAuditGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, aicallID, aiID uuid.UUID) ([]*amaiaudit.WebhookMessage, error)
 	AIAuditGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaiaudit.WebhookMessage, error)
 	AIAuditDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaiaudit.WebhookMessage, error)
+
+	// ai prompt proposal handlers
+	AIPromptProposalCreate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, auditIDs []uuid.UUID, language string) (*amaipromptproposal.WebhookMessage, error)
+	AIPromptProposalGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, aiID uuid.UUID, status amaipromptproposal.Status) ([]*amaipromptproposal.WebhookMessage, error)
+	AIPromptProposalGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaipromptproposal.WebhookMessage, error)
+	AIPromptProposalAccept(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaipromptproposal.WebhookMessage, error)
+	AIPromptProposalReject(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaipromptproposal.WebhookMessage, error)
+	AIPromptProposalDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amaipromptproposal.WebhookMessage, error)
 
 	// conference handlers
 	ConferenceCreate(

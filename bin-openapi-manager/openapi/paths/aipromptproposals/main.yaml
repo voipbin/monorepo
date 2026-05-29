@@ -1,0 +1,92 @@
+get:
+  summary: Gets a list of AI prompt proposals.
+  description: Retrieves a paginated list of AI prompt proposal records for the authenticated customer.
+  tags:
+    - AI
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: ai_id
+      in: query
+      schema:
+        type: string
+        format: uuid
+      description: Filter by AI ID.
+    - name: status
+      in: query
+      schema:
+        type: string
+      description: Filter by proposal status (progressing, completed, failed, accepted, rejected, expired).
+  responses:
+    '200':
+      description: A list of AI prompt proposals.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AIManagerAIPromptProposal'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Propose an improved AI prompt based on selected audits.
+  description: >
+    Generates a prompt improvement proposal asynchronously using Gemini, based on the
+    selected completed audits. Returns 202 Accepted immediately with status `progressing`;
+    poll GET /aipromptproposals/{id} for completion. All selected audits must belong to the
+    same AI and reference the AI's current prompt version.
+  tags:
+    - AI
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            ai_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: The AI participant whose prompt should be improved.
+            audit_ids:
+              type: array
+              minItems: 1
+              items:
+                type: string
+                format: uuid
+                x-go-type: string
+              description: The completed AI audits to use as evidence for the proposal.
+            language:
+              type: string
+              description: BCP47 language code for proposal output (e.g. "en-US", "ko-KR"). Defaults to "en-US".
+          required:
+            - ai_id
+            - audit_ids
+  responses:
+    '202':
+      description: Proposal accepted and running in background.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIPromptProposal'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '429':
+      $ref: '#/components/responses/TooManyRequests'
+    '500':
+      $ref: '#/components/responses/InternalError'

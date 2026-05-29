@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
@@ -25,11 +26,13 @@ import (
 	"monorepo/bin-ai-manager/pkg/aiaudithandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
+	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
 	"monorepo/bin-ai-manager/pkg/engine_openai_handler"
 	"monorepo/bin-ai-manager/pkg/geminiaudithandler"
+	"monorepo/bin-ai-manager/pkg/geminiproposalhandler"
 	"monorepo/bin-ai-manager/pkg/listenhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
@@ -135,8 +138,25 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aiauditHandler := aiaudithandler.NewAIAuditHandler(db, geminiaudithandler.NewGeminiAuditHandler(cfg.GoogleAPIKey))
 	aiauditHandler.SweepStaleAudits(context.Background())
 
+	geminiProposalHandler := geminiproposalhandler.NewGeminiProposalHandler(cfg.GoogleAPIKey)
+	aipromptproposalHandler := aipromptproposalhandler.NewAIPromptProposalHandler(db, geminiProposalHandler)
+	aipromptproposalHandler.SweepStaleProposals(context.Background())
+	go func() {
+		ctx := context.Background()
+		ticker := time.NewTicker(1 * time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				aipromptproposalHandler.SweepExpiredProposals(ctx)
+			}
+		}
+	}()
+
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, messageHandler, summaryHandler, teamHandler, participantHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -191,6 +211,7 @@ func runListen(
 	aicallhandler aicallhandler.AIcallHandler,
 	aiauditHandler aiaudithandler.AIAuditHandler,
 	aiprompthistoryHandler aiprompthistoryhandler.AIPromptHistoryHandler,
+	aipromptproposalHandler aipromptproposalhandler.AIPromptProposalHandler,
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
 	teamHandler teamhandler.TeamHandler,
@@ -208,6 +229,7 @@ func runListen(
 		aicallhandler,
 		aiauditHandler,
 		aiprompthistoryHandler,
+		aipromptproposalHandler,
 		messageHandler,
 		summaryHandler,
 		toolHandler,

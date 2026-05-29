@@ -73,6 +73,12 @@ ListenHandler (`pkg/listenhandler/`) routes by regex URI pattern over the shared
 | `POST /v1/aiaudits` | Create AI audit records for an AIcall |
 | `GET /v1/aiaudits/<uuid>` | Get a single AI audit record |
 | `DELETE /v1/aiaudits/<uuid>` | Soft-delete an AI audit record |
+| `GET /v1/aipromptproposals?` | List AI prompt improvement proposals (paginated) |
+| `POST /v1/aipromptproposals` | Create an AI prompt improvement proposal from a set of audits |
+| `GET /v1/aipromptproposals/<uuid>` | Get a single AI prompt improvement proposal |
+| `POST /v1/aipromptproposals/<uuid>/accept` | Accept a proposal and apply it to the AI's `init_prompt` |
+| `POST /v1/aipromptproposals/<uuid>/reject` | Reject a proposal without applying it |
+| `DELETE /v1/aipromptproposals/<uuid>` | Soft-delete an AI prompt improvement proposal |
 
 ## Event Subscriptions
 

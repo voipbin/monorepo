@@ -17,6 +17,7 @@ import (
 	aiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
+	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
@@ -300,6 +301,96 @@ func (m *MockRequestHandler) AIV1AIPromptHistoryList(ctx context.Context, aiID u
 func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptHistoryList(ctx, aiID, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptHistoryList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptHistoryList), ctx, aiID, pageToken, pageSize)
+}
+
+// AIV1AIPromptProposalAccept mocks base method.
+func (m *MockRequestHandler) AIV1AIPromptProposalAccept(ctx context.Context, customerID, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIPromptProposalAccept", ctx, customerID, id)
+	ret0, _ := ret[0].(*aipromptproposal.AIPromptProposal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIPromptProposalAccept indicates an expected call of AIV1AIPromptProposalAccept.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptProposalAccept(ctx, customerID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptProposalAccept", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptProposalAccept), ctx, customerID, id)
+}
+
+// AIV1AIPromptProposalCreate mocks base method.
+func (m *MockRequestHandler) AIV1AIPromptProposalCreate(ctx context.Context, customerID, aiID uuid.UUID, auditIDs []uuid.UUID, language string) (*aipromptproposal.AIPromptProposal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIPromptProposalCreate", ctx, customerID, aiID, auditIDs, language)
+	ret0, _ := ret[0].(*aipromptproposal.AIPromptProposal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIPromptProposalCreate indicates an expected call of AIV1AIPromptProposalCreate.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptProposalCreate(ctx, customerID, aiID, auditIDs, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptProposalCreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptProposalCreate), ctx, customerID, aiID, auditIDs, language)
+}
+
+// AIV1AIPromptProposalDelete mocks base method.
+func (m *MockRequestHandler) AIV1AIPromptProposalDelete(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIPromptProposalDelete", ctx, id)
+	ret0, _ := ret[0].(*aipromptproposal.AIPromptProposal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIPromptProposalDelete indicates an expected call of AIV1AIPromptProposalDelete.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptProposalDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptProposalDelete", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptProposalDelete), ctx, id)
+}
+
+// AIV1AIPromptProposalGet mocks base method.
+func (m *MockRequestHandler) AIV1AIPromptProposalGet(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIPromptProposalGet", ctx, id)
+	ret0, _ := ret[0].(*aipromptproposal.AIPromptProposal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIPromptProposalGet indicates an expected call of AIV1AIPromptProposalGet.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptProposalGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptProposalGet", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptProposalGet), ctx, id)
+}
+
+// AIV1AIPromptProposalList mocks base method.
+func (m *MockRequestHandler) AIV1AIPromptProposalList(ctx context.Context, pageToken string, pageSize uint64, filters map[aipromptproposal.Field]any) ([]*aipromptproposal.AIPromptProposal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIPromptProposalList", ctx, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]*aipromptproposal.AIPromptProposal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIPromptProposalList indicates an expected call of AIV1AIPromptProposalList.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptProposalList(ctx, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptProposalList", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptProposalList), ctx, pageToken, pageSize, filters)
+}
+
+// AIV1AIPromptProposalReject mocks base method.
+func (m *MockRequestHandler) AIV1AIPromptProposalReject(ctx context.Context, customerID, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIPromptProposalReject", ctx, customerID, id)
+	ret0, _ := ret[0].(*aipromptproposal.AIPromptProposal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1AIPromptProposalReject indicates an expected call of AIV1AIPromptProposalReject.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIPromptProposalReject(ctx, customerID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIPromptProposalReject", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIPromptProposalReject), ctx, customerID, id)
 }
 
 // AIV1AIUpdate mocks base method.

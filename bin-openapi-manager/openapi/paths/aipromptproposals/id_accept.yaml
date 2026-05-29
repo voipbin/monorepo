@@ -1,0 +1,35 @@
+post:
+  summary: Accept and apply an AI prompt proposal.
+  description: >
+    Promotes the proposal's `proposed_prompt` to the AI's current prompt. Only allowed when
+    status is `completed` and the basis prompt has not drifted. On success, returns the
+    updated proposal with `status=accepted` and `applied_prompt_history_id` set.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The AI prompt proposal ID.
+  responses:
+    '200':
+      description: The accepted AI prompt proposal record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIPromptProposal'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '500':
+      $ref: '#/components/responses/InternalError'

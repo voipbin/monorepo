@@ -31,6 +31,7 @@ import (
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
+	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	ammessage "monorepo/bin-ai-manager/models/message"
 	amparticipant "monorepo/bin-ai-manager/models/participant"
 	amsummary "monorepo/bin-ai-manager/models/summary"
@@ -333,6 +334,14 @@ type RequestHandler interface {
 	AIV1AIAuditList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaiaudit.Field]any) ([]*amaiaudit.AIAudit, error)
 	AIV1AIAuditGet(ctx context.Context, id uuid.UUID) (*amaiaudit.AIAudit, error)
 	AIV1AIAuditDelete(ctx context.Context, id uuid.UUID) (*amaiaudit.AIAudit, error)
+
+	// ai-manager aipromptproposal
+	AIV1AIPromptProposalCreate(ctx context.Context, customerID uuid.UUID, aiID uuid.UUID, auditIDs []uuid.UUID, language string) (*amaipromptproposal.AIPromptProposal, error)
+	AIV1AIPromptProposalList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaipromptproposal.Field]any) ([]*amaipromptproposal.AIPromptProposal, error)
+	AIV1AIPromptProposalGet(ctx context.Context, id uuid.UUID) (*amaipromptproposal.AIPromptProposal, error)
+	AIV1AIPromptProposalAccept(ctx context.Context, customerID uuid.UUID, id uuid.UUID) (*amaipromptproposal.AIPromptProposal, error)
+	AIV1AIPromptProposalReject(ctx context.Context, customerID uuid.UUID, id uuid.UUID) (*amaipromptproposal.AIPromptProposal, error)
+	AIV1AIPromptProposalDelete(ctx context.Context, id uuid.UUID) (*amaipromptproposal.AIPromptProposal, error)
 
 	// asterisk AMI
 	AstAMIRedirect(ctx context.Context, asteriskID, channelID, context, exten, priority string) error
