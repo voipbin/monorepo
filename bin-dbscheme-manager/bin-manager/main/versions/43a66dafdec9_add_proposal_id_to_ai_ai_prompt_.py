@@ -17,11 +17,14 @@ depends_on = None
 
 
 def upgrade():
+    # ALGORITHM=INSTANT performs the change without locking, so a LOCK clause
+    # is invalid. Combining ALGORITHM=INSTANT with LOCK=NONE/SHARED/EXCLUSIVE
+    # is rejected by MySQL with error 1221.
     op.execute(
         "ALTER TABLE ai_ai_prompt_histories "
         "ADD COLUMN proposal_id BINARY(16) NOT NULL "
         "DEFAULT 0x00000000000000000000000000000000, "
-        "ALGORITHM=INSTANT, LOCK=NONE"
+        "ALGORITHM=INSTANT"
     )
 
 
