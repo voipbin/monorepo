@@ -198,3 +198,114 @@ func TestRunProposalJob_GeminiBadJSON_WritesFailedInvalidResponse(t *testing.T) 
 
 	h.runProposalJob(context.Background(), pid, "orig", []uuid.UUID{auditID}, "en-US")
 }
+
+func TestCreate_AuditDifferentCustomer_Returns400(t *testing.T) {
+	h, mdb, _, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+
+	cust := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	currentHist := uuid.Must(uuid.NewV4())
+	auditID := uuid.Must(uuid.NewV4())
+
+	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(&ai.AI{
+		Identity:               commonidentity.Identity{CustomerID: cust},
+		CurrentPromptHistoryID: currentHist,
+	}, nil)
+	mdb.EXPECT().AIPromptProposalCountProgressing(gomock.Any(), cust).Return(int64(0), nil)
+	mdb.EXPECT().AIAuditGet(gomock.Any(), auditID).Return(&aiaudit.AIAudit{
+		Identity:        commonidentity.Identity{CustomerID: uuid.Must(uuid.NewV4())},
+		AIID:            aiID,
+		Status:          aiaudit.StatusCompleted,
+		PromptHistoryID: currentHist,
+	}, nil)
+
+	_, err := h.Create(context.Background(), cust, aiID, []uuid.UUID{auditID}, "en-US")
+	if err == nil || !strings.Contains(err.Error(), "not owned") {
+		t.Fatalf("expected 'not owned', got: %v", err)
+	}
+}
+
+func TestCreate_AuditDeleted_Returns400(t *testing.T) {
+	h, mdb, _, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+
+	cust := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	currentHist := uuid.Must(uuid.NewV4())
+	auditID := uuid.Must(uuid.NewV4())
+	tm := timePtr()
+
+	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(&ai.AI{
+		Identity:               commonidentity.Identity{CustomerID: cust},
+		CurrentPromptHistoryID: currentHist,
+	}, nil)
+	mdb.EXPECT().AIPromptProposalCountProgressing(gomock.Any(), cust).Return(int64(0), nil)
+	mdb.EXPECT().AIAuditGet(gomock.Any(), auditID).Return(&aiaudit.AIAudit{
+		Identity:        commonidentity.Identity{CustomerID: cust},
+		AIID:            aiID,
+		Status:          aiaudit.StatusCompleted,
+		PromptHistoryID: currentHist,
+		TMDelete:        tm,
+	}, nil)
+
+	_, err := h.Create(context.Background(), cust, aiID, []uuid.UUID{auditID}, "en-US")
+	if err == nil || !strings.Contains(err.Error(), "deleted") {
+		t.Fatalf("expected 'deleted', got: %v", err)
+	}
+}
+
+func TestCreate_AuditDifferentAI_Returns400(t *testing.T) {
+	h, mdb, _, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+
+	cust := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	otherAI := uuid.Must(uuid.NewV4())
+	currentHist := uuid.Must(uuid.NewV4())
+	auditID := uuid.Must(uuid.NewV4())
+
+	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(&ai.AI{
+		Identity:               commonidentity.Identity{CustomerID: cust},
+		CurrentPromptHistoryID: currentHist,
+	}, nil)
+	mdb.EXPECT().AIPromptProposalCountProgressing(gomock.Any(), cust).Return(int64(0), nil)
+	mdb.EXPECT().AIAuditGet(gomock.Any(), auditID).Return(&aiaudit.AIAudit{
+		Identity:        commonidentity.Identity{CustomerID: cust},
+		AIID:            otherAI,
+		Status:          aiaudit.StatusCompleted,
+		PromptHistoryID: currentHist,
+	}, nil)
+
+	_, err := h.Create(context.Background(), cust, aiID, []uuid.UUID{auditID}, "en-US")
+	if err == nil || !strings.Contains(err.Error(), "different AI") {
+		t.Fatalf("expected 'different AI', got: %v", err)
+	}
+}
+
+func TestCreate_AuditNotCompleted_Returns400(t *testing.T) {
+	h, mdb, _, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+
+	cust := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+	currentHist := uuid.Must(uuid.NewV4())
+	auditID := uuid.Must(uuid.NewV4())
+
+	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(&ai.AI{
+		Identity:               commonidentity.Identity{CustomerID: cust},
+		CurrentPromptHistoryID: currentHist,
+	}, nil)
+	mdb.EXPECT().AIPromptProposalCountProgressing(gomock.Any(), cust).Return(int64(0), nil)
+	mdb.EXPECT().AIAuditGet(gomock.Any(), auditID).Return(&aiaudit.AIAudit{
+		Identity:        commonidentity.Identity{CustomerID: cust},
+		AIID:            aiID,
+		Status:          aiaudit.StatusProgressing,
+		PromptHistoryID: currentHist,
+	}, nil)
+
+	_, err := h.Create(context.Background(), cust, aiID, []uuid.UUID{auditID}, "en-US")
+	if err == nil || !strings.Contains(err.Error(), "not completed") {
+		t.Fatalf("expected 'not completed', got: %v", err)
+	}
+}

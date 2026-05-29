@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aipromptproposal"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 )
 
@@ -74,6 +75,27 @@ func TestSweepExpiredProposals_NotDrifted_LeftAlone(t *testing.T) {
 		Status:               aipromptproposal.StatusCompleted,
 	}}, nil)
 	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(&ai.AI{CurrentPromptHistoryID: hist}, nil)
+
+	h.SweepExpiredProposals(context.Background())
+}
+
+func TestSweepExpiredProposals_AIGetError_SkipsSilently(t *testing.T) {
+	h, mdb, _, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+	injectRealUtilHandler(h)
+
+	pid := uuid.Must(uuid.NewV4())
+	aiID := uuid.Must(uuid.NewV4())
+
+	mdb.EXPECT().AIPromptProposalList(gomock.Any(), uint64(1000), gomock.Any(), gomock.Any()).Return([]*aipromptproposal.AIPromptProposal{{
+		Identity:             commonidentity.Identity{ID: pid},
+		AIID:                 aiID,
+		BasisPromptHistoryID: uuid.Must(uuid.NewV4()),
+		Status:               aipromptproposal.StatusCompleted,
+	}}, nil)
+	// AIGet fails; sweep must silently continue without calling UpdateExpired.
+	mdb.EXPECT().AIGet(gomock.Any(), aiID).Return(nil, dbhandler.ErrNotFound)
+	// No UpdateExpired expected.
 
 	h.SweepExpiredProposals(context.Background())
 }
