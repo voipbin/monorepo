@@ -116,6 +116,10 @@ put:
               items:
                 $ref: '#/components/schemas/AIManagerToolName'
               description: List of tool names to enable for this AI. Use ["all"] to enable all available tools.
+            auto_aicall_audit_enabled:
+              type: boolean
+              description: When true, any finished AICall involving this AI is audited automatically.
+              example: false
           required:
             - name
             - detail

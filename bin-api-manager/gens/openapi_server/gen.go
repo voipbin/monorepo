@@ -1117,6 +1117,9 @@ const (
 
 // AIManagerAI defines model for AIManagerAI.
 type AIManagerAI struct {
+	// AutoAicallAuditEnabled When true, any finished AICall involving this AI is audited automatically.
+	AutoAicallAuditEnabled *bool `json:"auto_aicall_audit_enabled,omitempty"`
+
 	// CurrentPromptHistoryId UUID of the most-recent prompt history entry. Zero UUID means no versioned history has been recorded yet.
 	CurrentPromptHistoryId *string `json:"current_prompt_history_id,omitempty"`
 
@@ -5047,7 +5050,9 @@ type GetAisParams struct {
 
 // PostAisJSONBody defines parameters for PostAis.
 type PostAisJSONBody struct {
-	Detail string `json:"detail"`
+	// AutoAicallAuditEnabled When true, any finished AICall involving this AI is audited automatically.
+	AutoAicallAuditEnabled *bool  `json:"auto_aicall_audit_enabled,omitempty"`
+	Detail                 string `json:"detail"`
 
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`
@@ -5084,7 +5089,9 @@ type PostAisJSONBody struct {
 
 // PutAisIdJSONBody defines parameters for PutAisId.
 type PutAisIdJSONBody struct {
-	Detail string `json:"detail"`
+	// AutoAicallAuditEnabled When true, any finished AICall involving this AI is audited automatically.
+	AutoAicallAuditEnabled *bool  `json:"auto_aicall_audit_enabled,omitempty"`
+	Detail                 string `json:"detail"`
 
 	// EngineKey API key or credential for the AI engine.
 	EngineKey string `json:"engine_key"`

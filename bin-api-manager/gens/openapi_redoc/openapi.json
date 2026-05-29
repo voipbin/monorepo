@@ -2127,6 +2127,11 @@
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
                     "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools."
+                  },
+                  "auto_aicall_audit_enabled": {
+                    "type": "boolean",
+                    "description": "When true, any finished AICall involving this AI is audited automatically.",
+                    "example": false
                   }
                 },
                 "required": [
@@ -2515,6 +2520,11 @@
                       "$ref": "#/components/schemas/AIManagerToolName"
                     },
                     "description": "List of tool names to enable for this AI. Use [\"all\"] to enable all available tools."
+                  },
+                  "auto_aicall_audit_enabled": {
+                    "type": "boolean",
+                    "description": "When true, any finished AICall involving this AI is audited automatically.",
+                    "example": false
                   }
                 },
                 "required": [
@@ -22532,6 +22542,11 @@
           "smart_turn_enabled": {
             "type": "boolean",
             "description": "Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3. When enabled, forces VAD stop_secs to 0.2 for optimal turn-taking.",
+            "example": false
+          },
+          "auto_aicall_audit_enabled": {
+            "type": "boolean",
+            "description": "When true, any finished AICall involving this AI is audited automatically.",
             "example": false
           },
           "tool_names": {
