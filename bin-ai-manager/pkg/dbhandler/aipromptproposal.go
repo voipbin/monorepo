@@ -215,3 +215,115 @@ func (h *handler) AIPromptProposalCountProgressing(ctx context.Context, customer
 	}
 	return count, nil
 }
+
+// AIAcceptProposal atomically applies an accepted proposal. Lock order: proposal -> AI.
+func (h *handler) AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, newHistoryID uuid.UUID, proposedPrompt string) error {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("AIAcceptProposal: BeginTx: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	// 1. Lock proposal row.
+	var pCustomer, pAIID, pBasis []byte
+	var pTMDelete sql.NullTime
+	var pStatus string
+	err = tx.QueryRowContext(ctx, `
+		SELECT customer_id, ai_id, basis_prompt_history_id, status, tm_delete
+		FROM `+aipromptproposalTable+`
+		WHERE id = ?
+		FOR UPDATE
+	`, proposalID.Bytes()).Scan(&pCustomer, &pAIID, &pBasis, &pStatus, &pTMDelete)
+	if err == sql.ErrNoRows {
+		err = ErrNotFound
+		return err
+	}
+	if err != nil {
+		err = fmt.Errorf("AIAcceptProposal: select proposal: %w", err)
+		return err
+	}
+	if pTMDelete.Valid {
+		err = ErrNotFound
+		return err
+	}
+	if pStatus != string(aipromptproposal.StatusCompleted) {
+		err = ErrProposalNotAcceptable
+		return err
+	}
+
+	aiID, _ := uuid.FromBytes(pAIID)
+	basisID, _ := uuid.FromBytes(pBasis)
+	customerID, _ := uuid.FromBytes(pCustomer)
+
+	// 2. Lock AI row and re-check basis.
+	var aiCurrentHistory []byte
+	var aiTMDelete sql.NullTime
+	err = tx.QueryRowContext(ctx, `
+		SELECT current_prompt_history_id, tm_delete
+		FROM ai_ais
+		WHERE id = ?
+		FOR UPDATE
+	`, aiID.Bytes()).Scan(&aiCurrentHistory, &aiTMDelete)
+	if err == sql.ErrNoRows {
+		err = ErrNotFound
+		return err
+	}
+	if err != nil {
+		err = fmt.Errorf("AIAcceptProposal: select AI: %w", err)
+		return err
+	}
+	if aiTMDelete.Valid {
+		err = ErrNotFound
+		return err
+	}
+	currentID, _ := uuid.FromBytes(aiCurrentHistory)
+	if currentID != basisID {
+		err = ErrPromptVersionDrifted
+		return err
+	}
+
+	now := h.utilHandler.TimeNow()
+
+	// 3. Insert new prompt history row.
+	if _, err = tx.ExecContext(ctx, `
+		INSERT INTO ai_ai_prompt_histories (id, customer_id, ai_id, prompt, proposal_id, tm_create)
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, newHistoryID.Bytes(), customerID.Bytes(), aiID.Bytes(), proposedPrompt, proposalID.Bytes(), now); err != nil {
+		err = fmt.Errorf("AIAcceptProposal: insert history: %w", err)
+		return err
+	}
+
+	// 4. Update AI.
+	if _, err = tx.ExecContext(ctx, `
+		UPDATE ai_ais
+		SET init_prompt = ?, current_prompt_history_id = ?, tm_update = ?
+		WHERE id = ?
+	`, proposedPrompt, newHistoryID.Bytes(), now, aiID.Bytes()); err != nil {
+		err = fmt.Errorf("AIAcceptProposal: update AI: %w", err)
+		return err
+	}
+
+	// 5. Update proposal.
+	result, uerr := tx.ExecContext(ctx, `
+		UPDATE `+aipromptproposalTable+`
+		SET status = 'accepted', applied_prompt_history_id = ?, tm_update = ?
+		WHERE id = ? AND status = 'completed' AND tm_delete IS NULL
+	`, newHistoryID.Bytes(), now, proposalID.Bytes())
+	if uerr != nil {
+		err = fmt.Errorf("AIAcceptProposal: update proposal: %w", uerr)
+		return err
+	}
+	if n, _ := result.RowsAffected(); n == 0 {
+		err = fmt.Errorf("AIAcceptProposal: proposal not updated (lock invariant violated)")
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("AIAcceptProposal: commit: %w", err)
+	}
+	return nil
+}
