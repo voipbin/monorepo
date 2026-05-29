@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/aiaudit"
 	"monorepo/bin-ai-manager/models/aiprompthistory"
+	"monorepo/bin-ai-manager/models/aipromptproposal"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/participant"
 	"monorepo/bin-ai-manager/models/summary"
@@ -72,6 +73,17 @@ type DBHandler interface {
 	ParticipantCreate(ctx context.Context, aicallID uuid.UUID, aiID uuid.UUID) error
 	ParticipantListByAIcallID(ctx context.Context, aicallID uuid.UUID, size uint64, token string) ([]*participant.Participant, error)
 	ParticipantListByAIID(ctx context.Context, aiID uuid.UUID, size uint64, token string) ([]*participant.Participant, error)
+
+	// AIPromptProposal
+	AIPromptProposalCreate(ctx context.Context, p *aipromptproposal.AIPromptProposal) error
+	AIPromptProposalGet(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error)
+	AIPromptProposalList(ctx context.Context, size uint64, token string, filters map[aipromptproposal.Field]any) ([]*aipromptproposal.AIPromptProposal, error)
+	AIPromptProposalUpdateFinal(ctx context.Context, id uuid.UUID, status aipromptproposal.Status, proposedPrompt, rationale, errStr string) (int64, error)
+	AIPromptProposalUpdateExpired(ctx context.Context, id uuid.UUID, errStr string) (int64, error)
+	AIPromptProposalUpdateRejected(ctx context.Context, id uuid.UUID) (int64, error)
+	AIPromptProposalDelete(ctx context.Context, id uuid.UUID) error
+	AIPromptProposalCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error)
+	AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, newHistoryID uuid.UUID, proposedPrompt string) error
 }
 
 // handler database handler
