@@ -138,6 +138,20 @@ func (mr *MockRequestHandlerMockRecorder) AIV1AIAuditCreate(ctx, customerID, aic
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIAuditCreate", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIAuditCreate), ctx, customerID, aicallID, language)
 }
 
+// AIV1AIAuditCreateWithDelay mocks base method.
+func (m *MockRequestHandler) AIV1AIAuditCreateWithDelay(ctx context.Context, customerID, aicallID uuid.UUID, language string, delay int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1AIAuditCreateWithDelay", ctx, customerID, aicallID, language, delay)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIV1AIAuditCreateWithDelay indicates an expected call of AIV1AIAuditCreateWithDelay.
+func (mr *MockRequestHandlerMockRecorder) AIV1AIAuditCreateWithDelay(ctx, customerID, aicallID, language, delay any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1AIAuditCreateWithDelay", reflect.TypeOf((*MockRequestHandler)(nil).AIV1AIAuditCreateWithDelay), ctx, customerID, aicallID, language, delay)
+}
+
 // AIV1AIAuditDelete mocks base method.
 func (m *MockRequestHandler) AIV1AIAuditDelete(ctx context.Context, id uuid.UUID) (*aiaudit.AIAudit, error) {
 	m.ctrl.T.Helper()

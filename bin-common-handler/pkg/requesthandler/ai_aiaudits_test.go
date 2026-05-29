@@ -276,3 +276,54 @@ func Test_AIV1AIAuditDelete(t *testing.T) {
 		})
 	}
 }
+
+func Test_AIV1AIAuditCreateWithDelay(t *testing.T) {
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		aicallID   uuid.UUID
+		language   string
+		delay      int
+
+		expectTarget  string
+		expectRequest *sock.Request
+	}{
+		{
+			name: "normal",
+
+			customerID: uuid.FromStringOrNil("ccf7720e-4838-4f97-bb61-3021e14c185a"),
+			aicallID:   uuid.FromStringOrNil("e8604e8a-ef52-11ef-88be-43d681e412f7"),
+			language:   "en-US",
+			delay:      1000,
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:      "/v1/aiaudits",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"ccf7720e-4838-4f97-bb61-3021e14c185a","aicall_id":"e8604e8a-ef52-11ef-88be-43d681e412f7","language":"en-US"}`),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			reqHandler := requestHandler{
+				sock: mockSock,
+			}
+			ctx := context.Background()
+
+			mockSock.EXPECT().RequestPublishWithDelay(tt.expectTarget, tt.expectRequest, tt.delay).Return(nil)
+
+			err := reqHandler.AIV1AIAuditCreateWithDelay(ctx, tt.customerID, tt.aicallID, tt.language, tt.delay)
+			if err != nil {
+				t.Errorf("Wrong match. expect ok, got: %v", err)
+			}
+		})
+	}
+}
