@@ -40,6 +40,16 @@ const (
 	AIManagerAIEngineModelOpenaiGPT5Nano         AIManagerAIEngineModel = "openai.gpt-5-nano"
 )
 
+// Defines values for AIManagerAIPromptProposalStatus.
+const (
+	AIManagerAIPromptProposalStatusAccepted    AIManagerAIPromptProposalStatus = "accepted"
+	AIManagerAIPromptProposalStatusCompleted   AIManagerAIPromptProposalStatus = "completed"
+	AIManagerAIPromptProposalStatusExpired     AIManagerAIPromptProposalStatus = "expired"
+	AIManagerAIPromptProposalStatusFailed      AIManagerAIPromptProposalStatus = "failed"
+	AIManagerAIPromptProposalStatusProgressing AIManagerAIPromptProposalStatus = "progressing"
+	AIManagerAIPromptProposalStatusRejected    AIManagerAIPromptProposalStatus = "rejected"
+)
+
 // Defines values for AIManagerAISTTType.
 const (
 	AIManagerAISTTTypeCartesia   AIManagerAISTTType = "cartesia"
@@ -1239,6 +1249,54 @@ type AIManagerAIPromptHistory struct {
 	// TmCreate The time this history entry was recorded.
 	TmCreate *string `json:"tm_create,omitempty"`
 }
+
+// AIManagerAIPromptProposal defines model for AIManagerAIPromptProposal.
+type AIManagerAIPromptProposal struct {
+	// AiId The AI participant whose prompt is being improved. Returned from the `GET /ais` response.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// AppliedPromptHistoryId The prompt history ID created when this proposal was accepted. Empty until accepted.
+	AppliedPromptHistoryId *string `json:"applied_prompt_history_id,omitempty"`
+
+	// AuditIds Ordered list of AI audit IDs the proposal was derived from. Returned from the `GET /aiaudits` response.
+	AuditIds *[]string `json:"audit_ids,omitempty"`
+
+	// BasisPromptHistoryId The prompt history snapshot the proposal was generated against.
+	BasisPromptHistoryId *string `json:"basis_prompt_history_id,omitempty"`
+
+	// CustomerId The customer who owns this proposal.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Error Canonicalized failure reason if status is failed or expired.
+	Error *string `json:"error,omitempty"`
+
+	// Id The unique identifier of the prompt proposal.
+	Id *string `json:"id,omitempty"`
+
+	// OriginalPrompt The basis prompt text captured at proposal time.
+	OriginalPrompt *string `json:"original_prompt,omitempty"`
+
+	// ProposedPrompt The Gemini-generated improved prompt. Empty until status is completed.
+	ProposedPrompt *string `json:"proposed_prompt,omitempty"`
+
+	// Rationale Gemini's explanation for the proposed prompt change. Empty until status is completed.
+	Rationale *string `json:"rationale,omitempty"`
+
+	// Status Status of the AI prompt proposal.
+	Status *AIManagerAIPromptProposalStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the proposal was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the proposal was deleted.
+	TmDelete *string `json:"tm_delete"`
+
+	// TmUpdate Timestamp when the proposal was last updated.
+	TmUpdate *string `json:"tm_update"`
+}
+
+// AIManagerAIPromptProposalStatus Status of the AI prompt proposal.
+type AIManagerAIPromptProposalStatus string
 
 // AIManagerAISTTType Speech-to-text provider type.
 type AIManagerAISTTType string
@@ -4951,6 +5009,33 @@ type PostAimessagesJSONBody struct {
 	Role AIManagerMessageRole `json:"role"`
 }
 
+// GetAipromptproposalsParams defines parameters for GetAipromptproposals.
+type GetAipromptproposalsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// AiId Filter by AI ID.
+	AiId *openapi_types.UUID `form:"ai_id,omitempty" json:"ai_id,omitempty"`
+
+	// Status Filter by proposal status (progressing, completed, failed, accepted, rejected, expired).
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// PostAipromptproposalsJSONBody defines parameters for PostAipromptproposals.
+type PostAipromptproposalsJSONBody struct {
+	// AiId The AI participant whose prompt should be improved.
+	AiId string `json:"ai_id"`
+
+	// AuditIds The completed AI audits to use as evidence for the proposal.
+	AuditIds []string `json:"audit_ids"`
+
+	// Language BCP47 language code for proposal output (e.g. "en-US", "ko-KR"). Defaults to "en-US".
+	Language *string `json:"language,omitempty"`
+}
+
 // GetAisParams defines parameters for GetAis.
 type GetAisParams struct {
 	// PageSize Number of results to return per page.
@@ -6865,6 +6950,9 @@ type PostAicallsJSONRequestBody PostAicallsJSONBody
 // PostAimessagesJSONRequestBody defines body for PostAimessages for application/json ContentType.
 type PostAimessagesJSONRequestBody PostAimessagesJSONBody
 
+// PostAipromptproposalsJSONRequestBody defines body for PostAipromptproposals for application/json ContentType.
+type PostAipromptproposalsJSONRequestBody PostAipromptproposalsJSONBody
+
 // PostAisJSONRequestBody defines body for PostAis for application/json ContentType.
 type PostAisJSONRequestBody PostAisJSONBody
 
@@ -7326,6 +7414,24 @@ type ServerInterface interface {
 	// Retrieve details of a aicall message
 	// (GET /aimessages/{id})
 	GetAimessagesId(c *gin.Context, id string)
+	// Gets a list of AI prompt proposals.
+	// (GET /aipromptproposals)
+	GetAipromptproposals(c *gin.Context, params GetAipromptproposalsParams)
+	// Propose an improved AI prompt based on selected audits.
+	// (POST /aipromptproposals)
+	PostAipromptproposals(c *gin.Context)
+	// Delete an AI prompt proposal.
+	// (DELETE /aipromptproposals/{id})
+	DeleteAipromptproposalsId(c *gin.Context, id openapi_types.UUID)
+	// Get an AI prompt proposal by ID.
+	// (GET /aipromptproposals/{id})
+	GetAipromptproposalsId(c *gin.Context, id openapi_types.UUID)
+	// Accept and apply an AI prompt proposal.
+	// (POST /aipromptproposals/{id}/accept)
+	PostAipromptproposalsIdAccept(c *gin.Context, id openapi_types.UUID)
+	// Reject an AI prompt proposal.
+	// (POST /aipromptproposals/{id}/reject)
+	PostAipromptproposalsIdReject(c *gin.Context, id openapi_types.UUID)
 	// Gets a list of ais.
 	// (GET /ais)
 	GetAis(c *gin.Context, params GetAisParams)
@@ -9224,6 +9330,165 @@ func (siw *ServerInterfaceWrapper) GetAimessagesId(c *gin.Context) {
 	}
 
 	siw.Handler.GetAimessagesId(c, id)
+}
+
+// GetAipromptproposals operation middleware
+func (siw *ServerInterfaceWrapper) GetAipromptproposals(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAipromptproposalsParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "ai_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "ai_id", c.Request.URL.Query(), &params.AiId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter ai_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAipromptproposals(c, params)
+}
+
+// PostAipromptproposals operation middleware
+func (siw *ServerInterfaceWrapper) PostAipromptproposals(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAipromptproposals(c)
+}
+
+// DeleteAipromptproposalsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteAipromptproposalsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteAipromptproposalsId(c, id)
+}
+
+// GetAipromptproposalsId operation middleware
+func (siw *ServerInterfaceWrapper) GetAipromptproposalsId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetAipromptproposalsId(c, id)
+}
+
+// PostAipromptproposalsIdAccept operation middleware
+func (siw *ServerInterfaceWrapper) PostAipromptproposalsIdAccept(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAipromptproposalsIdAccept(c, id)
+}
+
+// PostAipromptproposalsIdReject operation middleware
+func (siw *ServerInterfaceWrapper) PostAipromptproposalsIdReject(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostAipromptproposalsIdReject(c, id)
 }
 
 // GetAis operation middleware
@@ -17019,6 +17284,12 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/aimessages", wrapper.PostAimessages)
 	router.DELETE(options.BaseURL+"/aimessages/:id", wrapper.DeleteAimessagesId)
 	router.GET(options.BaseURL+"/aimessages/:id", wrapper.GetAimessagesId)
+	router.GET(options.BaseURL+"/aipromptproposals", wrapper.GetAipromptproposals)
+	router.POST(options.BaseURL+"/aipromptproposals", wrapper.PostAipromptproposals)
+	router.DELETE(options.BaseURL+"/aipromptproposals/:id", wrapper.DeleteAipromptproposalsId)
+	router.GET(options.BaseURL+"/aipromptproposals/:id", wrapper.GetAipromptproposalsId)
+	router.POST(options.BaseURL+"/aipromptproposals/:id/accept", wrapper.PostAipromptproposalsIdAccept)
+	router.POST(options.BaseURL+"/aipromptproposals/:id/reject", wrapper.PostAipromptproposalsIdReject)
 	router.GET(options.BaseURL+"/ais", wrapper.GetAis)
 	router.POST(options.BaseURL+"/ais", wrapper.PostAis)
 	router.DELETE(options.BaseURL+"/ais/:id", wrapper.DeleteAisId)
@@ -19375,6 +19646,382 @@ func (response GetAimessagesId404JSONResponse) VisitGetAimessagesIdResponse(w ht
 type GetAimessagesId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response GetAimessagesId500JSONResponse) VisitGetAimessagesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposalsRequestObject struct {
+	Params GetAipromptproposalsParams
+}
+
+type GetAipromptproposalsResponseObject interface {
+	VisitGetAipromptproposalsResponse(w http.ResponseWriter) error
+}
+
+type GetAipromptproposals200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                      `json:"next_page_token,omitempty"`
+	Result        *[]AIManagerAIPromptProposal `json:"result,omitempty"`
+}
+
+func (response GetAipromptproposals200JSONResponse) VisitGetAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposals401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAipromptproposals401JSONResponse) VisitGetAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposals500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAipromptproposals500JSONResponse) VisitGetAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsRequestObject struct {
+	Body *PostAipromptproposalsJSONRequestBody
+}
+
+type PostAipromptproposalsResponseObject interface {
+	VisitPostAipromptproposalsResponse(w http.ResponseWriter) error
+}
+
+type PostAipromptproposals202JSONResponse AIManagerAIPromptProposal
+
+func (response PostAipromptproposals202JSONResponse) VisitPostAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(202)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposals400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostAipromptproposals400JSONResponse) VisitPostAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposals401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostAipromptproposals401JSONResponse) VisitPostAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposals404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostAipromptproposals404JSONResponse) VisitPostAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposals409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostAipromptproposals409JSONResponse) VisitPostAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposals429JSONResponse struct{ TooManyRequestsJSONResponse }
+
+func (response PostAipromptproposals429JSONResponse) VisitPostAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposals500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostAipromptproposals500JSONResponse) VisitPostAipromptproposalsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAipromptproposalsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type DeleteAipromptproposalsIdResponseObject interface {
+	VisitDeleteAipromptproposalsIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteAipromptproposalsId200JSONResponse AIManagerAIPromptProposal
+
+func (response DeleteAipromptproposalsId200JSONResponse) VisitDeleteAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAipromptproposalsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteAipromptproposalsId400JSONResponse) VisitDeleteAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAipromptproposalsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteAipromptproposalsId401JSONResponse) VisitDeleteAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAipromptproposalsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteAipromptproposalsId403JSONResponse) VisitDeleteAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAipromptproposalsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteAipromptproposalsId404JSONResponse) VisitDeleteAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteAipromptproposalsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteAipromptproposalsId500JSONResponse) VisitDeleteAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposalsIdRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type GetAipromptproposalsIdResponseObject interface {
+	VisitGetAipromptproposalsIdResponse(w http.ResponseWriter) error
+}
+
+type GetAipromptproposalsId200JSONResponse AIManagerAIPromptProposal
+
+func (response GetAipromptproposalsId200JSONResponse) VisitGetAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposalsId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetAipromptproposalsId400JSONResponse) VisitGetAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposalsId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetAipromptproposalsId401JSONResponse) VisitGetAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposalsId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetAipromptproposalsId403JSONResponse) VisitGetAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposalsId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetAipromptproposalsId404JSONResponse) VisitGetAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAipromptproposalsId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetAipromptproposalsId500JSONResponse) VisitGetAipromptproposalsIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdAcceptRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostAipromptproposalsIdAcceptResponseObject interface {
+	VisitPostAipromptproposalsIdAcceptResponse(w http.ResponseWriter) error
+}
+
+type PostAipromptproposalsIdAccept200JSONResponse AIManagerAIPromptProposal
+
+func (response PostAipromptproposalsIdAccept200JSONResponse) VisitPostAipromptproposalsIdAcceptResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdAccept400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostAipromptproposalsIdAccept400JSONResponse) VisitPostAipromptproposalsIdAcceptResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdAccept401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostAipromptproposalsIdAccept401JSONResponse) VisitPostAipromptproposalsIdAcceptResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdAccept403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostAipromptproposalsIdAccept403JSONResponse) VisitPostAipromptproposalsIdAcceptResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdAccept404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostAipromptproposalsIdAccept404JSONResponse) VisitPostAipromptproposalsIdAcceptResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdAccept409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostAipromptproposalsIdAccept409JSONResponse) VisitPostAipromptproposalsIdAcceptResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdAccept500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostAipromptproposalsIdAccept500JSONResponse) VisitPostAipromptproposalsIdAcceptResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdRejectRequestObject struct {
+	Id openapi_types.UUID `json:"id"`
+}
+
+type PostAipromptproposalsIdRejectResponseObject interface {
+	VisitPostAipromptproposalsIdRejectResponse(w http.ResponseWriter) error
+}
+
+type PostAipromptproposalsIdReject200JSONResponse AIManagerAIPromptProposal
+
+func (response PostAipromptproposalsIdReject200JSONResponse) VisitPostAipromptproposalsIdRejectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdReject400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostAipromptproposalsIdReject400JSONResponse) VisitPostAipromptproposalsIdRejectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdReject401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostAipromptproposalsIdReject401JSONResponse) VisitPostAipromptproposalsIdRejectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdReject403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostAipromptproposalsIdReject403JSONResponse) VisitPostAipromptproposalsIdRejectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdReject404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostAipromptproposalsIdReject404JSONResponse) VisitPostAipromptproposalsIdRejectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdReject409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostAipromptproposalsIdReject409JSONResponse) VisitPostAipromptproposalsIdRejectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostAipromptproposalsIdReject500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostAipromptproposalsIdReject500JSONResponse) VisitPostAipromptproposalsIdRejectResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -37075,6 +37722,24 @@ type StrictServerInterface interface {
 	// Retrieve details of a aicall message
 	// (GET /aimessages/{id})
 	GetAimessagesId(ctx context.Context, request GetAimessagesIdRequestObject) (GetAimessagesIdResponseObject, error)
+	// Gets a list of AI prompt proposals.
+	// (GET /aipromptproposals)
+	GetAipromptproposals(ctx context.Context, request GetAipromptproposalsRequestObject) (GetAipromptproposalsResponseObject, error)
+	// Propose an improved AI prompt based on selected audits.
+	// (POST /aipromptproposals)
+	PostAipromptproposals(ctx context.Context, request PostAipromptproposalsRequestObject) (PostAipromptproposalsResponseObject, error)
+	// Delete an AI prompt proposal.
+	// (DELETE /aipromptproposals/{id})
+	DeleteAipromptproposalsId(ctx context.Context, request DeleteAipromptproposalsIdRequestObject) (DeleteAipromptproposalsIdResponseObject, error)
+	// Get an AI prompt proposal by ID.
+	// (GET /aipromptproposals/{id})
+	GetAipromptproposalsId(ctx context.Context, request GetAipromptproposalsIdRequestObject) (GetAipromptproposalsIdResponseObject, error)
+	// Accept and apply an AI prompt proposal.
+	// (POST /aipromptproposals/{id}/accept)
+	PostAipromptproposalsIdAccept(ctx context.Context, request PostAipromptproposalsIdAcceptRequestObject) (PostAipromptproposalsIdAcceptResponseObject, error)
+	// Reject an AI prompt proposal.
+	// (POST /aipromptproposals/{id}/reject)
+	PostAipromptproposalsIdReject(ctx context.Context, request PostAipromptproposalsIdRejectRequestObject) (PostAipromptproposalsIdRejectResponseObject, error)
 	// Gets a list of ais.
 	// (GET /ais)
 	GetAis(ctx context.Context, request GetAisRequestObject) (GetAisResponseObject, error)
@@ -39086,6 +39751,174 @@ func (sh *strictHandler) GetAimessagesId(ctx *gin.Context, id string) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetAimessagesIdResponseObject); ok {
 		if err := validResponse.VisitGetAimessagesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAipromptproposals operation middleware
+func (sh *strictHandler) GetAipromptproposals(ctx *gin.Context, params GetAipromptproposalsParams) {
+	var request GetAipromptproposalsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAipromptproposals(ctx, request.(GetAipromptproposalsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAipromptproposals")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAipromptproposalsResponseObject); ok {
+		if err := validResponse.VisitGetAipromptproposalsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAipromptproposals operation middleware
+func (sh *strictHandler) PostAipromptproposals(ctx *gin.Context) {
+	var request PostAipromptproposalsRequestObject
+
+	var body PostAipromptproposalsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAipromptproposals(ctx, request.(PostAipromptproposalsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAipromptproposals")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAipromptproposalsResponseObject); ok {
+		if err := validResponse.VisitPostAipromptproposalsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteAipromptproposalsId operation middleware
+func (sh *strictHandler) DeleteAipromptproposalsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request DeleteAipromptproposalsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteAipromptproposalsId(ctx, request.(DeleteAipromptproposalsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteAipromptproposalsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteAipromptproposalsIdResponseObject); ok {
+		if err := validResponse.VisitDeleteAipromptproposalsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetAipromptproposalsId operation middleware
+func (sh *strictHandler) GetAipromptproposalsId(ctx *gin.Context, id openapi_types.UUID) {
+	var request GetAipromptproposalsIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAipromptproposalsId(ctx, request.(GetAipromptproposalsIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAipromptproposalsId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetAipromptproposalsIdResponseObject); ok {
+		if err := validResponse.VisitGetAipromptproposalsIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAipromptproposalsIdAccept operation middleware
+func (sh *strictHandler) PostAipromptproposalsIdAccept(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostAipromptproposalsIdAcceptRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAipromptproposalsIdAccept(ctx, request.(PostAipromptproposalsIdAcceptRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAipromptproposalsIdAccept")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAipromptproposalsIdAcceptResponseObject); ok {
+		if err := validResponse.VisitPostAipromptproposalsIdAcceptResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostAipromptproposalsIdReject operation middleware
+func (sh *strictHandler) PostAipromptproposalsIdReject(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostAipromptproposalsIdRejectRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostAipromptproposalsIdReject(ctx, request.(PostAipromptproposalsIdRejectRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostAipromptproposalsIdReject")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostAipromptproposalsIdRejectResponseObject); ok {
+		if err := validResponse.VisitPostAipromptproposalsIdRejectResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

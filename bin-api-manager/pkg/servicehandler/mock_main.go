@@ -18,6 +18,7 @@ import (
 	aiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
+	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
@@ -283,6 +284,96 @@ func (m *MockServiceHandler) AIPromptHistoryGetsByAIID(ctx context.Context, a *a
 func (mr *MockServiceHandlerMockRecorder) AIPromptHistoryGetsByAIID(ctx, a, aiID, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptHistoryGetsByAIID", reflect.TypeOf((*MockServiceHandler)(nil).AIPromptHistoryGetsByAIID), ctx, a, aiID, size, token)
+}
+
+// AIPromptProposalAccept mocks base method.
+func (m *MockServiceHandler) AIPromptProposalAccept(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aipromptproposal.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalAccept", ctx, a, id)
+	ret0, _ := ret[0].(*aipromptproposal.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalAccept indicates an expected call of AIPromptProposalAccept.
+func (mr *MockServiceHandlerMockRecorder) AIPromptProposalAccept(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalAccept", reflect.TypeOf((*MockServiceHandler)(nil).AIPromptProposalAccept), ctx, a, id)
+}
+
+// AIPromptProposalCreate mocks base method.
+func (m *MockServiceHandler) AIPromptProposalCreate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID, auditIDs []uuid.UUID, language string) (*aipromptproposal.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalCreate", ctx, a, aiID, auditIDs, language)
+	ret0, _ := ret[0].(*aipromptproposal.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalCreate indicates an expected call of AIPromptProposalCreate.
+func (mr *MockServiceHandlerMockRecorder) AIPromptProposalCreate(ctx, a, aiID, auditIDs, language any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalCreate", reflect.TypeOf((*MockServiceHandler)(nil).AIPromptProposalCreate), ctx, a, aiID, auditIDs, language)
+}
+
+// AIPromptProposalDelete mocks base method.
+func (m *MockServiceHandler) AIPromptProposalDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aipromptproposal.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalDelete", ctx, a, id)
+	ret0, _ := ret[0].(*aipromptproposal.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalDelete indicates an expected call of AIPromptProposalDelete.
+func (mr *MockServiceHandlerMockRecorder) AIPromptProposalDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalDelete", reflect.TypeOf((*MockServiceHandler)(nil).AIPromptProposalDelete), ctx, a, id)
+}
+
+// AIPromptProposalGet mocks base method.
+func (m *MockServiceHandler) AIPromptProposalGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aipromptproposal.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalGet", ctx, a, id)
+	ret0, _ := ret[0].(*aipromptproposal.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalGet indicates an expected call of AIPromptProposalGet.
+func (mr *MockServiceHandlerMockRecorder) AIPromptProposalGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalGet", reflect.TypeOf((*MockServiceHandler)(nil).AIPromptProposalGet), ctx, a, id)
+}
+
+// AIPromptProposalGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) AIPromptProposalGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, aiID uuid.UUID, status aipromptproposal.Status) ([]*aipromptproposal.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalGetsByCustomerID", ctx, a, size, token, aiID, status)
+	ret0, _ := ret[0].([]*aipromptproposal.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalGetsByCustomerID indicates an expected call of AIPromptProposalGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) AIPromptProposalGetsByCustomerID(ctx, a, size, token, aiID, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).AIPromptProposalGetsByCustomerID), ctx, a, size, token, aiID, status)
+}
+
+// AIPromptProposalReject mocks base method.
+func (m *MockServiceHandler) AIPromptProposalReject(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*aipromptproposal.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalReject", ctx, a, id)
+	ret0, _ := ret[0].(*aipromptproposal.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalReject indicates an expected call of AIPromptProposalReject.
+func (mr *MockServiceHandlerMockRecorder) AIPromptProposalReject(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalReject", reflect.TypeOf((*MockServiceHandler)(nil).AIPromptProposalReject), ctx, a, id)
 }
 
 // AISummaryCreate mocks base method.
