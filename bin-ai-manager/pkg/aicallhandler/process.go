@@ -12,6 +12,10 @@ import (
 	cerrors "monorepo/bin-common-handler/models/errors"
 )
 
+// autoAuditTriggerDelay is the publish delay (ms) for the auto-audit request. A non-zero
+// delay selects the fire-and-forget async publish path and lets trailing state settle.
+const autoAuditTriggerDelay = 1000
+
 // ProcessStart starts a aicall process
 func (h *aicallHandler) ProcessStart(ctx context.Context, ac *aicall.AIcall) (*aicall.AIcall, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -107,6 +111,14 @@ func (h *aicallHandler) ProcessTerminate(ctx context.Context, id uuid.UUID) (*ai
 	res, err := h.UpdateStatus(ctx, id, aicall.StatusTerminated)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not terminate the aicall")
+	}
+
+	// Best-effort: if auto-audit was enabled at call creation, fire-and-forget an audit
+	// request through the queue. Any failure here must never affect call termination.
+	if enabled, _ := res.Metadata[aicall.MetaKeyAutoAuditEnabled].(bool); enabled {
+		if errAudit := h.reqHandler.AIV1AIAuditCreateWithDelay(ctx, res.CustomerID, res.ID, "", autoAuditTriggerDelay); errAudit != nil {
+			log.Errorf("Could not enqueue the auto aicall audit. Continuing anyway. aicall_id: %s, err: %v", res.ID, errAudit)
+		}
 	}
 
 	return res, nil
