@@ -43,3 +43,11 @@ go generate ./...
 ## Testing pattern
 
 gomock (go.uber.org/mock) + table-driven tests. Mocks co-located with handler packages. See `pkg/aicallhandler/start_test.go` for reference.
+
+## Cache invariants
+
+Any code path that writes to `ai_ais` — transactional or not — MUST call `h.aiUpdateToCache(ctx, aiID)` after the write succeeds. See `pkg/dbhandler/ai.go` (`AICreate`, `AIDelete`, `AIUpdate`) for the convention and `pkg/dbhandler/aipromptproposal.go` (`AIAcceptProposal`) for the transactional case. For transactional writers, the cache refresh must happen AFTER `tx.Commit()` (use a `refreshCache` flag + deferred closure so the call-site is single and consistent across exit paths).
+
+To audit: `grep -nE 'UPDATE ai_ais|INSERT INTO ai_ais' pkg/dbhandler/*.go` and confirm every match is followed by a path that ultimately calls `aiUpdateToCache`.
+
+The same convention does NOT apply to `ai_ai_prompt_proposals` or `ai_ai_prompt_histories` (those are not cached today).
