@@ -34,6 +34,8 @@ type WebhookMessage struct {
 	VADConfig        *VADConfig `json:"vad_config,omitempty"`
 	SmartTurnEnabled bool       `json:"smart_turn_enabled,omitempty"`
 
+	AutoAICallAuditEnabled bool `json:"auto_aicall_audit_enabled,omitempty"`
+
 	ToolNames []tool.ToolName `json:"tool_names,omitempty"`
 
 	DirectHash string `json:"direct_hash,omitempty"`
@@ -67,6 +69,8 @@ func (h *AI) ConvertWebhookMessage() *WebhookMessage {
 		STTLanguage:      h.STTLanguage,
 		VADConfig:        h.VADConfig,
 		SmartTurnEnabled: h.SmartTurnEnabled,
+
+		AutoAICallAuditEnabled: h.AutoAICallAuditEnabled,
 
 		ToolNames: h.ToolNames,
 

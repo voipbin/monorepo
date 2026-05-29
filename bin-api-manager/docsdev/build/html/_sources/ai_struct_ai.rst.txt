@@ -32,6 +32,7 @@ AI
             "min_volume": <number>
         },
         "smart_turn_enabled": <boolean>,
+        "auto_aicall_audit_enabled": <boolean>,
         "tool_names": ["<string>"],
         "direct_hash": "<string>",
         "tm_create": "<string>",
@@ -58,6 +59,7 @@ AI
 * ``stt_language`` (String, Optional): STT language in BCP-47 format (e.g., ``ko-KR``, ``en-US``). Controls which language the Speech-to-Text engine listens for. When set, the STT provider is configured to recognize this specific language, improving accuracy for non-English calls. Empty string or omitted means auto-detect (provider default).
 * ``vad_config`` (Object, Optional): Voice Activity Detection configuration. All fields are optional — omitted fields use Pipecat defaults. See :ref:`VAD Config <ai-struct-ai-vad_config>`.
 * ``smart_turn_enabled`` (Boolean, Optional): Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3 for more natural turn-taking. When ``true``, the VAD ``stop_secs`` parameter is automatically forced to ``0.2`` regardless of ``vad_config`` settings. Defaults to ``false``. See :ref:`Smart Turn <ai-struct-ai-smart_turn>`.
+* ``auto_aicall_audit_enabled`` (Boolean, Optional): When ``true``, any AICall that finishes while using this AI configuration automatically triggers an AICall audit. Defaults to ``false`` (opt-in).
 * ``tool_names`` (Array of String, Optional): List of enabled tool functions. Use ``["all"]`` to enable all tools, ``[]`` to disable all tools, or list specific tool names. See :ref:`Tool Functions <ai-struct-tool>`.
 * ``direct_hash`` (String): Hash for direct AI access. Empty string when direct access is disabled. When enabled, this hash forms the direct SIP URI: ``sip:direct.<hash>@sip.voipbin.net``. Regenerate via ``POST /ais/{id}/direct-hash-regenerate``.
 * ``tm_create`` (String, ISO 8601): Timestamp when the AI configuration was created.
@@ -95,6 +97,7 @@ Example
             "stop_secs": 0.5
         },
         "smart_turn_enabled": true,
+        "auto_aicall_audit_enabled": false,
         "tool_names": ["connect_call", "send_email", "stop_service"],
         "direct_hash": "",
         "tm_create": "2024-02-09 07:01:35.666687",

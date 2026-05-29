@@ -66,6 +66,10 @@ type AI struct {
 	VADConfig        *VADConfig `json:"vad_config,omitempty" db:"vad_config,json"`
 	SmartTurnEnabled bool       `json:"smart_turn_enabled,omitempty" db:"smart_turn_enabled"`
 
+	// AutoAICallAuditEnabled, when true, makes any finished AICall involving this AI
+	// trigger an AICall audit automatically.
+	AutoAICallAuditEnabled bool `json:"auto_aicall_audit_enabled,omitempty" db:"auto_aicall_audit_enabled"`
+
 	// ToolNames defines which tools are enabled for this AI
 	// ["all"] = all tools, ["connect_call", "send_email"] = specific tools, [] or nil = no tools
 	ToolNames []tool.ToolName `json:"tool_names,omitempty" db:"tool_names,json"`
