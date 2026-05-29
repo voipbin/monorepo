@@ -174,3 +174,44 @@ func (h *handler) AIPromptProposalUpdateRejected(ctx context.Context, id uuid.UU
 	}
 	return result.RowsAffected()
 }
+
+// AIPromptProposalDelete soft-deletes a proposal row.
+func (h *handler) AIPromptProposalDelete(ctx context.Context, id uuid.UUID) error {
+	ts := h.utilHandler.TimeNow()
+
+	query, args, err := sq.Update(aipromptproposalTable).
+		SetMap(map[string]any{"tm_update": ts, "tm_delete": ts}).
+		Where(sq.And{sq.Eq{"id": id.Bytes()}, sq.Eq{"tm_delete": nil}}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("AIPromptProposalDelete: could not build query. err: %v", err)
+	}
+
+	result, err := h.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return fmt.Errorf("AIPromptProposalDelete: could not execute. err: %v", err)
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("AIPromptProposalDelete: rows affected. err: %v", err)
+	}
+	if n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// AIPromptProposalCountProgressing returns the number of in-flight proposals for a customer.
+func (h *handler) AIPromptProposalCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error) {
+	query := fmt.Sprintf(`
+		SELECT COUNT(*) FROM %s
+		WHERE customer_id = ? AND status = 'progressing' AND tm_delete IS NULL
+	`, aipromptproposalTable)
+
+	row := h.db.QueryRowContext(ctx, query, customerID.Bytes())
+	var count int64
+	if err := row.Scan(&count); err != nil {
+		return 0, fmt.Errorf("AIPromptProposalCountProgressing: scan. err: %v", err)
+	}
+	return count, nil
+}
