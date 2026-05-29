@@ -11,6 +11,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/aiaudit"
+	"monorepo/bin-ai-manager/models/aipromptproposal"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/geminiproposalhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -132,3 +133,68 @@ func TestCreate_AuditPromptVersionMismatch_Returns400(t *testing.T) {
 	}
 }
 
+type simpleErr struct{ s string }
+
+func (e *simpleErr) Error() string { return e.s }
+
+func errorsNew(s string) error { return &simpleErr{s} }
+
+func TestRunProposalJob_Success_WritesCompleted(t *testing.T) {
+	h, mdb, mg, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+	injectRealUtilHandler(h)
+
+	pid := uuid.Must(uuid.NewV4())
+	auditID := uuid.Must(uuid.NewV4())
+
+	mdb.EXPECT().AIAuditGet(gomock.Any(), auditID).Return(&aiaudit.AIAudit{
+		Status:     aiaudit.StatusCompleted,
+		AIcallID:   uuid.Must(uuid.NewV4()),
+		Evaluation: []byte(`{"summary":"good","dimensions":{"helpfulness":{"reason":"h"},"accuracy":{"reason":"a"},"tone":{"reason":"t"},"goal_completion":{"reason":"g"}}}`),
+	}, nil)
+	mdb.EXPECT().MessageList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+
+	mg.EXPECT().Evaluate(gomock.Any(), "orig", gomock.Any(), "en-US").
+		Return(&geminiproposalhandler.ProposalResponse{ProposedPrompt: "new prompt", Rationale: "rationale text"}, nil)
+
+	mdb.EXPECT().AIPromptProposalUpdateFinal(gomock.Any(), pid, aipromptproposal.StatusCompleted, "new prompt", "rationale text", "").
+		Return(int64(1), nil)
+
+	h.runProposalJob(context.Background(), pid, "orig", []uuid.UUID{auditID}, "en-US")
+}
+
+func TestRunProposalJob_GeminiError_WritesFailedEvaluatorUnavailable(t *testing.T) {
+	h, mdb, mg, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+	injectRealUtilHandler(h)
+
+	pid := uuid.Must(uuid.NewV4())
+	auditID := uuid.Must(uuid.NewV4())
+
+	mdb.EXPECT().AIAuditGet(gomock.Any(), auditID).Return(&aiaudit.AIAudit{Status: aiaudit.StatusCompleted}, nil)
+	mdb.EXPECT().MessageList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+	mg.EXPECT().Evaluate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, errorsNew("network down"))
+	mdb.EXPECT().AIPromptProposalUpdateFinal(gomock.Any(), pid, aipromptproposal.StatusFailed, "", "", string(aipromptproposal.ErrorEvaluatorUnavailable)).
+		Return(int64(1), nil)
+
+	h.runProposalJob(context.Background(), pid, "orig", []uuid.UUID{auditID}, "en-US")
+}
+
+func TestRunProposalJob_GeminiBadJSON_WritesFailedInvalidResponse(t *testing.T) {
+	h, mdb, mg, mc := newHandlerWithMocks(t)
+	defer mc.Finish()
+	injectRealUtilHandler(h)
+
+	pid := uuid.Must(uuid.NewV4())
+	auditID := uuid.Must(uuid.NewV4())
+
+	mdb.EXPECT().AIAuditGet(gomock.Any(), auditID).Return(&aiaudit.AIAudit{Status: aiaudit.StatusCompleted}, nil)
+	mdb.EXPECT().MessageList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, nil)
+	mg.EXPECT().Evaluate(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, errorsNew("invalid_evaluator_response: empty rationale"))
+	mdb.EXPECT().AIPromptProposalUpdateFinal(gomock.Any(), pid, aipromptproposal.StatusFailed, "", "", string(aipromptproposal.ErrorInvalidEvaluatorResponse)).
+		Return(int64(1), nil)
+
+	h.runProposalJob(context.Background(), pid, "orig", []uuid.UUID{auditID}, "en-US")
+}
