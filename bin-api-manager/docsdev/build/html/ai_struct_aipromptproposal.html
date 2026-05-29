@@ -366,6 +366,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-participants">AI Participants</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#terminate-ai-call">Terminate AI Call</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-audit">AI Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_overview.html#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_overview.html#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
@@ -377,6 +378,7 @@
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">AI Prompt Proposal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_participant.html">AI Call Participant</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial_prompt_proposal.html">Tutorial: Improve an AI Prompt from Audits</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a><input aria-label="Toggle navigation of AI Voice Agent Integration" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
@@ -644,6 +646,35 @@
 <section id="status">
 <span id="ai-struct-aipromptproposal-status"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading">¶</a></h2>
 <p>All possible values for the <code class="docutils literal notranslate"><span class="pre">status</span></code> field:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Status</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>progressing</p></td>
+<td><p>The proposal evaluation is currently running</p></td>
+</tr>
+<tr class="row-odd"><td><p>completed</p></td>
+<td><p>The proposal evaluation succeeded; <code class="docutils literal notranslate"><span class="pre">proposed_prompt</span></code> is available for review</p></td>
+</tr>
+<tr class="row-even"><td><p>failed</p></td>
+<td><p>The proposal evaluation could not be completed; see <code class="docutils literal notranslate"><span class="pre">error</span></code> for the reason</p></td>
+</tr>
+<tr class="row-odd"><td><p>accepted</p></td>
+<td><p>The proposal was accepted and applied to the AI’s current prompt</p></td>
+</tr>
+<tr class="row-even"><td><p>rejected</p></td>
+<td><p>The proposal was explicitly rejected</p></td>
+</tr>
+<tr class="row-odd"><td><p>expired</p></td>
+<td><p>The basis prompt drifted before the proposal was actioned</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 <section id="error">
 <span id="ai-struct-aipromptproposal-error"></span><h2>Error<a class="headerlink" href="#error" title="Link to this heading">¶</a></h2>

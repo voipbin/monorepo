@@ -366,6 +366,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#ai-participants">AI Participants</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#terminate-ai-call">Terminate AI Call</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#ai-audit">AI Audit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ai-prompt-improvement-proposals">AI Prompt Improvement Proposals</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_ai.html">AI</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aiprompthistory.html">AIPromptHistory</a></li>
@@ -377,6 +378,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_aipromptproposal.html">AI Prompt Proposal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_struct_participant.html">AI Call Participant</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai_tutorial.html">Tutorial</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ai_tutorial_prompt_proposal.html">Tutorial: Improve an AI Prompt from Audits</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="ai_voice_agent_integration.html">AI Voice Agent Integration</a><input aria-label="Toggle navigation of AI Voice Agent Integration" class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
@@ -1620,12 +1622,129 @@ until <code class="docutils literal notranslate"><span class="pre">status</span>
 <p>See <a class="reference internal" href="ai_struct_aiaudit.html#ai-struct-aiaudit"><span class="std std-ref">AI Audit Structure</span></a> for the full field reference.</p>
 </section>
 </section>
+<section id="ai-prompt-improvement-proposals">
+<h1>AI Prompt Improvement Proposals<a class="headerlink" href="#ai-prompt-improvement-proposals" title="Link to this heading">¶</a></h1>
+<p>VoIPbin can analyze multiple completed AI audits for a single AI and generate
+an improved system prompt that addresses the failure patterns the audits
+surfaced. The improved prompt is produced by Gemini 2.5 Pro and returned for
+human review; nothing is applied to the live AI until you explicitly accept
+the proposal.</p>
+<p>Proposal generation is asynchronous. After triggering, poll the proposal
+record until <code class="docutils literal notranslate"><span class="pre">status</span></code> changes from <code class="docutils literal notranslate"><span class="pre">progressing</span></code> to <code class="docutils literal notranslate"><span class="pre">completed</span></code> (or
+<code class="docutils literal notranslate"><span class="pre">failed</span></code>), then either <code class="docutils literal notranslate"><span class="pre">accept</span></code> to apply the new prompt or <code class="docutils literal notranslate"><span class="pre">reject</span></code> to
+dismiss it.</p>
+<section id="workflow">
+<h2>Workflow<a class="headerlink" href="#workflow" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Run audits via the AI Audit API on completed AI calls.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals</span></code> with the target
+AI’s id and a list of audit ids. VoIPbin returns <code class="docutils literal notranslate"><span class="pre">202</span> <span class="pre">Accepted</span></code> and a
+proposal record in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status; generation runs asynchronously
+via Gemini 2.5 Pro.</p></li>
+<li><p>Poll <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals/{id}</span></code> until
+<code class="docutils literal notranslate"><span class="pre">status</span></code> is <code class="docutils literal notranslate"><span class="pre">completed</span></code>. The record now contains <code class="docutils literal notranslate"><span class="pre">original_prompt</span></code>,
+<code class="docutils literal notranslate"><span class="pre">proposed_prompt</span></code>, and a <code class="docutils literal notranslate"><span class="pre">rationale</span></code>. Render the diff client-side from
+<code class="docutils literal notranslate"><span class="pre">original_prompt</span></code> vs. <code class="docutils literal notranslate"><span class="pre">proposed_prompt</span></code>.</p></li>
+<li><p>To apply: <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals/{id}/accept</span></code>.
+VoIPbin writes a new <code class="docutils literal notranslate"><span class="pre">AIPromptHistory</span></code> row and updates the AI’s
+<code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> in a single transaction. The proposal status becomes
+<code class="docutils literal notranslate"><span class="pre">accepted</span></code>.</p></li>
+<li><p>To dismiss: <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals/{id}/reject</span></code>
+(status becomes <code class="docutils literal notranslate"><span class="pre">rejected</span></code>) or <code class="docutils literal notranslate"><span class="pre">DELETE</span></code> the proposal (soft-deletes).</p></li>
+</ol>
+</section>
+<section id="create-a-proposal">
+<h2>Create a proposal<a class="headerlink" href="#create-a-proposal" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals</span></code></p>
+<p>Submits a set of completed audits and asks VoIPbin to generate an improved
+<code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> for the target AI.</p>
+<p><strong>Request body</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;ai_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;UUID of the AI to improve&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;audit_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;UUID&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&lt;UUID&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;...&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;BCP47 language code, e.g. en-US&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ai_id</span></code> (UUID, required): The AI configuration whose <code class="docutils literal notranslate"><span class="pre">init_prompt</span></code>
+should be improved. Must belong to the authenticated customer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">audit_ids</span></code> (array of UUIDs, required): Between 1 and 20 audit records to
+use as evidence. All audits must be for the target AI AND for the AI’s
+current prompt version.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">language</span></code> (string, optional): Language for the generation prompt.
+Defaults to the AI configuration’s language if omitted.</p></li>
+</ul>
+<p><strong>Response</strong> — 202 Accepted</p>
+<p>Returns the proposal record in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. <code class="docutils literal notranslate"><span class="pre">proposed_prompt</span></code>
+and <code class="docutils literal notranslate"><span class="pre">rationale</span></code> are empty until generation completes.</p>
+</section>
+<section id="list-proposals">
+<h2>List proposals<a class="headerlink" href="#list-proposals" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals</span></code></p>
+<p>Returns a paginated list of proposal records owned by the authenticated
+customer.</p>
+<p><strong>Query parameters</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">page_size</span></code> (integer, optional): Maximum number of entries to return per
+page (1–100, default 100).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">page_token</span></code> (string, optional): Pagination token returned in a previous
+response.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ai_id</span></code> (UUID, optional): Filter by AI configuration.</p></li>
+</ul>
+</section>
+<section id="get-a-single-proposal">
+<h2>Get a single proposal<a class="headerlink" href="#get-a-single-proposal" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals/{id}</span></code></p>
+<p>Returns the proposal record for the given ID. Use this endpoint to poll for
+generation completion.</p>
+</section>
+<section id="accept-a-proposal">
+<h2>Accept a proposal<a class="headerlink" href="#accept-a-proposal" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals/{id}/accept</span></code></p>
+<p>Applies <code class="docutils literal notranslate"><span class="pre">proposed_prompt</span></code> to the AI’s <code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> in a single
+transaction. A new <code class="docutils literal notranslate"><span class="pre">AIPromptHistory</span></code> row is created and its id is written
+back to the proposal as <code class="docutils literal notranslate"><span class="pre">applied_prompt_history_id</span></code>. The proposal status
+becomes <code class="docutils literal notranslate"><span class="pre">accepted</span></code>.</p>
+</section>
+<section id="reject-a-proposal">
+<h2>Reject a proposal<a class="headerlink" href="#reject-a-proposal" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals/{id}/reject</span></code></p>
+<p>Marks the proposal as <code class="docutils literal notranslate"><span class="pre">rejected</span></code> without modifying the AI. Use this to
+record an explicit decision to dismiss the suggestion.</p>
+</section>
+<section id="delete-a-proposal">
+<h2>Delete a proposal<a class="headerlink" href="#delete-a-proposal" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">DELETE</span> <span class="pre">https://api.voipbin.net/v1.0/aipromptproposals/{id}</span></code></p>
+<p>Soft-deletes the proposal record. The record is retained but marked as
+deleted and excluded from future list responses.</p>
+</section>
+<section id="constraints">
+<h2>Constraints<a class="headerlink" href="#constraints" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>All selected audits MUST be for the target AI AND for the AI’s current
+prompt version. Mismatches cause <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1.0/aipromptproposals</span></code> to return
+<code class="docutils literal notranslate"><span class="pre">400</span></code> with the offending audit ids in the error message.</p></li>
+<li><p>If the AI’s <code class="docutils literal notranslate"><span class="pre">init_prompt</span></code> is updated between create and accept, the
+proposal becomes <code class="docutils literal notranslate"><span class="pre">expired</span></code> and accept returns <code class="docutils literal notranslate"><span class="pre">409</span></code>.</p></li>
+<li><p>If any source audit is deleted between create and accept, accept returns
+<code class="docutils literal notranslate"><span class="pre">409</span> <span class="pre">audit</span> <span class="pre">set</span> <span class="pre">invalidated</span></code>.</p></li>
+<li><p>Up to 20 audits per proposal.</p></li>
+<li><p>Up to 3 <code class="docutils literal notranslate"><span class="pre">progressing</span></code> proposals per customer at once. Exceeding returns
+<code class="docutils literal notranslate"><span class="pre">429</span></code>.</p></li>
+</ul>
+<p>See <a class="reference internal" href="ai_struct_aipromptproposal.html#ai-struct-aipromptproposal"><span class="std std-ref">AI Prompt Proposal Structure</span></a> for the
+full field reference, and <a class="reference internal" href="ai_tutorial_prompt_proposal.html#ai-tutorial-prompt-proposal"><span class="std std-ref">Tutorial: Improve an AI Prompt from Audits</span></a> for an
+end-to-end walkthrough.</p>
+</section>
+</section>
 <section id="related-documentation">
 <h1>Related Documentation<a class="headerlink" href="#related-documentation" title="Link to this heading">¶</a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="ai_struct_ai.html#ai-struct-ai"><span class="std std-ref">AI Structure</span></a> - AI configuration options</p></li>
 <li><p><a class="reference internal" href="ai_struct_aiaudit.html#ai-struct-aiaudit"><span class="std std-ref">AI Audit Structure</span></a> - AI audit struct fields</p></li>
 <li><p><a class="reference internal" href="ai_struct_aiprompthistory.html#ai-struct-aiprompthistory"><span class="std std-ref">AI Prompt History Structure</span></a> - Prompt history struct fields</p></li>
+<li><p><a class="reference internal" href="ai_struct_aipromptproposal.html#ai-struct-aipromptproposal"><span class="std std-ref">AI Prompt Proposal Structure</span></a> - AI prompt improvement proposal struct fields</p></li>
 <li><p><a class="reference internal" href="ai_struct_tool.html#ai-struct-tool"><span class="std std-ref">Tool Functions</span></a> - Available tool documentation</p></li>
 <li><p><a class="reference internal" href="transcribe_overview.html#transcribe-overview"><span class="std std-ref">Transcribe Overview</span></a> - Speech-to-text languages</p></li>
 <li><p><a class="reference internal" href="flow_struct_action.html#flow-struct-action"><span class="std std-ref">Flow Actions</span></a> - ai_talk action configuration</p></li>

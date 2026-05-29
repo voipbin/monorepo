@@ -21,3 +21,4 @@ Configure AI-powered voice agents with speech-to-text (STT), text-to-speech (TTS
    ai_struct_aipromptproposal
    ai_struct_participant
    ai_tutorial
+   ai_tutorial_prompt_proposal

@@ -59,8 +59,8 @@ Status        Description
 progressing   The proposal evaluation is currently running
 completed     The proposal evaluation succeeded; ``proposed_prompt`` is available for review
 failed        The proposal evaluation could not be completed; see ``error`` for the reason
-accepted     The proposal was accepted and applied to the AI's current prompt
-rejected     The proposal was explicitly rejected
+accepted      The proposal was accepted and applied to the AI's current prompt
+rejected      The proposal was explicitly rejected
 expired       The basis prompt drifted before the proposal was actioned
 ============= ===========
 
