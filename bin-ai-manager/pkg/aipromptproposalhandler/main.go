@@ -154,3 +154,33 @@ func (h *aipromptproposalHandler) Create(ctx context.Context, customerID uuid.UU
 func (h *aipromptproposalHandler) runProposalJob(ctx context.Context, proposalID uuid.UUID, basisPrompt string, auditIDs []uuid.UUID, language string) {
 	_, _, _, _, _ = ctx, proposalID, basisPrompt, auditIDs, language
 }
+
+// Get returns one proposal by ID.
+func (h *aipromptproposalHandler) Get(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
+	res, err := h.db.AIPromptProposalGet(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get proposal: %w", err)
+	}
+	return res, nil
+}
+
+// List returns a paginated list of proposals.
+func (h *aipromptproposalHandler) List(ctx context.Context, size uint64, token string, filters map[aipromptproposal.Field]any) ([]*aipromptproposal.AIPromptProposal, error) {
+	res, err := h.db.AIPromptProposalList(ctx, size, token, filters)
+	if err != nil {
+		return nil, fmt.Errorf("could not list proposals: %w", err)
+	}
+	return res, nil
+}
+
+// Delete soft-deletes a proposal and returns the pre-delete state.
+func (h *aipromptproposalHandler) Delete(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
+	pre, err := h.db.AIPromptProposalGet(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("could not get proposal before delete: %w", err)
+	}
+	if err := h.db.AIPromptProposalDelete(ctx, id); err != nil {
+		return nil, fmt.Errorf("could not delete proposal: %w", err)
+	}
+	return pre, nil
+}
