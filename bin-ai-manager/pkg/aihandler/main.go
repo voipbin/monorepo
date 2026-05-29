@@ -35,6 +35,7 @@ type AIHandler interface {
 		toolNames []tool.ToolName,
 		vadConfig *ai.VADConfig,
 		smartTurnEnabled bool,
+		autoAICallAuditEnabled bool,
 	) (*ai.AI, error)
 	Get(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 	List(ctx context.Context, size uint64, token string, filters map[ai.Field]any) ([]*ai.AI, error)
@@ -56,6 +57,7 @@ type AIHandler interface {
 		toolNames []tool.ToolName,
 		vadConfig *ai.VADConfig,
 		smartTurnEnabled bool,
+		autoAICallAuditEnabled bool,
 	) (*ai.AI, error)
 	DirectHashRegenerate(ctx context.Context, id uuid.UUID) (*ai.AI, error)
 }

@@ -199,6 +199,7 @@ func TestCreate(t *testing.T) {
 				[]tool.ToolName{},
 				tt.vadConfig,
 				tt.smartTurnEnabled,
+				false,
 			)
 
 			if (err != nil) != tt.wantError {
@@ -391,6 +392,7 @@ func TestUpdate(t *testing.T) {
 				[]tool.ToolName{},
 				tt.vadConfig,
 				tt.smartTurnEnabled,
+				false,
 			)
 
 			if (err != nil) != tt.wantError {
@@ -452,6 +454,7 @@ func TestCreate_RecordsPromptHistory(t *testing.T) {
 		nil,
 		nil,
 		false,
+		false,
 	)
 	if err != nil {
 		t.Errorf("Create() unexpected error: %v", err)
@@ -498,6 +501,7 @@ func TestCreate_EmptyPrompt_NoHistory(t *testing.T) {
 		"",
 		nil,
 		nil,
+		false,
 		false,
 	)
 	if err != nil {
@@ -553,6 +557,7 @@ func TestUpdate_NewPrompt_RecordsHistory(t *testing.T) {
 		nil,
 		nil,
 		false,
+		false,
 	)
 	if err != nil {
 		t.Errorf("Update() unexpected error: %v", err)
@@ -606,6 +611,7 @@ func TestUpdate_SamePrompt_NoHistory(t *testing.T) {
 		nil,
 		nil,
 		false,
+		false,
 	)
 	if err != nil {
 		t.Errorf("Update() unexpected error: %v", err)
@@ -654,6 +660,7 @@ func TestUpdate_EmptyPrompt_AlreadyEmpty_NoHistory(t *testing.T) {
 		nil,
 		nil,
 		false,
+		false,
 	)
 	if err != nil {
 		t.Errorf("Update() unexpected error: %v", err)
@@ -701,6 +708,7 @@ func TestCreate_HistoryFails_CreateSucceeds(t *testing.T) {
 		"",
 		nil,
 		nil,
+		false,
 		false,
 	)
 	if err != nil {
@@ -770,6 +778,7 @@ func TestCreate_WithPrompt_SetsCurrentHistoryIDAtomically(t *testing.T) {
 		nil,
 		nil,
 		false,
+		false,
 	)
 	if err != nil {
 		t.Errorf("Create() unexpected error: %v", err)
@@ -817,6 +826,7 @@ func TestCreate_WithoutPrompt_NoCurrentHistoryID(t *testing.T) {
 		nil,
 		nil,
 		false,
+		false,
 	)
 	if err != nil {
 		t.Errorf("Create() unexpected error: %v", err)
@@ -860,7 +870,7 @@ func TestUpdate_promptChangedCreatesHistoryAndSetsID(t *testing.T) {
 		utilHandler:   mockUtil,
 	}
 	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
-		"new prompt", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false)
+		"new prompt", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -904,7 +914,7 @@ func TestUpdate_promptClearedResetsID(t *testing.T) {
 		utilHandler:   mockUtil,
 	}
 	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
-		"", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false)
+		"", ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -938,7 +948,7 @@ func TestUpdate_promptUnchangedDoesNotCreateHistory(t *testing.T) {
 		utilHandler:   mockUtil,
 	}
 	_, err := h.Update(context.Background(), aiID, "name", "", ai.EngineModelOpenaiGPT5, nil, "", uuid.Nil,
-		same, ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false)
+		same, ai.TTSTypeNone, "", ai.STTTypeNone, "", nil, nil, false, false)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
