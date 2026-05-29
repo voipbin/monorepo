@@ -1,0 +1,61 @@
+get:
+  summary: Get an AI prompt proposal by ID.
+  description: Returns a single AI prompt proposal record.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The AI prompt proposal ID.
+  responses:
+    '200':
+      description: The AI prompt proposal record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIPromptProposal'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Delete an AI prompt proposal.
+  description: Soft-deletes an AI prompt proposal record.
+  tags:
+    - AI
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: The AI prompt proposal ID.
+  responses:
+    '200':
+      description: The deleted AI prompt proposal record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AIManagerAIPromptProposal'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

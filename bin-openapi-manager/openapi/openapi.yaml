@@ -2909,6 +2909,107 @@ components:
           description: Timestamp when the audit was deleted.
           example: "2026-01-15T09:30:00.000000Z"
 
+    AIManagerAIPromptProposalStatus:
+      type: string
+      description: Status of the AI prompt proposal.
+      example: "progressing"
+      enum:
+        - "progressing"
+        - "completed"
+        - "failed"
+        - "accepted"
+        - "rejected"
+        - "expired"
+      x-enum-varnames:
+        - AIManagerAIPromptProposalStatusProgressing
+        - AIManagerAIPromptProposalStatusCompleted
+        - AIManagerAIPromptProposalStatusFailed
+        - AIManagerAIPromptProposalStatusAccepted
+        - AIManagerAIPromptProposalStatusRejected
+        - AIManagerAIPromptProposalStatusExpired
+
+    AIManagerAIPromptProposal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The unique identifier of the prompt proposal.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: The customer who owns this proposal.
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        ai_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The AI participant whose prompt is being improved. Returned from the `GET /ais` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        audit_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+            x-go-type: string
+          description: "Ordered list of AI audit IDs the proposal was derived from. Returned from the `GET /aiaudits` response."
+          example:
+            - "550e8400-e29b-41d4-a716-446655440001"
+            - "550e8400-e29b-41d4-a716-446655440002"
+        basis_prompt_history_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The prompt history snapshot the proposal was generated against."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        original_prompt:
+          type: string
+          description: The basis prompt text captured at proposal time.
+          example: "You are a helpful support assistant."
+        proposed_prompt:
+          type: string
+          description: The Gemini-generated improved prompt. Empty until status is completed.
+          example: "You are a helpful and empathetic support assistant. Always confirm the customer's issue before proposing a fix."
+        rationale:
+          type: string
+          description: Gemini's explanation for the proposed prompt change. Empty until status is completed.
+          example: "The audits showed the assistant moved to solutions before fully acknowledging the customer's concern."
+        status:
+          $ref: '#/components/schemas/AIManagerAIPromptProposalStatus'
+        error:
+          type: string
+          description: Canonicalized failure reason if status is failed or expired.
+          example: "evaluator_unavailable"
+        applied_prompt_history_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The prompt history ID created when this proposal was accepted. Empty until accepted."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: Timestamp when the proposal was created.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          nullable: true
+          description: Timestamp when the proposal was last updated.
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          nullable: true
+          description: Timestamp when the proposal was deleted.
+          example: "2026-01-15T09:30:00.000000Z"
+
 
 #########################################
 # Common
@@ -7485,6 +7586,15 @@ paths:
     $ref: './paths/aiaudits/id.yaml'
   /aiaudits:
     $ref: './paths/aiaudits/main.yaml'
+
+  /aipromptproposals/{id}:
+    $ref: './paths/aipromptproposals/id.yaml'
+  /aipromptproposals/{id}/accept:
+    $ref: './paths/aipromptproposals/id_accept.yaml'
+  /aipromptproposals/{id}/reject:
+    $ref: './paths/aipromptproposals/id_reject.yaml'
+  /aipromptproposals:
+    $ref: './paths/aipromptproposals/main.yaml'
 
   /teams/{id}:
     $ref: './paths/teams/id.yaml'

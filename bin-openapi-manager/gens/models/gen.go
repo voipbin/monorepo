@@ -75,6 +75,36 @@ func (e AIManagerAIEngineModel) Valid() bool {
 	}
 }
 
+// Defines values for AIManagerAIPromptProposalStatus.
+const (
+	AIManagerAIPromptProposalStatusAccepted    AIManagerAIPromptProposalStatus = "accepted"
+	AIManagerAIPromptProposalStatusCompleted   AIManagerAIPromptProposalStatus = "completed"
+	AIManagerAIPromptProposalStatusExpired     AIManagerAIPromptProposalStatus = "expired"
+	AIManagerAIPromptProposalStatusFailed      AIManagerAIPromptProposalStatus = "failed"
+	AIManagerAIPromptProposalStatusProgressing AIManagerAIPromptProposalStatus = "progressing"
+	AIManagerAIPromptProposalStatusRejected    AIManagerAIPromptProposalStatus = "rejected"
+)
+
+// Valid indicates whether the value is a known member of the AIManagerAIPromptProposalStatus enum.
+func (e AIManagerAIPromptProposalStatus) Valid() bool {
+	switch e {
+	case AIManagerAIPromptProposalStatusAccepted:
+		return true
+	case AIManagerAIPromptProposalStatusCompleted:
+		return true
+	case AIManagerAIPromptProposalStatusExpired:
+		return true
+	case AIManagerAIPromptProposalStatusFailed:
+		return true
+	case AIManagerAIPromptProposalStatusProgressing:
+		return true
+	case AIManagerAIPromptProposalStatusRejected:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for AIManagerAISTTType.
 const (
 	AIManagerAISTTTypeCartesia   AIManagerAISTTType = "cartesia"
@@ -3404,6 +3434,54 @@ type AIManagerAIPromptHistory struct {
 	// TmCreate The time this history entry was recorded.
 	TmCreate *string `json:"tm_create,omitempty"`
 }
+
+// AIManagerAIPromptProposal defines model for AIManagerAIPromptProposal.
+type AIManagerAIPromptProposal struct {
+	// AiId The AI participant whose prompt is being improved. Returned from the `GET /ais` response.
+	AiId *string `json:"ai_id,omitempty"`
+
+	// AppliedPromptHistoryId The prompt history ID created when this proposal was accepted. Empty until accepted.
+	AppliedPromptHistoryId *string `json:"applied_prompt_history_id,omitempty"`
+
+	// AuditIds Ordered list of AI audit IDs the proposal was derived from. Returned from the `GET /aiaudits` response.
+	AuditIds *[]string `json:"audit_ids,omitempty"`
+
+	// BasisPromptHistoryId The prompt history snapshot the proposal was generated against.
+	BasisPromptHistoryId *string `json:"basis_prompt_history_id,omitempty"`
+
+	// CustomerId The customer who owns this proposal.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Error Canonicalized failure reason if status is failed or expired.
+	Error *string `json:"error,omitempty"`
+
+	// Id The unique identifier of the prompt proposal.
+	Id *string `json:"id,omitempty"`
+
+	// OriginalPrompt The basis prompt text captured at proposal time.
+	OriginalPrompt *string `json:"original_prompt,omitempty"`
+
+	// ProposedPrompt The Gemini-generated improved prompt. Empty until status is completed.
+	ProposedPrompt *string `json:"proposed_prompt,omitempty"`
+
+	// Rationale Gemini's explanation for the proposed prompt change. Empty until status is completed.
+	Rationale *string `json:"rationale,omitempty"`
+
+	// Status Status of the AI prompt proposal.
+	Status *AIManagerAIPromptProposalStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the proposal was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the proposal was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the proposal was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// AIManagerAIPromptProposalStatus Status of the AI prompt proposal.
+type AIManagerAIPromptProposalStatus string
 
 // AIManagerAISTTType Speech-to-text provider type.
 type AIManagerAISTTType string
@@ -7116,6 +7194,33 @@ type PostAimessagesJSONBody struct {
 	Role AIManagerMessageRole `json:"role"`
 }
 
+// GetAipromptproposalsParams defines parameters for GetAipromptproposals.
+type GetAipromptproposalsParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// AiId Filter by AI ID.
+	AiId *openapi_types.UUID `form:"ai_id,omitempty" json:"ai_id,omitempty"`
+
+	// Status Filter by proposal status (progressing, completed, failed, accepted, rejected, expired).
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// PostAipromptproposalsJSONBody defines parameters for PostAipromptproposals.
+type PostAipromptproposalsJSONBody struct {
+	// AiId The AI participant whose prompt should be improved.
+	AiId string `json:"ai_id"`
+
+	// AuditIds The completed AI audits to use as evidence for the proposal.
+	AuditIds []string `json:"audit_ids"`
+
+	// Language BCP47 language code for proposal output (e.g. "en-US", "ko-KR"). Defaults to "en-US".
+	Language *string `json:"language,omitempty"`
+}
+
 // GetAisParams defines parameters for GetAis.
 type GetAisParams struct {
 	// PageSize Number of results to return per page.
@@ -9029,6 +9134,9 @@ type PostAicallsJSONRequestBody PostAicallsJSONBody
 
 // PostAimessagesJSONRequestBody defines body for PostAimessages for application/json ContentType.
 type PostAimessagesJSONRequestBody PostAimessagesJSONBody
+
+// PostAipromptproposalsJSONRequestBody defines body for PostAipromptproposals for application/json ContentType.
+type PostAipromptproposalsJSONRequestBody PostAipromptproposalsJSONBody
 
 // PostAisJSONRequestBody defines body for PostAis for application/json ContentType.
 type PostAisJSONRequestBody PostAisJSONBody
