@@ -4,13 +4,17 @@ package aipromptproposalhandler
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
 
+	"monorepo/bin-ai-manager/models/aiaudit"
 	"monorepo/bin-ai-manager/models/aipromptproposal"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/geminiproposalhandler"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 )
 
@@ -59,3 +63,94 @@ func NewAIPromptProposalHandler(
 
 // Suppress unused-import until later tasks add code.
 var _ = time.Second
+
+// Create validates the request, captures the basis prompt, INSERTs the proposal row,
+// then spawns the background goroutine.
+func (h *aipromptproposalHandler) Create(ctx context.Context, customerID uuid.UUID, aiID uuid.UUID, auditIDs []uuid.UUID, language string) (*aipromptproposal.AIPromptProposal, error) {
+	if len(auditIDs) == 0 {
+		return nil, fmt.Errorf("invalid audit set: empty audit list")
+	}
+	if len(auditIDs) > maxAuditsPerProposal {
+		return nil, fmt.Errorf("invalid audit set: too many audits (max %d)", maxAuditsPerProposal)
+	}
+
+	ai, err := h.db.AIGet(ctx, aiID)
+	if err != nil {
+		return nil, fmt.Errorf("ai not found: %w", err)
+	}
+	if ai.CustomerID != customerID {
+		return nil, fmt.Errorf("ai not found")
+	}
+	if ai.TMDelete != nil {
+		return nil, fmt.Errorf("ai not found")
+	}
+
+	count, err := h.db.AIPromptProposalCountProgressing(ctx, customerID)
+	if err != nil {
+		return nil, fmt.Errorf("could not count progressing proposals: %w", err)
+	}
+	if count >= maxConcurrentCustomer {
+		return nil, fmt.Errorf("rate limit exceeded: customer already has %d proposals in progress", count)
+	}
+
+	auditPromptMismatch := []uuid.UUID{}
+	for _, auditID := range auditIDs {
+		a, gerr := h.db.AIAuditGet(ctx, auditID)
+		if gerr != nil {
+			return nil, fmt.Errorf("invalid audit set: audit %s not found", auditID)
+		}
+		if a.CustomerID != customerID {
+			return nil, fmt.Errorf("invalid audit set: audit %s not owned", auditID)
+		}
+		if a.TMDelete != nil {
+			return nil, fmt.Errorf("invalid audit set: audit %s deleted", auditID)
+		}
+		if a.AIID != aiID {
+			return nil, fmt.Errorf("invalid audit set: audit %s is for different AI", auditID)
+		}
+		if a.Status != aiaudit.StatusCompleted {
+			return nil, fmt.Errorf("invalid audit set: audit %s not completed (status=%s)", auditID, a.Status)
+		}
+		if a.PromptHistoryID != ai.CurrentPromptHistoryID {
+			auditPromptMismatch = append(auditPromptMismatch, auditID)
+		}
+	}
+	if len(auditPromptMismatch) > 0 {
+		ids := make([]string, len(auditPromptMismatch))
+		for i, id := range auditPromptMismatch {
+			ids[i] = id.String()
+		}
+		return nil, fmt.Errorf("audit prompt version mismatch: %s", strings.Join(ids, ","))
+	}
+
+	basis, err := h.db.AIPromptHistoryGet(ctx, ai.CurrentPromptHistoryID)
+	if err != nil {
+		return nil, fmt.Errorf("could not load basis prompt history: %w", err)
+	}
+
+	proposalID := h.utilHandler.UUIDCreate()
+	p := &aipromptproposal.AIPromptProposal{
+		Identity:             commonidentity.Identity{ID: proposalID, CustomerID: customerID},
+		AIID:                 aiID,
+		AuditIDs:             auditIDs,
+		BasisPromptHistoryID: ai.CurrentPromptHistoryID,
+		OriginalPrompt:       basis.Prompt,
+	}
+	if err := h.db.AIPromptProposalCreate(ctx, p); err != nil {
+		return nil, fmt.Errorf("could not create proposal: %w", err)
+	}
+
+	reloaded, err := h.db.AIPromptProposalGet(ctx, proposalID)
+	if err != nil {
+		return nil, fmt.Errorf("could not reload proposal: %w", err)
+	}
+
+	go h.runProposalJob(context.Background(), proposalID, basis.Prompt, auditIDs, language)
+
+	return reloaded, nil
+}
+
+// Stub for runProposalJob — filled in by Task 24.
+func (h *aipromptproposalHandler) runProposalJob(ctx context.Context, proposalID uuid.UUID, basisPrompt string, auditIDs []uuid.UUID, language string) {
+	_, _, _, _, _ = ctx, proposalID, basisPrompt, auditIDs, language
+}
