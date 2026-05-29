@@ -2,6 +2,7 @@ package dbhandler
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
@@ -116,4 +117,60 @@ func (h *handler) AIPromptProposalList(ctx context.Context, size uint64, token s
 		res = append(res, p)
 	}
 	return res, nil
+}
+
+// AIPromptProposalUpdateFinal writes the goroutine's final result. Guard: WHERE status='progressing' AND tm_delete IS NULL.
+func (h *handler) AIPromptProposalUpdateFinal(ctx context.Context, id uuid.UUID, status aipromptproposal.Status, proposedPrompt, rationale, errStr string) (int64, error) {
+	ts := h.utilHandler.TimeNow()
+
+	query := fmt.Sprintf(`
+		UPDATE %s
+		SET status = ?, proposed_prompt = ?, rationale = ?, error = ?, tm_update = ?
+		WHERE id = ? AND tm_delete IS NULL AND status = 'progressing'
+	`, aipromptproposalTable)
+
+	result, err := h.db.ExecContext(ctx, query,
+		string(status),
+		sql.NullString{String: proposedPrompt, Valid: proposedPrompt != ""},
+		sql.NullString{String: rationale, Valid: rationale != ""},
+		errStr,
+		ts,
+		id.Bytes(),
+	)
+	if err != nil {
+		return 0, fmt.Errorf("AIPromptProposalUpdateFinal: could not execute. err: %v", err)
+	}
+	return result.RowsAffected()
+}
+
+// AIPromptProposalUpdateExpired marks a completed proposal as expired (drift case).
+func (h *handler) AIPromptProposalUpdateExpired(ctx context.Context, id uuid.UUID, errStr string) (int64, error) {
+	ts := h.utilHandler.TimeNow()
+	query := fmt.Sprintf(`
+		UPDATE %s
+		SET status = 'expired', error = ?, tm_update = ?
+		WHERE id = ? AND tm_delete IS NULL AND status = 'completed'
+	`, aipromptproposalTable)
+
+	result, err := h.db.ExecContext(ctx, query, errStr, ts, id.Bytes())
+	if err != nil {
+		return 0, fmt.Errorf("AIPromptProposalUpdateExpired: could not execute. err: %v", err)
+	}
+	return result.RowsAffected()
+}
+
+// AIPromptProposalUpdateRejected marks a completed proposal as rejected by user.
+func (h *handler) AIPromptProposalUpdateRejected(ctx context.Context, id uuid.UUID) (int64, error) {
+	ts := h.utilHandler.TimeNow()
+	query := fmt.Sprintf(`
+		UPDATE %s
+		SET status = 'rejected', tm_update = ?
+		WHERE id = ? AND tm_delete IS NULL AND status = 'completed'
+	`, aipromptproposalTable)
+
+	result, err := h.db.ExecContext(ctx, query, ts, id.Bytes())
+	if err != nil {
+		return 0, fmt.Errorf("AIPromptProposalUpdateRejected: could not execute. err: %v", err)
+	}
+	return result.RowsAffected()
 }
