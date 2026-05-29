@@ -132,7 +132,3 @@ func TestCreate_AuditPromptVersionMismatch_Returns400(t *testing.T) {
 	}
 }
 
-var (
-	_ = timePtr              // suppress unused if needed
-	_ = injectRealUtilHandler // used by other test files in the package
-)
