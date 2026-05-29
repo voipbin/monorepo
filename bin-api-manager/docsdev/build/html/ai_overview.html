@@ -1576,6 +1576,23 @@ a numeric score and structured feedback. Use audits to monitor AI quality over
 time and identify calls that need attention.</p>
 <p>Audit evaluation is asynchronous. After triggering, poll the audit record
 until <code class="docutils literal notranslate"><span class="pre">status</span></code> changes from <code class="docutils literal notranslate"><span class="pre">progressing</span></code> to <code class="docutils literal notranslate"><span class="pre">completed</span></code> or <code class="docutils literal notranslate"><span class="pre">failed</span></code>.</p>
+<section id="automatic-auditing">
+<h2>Automatic auditing<a class="headerlink" href="#automatic-auditing" title="Link to this heading">¶</a></h2>
+<p>To audit every finished AICall automatically without calling <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/aiaudits</span></code>
+manually, set <code class="docutils literal notranslate"><span class="pre">auto_aicall_audit_enabled:</span> <span class="pre">true</span></code> on the AI configuration. When
+this flag is enabled, the platform triggers an audit immediately after each
+AICall that used the AI finishes — whether the call was a normal voice session
+or a team call. Audits created this way behave identically to manually triggered
+ones and appear in the same <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/aiaudits</span></code> list.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">auto_aicall_audit_enabled</span></code> is an opt-in field that defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.
+Enable it on AI configurations where you want continuous quality monitoring.
+If you only need to audit specific calls, leave it <code class="docutils literal notranslate"><span class="pre">false</span></code> and use
+<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/aiaudits</span></code> on demand.</p>
+</div>
+</section>
 <section id="trigger-an-audit">
 <h2>Trigger an audit<a class="headerlink" href="#trigger-an-audit" title="Link to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">https://api.voipbin.net/v1.0/aiaudits</span></code></p>

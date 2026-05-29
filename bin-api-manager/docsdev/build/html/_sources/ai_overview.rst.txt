@@ -874,6 +874,23 @@ time and identify calls that need attention.
 Audit evaluation is asynchronous. After triggering, poll the audit record
 until ``status`` changes from ``progressing`` to ``completed`` or ``failed``.
 
+Automatic auditing
+------------------
+
+To audit every finished AICall automatically without calling ``POST /aiaudits``
+manually, set ``auto_aicall_audit_enabled: true`` on the AI configuration. When
+this flag is enabled, the platform triggers an audit immediately after each
+AICall that used the AI finishes — whether the call was a normal voice session
+or a team call. Audits created this way behave identically to manually triggered
+ones and appear in the same ``GET /aiaudits`` list.
+
+.. note:: **AI Implementation Hint**
+
+   ``auto_aicall_audit_enabled`` is an opt-in field that defaults to ``false``.
+   Enable it on AI configurations where you want continuous quality monitoring.
+   If you only need to audit specific calls, leave it ``false`` and use
+   ``POST /aiaudits`` on demand.
+
 Trigger an audit
 ----------------
 
