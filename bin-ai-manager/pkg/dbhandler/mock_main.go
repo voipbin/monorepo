@@ -16,6 +16,7 @@ import (
 	aiaudit "monorepo/bin-ai-manager/models/aiaudit"
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
+	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
@@ -48,6 +49,20 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// AIAcceptProposal mocks base method.
+func (m *MockDBHandler) AIAcceptProposal(ctx context.Context, proposalID, newHistoryID uuid.UUID, proposedPrompt string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIAcceptProposal", ctx, proposalID, newHistoryID, proposedPrompt)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIAcceptProposal indicates an expected call of AIAcceptProposal.
+func (mr *MockDBHandlerMockRecorder) AIAcceptProposal(ctx, proposalID, newHistoryID, proposedPrompt any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIAcceptProposal", reflect.TypeOf((*MockDBHandler)(nil).AIAcceptProposal), ctx, proposalID, newHistoryID, proposedPrompt)
 }
 
 // AIAuditCountProgressing mocks base method.
@@ -239,6 +254,124 @@ func (m *MockDBHandler) AIPromptHistoryGetsByAIID(ctx context.Context, aiID uuid
 func (mr *MockDBHandlerMockRecorder) AIPromptHistoryGetsByAIID(ctx, aiID, size, token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptHistoryGetsByAIID", reflect.TypeOf((*MockDBHandler)(nil).AIPromptHistoryGetsByAIID), ctx, aiID, size, token)
+}
+
+// AIPromptProposalCountProgressing mocks base method.
+func (m *MockDBHandler) AIPromptProposalCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalCountProgressing", ctx, customerID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalCountProgressing indicates an expected call of AIPromptProposalCountProgressing.
+func (mr *MockDBHandlerMockRecorder) AIPromptProposalCountProgressing(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalCountProgressing", reflect.TypeOf((*MockDBHandler)(nil).AIPromptProposalCountProgressing), ctx, customerID)
+}
+
+// AIPromptProposalCreate mocks base method.
+func (m *MockDBHandler) AIPromptProposalCreate(ctx context.Context, p *aipromptproposal.AIPromptProposal) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalCreate", ctx, p)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIPromptProposalCreate indicates an expected call of AIPromptProposalCreate.
+func (mr *MockDBHandlerMockRecorder) AIPromptProposalCreate(ctx, p any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalCreate", reflect.TypeOf((*MockDBHandler)(nil).AIPromptProposalCreate), ctx, p)
+}
+
+// AIPromptProposalDelete mocks base method.
+func (m *MockDBHandler) AIPromptProposalDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AIPromptProposalDelete indicates an expected call of AIPromptProposalDelete.
+func (mr *MockDBHandlerMockRecorder) AIPromptProposalDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalDelete", reflect.TypeOf((*MockDBHandler)(nil).AIPromptProposalDelete), ctx, id)
+}
+
+// AIPromptProposalGet mocks base method.
+func (m *MockDBHandler) AIPromptProposalGet(ctx context.Context, id uuid.UUID) (*aipromptproposal.AIPromptProposal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalGet", ctx, id)
+	ret0, _ := ret[0].(*aipromptproposal.AIPromptProposal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalGet indicates an expected call of AIPromptProposalGet.
+func (mr *MockDBHandlerMockRecorder) AIPromptProposalGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalGet", reflect.TypeOf((*MockDBHandler)(nil).AIPromptProposalGet), ctx, id)
+}
+
+// AIPromptProposalList mocks base method.
+func (m *MockDBHandler) AIPromptProposalList(ctx context.Context, size uint64, token string, filters map[aipromptproposal.Field]any) ([]*aipromptproposal.AIPromptProposal, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalList", ctx, size, token, filters)
+	ret0, _ := ret[0].([]*aipromptproposal.AIPromptProposal)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalList indicates an expected call of AIPromptProposalList.
+func (mr *MockDBHandlerMockRecorder) AIPromptProposalList(ctx, size, token, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalList", reflect.TypeOf((*MockDBHandler)(nil).AIPromptProposalList), ctx, size, token, filters)
+}
+
+// AIPromptProposalUpdateExpired mocks base method.
+func (m *MockDBHandler) AIPromptProposalUpdateExpired(ctx context.Context, id uuid.UUID, errStr string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalUpdateExpired", ctx, id, errStr)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalUpdateExpired indicates an expected call of AIPromptProposalUpdateExpired.
+func (mr *MockDBHandlerMockRecorder) AIPromptProposalUpdateExpired(ctx, id, errStr any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalUpdateExpired", reflect.TypeOf((*MockDBHandler)(nil).AIPromptProposalUpdateExpired), ctx, id, errStr)
+}
+
+// AIPromptProposalUpdateFinal mocks base method.
+func (m *MockDBHandler) AIPromptProposalUpdateFinal(ctx context.Context, id uuid.UUID, status aipromptproposal.Status, proposedPrompt, rationale, errStr string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalUpdateFinal", ctx, id, status, proposedPrompt, rationale, errStr)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalUpdateFinal indicates an expected call of AIPromptProposalUpdateFinal.
+func (mr *MockDBHandlerMockRecorder) AIPromptProposalUpdateFinal(ctx, id, status, proposedPrompt, rationale, errStr any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalUpdateFinal", reflect.TypeOf((*MockDBHandler)(nil).AIPromptProposalUpdateFinal), ctx, id, status, proposedPrompt, rationale, errStr)
+}
+
+// AIPromptProposalUpdateRejected mocks base method.
+func (m *MockDBHandler) AIPromptProposalUpdateRejected(ctx context.Context, id uuid.UUID) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIPromptProposalUpdateRejected", ctx, id)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIPromptProposalUpdateRejected indicates an expected call of AIPromptProposalUpdateRejected.
+func (mr *MockDBHandlerMockRecorder) AIPromptProposalUpdateRejected(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIPromptProposalUpdateRejected", reflect.TypeOf((*MockDBHandler)(nil).AIPromptProposalUpdateRejected), ctx, id)
 }
 
 // AIUpdate mocks base method.
