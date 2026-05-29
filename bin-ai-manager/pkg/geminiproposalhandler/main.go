@@ -62,7 +62,7 @@ type geminiProposalHandler struct {
 }
 
 // NewGeminiProposalHandler creates a new handler using the given API key.
-func NewGeminiProposalHandler(apiKey string) *geminiProposalHandler {
+func NewGeminiProposalHandler(apiKey string) GeminiProposalHandler {
 	cfg := openai.DefaultConfig(apiKey)
 	cfg.BaseURL = geminiEndpoint
 	return &geminiProposalHandler{client: openai.NewClientWithConfig(cfg)}
@@ -155,7 +155,37 @@ Respond in the following language: "%s"`, maxProposedPromptChars, language)
 	return sb.String()
 }
 
-// Suppress unused-import warnings until later tasks use these.
-var (
-	_ = logrus.New
-)
+// Evaluate runs the full Gemini call: build the rewrite prompt, send it with strict JSON schema,
+// parse and validate the response.
+func (h *geminiProposalHandler) Evaluate(ctx context.Context, originalPrompt string, audits []AuditBlock, language string) (*ProposalResponse, error) {
+	fullPrompt := h.BuildPrompt(originalPrompt, audits, language)
+	logrus.Debugf("geminiProposalHandler.Evaluate: model=%s prompt_len=%d audits=%d language=%s", geminiModel, len(originalPrompt), len(audits), language)
+
+	resp, err := h.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+		Model: geminiModel,
+		Messages: []openai.ChatCompletionMessage{
+			{Role: openai.ChatMessageRoleUser, Content: fullPrompt},
+		},
+		ResponseFormat: &openai.ChatCompletionResponseFormat{
+			Type: openai.ChatCompletionResponseFormatTypeJSONSchema,
+			JSONSchema: &openai.ChatCompletionResponseFormatJSONSchema{
+				Name:   "proposal_response",
+				Schema: proposalJSONSchema,
+				Strict: false,
+			},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("gemini API error: %w", err)
+	}
+	if len(resp.Choices) == 0 {
+		return nil, fmt.Errorf("gemini returned no choices")
+	}
+
+	raw := []byte(resp.Choices[0].Message.Content)
+	parsed, perr := h.ParseProposalResponse(raw)
+	if perr != nil {
+		return nil, fmt.Errorf("invalid_evaluator_response: %w", perr)
+	}
+	return parsed, nil
+}
