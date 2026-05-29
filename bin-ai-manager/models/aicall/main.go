@@ -21,6 +21,11 @@ type PromptSnapshot struct {
 // MetaKeyPromptSnapshots is the Metadata map key for the prompt snapshot slice.
 const MetaKeyPromptSnapshots = "prompt_snapshots"
 
+// MetaKeyAutoAuditEnabled is the Metadata map key (bool) recording whether this AICall
+// should be auto-audited when it terminates. Frozen from the participating AI option(s)
+// at call-creation time.
+const MetaKeyAutoAuditEnabled = "auto_audit_enabled"
+
 // AIcall define
 type AIcall struct {
 	identity.Identity
