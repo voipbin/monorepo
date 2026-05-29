@@ -55,7 +55,7 @@ type aipromptproposalHandler struct {
 func NewAIPromptProposalHandler(
 	db dbhandler.DBHandler,
 	geminiHandler geminiproposalhandler.GeminiProposalHandler,
-) *aipromptproposalHandler {
+) AIPromptProposalHandler {
 	return &aipromptproposalHandler{
 		utilHandler:   utilhandler.NewUtilHandler(),
 		db:            db,
