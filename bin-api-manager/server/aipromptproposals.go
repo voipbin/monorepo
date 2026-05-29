@@ -36,9 +36,21 @@ func (h *server) PostAipromptproposals(c *gin.Context) {
 	}
 
 	aiID := uuid.FromStringOrNil(req.AiId)
+	if aiID == uuid.Nil {
+		log.Errorf("Could not parse the ai_id. ai_id: %s", req.AiId)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided ai_id is not a valid UUID."))
+		return
+	}
+
 	auditIDs := make([]uuid.UUID, 0, len(req.AuditIds))
 	for _, s := range req.AuditIds {
-		auditIDs = append(auditIDs, uuid.FromStringOrNil(s))
+		auditID := uuid.FromStringOrNil(s)
+		if auditID == uuid.Nil {
+			log.Errorf("Could not parse an audit_id. audit_id: %s", s)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided audit_id is not a valid UUID."))
+			return
+		}
+		auditIDs = append(auditIDs, auditID)
 	}
 
 	language := ""

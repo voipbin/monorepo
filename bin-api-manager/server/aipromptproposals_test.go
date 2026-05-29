@@ -100,6 +100,58 @@ func Test_PostAipromptproposals(t *testing.T) {
 	}
 }
 
+func Test_PostAipromptproposals_InvalidUUID_Returns400(t *testing.T) {
+	tests := []struct {
+		name string
+
+		reqBody []byte
+	}{
+		{
+			name:    "invalid ai_id",
+			reqBody: []byte(`{"ai_id":"not-a-uuid","audit_ids":["11111111-0000-0000-0000-000000000010"],"language":"en-US"}`),
+		},
+		{
+			name:    "invalid audit_id",
+			reqBody: []byte(`{"ai_id":"11111111-0000-0000-0000-000000000002","audit_ids":["11111111-0000-0000-0000-000000000010","not-a-uuid"],"language":"en-US"}`),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSvc := servicehandler.NewMockServiceHandler(mc)
+			h := &server{
+				serviceHandler: mockSvc,
+			}
+
+			agent := auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001"),
+				},
+			})
+
+			w := httptest.NewRecorder()
+			_, r := gin.CreateTestContext(w)
+
+			r.Use(func(c *gin.Context) {
+				c.Set("auth_identity", agent)
+			})
+			openapi_server.RegisterHandlers(r, h)
+
+			req, _ := http.NewRequest("POST", "/aipromptproposals", bytes.NewBuffer(tt.reqBody))
+			req.Header.Set("Content-Type", "application/json")
+
+			// No service call expected — request must be rejected at the handler layer.
+			r.ServeHTTP(w, req)
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Wrong match. expect: %d, got: %d, body: %s", http.StatusBadRequest, w.Code, w.Body.String())
+			}
+		})
+	}
+}
+
 func Test_GetAipromptproposals(t *testing.T) {
 	tests := []struct {
 		name  string
