@@ -73,9 +73,35 @@ func sanitize(text string) string {
 	return geminiaudithandler.NewGeminiAuditHandler("").Sanitize(text)
 }
 
+// ParseProposalResponse validates Gemini's JSON output for prompt-rewrite proposals.
+func (h *geminiProposalHandler) ParseProposalResponse(data []byte) (*ProposalResponse, error) {
+	var raw struct {
+		ProposedPrompt string `json:"proposed_prompt"`
+		Rationale      string `json:"rationale"`
+	}
+
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, fmt.Errorf("invalid JSON: %w", err)
+	}
+
+	if raw.ProposedPrompt == "" {
+		return nil, fmt.Errorf("proposed_prompt is empty")
+	}
+	if len(raw.ProposedPrompt) > maxProposedPromptChars {
+		return nil, fmt.Errorf("proposed_prompt exceeds max length %d", maxProposedPromptChars)
+	}
+	if raw.Rationale == "" {
+		return nil, fmt.Errorf("rationale is empty")
+	}
+	if len(raw.Rationale) > maxRationaleChars {
+		return nil, fmt.Errorf("rationale exceeds max length %d", maxRationaleChars)
+	}
+
+	return &ProposalResponse{ProposedPrompt: raw.ProposedPrompt, Rationale: raw.Rationale}, nil
+}
+
 // Suppress unused-import warnings until later tasks use these.
 var (
-	_ = fmt.Sprint
 	_ = strings.Contains
 	_ = logrus.New
 )
