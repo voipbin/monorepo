@@ -219,6 +219,11 @@ func (h *handler) AIPromptProposalCountProgressing(ctx context.Context, customer
 
 // AIAcceptProposal atomically applies an accepted proposal. Lock order: proposal -> AI.
 func (h *handler) AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, newHistoryID uuid.UUID, proposedPrompt string) error {
+	var (
+		aiID         uuid.UUID
+		refreshCache bool
+	)
+
 	tx, err := h.db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("AIAcceptProposal: BeginTx: %w", err)
@@ -226,6 +231,14 @@ func (h *handler) AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, ne
 	defer func() {
 		if err != nil {
 			_ = tx.Rollback()
+		}
+		// Refresh the AI cache on the two exit paths that mutated (or observed an
+		// already-mutated) ai_ais row: happy commit and ErrProposalAlreadyAccepted.
+		// The latter self-heals stale cache from a winning Accept whose cache write
+		// never ran (pod crash between tx.Commit and aiUpdateToCache). Use
+		// context.Background() so a cancelled request context cannot skip it.
+		if refreshCache && aiID != uuid.Nil {
+			_ = h.aiUpdateToCache(context.Background(), aiID)
 		}
 	}()
 
@@ -251,7 +264,15 @@ func (h *handler) AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, ne
 		err = ErrNotFound
 		return err
 	}
+
+	// Populate the function-scope aiID immediately after we read it from the
+	// locked proposal row. The deferred cache-refresh closure reads it on exit.
+	aiID, _ = uuid.FromBytes(pAIID)
+
 	if pStatus == string(aipromptproposal.StatusAccepted) {
+		// Self-heal: a previous Accept already committed, but its cache refresh
+		// may have been lost (winner's pod crash). Refresh on exit.
+		refreshCache = true
 		err = ErrProposalAlreadyAccepted
 		return err
 	}
@@ -260,7 +281,6 @@ func (h *handler) AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, ne
 		return err
 	}
 
-	aiID, _ := uuid.FromBytes(pAIID)
 	basisID, _ := uuid.FromBytes(pBasis)
 	customerID, _ := uuid.FromBytes(pCustomer)
 
@@ -330,5 +350,7 @@ func (h *handler) AIAcceptProposal(ctx context.Context, proposalID uuid.UUID, ne
 	if err = tx.Commit(); err != nil {
 		return fmt.Errorf("AIAcceptProposal: commit: %w", err)
 	}
+	// Happy path: AI row has been mutated. Trigger the deferred cache refresh.
+	refreshCache = true
 	return nil
 }
