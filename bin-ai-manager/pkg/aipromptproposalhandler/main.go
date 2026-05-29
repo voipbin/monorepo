@@ -5,13 +5,16 @@ package aipromptproposalhandler
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-ai-manager/models/aiaudit"
 	"monorepo/bin-ai-manager/models/aipromptproposal"
+	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/geminiproposalhandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
@@ -60,9 +63,6 @@ func NewAIPromptProposalHandler(
 		semaphore:     make(chan struct{}, maxConcurrentGlobal),
 	}
 }
-
-// Suppress unused-import until later tasks add code.
-var _ = time.Second
 
 // Create validates the request, captures the basis prompt, INSERTs the proposal row,
 // then spawns the background goroutine.
@@ -150,9 +150,122 @@ func (h *aipromptproposalHandler) Create(ctx context.Context, customerID uuid.UU
 	return reloaded, nil
 }
 
-// Stub for runProposalJob — filled in by Task 24.
-func (h *aipromptproposalHandler) runProposalJob(ctx context.Context, proposalID uuid.UUID, basisPrompt string, auditIDs []uuid.UUID, language string) {
-	_, _, _, _, _ = ctx, proposalID, basisPrompt, auditIDs, language
+// runProposalJob runs the Gemini evaluation for a single proposal in a goroutine.
+func (h *aipromptproposalHandler) runProposalJob(parent context.Context, proposalID uuid.UUID, basisPrompt string, auditIDs []uuid.UUID, language string) {
+	h.semaphore <- struct{}{}
+
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "aipromptproposalHandler.runProposalJob",
+		"proposal_id": proposalID,
+	})
+
+	ctx, cancel := context.WithTimeout(parent, geminiTimeoutSeconds*time.Second)
+	defer cancel()
+
+	finalStatus := aipromptproposal.StatusFailed
+	finalProposed := ""
+	finalRationale := ""
+	finalErr := ""
+
+	defer func() {
+		defer func() { <-h.semaphore }()
+		if r := recover(); r != nil {
+			log.Errorf("panic in runProposalJob: %v\n%s", r, debug.Stack())
+			finalErr = string(aipromptproposal.ErrorEvaluatorUnavailable)
+			finalStatus = aipromptproposal.StatusFailed
+			finalProposed = ""
+			finalRationale = ""
+		}
+		writeCtx, writeCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer writeCancel()
+		n, dbErr := h.db.AIPromptProposalUpdateFinal(writeCtx, proposalID, finalStatus, finalProposed, finalRationale, finalErr)
+		if dbErr != nil {
+			log.WithError(dbErr).Error("could not write final proposal result")
+		} else if n == 0 {
+			log.Warnf("final proposal result not written: row was deleted or swept (intended status=%s)", finalStatus)
+		} else {
+			log.Debugf("final proposal result written: status=%s", finalStatus)
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		log.Warn("context cancelled before Gemini call")
+		finalErr = string(aipromptproposal.ErrorCancelled)
+		return
+	default:
+	}
+
+	blocks, blockErr := h.loadAuditBlocks(ctx, auditIDs)
+	if blockErr != nil {
+		log.WithError(blockErr).Error("could not load audit blocks")
+		finalErr = string(aipromptproposal.ErrorEvaluatorUnavailable)
+		return
+	}
+
+	resp, err := h.geminiHandler.Evaluate(ctx, basisPrompt, blocks, language)
+	if err != nil {
+		log.WithError(err).Error("gemini evaluation failed")
+		if strings.Contains(err.Error(), "invalid_evaluator_response") {
+			finalErr = string(aipromptproposal.ErrorInvalidEvaluatorResponse)
+		} else {
+			finalErr = string(aipromptproposal.ErrorEvaluatorUnavailable)
+		}
+		return
+	}
+
+	finalStatus = aipromptproposal.StatusCompleted
+	finalProposed = resp.ProposedPrompt
+	finalRationale = resp.Rationale
+}
+
+// loadAuditBlocks loads audit records and their transcripts into AuditBlocks for Gemini.
+func (h *aipromptproposalHandler) loadAuditBlocks(ctx context.Context, auditIDs []uuid.UUID) ([]geminiproposalhandler.AuditBlock, error) {
+	out := make([]geminiproposalhandler.AuditBlock, 0, len(auditIDs))
+	for i, id := range auditIDs {
+		a, err := h.db.AIAuditGet(ctx, id)
+		if err != nil {
+			return nil, fmt.Errorf("could not load audit %s: %w", id, err)
+		}
+		if a.TMDelete != nil || a.Status != aiaudit.StatusCompleted {
+			continue
+		}
+
+		dim, sumErr := parseAuditEvaluation(a.Evaluation)
+		if sumErr != nil {
+			return nil, fmt.Errorf("could not parse evaluation for audit %s: %w", id, sumErr)
+		}
+
+		msgs, msgErr := h.db.MessageList(ctx, 500, "", map[message.Field]any{
+			message.FieldAIcallID: a.AIcallID,
+			message.FieldDeleted:  false,
+		})
+		if msgErr != nil {
+			return nil, fmt.Errorf("could not load messages for audit %s: %w", id, msgErr)
+		}
+
+		transcript := buildTranscript(msgs, maxTranscriptCharsPerAudit)
+
+		out = append(out, geminiproposalhandler.AuditBlock{
+			Index:           i + 1,
+			OverallScore:    derefScore(a.OverallScore),
+			HelpfulnessR:    dim.Helpfulness.Reason,
+			AccuracyR:       dim.Accuracy.Reason,
+			ToneR:           dim.Tone.Reason,
+			GoalCompletionR: dim.GoalCompletion.Reason,
+			ToolUsageR:      dim.ToolUsageR,
+			Summary:         dim.Summary,
+			Transcript:      transcript,
+		})
+	}
+	return out, nil
+}
+
+func derefScore(p *int) int {
+	if p == nil {
+		return 0
+	}
+	return *p
 }
 
 // Get returns one proposal by ID.
