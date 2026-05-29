@@ -3,6 +3,7 @@ create table ai_ai_prompt_histories (
   customer_id binary(16)  not null,
   ai_id       binary(16)  not null,
   prompt      longtext    not null,
+  proposal_id binary(16)  not null default 0x00000000000000000000000000000000,
   tm_create   datetime(6) not null,
   primary key (id)
 );
