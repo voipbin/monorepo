@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aiaudithandler"
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
+	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
@@ -49,15 +50,16 @@ type listenHandler struct {
 
 	utilHandler utilhandler.UtilHandler
 
-	aiHandler              aihandler.AIHandler
-	aicallHandler          aicallhandler.AIcallHandler
-	aiauditHandler         aiaudithandler.AIAuditHandler
-	aiprompthistoryHandler aiprompthistoryhandler.AIPromptHistoryHandler
-	messageHandler         messagehandler.MessageHandler
-	summaryHandler         summaryhandler.SummaryHandler
-	toolHandler            toolhandler.ToolHandler
-	teamHandler            teamhandler.TeamHandler
-	participantHandler     participanthandler.ParticipantHandler
+	aiHandler               aihandler.AIHandler
+	aicallHandler           aicallhandler.AIcallHandler
+	aiauditHandler          aiaudithandler.AIAuditHandler
+	aiprompthistoryHandler  aiprompthistoryhandler.AIPromptHistoryHandler
+	aipromptproposalHandler aipromptproposalhandler.AIPromptProposalHandler
+	messageHandler          messagehandler.MessageHandler
+	summaryHandler          summaryhandler.SummaryHandler
+	toolHandler             toolhandler.ToolHandler
+	teamHandler             teamhandler.TeamHandler
+	participantHandler      participanthandler.ParticipantHandler
 }
 
 var (
@@ -88,6 +90,13 @@ var (
 	regV1AIAuditsGet = regexp.MustCompile(`/v1/aiaudits\?`)
 	regV1AIAudits    = regexp.MustCompile(`/v1/aiaudits$`)
 	regV1AIAuditsID  = regexp.MustCompile("/v1/aiaudits/" + regUUID + "$")
+
+	// aipromptproposals
+	regV1AIPromptProposalsGet      = regexp.MustCompile(`/v1/aipromptproposals\?`)
+	regV1AIPromptProposals         = regexp.MustCompile(`/v1/aipromptproposals$`)
+	regV1AIPromptProposalsID       = regexp.MustCompile("/v1/aipromptproposals/" + regUUID + "$")
+	regV1AIPromptProposalsIDAccept = regexp.MustCompile("/v1/aipromptproposals/" + regUUID + "/accept$")
+	regV1AIPromptProposalsIDReject = regexp.MustCompile("/v1/aipromptproposals/" + regUUID + "/reject$")
 
 	// messages
 	regV1MessagesGet = regexp.MustCompile(`/v1/messages\?`)
@@ -181,6 +190,7 @@ func NewListenHandler(
 	aicallHandler aicallhandler.AIcallHandler,
 	aiauditHandler aiaudithandler.AIAuditHandler,
 	aiprompthistoryHandler aiprompthistoryhandler.AIPromptHistoryHandler,
+	aipromptproposalHandler aipromptproposalhandler.AIPromptProposalHandler,
 	messageHandler messagehandler.MessageHandler,
 	summaryHandler summaryhandler.SummaryHandler,
 	toolHandler toolhandler.ToolHandler,
@@ -194,15 +204,16 @@ func NewListenHandler(
 
 		utilHandler: utilHandler,
 
-		aiHandler:              aiHandler,
-		aicallHandler:          aicallHandler,
-		aiauditHandler:         aiauditHandler,
-		aiprompthistoryHandler: aiprompthistoryHandler,
-		messageHandler:         messageHandler,
-		summaryHandler:         summaryHandler,
-		toolHandler:            toolHandler,
-		teamHandler:            teamHandler,
-		participantHandler:     participantHandler,
+		aiHandler:               aiHandler,
+		aicallHandler:           aicallHandler,
+		aiauditHandler:          aiauditHandler,
+		aiprompthistoryHandler:  aiprompthistoryHandler,
+		aipromptproposalHandler: aipromptproposalHandler,
+		messageHandler:          messageHandler,
+		summaryHandler:          summaryHandler,
+		toolHandler:             toolHandler,
+		teamHandler:             teamHandler,
+		participantHandler:      participantHandler,
 	}
 
 	return h
@@ -354,6 +365,39 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AIAuditsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1AIAuditsIDDelete(ctx, m)
 		requestType = "/v1/aiaudits/<id>"
+
+	///////////////
+	// aipromptproposals
+	///////////////
+	// POST /aipromptproposals/<id>/accept
+	case regV1AIPromptProposalsIDAccept.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIPromptProposalsIDAcceptPost(ctx, m)
+		requestType = "/v1/aipromptproposals/<id>/accept"
+
+	// POST /aipromptproposals/<id>/reject
+	case regV1AIPromptProposalsIDReject.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIPromptProposalsIDRejectPost(ctx, m)
+		requestType = "/v1/aipromptproposals/<id>/reject"
+
+	// GET /aipromptproposals
+	case regV1AIPromptProposalsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIPromptProposalsGet(ctx, m)
+		requestType = "/v1/aipromptproposals"
+
+	// POST /aipromptproposals
+	case regV1AIPromptProposals.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1AIPromptProposalsPost(ctx, m)
+		requestType = "/v1/aipromptproposals"
+
+	// GET /aipromptproposals/<id>
+	case regV1AIPromptProposalsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1AIPromptProposalsIDGet(ctx, m)
+		requestType = "/v1/aipromptproposals/<id>"
+
+	// DELETE /aipromptproposals/<id>
+	case regV1AIPromptProposalsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1AIPromptProposalsIDDelete(ctx, m)
+		requestType = "/v1/aipromptproposals/<id>"
 
 	///////////////
 	// messages
