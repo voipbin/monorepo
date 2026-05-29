@@ -208,6 +208,7 @@ type RequestHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		autoAICallAuditEnabled bool,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIDirectHashRegenerate(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
@@ -226,6 +227,7 @@ type RequestHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		autoAICallAuditEnabled bool,
 	) (*amai.AI, error)
 
 	// ai-manager prompt histories

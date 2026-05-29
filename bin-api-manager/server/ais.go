@@ -55,6 +55,11 @@ func (h *server) PostAis(c *gin.Context) {
 		sttLanguage = *req.SttLanguage
 	}
 
+	autoAICallAuditEnabled := false
+	if req.AutoAicallAuditEnabled != nil {
+		autoAICallAuditEnabled = *req.AutoAicallAuditEnabled
+	}
+
 	res, err := h.serviceHandler.AICreate(
 		c.Request.Context(),
 		a,
@@ -70,6 +75,7 @@ func (h *server) PostAis(c *gin.Context) {
 		amai.STTType(req.SttType),
 		sttLanguage,
 		toolNames,
+		autoAICallAuditEnabled,
 	)
 	if err != nil {
 		log.Errorf("Could not create a AI. err: %v", err)
@@ -246,6 +252,11 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		sttLanguage = *req.SttLanguage
 	}
 
+	autoAICallAuditEnabled := false
+	if req.AutoAicallAuditEnabled != nil {
+		autoAICallAuditEnabled = *req.AutoAicallAuditEnabled
+	}
+
 	res, err := h.serviceHandler.AIUpdate(
 		c.Request.Context(),
 		a,
@@ -262,6 +273,7 @@ func (h *server) PutAisId(c *gin.Context, id string) {
 		amai.STTType(req.SttType),
 		sttLanguage,
 		toolNames,
+		autoAICallAuditEnabled,
 	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)
