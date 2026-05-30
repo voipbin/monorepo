@@ -13,6 +13,8 @@ Key fields:
 - `tool_names` — list of LLM tool names enabled for this AI
 - `tts_type`, `stt_type` — voice provider selection
 - `voice_gender`, `voice_language` — TTS voice selection parameters
+- `smart_turn_enabled` — boolean; enables smart turn detection during AI call sessions
+- `auto_aicall_audit_enabled` — boolean; when true, any finished AICall involving this AI is automatically audited (triggers `AIAudit` creation on AICall termination)
 
 ### AIcall (Session)
 Active conversation session linking an AI configuration to a reference resource.

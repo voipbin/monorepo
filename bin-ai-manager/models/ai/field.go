@@ -28,6 +28,8 @@ const (
 	FieldVADConfig        Field = "vad_config"
 	FieldSmartTurnEnabled Field = "smart_turn_enabled"
 
+	FieldAutoAICallAuditEnabled Field = "auto_aicall_audit_enabled"
+
 	FieldToolNames Field = "tool_names"
 
 	FieldDirectID   Field = "direct_id"

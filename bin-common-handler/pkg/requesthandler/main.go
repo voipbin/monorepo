@@ -208,6 +208,7 @@ type RequestHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		autoAICallAuditEnabled bool,
 	) (*amai.AI, error)
 	AIV1AIDelete(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
 	AIV1AIDirectHashRegenerate(ctx context.Context, aiID uuid.UUID) (*amai.AI, error)
@@ -226,6 +227,7 @@ type RequestHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		autoAICallAuditEnabled bool,
 	) (*amai.AI, error)
 
 	// ai-manager prompt histories
@@ -331,6 +333,7 @@ type RequestHandler interface {
 
 	// ai-manager aiaudit
 	AIV1AIAuditCreate(ctx context.Context, customerID uuid.UUID, aicallID uuid.UUID, language string) ([]*amaiaudit.AIAudit, error)
+	AIV1AIAuditCreateWithDelay(ctx context.Context, customerID uuid.UUID, aicallID uuid.UUID, language string, delay int) error
 	AIV1AIAuditList(ctx context.Context, pageToken string, pageSize uint64, filters map[amaiaudit.Field]any) ([]*amaiaudit.AIAudit, error)
 	AIV1AIAuditGet(ctx context.Context, id uuid.UUID) (*amaiaudit.AIAudit, error)
 	AIV1AIAuditDelete(ctx context.Context, id uuid.UUID) (*amaiaudit.AIAudit, error)

@@ -38,6 +38,7 @@ func (h *aiHandler) dbCreate(
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
+	autoAICallAuditEnabled bool,
 	currentPromptHistoryID uuid.UUID,
 ) (*ai.AI, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -82,6 +83,8 @@ func (h *aiHandler) dbCreate(
 
 		VADConfig:        vadConfig,
 		SmartTurnEnabled: smartTurnEnabled,
+
+		AutoAICallAuditEnabled: autoAICallAuditEnabled,
 
 		DirectID:   d.ID,
 		DirectHash: d.Hash,
@@ -182,9 +185,10 @@ func (h *aiHandler) dbUpdate(
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
+	autoAICallAuditEnabled bool,
 ) (*ai.AI, error) {
 	fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
-		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
+		ttsType, ttsVoice, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 
 	if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 		return nil, errors.Wrapf(err, "could not update ai")
@@ -214,6 +218,7 @@ func (h *aiHandler) buildUpdateFields(
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
+	autoAICallAuditEnabled bool,
 ) map[ai.Field]any {
 	return map[ai.Field]any{
 		ai.FieldName:             name,
@@ -230,5 +235,6 @@ func (h *aiHandler) buildUpdateFields(
 		ai.FieldToolNames:        toolNames,
 		ai.FieldVADConfig:        vadConfig,
 		ai.FieldSmartTurnEnabled: smartTurnEnabled,
+		ai.FieldAutoAICallAuditEnabled: autoAICallAuditEnabled,
 	}
 }

@@ -32,6 +32,7 @@ func (h *aiHandler) Create(
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
+	autoAICallAuditEnabled bool,
 ) (*ai.AI, error) {
 
 	if !ai.IsValidEngineModel(engineModel) {
@@ -58,7 +59,7 @@ func (h *aiHandler) Create(
 
 	res, err := h.dbCreate(ctx, customerID, name, detail, engineModel, parameter, engineKey, ragID,
 		initPrompt, ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled,
-		currentPromptHistoryID)
+		autoAICallAuditEnabled, currentPromptHistoryID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create ai")
 	}
@@ -97,6 +98,7 @@ func (h *aiHandler) Update(
 	toolNames []tool.ToolName,
 	vadConfig *ai.VADConfig,
 	smartTurnEnabled bool,
+	autoAICallAuditEnabled bool,
 ) (*ai.AI, error) {
 
 	if !ai.IsValidEngineModel(engineModel) {
@@ -128,7 +130,7 @@ func (h *aiHandler) Update(
 	case promptChanged:
 		historyID := h.utilHandler.UUIDCreate()
 		fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
-			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = historyID
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 			return nil, errors.Wrapf(err, "could not update ai")
@@ -152,7 +154,7 @@ func (h *aiHandler) Update(
 
 	case promptCleared:
 		fields := h.buildUpdateFields(name, detail, engineModel, parameter, engineKey, ragID, "",
-			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 		fields[ai.FieldCurrentPromptHistoryID] = uuid.Nil
 		if err := h.db.AIUpdate(ctx, id, fields); err != nil {
 			return nil, errors.Wrapf(err, "could not update ai (clear prompt)")
@@ -166,6 +168,6 @@ func (h *aiHandler) Update(
 
 	default: // prompt unchanged
 		return h.dbUpdate(ctx, id, name, detail, engineModel, parameter, engineKey, ragID, initPrompt,
-			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled)
+			ttsType, ttsVoiceID, sttType, sttLanguage, toolNames, vadConfig, smartTurnEnabled, autoAICallAuditEnabled)
 	}
 }

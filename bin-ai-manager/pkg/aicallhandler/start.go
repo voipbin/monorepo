@@ -122,7 +122,8 @@ func (h *aicallHandler) resolveAIForTeam(ctx context.Context, teamID uuid.UUID) 
 // buildPromptSnapshots constructs the []PromptSnapshot to store in AIcall.Metadata at call start.
 // For AssistanceTypeAI: one snapshot for the single AI config.
 // For AssistanceTypeTeam: one snapshot per team member (partial-failure-tolerant via resolveAIForTeam).
-func (h *aicallHandler) buildPromptSnapshots(ctx context.Context, a *ai.AI, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID) []aicall.PromptSnapshot {
+// The returned bool is the auto-audit flag: true if any participating AI has AutoAICallAuditEnabled set.
+func (h *aicallHandler) buildPromptSnapshots(ctx context.Context, a *ai.AI, assistanceType aicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID) ([]aicall.PromptSnapshot, bool) {
 	switch assistanceType {
 	case aicall.AssistanceTypeAI:
 		substituted := h.getInitPrompt(ctx, a, activeflowID)
@@ -132,17 +133,21 @@ func (h *aicallHandler) buildPromptSnapshots(ctx context.Context, a *ai.AI, assi
 				PromptHistoryID: a.CurrentPromptHistoryID,
 				Prompt:          substituted,
 			},
-		}
+		}, a.AutoAICallAuditEnabled
 
 	case aicall.AssistanceTypeTeam:
 		memberAIs, err := h.resolveAIForTeam(ctx, assistanceID)
 		if err != nil {
 			logrus.WithField("func", "buildPromptSnapshots").
 				Errorf("Could not resolve team AIs — storing empty snapshots. err: %v", err)
-			return []aicall.PromptSnapshot{}
+			return []aicall.PromptSnapshot{}, false
 		}
 		snapshots := make([]aicall.PromptSnapshot, 0, len(memberAIs))
+		autoAudit := false
 		for memberID, memberAI := range memberAIs {
+			if memberAI.AutoAICallAuditEnabled {
+				autoAudit = true
+			}
 			substituted := h.getInitPrompt(ctx, memberAI, activeflowID)
 			snapshots = append(snapshots, aicall.PromptSnapshot{
 				AIID:            memberAI.ID,
@@ -151,10 +156,10 @@ func (h *aicallHandler) buildPromptSnapshots(ctx context.Context, a *ai.AI, assi
 				MemberID:        memberID,
 			})
 		}
-		return snapshots
+		return snapshots, autoAudit
 
 	default:
-		return []aicall.PromptSnapshot{}
+		return []aicall.PromptSnapshot{}, false
 	}
 }
 
@@ -610,9 +615,10 @@ func (h *aicallHandler) startAIcallByRealtime(
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
-	snapshots := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
+	snapshots, autoAudit := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
 	metadata := map[string]any{
-		aicall.MetaKeyPromptSnapshots: snapshots,
+		aicall.MetaKeyPromptSnapshots:  snapshots,
+		aicall.MetaKeyAutoAuditEnabled: autoAudit,
 	}
 	res, err := h.Create(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
 		confbridgeID, pipecatcallID, currentMemberID, parameter, metadata)
@@ -665,9 +671,10 @@ func (h *aicallHandler) startAIcallByMessaging(
 
 	// create ai call
 	pipecatcallID := h.utilHandler.UUIDCreate()
-	snapshots := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
+	snapshots, autoAudit := h.buildPromptSnapshots(ctx, a, assistanceType, assistanceID, activeflowID)
 	metadata := map[string]any{
-		aicall.MetaKeyPromptSnapshots: snapshots,
+		aicall.MetaKeyPromptSnapshots:  snapshots,
+		aicall.MetaKeyAutoAuditEnabled: autoAudit,
 	}
 	res, err := h.CreateByMessaging(ctx, a, assistanceType, assistanceID, activeflowID, referenceType, referenceID,
 		pipecatcallID, currentMemberID, parameter, metadata)

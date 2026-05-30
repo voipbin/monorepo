@@ -282,6 +282,7 @@ func Test_PostAis(t *testing.T) {
 				tt.expectedSTTType,
 				tt.expectedSTTLanguage,
 				tt.expectedToolNames,
+				false, // autoAICallAuditEnabled
 			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)
@@ -776,6 +777,7 @@ func Test_PutAisId(t *testing.T) {
 				tt.expectedSTTType,
 				tt.expectedSTTLanguage,
 				tt.expectedToolNames,
+				false, // autoAICallAuditEnabled
 			).Return(tt.responseAI, nil)
 
 			r.ServeHTTP(w, req)

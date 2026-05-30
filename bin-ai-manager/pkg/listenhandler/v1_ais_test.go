@@ -177,6 +177,7 @@ func Test_processV1AIsPost(t *testing.T) {
 				gomock.Any(), // toolNames
 				gomock.Any(), // vadConfig
 				gomock.Any(), // smartTurnEnabled
+				gomock.Any(), // autoAICallAuditEnabled
 			).Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -396,6 +397,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 				gomock.Any(), // toolNames
 				gomock.Any(), // vadConfig
 				gomock.Any(), // smartTurnEnabled
+				gomock.Any(), // autoAICallAuditEnabled
 			).Return(tt.responseAI, nil)
 			res, err := h.processRequest(tt.request)
 			if err != nil {

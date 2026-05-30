@@ -120,6 +120,7 @@ func Test_ServiceStart_serviceStartReferenceTypeCall(t *testing.T) {
 							Prompt: "hello, this is init prompt message.",
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 			expectMessageTexts: []string{
@@ -524,6 +525,7 @@ func Test_ServiceStartTypeTask(t *testing.T) {
 							Prompt: "hello, this is init prompt message.",
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 			expectMessageTexts: []string{

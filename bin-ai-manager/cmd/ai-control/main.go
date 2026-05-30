@@ -237,6 +237,7 @@ func runCreate(cmd *cobra.Command, args []string) error {
 		nil, // toolNames - nil means default (all tools)
 		vadConfig,
 		smartTurnEnabled,
+		false, // autoAICallAuditEnabled - not supported via CLI yet
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to create AI")
@@ -359,6 +360,7 @@ func runUpdate(cmd *cobra.Command, args []string) error {
 		nil, // toolNames - nil keeps existing value
 		vadConfig,
 		smartTurnEnabled,
+		false, // autoAICallAuditEnabled - not supported via CLI yet
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to update AI")

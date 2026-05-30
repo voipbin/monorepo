@@ -25,6 +25,8 @@ create table ai_ais(
 
   smart_turn_enabled  boolean not null default 0,      -- smart turn detection enabled
 
+  auto_aicall_audit_enabled  boolean not null default 0,   -- auto aicall audit enabled
+
   tool_names  json,           -- enabled tools for this AI
 
   current_prompt_history_id  binary(16),   -- current prompt history id

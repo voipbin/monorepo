@@ -270,6 +270,7 @@ type ServiceHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		autoAICallAuditEnabled bool,
 	) (*amai.WebhookMessage, error)
 	AIGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*amai.WebhookMessage, error)
 	AIGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*amai.WebhookMessage, error)
@@ -290,6 +291,7 @@ type ServiceHandler interface {
 		sttType amai.STTType,
 		sttLanguage string,
 		toolNames []amtool.ToolName,
+		autoAICallAuditEnabled bool,
 	) (*amai.WebhookMessage, error)
 	AIDirectHashRegenerate(ctx context.Context, a *auth.AuthIdentity, aiID uuid.UUID) (*amai.WebhookMessage, error)
 

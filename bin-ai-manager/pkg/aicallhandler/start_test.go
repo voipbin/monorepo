@@ -1893,6 +1893,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 							Prompt: "You are a helpful assistant.",
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 			expectVariables: map[string]string{
@@ -1933,6 +1934,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 							Prompt: "You are a helpful assistant.",
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 		},
@@ -2011,6 +2013,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 							MemberID: uuid.FromStringOrNil("c5111111-b659-11f0-b8ef-13f90dff9ee8"),
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 			expectVariables: map[string]string{
@@ -2056,6 +2059,7 @@ func Test_startAIcallByRealtime(t *testing.T) {
 							MemberID: uuid.FromStringOrNil("c5111111-b659-11f0-b8ef-13f90dff9ee8"),
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 		},
@@ -2221,6 +2225,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 							Prompt: "You are a helpful assistant.",
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 			expectVariables: map[string]string{
@@ -2262,6 +2267,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 							Prompt: "You are a helpful assistant.",
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 		},
@@ -2310,6 +2316,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 							AIID: uuid.FromStringOrNil("f10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 			expectVariables: map[string]string{
@@ -2343,6 +2350,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 							AIID: uuid.FromStringOrNil("f10ecf94-b659-11f0-b8ef-13f90dff9ee8"),
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 		},
@@ -2391,6 +2399,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 							AIID: uuid.FromStringOrNil("e40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 			expectVariables: map[string]string{
@@ -2427,6 +2436,7 @@ func Test_startAIcallByMessaging(t *testing.T) {
 							AIID: uuid.FromStringOrNil("e40ecf94-b659-11f0-b8ef-13f90dff9ee8"),
 						},
 					},
+					aicall.MetaKeyAutoAuditEnabled: false,
 				},
 			},
 		},
@@ -3447,6 +3457,122 @@ func Test_resolveAIForTeam(t *testing.T) {
 				if _, ok := res[k]; !ok {
 					t.Errorf("Wrong match. expected key %s not found in result map", k)
 				}
+			}
+		})
+	}
+}
+
+func Test_buildPromptSnapshots_autoAudit(t *testing.T) {
+	teamID := uuid.FromStringOrNil("aaaa0000-0000-0000-0000-000000000001")
+	member1ID := uuid.FromStringOrNil("aaaa1111-0000-0000-0000-000000000001")
+	member2ID := uuid.FromStringOrNil("aaaa2222-0000-0000-0000-000000000001")
+	memberAI1ID := uuid.FromStringOrNil("aaaa3333-0000-0000-0000-000000000001")
+	memberAI2ID := uuid.FromStringOrNil("aaaa4444-0000-0000-0000-000000000001")
+
+	tests := []struct {
+		name           string
+		a              *ai.AI
+		assistanceType aicall.AssistanceType
+		assistanceID   uuid.UUID
+		mockSetup      func(mockTeam *teamhandler.MockTeamHandler, mockAI *aihandler.MockAIHandler, mockReq *requesthandler.MockRequestHandler)
+		expectAudit    bool
+	}{
+		{
+			name: "single AI with auto audit enabled",
+			a: &ai.AI{
+				Identity:               commonidentity.Identity{ID: uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")},
+				AutoAICallAuditEnabled: true,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001"),
+			mockSetup:      func(_ *teamhandler.MockTeamHandler, _ *aihandler.MockAIHandler, _ *requesthandler.MockRequestHandler) {},
+			expectAudit:    true,
+		},
+		{
+			name: "single AI with auto audit disabled",
+			a: &ai.AI{
+				Identity:               commonidentity.Identity{ID: uuid.FromStringOrNil("11111111-0000-0000-0000-000000000002")},
+				AutoAICallAuditEnabled: false,
+			},
+			assistanceType: aicall.AssistanceTypeAI,
+			assistanceID:   uuid.FromStringOrNil("11111111-0000-0000-0000-000000000002"),
+			mockSetup:      func(_ *teamhandler.MockTeamHandler, _ *aihandler.MockAIHandler, _ *requesthandler.MockRequestHandler) {},
+			expectAudit:    false,
+		},
+		{
+			name: "team with any member having auto audit enabled returns true",
+			a: &ai.AI{
+				Identity: commonidentity.Identity{ID: memberAI1ID},
+			},
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   teamID,
+			mockSetup: func(mockTeam *teamhandler.MockTeamHandler, mockAI *aihandler.MockAIHandler, _ *requesthandler.MockRequestHandler) {
+				mockTeam.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Members: []team.Member{
+						{ID: member1ID, AIID: memberAI1ID},
+						{ID: member2ID, AIID: memberAI2ID},
+					},
+				}, nil)
+				mockAI.EXPECT().Get(gomock.Any(), memberAI1ID).Return(&ai.AI{
+					Identity:               commonidentity.Identity{ID: memberAI1ID},
+					AutoAICallAuditEnabled: false,
+				}, nil)
+				mockAI.EXPECT().Get(gomock.Any(), memberAI2ID).Return(&ai.AI{
+					Identity:               commonidentity.Identity{ID: memberAI2ID},
+					AutoAICallAuditEnabled: true,
+				}, nil)
+			},
+			expectAudit: true,
+		},
+		{
+			name: "team with all members having auto audit disabled returns false",
+			a: &ai.AI{
+				Identity: commonidentity.Identity{ID: memberAI1ID},
+			},
+			assistanceType: aicall.AssistanceTypeTeam,
+			assistanceID:   teamID,
+			mockSetup: func(mockTeam *teamhandler.MockTeamHandler, mockAI *aihandler.MockAIHandler, _ *requesthandler.MockRequestHandler) {
+				mockTeam.EXPECT().Get(gomock.Any(), teamID).Return(&team.Team{
+					Members: []team.Member{
+						{ID: member1ID, AIID: memberAI1ID},
+						{ID: member2ID, AIID: memberAI2ID},
+					},
+				}, nil)
+				mockAI.EXPECT().Get(gomock.Any(), memberAI1ID).Return(&ai.AI{
+					Identity:               commonidentity.Identity{ID: memberAI1ID},
+					AutoAICallAuditEnabled: false,
+				}, nil)
+				mockAI.EXPECT().Get(gomock.Any(), memberAI2ID).Return(&ai.AI{
+					Identity:               commonidentity.Identity{ID: memberAI2ID},
+					AutoAICallAuditEnabled: false,
+				}, nil)
+			},
+			expectAudit: false,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockTeam := teamhandler.NewMockTeamHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+
+			tt.mockSetup(mockTeam, mockAI, mockReq)
+
+			h := &aicallHandler{
+				reqHandler:  mockReq,
+				teamHandler: mockTeam,
+				aiHandler:   mockAI,
+			}
+			ctx := context.Background()
+
+			_, gotAudit := h.buildPromptSnapshots(ctx, tt.a, tt.assistanceType, tt.assistanceID, uuid.Nil)
+			if gotAudit != tt.expectAudit {
+				t.Errorf("wrong auto audit flag. expect: %v, got: %v", tt.expectAudit, gotAudit)
 			}
 		})
 	}

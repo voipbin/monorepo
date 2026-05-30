@@ -2138,6 +2138,10 @@ components:
           type: boolean
           description: Enable smart turn detection using Pipecat's LocalSmartTurnAnalyzerV3. When enabled, forces VAD stop_secs to 0.2 for optimal turn-taking.
           example: false
+        auto_aicall_audit_enabled:
+          type: boolean
+          description: When true, any finished AICall involving this AI is audited automatically.
+          example: false
         tool_names:
           type: array
           items:

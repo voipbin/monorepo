@@ -101,3 +101,28 @@ func (r *requestHandler) AIV1AIAuditDelete(ctx context.Context, id uuid.UUID) (*
 
 	return &res, nil
 }
+
+// AIV1AIAuditCreateWithDelay asks ai-manager to create audit job(s) for an aicall after a
+// delay. It is fire-and-forget: with delay > 0 the request is published to the queue and no
+// response is awaited. It returns nil on a successful publish.
+func (r *requestHandler) AIV1AIAuditCreateWithDelay(ctx context.Context, customerID uuid.UUID, aicallID uuid.UUID, language string, delay int) error {
+	uri := "/v1/aiaudits"
+
+	data := &amrequest.V1DataAIAuditsPost{
+		CustomerID: customerID,
+		AIcallID:   aicallID,
+		Language:   language,
+	}
+
+	m, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	tmp, err := r.sendRequestAI(ctx, uri, sock.RequestMethodPost, "ai/aiaudits", requestTimeoutDefault, delay, ContentTypeJSON, m)
+	if err != nil {
+		return err
+	}
+
+	return parseResponse(tmp, nil)
+}

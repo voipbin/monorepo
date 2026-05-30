@@ -48,6 +48,7 @@ func (h *serviceHandler) AICreate(
 	sttType amai.STTType,
 	sttLanguage string,
 	toolNames []amtool.ToolName,
+	autoAICallAuditEnabled bool,
 ) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
@@ -68,6 +69,8 @@ func (h *serviceHandler) AICreate(
 		"stt_type":     sttType,
 		"stt_language": sttLanguage,
 		"tool_names":   toolNames,
+
+		"auto_aicall_audit_enabled": autoAICallAuditEnabled,
 	})
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
@@ -105,6 +108,7 @@ func (h *serviceHandler) AICreate(
 		sttType,
 		sttLanguage,
 		toolNames,
+		autoAICallAuditEnabled,
 	)
 	if err != nil {
 		log.Errorf("Could not create a new ai. err: %v", err)
@@ -308,6 +312,7 @@ func (h *serviceHandler) AIUpdate(
 	sttType amai.STTType,
 	sttLanguage string,
 	toolNames []amtool.ToolName,
+	autoAICallAuditEnabled bool,
 ) (*amai.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
@@ -329,6 +334,8 @@ func (h *serviceHandler) AIUpdate(
 		"stt_type":     sttType,
 		"stt_language": sttLanguage,
 		"tool_names":   toolNames,
+
+		"auto_aicall_audit_enabled": autoAICallAuditEnabled,
 	})
 
 	// get chat
@@ -373,6 +380,7 @@ func (h *serviceHandler) AIUpdate(
 		sttType,
 		sttLanguage,
 		toolNames,
+		autoAICallAuditEnabled,
 	)
 	if err != nil {
 		log.Errorf("Could not update the ai. err: %v", err)

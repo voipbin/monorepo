@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -254,6 +255,127 @@ func Test_ProcessTerminate(t *testing.T) {
 
 			if !reflect.DeepEqual(res, tt.responseAicall) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.responseAicall, res)
+			}
+		})
+	}
+}
+
+// Test_ProcessTerminate_autoAuditTrigger verifies that the auto-audit fire-and-forget hook
+// fires exactly when MetaKeyAutoAuditEnabled is true, and that a publish error from
+// AIV1AIAuditCreateWithDelay does NOT fail termination.
+func Test_ProcessTerminate_autoAuditTrigger(t *testing.T) {
+	// Shared IDs used across test cases.
+	aicallID := uuid.FromStringOrNil("11111111-0000-0000-0000-000000000001")
+	customerID := uuid.FromStringOrNil("22222222-0000-0000-0000-000000000002")
+
+	// baseAIcall is the aicall returned by the first Get call (h.Get at the top of ProcessTerminate).
+	// ReferenceTypeCall skips the FlowV1ActiveflowContinue branch.
+	// PipecatcallID == uuid.Nil and ConfbridgeID == uuid.Nil skip the pipecat/confbridge branches.
+	makeBaseAIcall := func(meta map[string]any) *aicall.AIcall {
+		return &aicall.AIcall{
+			Identity: commonidentity.Identity{
+				ID:         aicallID,
+				CustomerID: customerID,
+			},
+			ReferenceType: aicall.ReferenceTypeCall,
+			PipecatcallID: uuid.Nil,
+			ConfbridgeID:  uuid.Nil,
+			Metadata:      meta,
+		}
+	}
+
+	tests := []struct {
+		name string
+
+		metadata map[string]any
+
+		// auditPublishErr, if non-nil, is the error AIV1AIAuditCreateWithDelay returns.
+		// Only meaningful when expectAuditCall == true.
+		auditPublishErr error
+
+		// expectAuditCall controls whether we register an EXPECT for AIV1AIAuditCreateWithDelay.
+		expectAuditCall bool
+	}{
+		{
+			name:            "flag true - audit triggered",
+			metadata:        map[string]any{aicall.MetaKeyAutoAuditEnabled: true},
+			expectAuditCall: true,
+			auditPublishErr: nil,
+		},
+		{
+			name:            "flag false - audit not triggered",
+			metadata:        map[string]any{aicall.MetaKeyAutoAuditEnabled: false},
+			expectAuditCall: false,
+		},
+		{
+			name:            "flag absent - audit not triggered",
+			metadata:        map[string]any{},
+			expectAuditCall: false,
+		},
+		{
+			name:            "flag true but publish error - termination still succeeds",
+			metadata:        map[string]any{aicall.MetaKeyAutoAuditEnabled: true},
+			expectAuditCall: true,
+			auditPublishErr: fmt.Errorf("publish failed"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+
+			h := &aicallHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				db:            mockDB,
+				aiHandler:     mockAI,
+			}
+			ctx := context.Background()
+
+			// The aicall returned by the first Get (top of ProcessTerminate).
+			baseAIcall := makeBaseAIcall(tt.metadata)
+
+			// The aicall returned by the second Get (inside UpdateStatus after the DB write).
+			// It carries the same Metadata so the hook can read the flag.
+			terminatedAIcall := makeBaseAIcall(tt.metadata)
+
+			// First Get: called at the top of ProcessTerminate.
+			mockDB.EXPECT().AIcallGet(ctx, aicallID).Return(baseAIcall, nil)
+
+			// FlowV1ActiveflowServiceStop: always called for non-terminated aicalls.
+			mockReq.EXPECT().FlowV1ActiveflowServiceStop(ctx, baseAIcall.ActiveflowID, baseAIcall.ID, 0).Return(nil)
+
+			// ReferenceTypeCall: FlowV1ActiveflowContinue is NOT called (branch is skipped).
+
+			// UpdateStatus internals: TimeNow, AIcallUpdate, second AIcallGet, PublishWebhookEvent.
+			now := time.Now()
+			mockUtil.EXPECT().TimeNow().Return(&now)
+			mockDB.EXPECT().AIcallUpdate(ctx, aicallID, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AIcallGet(ctx, aicallID).Return(terminatedAIcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, customerID, aicall.EventTypeStatusTerminated, terminatedAIcall)
+
+			// Auto-audit hook: only expected when the flag is true.
+			if tt.expectAuditCall {
+				mockReq.EXPECT().
+					AIV1AIAuditCreateWithDelay(ctx, customerID, aicallID, "", autoAuditTriggerDelay).
+					Return(tt.auditPublishErr)
+			}
+
+			res, err := h.ProcessTerminate(ctx, aicallID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if !reflect.DeepEqual(res, terminatedAIcall) {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", terminatedAIcall, res)
 			}
 		})
 	}
