@@ -161,17 +161,18 @@ func Test_AIV1AICreate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		customerID  uuid.UUID
-		aiName      string
-		detail      string
-		engineModel amai.EngineModel
-		parameter   map[string]any
-		engineKey   string
-		initPrompt  string
-		ttsType     amai.TTSType
-		ttsVoiceID  string
-		sttType     amai.STTType
-		sttLanguage string
+		customerID             uuid.UUID
+		aiName                 string
+		detail                 string
+		engineModel            amai.EngineModel
+		parameter              map[string]any
+		engineKey              string
+		initPrompt             string
+		ttsType                amai.TTSType
+		ttsVoiceID             string
+		sttType                amai.STTType
+		sttLanguage            string
+		autoAICallAuditEnabled bool
 
 		response *sock.Response
 
@@ -190,12 +191,13 @@ func Test_AIV1AICreate(t *testing.T) {
 				"key1": "value1",
 				"key2": 2,
 			},
-			engineKey:   "test engine key",
-			initPrompt:  "test init prompt",
-			ttsType:     amai.TTSTypeElevenLabs,
-			ttsVoiceID:  "test tts voice id",
-			sttType:     amai.STTTypeDeepgram,
-			sttLanguage: "en-US",
+			engineKey:              "test engine key",
+			initPrompt:             "test init prompt",
+			ttsType:                amai.TTSTypeElevenLabs,
+			ttsVoiceID:             "test tts voice id",
+			sttType:                amai.STTTypeDeepgram,
+			sttLanguage:            "en-US",
+			autoAICallAuditEnabled: false,
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -209,6 +211,44 @@ func Test_AIV1AICreate(t *testing.T) {
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
 				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","rag_id":"00000000-0000-0000-0000-000000000000","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram","stt_language":"en-US"}`),
+			},
+			expectRes: &amai.AI{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("e6248322-de4f-4313-bd89-f9de1c6466a8"),
+				},
+			},
+		},
+		{
+			name: "auto_aicall_audit_enabled true",
+
+			customerID:  uuid.FromStringOrNil("eeaf1e90-237a-4da5-a978-a8fc0eb691d0"),
+			aiName:      "test name",
+			detail:      "test detail",
+			engineModel: amai.EngineModelOpenaiGPT5,
+			parameter: map[string]any{
+				"key1": "value1",
+				"key2": 2,
+			},
+			engineKey:              "test engine key",
+			initPrompt:             "test init prompt",
+			ttsType:                amai.TTSTypeElevenLabs,
+			ttsVoiceID:             "test tts voice id",
+			sttType:                amai.STTTypeDeepgram,
+			sttLanguage:            "en-US",
+			autoAICallAuditEnabled: true,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"e6248322-de4f-4313-bd89-f9de1c6466a8"}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:      "/v1/ais",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"eeaf1e90-237a-4da5-a978-a8fc0eb691d0","name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","rag_id":"00000000-0000-0000-0000-000000000000","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram","stt_language":"en-US","auto_aicall_audit_enabled":true}`),
 			},
 			expectRes: &amai.AI{
 				Identity: identity.Identity{
@@ -231,7 +271,7 @@ func Test_AIV1AICreate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AICreate(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, tt.sttLanguage, nil, false)
+			cf, err := reqHandler.AIV1AICreate(ctx, tt.customerID, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, tt.sttLanguage, nil, tt.autoAICallAuditEnabled)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
@@ -310,17 +350,18 @@ func Test_AIV1AIUpdate(t *testing.T) {
 	tests := []struct {
 		name string
 
-		id          uuid.UUID
-		aiName      string
-		detail      string
-		engineModel amai.EngineModel
-		parameter   map[string]any
-		engineKey   string
-		initPrompt  string
-		ttsType     amai.TTSType
-		ttsVoiceID  string
-		sttType     amai.STTType
-		sttLanguage string
+		id                     uuid.UUID
+		aiName                 string
+		detail                 string
+		engineModel            amai.EngineModel
+		parameter              map[string]any
+		engineKey              string
+		initPrompt             string
+		ttsType                amai.TTSType
+		ttsVoiceID             string
+		sttType                amai.STTType
+		sttLanguage            string
+		autoAICallAuditEnabled bool
 
 		response *sock.Response
 
@@ -339,12 +380,13 @@ func Test_AIV1AIUpdate(t *testing.T) {
 				"key1": "value1",
 				"key2": 2,
 			},
-			engineKey:   "test engine key",
-			initPrompt:  "test init prompt",
-			ttsType:     amai.TTSTypeElevenLabs,
-			ttsVoiceID:  "test tts voice id",
-			sttType:     amai.STTTypeDeepgram,
-			sttLanguage: "ko-KR",
+			engineKey:              "test engine key",
+			initPrompt:             "test init prompt",
+			ttsType:                amai.TTSTypeElevenLabs,
+			ttsVoiceID:             "test tts voice id",
+			sttType:                amai.STTTypeDeepgram,
+			sttLanguage:            "ko-KR",
+			autoAICallAuditEnabled: false,
 
 			response: &sock.Response{
 				StatusCode: 200,
@@ -358,6 +400,44 @@ func Test_AIV1AIUpdate(t *testing.T) {
 				Method:   sock.RequestMethodPut,
 				DataType: "application/json",
 				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","rag_id":"00000000-0000-0000-0000-000000000000","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram","stt_language":"ko-KR"}`),
+			},
+			expectRes: &amai.AI{
+				Identity: identity.Identity{
+					ID: uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
+				},
+			},
+		},
+		{
+			name: "auto_aicall_audit_enabled true",
+
+			id:          uuid.FromStringOrNil("76380ede-f84a-11ed-a288-2bf54d8b92e6"),
+			aiName:      "test name",
+			detail:      "test detail",
+			engineModel: amai.EngineModelOpenaiGPT5,
+			parameter: map[string]any{
+				"key1": "value1",
+				"key2": 2,
+			},
+			engineKey:              "test engine key",
+			initPrompt:             "test init prompt",
+			ttsType:                amai.TTSTypeElevenLabs,
+			ttsVoiceID:             "test tts voice id",
+			sttType:                amai.STTTypeDeepgram,
+			sttLanguage:            "ko-KR",
+			autoAICallAuditEnabled: true,
+
+			response: &sock.Response{
+				StatusCode: 200,
+				DataType:   "application/json",
+				Data:       []byte(`{"id":"76380ede-f84a-11ed-a288-2bf54d8b92e6"}`),
+			},
+
+			expectTarget: string(outline.QueueNameAIRequest),
+			expectRequest: &sock.Request{
+				URI:      "/v1/ais/76380ede-f84a-11ed-a288-2bf54d8b92e6",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"value1","key2":2},"engine_key":"test engine key","rag_id":"00000000-0000-0000-0000-000000000000","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test tts voice id","stt_type":"deepgram","stt_language":"ko-KR","auto_aicall_audit_enabled":true}`),
 			},
 			expectRes: &amai.AI{
 				Identity: identity.Identity{
@@ -380,7 +460,7 @@ func Test_AIV1AIUpdate(t *testing.T) {
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			cf, err := reqHandler.AIV1AIUpdate(ctx, tt.id, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, tt.sttLanguage, nil, false)
+			cf, err := reqHandler.AIV1AIUpdate(ctx, tt.id, tt.aiName, tt.detail, tt.engineModel, tt.parameter, tt.engineKey, uuid.Nil, tt.initPrompt, tt.ttsType, tt.ttsVoiceID, tt.sttType, tt.sttLanguage, nil, tt.autoAICallAuditEnabled)
 			if err != nil {
 				t.Errorf("Wrong match. expect ok, got: %v", err)
 			}
