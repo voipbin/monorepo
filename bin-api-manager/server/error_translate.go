@@ -13,7 +13,8 @@ import (
 // translateToVoipbinError maps any error returned from a servicehandler
 // into a *VoipbinError. Priority order:
 //  1. Typed passthrough (errors.As).
-//  2. Sentinel match (errors.Is against serviceerrors.Err*).
+//  2. Sentinel match (errors.Is against serviceerrors.Err* and the bare
+//     requesthandler.Err* HTTP-status sentinels).
 //  3. Transport-failure detection (context.Canceled / DeadlineExceeded).
 //  4. Default: Internal with the original error wrapped as Cause.
 //
@@ -29,10 +30,14 @@ import (
 // substring-fallback step has been removed; any unmatched error
 // correctly degrades to INTERNAL via the default branch.
 //
-// Exception: backend services that return a bare status code (e.g.
-// simpleResponse(400)) without a typed VoipbinError body produce a
-// requesthandler.ErrBadRequest sentinel instead of a VoipbinError.
-// That case is handled explicitly below.
+// Bare status codes: backend services that return a bare status code
+// (e.g. simpleResponse(404)) without a typed VoipbinError body produce a
+// requesthandler.Err* sentinel (via HttpStatusErrorMap) instead of a
+// VoipbinError. Step 2 maps the closed set of these sentinels
+// (400/401/402/403/404/409/429/503/500) back to the canonical cerrors
+// status, mirroring cerrors.HTTPStatusFor in reverse so the client sees
+// the same HTTP code the backend emitted. Statuses outside that set fall
+// through to the Default branch (INTERNAL).
 func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -64,6 +69,26 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request is invalid.")
 	case stderrors.Is(err, requesthandler.ErrBadRequest):
 		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request contains invalid data.")
+	case stderrors.Is(err, requesthandler.ErrUnauthorized):
+		return cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required.")
+	case stderrors.Is(err, requesthandler.ErrPaymentRequired):
+		return cerrors.PaymentRequired(commonoutline.ServiceNameAPIManager, "INSUFFICIENT_BALANCE",
+			"Customer balance is below the minimum required for this operation.").Wrap(err)
+	case stderrors.Is(err, requesthandler.ErrForbidden):
+		return cerrors.PermissionDenied(commonoutline.ServiceNameAPIManager, "PERMISSION_DENIED", "You do not have permission to access this resource.")
+	case stderrors.Is(err, requesthandler.ErrNotFound):
+		return cerrors.NotFound(commonoutline.ServiceNameAPIManager, "RESOURCE_NOT_FOUND", "The requested resource was not found.")
+	case stderrors.Is(err, requesthandler.ErrConflict):
+		return cerrors.FailedPrecondition(commonoutline.ServiceNameAPIManager, "STATE_INVALID",
+			"The operation is invalid for the current resource state.").Wrap(err)
+	case stderrors.Is(err, requesthandler.ErrTooManyRequests):
+		return cerrors.ResourceExhausted(commonoutline.ServiceNameAPIManager, "RATE_LIMIT_EXCEEDED",
+			"Too many requests. Please retry later.").Wrap(err)
+	case stderrors.Is(err, requesthandler.ErrServiceUnavailable):
+		return cerrors.Unavailable(commonoutline.ServiceNameAPIManager, "SERVICE_UNAVAILABLE",
+			"An upstream service is temporarily unavailable.").Wrap(err)
+	case stderrors.Is(err, requesthandler.ErrInternal):
+		return cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.").Wrap(err)
 	case stderrors.Is(err, serviceerrors.ErrInternal):
 		return cerrors.Internal(commonoutline.ServiceNameAPIManager, "INTERNAL", "An internal error occurred.").Wrap(err)
 	case stderrors.Is(err, serviceerrors.ErrIdentityVerificationRequired):

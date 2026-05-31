@@ -8,6 +8,7 @@ import (
 
 	"monorepo/bin-api-manager/pkg/serviceerrors"
 	cerrors "monorepo/bin-common-handler/models/errors"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	pkgerrors "github.com/pkg/errors"
 )
@@ -164,3 +165,56 @@ func TestTranslatePanicRecovery(t *testing.T) {
 type panickingError struct{}
 
 func (panickingError) Error() string { panic("boom") }
+
+// TestTranslateBareStatusSentinels verifies that a bare requesthandler
+// HTTP-status sentinel (produced when a backend returns a bare
+// simpleResponse(<code>) with no typed VoipbinError body) is translated to
+// the matching cerrors status/reason, mirroring cerrors.HTTPStatusFor.
+// This is the regression guard for issue #953.
+func TestTranslateBareStatusSentinels(t *testing.T) {
+	tests := []struct {
+		name       string
+		err        error
+		wantStatus cerrors.Status
+		wantReason string
+	}{
+		{"bad_request", requesthandler.ErrBadRequest, cerrors.StatusInvalidArgument, "INVALID_ARGUMENT"},
+		{"unauthorized", requesthandler.ErrUnauthorized, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED"},
+		{"payment_required", requesthandler.ErrPaymentRequired, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE"},
+		{"forbidden", requesthandler.ErrForbidden, cerrors.StatusPermissionDenied, "PERMISSION_DENIED"},
+		{"not_found", requesthandler.ErrNotFound, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND"},
+		{"conflict", requesthandler.ErrConflict, cerrors.StatusFailedPrecondition, "STATE_INVALID"},
+		{"too_many_requests", requesthandler.ErrTooManyRequests, cerrors.StatusResourceExhausted, "RATE_LIMIT_EXCEEDED"},
+		{"service_unavailable", requesthandler.ErrServiceUnavailable, cerrors.StatusUnavailable, "SERVICE_UNAVAILABLE"},
+		{"internal", requesthandler.ErrInternal, cerrors.StatusInternal, "INTERNAL"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := translateToVoipbinError(tt.err)
+			if got.Status != tt.wantStatus || got.Reason != tt.wantReason {
+				t.Errorf("got status=%q reason=%q want %q/%q", got.Status, got.Reason, tt.wantStatus, tt.wantReason)
+			}
+			// HTTPStatusFor must round-trip the resulting status back to the
+			// HTTP code the backend originally emitted.
+			if cerrors.HTTPStatusFor(got.Status) == 500 && tt.wantStatus != cerrors.StatusInternal {
+				t.Errorf("status %q unexpectedly maps to HTTP 500", got.Status)
+			}
+		})
+	}
+}
+
+// TestTranslateBareNotFoundWrapped verifies the production wrapping path:
+// servicehandler wraps the bare-404 sentinel with pkg/errors.Wrapf (e.g.
+// serviceHandler.aipromptproposalGet does errors.Wrapf(err, "could not get
+// ai prompt proposal info")). The sentinel must still be recovered through
+// the wrap.
+func TestTranslateBareNotFoundWrapped(t *testing.T) {
+	wrapped := pkgerrors.Wrapf(requesthandler.ErrNotFound, "could not get ai prompt proposal info")
+	got := translateToVoipbinError(wrapped)
+	if got.Status != cerrors.StatusNotFound {
+		t.Errorf("wrapped bare 404 should map to NOT_FOUND, got %q", got.Status)
+	}
+	if got.Reason != "RESOURCE_NOT_FOUND" {
+		t.Errorf("reason = %q want RESOURCE_NOT_FOUND", got.Reason)
+	}
+}
