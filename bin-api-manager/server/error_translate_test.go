@@ -177,16 +177,17 @@ func TestTranslateBareStatusSentinels(t *testing.T) {
 		err        error
 		wantStatus cerrors.Status
 		wantReason string
+		wantHTTP   int
 	}{
-		{"bad_request", requesthandler.ErrBadRequest, cerrors.StatusInvalidArgument, "INVALID_ARGUMENT"},
-		{"unauthorized", requesthandler.ErrUnauthorized, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED"},
-		{"payment_required", requesthandler.ErrPaymentRequired, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE"},
-		{"forbidden", requesthandler.ErrForbidden, cerrors.StatusPermissionDenied, "PERMISSION_DENIED"},
-		{"not_found", requesthandler.ErrNotFound, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND"},
-		{"conflict", requesthandler.ErrConflict, cerrors.StatusFailedPrecondition, "STATE_INVALID"},
-		{"too_many_requests", requesthandler.ErrTooManyRequests, cerrors.StatusResourceExhausted, "RATE_LIMIT_EXCEEDED"},
-		{"service_unavailable", requesthandler.ErrServiceUnavailable, cerrors.StatusUnavailable, "SERVICE_UNAVAILABLE"},
-		{"internal", requesthandler.ErrInternal, cerrors.StatusInternal, "INTERNAL"},
+		{"bad_request", requesthandler.ErrBadRequest, cerrors.StatusInvalidArgument, "INVALID_ARGUMENT", 400},
+		{"unauthorized", requesthandler.ErrUnauthorized, cerrors.StatusUnauthenticated, "AUTHENTICATION_REQUIRED", 401},
+		{"payment_required", requesthandler.ErrPaymentRequired, cerrors.StatusPaymentRequired, "INSUFFICIENT_BALANCE", 402},
+		{"forbidden", requesthandler.ErrForbidden, cerrors.StatusPermissionDenied, "PERMISSION_DENIED", 403},
+		{"not_found", requesthandler.ErrNotFound, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND", 404},
+		{"conflict", requesthandler.ErrConflict, cerrors.StatusFailedPrecondition, "STATE_INVALID", 409},
+		{"too_many_requests", requesthandler.ErrTooManyRequests, cerrors.StatusResourceExhausted, "RATE_LIMIT_EXCEEDED", 429},
+		{"service_unavailable", requesthandler.ErrServiceUnavailable, cerrors.StatusUnavailable, "SERVICE_UNAVAILABLE", 503},
+		{"internal", requesthandler.ErrInternal, cerrors.StatusInternal, "INTERNAL", 500},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -195,9 +196,9 @@ func TestTranslateBareStatusSentinels(t *testing.T) {
 				t.Errorf("got status=%q reason=%q want %q/%q", got.Status, got.Reason, tt.wantStatus, tt.wantReason)
 			}
 			// HTTPStatusFor must round-trip the resulting status back to the
-			// HTTP code the backend originally emitted.
-			if cerrors.HTTPStatusFor(got.Status) == 500 && tt.wantStatus != cerrors.StatusInternal {
-				t.Errorf("status %q unexpectedly maps to HTTP 500", got.Status)
+			// exact HTTP code the backend originally emitted.
+			if gotHTTP := cerrors.HTTPStatusFor(got.Status); gotHTTP != tt.wantHTTP {
+				t.Errorf("HTTPStatusFor(%q) = %d want %d", got.Status, gotHTTP, tt.wantHTTP)
 			}
 		})
 	}

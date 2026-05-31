@@ -67,6 +67,10 @@ func translateToVoipbinError(err error) (out *cerrors.VoipbinError) {
 		return cerrors.NotFound(commonoutline.ServiceNameAPIManager, "RESOURCE_NOT_FOUND", "The requested resource was not found.")
 	case stderrors.Is(err, serviceerrors.ErrInvalidArgument):
 		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request is invalid.")
+	// Bare requesthandler HTTP-status sentinels (backend returned a bare
+	// status with no typed body). Wrap behavior mirrors the serviceerrors
+	// analogues above: 401/403/404 return unwrapped; the rest .Wrap(err) to
+	// keep the originating sentinel in the server-side Cause chain.
 	case stderrors.Is(err, requesthandler.ErrBadRequest):
 		return cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ARGUMENT", "The request contains invalid data.")
 	case stderrors.Is(err, requesthandler.ErrUnauthorized):
