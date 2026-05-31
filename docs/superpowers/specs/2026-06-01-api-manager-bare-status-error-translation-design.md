@@ -66,7 +66,16 @@ Add cases to step 2 of `translateToVoipbinError`, immediately adjacent to the ex
 | `ErrInternal` | 500 | `Internal` | `INTERNAL` | `INTERNAL` |
 
 Notes:
-- **Reason/message wording reuses the existing typed-sentinel cases verbatim where one exists**, so the external envelope is identical whether the error originated as a typed sentinel or a bare backend status. Concretely, each bare-status case reuses the exact reason/message strings already present in `translateToVoipbinError` (`error_translate.go`): 404 → `RESOURCE_NOT_FOUND` ("The requested resource was not found."), 401 → `AUTHENTICATION_REQUIRED`, 403 → `PERMISSION_DENIED`, 402 → `INSUFFICIENT_BALANCE`, 409 → `STATE_INVALID`, 503 → `SERVICE_UNAVAILABLE`, 500 → `INTERNAL`. Only 429 introduces a new reason (`RATE_LIMIT_EXCEEDED`) because no existing case maps to `ResourceExhausted`.
+- **Reason/message wording reuses the existing typed-sentinel cases verbatim where one exists**, so the external envelope is identical whether the error originated as a typed sentinel or a bare backend status. Concretely, each bare-status case reuses the exact reason **and message** strings already present in `translateToVoipbinError` (`error_translate.go`):
+  - 401 → `AUTHENTICATION_REQUIRED` / "Authentication is required." (`:56`)
+  - 402 → `INSUFFICIENT_BALANCE` / "Customer balance is below the minimum required for this operation." (`:79-80`)
+  - 403 → `PERMISSION_DENIED` / "You do not have permission to access this resource." (`:58`)
+  - 404 → `RESOURCE_NOT_FOUND` / "The requested resource was not found." (`:62`)
+  - 409 → `STATE_INVALID` / "The operation is invalid for the current resource state." (`:73-74`)
+  - 503 → `SERVICE_UNAVAILABLE` / "An upstream service is temporarily unavailable." (`:76-77`)
+  - 500 → `INTERNAL` / "An internal error occurred." (`:68`)
+  - 429 → `RATE_LIMIT_EXCEEDED` / "Too many requests. Please retry later." — the **only new** reason, because no existing case maps to `ResourceExhausted`.
+- **403 maps to the generic `PERMISSION_DENIED`**, not the `DIRECT_ACCESS_NOT_SUPPORTED` PermissionDenied variant (`:60`). A bare backend 403 carries no direct-access semantics, so the generic permission-denied envelope is correct.
 - **402 reuses `INSUFFICIENT_BALANCE`** (not a new `PAYMENT_REQUIRED` reason) to stay consistent with the established 402 mapping at `error_translate.go:78-80` and its test (`error_translate_test.go:76`), so there is a single 402 envelope. No backend emits a bare 402 today, so this is a consistency choice with no live path.
 - **409 → `FailedPrecondition`** rather than `AlreadyExists`. Both map to HTTP 409 via `HTTPStatusFor`, but the bare-409 emitters in practice (accept/reject "not completed") are state-precondition failures. This is already the documented contract: the `AlreadyExists` constructor doc (`constructors.go:40-45`) explicitly states "the api-manager translator never emits ALREADY_EXISTS as a fallback mapping — 409 responses default to FAILED_PRECONDITION." Reusing `STATE_INVALID` matches the existing `serviceerrors.ErrStateInvalid` case.
 - **Ordering:** these sentinel cases must run **after** step 1 (typed passthrough) — which they do, since they live in step 2 — so a migrated backend's typed `VoipbinError` is never overridden by a coincidental status-code match.
@@ -80,7 +89,7 @@ The bare statuses above are exactly the ones backends emit via `simpleResponse(.
 
 | File | Change |
 |---|---|
-| `bin-api-manager/server/error_translate.go` | Add 8 sentinel cases (7 new + the existing 400) in step 2 of `translateToVoipbinError`. |
+| `bin-api-manager/server/error_translate.go` | Add 8 sentinel cases (7 new + the existing 400) in step 2 of `translateToVoipbinError`. **Also update the stale doc comment** (`:32-35`, which currently says only the bare-400 case is handled) and the "Migration status" note (`:23-30`) to describe the full closed bare-status set. |
 | `bin-api-manager/server/error_translate_test.go` | Add a table-driven test over every `requesthandler.Err*` sentinel → expected `Status`/reason, plus a `pkg/errors`-wrapped variant for the 404 case (mirrors servicehandler's `errors.Wrapf`). |
 | `bin-api-manager/server/error_test.go` | Add one edge-level test driving `abortWithServiceError` through a real `gin` recorder for a wrapped `requesthandler.ErrNotFound`, asserting `w.Code == 404` — covers the full status round-trip via `HTTPStatusFor`, not just the translator's `Status` field. |
 
