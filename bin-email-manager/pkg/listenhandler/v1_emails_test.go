@@ -3,6 +3,7 @@ package listenhandler
 import (
 	commonaddress "monorepo/bin-common-handler/models/address"
 
+	"context"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -25,6 +26,7 @@ func Test_v1EmailsGet(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
+		expectFilters  map[email.Field]any
 		responseEmails []*email.Email
 
 		expectRes *sock.Response
@@ -41,6 +43,10 @@ func Test_v1EmailsGet(t *testing.T) {
 			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
+			expectFilters: map[email.Field]any{
+				email.FieldCustomerID: uuid.FromStringOrNil("16d3fcf0-7f4c-11ec-a4c3-7bf43125108d"),
+				email.FieldDeleted:    false,
+			},
 			responseEmails: []*email.Email{
 				{
 					Identity: identity.Identity{
@@ -67,6 +73,10 @@ func Test_v1EmailsGet(t *testing.T) {
 			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
+			expectFilters: map[email.Field]any{
+				email.FieldCustomerID: uuid.FromStringOrNil("2457d824-7f4c-11ec-9489-b3552a7c9d63"),
+				email.FieldDeleted:    false,
+			},
 			responseEmails: []*email.Email{
 				{
 					Identity: identity.Identity{
@@ -97,6 +107,10 @@ func Test_v1EmailsGet(t *testing.T) {
 			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
+			expectFilters: map[email.Field]any{
+				email.FieldCustomerID: uuid.FromStringOrNil("3ee14bee-7f4c-11ec-a1d8-a3a488ed5885"),
+				email.FieldDeleted:    false,
+			},
 			responseEmails: []*email.Email{},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -122,7 +136,13 @@ func Test_v1EmailsGet(t *testing.T) {
 				emailHandler: mockEmail,
 			}
 
-			mockEmail.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseEmails, nil)
+			mockEmail.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).
+				DoAndReturn(func(_ context.Context, _ string, _ uint64, filters map[email.Field]any) ([]*email.Email, error) {
+					if !reflect.DeepEqual(filters, tt.expectFilters) {
+						t.Errorf("Wrong filters.\nexpect: %v\ngot: %v", tt.expectFilters, filters)
+					}
+					return tt.responseEmails, nil
+				})
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
