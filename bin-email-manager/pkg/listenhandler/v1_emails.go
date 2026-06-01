@@ -3,19 +3,27 @@ package listenhandler
 import (
 	"context"
 	"encoding/json"
-	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-email-manager/models/email"
-	"monorepo/bin-email-manager/pkg/listenhandler/models/request"
 	"net/url"
 	"strconv"
 	"strings"
 
+	"monorepo/bin-common-handler/models/sock"
+	"monorepo/bin-common-handler/pkg/utilhandler"
+	"monorepo/bin-email-manager/models/email"
+	"monorepo/bin-email-manager/pkg/listenhandler/models/request"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // v1EmailsGet handles /v1/emails GET request
 func (h *listenHandler) v1EmailsGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":    "v1EmailsGet",
+		"request": m,
+	})
+
 	u, err := url.Parse(m.URI)
 	if err != nil {
 		return nil, err
@@ -26,11 +34,17 @@ func (h *listenHandler) v1EmailsGet(ctx context.Context, m *sock.Request) (*sock
 	pageSize := uint64(tmpSize)
 	pageToken := u.Query().Get(PageToken)
 
-	// parse the filters
-	urlFilters := h.utilHandler.URLParseFilters(u)
-	filters := make(map[email.Field]any)
-	for k, v := range urlFilters {
-		filters[email.Field(k)] = v
+	// parse the filters from the request body
+	tmpFilters, err := utilhandler.ParseFiltersFromRequestBody(m.Data)
+	if err != nil {
+		log.Errorf("Could not parse filters. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	filters, err := utilhandler.ConvertFilters[email.FieldStruct, email.Field](email.FieldStruct{}, tmpFilters)
+	if err != nil {
+		log.Errorf("Could not convert filters. err: %v", err)
+		return simpleResponse(400), nil
 	}
 
 	tmp, err := h.emailHandler.List(ctx, pageToken, pageSize, filters)
