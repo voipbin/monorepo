@@ -25,30 +25,22 @@ func Test_v1EmailsGet(t *testing.T) {
 		pageToken string
 		pageSize  uint64
 
-		responseFilters map[string]string
-		expectFilters   map[email.Field]any
-		responseEmails  []*email.Email
+		responseEmails []*email.Email
 
 		expectRes *sock.Response
 	}{
 		{
 			name: "1 item",
 			request: &sock.Request{
-				URI:    "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10&filter_customer_id=16d3fcf0-7f4c-11ec-a4c3-7bf43125108d&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"16d3fcf0-7f4c-11ec-a4c3-7bf43125108d","deleted":false}`),
 			},
 
 			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
-			responseFilters: map[string]string{
-				"customer_id": "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
-				"deleted":     "false",
-			},
-			expectFilters: map[email.Field]any{
-				email.FieldCustomerID: "16d3fcf0-7f4c-11ec-a4c3-7bf43125108d",
-				email.FieldDeleted:    "false",
-			},
 			responseEmails: []*email.Email{
 				{
 					Identity: identity.Identity{
@@ -66,21 +58,15 @@ func Test_v1EmailsGet(t *testing.T) {
 		{
 			name: "2 items",
 			request: &sock.Request{
-				URI:    "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10&filter_customer_id=2457d824-7f4c-11ec-9489-b3552a7c9d63&filter_deleted=false",
-				Method: sock.RequestMethodGet,
+				URI:      "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"2457d824-7f4c-11ec-9489-b3552a7c9d63","deleted":false}`),
 			},
 
 			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
-			responseFilters: map[string]string{
-				"customer_id": "2457d824-7f4c-11ec-9489-b3552a7c9d63",
-				"deleted":     "false",
-			},
-			expectFilters: map[email.Field]any{
-				email.FieldCustomerID: "2457d824-7f4c-11ec-9489-b3552a7c9d63",
-				email.FieldDeleted:    "false",
-			},
 			responseEmails: []*email.Email{
 				{
 					Identity: identity.Identity{
@@ -102,22 +88,15 @@ func Test_v1EmailsGet(t *testing.T) {
 		{
 			name: "empty",
 			request: &sock.Request{
-				URI:      "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10&filter_customer_id=3ee14bee-7f4c-11ec-a1d8-a3a488ed5885&filter_deleted=false",
+				URI:      "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
 				Method:   sock.RequestMethodGet,
 				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"3ee14bee-7f4c-11ec-a1d8-a3a488ed5885","deleted":false}`),
 			},
 
 			pageToken: "2020-10-10T03:30:17.000000Z",
 			pageSize:  10,
 
-			responseFilters: map[string]string{
-				"customer_id": "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
-				"deleted":     "false",
-			},
-			expectFilters: map[email.Field]any{
-				email.FieldCustomerID: "3ee14bee-7f4c-11ec-a1d8-a3a488ed5885",
-				email.FieldDeleted:    "false",
-			},
 			responseEmails: []*email.Email{},
 			expectRes: &sock.Response{
 				StatusCode: 200,
@@ -143,7 +122,6 @@ func Test_v1EmailsGet(t *testing.T) {
 				emailHandler: mockEmail,
 			}
 
-			mockUtil.EXPECT().URLParseFilters(gomock.Any()).Return(tt.responseFilters)
 			mockEmail.EXPECT().List(gomock.Any(), tt.pageToken, tt.pageSize, gomock.Any()).Return(tt.responseEmails, nil)
 
 			res, err := h.processRequest(tt.request)
@@ -155,6 +133,38 @@ func Test_v1EmailsGet(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_v1EmailsGet_malformedBody(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockEmail := emailhandler.NewMockEmailHandler(mc)
+
+	h := &listenHandler{
+		utilHandler:  mockUtil,
+		sockHandler:  mockSock,
+		emailHandler: mockEmail,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
+		Method:   sock.RequestMethodGet,
+		DataType: "application/json",
+		Data:     []byte(`{not-json`),
+	}
+
+	// emailHandler.List must NOT be called when the body cannot be parsed.
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != 400 {
+		t.Errorf("Wrong match. expect: 400, got: %d", res.StatusCode)
 	}
 }
 
