@@ -188,6 +188,40 @@ func Test_v1EmailsGet_malformedBody(t *testing.T) {
 	}
 }
 
+func Test_v1EmailsGet_invalidCustomerID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockEmail := emailhandler.NewMockEmailHandler(mc)
+
+	h := &listenHandler{
+		utilHandler:  mockUtil,
+		sockHandler:  mockSock,
+		emailHandler: mockEmail,
+	}
+
+	request := &sock.Request{
+		URI:      "/v1/emails?page_token=2020-10-10T03:30:17.000000Z&page_size=10",
+		Method:   sock.RequestMethodGet,
+		DataType: "application/json",
+		Data:     []byte(`{"customer_id":"not-a-uuid"}`),
+	}
+
+	// A syntactically-valid body with an invalid customer_id must fail closed
+	// (400), never fall through to an unfiltered query. emailHandler.List must
+	// NOT be called (no EXPECT set, so gomock fails the test if it is).
+	res, err := h.processRequest(request)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != 400 {
+		t.Errorf("Wrong match. expect: 400, got: %d", res.StatusCode)
+	}
+}
+
 func Test_v1EmailsPost(t *testing.T) {
 
 	tests := []struct {
