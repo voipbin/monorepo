@@ -11,8 +11,10 @@ import (
 	"monorepo/bin-api-manager/lib/middleware"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gin-gonic/gin"
+	pkgerrors "github.com/pkg/errors"
 )
 
 func TestAbortWithErrorSetsStatusAndBody(t *testing.T) {
@@ -181,6 +183,25 @@ func TestAbortWithErrorOmitsEmptyDetails(t *testing.T) {
 	if strings.Contains(w.Body.String(), `"details"`) {
 		t.Errorf("details should be omitted when empty; body=%s", w.Body.String())
 	}
+}
+
+// TestAbortWithServiceErrorBareNotFoundRoundTrips404 guards the full
+// client-observed path for issue #953: a bare requesthandler.ErrNotFound
+// (emitted when a backend returns simpleResponse(404)), wrapped by
+// servicehandler with pkg/errors.Wrapf, must surface as HTTP 404 with the
+// RESOURCE_NOT_FOUND envelope — not 500.
+func TestAbortWithServiceErrorBareNotFoundRoundTrips404(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(middleware.RequestID())
+	r.GET("/", func(c *gin.Context) {
+		abortWithServiceError(c, pkgerrors.Wrapf(requesthandler.ErrNotFound, "could not get ai prompt proposal info"))
+	})
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+
+	assertErrorResponse(t, w, cerrors.StatusNotFound, "RESOURCE_NOT_FOUND")
 }
 
 // assertErrorResponse is a test helper shared across handler tests. It

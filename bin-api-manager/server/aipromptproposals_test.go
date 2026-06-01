@@ -12,9 +12,11 @@ import (
 	"monorepo/bin-api-manager/models/auth"
 	"monorepo/bin-api-manager/pkg/servicehandler"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
+	pkgerrors "github.com/pkg/errors"
 	"go.uber.org/mock/gomock"
 )
 
@@ -297,6 +299,45 @@ func Test_GetAipromptproposalsId(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectedRes, w.Body)
 			}
 		})
+	}
+}
+
+// Test_GetAipromptproposalsId_NotFound_Returns404 is the handler-level
+// regression guard for issue #953: when the servicehandler returns a bare
+// requesthandler.ErrNotFound (emitted when ai-manager replies with a bare
+// simpleResponse(404)), wrapped via pkg/errors.Wrapf as aipromptproposalGet
+// does, the endpoint must respond with HTTP 404 — not 500.
+func Test_GetAipromptproposalsId_NotFound_Returns404(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSvc := servicehandler.NewMockServiceHandler(mc)
+	h := &server{
+		serviceHandler: mockSvc,
+	}
+
+	agent := auth.NewAgentIdentity(&amagent.Agent{
+		Identity: commonidentity.Identity{
+			ID: uuid.FromStringOrNil("33333333-0000-0000-0000-000000000001"),
+		},
+	})
+	targetID := uuid.FromStringOrNil("33333333-0000-0000-0000-000000000099")
+
+	w := httptest.NewRecorder()
+	_, r := gin.CreateTestContext(w)
+
+	r.Use(func(c *gin.Context) {
+		c.Set("auth_identity", agent)
+	})
+	openapi_server.RegisterHandlers(r, h)
+
+	req, _ := http.NewRequest("GET", "/aipromptproposals/33333333-0000-0000-0000-000000000099", nil)
+	mockSvc.EXPECT().AIPromptProposalGet(req.Context(), agent, targetID).
+		Return(nil, pkgerrors.Wrapf(requesthandler.ErrNotFound, "could not get ai prompt proposal info"))
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("Wrong match. expect: %d, got: %d, body: %s", http.StatusNotFound, w.Code, w.Body.String())
 	}
 }
 
