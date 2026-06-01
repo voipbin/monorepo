@@ -10,6 +10,9 @@ import "github.com/gofrs/uuid"
 // JSON columns (source, destinations, attachments) and large free-text columns
 // (subject, content) are intentionally excluded — they are not equality-filter
 // targets.
+//
+// The `filter:` tags must stay in sync with the corresponding Field constants in
+// field.go (e.g. FieldCustomerID = "customer_id").
 type FieldStruct struct {
 	ID                  uuid.UUID    `filter:"id"`
 	CustomerID          uuid.UUID    `filter:"customer_id"`
