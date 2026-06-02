@@ -34,7 +34,7 @@ func (h *listenHandler) processV1ExtensionsCountByCustomerGet(ctx context.Contex
 	count, err := h.extensionHandler.CountByCustomerID(ctx, req.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get extension count. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(&countByCustomerResponse{Count: count})
@@ -66,7 +66,7 @@ func (h *listenHandler) processV1TrunksCountByCustomerGet(ctx context.Context, m
 	count, err := h.trunkHandler.CountByCustomerID(ctx, req.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get trunk count. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(&countByCustomerResponse{Count: count})

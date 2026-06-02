@@ -27,7 +27,7 @@ func (h *listenHandler) processV1AgentsIDDirectHashRegenerate(ctx context.Contex
 	tmp, err := h.agentHandler.DirectHashRegenerate(ctx, id)
 	if err != nil {
 		log.Errorf("Could not regenerate direct hash. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

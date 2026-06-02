@@ -34,7 +34,7 @@ func (h *listenHandler) processV1AgentsCountByCustomerGet(ctx context.Context, m
 	count, err := h.agentHandler.CountByCustomerID(ctx, req.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get agent count. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(&countByCustomerResponse{Count: count})

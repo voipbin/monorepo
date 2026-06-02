@@ -58,7 +58,7 @@ func (h *listenHandler) processV1AgentsGet(ctx context.Context, req *sock.Reques
 	tmp, err := h.agentHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -238,7 +238,7 @@ func (h *listenHandler) processV1AgentsGetByCustomerIDAddressPost(ctx context.Co
 	)
 	if err != nil {
 		log.Errorf("Could not create an agent info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
