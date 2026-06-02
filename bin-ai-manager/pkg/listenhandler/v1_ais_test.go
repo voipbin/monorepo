@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"fmt"
 	reflect "reflect"
 	"testing"
 	"time"
@@ -105,7 +106,7 @@ func Test_processV1AIsPost(t *testing.T) {
 		expectName        string
 		expectDetail      string
 		expectEngineModel ai.EngineModel
-		expectParameter  map[string]any
+		expectParameter   map[string]any
 		expectEngineKey   string
 		expectInitPrompt  string
 		expectTTSType     ai.TTSType
@@ -324,7 +325,7 @@ func Test_processV1AIsIDPut(t *testing.T) {
 		expectName        string
 		expectDetail      string
 		expectEngineModel ai.EngineModel
-		expectParameter  map[string]any
+		expectParameter   map[string]any
 		expectEngineKey   string
 		expectInitPrompt  string
 		expectTTSType     ai.TTSType
@@ -474,10 +475,10 @@ func Test_processV1AIsIDParticipantsGet(t *testing.T) {
 
 func Test_processV1AIsIDDirectHashRegenerate_errorMapping(t *testing.T) {
 	tests := []struct {
-		name           string
-		request        *sock.Request
-		handlerErr     error
-		expectStatus   int
+		name         string
+		request      *sock.Request
+		handlerErr   error
+		expectStatus int
 	}{
 		{
 			name: "dbhandler.ErrNotFound maps to 404",
@@ -494,8 +495,8 @@ func Test_processV1AIsIDDirectHashRegenerate_errorMapping(t *testing.T) {
 				URI:    "/v1/ais/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/direct-hash-regenerate",
 				Method: sock.RequestMethodPost,
 			},
-			handlerErr:   dbhandler.ErrNotFound, // placeholder — tested separately in error_response_test.go
-			expectStatus: 404,
+			handlerErr:   fmt.Errorf("boom"),
+			expectStatus: 500,
 		},
 	}
 
