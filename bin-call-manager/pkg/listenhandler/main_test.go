@@ -803,16 +803,16 @@ func Test_processRequest_errorPaths(t *testing.T) {
 			expectCode: 500,
 		},
 		{
-			name: "GET /v1/confbridges/<id> returns 400 on error",
+			name: "GET /v1/confbridges/<id> returns 500 on generic error",
 			request: &sock.Request{
 				URI:    "/v1/confbridges/68e9edd8-3609-11ec-ad76-b72fa8f57f23",
 				Method: sock.RequestMethodGet,
 			},
 			setupMocks: func(mc *gomock.Controller, h *listenHandler) {
 				mockConfbridge := h.confbridgeHandler.(*confbridgehandler.MockConfbridgeHandler)
-				mockConfbridge.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("not found"))
+				mockConfbridge.EXPECT().Get(gomock.Any(), uuid.FromStringOrNil("68e9edd8-3609-11ec-ad76-b72fa8f57f23")).Return(nil, fmt.Errorf("connection refused"))
 			},
-			expectCode: 400,
+			expectCode: 500,
 		},
 		{
 			name: "GET /v1/recordings/<id> returns 404 on typed NotFound error",

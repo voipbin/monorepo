@@ -51,7 +51,7 @@ func (h *listenHandler) processV1ExternalMediasGet(ctx context.Context, m *sock.
 	tmps, err := h.externalMediaHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get external medias. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmps)
@@ -98,7 +98,7 @@ func (h *listenHandler) processV1ExternalMediasPost(ctx context.Context, m *sock
 	)
 	if err != nil {
 		log.Errorf("Could not start the external media. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

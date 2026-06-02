@@ -42,7 +42,7 @@ func (h *listenHandler) processV1OutboundConfigsPost(ctx context.Context, m *soc
 		if strings.Contains(err.Error(), "Duplicate entry") {
 			return simpleResponse(409), nil
 		}
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(outboundconfig.ConvertWebhookMessage(c))
@@ -81,7 +81,7 @@ func (h *listenHandler) processV1OutboundConfigsGet(ctx context.Context, m *sock
 	configs, err := h.outboundConfigHandler.List(ctx, customerID, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not list outbound configs. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	// convert to webhook messages

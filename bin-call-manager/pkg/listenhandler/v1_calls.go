@@ -57,7 +57,7 @@ func (h *listenHandler) processV1CallsGet(ctx context.Context, m *sock.Request) 
 	calls, err := h.callHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get calls. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(calls)
@@ -141,7 +141,7 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *sock.Request)
 	calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.Connect, req.Anonymous, req.Metadata)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	tmp := &response.V1ResponseCallsPost{
@@ -197,7 +197,7 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *sock.Reques
 	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.GroupcallID, req.Source, req.Destination, req.EarlyExecution, req.Connect, req.Anonymous, req.Metadata)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", req.FlowID, req.Source, req.Destination, err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(c)
@@ -234,7 +234,7 @@ func (h *listenHandler) processV1CallsIDDelete(ctx context.Context, m *sock.Requ
 	tmp, err := h.callHandler.Delete(ctx, id)
 	if err != nil {
 		log.Debugf("Could not delete the call. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -271,7 +271,7 @@ func (h *listenHandler) processV1CallsIDHangupPost(ctx context.Context, m *sock.
 	tmp, err := h.callHandler.HangingUp(ctx, id, call.HangupReasonNormal)
 	if err != nil {
 		log.Debugf("Could not hanging up the call. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -427,7 +427,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsPost(ctx context.Context, 
 	tmp, err := h.callHandler.ChainedCallIDAdd(ctx, id, req.ChainedCallID)
 	if err != nil {
 		log.Debugf("Could not get updated call info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -463,7 +463,7 @@ func (h *listenHandler) processV1CallsIDChainedCallIDsDelete(ctx context.Context
 	tmp, err := h.callHandler.ChainedCallIDRemove(ctx, id, chainedCallID)
 	if err != nil {
 		log.Debugf("Could not get updated call info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -593,7 +593,7 @@ func (h *listenHandler) processV1CallsIDDigitsGet(ctx context.Context, m *sock.R
 	digit, err := h.callHandler.DigitsGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get call's digits. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	tmp := &response.V1ResponseCallsIDDigitsGet{
@@ -635,7 +635,7 @@ func (h *listenHandler) processV1CallsIDDigitsSet(ctx context.Context, m *sock.R
 
 	if err := h.callHandler.DigitsSet(ctx, id, req.Digits); err != nil {
 		log.Errorf("Could not get call's digits. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	res := &sock.Response{
@@ -667,7 +667,7 @@ func (h *listenHandler) processV1CallsIDRecordingIDPut(ctx context.Context, m *s
 	tmp, err := h.callHandler.UpdateRecordingID(ctx, id, req.RecordingID)
 	if err != nil {
 		log.Errorf("Could not update call's recording id. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -706,7 +706,7 @@ func (h *listenHandler) processV1CallsIDConfbridgeIDPut(ctx context.Context, m *
 	tmp, err := h.callHandler.UpdateConfbridgeID(ctx, id, req.ConfbridgeID)
 	if err != nil {
 		log.Errorf("Could not update call's recording id. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -745,7 +745,7 @@ func (h *listenHandler) processV1CallsIDRecordingStartPost(ctx context.Context, 
 	tmp, err := h.callHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration, req.OnEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start call recording. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -780,7 +780,7 @@ func (h *listenHandler) processV1CallsIDRecordingStopPost(ctx context.Context, m
 	tmp, err := h.callHandler.RecordingStop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not start call recording. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -819,7 +819,7 @@ func (h *listenHandler) processV1CallsIDTalkPost(ctx context.Context, m *sock.Re
 
 	if errTalk := h.callHandler.Talk(ctx, id, false, req.Text, req.Language, req.Provider, req.VoiceID); errTalk != nil {
 		log.Errorf("Could not talk to the call. err: %v", errTalk)
-		return simpleResponse(500), nil
+		return errorResponse(errTalk), nil
 	}
 
 	res := &sock.Response{
@@ -876,7 +876,7 @@ func (h *listenHandler) processV1CallsIDMediaStopPost(ctx context.Context, m *so
 
 	if errStop := h.callHandler.MediaStop(ctx, id); errStop != nil {
 		log.Errorf("Could not stop the media. err: %v", errStop)
-		return simpleResponse(500), nil
+		return errorResponse(errStop), nil
 	}
 
 	res := &sock.Response{
