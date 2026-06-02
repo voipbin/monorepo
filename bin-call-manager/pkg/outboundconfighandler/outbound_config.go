@@ -10,6 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // Delete soft-deletes the OutboundConfig identified by id and invalidates its cache entry.
@@ -19,16 +21,17 @@ func (h *outboundConfigHandler) Delete(ctx context.Context, id uuid.UUID) (*outb
 	if err != nil {
 		return nil, fmt.Errorf("could not get outbound_config for delete: %w", err)
 	}
+	if c == nil {
+		return nil, cerrors.NotFound(commonoutline.ServiceNameCallManager, "OUTBOUND_CONFIG_NOT_FOUND", "The outbound config was not found.")
+	}
 
 	if err := h.db.OutboundConfigDelete(ctx, id); err != nil {
 		return nil, fmt.Errorf("could not delete outbound_config: %w", err)
 	}
 
-	if c != nil {
-		_ = h.cacheHandler.OutboundConfigDelete(ctx, c.CustomerID)
-		now := time.Now()
-		c.TMDelete = &now // reflect the deletion timestamp in the returned struct
-	}
+	_ = h.cacheHandler.OutboundConfigDelete(ctx, c.CustomerID)
+	now := time.Now()
+	c.TMDelete = &now // reflect the deletion timestamp in the returned struct
 
 	return c, nil
 }
@@ -62,8 +65,16 @@ func (h *outboundConfigHandler) GetByCustomerID(ctx context.Context, customerID 
 }
 
 // GetByID returns the OutboundConfig with the given id directly from DB.
+// Returns a typed NotFound error if the DB returns nil (row does not exist).
 func (h *outboundConfigHandler) GetByID(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {
-	return h.db.OutboundConfigGetByID(ctx, id)
+	res, err := h.db.OutboundConfigGetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, cerrors.NotFound(commonoutline.ServiceNameCallManager, "OUTBOUND_CONFIG_NOT_FOUND", "The outbound config was not found.")
+	}
+	return res, nil
 }
 
 // List returns a page of OutboundConfigs for the given customerID.
@@ -98,7 +109,7 @@ func (h *outboundConfigHandler) Update(ctx context.Context, id uuid.UUID, req *o
 		return nil, fmt.Errorf("could not get outbound_config for update: %w", err)
 	}
 	if existing == nil {
-		return nil, fmt.Errorf("outbound_config not found: %s", id)
+		return nil, cerrors.NotFound(commonoutline.ServiceNameCallManager, "OUTBOUND_CONFIG_NOT_FOUND", "The outbound config was not found.")
 	}
 
 	if err := h.validateUpdateRequest(ctx, existing.CustomerID, req); err != nil {
