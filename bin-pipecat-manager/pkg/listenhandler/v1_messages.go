@@ -24,7 +24,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 
 	tmp, err := h.pipecatcallHandler.SendMessage(ctx, req.PipecatcallID, req.MessageID, req.MessageText, req.RunImmediately, req.AudioResponse)
 	if err != nil {
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

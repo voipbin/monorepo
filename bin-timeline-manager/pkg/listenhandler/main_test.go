@@ -986,6 +986,167 @@ func TestListenHandler_Interface(t *testing.T) {
 	var _ ListenHandler = (*listenHandler)(nil)
 }
 
+// TestV1EventsPost_HandlerPlainError asserts that after the errorResponse
+// conversion a plain handler error surfaces as 500 (not some other code).
+// This locks in the default errorResponse behavior for converted call sites.
+func TestV1EventsPost_HandlerPlainError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(ctrl)
+	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+
+	handler := &listenHandler{
+		sockHandler:  mockSock,
+		eventHandler: mockEvent,
+	}
+
+	testID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataEventsPost{
+		Publisher:  commonoutline.ServiceName("flow-manager"),
+		ResourceID: testID,
+		Events:     []string{"activeflow_*"},
+		PageSize:   10,
+	}
+	reqData, _ := json.Marshal(req)
+
+	mockEvent.EXPECT().
+		List(gomock.Any(), gomock.Any()).
+		Return(nil, errors.New("database unavailable"))
+
+	sockReq := &sock.Request{
+		URI:    "/v1/events",
+		Method: sock.RequestMethodPost,
+		Data:   reqData,
+	}
+
+	resp, err := handler.v1EventsPost(context.Background(), sockReq)
+	if err != nil {
+		t.Fatalf("v1EventsPost() error = %v, want nil", err)
+	}
+	if resp.StatusCode != 500 {
+		t.Errorf("v1EventsPost() StatusCode = %d, want 500 (plain error must map to 500 via errorResponse)", resp.StatusCode)
+	}
+}
+
+// TestV1AggregatedEventsPost_HandlerPlainError asserts that a plain handler
+// error surfaces as 500 via errorResponse.
+func TestV1AggregatedEventsPost_HandlerPlainError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(ctrl)
+	mockEvent := eventhandler.NewMockEventHandler(ctrl)
+
+	handler := &listenHandler{
+		sockHandler:  mockSock,
+		eventHandler: mockEvent,
+	}
+
+	testID := uuid.Must(uuid.NewV4())
+	req := &request.V1DataAggregatedEventsPost{
+		ActiveflowID: testID,
+		PageSize:     10,
+	}
+	reqData, _ := json.Marshal(req)
+
+	mockEvent.EXPECT().
+		AggregatedList(gomock.Any(), gomock.Any()).
+		Return(nil, errors.New("aggregation failed"))
+
+	sockReq := &sock.Request{
+		URI:    "/v1/aggregated-events",
+		Method: sock.RequestMethodPost,
+		Data:   reqData,
+	}
+
+	resp, err := handler.v1AggregatedEventsPost(context.Background(), sockReq)
+	if err != nil {
+		t.Fatalf("v1AggregatedEventsPost() error = %v, want nil", err)
+	}
+	if resp.StatusCode != 500 {
+		t.Errorf("v1AggregatedEventsPost() StatusCode = %d, want 500", resp.StatusCode)
+	}
+}
+
+// TestV1SIPAnalysisPost_HandlerPlainErrorViaErrorResponse asserts that a plain
+// handler error surfaces as 500 via errorResponse (not simpleResponse).
+func TestV1SIPAnalysisPost_HandlerPlainErrorViaErrorResponse(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(ctrl)
+	mockSIP := siphandler.NewMockSIPHandler(ctrl)
+
+	handler := &listenHandler{
+		sockHandler: mockSock,
+		sipHandler:  mockSIP,
+	}
+
+	req := &request.V1SIPAnalysisPost{
+		SIPCallID: "test-call-id",
+		FromTime:  "2026-01-01T00:00:00Z",
+		ToTime:    "2026-01-01T01:00:00Z",
+	}
+	reqData, _ := json.Marshal(req)
+
+	mockSIP.EXPECT().GetSIPAnalysis(gomock.Any(), req.SIPCallID, gomock.Any(), gomock.Any()).
+		Return(nil, errors.New("homer unreachable"))
+
+	sockReq := &sock.Request{
+		URI:    "/v1/sip/analysis",
+		Method: sock.RequestMethodPost,
+		Data:   reqData,
+	}
+
+	resp, err := handler.v1SIPAnalysisPost(context.Background(), sockReq)
+	if err != nil {
+		t.Fatalf("v1SIPAnalysisPost() error = %v, want nil", err)
+	}
+	if resp.StatusCode != 500 {
+		t.Errorf("v1SIPAnalysisPost() StatusCode = %d, want 500", resp.StatusCode)
+	}
+}
+
+// TestV1SIPPcapPost_HandlerPlainErrorViaErrorResponse asserts that a plain
+// handler error surfaces as 500 via errorResponse.
+func TestV1SIPPcapPost_HandlerPlainErrorViaErrorResponse(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(ctrl)
+	mockSIP := siphandler.NewMockSIPHandler(ctrl)
+
+	handler := &listenHandler{
+		sockHandler: mockSock,
+		sipHandler:  mockSIP,
+	}
+
+	req := &request.V1SIPPcapPost{
+		SIPCallID: "test-call-id",
+		FromTime:  "2026-01-01T00:00:00Z",
+		ToTime:    "2026-01-01T01:00:00Z",
+	}
+	reqData, _ := json.Marshal(req)
+
+	mockSIP.EXPECT().GetPcap(gomock.Any(), req.SIPCallID, gomock.Any(), gomock.Any()).
+		Return(nil, errors.New("pcap unavailable"))
+
+	sockReq := &sock.Request{
+		URI:    "/v1/sip/pcap",
+		Method: sock.RequestMethodPost,
+		Data:   reqData,
+	}
+
+	resp, err := handler.v1SIPPcapPost(context.Background(), sockReq)
+	if err != nil {
+		t.Fatalf("v1SIPPcapPost() error = %v, want nil", err)
+	}
+	if resp.StatusCode != 500 {
+		t.Errorf("v1SIPPcapPost() StatusCode = %d, want 500", resp.StatusCode)
+	}
+}
+
 func TestProcessRequest_HandlerReturnsError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
