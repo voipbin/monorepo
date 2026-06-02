@@ -287,6 +287,114 @@ func Test_processV1OutboundConfigsGet_notFound(t *testing.T) {
 	}
 }
 
+// Test_processV1OutboundConfigsIDDelete_notFound verifies that when
+// outboundConfigHandler.Delete returns a typed cerrors.NotFound (the new
+// behaviour after the nil-row fix), processV1OutboundConfigsIDDelete produces
+// HTTP 404 instead of 200 with a null body.
+func Test_processV1OutboundConfigsIDDelete_notFound(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+	}{
+		{
+			name: "DELETE non-existent outbound config returns 404",
+			request: &sock.Request{
+				URI:    "/v1/outbound_configs/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodDelete,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:           mockSock,
+				callHandler:           mockCall,
+				outboundConfigHandler: mockOutboundConfig,
+			}
+
+			notFoundErr := cerrors.NotFound(
+				commonoutline.ServiceNameCallManager,
+				"OUTBOUND_CONFIG_NOT_FOUND",
+				"The outbound config was not found.",
+			)
+			mockOutboundConfig.EXPECT().Delete(gomock.Any(), tt.id).Return(nil, notFoundErr)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("expected nil error, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
+// Test_processV1OutboundConfigsIDPut_notFound verifies that when
+// outboundConfigHandler.Update returns a typed cerrors.NotFound (the new
+// behaviour after the nil-row fix), processV1OutboundConfigsIDPut produces
+// HTTP 404 instead of 500.
+func Test_processV1OutboundConfigsIDPut_notFound(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+	}{
+		{
+			name: "PUT non-existent outbound config returns 404",
+			request: &sock.Request{
+				URI:      "/v1/outbound_configs/00000000-0000-0000-0000-000000000099",
+				Method:   sock.RequestMethodPut,
+				DataType: "application/json",
+				Data:     []byte(`{"name":"updated"}`),
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:           mockSock,
+				callHandler:           mockCall,
+				outboundConfigHandler: mockOutboundConfig,
+			}
+
+			notFoundErr := cerrors.NotFound(
+				commonoutline.ServiceNameCallManager,
+				"OUTBOUND_CONFIG_NOT_FOUND",
+				"The outbound config was not found.",
+			)
+			mockOutboundConfig.EXPECT().Update(gomock.Any(), tt.id, gomock.Any()).Return(nil, notFoundErr)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("expected nil error, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
 // Test_processV1OutboundConfigsIDGet_notFound verifies that when
 // outboundConfigHandler.GetByID returns a typed cerrors.NotFound (the new
 // behaviour after the nil-row fix), processV1OutboundConfigsIDGet produces

@@ -55,14 +55,14 @@ func Test_outboundConfigHandler_Delete(t *testing.T) {
 			wantErr:           true,
 		},
 		{
-			name:              "GetByID nil (not found)",
+			name:              "GetByID nil (not found) - returns typed not-found error, no delete called",
 			id:                uuid.FromStringOrNil("66666666-0000-0000-0000-000000000003"),
 			dbGetRes:          nil,
 			dbGetErr:          nil,
 			dbDelErr:          nil,
 			expectCacheDelete: false,
 			expectRes:         nil,
-			wantErr:           false,
+			wantErr:           true,
 		},
 	}
 
@@ -86,8 +86,8 @@ func Test_outboundConfigHandler_Delete(t *testing.T) {
 				Return(tt.dbGetRes, tt.dbGetErr).
 				Times(1)
 
-			if tt.dbGetErr == nil {
-				// OutboundConfigDelete is always called when GetByID returns no error
+			if tt.dbGetErr == nil && tt.dbGetRes != nil {
+				// OutboundConfigDelete is only called when GetByID returns a non-nil config
 				mockDB.EXPECT().
 					OutboundConfigDelete(ctx, tt.id).
 					Return(tt.dbDelErr).
@@ -615,20 +615,20 @@ func Test_outboundConfigHandler_Update(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "outbound_config not found",
-			id:   uuid.FromStringOrNil("55555555-0000-0000-0000-000000000004"),
-			req:  &outboundconfig.UpdateRequest{Name: &name},
+			name:        "outbound_config not found",
+			id:          uuid.FromStringOrNil("55555555-0000-0000-0000-000000000004"),
+			req:         &outboundconfig.UpdateRequest{Name: &name},
 			existingRes: nil,
 			existingErr: nil,
-			wantErr: true,
+			wantErr:     true,
 		},
 		{
-			name: "GetByID error",
-			id:   uuid.FromStringOrNil("55555555-0000-0000-0000-000000000005"),
-			req:  &outboundconfig.UpdateRequest{Name: &name},
+			name:        "GetByID error",
+			id:          uuid.FromStringOrNil("55555555-0000-0000-0000-000000000005"),
+			req:         &outboundconfig.UpdateRequest{Name: &name},
 			existingRes: nil,
 			existingErr: fmt.Errorf("connection refused"),
-			wantErr: true,
+			wantErr:     true,
 		},
 	}
 

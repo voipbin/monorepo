@@ -21,16 +21,17 @@ func (h *outboundConfigHandler) Delete(ctx context.Context, id uuid.UUID) (*outb
 	if err != nil {
 		return nil, fmt.Errorf("could not get outbound_config for delete: %w", err)
 	}
+	if c == nil {
+		return nil, cerrors.NotFound(commonoutline.ServiceNameCallManager, "OUTBOUND_CONFIG_NOT_FOUND", "The outbound config was not found.")
+	}
 
 	if err := h.db.OutboundConfigDelete(ctx, id); err != nil {
 		return nil, fmt.Errorf("could not delete outbound_config: %w", err)
 	}
 
-	if c != nil {
-		_ = h.cacheHandler.OutboundConfigDelete(ctx, c.CustomerID)
-		now := time.Now()
-		c.TMDelete = &now // reflect the deletion timestamp in the returned struct
-	}
+	_ = h.cacheHandler.OutboundConfigDelete(ctx, c.CustomerID)
+	now := time.Now()
+	c.TMDelete = &now // reflect the deletion timestamp in the returned struct
 
 	return c, nil
 }
@@ -108,7 +109,7 @@ func (h *outboundConfigHandler) Update(ctx context.Context, id uuid.UUID, req *o
 		return nil, fmt.Errorf("could not get outbound_config for update: %w", err)
 	}
 	if existing == nil {
-		return nil, fmt.Errorf("outbound_config not found: %s", id)
+		return nil, cerrors.NotFound(commonoutline.ServiceNameCallManager, "OUTBOUND_CONFIG_NOT_FOUND", "The outbound config was not found.")
 	}
 
 	if err := h.validateUpdateRequest(ctx, existing.CustomerID, req); err != nil {
