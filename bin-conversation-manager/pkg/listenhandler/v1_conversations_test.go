@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
 	"monorepo/bin-conversation-manager/pkg/conversationhandler"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
 
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
@@ -415,6 +416,47 @@ func Test_processV1ConversationsIDPut(t *testing.T) {
 
 			if reflect.DeepEqual(tt.expectRes, res) != true {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1ConversationsID_notFound(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+	}{
+		{
+			name: "GET non-existent conversation returns 404",
+			request: &sock.Request{
+				URI:    "/v1/conversations/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodGet,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockConversation := conversationhandler.NewMockConversationHandler(mc)
+			h := &listenHandler{
+				sockHandler:         mockSock,
+				conversationHandler: mockConversation,
+			}
+
+			mockConversation.EXPECT().Get(gomock.Any(), tt.id).Return(nil, dbhandler.ErrNotFound)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
 			}
 		})
 	}
