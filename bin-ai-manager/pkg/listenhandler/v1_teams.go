@@ -58,7 +58,7 @@ func (h *listenHandler) processV1TeamsGet(ctx context.Context, m *sock.Request) 
 	tmp, err := h.teamHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get teams. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -100,7 +100,7 @@ func (h *listenHandler) processV1TeamsPost(ctx context.Context, m *sock.Request)
 	)
 	if err != nil {
 		log.Errorf("Could not create team. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

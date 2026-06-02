@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/models/participant"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
 )
 
@@ -463,6 +464,51 @@ func Test_processV1AIcallsIDParticipantsGet(t *testing.T) {
 			}
 			if res.StatusCode != tt.expectRes.StatusCode {
 				t.Fatalf("expected status %d, got %d", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processV1AIcallsIDToolExecutePost_errorMapping(t *testing.T) {
+	tests := []struct {
+		name         string
+		request      *sock.Request
+		handlerErr   error
+		expectStatus int
+	}{
+		{
+			name: "dbhandler.ErrNotFound maps to 404",
+			request: &sock.Request{
+				URI:      "/v1/aicalls/a02f9d60-bbb6-11f0-81e6-7fbbd900fc6b/tool_execute",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"tool-1","type":"function","function":{"name":"connect","arguments":"{}"}}`),
+			},
+			handlerErr:   dbhandler.ErrNotFound,
+			expectStatus: 404,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAIcall := aicallhandler.NewMockAIcallHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				aicallHandler: mockAIcall,
+			}
+
+			mockAIcall.EXPECT().ToolHandle(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, tt.handlerErr)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Fatalf("expected no error, got: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Fatalf("expected status %d, got %d", tt.expectStatus, res.StatusCode)
 			}
 		})
 	}

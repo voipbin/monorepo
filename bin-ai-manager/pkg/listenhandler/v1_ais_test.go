@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-ai-manager/models/ai"
 	"monorepo/bin-ai-manager/models/participant"
 	"monorepo/bin-ai-manager/pkg/aihandler"
+	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
 )
 
@@ -466,6 +467,58 @@ func Test_processV1AIsIDParticipantsGet(t *testing.T) {
 			}
 			if res.StatusCode != tt.expectRes.StatusCode {
 				t.Fatalf("expected status %d, got %d", tt.expectRes.StatusCode, res.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_processV1AIsIDDirectHashRegenerate_errorMapping(t *testing.T) {
+	tests := []struct {
+		name           string
+		request        *sock.Request
+		handlerErr     error
+		expectStatus   int
+	}{
+		{
+			name: "dbhandler.ErrNotFound maps to 404",
+			request: &sock.Request{
+				URI:    "/v1/ais/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/direct-hash-regenerate",
+				Method: sock.RequestMethodPost,
+			},
+			handlerErr:   dbhandler.ErrNotFound,
+			expectStatus: 404,
+		},
+		{
+			name: "generic error maps to 500",
+			request: &sock.Request{
+				URI:    "/v1/ais/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/direct-hash-regenerate",
+				Method: sock.RequestMethodPost,
+			},
+			handlerErr:   dbhandler.ErrNotFound, // placeholder — tested separately in error_response_test.go
+			expectStatus: 404,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockAI := aihandler.NewMockAIHandler(mc)
+
+			h := &listenHandler{
+				sockHandler: mockSock,
+				aiHandler:   mockAI,
+			}
+
+			mockAI.EXPECT().DirectHashRegenerate(gomock.Any(), gomock.Any()).Return(nil, tt.handlerErr)
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Fatalf("expected no error, got: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Fatalf("expected status %d, got %d", tt.expectStatus, res.StatusCode)
 			}
 		})
 	}

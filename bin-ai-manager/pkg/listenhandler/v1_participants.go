@@ -44,7 +44,7 @@ func (h *listenHandler) processV1AIcallsIDParticipantsGet(ctx context.Context, m
 	tmp, err := h.participantHandler.ListByAIcallID(ctx, id, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get participants. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	// convert to WebhookMessage before marshaling
@@ -91,7 +91,7 @@ func (h *listenHandler) processV1AIsIDParticipantsGet(ctx context.Context, m *so
 	tmp, err := h.participantHandler.ListByAIID(ctx, id, pageSize, pageToken)
 	if err != nil {
 		log.Errorf("Could not get participants. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	// convert to WebhookMessage before marshaling
