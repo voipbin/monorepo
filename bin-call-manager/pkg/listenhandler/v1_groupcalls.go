@@ -52,7 +52,7 @@ func (h *listenHandler) processV1GroupcallsGet(ctx context.Context, m *sock.Requ
 	tmp, err := h.groupcallHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get recordings. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -105,7 +105,7 @@ func (h *listenHandler) processV1GroupcallsPost(ctx context.Context, m *sock.Req
 	)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -141,7 +141,7 @@ func (h *listenHandler) processV1GroupcallsIDGet(ctx context.Context, m *sock.Re
 	tmp, err := h.groupcallHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get groupcall info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -177,7 +177,7 @@ func (h *listenHandler) processV1GroupcallsIDDelete(ctx context.Context, m *sock
 	tmp, err := h.groupcallHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get groupcall info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -213,7 +213,7 @@ func (h *listenHandler) processV1GroupcallsIDHangupPost(ctx context.Context, m *
 	tmp, err := h.groupcallHandler.Hangingup(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get groupcall info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -255,7 +255,7 @@ func (h *listenHandler) processV1GroupcallsIDAnswerGroupcallIDPost(ctx context.C
 	tmp, err := h.groupcallHandler.AnswerGroupcall(ctx, id, req.AnswerGroupcallID)
 	if err != nil {
 		log.Errorf("Could not get groupcall info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -291,7 +291,7 @@ func (h *listenHandler) processV1GroupcallsIDHangupGroupcallPost(ctx context.Con
 	tmp, err := h.groupcallHandler.HangupGroupcall(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get groupcall info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -327,7 +327,7 @@ func (h *listenHandler) processV1GroupcallsIDHangupCallPost(ctx context.Context,
 	tmp, err := h.groupcallHandler.HangupCall(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get groupcall info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

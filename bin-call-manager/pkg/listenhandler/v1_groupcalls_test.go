@@ -14,6 +14,7 @@ import (
 
 	"monorepo/bin-call-manager/models/groupcall"
 	"monorepo/bin-call-manager/pkg/callhandler"
+	"monorepo/bin-call-manager/pkg/dbhandler"
 	"monorepo/bin-call-manager/pkg/externalmediahandler"
 	"monorepo/bin-call-manager/pkg/groupcallhandler"
 )
@@ -560,6 +561,74 @@ func Test_processV1GroupcallsIDHangupCallPost(t *testing.T) {
 
 			if reflect.DeepEqual(res, tt.expectRes) != true {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+		})
+	}
+}
+
+func Test_processV1GroupcallsID_notFound(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+		setup   func(m *groupcallhandler.MockGroupcallHandler, id uuid.UUID)
+	}{
+		{
+			name: "GET non-existent groupcall returns 404",
+			request: &sock.Request{
+				URI:    "/v1/groupcalls/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodGet,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+			setup: func(m *groupcallhandler.MockGroupcallHandler, id uuid.UUID) {
+				m.EXPECT().Get(gomock.Any(), id).Return(nil, dbhandler.ErrNotFound)
+			},
+		},
+		{
+			name: "DELETE non-existent groupcall returns 404",
+			request: &sock.Request{
+				URI:    "/v1/groupcalls/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodDelete,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+			setup: func(m *groupcallhandler.MockGroupcallHandler, id uuid.UUID) {
+				m.EXPECT().Delete(gomock.Any(), id).Return(nil, dbhandler.ErrNotFound)
+			},
+		},
+		{
+			name: "POST hangup non-existent groupcall returns 404",
+			request: &sock.Request{
+				URI:    "/v1/groupcalls/00000000-0000-0000-0000-000000000099/hangup",
+				Method: sock.RequestMethodPost,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+			setup: func(m *groupcallhandler.MockGroupcallHandler, id uuid.UUID) {
+				m.EXPECT().Hangingup(gomock.Any(), id).Return(nil, dbhandler.ErrNotFound)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockGroupcall := groupcallhandler.NewMockGroupcallHandler(mc)
+			h := &listenHandler{
+				sockHandler:      mockSock,
+				callHandler:      mockCall,
+				groupcallHandler: mockGroupcall,
+			}
+			tt.setup(mockGroupcall, tt.id)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
 			}
 		})
 	}
