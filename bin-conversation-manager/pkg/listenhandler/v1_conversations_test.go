@@ -507,6 +507,9 @@ func Test_processV1ConversationsID_notFoundTyped(t *testing.T) {
 			if res.StatusCode != 404 {
 				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
 			}
+			if res.DataType != cerrors.DataTypeVoipbinError {
+				t.Errorf("DataType mismatch. expected: %s, got: %s", cerrors.DataTypeVoipbinError, res.DataType)
+			}
 		})
 	}
 }
