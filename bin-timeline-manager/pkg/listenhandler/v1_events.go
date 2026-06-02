@@ -27,7 +27,7 @@ func (h *listenHandler) v1EventsPost(ctx context.Context, m *sock.Request) (*soc
 	result, err := h.eventHandler.List(ctx, &req)
 	if err != nil {
 		log.Errorf("Could not list events. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	// Marshal response

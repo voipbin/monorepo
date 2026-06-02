@@ -43,7 +43,7 @@ func (h *listenHandler) v1SIPAnalysisPost(ctx context.Context, m *sock.Request) 
 	result, err := h.sipHandler.GetSIPAnalysis(ctx, req.SIPCallID, fromTime, toTime)
 	if err != nil {
 		log.Errorf("Could not get SIP analysis. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	// Marshal response
@@ -89,7 +89,7 @@ func (h *listenHandler) v1SIPPcapPost(ctx context.Context, m *sock.Request) (*so
 	pcapData, err := h.sipHandler.GetPcap(ctx, req.SIPCallID, fromTime, toTime)
 	if err != nil {
 		log.Errorf("Could not get PCAP data. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	// Base64 encode PCAP data for JSON transport

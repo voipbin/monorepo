@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -488,6 +489,61 @@ func Test_processV1TranscribesIDStopPost_notFound(t *testing.T) {
 	}
 	if !reflect.DeepEqual(res, expectRes) {
 		t.Errorf("Wrong match.\nexepct: %v\ngot: %v", expectRes, res)
+	}
+}
+
+func Test_processV1TranscribesGet_errorMapping(t *testing.T) {
+	tests := []struct {
+		name           string
+		handlerErr     error
+		expectStatus   int
+		expectDataType string
+	}{
+		{
+			name:           "typed NotFound maps to 404",
+			handlerErr:     cerrors.NotFound(commonoutline.ServiceNameTranscribeManager, "TRANSCRIBE_NOT_FOUND", "no transcribes found"),
+			expectStatus:   404,
+			expectDataType: cerrors.DataTypeVoipbinError,
+		},
+		{
+			name:         "generic error maps to 500",
+			handlerErr:   fmt.Errorf("db error"),
+			expectStatus: 500,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockTranscribe := transcribehandler.NewMockTranscribeHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:       mockSock,
+				transcribeHandler: mockTranscribe,
+			}
+
+			req := &sock.Request{
+				URI:    "/v1/transcribes?page_size=10&page_token=",
+				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"customer_id":"079ffd84-7f68-11ed-ae05-430c9b75ab3b"}`),
+			}
+
+			mockTranscribe.EXPECT().List(gomock.Any(), uint64(10), gomock.Any(), gomock.Any()).Return(nil, tt.handlerErr)
+
+			res, err := h.processRequest(req)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("wrong status: expect %d, got %d", tt.expectStatus, res.StatusCode)
+			}
+			if tt.expectDataType != "" && res.DataType != tt.expectDataType {
+				t.Errorf("wrong data type: expect %s, got %s", tt.expectDataType, res.DataType)
+			}
+		})
 	}
 }
 

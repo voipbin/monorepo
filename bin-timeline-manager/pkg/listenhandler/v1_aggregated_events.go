@@ -27,7 +27,7 @@ func (h *listenHandler) v1AggregatedEventsPost(ctx context.Context, m *sock.Requ
 	result, err := h.eventHandler.AggregatedList(ctx, &req)
 	if err != nil {
 		log.Errorf("Could not list aggregated events. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	// Marshal response

@@ -20,7 +20,7 @@ func (h *listenHandler) processV1PingGet(ctx context.Context, m *sock.Request) (
 	res, err := h.pipecatcallHandler.Ping(ctx)
 	if err != nil {
 		log.Debugf("Could not get ping result. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(res)

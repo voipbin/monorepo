@@ -1,9 +1,13 @@
 package listenhandler
 
 import (
+	"fmt"
+	"net/http"
 	"reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -95,6 +99,61 @@ func TestProcessV1AvailableNumbersGet(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
 			}
 
+		})
+	}
+}
+
+func TestProcessV1AvailableNumbersGet_errorMapping(t *testing.T) {
+	tests := []struct {
+		name           string
+		handlerErr     error
+		expectStatus   int
+		expectDataType string
+	}{
+		{
+			name:           "typed NotFound error maps to 404",
+			handlerErr:     cerrors.NotFound(commonoutline.ServiceNameNumberManager, "NUMBER_NOT_FOUND", "no numbers available"),
+			expectStatus:   http.StatusNotFound,
+			expectDataType: cerrors.DataTypeVoipbinError,
+		},
+		{
+			name:         "generic error maps to 500",
+			handlerErr:   fmt.Errorf("provider unavailable"),
+			expectStatus: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockNumber := numberhandler.NewMockNumberHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				numberHandler: mockNumber,
+			}
+
+			req := &sock.Request{
+				URI:    "/v1/available_numbers?page_size=10",
+				Method: sock.RequestMethodGet,
+				Data:   []byte(`{"country_code":"US"}`),
+			}
+
+			mockNumber.EXPECT().GetAvailableNumbers("US", uint(10)).Return(nil, tt.handlerErr)
+
+			res, err := h.processRequest(req)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+			if res.StatusCode != tt.expectStatus {
+				t.Errorf("wrong status: expect %d, got %d", tt.expectStatus, res.StatusCode)
+			}
+			if tt.expectDataType != "" && res.DataType != tt.expectDataType {
+				t.Errorf("wrong data type: expect %s, got %s", tt.expectDataType, res.DataType)
+			}
 		})
 	}
 }

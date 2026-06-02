@@ -42,7 +42,7 @@ func (h *listenHandler) processV1PipecatcallsPost(ctx context.Context, m *sock.R
 	)
 	if err != nil {
 		log.Debugf("Could not create a pipecatcall. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
