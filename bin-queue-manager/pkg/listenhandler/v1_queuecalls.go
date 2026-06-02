@@ -51,7 +51,7 @@ func (h *listenHandler) processV1QueuecallsGet(ctx context.Context, m *sock.Requ
 	tmp, err := h.queuecallHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get queuecalls info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -87,7 +87,7 @@ func (h *listenHandler) processV1QueuecallsReferenceIDIDGet(ctx context.Context,
 	tmp, err := h.queuecallHandler.GetByReferenceID(ctx, referenceID)
 	if err != nil {
 		log.Errorf("Could not get queuecall info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -255,7 +255,7 @@ func (h *listenHandler) processV1QueuecallsIDExecutePost(ctx context.Context, m 
 	tmp, err := h.queuecallHandler.Execute(ctx, id, req.AgentID)
 	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -290,7 +290,7 @@ func (h *listenHandler) processV1QueuecallsIDKickPost(ctx context.Context, m *so
 	tmp, err := h.queuecallHandler.Kick(ctx, id)
 	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -325,7 +325,7 @@ func (h *listenHandler) processV1QueuecallsReferenceIDIDKickPost(ctx context.Con
 	tmp, err := h.queuecallHandler.KickByReferenceID(ctx, referenceID)
 	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

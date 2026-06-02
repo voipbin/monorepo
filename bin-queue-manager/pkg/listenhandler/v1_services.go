@@ -30,7 +30,7 @@ func (h *listenHandler) processV1ServicesTypeQueuecallPost(ctx context.Context, 
 	tmp, err := h.queuecallHandler.ServiceStart(ctx, req.QueueID, req.ActiveflowID, req.ReferenceType, req.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

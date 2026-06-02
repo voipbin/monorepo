@@ -98,7 +98,7 @@ func (h *listenHandler) processV1QueuesGet(ctx context.Context, m *sock.Request)
 	tmp, err := h.queueHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get queue info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -229,7 +229,7 @@ func (h *listenHandler) processV1QueuesIDPut(ctx context.Context, m *sock.Reques
 	)
 	if err != nil {
 		log.Errorf("Could not update the queue info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -271,7 +271,7 @@ func (h *listenHandler) processV1QueuesIDTagIDsPut(ctx context.Context, m *sock.
 	tmp, err := h.queueHandler.UpdateTagIDs(ctx, id, req.TagIDs)
 	if err != nil {
 		log.Errorf("Could not get queue info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -313,7 +313,7 @@ func (h *listenHandler) processV1QueuesIDRoutingMethodPut(ctx context.Context, m
 	tmp, err := h.queueHandler.UpdateRoutingMethod(ctx, id, queue.RoutingMethod(req.RoutingMethod))
 	if err != nil {
 		log.Errorf("Could not update the queue info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -405,7 +405,7 @@ func (h *listenHandler) processV1QueuesIDAgentsGet(ctx context.Context, m *sock.
 	tmp, err := h.queueHandler.GetAgents(ctx, id, status)
 	if err != nil {
 		log.Errorf("Could not get agents. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -471,7 +471,7 @@ func (h *listenHandler) processV1QueuesIDExecutePut(ctx context.Context, m *sock
 	tmp, err := h.queueHandler.UpdateExecute(ctx, id, req.Execute)
 	if err != nil {
 		log.Errorf("Could not get agents. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -506,7 +506,7 @@ func (h *listenHandler) processV1QueuecallsIDStatusWaitingPost(ctx context.Conte
 	tmp, err := h.queuecallHandler.UpdateStatusWaiting(ctx, id)
 	if err != nil {
 		log.Errorf("Could not leave the queuecall from the queue. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
