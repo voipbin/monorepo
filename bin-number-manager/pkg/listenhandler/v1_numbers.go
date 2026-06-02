@@ -41,7 +41,7 @@ func (h *listenHandler) processV1NumbersPost(ctx context.Context, m *sock.Reques
 	}
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(numb)
@@ -77,7 +77,7 @@ func (h *listenHandler) processV1NumbersIDDelete(ctx context.Context, m *sock.Re
 	number, err := h.numberHandler.Delete(ctx, id)
 	if err != nil {
 		log.Debugf("Could not delete the number. number: %s, err: %v", id, err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(number)
@@ -113,7 +113,7 @@ func (h *listenHandler) processV1NumbersIDGet(ctx context.Context, m *sock.Reque
 	number, err := h.numberHandler.Get(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a number. number: %s, err: %v", id, err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(number)
@@ -162,7 +162,7 @@ func (h *listenHandler) processV1NumbersIDPut(ctx context.Context, m *sock.Reque
 	num, err := h.numberHandler.Update(ctx, id, fields)
 	if err != nil {
 		log.Debugf("Could not update the number. number: %s, err: %v", id, err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(num)
@@ -214,7 +214,7 @@ func (h *listenHandler) processV1NumbersGet(ctx context.Context, m *sock.Request
 	numbers, err := h.numberHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get numbers. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(numbers)
@@ -261,7 +261,7 @@ func (h *listenHandler) processV1NumbersIDFlowIDsPut(ctx context.Context, m *soc
 	num, err := h.numberHandler.Update(ctx, id, fields)
 	if err != nil {
 		log.Debugf("Could not update the number's flow_id. number_id: %s, err: %v", id, err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(num)
@@ -295,7 +295,7 @@ func (h *listenHandler) processV1NumbersRenewPost(ctx context.Context, m *sock.R
 	numb, err := h.numberHandler.RenewNumbers(ctx, req.Days, req.Hours, req.TMRenew)
 	if err != nil {
 		log.Errorf("Could not handle the order number. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(numb)

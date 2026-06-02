@@ -67,7 +67,7 @@ func (h *listenHandler) processV1ConversationsGet(ctx context.Context, m *sock.R
 	tmps, err := h.conversationHandler.List(ctx, pageToken, pageSize, fields)
 	if err != nil {
 		log.Debugf("Could not get conversations. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmps)
@@ -111,7 +111,7 @@ func (h *listenHandler) processV1ConversationsPost(ctx context.Context, m *sock.
 	)
 	if err != nil {
 		log.Errorf("Could not create the account. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -147,7 +147,7 @@ func (h *listenHandler) processV1ConversationsIDGet(ctx context.Context, req *so
 	tmp, err := h.conversationHandler.Get(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a conversation. conversation_id: %s, err: %v", id, err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

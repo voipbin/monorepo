@@ -4,8 +4,10 @@ import (
 	"reflect"
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -13,6 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-message-manager/models/message"
+	"monorepo/bin-message-manager/pkg/dbhandler"
 	"monorepo/bin-message-manager/pkg/messagehandler"
 )
 
@@ -308,6 +311,113 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", tt.response, res)
 			}
 
+		})
+	}
+}
+
+// Test_processV1MessagesID_notFoundTyped verifies that the typed
+// *cerrors.VoipbinError (NotFound) returned by the real messageHandler.Get
+// is correctly translated to HTTP 404 via the errors.As → cerrors.ToResponse branch
+// in errorResponse.
+func Test_processV1MessagesID_notFoundTyped(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+	}{
+		{
+			name: "GET non-existent message returns 404 via typed cerrors.NotFound",
+			request: &sock.Request{
+				URI:    "/v1/messages/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodGet,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			h := &listenHandler{
+				sockHandler:    mockSock,
+				messageHandler: mockMessage,
+			}
+
+			mockMessage.EXPECT().Get(gomock.Any(), tt.id).Return(nil, cerrors.NotFound(
+				commonoutline.ServiceNameMessageManager,
+				"MESSAGE_NOT_FOUND",
+				"The message was not found.",
+			))
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
+			}
+			if res.DataType != cerrors.DataTypeVoipbinError {
+				t.Errorf("DataType mismatch. expected: %s, got: %s", cerrors.DataTypeVoipbinError, res.DataType)
+			}
+		})
+	}
+}
+
+func Test_processV1MessagesID_notFound(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+		setup   func(m *messagehandler.MockMessageHandler, id uuid.UUID)
+	}{
+		{
+			name: "GET non-existent message returns 404",
+			request: &sock.Request{
+				URI:    "/v1/messages/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodGet,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+			setup: func(m *messagehandler.MockMessageHandler, id uuid.UUID) {
+				m.EXPECT().Get(gomock.Any(), id).Return(nil, dbhandler.ErrNotFound)
+			},
+		},
+		{
+			name: "DELETE non-existent message returns 404",
+			request: &sock.Request{
+				URI:    "/v1/messages/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodDelete,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+			setup: func(m *messagehandler.MockMessageHandler, id uuid.UUID) {
+				m.EXPECT().Delete(gomock.Any(), id).Return(nil, dbhandler.ErrNotFound)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockMessage := messagehandler.NewMockMessageHandler(mc)
+			h := &listenHandler{
+				sockHandler:    mockSock,
+				messageHandler: mockMessage,
+			}
+			tt.setup(mockMessage, tt.id)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
+			}
 		})
 	}
 }
