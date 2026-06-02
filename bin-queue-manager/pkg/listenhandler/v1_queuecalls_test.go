@@ -1,6 +1,7 @@
 package listenhandler
 
 import (
+	"net/http"
 	reflect "reflect"
 	"testing"
 	"time"
@@ -13,6 +14,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-queue-manager/models/queuecall"
+	"monorepo/bin-queue-manager/pkg/dbhandler"
 	"monorepo/bin-queue-manager/pkg/queuecallhandler"
 )
 
@@ -554,5 +556,36 @@ func Test_processV1QueuecallsIDStatusWaitingPost(t *testing.T) {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
+	}
+}
+
+func Test_processV1QueuecallsReferenceIDIDGet_notFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockQueuecall := queuecallhandler.NewMockQueuecallHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:      mockSock,
+		queuecallHandler: mockQueuecall,
+	}
+
+	referenceID := uuid.FromStringOrNil("bb000000-0000-0000-0000-000000000001")
+
+	mockQueuecall.EXPECT().GetByReferenceID(gomock.Any(), referenceID).Return(nil, dbhandler.ErrNotFound)
+
+	req := &sock.Request{
+		URI:    "/v1/queuecalls/reference_id/bb000000-0000-0000-0000-000000000001",
+		Method: sock.RequestMethodGet,
+	}
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != http.StatusNotFound {
+		t.Errorf("Wrong status code. expect: %d, got: %d", http.StatusNotFound, res.StatusCode)
 	}
 }

@@ -51,7 +51,7 @@ func (h *listenHandler) processV1RecordingsGet(ctx context.Context, m *sock.Requ
 	tmps, err := h.recordingHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get recordings. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmps)
@@ -85,7 +85,7 @@ func (h *listenHandler) processV1RecordingsPost(ctx context.Context, m *sock.Req
 	tmp, err := h.recordingHandler.Start(ctx, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration, req.OnEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start the recording. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

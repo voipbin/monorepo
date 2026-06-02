@@ -28,7 +28,7 @@ func (h *listenHandler) processV1QueuesIDDirectHashRegeneratePost(ctx context.Co
 	tmp, err := h.queueHandler.DirectHashRegenerate(ctx, id)
 	if err != nil {
 		log.Errorf("Could not regenerate direct hash. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

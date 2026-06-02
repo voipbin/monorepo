@@ -34,7 +34,7 @@ func (h *listenHandler) processV1QueuesCountByCustomerGet(ctx context.Context, m
 	count, err := h.queueHandler.CountByCustomerID(ctx, req.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get queue count. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(&countByCustomerResponse{Count: count})

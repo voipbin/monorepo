@@ -51,7 +51,7 @@ func (h *listenHandler) v1MessagesPost(ctx context.Context, m commonsock.Request
 	msg, err := h.messageHandler.MessageCreate(ctx, createReq)
 	if err != nil {
 		logrus.Errorf("Failed to create message: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(msg)
@@ -95,7 +95,7 @@ func (h *listenHandler) v1MessagesGet(ctx context.Context, m commonsock.Request)
 	messages, err := h.messageHandler.MessageList(ctx, typedFilters, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not list the messages. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(messages)
@@ -137,7 +137,7 @@ func (h *listenHandler) v1MessagesIDDelete(ctx context.Context, m commonsock.Req
 	msg, err := h.messageHandler.MessageDelete(ctx, messageID)
 	if err != nil {
 		log.Errorf("Could not delete the message. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(msg)

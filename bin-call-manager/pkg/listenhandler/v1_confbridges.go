@@ -35,13 +35,13 @@ func (h *listenHandler) processV1ConfbridgesPost(ctx context.Context, m *sock.Re
 	cb, err := h.confbridgeHandler.Create(ctx, req.CustomerID, req.ActiveflowID, req.ReferenceType, req.ReferenceID, req.Type)
 	if err != nil {
 		log.Errorf("Could not create the confbridge. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(cb)
 	if err != nil {
 		log.Errorf("Could not marshal the confbridge. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -70,13 +70,13 @@ func (h *listenHandler) processV1ConfbridgesIDGet(ctx context.Context, m *sock.R
 	cb, err := h.confbridgeHandler.Get(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get the confbridge. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(cb)
 	if err != nil {
 		log.Errorf("Could not marshal the confbridge. err: %v", err)
-		return simpleResponse(400), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
@@ -104,7 +104,7 @@ func (h *listenHandler) processV1ConfbridgesIDDelete(ctx context.Context, m *soc
 	tmp, err := h.confbridgeHandler.Delete(ctx, id)
 	if err != nil {
 		log.Errorf("Could not terminate the confbridge. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -139,7 +139,7 @@ func (h *listenHandler) processV1ConfbridgesIDTerminatePost(ctx context.Context,
 	tmp, err := h.confbridgeHandler.Terminating(ctx, id)
 	if err != nil {
 		log.Errorf("Could not terminate the confbridge. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -174,7 +174,7 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDDelete(ctx context.Context,
 
 	if err := h.confbridgeHandler.Kick(ctx, id, callID); err != nil {
 		log.Errorf("Could not kick out the call from the confbridge. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	return simpleResponse(200), nil
@@ -197,7 +197,7 @@ func (h *listenHandler) processV1ConfbridgesIDCallsIDPost(ctx context.Context, m
 
 	if err := h.confbridgeHandler.Join(ctx, id, callID); err != nil {
 		log.Errorf("Could not join the call to the confbridge. err: %v", err)
-		return simpleResponse(400), nil
+		return errorResponse(err), nil
 	}
 
 	return simpleResponse(200), nil
@@ -321,7 +321,7 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStartPost(ctx context.Con
 	tmp, err := h.confbridgeHandler.RecordingStart(ctx, id, req.Format, req.EndOfSilence, req.EndOfKey, req.Duration, req.OnEndFlowID)
 	if err != nil {
 		log.Errorf("Could not start call recording. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -356,7 +356,7 @@ func (h *listenHandler) processV1ConfbridgesIDRecordingStopPost(ctx context.Cont
 	tmp, err := h.confbridgeHandler.RecordingStop(ctx, id)
 	if err != nil {
 		log.Errorf("Could not start call recording. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -396,7 +396,7 @@ func (h *listenHandler) processV1ConfbridgesIDFlagsPost(ctx context.Context, m *
 	tmp, err := h.confbridgeHandler.FlagAdd(ctx, id, req.Flag)
 	if err != nil {
 		log.Errorf("Could not add the flag. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -436,7 +436,7 @@ func (h *listenHandler) processV1ConfbridgesIDFlagsDelete(ctx context.Context, m
 	tmp, err := h.confbridgeHandler.FlagRemove(ctx, id, req.Flag)
 	if err != nil {
 		log.Errorf("Could not remove the flag. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -470,7 +470,7 @@ func (h *listenHandler) processV1ConfbridgesIDRingPost(ctx context.Context, m *s
 
 	if errRing := h.confbridgeHandler.Ring(ctx, id); errRing != nil {
 		log.Errorf("Could not ring the confbridge. err: %v", errRing)
-		return simpleResponse(500), nil
+		return errorResponse(errRing), nil
 	}
 
 	return simpleResponse(200), nil
@@ -492,7 +492,7 @@ func (h *listenHandler) processV1ConfbridgesIDAnswerPost(ctx context.Context, m 
 
 	if errRing := h.confbridgeHandler.Answer(ctx, id); errRing != nil {
 		log.Errorf("Could not answer the confbridge. err: %v", errRing)
-		return simpleResponse(500), nil
+		return errorResponse(errRing), nil
 	}
 
 	return simpleResponse(200), nil

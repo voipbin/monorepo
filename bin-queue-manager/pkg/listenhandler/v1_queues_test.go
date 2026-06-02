@@ -18,6 +18,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-queue-manager/models/queue"
+	"monorepo/bin-queue-manager/pkg/dbhandler"
 	"monorepo/bin-queue-manager/pkg/queuehandler"
 )
 
@@ -885,5 +886,39 @@ func Test_processV1QueuesIDExecutePut(t *testing.T) {
 				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectedRes, res)
 			}
 		})
+	}
+}
+
+func Test_processV1QueuesIDPut_notFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockQueue := queuehandler.NewMockQueueHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:  mockSock,
+		queueHandler: mockQueue,
+	}
+
+	mockQueue.EXPECT().UpdateBasicInfo(
+		gomock.Any(),
+		uuid.FromStringOrNil("66f7d436-5f6c-11ec-9298-677df04a59c2"),
+		gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+	).Return(nil, dbhandler.ErrNotFound)
+
+	req := &sock.Request{
+		URI:    "/v1/queues/66f7d436-5f6c-11ec-9298-677df04a59c2",
+		Method: sock.RequestMethodPut,
+		Data:   []byte(`{"name":"x","detail":"","routing_method":"random","tag_ids":[],"wait_flow_id":"00000000-0000-0000-0000-000000000000","wait_timeout":0,"service_timeout":0}`),
+	}
+
+	res, err := h.processRequest(req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != http.StatusNotFound {
+		t.Errorf("Wrong status code. expect: %d, got: %d", http.StatusNotFound, res.StatusCode)
 	}
 }

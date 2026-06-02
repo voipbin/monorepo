@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/message"
+	"monorepo/bin-talk-manager/pkg/dbhandler"
 	"monorepo/bin-talk-manager/pkg/messagehandler"
 )
 
@@ -470,6 +471,38 @@ func Test_processV1MessagesIDDelete(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_processV1MessagesIDDelete_notFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockMessage := messagehandler.NewMockMessageHandler(mc)
+
+	h := &listenHandler{
+		sockHandler:    mockSock,
+		messageHandler: mockMessage,
+	}
+
+	ctx := context.Background()
+	messageID := uuid.FromStringOrNil("9ade9b10-64ed-11ed-b1c8-d6ef95af9798")
+	mockMessage.EXPECT().MessageDelete(ctx, messageID).Return(nil, dbhandler.ErrNotFound)
+
+	req := &sock.Request{
+		URI:      "/v1/messages/9ade9b10-64ed-11ed-b1c8-d6ef95af9798",
+		Method:   sock.RequestMethodDelete,
+		DataType: "application/json",
+	}
+
+	res, err := h.v1MessagesIDDelete(ctx, *req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != 404 {
+		t.Errorf("Wrong match. expect: 404, got: %d", res.StatusCode)
 	}
 }
 

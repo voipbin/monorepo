@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-common-handler/pkg/utilhandler"
 	"monorepo/bin-talk-manager/models/chat"
 	"monorepo/bin-talk-manager/pkg/chathandler"
+	"monorepo/bin-talk-manager/pkg/dbhandler"
 )
 
 func timePtrChat(t time.Time) *time.Time {
@@ -583,6 +584,71 @@ func Test_processV1TalkChatsIDDelete(t *testing.T) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
+	}
+}
+
+func Test_processV1TalkChatsIDPut_notFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockChat := chathandler.NewMockChatHandler(mc)
+
+	h := &listenHandler{
+		sockHandler: mockSock,
+		chatHandler: mockChat,
+	}
+
+	ctx := context.Background()
+	chatID := uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795")
+	mockChat.EXPECT().ChatUpdate(ctx, chatID, gomock.Any(), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
+
+	req := &sock.Request{
+		URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+		Method:   sock.RequestMethodPut,
+		DataType: "application/json",
+		Data:     []byte(`{"name":"irrelevant"}`),
+	}
+
+	res, err := h.v1ChatsIDPut(ctx, *req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != 404 {
+		t.Errorf("Wrong match. expect: 404, got: %d", res.StatusCode)
+	}
+}
+
+func Test_processV1TalkChatsIDDelete_notFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockChat := chathandler.NewMockChatHandler(mc)
+
+	h := &listenHandler{
+		sockHandler: mockSock,
+		chatHandler: mockChat,
+	}
+
+	ctx := context.Background()
+	chatID := uuid.FromStringOrNil("6ebc6880-31da-11ed-8e95-a3bc92af9795")
+	mockChat.EXPECT().ChatDelete(ctx, chatID).Return(nil, dbhandler.ErrNotFound)
+
+	req := &sock.Request{
+		URI:      "/v1/chats/6ebc6880-31da-11ed-8e95-a3bc92af9795",
+		Method:   sock.RequestMethodDelete,
+		DataType: "application/json",
+	}
+
+	res, err := h.v1ChatsIDDelete(ctx, *req)
+	if err != nil {
+		t.Errorf("Wrong match. expect: ok, got: %v", err)
+	}
+
+	if res.StatusCode != 404 {
+		t.Errorf("Wrong match. expect: 404, got: %d", res.StatusCode)
 	}
 }
 
