@@ -34,7 +34,7 @@ func (h *listenHandler) processV1FlowsCountByCustomerGet(ctx context.Context, m 
 	count, err := h.flowHandler.CountByCustomerID(ctx, req.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get flow count. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(&countByCustomerResponse{Count: count})

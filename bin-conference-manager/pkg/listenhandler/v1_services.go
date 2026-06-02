@@ -28,7 +28,7 @@ func (h *listenHandler) processV1ServicesTypeConferencecallPost(ctx context.Cont
 	tmp, err := h.conferencecallHandler.ServiceStart(ctx, req.ActiveflowID, req.ConferenceID, req.ReferenceType, req.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

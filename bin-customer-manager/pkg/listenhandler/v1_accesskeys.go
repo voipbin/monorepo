@@ -53,7 +53,7 @@ func (h *listenHandler) processV1AccesskeysGet(ctx context.Context, m *sock.Requ
 	tmp, err := h.accesskeyHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not get accesskyes info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -96,7 +96,7 @@ func (h *listenHandler) processV1AccesskeysPost(ctx context.Context, m *sock.Req
 	)
 	if err != nil {
 		log.Errorf("Could not create the accesskye info. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

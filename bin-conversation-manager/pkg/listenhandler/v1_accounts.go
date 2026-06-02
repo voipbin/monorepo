@@ -51,7 +51,7 @@ func (h *listenHandler) processV1AccountsGet(ctx context.Context, m *sock.Reques
 	tmps, err := h.accountHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Debugf("Could not get conversations. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	webhookMessages := make([]*account.WebhookMessage, len(tmps))

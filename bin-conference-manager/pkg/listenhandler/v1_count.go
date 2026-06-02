@@ -34,7 +34,7 @@ func (h *listenHandler) processV1ConferencesCountByCustomerGet(ctx context.Conte
 	count, err := h.conferenceHandler.CountByCustomerID(ctx, req.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get conference count. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(&countByCustomerResponse{Count: count})

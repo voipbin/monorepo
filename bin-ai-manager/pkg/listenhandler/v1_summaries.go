@@ -57,7 +57,7 @@ func (h *listenHandler) processV1SummariesGet(ctx context.Context, m *sock.Reque
 	tmp, err := h.summaryHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get items. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -91,7 +91,7 @@ func (h *listenHandler) processV1SummariesPost(ctx context.Context, m *sock.Requ
 	tmp, err := h.summaryHandler.Start(ctx, req.CustomerID, req.ActiveflowID, req.OnEndFlowID, req.ReferenceType, req.ReferenceID, req.Language)
 	if err != nil {
 		log.Errorf("Could not create item. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

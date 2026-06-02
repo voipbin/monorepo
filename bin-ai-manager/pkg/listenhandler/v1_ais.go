@@ -58,7 +58,7 @@ func (h *listenHandler) processV1AIsGet(ctx context.Context, m *sock.Request) (*
 	tmp, err := h.aiHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -110,7 +110,7 @@ func (h *listenHandler) processV1AIsPost(ctx context.Context, m *sock.Request) (
 	)
 	if err != nil {
 		log.Errorf("Could not create ai. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

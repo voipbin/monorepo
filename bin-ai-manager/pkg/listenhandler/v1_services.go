@@ -27,7 +27,7 @@ func (h *listenHandler) processV1ServicesTypeAIcallPost(ctx context.Context, m *
 	tmp, err := h.aicallHandler.ServiceStart(ctx, req.AssistanceType, req.AssistanceID, req.ActiveflowID, req.ReferenceType, req.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not start ai service. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -69,7 +69,7 @@ func (h *listenHandler) processV1ServicesTypeSummaryPost(ctx context.Context, m 
 	)
 	if err != nil {
 		log.Errorf("Could not start summary service. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -103,7 +103,7 @@ func (h *listenHandler) processV1ServicesTypeTaskPost(ctx context.Context, m *so
 	tmp, err := h.aicallHandler.ServiceStartTypeTask(ctx, req.AssistanceType, req.AssistanceID, req.ActiveflowID)
 	if err != nil {
 		log.Errorf("Could not start task service. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

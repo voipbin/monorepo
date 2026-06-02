@@ -45,7 +45,7 @@ func (h *listenHandler) processV1ExtensionsPost(ctx context.Context, m *sock.Req
 	)
 	if err != nil {
 		log.Errorf("Could not create a new extension correctly. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

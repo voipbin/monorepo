@@ -57,7 +57,7 @@ func (h *listenHandler) processV1AIcallsGet(ctx context.Context, m *sock.Request
 	tmp, err := h.aicallHandler.List(ctx, pageSize, pageToken, typedFilters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -91,7 +91,7 @@ func (h *listenHandler) processV1AIcallsPost(ctx context.Context, m *sock.Reques
 	tmp, err := h.aicallHandler.Start(ctx, req.AssistanceType, req.AssistanceID, req.ActiveflowID, req.ReferenceType, req.ReferenceID)
 	if err != nil {
 		log.Errorf("Could not create aicall. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -249,7 +249,7 @@ func (h *listenHandler) processV1AIcallsIDToolExecutePost(ctx context.Context, m
 	tmp, err := h.aicallHandler.ToolHandle(ctx, id, req.ID, req.Type, req.Function)
 	if err != nil {
 		log.Errorf("Could not execute tool. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

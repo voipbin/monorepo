@@ -30,6 +30,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 		expectFilters   map[account.Field]any
 
 		responseAccounts []*account.Account
+		responseErr      error
 
 		response *sock.Response
 	}{
@@ -100,6 +101,30 @@ func Test_processV1AccountsGet(t *testing.T) {
 				Data:       []byte(`[{"id":"6b5f9da6-fecb-11ed-a0ea-4fdabd236387","customer_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"6b906c9c-fecb-11ed-a341-f38426e7e737","customer_id":"00000000-0000-0000-0000-000000000000","message_flow_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
+		{
+			name: "not found returns 404",
+
+			request: &sock.Request{
+				URI:      "/v1/accounts?page_size=10&page_token=2021-03-01T03:30:17.000000Z",
+				Method:   sock.RequestMethodGet,
+				DataType: requesthandler.ContentTypeJSON,
+				Data:     []byte(`{"customer_id":"7c3f0faf-fecb-11ed-b1fb-afbcde345678","deleted":false}`),
+			},
+
+			expectPageSize:  10,
+			expectPageToken: "2021-03-01T03:30:17.000000Z",
+			expectFilters: map[account.Field]any{
+				account.FieldCustomerID: uuid.FromStringOrNil("7c3f0faf-fecb-11ed-b1fb-afbcde345678"),
+				account.FieldDeleted:    false,
+			},
+
+			responseAccounts: nil,
+			responseErr:      dbhandler.ErrNotFound,
+
+			response: &sock.Response{
+				StatusCode: 404,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -117,7 +142,7 @@ func Test_processV1AccountsGet(t *testing.T) {
 				accountHandler: mockAccount,
 			}
 
-			mockAccount.EXPECT().List(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any()).Return(tt.responseAccounts, nil)
+			mockAccount.EXPECT().List(gomock.Any(), tt.expectPageToken, tt.expectPageSize, gomock.Any()).Return(tt.responseAccounts, tt.responseErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
