@@ -51,7 +51,7 @@ func (h *listenHandler) processV1MessagesGet(ctx context.Context, m *sock.Reques
 	messages, err := h.messageHandler.List(ctx, pageToken, pageSize, filters)
 	if err != nil {
 		log.Debugf("Could not get messages. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(messages)
@@ -86,7 +86,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 	ms, err := h.messageHandler.Send(ctx, req.ID, req.CustomerID, req.Source, req.Destinations, req.Text)
 	if err != nil {
 		log.Errorf("Could not send a message. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(ms)
@@ -121,7 +121,7 @@ func (h *listenHandler) processV1MessagesIDGet(ctx context.Context, m *sock.Requ
 	tmp, err := h.messageHandler.Get(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a message. message_id: %s, err: %v", id, err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -156,7 +156,7 @@ func (h *listenHandler) processV1MessagesIDDelete(ctx context.Context, m *sock.R
 	tmp, err := h.messageHandler.Delete(ctx, id)
 	if err != nil {
 		log.Debugf("Could not get a message. message_id: %s, err: %v", id, err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
