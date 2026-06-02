@@ -51,7 +51,7 @@ func (h *listenHandler) processV1ConferencesGet(ctx context.Context, m *sock.Req
 	confs, err := h.conferenceHandler.List(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Debugf("Could not get conferences. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(confs)
@@ -97,7 +97,7 @@ func (h *listenHandler) processV1ConferencesPost(ctx context.Context, m *sock.Re
 	)
 	if err != nil {
 		log.Errorf("Could not create a conference. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	tmp, err := json.Marshal(cf)
