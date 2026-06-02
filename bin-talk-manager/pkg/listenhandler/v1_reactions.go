@@ -31,7 +31,7 @@ func (h *listenHandler) v1MessagesIDReactionsPost(ctx context.Context, m commons
 	msg, err := h.reactionHandler.ReactionAdd(ctx, messageID, req.Emoji, req.OwnerType, ownerID)
 	if err != nil {
 		logrus.Errorf("Failed to add reaction: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(msg)
@@ -62,7 +62,7 @@ func (h *listenHandler) v1MessagesIDReactionsDelete(ctx context.Context, m commo
 	msg, err := h.reactionHandler.ReactionRemove(ctx, messageID, req.Emoji, req.OwnerType, ownerID)
 	if err != nil {
 		logrus.Errorf("Failed to remove reaction: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(msg)

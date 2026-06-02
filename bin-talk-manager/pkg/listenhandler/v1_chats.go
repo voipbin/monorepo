@@ -48,7 +48,7 @@ func (h *listenHandler) v1ChatsPost(ctx context.Context, m commonsock.Request) (
 
 	t, err := h.chatHandler.ChatCreate(ctx, customerID, chat.Type(req.Type), req.Name, req.Detail, req.CreatorType, creatorID, participants)
 	if err != nil {
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(t)
@@ -89,7 +89,7 @@ func (h *listenHandler) v1ChatsGet(ctx context.Context, m commonsock.Request) (*
 
 	chats, err := h.chatHandler.ChatList(ctx, typedFilters, pageToken, pageSize)
 	if err != nil {
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(chats)
@@ -134,7 +134,7 @@ func (h *listenHandler) v1ChatsIDPut(ctx context.Context, m commonsock.Request) 
 	t, err := h.chatHandler.ChatUpdate(ctx, chatID, req.Name, req.Detail)
 	if err != nil {
 		logrus.Errorf("Failed to update chat: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(t)
@@ -151,7 +151,7 @@ func (h *listenHandler) v1ChatsIDDelete(ctx context.Context, m commonsock.Reques
 
 	t, err := h.chatHandler.ChatDelete(ctx, chatID)
 	if err != nil {
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(t)

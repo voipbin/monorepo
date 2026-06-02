@@ -43,7 +43,7 @@ func (h *listenHandler) v1ParticipantsGet(ctx context.Context, m commonsock.Requ
 
 	participants, err := h.participantHandler.ParticipantListWithFilters(ctx, typedFilters, pageToken, pageSize)
 	if err != nil {
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(participants)

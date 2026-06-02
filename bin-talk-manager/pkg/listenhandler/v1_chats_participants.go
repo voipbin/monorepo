@@ -36,7 +36,7 @@ func (h *listenHandler) v1ChatsIDParticipantsPost(ctx context.Context, m commons
 	participant, err := h.participantHandler.ParticipantAdd(ctx, chatID, ownerID, req.OwnerType)
 	if err != nil {
 		logrus.Errorf("Failed to add participant: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(participant)
@@ -67,7 +67,7 @@ func (h *listenHandler) v1ChatsIDParticipantsGet(ctx context.Context, m commonso
 	participants, err := h.participantHandler.ParticipantList(ctx, chat.CustomerID, chatID)
 	if err != nil {
 		logrus.Errorf("Failed to list participants: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, _ := json.Marshal(participants)
@@ -99,7 +99,7 @@ func (h *listenHandler) v1ChatsIDParticipantsIDDelete(ctx context.Context, m com
 	err = h.participantHandler.ParticipantRemove(ctx, chat.CustomerID, participantID)
 	if err != nil {
 		logrus.Errorf("Failed to remove participant: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	return &commonsock.Response{
