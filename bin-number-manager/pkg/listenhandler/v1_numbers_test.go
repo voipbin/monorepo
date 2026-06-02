@@ -13,6 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-number-manager/models/number"
+	"monorepo/bin-number-manager/pkg/dbhandler"
 	"monorepo/bin-number-manager/pkg/numberhandler"
 )
 
@@ -935,5 +936,60 @@ func Test_processV1NumbersIDMetadataPut_handlerError(t *testing.T) {
 	}
 	if res.StatusCode != 400 {
 		t.Errorf("Expected status 400, got %d", res.StatusCode)
+	}
+}
+
+func Test_processV1NumbersID_notFound(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+		setup   func(m *numberhandler.MockNumberHandler, id uuid.UUID)
+	}{
+		{
+			name: "GET non-existent number returns 404",
+			request: &sock.Request{
+				URI:    "/v1/numbers/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodGet,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+			setup: func(m *numberhandler.MockNumberHandler, id uuid.UUID) {
+				m.EXPECT().Get(gomock.Any(), id).Return(nil, dbhandler.ErrNotFound)
+			},
+		},
+		{
+			name: "DELETE non-existent number returns 404",
+			request: &sock.Request{
+				URI:    "/v1/numbers/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodDelete,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+			setup: func(m *numberhandler.MockNumberHandler, id uuid.UUID) {
+				m.EXPECT().Delete(gomock.Any(), id).Return(nil, dbhandler.ErrNotFound)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockNumber := numberhandler.NewMockNumberHandler(mc)
+			h := &listenHandler{
+				sockHandler:   mockSock,
+				numberHandler: mockNumber,
+			}
+			tt.setup(mockNumber, tt.id)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
+			}
+		})
 	}
 }
