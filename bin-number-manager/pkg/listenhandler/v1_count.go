@@ -34,7 +34,7 @@ func (h *listenHandler) processV1NumbersCountVirtualByCustomerGet(ctx context.Co
 	count, err := h.numberHandler.CountVirtualByCustomerID(ctx, req.CustomerID)
 	if err != nil {
 		log.Errorf("Could not get virtual number count. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(&countByCustomerResponse{Count: count})

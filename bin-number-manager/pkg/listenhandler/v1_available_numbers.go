@@ -72,7 +72,7 @@ func (h *listenHandler) processV1AvailableNumbersGet(ctx context.Context, m *soc
 	}
 	if err != nil {
 		log.Debugf("Could not get available numbers. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(numbers)
