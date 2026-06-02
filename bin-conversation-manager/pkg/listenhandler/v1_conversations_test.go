@@ -462,6 +462,55 @@ func Test_processV1ConversationsID_notFound(t *testing.T) {
 	}
 }
 
+// Test_processV1ConversationsID_notFoundTyped verifies that the typed
+// *cerrors.VoipbinError (NotFound) returned by the real conversationHandler.Get
+// is correctly translated to HTTP 404 via the errors.As → cerrors.ToResponse branch
+// in errorResponse.
+func Test_processV1ConversationsID_notFoundTyped(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+	}{
+		{
+			name: "GET non-existent conversation returns 404 via typed cerrors.NotFound",
+			request: &sock.Request{
+				URI:    "/v1/conversations/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodGet,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockConversation := conversationhandler.NewMockConversationHandler(mc)
+			h := &listenHandler{
+				sockHandler:         mockSock,
+				conversationHandler: mockConversation,
+			}
+
+			mockConversation.EXPECT().Get(gomock.Any(), tt.id).Return(nil, cerrors.NotFound(
+				commonoutline.ServiceNameConversationManager,
+				"CONVERSATION_NOT_FOUND",
+				"The conversation was not found.",
+			))
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
 // Test_processV1ConversationsIDPut_ErrorPassthrough verifies that errors
 // returned from conversationHandler.Update flow through errorResponse so the
 // api-manager edge sees the right HTTP status (design §5.4):
