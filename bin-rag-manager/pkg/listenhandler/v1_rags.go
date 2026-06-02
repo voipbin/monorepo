@@ -51,7 +51,7 @@ func (h *listenHandler) processV1RagsPost(ctx context.Context, m *sock.Request) 
 	r, err := h.ragHandler.RagCreate(ctx, reqData.CustomerID, reqData.Name, reqData.Description, reqData.StorageFileIDs, reqData.SourceURLs)
 	if err != nil {
 		log.Errorf("Could not create rag. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	return jsonResponse(200, r), nil
@@ -87,7 +87,7 @@ func (h *listenHandler) processV1RagsGet(ctx context.Context, m *sock.Request) (
 	rags, err := h.ragHandler.RagList(ctx, pageSize, pageToken, filters)
 	if err != nil {
 		log.Errorf("Could not list rags. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	return jsonResponse(200, rags), nil
@@ -112,7 +112,7 @@ func (h *listenHandler) processV1RagsIDGet(ctx context.Context, m *sock.Request)
 	r, err := h.ragHandler.RagGet(ctx, id)
 	if err != nil {
 		log.Errorf("Could not get rag. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	return jsonResponse(200, r), nil
@@ -159,7 +159,7 @@ func (h *listenHandler) processV1RagsIDPut(ctx context.Context, m *sock.Request)
 	r, err := h.ragHandler.RagUpdate(ctx, id, fields)
 	if err != nil {
 		log.Errorf("Could not update rag. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	return jsonResponse(200, r), nil
@@ -183,7 +183,7 @@ func (h *listenHandler) processV1RagsIDDelete(ctx context.Context, m *sock.Reque
 
 	if err := h.ragHandler.RagDelete(ctx, id); err != nil {
 		log.Errorf("Could not delete rag. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	return simpleResponse(200), nil
@@ -223,7 +223,7 @@ func (h *listenHandler) processV1RagsIDSourcesPost(ctx context.Context, m *sock.
 	r, err := h.ragHandler.RagAddSources(ctx, ragID, reqData.StorageFileIDs, reqData.SourceURLs)
 	if err != nil {
 		log.Errorf("Could not add sources. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	return jsonResponse(200, r), nil
@@ -256,7 +256,7 @@ func (h *listenHandler) processV1RagsIDSourcesIDDelete(ctx context.Context, m *s
 	r, err := h.ragHandler.RagRemoveSource(ctx, ragID, sourceID)
 	if err != nil {
 		log.Errorf("Could not remove source. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	return jsonResponse(200, r), nil

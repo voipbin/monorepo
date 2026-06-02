@@ -38,7 +38,7 @@ func (h *listenHandler) processV1QueryPost(ctx context.Context, m *sock.Request)
 	res, err := h.ragHandler.QueryRag(ctx, req.RagID, req.Query, req.TopK)
 	if err != nil {
 		log.Errorf("Could not query rag. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	return jsonResponse(200, res), nil
