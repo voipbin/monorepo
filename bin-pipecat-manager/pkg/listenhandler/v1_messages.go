@@ -29,7 +29,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 
 	data, err := json.Marshal(tmp)
 	if err != nil {
-		return simpleResponse(404), nil
+		return simpleResponse(500), nil
 	}
 
 	res := &sock.Response{
