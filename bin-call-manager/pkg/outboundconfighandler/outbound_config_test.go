@@ -287,7 +287,7 @@ func Test_outboundConfigHandler_GetByID(t *testing.T) {
 			dbRes:   nil,
 			dbErr:   nil,
 			expect:  nil,
-			wantErr: false,
+			wantErr: true, // db returns (nil, nil) → handler returns typed NotFound error
 		},
 		{
 			name:    "db error",

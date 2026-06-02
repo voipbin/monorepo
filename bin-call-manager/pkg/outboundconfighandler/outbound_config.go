@@ -10,6 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	outboundconfig "monorepo/bin-call-manager/models/outboundconfig"
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 )
 
 // Delete soft-deletes the OutboundConfig identified by id and invalidates its cache entry.
@@ -62,8 +64,16 @@ func (h *outboundConfigHandler) GetByCustomerID(ctx context.Context, customerID 
 }
 
 // GetByID returns the OutboundConfig with the given id directly from DB.
+// Returns a typed NotFound error if the DB returns nil (row does not exist).
 func (h *outboundConfigHandler) GetByID(ctx context.Context, id uuid.UUID) (*outboundconfig.OutboundConfig, error) {
-	return h.db.OutboundConfigGetByID(ctx, id)
+	res, err := h.db.OutboundConfigGetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if res == nil {
+		return nil, cerrors.NotFound(commonoutline.ServiceNameCallManager, "OUTBOUND_CONFIG_NOT_FOUND", "The outbound config was not found.")
+	}
+	return res, nil
 }
 
 // List returns a page of OutboundConfigs for the given customerID.

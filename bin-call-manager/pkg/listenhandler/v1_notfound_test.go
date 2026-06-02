@@ -3,6 +3,8 @@ package listenhandler
 import (
 	"testing"
 
+	cerrors "monorepo/bin-common-handler/models/errors"
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
@@ -273,6 +275,59 @@ func Test_processV1OutboundConfigsGet_notFound(t *testing.T) {
 			}
 
 			mockOutboundConfig.EXPECT().List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, dbhandler.ErrNotFound)
+
+			res, err := h.processRequest(tt.request)
+			if err != nil {
+				t.Errorf("expected nil error, got: %v", err)
+			}
+			if res.StatusCode != 404 {
+				t.Errorf("StatusCode mismatch. expected: 404, got: %d", res.StatusCode)
+			}
+		})
+	}
+}
+
+// Test_processV1OutboundConfigsIDGet_notFound verifies that when
+// outboundConfigHandler.GetByID returns a typed cerrors.NotFound (the new
+// behaviour after the nil-row fix), processV1OutboundConfigsIDGet produces
+// HTTP 404 instead of 200 with a null body.
+func Test_processV1OutboundConfigsIDGet_notFound(t *testing.T) {
+	tests := []struct {
+		name    string
+		request *sock.Request
+		id      uuid.UUID
+	}{
+		{
+			name: "GET non-existent outbound config returns 404",
+			request: &sock.Request{
+				URI:    "/v1/outbound_configs/00000000-0000-0000-0000-000000000099",
+				Method: sock.RequestMethodGet,
+			},
+			id: uuid.FromStringOrNil("00000000-0000-0000-0000-000000000099"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockSock := sockhandler.NewMockSockHandler(mc)
+			mockCall := callhandler.NewMockCallHandler(mc)
+			mockOutboundConfig := outboundconfighandler.NewMockOutboundConfigHandler(mc)
+
+			h := &listenHandler{
+				sockHandler:           mockSock,
+				callHandler:           mockCall,
+				outboundConfigHandler: mockOutboundConfig,
+			}
+
+			notFoundErr := cerrors.NotFound(
+				commonoutline.ServiceNameCallManager,
+				"OUTBOUND_CONFIG_NOT_FOUND",
+				"The outbound config was not found.",
+			)
+			mockOutboundConfig.EXPECT().GetByID(gomock.Any(), tt.id).Return(nil, notFoundErr)
 
 			res, err := h.processRequest(tt.request)
 			if err != nil {
