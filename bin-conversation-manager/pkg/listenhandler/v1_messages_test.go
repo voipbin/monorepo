@@ -14,6 +14,7 @@ import (
 	"monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-conversation-manager/pkg/accounthandler"
 	"monorepo/bin-conversation-manager/pkg/conversationhandler"
+	"monorepo/bin-conversation-manager/pkg/dbhandler"
 	"monorepo/bin-conversation-manager/pkg/messagehandler"
 
 	"github.com/gofrs/uuid"
@@ -27,6 +28,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 		request *sock.Request
 
 		responseMessage *message.Message
+		responseErr     error
 
 		expectedConversationID uuid.UUID
 		expectedText           string
@@ -46,6 +48,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 					ID: uuid.FromStringOrNil("f702762c-1bd3-11f0-8f2b-9f2159c784a9"),
 				},
 			},
+			responseErr: nil,
 
 			expectedConversationID: uuid.FromStringOrNil("f6d0a7a0-1bd3-11f0-9e4d-6f54fac53b80"),
 			expectedText:           "I'm your father",
@@ -53,6 +56,24 @@ func Test_processV1MessagesPost(t *testing.T) {
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"f702762c-1bd3-11f0-8f2b-9f2159c784a9","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			name: "not found returns 404",
+			request: &sock.Request{
+				URI:      "/v1/messages",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"conversation_id":"a1b2c3d4-1bd3-11f0-9e4d-6f54fac53b80","text":"hello"}`),
+			},
+
+			responseMessage: nil,
+			responseErr:     dbhandler.ErrNotFound,
+
+			expectedConversationID: uuid.FromStringOrNil("a1b2c3d4-1bd3-11f0-9e4d-6f54fac53b80"),
+			expectedText:           "hello",
+			expectedRes: &sock.Response{
+				StatusCode: 404,
 			},
 		},
 	}
@@ -70,7 +91,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 				conversationHandler: mockConversation,
 			}
 
-			mockConversation.EXPECT().MessageSend(gomock.Any(), tt.expectedConversationID, tt.expectedText, nil).Return(tt.responseMessage, nil)
+			mockConversation.EXPECT().MessageSend(gomock.Any(), tt.expectedConversationID, tt.expectedText, nil).Return(tt.responseMessage, tt.responseErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -200,6 +221,7 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 		request *sock.Request
 
 		responseMessage *message.Message
+		responseErr     error
 
 		expectedID             uuid.UUID
 		expectedCustomerID     uuid.UUID
@@ -229,6 +251,7 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 					ID: uuid.FromStringOrNil("34e82c6e-1bcc-11f0-9c76-0fef42a4c318"),
 				},
 			},
+			responseErr: nil,
 
 			expectedID:             uuid.FromStringOrNil("34e82c6e-1bcc-11f0-9c76-0fef42a4c318"),
 			expectedCustomerID:     uuid.FromStringOrNil("456609ea-fecc-11ed-a717-5f6984c51794"),
@@ -245,6 +268,34 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"id":"34e82c6e-1bcc-11f0-9c76-0fef42a4c318","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+			},
+		},
+		{
+			name: "not found returns 404",
+
+			request: &sock.Request{
+				URI:      "/v1/messages/create",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+				Data:     []byte(`{"id":"45f93d7f-1bcc-11f0-9c76-0fef42a4c318","customer_id":"556609ea-fecc-11ed-a717-5f6984c51794","conversation_id":"696f3930-1adb-11f0-b87e-67f6dad44afa","direction":"incoming","status":"done","reference_type":"line","reference_id":"69a1726a-1adb-11f0-b618-979f6c3070ea","transaction_id":"69caa388-1adb-11f0-a5f0-7f93f53de671","text":"not found","medias":[]}`),
+			},
+
+			responseMessage: nil,
+			responseErr:     dbhandler.ErrNotFound,
+
+			expectedID:             uuid.FromStringOrNil("45f93d7f-1bcc-11f0-9c76-0fef42a4c318"),
+			expectedCustomerID:     uuid.FromStringOrNil("556609ea-fecc-11ed-a717-5f6984c51794"),
+			expectedConversationID: uuid.FromStringOrNil("696f3930-1adb-11f0-b87e-67f6dad44afa"),
+			expectedDirection:      message.DirectionIncoming,
+			expectedStatus:         message.StatusDone,
+			expectedReferenceType:  message.ReferenceTypeLine,
+			expectedReferenceID:    uuid.FromStringOrNil("69a1726a-1adb-11f0-b618-979f6c3070ea"),
+			expectedTransactionID:  "69caa388-1adb-11f0-a5f0-7f93f53de671",
+			expectedText:           "not found",
+			expectedMedias:         []media.Media{},
+
+			expectedRes: &sock.Response{
+				StatusCode: 404,
 			},
 		},
 	}
@@ -278,7 +329,7 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 				tt.expectedTransactionID,
 				tt.expectedText,
 				tt.expectedMedias,
-			).Return(tt.responseMessage, nil)
+			).Return(tt.responseMessage, tt.responseErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

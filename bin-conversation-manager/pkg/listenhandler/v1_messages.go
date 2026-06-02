@@ -30,7 +30,7 @@ func (h *listenHandler) processV1MessagesPost(ctx context.Context, m *sock.Reque
 	tmp, err := h.conversationHandler.MessageSend(ctx, req.ConversationID, req.Text, req.Medias)
 	if err != nil {
 		log.Errorf("Could not send the message. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -129,7 +129,7 @@ func (h *listenHandler) processV1MessagesCreatePost(ctx context.Context, m *sock
 	)
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)

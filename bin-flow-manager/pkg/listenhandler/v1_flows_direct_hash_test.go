@@ -13,6 +13,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-flow-manager/models/flow"
+	"monorepo/bin-flow-manager/pkg/dbhandler"
 	"monorepo/bin-flow-manager/pkg/flowhandler"
 )
 
@@ -67,6 +68,22 @@ func Test_processV1FlowsIDDirectHashRegeneratePost(t *testing.T) {
 			expectedFlowID: uuid.FromStringOrNil("b7f5fbe9-9b85-22fb-bf86-4f2f72c0b347"),
 			expectedRes: &sock.Response{
 				StatusCode: 500,
+			},
+		},
+		{
+			name: "not found returns 404",
+			request: &sock.Request{
+				URI:      "/v1/flows/c8f6fcfa-ab96-33fc-cf97-5f3f83d1c458/direct-hash-regenerate",
+				Method:   sock.RequestMethodPost,
+				DataType: "application/json",
+			},
+
+			responseFlow: nil,
+			responseErr:  dbhandler.ErrNotFound,
+
+			expectedFlowID: uuid.FromStringOrNil("c8f6fcfa-ab96-33fc-cf97-5f3f83d1c458"),
+			expectedRes: &sock.Response{
+				StatusCode: 404,
 			},
 		},
 	}

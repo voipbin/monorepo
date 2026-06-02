@@ -10,6 +10,7 @@ import (
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 
+	"monorepo/bin-flow-manager/pkg/dbhandler"
 	"monorepo/bin-flow-manager/pkg/flowhandler"
 )
 
@@ -21,6 +22,7 @@ func Test_processV1FlowsCountByCustomerGet(t *testing.T) {
 
 		customerID    uuid.UUID
 		responseCount int
+		responseErr   error
 		expectRes     *sock.Response
 	}{
 		{
@@ -34,10 +36,27 @@ func Test_processV1FlowsCountByCustomerGet(t *testing.T) {
 
 			customerID:    uuid.FromStringOrNil("a2b3c4d5-0001-0001-0001-000000000001"),
 			responseCount: 5,
+			responseErr:   nil,
 			expectRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
 				Data:       []byte(`{"count":5}`),
+			},
+		},
+		{
+			name: "not found returns 404",
+			request: &sock.Request{
+				URI:      "/v1/flows/count_by_customer",
+				Method:   sock.RequestMethodGet,
+				DataType: "application/json",
+				Data:     []byte(`{"customer_id":"b3c4d5e6-0002-0002-0002-000000000002"}`),
+			},
+
+			customerID:    uuid.FromStringOrNil("b3c4d5e6-0002-0002-0002-000000000002"),
+			responseCount: 0,
+			responseErr:   dbhandler.ErrNotFound,
+			expectRes: &sock.Response{
+				StatusCode: 404,
 			},
 		},
 	}
@@ -55,7 +74,7 @@ func Test_processV1FlowsCountByCustomerGet(t *testing.T) {
 				flowHandler: mockFlow,
 			}
 
-			mockFlow.EXPECT().CountByCustomerID(gomock.Any(), tt.customerID).Return(tt.responseCount, nil)
+			mockFlow.EXPECT().CountByCustomerID(gomock.Any(), tt.customerID).Return(tt.responseCount, tt.responseErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

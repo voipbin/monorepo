@@ -37,7 +37,7 @@ func (h *listenHandler) processV1FlowsIDDirectHashRegeneratePost(ctx context.Con
 	tmp, err := h.flowHandler.DirectHashRegenerate(ctx, id)
 	if err != nil {
 		log.Errorf("Could not regenerate direct hash. err: %v", err)
-		return simpleResponse(500), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
