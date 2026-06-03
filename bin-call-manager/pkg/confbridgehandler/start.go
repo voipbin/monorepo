@@ -44,9 +44,10 @@ func (h *confbridgeHandler) StartContextIncoming(ctx context.Context, cn *channe
 	log.WithField("confbridge", cb).Debugf("Found confbridge. confbridge_id: %s", cb.ID)
 
 	// add the channel to the bridge
+	// Note: errors.Wrap(nil, msg) returns nil, so errJoin must be used explicitly here.
 	if errJoin := h.bridgeHandler.ChannelJoin(ctx, cb.BridgeID, channelID, "", false, false); errJoin != nil {
-		log.Errorf("Could not add the channel to the bridge. err: %v", err)
-		return errors.Wrap(err, "could not add the channel to the bridge")
+		log.Errorf("could not add the channel to the bridge. err: %v", errJoin)
+		return errors.Wrap(errJoin, "could not add the channel to the bridge")
 	}
 
 	return nil
