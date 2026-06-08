@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	fmaction "monorepo/bin-flow-manager/models/action"
+	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -57,6 +58,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameStopMedia:           h.toolHandleMediaStop,
 		message.FunctionCallNameStopService:         h.toolHandleServiceStop,
 		message.FunctionCallNameSearchKnowledge:     h.toolHandleSearchKnowledge,
+		message.FunctionCallNameGetCorrelation:      h.toolHandleGetCorrelation,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
@@ -480,3 +482,131 @@ func (h *aicallHandler) toolHandleSearchKnowledge(ctx context.Context, c *aicall
 	fillSuccess(res, "rag", tmpAI.RagID.String(), sb.String())
 	return res
 }
+
+// msgCorrelationNotFound is the single masking string used for every
+// "you cannot see this" path so that genuine-absent, exists-but-not-owned,
+// and ownership-lookup-failure are all byte-identical. This prevents the tool
+// from being used as a cross-customer existence oracle.
+const msgCorrelationNotFound = "No events found for this resource."
+
+// toolHandleGetCorrelation retrieves the correlation graph for a resource and
+// returns a human-readable summary. It is an internal diagnostic tool.
+//
+// Security: the timeline correlation endpoint is not customer-scoped, so an
+// arbitrary resource_id could otherwise expose another customer's data (IDOR).
+// Ownership is enforced by resolving the correlated activeflow via flow-manager
+// and comparing its CustomerID against the calling session's CustomerID. Any
+// path that would reveal existence of a resource the caller does not own returns
+// the same masking string as a genuine not-found.
+func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleGetCorrelation",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool get_correlation.")
+
+	res := newToolResult(tc.ID)
+
+	var args struct {
+		ResourceID string `json:"resource_id"`
+	}
+	// resource_id is optional; ignore unmarshal errors and fall back to own session.
+	_ = json.Unmarshal([]byte(tc.Function.Arguments), &args)
+
+	// ownSession is true when no id is supplied: the target is the caller's own
+	// activeflow, which is owned by definition.
+	ownSession := args.ResourceID == ""
+	resourceID := c.ActiveflowID
+	if !ownSession {
+		parsed, err := uuid.FromString(args.ResourceID)
+		if err != nil {
+			fillFailed(res, fmt.Errorf("invalid resource_id"))
+			return res
+		}
+		resourceID = parsed
+	}
+	if resourceID == uuid.Nil {
+		fillFailed(res, fmt.Errorf("no resource_id available"))
+		return res
+	}
+
+	corr, err := h.reqHandler.TimelineV1CorrelationGet(ctx, resourceID)
+	if err != nil {
+		log.Errorf("Correlation lookup failed. err: %v", err)
+		fillFailed(res, fmt.Errorf("correlation lookup failed"))
+		return res
+	}
+
+	// Resource absent -> canonical not-found.
+	if !corr.ResourceFound {
+		fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
+		return res
+	}
+
+	// Resource exists but has no activeflow: there is no activeflow to validate
+	// ownership against. Only disclose this state for the caller's own session;
+	// for a supplied foreign id, mask as not-found.
+	if corr.ActiveflowID == uuid.Nil {
+		if ownSession {
+			fillSuccess(res, "correlation", resourceID.String(), "This resource exists but is not linked to any call flow.")
+		} else {
+			fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
+		}
+		return res
+	}
+
+	// Has activeflow: validate ownership via flow-manager (timeline has no customer_id).
+	af, err := h.reqHandler.FlowV1ActiveflowGet(ctx, corr.ActiveflowID)
+	if err != nil {
+		// Mask the lookup failure as not-found: do not reveal that the activeflow exists.
+		log.Warnf("Could not verify correlation ownership. resource_id: %s, err: %v", resourceID, err)
+		fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
+		return res
+	}
+	if af.CustomerID != c.CustomerID {
+		log.Warnf("Cross-customer correlation attempt blocked. session_customer: %s, resource_owner: %s, resource_id: %s",
+			c.CustomerID, af.CustomerID, resourceID)
+		fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
+		return res
+	}
+
+	summary := formatCorrelationSummary(corr)
+	fillSuccess(res, "correlation", corr.ActiveflowID.String(), summary)
+	return res
+}
+
+// formatCorrelationSummary renders an LLM-readable summary of a correlation
+// graph. It leads with prose grouped by publisher and includes compact resource
+// ids so the LLM can chain follow-up tool calls.
+func formatCorrelationSummary(corr *tmcorrelation.Correlation) string {
+	var sb strings.Builder
+
+	fmt.Fprintf(&sb, "Call flow %s is linked to:\n", corr.ActiveflowID)
+	if len(corr.Resources) == 0 {
+		sb.WriteString("- (no correlated resources)\n")
+	}
+
+	for _, group := range corr.Resources {
+		if group == nil {
+			continue
+		}
+		fmt.Fprintf(&sb, "- %s: %d resource(s)\n", group.Publisher, len(group.Resources))
+		for _, r := range group.Resources {
+			if r == nil {
+				continue
+			}
+			if len(r.EventTypes) > 0 {
+				fmt.Fprintf(&sb, "  - %s %s (events: %s)\n", r.DataType, r.ID, strings.Join(r.EventTypes, ", "))
+			} else {
+				fmt.Fprintf(&sb, "  - %s %s\n", r.DataType, r.ID)
+			}
+		}
+	}
+
+	if corr.Truncated {
+		sb.WriteString("(truncated: more resources exist than were returned)\n")
+	}
+
+	return sb.String()
+}
+

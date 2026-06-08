@@ -59,6 +59,21 @@ func (mr *MockEventHandlerMockRecorder) AggregatedList(ctx, activeflowID, pageTo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedList", reflect.TypeOf((*MockEventHandler)(nil).AggregatedList), ctx, activeflowID, pageToken, pageSize)
 }
 
+// CorrelationGet mocks base method.
+func (m *MockEventHandler) CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.Correlation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CorrelationGet", ctx, resourceID)
+	ret0, _ := ret[0].(*correlation.Correlation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CorrelationGet indicates an expected call of CorrelationGet.
+func (mr *MockEventHandlerMockRecorder) CorrelationGet(ctx, resourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CorrelationGet", reflect.TypeOf((*MockEventHandler)(nil).CorrelationGet), ctx, resourceID)
+}
+
 // List mocks base method.
 func (m *MockEventHandler) List(ctx context.Context, publisher outline.ServiceName, resourceID uuid.UUID, events []string, pageToken string, pageSize int) (*event.EventListResponse, error) {
 	m.ctrl.T.Helper()
@@ -72,19 +87,4 @@ func (m *MockEventHandler) List(ctx context.Context, publisher outline.ServiceNa
 func (mr *MockEventHandlerMockRecorder) List(ctx, publisher, resourceID, events, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockEventHandler)(nil).List), ctx, publisher, resourceID, events, pageToken, pageSize)
-}
-
-// ResourceCorrelationGet mocks base method.
-func (m *MockEventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelation, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResourceCorrelationGet", ctx, resourceID)
-	ret0, _ := ret[0].(*correlation.ResourceCorrelation)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ResourceCorrelationGet indicates an expected call of ResourceCorrelationGet.
-func (mr *MockEventHandlerMockRecorder) ResourceCorrelationGet(ctx, resourceID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceCorrelationGet", reflect.TypeOf((*MockEventHandler)(nil).ResourceCorrelationGet), ctx, resourceID)
 }

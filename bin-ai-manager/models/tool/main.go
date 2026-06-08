@@ -16,6 +16,7 @@ const (
 	ToolNameStopMedia         ToolName = "stop_media"
 	ToolNameStopService       ToolName = "stop_service"
 	ToolNameSearchKnowledge   ToolName = "search_knowledge"
+	ToolNameGetCorrelation    ToolName = "get_correlation"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -30,6 +31,7 @@ var AllToolNames = []ToolName{
 	ToolNameStopMedia,
 	ToolNameStopService,
 	ToolNameSearchKnowledge,
+	ToolNameGetCorrelation,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

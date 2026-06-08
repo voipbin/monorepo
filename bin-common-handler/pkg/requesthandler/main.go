@@ -87,6 +87,7 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
+	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 	tmevent "monorepo/bin-timeline-manager/models/event"
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 
@@ -1397,6 +1398,7 @@ type RequestHandler interface {
 	// timeline-manager events
 	TimelineV1EventList(ctx context.Context, req *tmevent.EventListRequest) (*tmevent.EventListResponse, error)
 	TimelineV1AggregatedEventList(ctx context.Context, req *tmevent.AggregatedEventListRequest) (*tmevent.AggregatedEventListResponse, error)
+	TimelineV1CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*tmcorrelation.Correlation, error)
 
 	// timeline-manager sip
 	TimelineV1SIPAnalysisGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPAnalysisResponse, error)

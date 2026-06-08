@@ -18,7 +18,7 @@ import (
 type EventHandler interface {
 	List(ctx context.Context, publisher commonoutline.ServiceName, resourceID uuid.UUID, events []string, pageToken string, pageSize int) (*event.EventListResponse, error)
 	AggregatedList(ctx context.Context, activeflowID uuid.UUID, pageToken string, pageSize int) (*event.AggregatedEventListResponse, error)
-	ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelation, error)
+	CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.Correlation, error)
 }
 
 type eventHandler struct {

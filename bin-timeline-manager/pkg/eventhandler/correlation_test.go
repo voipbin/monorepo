@@ -13,23 +13,23 @@ import (
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 )
 
-func TestResourceCorrelationGet_Validation(t *testing.T) {
+func TestCorrelationGet_Validation(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	mockDB := dbhandler.NewMockDBHandler(ctrl)
 	handler := NewEventHandler(mockDB)
 
-	_, err := handler.ResourceCorrelationGet(context.Background(), uuid.Nil)
+	_, err := handler.CorrelationGet(context.Background(), uuid.Nil)
 	if err == nil {
 		t.Fatal("expected error for nil resource_id")
 	}
 	if err.Error() != "resource_id is required" {
-		t.Errorf("ResourceCorrelationGet() error = %q, want %q", err.Error(), "resource_id is required")
+		t.Errorf("CorrelationGet() error = %q, want %q", err.Error(), "resource_id is required")
 	}
 }
 
-func TestResourceCorrelationGet_NoActiveflow_ResourceFound(t *testing.T) {
+func TestCorrelationGet_NoActiveflow_ResourceFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -41,7 +41,7 @@ func TestResourceCorrelationGet_NoActiveflow_ResourceFound(t *testing.T) {
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return("", nil)
 	mockDB.EXPECT().ResourceExists(gomock.Any(), resourceID.String()).Return(true, nil)
 
-	res, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	res, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -59,7 +59,7 @@ func TestResourceCorrelationGet_NoActiveflow_ResourceFound(t *testing.T) {
 	}
 }
 
-func TestResourceCorrelationGet_NotFound(t *testing.T) {
+func TestCorrelationGet_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -71,7 +71,7 @@ func TestResourceCorrelationGet_NotFound(t *testing.T) {
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return("", nil)
 	mockDB.EXPECT().ResourceExists(gomock.Any(), resourceID.String()).Return(false, nil)
 
-	res, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	res, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -83,7 +83,7 @@ func TestResourceCorrelationGet_NotFound(t *testing.T) {
 	}
 }
 
-func TestResourceCorrelationGet_Success_GroupedAndSorted(t *testing.T) {
+func TestCorrelationGet_Success_GroupedAndSorted(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -119,7 +119,7 @@ func TestResourceCorrelationGet_Success_GroupedAndSorted(t *testing.T) {
 		},
 	}, nil)
 
-	res, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	res, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -149,7 +149,7 @@ func TestResourceCorrelationGet_Success_GroupedAndSorted(t *testing.T) {
 	}
 }
 
-func TestResourceCorrelationGet_Truncation(t *testing.T) {
+func TestCorrelationGet_Truncation(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -176,7 +176,7 @@ func TestResourceCorrelationGet_Truncation(t *testing.T) {
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return(activeflowID.String(), nil)
 	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return(rows, nil)
 
-	res, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	res, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -192,7 +192,7 @@ func TestResourceCorrelationGet_Truncation(t *testing.T) {
 	}
 }
 
-func TestResourceCorrelationGet_SkipsUnparseableResourceID(t *testing.T) {
+func TestCorrelationGet_SkipsUnparseableResourceID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -210,7 +210,7 @@ func TestResourceCorrelationGet_SkipsUnparseableResourceID(t *testing.T) {
 		{Publisher: "call-manager", ResourceID: goodID.String(), DataType: "call", EventTypes: []string{"call_created"}, FirstSeen: base, LastSeen: base},
 	}, nil)
 
-	res, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	res, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -223,7 +223,7 @@ func TestResourceCorrelationGet_SkipsUnparseableResourceID(t *testing.T) {
 	}
 }
 
-func TestResourceCorrelationGet_DBError(t *testing.T) {
+func TestCorrelationGet_DBError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -234,13 +234,13 @@ func TestResourceCorrelationGet_DBError(t *testing.T) {
 
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return("", errors.New("clickhouse down"))
 
-	_, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	_, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err == nil {
 		t.Fatal("expected error from db failure")
 	}
 }
 
-func TestResourceCorrelationGet_ResourceExistsError(t *testing.T) {
+func TestCorrelationGet_ResourceExistsError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -252,13 +252,13 @@ func TestResourceCorrelationGet_ResourceExistsError(t *testing.T) {
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return("", nil)
 	mockDB.EXPECT().ResourceExists(gomock.Any(), resourceID.String()).Return(false, errors.New("clickhouse down"))
 
-	_, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	_, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err == nil {
 		t.Fatal("expected error from ResourceExists failure")
 	}
 }
 
-func TestResourceCorrelationGet_CorrelatedListError(t *testing.T) {
+func TestCorrelationGet_CorrelatedListError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -271,13 +271,13 @@ func TestResourceCorrelationGet_CorrelatedListError(t *testing.T) {
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return(activeflowID.String(), nil)
 	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return(nil, errors.New("clickhouse down"))
 
-	_, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	_, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err == nil {
 		t.Fatal("expected error from CorrelatedResourceList failure")
 	}
 }
 
-func TestResourceCorrelationGet_UnparseableActiveflowID(t *testing.T) {
+func TestCorrelationGet_UnparseableActiveflowID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -288,13 +288,13 @@ func TestResourceCorrelationGet_UnparseableActiveflowID(t *testing.T) {
 
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return("garbage-not-a-uuid", nil)
 
-	_, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	_, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err == nil {
 		t.Fatal("expected error from unparseable activeflow_id")
 	}
 }
 
-func TestResourceCorrelationGet_ActiveflowFoundButEmpty(t *testing.T) {
+func TestCorrelationGet_ActiveflowFoundButEmpty(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -307,7 +307,7 @@ func TestResourceCorrelationGet_ActiveflowFoundButEmpty(t *testing.T) {
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return(activeflowID.String(), nil)
 	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return([]*correlation.CorrelatedRow{}, nil)
 
-	res, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
+	res, err := handler.CorrelationGet(context.Background(), resourceID)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
