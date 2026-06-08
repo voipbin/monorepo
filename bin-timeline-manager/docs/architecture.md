@@ -51,6 +51,7 @@ Requests arrive on queue `bin-manager.timeline-manager.request`. The listenhandl
 |--------|-------------|---------|
 | POST | `/v1/events` | `v1EventsPost` — list events with filters (publisher, resource ID, event-type wildcards) |
 | POST | `/v1/aggregated-events` | `v1AggregatedEventsPost` — aggregated event view |
+| GET | `/v1/correlations/<resource_id>` | `v1CorrelationsGet` — resolve a resource id to its activeflow and return all correlated resources grouped by publisher |
 | GET | `/v1/sip/analysis` | `v1SIPAnalysisGet` — SIP call analysis (via Homer) |
 | GET | `/v1/sip/pcap` | `v1SIPPcapGet` — SIP PCAP capture retrieval (via Homer) |
 
