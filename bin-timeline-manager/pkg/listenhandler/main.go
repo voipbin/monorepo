@@ -22,8 +22,11 @@ import (
 )
 
 var (
+	regUUID = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+
 	regV1Events           = regexp.MustCompile("/v1/events$")
 	regV1AggregatedEvents = regexp.MustCompile("/v1/aggregated-events$")
+	regV1Correlations     = regexp.MustCompile("/v1/correlations/" + regUUID + "$")
 	regV1SIPAnalysis      = regexp.MustCompile("/v1/sip/analysis$")
 	regV1SIPPcap          = regexp.MustCompile("/v1/sip/pcap$")
 )
@@ -146,6 +149,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1AggregatedEvents.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/aggregated-events"
 		response, err = h.v1AggregatedEventsPost(ctx, m)
+
+	case regV1Correlations.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/correlations"
+		response, err = h.v1CorrelationsGet(ctx, m)
 
 	case regV1SIPAnalysis.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/sip/analysis"

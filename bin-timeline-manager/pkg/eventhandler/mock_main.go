@@ -15,6 +15,7 @@ import (
 	response "monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 	reflect "reflect"
 
+	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -70,4 +71,19 @@ func (m *MockEventHandler) List(ctx context.Context, req *request.V1DataEventsPo
 func (mr *MockEventHandlerMockRecorder) List(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockEventHandler)(nil).List), ctx, req)
+}
+
+// ResourceCorrelationGet mocks base method.
+func (m *MockEventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*response.V1DataResourceCorrelationGet, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResourceCorrelationGet", ctx, resourceID)
+	ret0, _ := ret[0].(*response.V1DataResourceCorrelationGet)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResourceCorrelationGet indicates an expected call of ResourceCorrelationGet.
+func (mr *MockEventHandlerMockRecorder) ResourceCorrelationGet(ctx, resourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceCorrelationGet", reflect.TypeOf((*MockEventHandler)(nil).ResourceCorrelationGet), ctx, resourceID)
 }
