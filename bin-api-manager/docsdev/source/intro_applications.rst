@@ -35,7 +35,7 @@ See detail at :ref:`here <campaign-overview>`.
 
 Conference
 ----------
-The Conference API is a versatile low-level API that enables users to create conference rooms for various communication objects, including voice, video, and chat. This feature fosters collaboration and communication among multiple participants in real-time.
+The Conference API is a versatile low-level API that enables users to create conference rooms for various communication objects, including voice and chat. This feature fosters collaboration and communication among multiple participants in real-time.
 
 See detail at :ref:`here <conference-overview>`.
 

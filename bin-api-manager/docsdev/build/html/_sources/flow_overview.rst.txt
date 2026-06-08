@@ -315,7 +315,7 @@ Before this action executes, VoIPBIN replaces the placeholders:
 
 Unified flow
 ------------
-VoIPBIN's Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice and video calls, SMS, and RESTful API triggers.
+VoIPBIN's Unified Flow feature is a game-changer, allowing users to create a single flow that can be attached to multiple communication channels, including voice calls, SMS, and RESTful API triggers.
 
 With Unified Flow, users can design a custom flow that defines the actions to be taken when a specific channel request is received. VoIPBIN then automatically executes this flow, ensuring a consistent experience for customers across various channels.
 

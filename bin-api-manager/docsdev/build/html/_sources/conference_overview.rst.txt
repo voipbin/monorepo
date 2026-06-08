@@ -9,9 +9,9 @@ Overview
    * **Cost:** Chargeable (credit deduction per conference minute per participant)
    * **Async:** Yes. ``POST https://api.voipbin.net/v1.0/conferences`` returns immediately with status ``starting``. Poll ``GET https://api.voipbin.net/v1.0/conferences/{id}`` or subscribe via WebSocket to track conference status changes.
 
-The Conference API is a powerful low-level API that empowers developers to create conference rooms capable of accommodating various forms of communication, including voice, video, and chat. At its core, the API revolves around the concept of conferences, which act as containers for communications exchanged between two or more users. These communications may represent single interactions or a complete history of all interactions between the participants.
+The Conference API is a powerful low-level API that empowers developers to create conference rooms capable of accommodating various forms of communication, including voice and chat. At its core, the API revolves around the concept of conferences, which act as containers for communications exchanged between two or more users. These communications may represent single interactions or a complete history of all interactions between the participants.
 
-Additionally, the Conference API allows developers to establish voice, video, and WebRTC (Web Real-Time Communication) calls, enabling seamless voice and video communication between two users. These calls can be stored within the conferences, ensuring that all relevant communications are organized and easily accessible.
+Additionally, the Conference API allows developers to establish voice and WebRTC (Web Real-Time Communication) calls, enabling seamless voice communication between two users. These calls can be stored within the conferences, ensuring that all relevant communications are organized and easily accessible.
 
 .. image:: _static/images/conference_overview_flow.png
 

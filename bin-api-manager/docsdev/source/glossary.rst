@@ -113,7 +113,7 @@ Automated telephone system that interacts with callers through voice prompts and
 
 Media Server
 ------------
-Backend infrastructure that handles real-time audio/video processing including transcoding, mixing, echo cancellation, and jitter buffering. VoIPBIN's media servers ensure high-quality media streams.
+Backend infrastructure that handles real-time audio processing including transcoding, mixing, echo cancellation, and jitter buffering. VoIPBIN's media servers ensure high-quality media streams.
 
 .. _glossary-pstn:
 

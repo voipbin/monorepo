@@ -222,7 +222,7 @@ VoIPBIN supports multiple communication channels through dedicated gateways:
 **Voice Communication:**
 
 * **PSTN**: Traditional phone calls via carrier integrations
-* **WebRTC**: Browser-based voice and video calls
+* **WebRTC**: Browser-based voice calls
 * **SIP**: Direct SIP trunking for enterprise customers
 
 **Messaging:**
