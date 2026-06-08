@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-timeline-manager/models/event"
+	"monorepo/bin-timeline-manager/models/correlation"
 )
 
 // max_execution_time (seconds) applied to the correlation lookups via the
@@ -106,7 +106,7 @@ func (h *dbHandler) ResourceExists(ctx context.Context, resourceID string) (bool
 // CorrelatedResourceList returns deduplicated resources grouped by (publisher,
 // resource_id) for a given activeflow_id, aggregated at the ClickHouse layer.
 // limit caps the row count (callers pass maxResources+1 to detect truncation).
-func (h *dbHandler) CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*event.CorrelatedRow, error) {
+func (h *dbHandler) CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*correlation.CorrelatedRow, error) {
 	if h.conn == nil {
 		return nil, errors.New("clickhouse connection not established")
 	}
@@ -133,9 +133,9 @@ func (h *dbHandler) CorrelatedResourceList(ctx context.Context, activeflowID str
 	}
 	defer func() { _ = rows.Close() }()
 
-	result := []*event.CorrelatedRow{}
+	result := []*correlation.CorrelatedRow{}
 	for rows.Next() {
-		var r event.CorrelatedRow
+		var r correlation.CorrelatedRow
 		if err := rows.Scan(&r.Publisher, &r.ResourceID, &r.DataType, &r.EventTypes, &r.FirstSeen, &r.LastSeen); err != nil {
 			return nil, errors.Wrap(err, "could not scan correlated row")
 		}

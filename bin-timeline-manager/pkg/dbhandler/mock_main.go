@@ -11,6 +11,7 @@ package dbhandler
 
 import (
 	context "context"
+	correlation "monorepo/bin-timeline-manager/models/correlation"
 	event "monorepo/bin-timeline-manager/models/event"
 	reflect "reflect"
 
@@ -58,10 +59,10 @@ func (mr *MockDBHandlerMockRecorder) AggregatedEventList(ctx, activeflowID, page
 }
 
 // CorrelatedResourceList mocks base method.
-func (m *MockDBHandler) CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*event.CorrelatedRow, error) {
+func (m *MockDBHandler) CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*correlation.CorrelatedRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CorrelatedResourceList", ctx, activeflowID, limit)
-	ret0, _ := ret[0].([]*event.CorrelatedRow)
+	ret0, _ := ret[0].([]*correlation.CorrelatedRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

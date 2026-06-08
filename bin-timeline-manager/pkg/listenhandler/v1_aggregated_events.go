@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 func (h *listenHandler) v1AggregatedEventsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
@@ -23,11 +24,19 @@ func (h *listenHandler) v1AggregatedEventsPost(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	// Call handler
-	result, err := h.eventHandler.AggregatedList(ctx, &req)
+	// Call handler with the unwrapped domain inputs. The listenhandler is the
+	// single layer that touches request.* / response.* transport DTOs.
+	res, err := h.eventHandler.AggregatedList(ctx, req.ActiveflowID, req.PageToken, req.PageSize)
 	if err != nil {
 		log.Errorf("Could not list aggregated events. err: %v", err)
 		return errorResponse(err), nil
+	}
+
+	// Map the domain result into the transport DTO. The listenhandler is the
+	// single layer that constructs response.* types.
+	result := &response.V1DataAggregatedEventsPost{
+		Result:        res.Result,
+		NextPageToken: res.NextPageToken,
 	}
 
 	// Marshal response

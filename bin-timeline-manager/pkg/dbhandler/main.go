@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-timeline-manager/models/correlation"
 	"monorepo/bin-timeline-manager/models/event"
 )
 
@@ -39,7 +40,7 @@ type DBHandler interface {
 	AggregatedEventList(ctx context.Context, activeflowID string, pageToken string, pageSize int) ([]*event.Event, error)
 	ResourceActiveflowIDGet(ctx context.Context, resourceID string) (string, error)
 	ResourceExists(ctx context.Context, resourceID string) (bool, error)
-	CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*event.CorrelatedRow, error)
+	CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*correlation.CorrelatedRow, error)
 	WaitForConnection(ctx context.Context) error
 }
 

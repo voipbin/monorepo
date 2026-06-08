@@ -7,101 +7,107 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
+	"monorepo/bin-timeline-manager/models/event"
+)
+
+// Pagination bounds for list-style queries. These are a business policy enforced
+// by the event handler (the sole clamper), so they live here rather than in the
+// transport request DTO package.
+const (
+	DefaultPageSize = 100
+	MaxPageSize     = 1000
 )
 
 // List returns events matching the request criteria.
-func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error) {
+func (h *eventHandler) List(ctx context.Context, publisher commonoutline.ServiceName, resourceID uuid.UUID, events []string, pageToken string, pageSize int) (*event.EventListResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "List",
-		"publisher":   req.Publisher,
-		"resource_id": req.ResourceID,
-		"events":      req.Events,
+		"publisher":   publisher,
+		"resource_id": resourceID,
+		"events":      events,
 	})
 
 	// Validate request
-	if req.Publisher == "" {
+	if publisher == "" {
 		return nil, errors.New("publisher is required")
 	}
-	if req.ResourceID == uuid.Nil {
+	if resourceID == uuid.Nil {
 		return nil, errors.New("resource_id is required")
 	}
-	if len(req.Events) == 0 {
+	if len(events) == 0 {
 		return nil, errors.New("events filter is required")
 	}
 
 	// Apply defaults
-	pageSize := req.PageSize
 	if pageSize <= 0 {
-		pageSize = request.DefaultPageSize
+		pageSize = DefaultPageSize
 	}
-	if pageSize > request.MaxPageSize {
-		pageSize = request.MaxPageSize
+	if pageSize > MaxPageSize {
+		pageSize = MaxPageSize
 	}
 
 	// Query database (request pageSize + 1 to determine if more results exist)
 	// Convert ServiceName to string for database query
-	events, err := h.db.EventList(ctx, string(req.Publisher), req.ResourceID, req.Events, req.PageToken, pageSize+1)
+	rows, err := h.db.EventList(ctx, string(publisher), resourceID, events, pageToken, pageSize+1)
 	if err != nil {
 		log.Errorf("Could not list events. err: %v", err)
 		return nil, errors.Wrap(err, "could not list events")
 	}
 
 	// Build response with pagination
-	res := &response.V1DataEventsPost{
-		Result: events,
+	res := &event.EventListResponse{
+		Result: rows,
 	}
 
 	// If we got more than pageSize, there are more results
-	if len(events) > pageSize {
-		res.Result = events[:pageSize]
+	if len(rows) > pageSize {
+		res.Result = rows[:pageSize]
 		// Use timestamp of last returned event as next page token
-		res.NextPageToken = events[pageSize-1].Timestamp.Format(commonutil.ISO8601Layout)
+		res.NextPageToken = rows[pageSize-1].Timestamp.Format(commonutil.ISO8601Layout)
 	}
 
 	return res, nil
 }
 
 // AggregatedList returns all events matching the given activeflow ID.
-func (h *eventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*response.V1DataAggregatedEventsPost, error) {
+func (h *eventHandler) AggregatedList(ctx context.Context, activeflowID uuid.UUID, pageToken string, pageSize int) (*event.AggregatedEventListResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "AggregatedList",
-		"activeflow_id": req.ActiveflowID,
+		"activeflow_id": activeflowID,
 	})
 
 	// Validate request
-	if req.ActiveflowID == uuid.Nil {
+	if activeflowID == uuid.Nil {
 		return nil, errors.New("activeflow_id is required")
 	}
 
 	// Apply defaults
-	pageSize := req.PageSize
 	if pageSize <= 0 {
-		pageSize = request.DefaultPageSize
+		pageSize = DefaultPageSize
 	}
-	if pageSize > request.MaxPageSize {
-		pageSize = request.MaxPageSize
+	if pageSize > MaxPageSize {
+		pageSize = MaxPageSize
 	}
 
 	// Query database (request pageSize + 1 to determine if more results exist)
-	events, err := h.db.AggregatedEventList(ctx, req.ActiveflowID.String(), req.PageToken, pageSize+1)
+	rows, err := h.db.AggregatedEventList(ctx, activeflowID.String(), pageToken, pageSize+1)
 	if err != nil {
 		log.Errorf("Could not list aggregated events. err: %v", err)
 		return nil, errors.Wrap(err, "could not list aggregated events")
 	}
 
 	// Build response with pagination
-	res := &response.V1DataAggregatedEventsPost{
-		Result: events,
+	res := &event.AggregatedEventListResponse{
+		Result: rows,
 	}
 
 	// If we got more than pageSize, there are more results
-	if len(events) > pageSize {
-		res.Result = events[:pageSize]
-		res.NextPageToken = events[pageSize-1].Timestamp.Format(commonutil.ISO8601Layout)
+	if len(rows) > pageSize {
+		res.Result = rows[:pageSize]
+		res.NextPageToken = rows[pageSize-1].Timestamp.Format(commonutil.ISO8601Layout)
 	}
 
 	return res, nil

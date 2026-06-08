@@ -1,4 +1,4 @@
-package event
+package correlation
 
 import (
 	"time"
@@ -33,4 +33,16 @@ type CorrelatedResource struct {
 type PublisherGroup struct {
 	Publisher string                `json:"publisher"`
 	Resources []*CorrelatedResource `json:"resources"`
+}
+
+// ResourceCorrelation is the domain result of resolving a resource id to its
+// activeflow correlation graph. It is the value returned by
+// eventHandler.ResourceCorrelationGet; the listenhandler maps it into the
+// transport DTO (response.V1DataResourceCorrelationGet) before marshalling.
+type ResourceCorrelation struct {
+	ResourceID    uuid.UUID
+	ResourceFound bool
+	ActiveflowID  uuid.UUID
+	Truncated     bool
+	Resources     []*PublisherGroup
 }

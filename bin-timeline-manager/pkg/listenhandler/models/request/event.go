@@ -16,9 +16,3 @@ type V1DataEventsPost struct {
 	PageToken string `json:"page_token,omitempty"`
 	PageSize  int    `json:"page_size,omitempty"`
 }
-
-// Default and max page sizes
-const (
-	DefaultPageSize = 100
-	MaxPageSize     = 1000
-)

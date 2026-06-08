@@ -20,7 +20,6 @@ import (
 	"monorepo/bin-timeline-manager/internal/config"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 )
 
 func main() {
@@ -84,7 +83,7 @@ func cmdEventList() *cobra.Command {
 	flags.String("publisher", "", "Publisher service name (required)")
 	flags.String("id", "", "Resource ID (required)")
 	flags.String("events", "", "Event patterns comma-separated (required, e.g., 'activeflow_*,flow_created')")
-	flags.Int("page-size", 100, "Page size")
+	flags.Int("page-size", eventhandler.DefaultPageSize, "Page size")
 	flags.String("page-token", "", "Page token for pagination")
 
 	return cmd
@@ -122,15 +121,14 @@ func runEventList(cmd *cobra.Command, args []string) error {
 
 	handler := eventhandler.NewEventHandler(db)
 
-	req := &request.V1DataEventsPost{
-		Publisher: commonoutline.ServiceName(publisher),
-		ResourceID: id,
-		Events:    events,
-		PageSize:  viper.GetInt("page-size"),
-		PageToken: viper.GetString("page-token"),
-	}
-
-	result, err := handler.List(context.Background(), req)
+	result, err := handler.List(
+		context.Background(),
+		commonoutline.ServiceName(publisher),
+		id,
+		events,
+		viper.GetString("page-token"),
+		viper.GetInt("page-size"),
+	)
 	if err != nil {
 		return errors.Wrap(err, "failed to list events")
 	}

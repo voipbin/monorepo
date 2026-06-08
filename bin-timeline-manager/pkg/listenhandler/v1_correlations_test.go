@@ -11,7 +11,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
-	"monorepo/bin-timeline-manager/models/event"
+	"monorepo/bin-timeline-manager/models/correlation"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
@@ -57,11 +57,11 @@ func TestV1CorrelationsGet_Success(t *testing.T) {
 	resourceID := uuid.Must(uuid.NewV4())
 	activeflowID := uuid.Must(uuid.NewV4())
 
-	expected := &response.V1DataResourceCorrelationGet{
+	expected := &correlation.ResourceCorrelation{
 		ResourceID:    resourceID,
 		ResourceFound: true,
 		ActiveflowID:  activeflowID,
-		Resources:     []*event.PublisherGroup{},
+		Resources:     []*correlation.PublisherGroup{},
 	}
 
 	mockEvent.EXPECT().ResourceCorrelationGet(gomock.Any(), resourceID).Return(expected, nil)
@@ -167,10 +167,10 @@ func TestProcessRequest_V1CorrelationsGet_Routing(t *testing.T) {
 	}
 
 	resourceID := uuid.Must(uuid.NewV4())
-	expected := &response.V1DataResourceCorrelationGet{
+	expected := &correlation.ResourceCorrelation{
 		ResourceID:    resourceID,
 		ResourceFound: true,
-		Resources:     []*event.PublisherGroup{},
+		Resources:     []*correlation.PublisherGroup{},
 	}
 	mockEvent.EXPECT().ResourceCorrelationGet(gomock.Any(), resourceID).Return(expected, nil)
 

@@ -11,8 +11,9 @@ package eventhandler
 
 import (
 	context "context"
-	request "monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
-	response "monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
+	outline "monorepo/bin-common-handler/models/outline"
+	correlation "monorepo/bin-timeline-manager/models/correlation"
+	event "monorepo/bin-timeline-manager/models/event"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -44,40 +45,40 @@ func (m *MockEventHandler) EXPECT() *MockEventHandlerMockRecorder {
 }
 
 // AggregatedList mocks base method.
-func (m *MockEventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*response.V1DataAggregatedEventsPost, error) {
+func (m *MockEventHandler) AggregatedList(ctx context.Context, activeflowID uuid.UUID, pageToken string, pageSize int) (*event.AggregatedEventListResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AggregatedList", ctx, req)
-	ret0, _ := ret[0].(*response.V1DataAggregatedEventsPost)
+	ret := m.ctrl.Call(m, "AggregatedList", ctx, activeflowID, pageToken, pageSize)
+	ret0, _ := ret[0].(*event.AggregatedEventListResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AggregatedList indicates an expected call of AggregatedList.
-func (mr *MockEventHandlerMockRecorder) AggregatedList(ctx, req any) *gomock.Call {
+func (mr *MockEventHandlerMockRecorder) AggregatedList(ctx, activeflowID, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedList", reflect.TypeOf((*MockEventHandler)(nil).AggregatedList), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedList", reflect.TypeOf((*MockEventHandler)(nil).AggregatedList), ctx, activeflowID, pageToken, pageSize)
 }
 
 // List mocks base method.
-func (m *MockEventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error) {
+func (m *MockEventHandler) List(ctx context.Context, publisher outline.ServiceName, resourceID uuid.UUID, events []string, pageToken string, pageSize int) (*event.EventListResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "List", ctx, req)
-	ret0, _ := ret[0].(*response.V1DataEventsPost)
+	ret := m.ctrl.Call(m, "List", ctx, publisher, resourceID, events, pageToken, pageSize)
+	ret0, _ := ret[0].(*event.EventListResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // List indicates an expected call of List.
-func (mr *MockEventHandlerMockRecorder) List(ctx, req any) *gomock.Call {
+func (mr *MockEventHandlerMockRecorder) List(ctx, publisher, resourceID, events, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockEventHandler)(nil).List), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockEventHandler)(nil).List), ctx, publisher, resourceID, events, pageToken, pageSize)
 }
 
 // ResourceCorrelationGet mocks base method.
-func (m *MockEventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*response.V1DataResourceCorrelationGet, error) {
+func (m *MockEventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ResourceCorrelationGet", ctx, resourceID)
-	ret0, _ := ret[0].(*response.V1DataResourceCorrelationGet)
+	ret0, _ := ret[0].(*correlation.ResourceCorrelation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

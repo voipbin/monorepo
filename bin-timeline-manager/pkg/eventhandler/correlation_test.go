@@ -9,7 +9,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
-	"monorepo/bin-timeline-manager/models/event"
+	"monorepo/bin-timeline-manager/models/correlation"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 )
 
@@ -100,7 +100,7 @@ func TestResourceCorrelationGet_Success_GroupedAndSorted(t *testing.T) {
 
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return(activeflowID.String(), nil)
 	// ai-manager row first to verify publisher sorting puts call-manager before ai... no, alphabetical: ai-manager < call-manager
-	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return([]*event.CorrelatedRow{
+	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return([]*correlation.CorrelatedRow{
 		{
 			Publisher:  "call-manager",
 			ResourceID: callID.String(),
@@ -160,10 +160,10 @@ func TestResourceCorrelationGet_Truncation(t *testing.T) {
 	activeflowID := uuid.Must(uuid.NewV4())
 
 	// Return maxCorrelationResources+1 rows to trigger truncation.
-	rows := make([]*event.CorrelatedRow, maxCorrelationResources+1)
+	rows := make([]*correlation.CorrelatedRow, maxCorrelationResources+1)
 	base := time.Date(2026, 6, 8, 10, 0, 0, 0, time.UTC)
 	for i := range rows {
-		rows[i] = &event.CorrelatedRow{
+		rows[i] = &correlation.CorrelatedRow{
 			Publisher:  "call-manager",
 			ResourceID: uuid.Must(uuid.NewV4()).String(),
 			DataType:   "call",
@@ -205,7 +205,7 @@ func TestResourceCorrelationGet_SkipsUnparseableResourceID(t *testing.T) {
 	base := time.Date(2026, 6, 8, 10, 0, 0, 0, time.UTC)
 
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return(activeflowID.String(), nil)
-	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return([]*event.CorrelatedRow{
+	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return([]*correlation.CorrelatedRow{
 		{Publisher: "call-manager", ResourceID: "not-a-uuid", DataType: "call", EventTypes: []string{"call_created"}, FirstSeen: base, LastSeen: base},
 		{Publisher: "call-manager", ResourceID: goodID.String(), DataType: "call", EventTypes: []string{"call_created"}, FirstSeen: base, LastSeen: base},
 	}, nil)
@@ -305,7 +305,7 @@ func TestResourceCorrelationGet_ActiveflowFoundButEmpty(t *testing.T) {
 	activeflowID := uuid.Must(uuid.NewV4())
 
 	mockDB.EXPECT().ResourceActiveflowIDGet(gomock.Any(), resourceID.String()).Return(activeflowID.String(), nil)
-	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return([]*event.CorrelatedRow{}, nil)
+	mockDB.EXPECT().CorrelatedResourceList(gomock.Any(), activeflowID.String(), maxCorrelationResources+1).Return([]*correlation.CorrelatedRow{}, nil)
 
 	res, err := handler.ResourceCorrelationGet(context.Background(), resourceID)
 	if err != nil {

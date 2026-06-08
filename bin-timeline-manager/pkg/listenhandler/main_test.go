@@ -79,14 +79,14 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
-	expectedResponse := &response.V1DataEventsPost{
+	expectedResponse := &event.EventListResponse{
 		Result: []*event.Event{
 			{Timestamp: ts, EventType: "activeflow_created"},
 		},
 	}
 
 	mockEvent.EXPECT().
-		List(gomock.Any(), gomock.Any()).
+		List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(expectedResponse, nil)
 
 	sockReq := &sock.Request{
@@ -106,6 +106,19 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 
 	if resp.DataType != "application/json" {
 		t.Errorf("processRequest() DataType = %q, want %q", resp.DataType, "application/json")
+	}
+
+	// Verify the domain result was mapped into the response DTO and marshalled
+	// with the expected wire shape (listenhandler owns response.* construction).
+	var got response.V1DataEventsPost
+	if err := json.Unmarshal(resp.Data, &got); err != nil {
+		t.Fatalf("could not unmarshal response body: %v", err)
+	}
+	if len(got.Result) != 1 {
+		t.Fatalf("body Result len = %d, want 1", len(got.Result))
+	}
+	if got.Result[0].EventType != "activeflow_created" {
+		t.Errorf("body Result[0].EventType = %q, want activeflow_created", got.Result[0].EventType)
 	}
 }
 
@@ -159,7 +172,7 @@ func TestProcessRequest_V1EventsPost_HandlerError(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	mockEvent.EXPECT().
-		List(gomock.Any(), gomock.Any()).
+		List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("handler error"))
 
 	sockReq := &sock.Request{
@@ -860,14 +873,14 @@ func TestProcessRequest_V1AggregatedEventsPost(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
-	expectedResponse := &response.V1DataAggregatedEventsPost{
+	expectedResponse := &event.AggregatedEventListResponse{
 		Result: []*event.Event{
 			{Timestamp: ts, EventType: "activeflow_created"},
 		},
 	}
 
 	mockEvent.EXPECT().
-		AggregatedList(gomock.Any(), gomock.Any()).
+		AggregatedList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(expectedResponse, nil)
 
 	sockReq := &sock.Request{
@@ -887,6 +900,19 @@ func TestProcessRequest_V1AggregatedEventsPost(t *testing.T) {
 
 	if resp.DataType != "application/json" {
 		t.Errorf("processRequest() DataType = %q, want %q", resp.DataType, "application/json")
+	}
+
+	// Verify the domain result was mapped into the response DTO and marshalled
+	// with the expected wire shape (listenhandler owns response.* construction).
+	var got response.V1DataAggregatedEventsPost
+	if err := json.Unmarshal(resp.Data, &got); err != nil {
+		t.Fatalf("could not unmarshal response body: %v", err)
+	}
+	if len(got.Result) != 1 {
+		t.Fatalf("body Result len = %d, want 1", len(got.Result))
+	}
+	if got.Result[0].EventType != "activeflow_created" {
+		t.Errorf("body Result[0].EventType = %q, want activeflow_created", got.Result[0].EventType)
 	}
 }
 
@@ -938,7 +964,7 @@ func TestProcessRequest_V1AggregatedEventsPost_HandlerError(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	mockEvent.EXPECT().
-		AggregatedList(gomock.Any(), gomock.Any()).
+		AggregatedList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("handler error"))
 
 	sockReq := &sock.Request{
@@ -1011,7 +1037,7 @@ func TestV1EventsPost_HandlerPlainError(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	mockEvent.EXPECT().
-		List(gomock.Any(), gomock.Any()).
+		List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("database unavailable"))
 
 	sockReq := &sock.Request{
@@ -1051,7 +1077,7 @@ func TestV1AggregatedEventsPost_HandlerPlainError(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	mockEvent.EXPECT().
-		AggregatedList(gomock.Any(), gomock.Any()).
+		AggregatedList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("aggregation failed"))
 
 	sockReq := &sock.Request{
@@ -1170,7 +1196,7 @@ func TestProcessRequest_HandlerReturnsError(t *testing.T) {
 
 	// Handler returns error - v1EventsPost returns 500, then processRequest catches and converts to 400
 	mockEvent.EXPECT().
-		List(gomock.Any(), gomock.Any()).
+		List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("database error"))
 
 	sockReq := &sock.Request{

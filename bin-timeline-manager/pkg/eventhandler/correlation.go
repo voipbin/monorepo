@@ -8,8 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-timeline-manager/models/event"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
+	"monorepo/bin-timeline-manager/models/correlation"
 )
 
 // maxCorrelationResources caps the number of resources returned in a single
@@ -21,7 +20,7 @@ const maxCorrelationResources = 100
 // the correlation graph of all resources sharing that activeflow, grouped by
 // publisher. Returns an empty graph (ResourceFound distinguishes the cases)
 // when the resource has no activeflow.
-func (h *eventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*response.V1DataResourceCorrelationGet, error) {
+func (h *eventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelation, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ResourceCorrelationGet",
 		"resource_id": resourceID,
@@ -46,12 +45,12 @@ func (h *eventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uu
 			log.Errorf("Could not check resource existence. err: %v", errExists)
 			return nil, errors.Wrap(errExists, "could not check resource existence")
 		}
-		return &response.V1DataResourceCorrelationGet{
+		return &correlation.ResourceCorrelation{
 			ResourceID:    resourceID,
 			ResourceFound: found,
 			ActiveflowID:  uuid.Nil,
 			Truncated:     false,
-			Resources:     []*event.PublisherGroup{},
+			Resources:     []*correlation.PublisherGroup{},
 		}, nil
 	}
 
@@ -76,7 +75,7 @@ func (h *eventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uu
 	// 3. group by publisher with stable ordering.
 	groups := groupByPublisher(rows)
 
-	return &response.V1DataResourceCorrelationGet{
+	return &correlation.ResourceCorrelation{
 		ResourceID:    resourceID,
 		ResourceFound: true,
 		ActiveflowID:  activeflowID,
@@ -88,10 +87,10 @@ func (h *eventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uu
 // groupByPublisher converts aggregated rows into publisher-grouped, stably
 // sorted output. Rows whose resource_id fails to parse as a UUID are skipped
 // (with a warning) so a single malformed payload does not fail the whole call.
-func groupByPublisher(rows []*event.CorrelatedRow) []*event.PublisherGroup {
+func groupByPublisher(rows []*correlation.CorrelatedRow) []*correlation.PublisherGroup {
 	log := logrus.WithField("func", "groupByPublisher")
 
-	byPublisher := map[string][]*event.CorrelatedResource{}
+	byPublisher := map[string][]*correlation.CorrelatedResource{}
 	for _, r := range rows {
 		id, err := uuid.FromString(r.ResourceID)
 		if err != nil {
@@ -103,7 +102,7 @@ func groupByPublisher(rows []*event.CorrelatedRow) []*event.PublisherGroup {
 		copy(eventTypes, r.EventTypes)
 		sort.Strings(eventTypes)
 
-		byPublisher[r.Publisher] = append(byPublisher[r.Publisher], &event.CorrelatedResource{
+		byPublisher[r.Publisher] = append(byPublisher[r.Publisher], &correlation.CorrelatedResource{
 			ID:         id,
 			DataType:   r.DataType,
 			EventTypes: eventTypes,
@@ -118,13 +117,13 @@ func groupByPublisher(rows []*event.CorrelatedRow) []*event.PublisherGroup {
 	}
 	sort.Strings(publishers)
 
-	groups := make([]*event.PublisherGroup, 0, len(publishers))
+	groups := make([]*correlation.PublisherGroup, 0, len(publishers))
 	for _, p := range publishers {
 		resources := byPublisher[p]
 		sort.SliceStable(resources, func(i, j int) bool {
 			return resources[i].FirstSeen.Before(resources[j].FirstSeen)
 		})
-		groups = append(groups, &event.PublisherGroup{
+		groups = append(groups, &correlation.PublisherGroup{
 			Publisher: p,
 			Resources: resources,
 		})
