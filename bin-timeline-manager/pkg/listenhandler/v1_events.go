@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
@@ -25,18 +24,9 @@ func (h *listenHandler) v1EventsPost(ctx context.Context, m *sock.Request) (*soc
 		return simpleResponse(400), nil
 	}
 
-	// Map the wire request into the domain input model. The listenhandler is the
+	// Call handler with the unwrapped domain inputs. The listenhandler is the
 	// single layer that touches request.* / response.* transport DTOs.
-	in := &event.EventListRequest{
-		Publisher:  req.Publisher,
-		ResourceID: req.ResourceID,
-		Events:     req.Events,
-		PageToken:  req.PageToken,
-		PageSize:   req.PageSize,
-	}
-
-	// Call handler
-	res, err := h.eventHandler.List(ctx, in)
+	res, err := h.eventHandler.List(ctx, req.Publisher, req.ResourceID, req.Events, req.PageToken, req.PageSize)
 	if err != nil {
 		log.Errorf("Could not list events. err: %v", err)
 		return errorResponse(err), nil

@@ -7,6 +7,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	commonoutline "monorepo/bin-common-handler/models/outline"
+
 	"monorepo/bin-timeline-manager/models/correlation"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
@@ -14,8 +16,8 @@ import (
 
 // EventHandler interface for event operations.
 type EventHandler interface {
-	List(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error)
-	AggregatedList(ctx context.Context, req *event.AggregatedEventListRequest) (*event.AggregatedEventListResponse, error)
+	List(ctx context.Context, publisher commonoutline.ServiceName, resourceID uuid.UUID, events []string, pageToken string, pageSize int) (*event.EventListResponse, error)
+	AggregatedList(ctx context.Context, activeflowID uuid.UUID, pageToken string, pageSize int) (*event.AggregatedEventListResponse, error)
 	ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelation, error)
 }
 

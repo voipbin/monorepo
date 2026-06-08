@@ -86,7 +86,7 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 	}
 
 	mockEvent.EXPECT().
-		List(gomock.Any(), gomock.Any()).
+		List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(expectedResponse, nil)
 
 	sockReq := &sock.Request{
@@ -172,7 +172,7 @@ func TestProcessRequest_V1EventsPost_HandlerError(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	mockEvent.EXPECT().
-		List(gomock.Any(), gomock.Any()).
+		List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("handler error"))
 
 	sockReq := &sock.Request{
@@ -880,7 +880,7 @@ func TestProcessRequest_V1AggregatedEventsPost(t *testing.T) {
 	}
 
 	mockEvent.EXPECT().
-		AggregatedList(gomock.Any(), gomock.Any()).
+		AggregatedList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(expectedResponse, nil)
 
 	sockReq := &sock.Request{
@@ -964,7 +964,7 @@ func TestProcessRequest_V1AggregatedEventsPost_HandlerError(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	mockEvent.EXPECT().
-		AggregatedList(gomock.Any(), gomock.Any()).
+		AggregatedList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("handler error"))
 
 	sockReq := &sock.Request{
@@ -1037,7 +1037,7 @@ func TestV1EventsPost_HandlerPlainError(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	mockEvent.EXPECT().
-		List(gomock.Any(), gomock.Any()).
+		List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("database unavailable"))
 
 	sockReq := &sock.Request{
@@ -1077,7 +1077,7 @@ func TestV1AggregatedEventsPost_HandlerPlainError(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	mockEvent.EXPECT().
-		AggregatedList(gomock.Any(), gomock.Any()).
+		AggregatedList(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("aggregation failed"))
 
 	sockReq := &sock.Request{
@@ -1196,7 +1196,7 @@ func TestProcessRequest_HandlerReturnsError(t *testing.T) {
 
 	// Handler returns error - v1EventsPost returns 500, then processRequest catches and converts to 400
 	mockEvent.EXPECT().
-		List(gomock.Any(), gomock.Any()).
+		List(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil, errors.New("database error"))
 
 	sockReq := &sock.Request{

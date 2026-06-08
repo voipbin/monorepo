@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/models/sock"
-	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
@@ -25,16 +24,9 @@ func (h *listenHandler) v1AggregatedEventsPost(ctx context.Context, m *sock.Requ
 		return simpleResponse(400), nil
 	}
 
-	// Map the wire request into the domain input model. The listenhandler is the
+	// Call handler with the unwrapped domain inputs. The listenhandler is the
 	// single layer that touches request.* / response.* transport DTOs.
-	in := &event.AggregatedEventListRequest{
-		ActiveflowID: req.ActiveflowID,
-		PageToken:    req.PageToken,
-		PageSize:     req.PageSize,
-	}
-
-	// Call handler
-	res, err := h.eventHandler.AggregatedList(ctx, in)
+	res, err := h.eventHandler.AggregatedList(ctx, req.ActiveflowID, req.PageToken, req.PageSize)
 	if err != nil {
 		log.Errorf("Could not list aggregated events. err: %v", err)
 		return errorResponse(err), nil
