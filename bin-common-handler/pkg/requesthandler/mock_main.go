@@ -84,6 +84,7 @@ import (
 	chat "monorepo/bin-talk-manager/models/chat"
 	message3 "monorepo/bin-talk-manager/models/message"
 	participant0 "monorepo/bin-talk-manager/models/participant"
+	correlation "monorepo/bin-timeline-manager/models/correlation"
 	event "monorepo/bin-timeline-manager/models/event"
 	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
@@ -6909,6 +6910,21 @@ func (m *MockRequestHandler) TimelineV1EventList(ctx context.Context, req *event
 func (mr *MockRequestHandlerMockRecorder) TimelineV1EventList(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1EventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1EventList), ctx, req)
+}
+
+// TimelineV1ResourceCorrelationGet mocks base method.
+func (m *MockRequestHandler) TimelineV1ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1ResourceCorrelationGet", ctx, resourceID)
+	ret0, _ := ret[0].(*correlation.ResourceCorrelationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1ResourceCorrelationGet indicates an expected call of TimelineV1ResourceCorrelationGet.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1ResourceCorrelationGet(ctx, resourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1ResourceCorrelationGet", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1ResourceCorrelationGet), ctx, resourceID)
 }
 
 // TimelineV1SIPAnalysisGet mocks base method.

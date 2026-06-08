@@ -481,4 +481,39 @@ run_llm: Always set true — you should respond to the user based on the search 
 			"required": []string{"query"},
 		},
 	},
+	{
+		Name:   tool.ToolNameGetCorrelation,
+		RunLLM: true,
+		Description: `Retrieves the correlation graph for a resource: the related resources (calls, recordings, transcribes, aicalls, messages, etc.) linked to the same call flow execution.
+
+This is an internal diagnostic tool. Use it to understand what other resources are tied to a given call flow so you can reason about or chain follow-up lookups.
+
+WHEN TO USE:
+- You need to know what resources are linked to the current session's call flow
+- A diagnostic question requires understanding the relationships between resources of a call flow
+- You want to discover resource ids (e.g. an aicall id) to chain into another tool
+
+WHEN NOT TO USE:
+- General conversation or knowledge-base questions (use search_knowledge)
+- You only need a single runtime variable (use get_variables)
+
+ARGUMENTS:
+- resource_id (optional): the resource id to inspect. If omitted, the current session's call flow is used. You can only retrieve correlations for resources owned by your own account; others return "No events found".
+
+run_llm: Set true so you can summarize and reason about the correlated resources.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to reason about the correlation results.",
+					"default":     true,
+				},
+				"resource_id": map[string]any{
+					"type":        "string",
+					"description": "Optional resource id (UUID) to inspect. If omitted, the current session's call flow is used.",
+				},
+			},
+		},
+	},
 }
