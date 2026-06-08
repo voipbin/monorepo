@@ -595,8 +595,11 @@ func formatCorrelationSummary(corr *tmcorrelation.ResourceCorrelationResponse) s
 			if r == nil {
 				continue
 			}
-			events := strings.Join(r.EventTypes, ", ")
-			fmt.Fprintf(&sb, "  - %s %s (events: %s)\n", r.DataType, r.ID, events)
+			if len(r.EventTypes) > 0 {
+				fmt.Fprintf(&sb, "  - %s %s (events: %s)\n", r.DataType, r.ID, strings.Join(r.EventTypes, ", "))
+			} else {
+				fmt.Fprintf(&sb, "  - %s %s\n", r.DataType, r.ID)
+			}
 		}
 	}
 

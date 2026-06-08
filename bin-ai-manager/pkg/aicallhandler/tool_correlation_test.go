@@ -396,3 +396,90 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 		})
 	}
 }
+
+// Test_toolHandleGetCorrelation_maskingInvariant locks the core security
+// property: for one fixed foreign resource_id, the three "cannot see this"
+// scenarios (genuinely absent, exists+cross-customer, exists+ownership-lookup
+// error) MUST produce byte-identical results. If they ever diverge, the tool
+// becomes a cross-customer existence oracle. This guards against a future
+// regression that the per-path string assertions above would not catch.
+func Test_toolHandleGetCorrelation_maskingInvariant(t *testing.T) {
+	sessionCustomerID := uuid.FromStringOrNil("22222222-0000-4000-8000-0000000000aa")
+	foreignResourceID := uuid.FromStringOrNil("55555555-0000-4000-8000-0000000000aa")
+	foreignActiveflowID := uuid.FromStringOrNil("66666666-0000-4000-8000-0000000000aa")
+	foreignCustomerID := uuid.FromStringOrNil("99999999-0000-4000-8000-0000000000aa")
+
+	newAicall := func() *aicall.AIcall {
+		return &aicall.AIcall{
+			Identity: commonidentity.Identity{
+				ID:         uuid.FromStringOrNil("11111111-0000-4000-8000-0000000000aa"),
+				CustomerID: sessionCustomerID,
+			},
+			ActiveflowID: uuid.FromStringOrNil("33333333-0000-4000-8000-0000000000aa"),
+		}
+	}
+	newTool := func() *message.ToolCall {
+		return &message.ToolCall{
+			ID:   "tool-mask",
+			Type: message.ToolTypeFunction,
+			Function: message.FunctionCall{
+				Name:      message.FunctionCallNameGetCorrelation,
+				Arguments: `{"resource_id":"55555555-0000-4000-8000-0000000000aa"}`,
+			},
+		}
+	}
+
+	scenarios := map[string]func(mockReq *requesthandler.MockRequestHandler){
+		"genuinely absent": func(mockReq *requesthandler.MockRequestHandler) {
+			mockReq.EXPECT().TimelineV1ResourceCorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.ResourceCorrelationResponse{
+				ResourceID:    foreignResourceID,
+				ResourceFound: false,
+			}, nil)
+		},
+		"exists cross-customer": func(mockReq *requesthandler.MockRequestHandler) {
+			mockReq.EXPECT().TimelineV1ResourceCorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.ResourceCorrelationResponse{
+				ResourceID:    foreignResourceID,
+				ResourceFound: true,
+				ActiveflowID:  foreignActiveflowID,
+			}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), foreignActiveflowID).Return(&fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID:         foreignActiveflowID,
+					CustomerID: foreignCustomerID,
+				},
+			}, nil)
+		},
+		"exists ownership-lookup error": func(mockReq *requesthandler.MockRequestHandler) {
+			mockReq.EXPECT().TimelineV1ResourceCorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.ResourceCorrelationResponse{
+				ResourceID:    foreignResourceID,
+				ResourceFound: true,
+				ActiveflowID:  foreignActiveflowID,
+			}, nil)
+			mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), foreignActiveflowID).Return(nil, fmt.Errorf("rpc error"))
+		},
+	}
+
+	var results []*messageContent
+	for name, setup := range scenarios {
+		mc := gomock.NewController(t)
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		setup(mockReq)
+
+		h := &aicallHandler{reqHandler: mockReq}
+		res := h.toolHandleGetCorrelation(context.Background(), newAicall(), newTool())
+		mc.Finish()
+
+		// Sanity: every masked path must report the canonical not-found message.
+		if res.Message != msgCorrelationNotFound {
+			t.Errorf("scenario %q: expected masking message %q, got %q", name, msgCorrelationNotFound, res.Message)
+		}
+		results = append(results, res)
+	}
+
+	// The invariant: all masked results must be byte-identical to each other.
+	for i := 1; i < len(results); i++ {
+		if !reflect.DeepEqual(results[0], results[i]) {
+			t.Errorf("masking invariant violated: results differ\nresult[0]: %#v\nresult[%d]: %#v", results[0], i, results[i])
+		}
+	}
+}

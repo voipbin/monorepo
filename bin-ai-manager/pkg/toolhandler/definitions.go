@@ -514,6 +514,7 @@ run_llm: Set true so you can summarize and reason about the correlated resources
 					"description": "Optional resource id (UUID) to inspect. If omitted, the current session's call flow is used.",
 				},
 			},
+			"required": []string{},
 		},
 	},
 }
