@@ -10,6 +10,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-common-handler/models/sock"
+
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 // v1CorrelationsGet handles GET /v1/correlations/<resource_id> request.
@@ -30,10 +32,20 @@ func (h *listenHandler) v1CorrelationsGet(ctx context.Context, m *sock.Request) 
 		return simpleResponse(400), nil
 	}
 
-	result, err := h.eventHandler.ResourceCorrelationGet(ctx, resourceID)
+	res, err := h.eventHandler.ResourceCorrelationGet(ctx, resourceID)
 	if err != nil {
 		log.Errorf("Could not get resource correlation. err: %v", err)
 		return errorResponse(err), nil
+	}
+
+	// Map the domain result into the transport DTO. The listenhandler is the
+	// single layer that constructs response.* types.
+	result := &response.V1DataResourceCorrelationGet{
+		ResourceID:    res.ResourceID,
+		ResourceFound: res.ResourceFound,
+		ActiveflowID:  res.ActiveflowID,
+		Truncated:     res.Truncated,
+		Resources:     res.Resources,
 	}
 
 	data, err := json.Marshal(result)

@@ -236,6 +236,23 @@ bash docs/reference/extractor.sh <service-dir>
 
 → Detail: [docs/conventions/package-structure.md](docs/conventions/package-structure.md)
 
+## CRITICAL: Layering — response DTO ownership
+
+**CRITICAL: Types under `pkg/listenhandler/models/response` (the `response.*` transport DTOs) may only be constructed inside `pkg/listenhandler`.**
+
+This rule applies to every service in the monorepo.
+
+- ✅ **Service / business handlers** (`pkg/*handler` other than `listenhandler`: `eventhandler`, `callhandler`, `aicallhandler`, `toolhandler`, etc.) MUST return **domain models** — types under the service's `models/` tree.
+- ✅ **`listenhandler` is the single layer that constructs `response.*` DTOs**, mapping a domain model into the transport DTO immediately before `json.Marshal`.
+- ❌ **NEVER** import `pkg/listenhandler/models/response` from a business/service handler, the dbhandler, or any non-listenhandler producer.
+- ❌ **NEVER** return a `response.*` value from a handler interface method.
+
+**Reference pattern:** `bin-call-manager` — `callHandler.List` returns `[]*call.Call` (a domain type) and `listenhandler.processV1CallsGet` marshals it. `bin-timeline-manager` — `eventHandler.ResourceCorrelationGet` returns `*correlation.ResourceCorrelation` (domain) and `listenhandler.v1CorrelationsGet` maps it into `response.V1DataResourceCorrelationGet`.
+
+**Exception — the RPC client:** `bin-common-handler/pkg/requesthandler` is the client side of the inter-service RPC contract. It may reference a producing service's `response.*` types to unmarshal wire payloads. This is the one sanctioned cross-package consumer. (The cleaner long-term form, already used by some clients, is to unmarshal into the producing service's domain `models/` type instead; prefer that for new client methods.)
+
+**Why:** Keeps the transport contract owned by one layer. Business logic stays free of wire-format concerns, response shapes can evolve without touching handlers, and the wire DTO has exactly one producer to audit.
+
 ## Where to find things (index)
 
 - **Architecture** → [docs/architecture/](docs/architecture/) — service boundaries, inter-service communication, deployment topology, dependency graph

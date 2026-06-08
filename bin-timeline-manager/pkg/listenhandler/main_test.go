@@ -17,7 +17,6 @@ import (
 	"monorepo/bin-timeline-manager/models/sipmessage"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 	"monorepo/bin-timeline-manager/pkg/siphandler"
 )
 
@@ -79,7 +78,7 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
-	expectedResponse := &response.V1DataEventsPost{
+	expectedResponse := &event.EventListResponse{
 		Result: []*event.Event{
 			{Timestamp: ts, EventType: "activeflow_created"},
 		},
@@ -860,7 +859,7 @@ func TestProcessRequest_V1AggregatedEventsPost(t *testing.T) {
 	reqData, _ := json.Marshal(req)
 
 	ts := time.Date(2024, 1, 15, 10, 30, 0, 123000000, time.UTC)
-	expectedResponse := &response.V1DataAggregatedEventsPost{
+	expectedResponse := &event.AggregatedEventListResponse{
 		Result: []*event.Event{
 			{Timestamp: ts, EventType: "activeflow_created"},
 		},

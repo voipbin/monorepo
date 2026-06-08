@@ -9,12 +9,12 @@ import (
 
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
+	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 // List returns events matching the request criteria.
-func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error) {
+func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*event.EventListResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "List",
 		"publisher":   req.Publisher,
@@ -51,7 +51,7 @@ func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) 
 	}
 
 	// Build response with pagination
-	res := &response.V1DataEventsPost{
+	res := &event.EventListResponse{
 		Result: events,
 	}
 
@@ -66,7 +66,7 @@ func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) 
 }
 
 // AggregatedList returns all events matching the given activeflow ID.
-func (h *eventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*response.V1DataAggregatedEventsPost, error) {
+func (h *eventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*event.AggregatedEventListResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "AggregatedList",
 		"activeflow_id": req.ActiveflowID,
@@ -94,7 +94,7 @@ func (h *eventHandler) AggregatedList(ctx context.Context, req *request.V1DataAg
 	}
 
 	// Build response with pagination
-	res := &response.V1DataAggregatedEventsPost{
+	res := &event.AggregatedEventListResponse{
 		Result: events,
 	}
 

@@ -9,6 +9,7 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 func (h *listenHandler) v1EventsPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
@@ -24,10 +25,17 @@ func (h *listenHandler) v1EventsPost(ctx context.Context, m *sock.Request) (*soc
 	}
 
 	// Call handler
-	result, err := h.eventHandler.List(ctx, &req)
+	res, err := h.eventHandler.List(ctx, &req)
 	if err != nil {
 		log.Errorf("Could not list events. err: %v", err)
 		return errorResponse(err), nil
+	}
+
+	// Map the domain result into the transport DTO. The listenhandler is the
+	// single layer that constructs response.* types.
+	result := &response.V1DataEventsPost{
+		Result:        res.Result,
+		NextPageToken: res.NextPageToken,
 	}
 
 	// Marshal response

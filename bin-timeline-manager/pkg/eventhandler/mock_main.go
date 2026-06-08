@@ -11,8 +11,9 @@ package eventhandler
 
 import (
 	context "context"
+	correlation "monorepo/bin-timeline-manager/models/correlation"
+	event "monorepo/bin-timeline-manager/models/event"
 	request "monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
-	response "monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -44,10 +45,10 @@ func (m *MockEventHandler) EXPECT() *MockEventHandlerMockRecorder {
 }
 
 // AggregatedList mocks base method.
-func (m *MockEventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*response.V1DataAggregatedEventsPost, error) {
+func (m *MockEventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*event.AggregatedEventListResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AggregatedList", ctx, req)
-	ret0, _ := ret[0].(*response.V1DataAggregatedEventsPost)
+	ret0, _ := ret[0].(*event.AggregatedEventListResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -59,10 +60,10 @@ func (mr *MockEventHandlerMockRecorder) AggregatedList(ctx, req any) *gomock.Cal
 }
 
 // List mocks base method.
-func (m *MockEventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error) {
+func (m *MockEventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*event.EventListResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, req)
-	ret0, _ := ret[0].(*response.V1DataEventsPost)
+	ret0, _ := ret[0].(*event.EventListResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -74,10 +75,10 @@ func (mr *MockEventHandlerMockRecorder) List(ctx, req any) *gomock.Call {
 }
 
 // ResourceCorrelationGet mocks base method.
-func (m *MockEventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*response.V1DataResourceCorrelationGet, error) {
+func (m *MockEventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ResourceCorrelationGet", ctx, resourceID)
-	ret0, _ := ret[0].(*response.V1DataResourceCorrelationGet)
+	ret0, _ := ret[0].(*correlation.ResourceCorrelation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
