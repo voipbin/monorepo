@@ -57,6 +57,21 @@ func (mr *MockDBHandlerMockRecorder) AggregatedEventList(ctx, activeflowID, page
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AggregatedEventList", reflect.TypeOf((*MockDBHandler)(nil).AggregatedEventList), ctx, activeflowID, pageToken, pageSize)
 }
 
+// CorrelatedResourceList mocks base method.
+func (m *MockDBHandler) CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*event.CorrelatedRow, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CorrelatedResourceList", ctx, activeflowID, limit)
+	ret0, _ := ret[0].([]*event.CorrelatedRow)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CorrelatedResourceList indicates an expected call of CorrelatedResourceList.
+func (mr *MockDBHandlerMockRecorder) CorrelatedResourceList(ctx, activeflowID, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CorrelatedResourceList", reflect.TypeOf((*MockDBHandler)(nil).CorrelatedResourceList), ctx, activeflowID, limit)
+}
+
 // EventBatchInsert mocks base method.
 func (m *MockDBHandler) EventBatchInsert(ctx context.Context, rows []EventRow) error {
 	m.ctrl.T.Helper()
@@ -84,6 +99,36 @@ func (m *MockDBHandler) EventList(ctx context.Context, publisher string, resourc
 func (mr *MockDBHandlerMockRecorder) EventList(ctx, publisher, resourceID, events, pageToken, pageSize any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventList", reflect.TypeOf((*MockDBHandler)(nil).EventList), ctx, publisher, resourceID, events, pageToken, pageSize)
+}
+
+// ResourceActiveflowIDGet mocks base method.
+func (m *MockDBHandler) ResourceActiveflowIDGet(ctx context.Context, resourceID string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResourceActiveflowIDGet", ctx, resourceID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResourceActiveflowIDGet indicates an expected call of ResourceActiveflowIDGet.
+func (mr *MockDBHandlerMockRecorder) ResourceActiveflowIDGet(ctx, resourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceActiveflowIDGet", reflect.TypeOf((*MockDBHandler)(nil).ResourceActiveflowIDGet), ctx, resourceID)
+}
+
+// ResourceExists mocks base method.
+func (m *MockDBHandler) ResourceExists(ctx context.Context, resourceID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResourceExists", ctx, resourceID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResourceExists indicates an expected call of ResourceExists.
+func (mr *MockDBHandlerMockRecorder) ResourceExists(ctx, resourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResourceExists", reflect.TypeOf((*MockDBHandler)(nil).ResourceExists), ctx, resourceID)
 }
 
 // WaitForConnection mocks base method.

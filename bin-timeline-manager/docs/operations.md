@@ -10,6 +10,7 @@
 | SIP analysis returning 503 | Homer API unreachable | Check `homer_api_address` config and Homer service health |
 | 27 queues failing to subscribe | RabbitMQ connection dropped | Check RabbitMQ connectivity; service will reconnect automatically |
 | Migration failure at startup | Missing `migrations_path` or ClickHouse unavailable | Verify `CLICKHOUSE_ADDRESS` and `MIGRATIONS_PATH` env vars |
+| Correlation returns incomplete results for old events after deploy | Migration 000004 `MATERIALIZE COLUMN`/`MATERIALIZE INDEX` run as async background mutations; migrate marks success before they finish | Monitor `SELECT * FROM system.mutations WHERE is_done = 0 OR latest_fail_reason != ''`; wait for completion before relying on historical correlation |
 
 ## Debugging Guide
 

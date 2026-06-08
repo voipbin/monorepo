@@ -5,6 +5,8 @@ package eventhandler
 import (
 	"context"
 
+	"github.com/gofrs/uuid"
+
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
@@ -14,6 +16,7 @@ import (
 type EventHandler interface {
 	List(ctx context.Context, req *request.V1DataEventsPost) (*response.V1DataEventsPost, error)
 	AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*response.V1DataAggregatedEventsPost, error)
+	ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*response.V1DataResourceCorrelationGet, error)
 }
 
 type eventHandler struct {

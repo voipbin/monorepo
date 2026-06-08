@@ -37,6 +37,9 @@ type DBHandler interface {
 	EventBatchInsert(ctx context.Context, rows []EventRow) error
 	EventList(ctx context.Context, publisher string, resourceID uuid.UUID, events []string, pageToken string, pageSize int) ([]*event.Event, error)
 	AggregatedEventList(ctx context.Context, activeflowID string, pageToken string, pageSize int) ([]*event.Event, error)
+	ResourceActiveflowIDGet(ctx context.Context, resourceID string) (string, error)
+	ResourceExists(ctx context.Context, resourceID string) (bool, error)
+	CorrelatedResourceList(ctx context.Context, activeflowID string, limit int) ([]*event.CorrelatedRow, error)
 	WaitForConnection(ctx context.Context) error
 }
 

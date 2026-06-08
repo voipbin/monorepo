@@ -33,6 +33,27 @@ API DTO for listing events (richer types used here, converted before DB call):
 | `PageSize` | `int` | Optional — results per page (default: 100, max: 1000) |
 | `PageToken` | `string` | Optional — opaque cursor for next page |
 
+### Resource Correlation
+
+A correlation graph links every resource that shares the same `activeflow_id`.
+`activeflow_id` is the universal correlation key across most VoIPBin resources
+(call, recording, confbridge, aicall, ai message, summary, transcribe,
+conferencecall, queuecall). Given any one resource id, the service reverse-looks
+up its `activeflow_id` (from the MATERIALIZED column) and returns all sibling
+resources grouped by publisher.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ResourceID` | `uuid.UUID` | The queried resource id |
+| `ResourceFound` | `bool` | Whether any event exists for the id (distinguishes "never seen" from "seen but no activeflow") |
+| `ActiveflowID` | `uuid.UUID` | The resolved activeflow; `uuid.Nil` when none |
+| `Truncated` | `bool` | `true` when the graph exceeded the 100-resource cap |
+| `Resources` | `[]PublisherGroup` | Deduplicated resources grouped by publisher, each with `event_types`, `first_seen`, `last_seen` |
+
+Known gap: `message-manager` (SMS) and `transfer-manager` resources do not carry
+`activeflow_id` in their event payloads, so they are not captured. If they later
+emit `activeflow_id`, they are picked up automatically (MATERIALIZED extraction).
+
 ## Key Business Rules
 
 ### Read-Only Query API
