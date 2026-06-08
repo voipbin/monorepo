@@ -1398,7 +1398,7 @@ type RequestHandler interface {
 	// timeline-manager events
 	TimelineV1EventList(ctx context.Context, req *tmevent.EventListRequest) (*tmevent.EventListResponse, error)
 	TimelineV1AggregatedEventList(ctx context.Context, req *tmevent.AggregatedEventListRequest) (*tmevent.AggregatedEventListResponse, error)
-	TimelineV1ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*tmcorrelation.ResourceCorrelationResponse, error)
+	TimelineV1CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*tmcorrelation.CorrelationResponse, error)
 
 	// timeline-manager sip
 	TimelineV1SIPAnalysisGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPAnalysisResponse, error)

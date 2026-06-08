@@ -47,13 +47,13 @@ type ResourceCorrelation struct {
 	Resources     []*PublisherGroup
 }
 
-// ResourceCorrelationResponse is the transport contract for
+// CorrelationResponse is the transport contract for
 // GET /v1/correlations/<id>. It is the single source of truth for the wire
 // shape: the listenhandler response DTO (response.V1DataResourceCorrelationGet)
 // is a type alias of this type, and the requesthandler client unmarshals into
 // it. The domain type above (ResourceCorrelation) carries no json tags and is
 // mapped into this type at the listenhandler boundary.
-type ResourceCorrelationResponse struct {
+type CorrelationResponse struct {
 	ResourceID    uuid.UUID         `json:"resource_id"`
 	ResourceFound bool              `json:"resource_found"`
 	ActiveflowID  uuid.UUID         `json:"activeflow_id"`

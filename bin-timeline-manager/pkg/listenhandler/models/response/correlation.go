@@ -9,4 +9,4 @@ import (
 // models/correlation to avoid struct drift between the listenhandler response
 // and the requesthandler client. The listenhandler remains the layer that
 // constructs this DTO from the domain correlation.ResourceCorrelation.
-type V1DataResourceCorrelationGet = correlation.ResourceCorrelationResponse
+type V1DataResourceCorrelationGet = correlation.CorrelationResponse

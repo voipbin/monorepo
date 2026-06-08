@@ -6897,6 +6897,21 @@ func (mr *MockRequestHandlerMockRecorder) TimelineV1AggregatedEventList(ctx, req
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1AggregatedEventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1AggregatedEventList), ctx, req)
 }
 
+// TimelineV1CorrelationGet mocks base method.
+func (m *MockRequestHandler) TimelineV1CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.CorrelationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1CorrelationGet", ctx, resourceID)
+	ret0, _ := ret[0].(*correlation.CorrelationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1CorrelationGet indicates an expected call of TimelineV1CorrelationGet.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1CorrelationGet(ctx, resourceID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1CorrelationGet", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1CorrelationGet), ctx, resourceID)
+}
+
 // TimelineV1EventList mocks base method.
 func (m *MockRequestHandler) TimelineV1EventList(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error) {
 	m.ctrl.T.Helper()
@@ -6910,21 +6925,6 @@ func (m *MockRequestHandler) TimelineV1EventList(ctx context.Context, req *event
 func (mr *MockRequestHandlerMockRecorder) TimelineV1EventList(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1EventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1EventList), ctx, req)
-}
-
-// TimelineV1ResourceCorrelationGet mocks base method.
-func (m *MockRequestHandler) TimelineV1ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelationResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TimelineV1ResourceCorrelationGet", ctx, resourceID)
-	ret0, _ := ret[0].(*correlation.ResourceCorrelationResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// TimelineV1ResourceCorrelationGet indicates an expected call of TimelineV1ResourceCorrelationGet.
-func (mr *MockRequestHandlerMockRecorder) TimelineV1ResourceCorrelationGet(ctx, resourceID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1ResourceCorrelationGet", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1ResourceCorrelationGet), ctx, resourceID)
 }
 
 // TimelineV1SIPAnalysisGet mocks base method.

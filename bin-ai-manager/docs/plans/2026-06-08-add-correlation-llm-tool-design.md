@@ -17,7 +17,7 @@ This design exposes that capability as an LLM function-call tool (`get_correlati
 ### In scope (Phase 1)
 
 - New tool `get_correlation` in bin-ai-manager: tool name constant, definition, dispatch, handler.
-- New requesthandler client `TimelineV1ResourceCorrelationGet` in bin-common-handler.
+- New requesthandler client `TimelineV1CorrelationGet` in bin-common-handler.
 - New RPC contract types in bin-timeline-manager `models/event` (request is just the id via path; response reuses existing `PublisherGroup`/`CorrelatedResource`).
 - Handler produces a **human-readable text summary** (not raw UUID dump) for the LLM, following the `search_knowledge` precedent.
 - `RunLLM: true` so the model can chain (e.g. get_correlation then get_aicall_messages).
@@ -258,13 +258,13 @@ Per publisher: count resources, list data_type with counts, optionally first eve
 | Service | Change | Phase |
 |---|---|---|
 | bin-timeline-manager | Add `ResourceCorrelationResponse` contract type in models/event; alias listenhandler DTO to it | 1 |
-| bin-common-handler | Add `TimelineV1ResourceCorrelationGet` requesthandler method (ContentTypeNone GET) + interface + mock | 1 |
+| bin-common-handler | Add `TimelineV1CorrelationGet` requesthandler method (ContentTypeNone GET) + interface + mock | 1 |
 | bin-ai-manager | Tool name (+AllToolNames), function-call name, definition, dispatch, handler with ownership validation, summary formatter; unit tests | 1 |
 
 ## 11. Implementation Order
 
 1. bin-timeline-manager: add `ResourceCorrelationResponse` to models/event; alias `response.V1DataResourceCorrelationGet = event.ResourceCorrelationResponse`.
-2. bin-common-handler: add `TimelineV1ResourceCorrelationGet` + interface entry + regenerate mock; unit test (target queue + URI + method GET, ContentTypeNone).
+2. bin-common-handler: add `TimelineV1CorrelationGet` + interface entry + regenerate mock; unit test (target queue + URI + method GET, ContentTypeNone).
 3. bin-ai-manager: tool name (+ AllToolNames + reserved-name test) + function-call name constants.
 4. bin-ai-manager: definition in definitions.go (RunLLM:true, optional resource_id).
 5. bin-ai-manager: handler `toolHandleGetCorrelation` (with FlowV1ActiveflowGet ownership validation) + `formatCorrelationSummary` + dispatch entry; unit tests (own session fallback, provided owned id, cross-customer id blocked, not-found, no-activeflow, lookup error, ownership-lookup error, summary formatting).

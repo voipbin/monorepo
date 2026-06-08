@@ -14,7 +14,7 @@ import (
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 )
 
-func Test_TimelineV1ResourceCorrelationGet(t *testing.T) {
+func Test_TimelineV1CorrelationGet(t *testing.T) {
 
 	tests := []struct {
 		name string
@@ -25,7 +25,7 @@ func Test_TimelineV1ResourceCorrelationGet(t *testing.T) {
 		expectRequest *sock.Request
 		response      *sock.Response
 
-		expectRes *tmcorrelation.ResourceCorrelationResponse
+		expectRes *tmcorrelation.CorrelationResponse
 	}{
 		{
 			name: "normal",
@@ -43,7 +43,7 @@ func Test_TimelineV1ResourceCorrelationGet(t *testing.T) {
 				DataType:   "application/json",
 				Data:       []byte(`{"resource_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","resource_found":true,"activeflow_id":"a8d3b3e2-2c74-11ee-98fb-0762519529f3","truncated":false,"resources":[{"publisher":"call-manager","resources":[{"id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","data_type":"call","event_types":["call_created"],"first_seen":"2024-01-15T10:00:00Z","last_seen":"2024-01-15T10:05:00Z"}]}]}`),
 			},
-			expectRes: &tmcorrelation.ResourceCorrelationResponse{
+			expectRes: &tmcorrelation.CorrelationResponse{
 				ResourceID:    uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
 				ResourceFound: true,
 				ActiveflowID:  uuid.FromStringOrNil("a8d3b3e2-2c74-11ee-98fb-0762519529f3"),
@@ -80,7 +80,7 @@ func Test_TimelineV1ResourceCorrelationGet(t *testing.T) {
 				DataType:   "application/json",
 				Data:       []byte(`{"resource_id":"66ecfc4e-2c74-11ee-98fb-0762519529f3","resource_found":false}`),
 			},
-			expectRes: &tmcorrelation.ResourceCorrelationResponse{
+			expectRes: &tmcorrelation.CorrelationResponse{
 				ResourceID:    uuid.FromStringOrNil("66ecfc4e-2c74-11ee-98fb-0762519529f3"),
 				ResourceFound: false,
 			},
@@ -100,7 +100,7 @@ func Test_TimelineV1ResourceCorrelationGet(t *testing.T) {
 			ctx := context.Background()
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectTarget, tt.expectRequest).Return(tt.response, nil)
 
-			res, err := reqHandler.TimelineV1ResourceCorrelationGet(ctx, tt.resourceID)
+			res, err := reqHandler.TimelineV1CorrelationGet(ctx, tt.resourceID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
