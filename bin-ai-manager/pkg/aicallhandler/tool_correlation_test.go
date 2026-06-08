@@ -63,6 +63,16 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 								},
 							},
 						},
+						{
+							Publisher: "transcribe-manager",
+							Resources: []*tmcorrelation.CorrelatedResource{
+								{
+									ID:         uuid.FromStringOrNil("77777777-0000-4000-8000-000000000001"),
+									DataType:   "transcribe",
+									EventTypes: []string{},
+								},
+							},
+						},
 					},
 				}, nil)
 				mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), a.ActiveflowID).Return(&fmactiveflow.Activeflow{
@@ -78,7 +88,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 				ToolCallID:   "tool-1",
 				ResourceType: "correlation",
 				ResourceID:   "33333333-0000-4000-8000-000000000001",
-				Message:      "Call flow 33333333-0000-4000-8000-000000000001 is linked to:\n- call-manager: 1 resource(s)\n  - call 44444444-0000-4000-8000-000000000001 (events: call_created, call_hangup)\n",
+				Message:      "Call flow 33333333-0000-4000-8000-000000000001 is linked to:\n- call-manager: 1 resource(s)\n  - call 44444444-0000-4000-8000-000000000001 (events: call_created, call_hangup)\n- transcribe-manager: 1 resource(s)\n  - transcribe 77777777-0000-4000-8000-000000000001\n",
 			},
 		},
 		{
@@ -456,6 +466,13 @@ func Test_toolHandleGetCorrelation_maskingInvariant(t *testing.T) {
 				ActiveflowID:  foreignActiveflowID,
 			}, nil)
 			mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), foreignActiveflowID).Return(nil, fmt.Errorf("rpc error"))
+		},
+		"exists no activeflow": func(mockReq *requesthandler.MockRequestHandler) {
+			mockReq.EXPECT().TimelineV1ResourceCorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.ResourceCorrelationResponse{
+				ResourceID:    foreignResourceID,
+				ResourceFound: true,
+				ActiveflowID:  uuid.Nil,
+			}, nil)
 		},
 	}
 

@@ -498,7 +498,7 @@ WHEN NOT TO USE:
 - You only need a single runtime variable (use get_variables)
 
 ARGUMENTS:
-- resource_id (optional): the resource id to inspect. If omitted, the current session's call flow is used. You can only retrieve correlations for resources owned by your own account; others return "No events found".
+- resource_id (optional): the resource id to inspect. If omitted, the current session's call flow is used. You can only retrieve correlations for resources owned by your own account; others return "No events found for this resource.".
 
 run_llm: Set true so you can summarize and reason about the correlated resources.`,
 		Parameters: map[string]any{
