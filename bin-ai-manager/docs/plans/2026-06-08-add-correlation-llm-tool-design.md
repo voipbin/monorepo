@@ -5,6 +5,8 @@ Service: bin-ai-manager (+ bin-common-handler requesthandler, bin-timeline-manag
 Date: 2026-06-08
 
 > Implementation note (post-rebase): after this design was approved, main merged #972 which moved correlation types from `bin-timeline-manager/models/event` to a dedicated `bin-timeline-manager/models/correlation` package and split the domain type (`ResourceCorrelation`, no json tags) from the transport DTO. The implementation was rebased onto that structure: the transport contract `ResourceCorrelationResponse` (json tags) now lives in `models/correlation`, the listenhandler DTO is a type alias of it, and requesthandler/ai-manager import `models/correlation` (alias `tmcorrelation`). All "models/event" references below should be read as "models/correlation". The design intent (single source of truth + alias, ownership validation, masking) is unchanged.
+>
+> Final naming (post-rename): the domain/transport split and the separate DTOs were collapsed to follow the flow-manager GET flow standard pattern (the model carries json tags and is serialized directly; no transport-only DTO). The single type is `correlation.Correlation` (json tags), the listenhandler marshals it directly and the requesthandler unmarshals into it. The eventhandler method is `CorrelationGet` (the redundant `Resource` prefix was dropped). The wire JSON is unchanged. Read every `ResourceCorrelation` / `CorrelationResponse` / `V1DataResourceCorrelationGet` / `ResourceCorrelationGet` mention in the code blocks below as `Correlation` / `CorrelationGet` accordingly; the listenhandler DTO file and the eventhandler-to-DTO mapping were removed.
 
 ## 1. Problem Statement
 

@@ -35,25 +35,12 @@ type PublisherGroup struct {
 	Resources []*CorrelatedResource `json:"resources"`
 }
 
-// ResourceCorrelation is the domain result of resolving a resource id to its
-// activeflow correlation graph. It is the value returned by
-// eventHandler.ResourceCorrelationGet; the listenhandler maps it into the
-// transport DTO (response.V1DataResourceCorrelationGet) before marshalling.
-type ResourceCorrelation struct {
-	ResourceID    uuid.UUID
-	ResourceFound bool
-	ActiveflowID  uuid.UUID
-	Truncated     bool
-	Resources     []*PublisherGroup
-}
-
-// CorrelationResponse is the transport contract for
-// GET /v1/correlations/<id>. It is the single source of truth for the wire
-// shape: the listenhandler response DTO (response.V1DataResourceCorrelationGet)
-// is a type alias of this type, and the requesthandler client unmarshals into
-// it. The domain type above (ResourceCorrelation) carries no json tags and is
-// mapped into this type at the listenhandler boundary.
-type CorrelationResponse struct {
+// Correlation is the result of resolving a resource id to its activeflow and
+// the correlation graph of all resources sharing that activeflow, grouped by
+// publisher. It carries json tags and is serialized directly on the wire by the
+// listenhandler and unmarshaled directly by the requesthandler client (the
+// flow-manager Flow pattern: the model is the transport shape, no separate DTO).
+type Correlation struct {
 	ResourceID    uuid.UUID         `json:"resource_id"`
 	ResourceFound bool              `json:"resource_found"`
 	ActiveflowID  uuid.UUID         `json:"activeflow_id"`

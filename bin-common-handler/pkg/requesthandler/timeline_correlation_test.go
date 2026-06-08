@@ -25,7 +25,7 @@ func Test_TimelineV1CorrelationGet(t *testing.T) {
 		expectRequest *sock.Request
 		response      *sock.Response
 
-		expectRes *tmcorrelation.CorrelationResponse
+		expectRes *tmcorrelation.Correlation
 	}{
 		{
 			name: "normal",
@@ -43,7 +43,7 @@ func Test_TimelineV1CorrelationGet(t *testing.T) {
 				DataType:   "application/json",
 				Data:       []byte(`{"resource_id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","resource_found":true,"activeflow_id":"a8d3b3e2-2c74-11ee-98fb-0762519529f3","truncated":false,"resources":[{"publisher":"call-manager","resources":[{"id":"55ecfc4e-2c74-11ee-98fb-0762519529f3","data_type":"call","event_types":["call_created"],"first_seen":"2024-01-15T10:00:00Z","last_seen":"2024-01-15T10:05:00Z"}]}]}`),
 			},
-			expectRes: &tmcorrelation.CorrelationResponse{
+			expectRes: &tmcorrelation.Correlation{
 				ResourceID:    uuid.FromStringOrNil("55ecfc4e-2c74-11ee-98fb-0762519529f3"),
 				ResourceFound: true,
 				ActiveflowID:  uuid.FromStringOrNil("a8d3b3e2-2c74-11ee-98fb-0762519529f3"),
@@ -80,7 +80,7 @@ func Test_TimelineV1CorrelationGet(t *testing.T) {
 				DataType:   "application/json",
 				Data:       []byte(`{"resource_id":"66ecfc4e-2c74-11ee-98fb-0762519529f3","resource_found":false}`),
 			},
-			expectRes: &tmcorrelation.CorrelationResponse{
+			expectRes: &tmcorrelation.Correlation{
 				ResourceID:    uuid.FromStringOrNil("66ecfc4e-2c74-11ee-98fb-0762519529f3"),
 				ResourceFound: false,
 			},

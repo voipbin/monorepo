@@ -578,7 +578,7 @@ func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.
 // formatCorrelationSummary renders an LLM-readable summary of a correlation
 // graph. It leads with prose grouped by publisher and includes compact resource
 // ids so the LLM can chain follow-up tool calls.
-func formatCorrelationSummary(corr *tmcorrelation.CorrelationResponse) string {
+func formatCorrelationSummary(corr *tmcorrelation.Correlation) string {
 	var sb strings.Builder
 
 	fmt.Fprintf(&sb, "Call flow %s is linked to:\n", corr.ActiveflowID)

@@ -6898,10 +6898,10 @@ func (mr *MockRequestHandlerMockRecorder) TimelineV1AggregatedEventList(ctx, req
 }
 
 // TimelineV1CorrelationGet mocks base method.
-func (m *MockRequestHandler) TimelineV1CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.CorrelationResponse, error) {
+func (m *MockRequestHandler) TimelineV1CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.Correlation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TimelineV1CorrelationGet", ctx, resourceID)
-	ret0, _ := ret[0].(*correlation.CorrelationResponse)
+	ret0, _ := ret[0].(*correlation.Correlation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

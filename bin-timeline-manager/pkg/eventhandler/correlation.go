@@ -16,13 +16,13 @@ import (
 // is signaled via the Truncated flag. Raising this requires a code change.
 const maxCorrelationResources = 100
 
-// ResourceCorrelationGet resolves a resource id to its activeflow and returns
+// CorrelationGet resolves a resource id to its activeflow and returns
 // the correlation graph of all resources sharing that activeflow, grouped by
 // publisher. Returns an empty graph (ResourceFound distinguishes the cases)
 // when the resource has no activeflow.
-func (h *eventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelation, error) {
+func (h *eventHandler) CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.Correlation, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ResourceCorrelationGet",
+		"func":        "CorrelationGet",
 		"resource_id": resourceID,
 	})
 
@@ -45,7 +45,7 @@ func (h *eventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uu
 			log.Errorf("Could not check resource existence. err: %v", errExists)
 			return nil, errors.Wrap(errExists, "could not check resource existence")
 		}
-		return &correlation.ResourceCorrelation{
+		return &correlation.Correlation{
 			ResourceID:    resourceID,
 			ResourceFound: found,
 			ActiveflowID:  uuid.Nil,
@@ -75,7 +75,7 @@ func (h *eventHandler) ResourceCorrelationGet(ctx context.Context, resourceID uu
 	// 3. group by publisher with stable ordering.
 	groups := groupByPublisher(rows)
 
-	return &correlation.ResourceCorrelation{
+	return &correlation.Correlation{
 		ResourceID:    resourceID,
 		ResourceFound: true,
 		ActiveflowID:  activeflowID,

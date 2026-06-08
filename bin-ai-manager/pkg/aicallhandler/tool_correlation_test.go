@@ -48,7 +48,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 			},
 
 			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
-				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), a.ActiveflowID).Return(&tmcorrelation.CorrelationResponse{
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), a.ActiveflowID).Return(&tmcorrelation.Correlation{
 					ResourceID:    a.ActiveflowID,
 					ResourceFound: true,
 					ActiveflowID:  a.ActiveflowID,
@@ -113,7 +113,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
 				targetID := uuid.FromStringOrNil("55555555-0000-4000-8000-000000000002")
 				afID := uuid.FromStringOrNil("66666666-0000-4000-8000-000000000002")
-				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), targetID).Return(&tmcorrelation.CorrelationResponse{
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), targetID).Return(&tmcorrelation.Correlation{
 					ResourceID:    targetID,
 					ResourceFound: true,
 					ActiveflowID:  afID,
@@ -157,7 +157,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
 				targetID := uuid.FromStringOrNil("55555555-0000-4000-8000-000000000003")
 				afID := uuid.FromStringOrNil("66666666-0000-4000-8000-000000000003")
-				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), targetID).Return(&tmcorrelation.CorrelationResponse{
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), targetID).Return(&tmcorrelation.Correlation{
 					ResourceID:    targetID,
 					ResourceFound: true,
 					ActiveflowID:  afID,
@@ -198,7 +198,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 			},
 
 			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
-				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), a.ActiveflowID).Return(&tmcorrelation.CorrelationResponse{
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), a.ActiveflowID).Return(&tmcorrelation.Correlation{
 					ResourceID:    a.ActiveflowID,
 					ResourceFound: false,
 				}, nil)
@@ -232,7 +232,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 			},
 
 			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
-				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), a.ActiveflowID).Return(&tmcorrelation.CorrelationResponse{
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), a.ActiveflowID).Return(&tmcorrelation.Correlation{
 					ResourceID:    a.ActiveflowID,
 					ResourceFound: true,
 					ActiveflowID:  uuid.Nil,
@@ -268,7 +268,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 
 			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
 				targetID := uuid.FromStringOrNil("55555555-0000-4000-8000-000000000006")
-				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), targetID).Return(&tmcorrelation.CorrelationResponse{
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), targetID).Return(&tmcorrelation.Correlation{
 					ResourceID:    targetID,
 					ResourceFound: true,
 					ActiveflowID:  uuid.Nil,
@@ -305,7 +305,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 			mockSetup: func(mockReq *requesthandler.MockRequestHandler, a *aicall.AIcall) {
 				targetID := uuid.FromStringOrNil("55555555-0000-4000-8000-000000000007")
 				afID := uuid.FromStringOrNil("66666666-0000-4000-8000-000000000007")
-				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), targetID).Return(&tmcorrelation.CorrelationResponse{
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), targetID).Return(&tmcorrelation.Correlation{
 					ResourceID:    targetID,
 					ResourceFound: true,
 					ActiveflowID:  afID,
@@ -441,13 +441,13 @@ func Test_toolHandleGetCorrelation_maskingInvariant(t *testing.T) {
 
 	scenarios := map[string]func(mockReq *requesthandler.MockRequestHandler){
 		"genuinely absent": func(mockReq *requesthandler.MockRequestHandler) {
-			mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.CorrelationResponse{
+			mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.Correlation{
 				ResourceID:    foreignResourceID,
 				ResourceFound: false,
 			}, nil)
 		},
 		"exists cross-customer": func(mockReq *requesthandler.MockRequestHandler) {
-			mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.CorrelationResponse{
+			mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.Correlation{
 				ResourceID:    foreignResourceID,
 				ResourceFound: true,
 				ActiveflowID:  foreignActiveflowID,
@@ -460,7 +460,7 @@ func Test_toolHandleGetCorrelation_maskingInvariant(t *testing.T) {
 			}, nil)
 		},
 		"exists ownership-lookup error": func(mockReq *requesthandler.MockRequestHandler) {
-			mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.CorrelationResponse{
+			mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.Correlation{
 				ResourceID:    foreignResourceID,
 				ResourceFound: true,
 				ActiveflowID:  foreignActiveflowID,
@@ -468,7 +468,7 @@ func Test_toolHandleGetCorrelation_maskingInvariant(t *testing.T) {
 			mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), foreignActiveflowID).Return(nil, fmt.Errorf("rpc error"))
 		},
 		"exists no activeflow": func(mockReq *requesthandler.MockRequestHandler) {
-			mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.CorrelationResponse{
+			mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), foreignResourceID).Return(&tmcorrelation.Correlation{
 				ResourceID:    foreignResourceID,
 				ResourceFound: true,
 				ActiveflowID:  uuid.Nil,

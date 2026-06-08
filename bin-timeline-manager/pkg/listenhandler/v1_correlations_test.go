@@ -13,7 +13,6 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-timeline-manager/models/correlation"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 func TestRegV1Correlations(t *testing.T) {
@@ -57,14 +56,14 @@ func TestV1CorrelationsGet_Success(t *testing.T) {
 	resourceID := uuid.Must(uuid.NewV4())
 	activeflowID := uuid.Must(uuid.NewV4())
 
-	expected := &correlation.ResourceCorrelation{
+	expected := &correlation.Correlation{
 		ResourceID:    resourceID,
 		ResourceFound: true,
 		ActiveflowID:  activeflowID,
 		Resources:     []*correlation.PublisherGroup{},
 	}
 
-	mockEvent.EXPECT().ResourceCorrelationGet(gomock.Any(), resourceID).Return(expected, nil)
+	mockEvent.EXPECT().CorrelationGet(gomock.Any(), resourceID).Return(expected, nil)
 
 	sockReq := &sock.Request{
 		URI:    "/v1/correlations/" + resourceID.String(),
@@ -82,7 +81,7 @@ func TestV1CorrelationsGet_Success(t *testing.T) {
 		t.Errorf("DataType = %q, want application/json", resp.DataType)
 	}
 
-	var got response.V1DataResourceCorrelationGet
+	var got correlation.Correlation
 	if err := json.Unmarshal(resp.Data, &got); err != nil {
 		t.Fatalf("could not unmarshal response body: %v", err)
 	}
@@ -138,7 +137,7 @@ func TestV1CorrelationsGet_HandlerError(t *testing.T) {
 
 	resourceID := uuid.Must(uuid.NewV4())
 
-	mockEvent.EXPECT().ResourceCorrelationGet(gomock.Any(), resourceID).Return(nil, errors.New("clickhouse down"))
+	mockEvent.EXPECT().CorrelationGet(gomock.Any(), resourceID).Return(nil, errors.New("clickhouse down"))
 
 	sockReq := &sock.Request{
 		URI:    "/v1/correlations/" + resourceID.String(),
@@ -167,12 +166,12 @@ func TestProcessRequest_V1CorrelationsGet_Routing(t *testing.T) {
 	}
 
 	resourceID := uuid.Must(uuid.NewV4())
-	expected := &correlation.ResourceCorrelation{
+	expected := &correlation.Correlation{
 		ResourceID:    resourceID,
 		ResourceFound: true,
 		Resources:     []*correlation.PublisherGroup{},
 	}
-	mockEvent.EXPECT().ResourceCorrelationGet(gomock.Any(), resourceID).Return(expected, nil)
+	mockEvent.EXPECT().CorrelationGet(gomock.Any(), resourceID).Return(expected, nil)
 
 	sockReq := &sock.Request{
 		URI:    "/v1/correlations/" + resourceID.String(),
