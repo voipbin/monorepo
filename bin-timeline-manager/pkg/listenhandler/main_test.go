@@ -17,6 +17,7 @@ import (
 	"monorepo/bin-timeline-manager/models/sipmessage"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 	"monorepo/bin-timeline-manager/pkg/siphandler"
 )
 
@@ -105,6 +106,19 @@ func TestProcessRequest_V1EventsPost(t *testing.T) {
 
 	if resp.DataType != "application/json" {
 		t.Errorf("processRequest() DataType = %q, want %q", resp.DataType, "application/json")
+	}
+
+	// Verify the domain result was mapped into the response DTO and marshalled
+	// with the expected wire shape (listenhandler owns response.* construction).
+	var got response.V1DataEventsPost
+	if err := json.Unmarshal(resp.Data, &got); err != nil {
+		t.Fatalf("could not unmarshal response body: %v", err)
+	}
+	if len(got.Result) != 1 {
+		t.Fatalf("body Result len = %d, want 1", len(got.Result))
+	}
+	if got.Result[0].EventType != "activeflow_created" {
+		t.Errorf("body Result[0].EventType = %q, want activeflow_created", got.Result[0].EventType)
 	}
 }
 
@@ -886,6 +900,19 @@ func TestProcessRequest_V1AggregatedEventsPost(t *testing.T) {
 
 	if resp.DataType != "application/json" {
 		t.Errorf("processRequest() DataType = %q, want %q", resp.DataType, "application/json")
+	}
+
+	// Verify the domain result was mapped into the response DTO and marshalled
+	// with the expected wire shape (listenhandler owns response.* construction).
+	var got response.V1DataAggregatedEventsPost
+	if err := json.Unmarshal(resp.Data, &got); err != nil {
+		t.Fatalf("could not unmarshal response body: %v", err)
+	}
+	if len(got.Result) != 1 {
+		t.Fatalf("body Result len = %d, want 1", len(got.Result))
+	}
+	if got.Result[0].EventType != "activeflow_created" {
+		t.Errorf("body Result[0].EventType = %q, want activeflow_created", got.Result[0].EventType)
 	}
 }
 
