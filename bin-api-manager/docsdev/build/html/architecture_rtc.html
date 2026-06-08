@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="System Request Flows" href="architecture_flow.html"><link rel="prev" title="Data Flow Diagrams" href="architecture_dataflow.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 7.2.6 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Real-Time Communication (RTC) - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -606,7 +606,7 @@
 <p><strong>AI Context</strong></p>
 <p>This page describes VoIPBIN’s real-time communication stack: Kamailio (stateless SIP edge routing), Asterisk (three specialized farms for calls, conferences, and registration), RTPEngine (media proxy and codec transcoding), conference architecture, and SIP session recovery after Asterisk crashes. Relevant when an AI agent needs to understand VoIP call flow mechanics, media handling, codec strategies, or high-availability features.</p>
 </div>
-<p>VoIPBIN’s RTC architecture handles all real-time voice and video communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.</p>
+<p>VoIPBIN’s RTC architecture handles all real-time voice communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.</p>
 <section id="voip-stack-overview">
 <h2>VoIP Stack Overview<a class="headerlink" href="#voip-stack-overview" title="Link to this heading">¶</a></h2>
 <p>VoIPBIN’s VoIP stack consists of three main components working together:</p>
@@ -858,7 +858,7 @@ wrong Asterisk instance.</p>
 <li><p>Participant mixing (up to hundreds of participants)</p></li>
 <li><p>Conference recording</p></li>
 <li><p>Participant management (mute, kick, etc.)</p></li>
-<li><p>Audio/video conferencing</p></li>
+<li><p>Audio conferencing</p></li>
 </ul>
 <p><strong>3. Asterisk-Registrar Farm</strong></p>
 <p>Handles SIP registration:</p>
@@ -969,12 +969,12 @@ wrong Asterisk instance.</p>
 <li><p><strong>Call Initiation</strong>: Flow Manager requests conference creation (via “connect” or “conference_join” action)</p></li>
 <li><p><strong>Conference Establishment</strong>: Asterisk-Conference creates dedicated bridge for participants</p></li>
 <li><p><strong>Participant Joining</strong>: Participants added to bridge sequentially or simultaneously</p></li>
-<li><p><strong>Conference Interaction</strong>: Participants communicate with voice/video, screen sharing, etc.</p></li>
+<li><p><strong>Conference Interaction</strong>: Participants communicate via voice in real time.</p></li>
 <li><p><strong>Conference Termination</strong>: Bridge destroyed when conference ends or all participants leave</p></li>
 </ol>
 <p><strong>Conference Features:</strong></p>
 <ul class="simple">
-<li><p>Audio and video mixing</p></li>
+<li><p>Audio mixing</p></li>
 <li><p>Recording capabilities</p></li>
 <li><p>Dynamic participant management</p></li>
 <li><p>Mute/unmute controls</p></li>
@@ -1117,7 +1117,7 @@ wrong Asterisk instance.</p>
 <img alt="SIP Session Recovery Diagram" src="_images/architecture_rtc_sip_session_recovery_diagram.png" />
 <p><strong>Patch Implementation:</strong></p>
 <p>This patch allows a newly created SIP channel to impersonate the original one, making the recovery INVITE appear as a legitimate continuation:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Extract</span> <span class="n">recovery</span> <span class="n">variables</span> <span class="kn">from</span> <span class="nn">channel</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">Extract</span> <span class="n">recovery</span> <span class="n">variables</span> <span class="kn">from</span><span class="w"> </span><span class="nn">channel</span>
 <span class="n">val_from_display_c_str</span> <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_DISPLAY&quot;</span><span class="p">);</span>
 <span class="n">val_from_uri_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_URI&quot;</span><span class="p">);</span>
 <span class="n">val_from_tag_c_str</span>     <span class="o">=</span> <span class="n">pbx_builtin_getvar_helper</span><span class="p">(</span><span class="n">session</span><span class="o">-&gt;</span><span class="n">channel</span><span class="p">,</span> <span class="s2">&quot;PJSIP_RECOVERY_FROM_TAG&quot;</span><span class="p">);</span>
@@ -1139,7 +1139,7 @@ wrong Asterisk instance.</p>
 <ul class="simple">
 <li><p><strong>Transparent to Client</strong>: Client sees normal re-INVITE, no indication of crash</p></li>
 <li><p><strong>State Preservation</strong>: All call state and variables restored</p></li>
-<li><p><strong>Media Continuity</strong>: Audio/video streams resume without gaps</p></li>
+<li><p><strong>Media Continuity</strong>: Audio streams resume without gaps</p></li>
 <li><p><strong>Flow Continuity</strong>: Call flow resumes at exact point before crash</p></li>
 </ul>
 </section>
@@ -1282,8 +1282,8 @@ ensuring that health probe traffic never affects call quality or latency.</p>
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

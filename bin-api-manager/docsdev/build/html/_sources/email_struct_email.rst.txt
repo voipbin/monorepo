@@ -70,7 +70,7 @@ Example
         "destinations": [
             {
                 "type": "email",
-                "target": "pchero21@gmail.com",
+                "target": "user@example.com",
                 "target_name": "",
                 "name": "",
                 "detail": ""

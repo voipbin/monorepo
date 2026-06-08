@@ -3,7 +3,7 @@
 Call Media and Codecs
 =====================
 
-This section covers audio and video media handling in VoIPBIN, including codec support, quality considerations, and encryption.
+This section covers audio media handling in VoIPBIN, including codec support, quality considerations, and encryption.
 
 .. note:: **AI Implementation Hint**
 
@@ -508,57 +508,6 @@ Real-time transcription of audio:
 
    Transcription events are delivered via WebSocket subscription, not via webhooks. Subscribe to ``customer_id:<your-id>:transcript:*`` to receive real-time transcript events. Each event contains the ``direction`` (``in`` or ``out``) so you can distinguish which party is speaking. The ``language`` parameter must use the exact locale code (e.g., ``en-US``, not ``en``).
 
-Video Calls (WebRTC)
---------------------
-
-VoIPBIN supports video via WebRTC:
-
-.. code::
-
-    Video Codec Support:
-
-    +--------+------------+-----------------+
-    | Codec  | Resolution | Use Case        |
-    +--------+------------+-----------------+
-    | VP8    | Up to 720p | Default WebRTC  |
-    | VP9    | Up to 1080p| Higher quality  |
-    | H.264  | Up to 1080p| Hardware accel  |
-    +--------+------------+-----------------+
-
-    Video Constraints:
-    +------------------------------------------+
-    | Max resolution: 1280x720 (720p)          |
-    | Max framerate: 30 fps                    |
-    | Max bitrate: 2 Mbps                      |
-    +------------------------------------------+
-
-**Video Conferencing:**
-
-.. code::
-
-    Video Conference Layout:
-
-    2 Participants:
-    +-------------+-------------+
-    |             |             |
-    |     A       |      B      |
-    |             |             |
-    +-------------+-------------+
-
-    4 Participants:
-    +------+------+------+------+
-    |  A   |  B   |  C   |  D   |
-    +------+------+------+------+
-
-    Active Speaker:
-    +---------------------------+
-    |                           |
-    |     Active Speaker        |
-    |                           |
-    +-------+-------+-------+---+
-    | P1    | P2    | P3    | ...|
-    +-------+-------+-------+---+
-
 Bandwidth Requirements
 ----------------------
 
@@ -584,13 +533,6 @@ Plan network capacity based on call types:
     | Bidirectional: ~100 kbps per call        |
     +------------------------------------------+
 
-    Video (720p):
-    +------------------------------------------+
-    | Video: 1-2 Mbps                          |
-    | Audio: ~100 kbps (Opus)                  |
-    | Bidirectional: ~4 Mbps per call          |
-    +------------------------------------------+
-
 **Capacity Planning:**
 
 .. code::
@@ -607,12 +549,6 @@ Plan network capacity based on call types:
     +------------------------------------------+
     | 100 calls x 100 kbps = 10 Mbps           |
     | Recommended: 15 Mbps (headroom)          |
-    +------------------------------------------+
-
-    Video (720p):
-    +------------------------------------------+
-    | 100 calls x 4 Mbps = 400 Mbps            |
-    | Recommended: 500 Mbps (headroom)         |
     +------------------------------------------+
 
 Quality Monitoring

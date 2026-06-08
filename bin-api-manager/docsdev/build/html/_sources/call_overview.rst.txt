@@ -26,7 +26,7 @@ With the VoIPBIN API you can:
 
 Protocol
 --------
-VoIPBIN offers support for various call/video protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.
+VoIPBIN offers support for various call protocols, enabling users to join the same conference room and communicate with one another seamlessly. The flexibility in protocol options ensures efficient and reliable communication between different devices and platforms.
 
 .. image:: _static/images/call_overview_protocol.png
 
@@ -105,7 +105,7 @@ Every call in VoIPBIN follows a predictable lifecycle from creation to terminati
    * - ringing
      - The destination device is ringing. The person being called can now answer.
    * - progressing
-     - The call has been answered. Both parties can now hear each other. Media (audio/video) is flowing.
+     - The call has been answered. Both parties can now hear each other. Media (audio) is flowing.
    * - terminating
      - The system is ending the call. This happens when your application hangs up or a flow action ends the call.
    * - canceling

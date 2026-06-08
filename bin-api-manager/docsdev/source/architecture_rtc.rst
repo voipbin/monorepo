@@ -7,7 +7,7 @@ Real-Time Communication (RTC)
 
    This page describes VoIPBIN's real-time communication stack: Kamailio (stateless SIP edge routing), Asterisk (three specialized farms for calls, conferences, and registration), RTPEngine (media proxy and codec transcoding), conference architecture, and SIP session recovery after Asterisk crashes. Relevant when an AI agent needs to understand VoIP call flow mechanics, media handling, codec strategies, or high-availability features.
 
-VoIPBIN's RTC architecture handles all real-time voice and video communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.
+VoIPBIN's RTC architecture handles all real-time voice communication through a distributed stack of specialized components. The architecture separates signaling (SIP) from media (RTP) processing, enabling independent scaling and fault tolerance.
 
 VoIP Stack Overview
 -------------------
@@ -283,7 +283,7 @@ Manages multi-party conference calls:
 * Participant mixing (up to hundreds of participants)
 * Conference recording
 * Participant management (mute, kick, etc.)
-* Audio/video conferencing
+* Audio conferencing
 
 **3. Asterisk-Registrar Farm**
 
@@ -411,12 +411,12 @@ Conference Flow
 1. **Call Initiation**: Flow Manager requests conference creation (via "connect" or "conference_join" action)
 2. **Conference Establishment**: Asterisk-Conference creates dedicated bridge for participants
 3. **Participant Joining**: Participants added to bridge sequentially or simultaneously
-4. **Conference Interaction**: Participants communicate with voice/video, screen sharing, etc.
+4. **Conference Interaction**: Participants communicate via voice in real time.
 5. **Conference Termination**: Bridge destroyed when conference ends or all participants leave
 
 **Conference Features:**
 
-* Audio and video mixing
+* Audio mixing
 * Recording capabilities
 * Dynamic participant management
 * Mute/unmute controls
@@ -610,7 +610,7 @@ The complete implementation is available on GitHub:
 
 * **Transparent to Client**: Client sees normal re-INVITE, no indication of crash
 * **State Preservation**: All call state and variables restored
-* **Media Continuity**: Audio/video streams resume without gaps
+* **Media Continuity**: Audio streams resume without gaps
 * **Flow Continuity**: Call flow resumes at exact point before crash
 
 Kamailio Proxy - Provider Health Monitor
