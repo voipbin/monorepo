@@ -10,11 +10,18 @@ import (
 	commonutil "monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-timeline-manager/models/event"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
+)
+
+// Pagination bounds for list-style queries. These are a business policy enforced
+// by the event handler (the sole clamper), so they live here rather than in the
+// transport request DTO package.
+const (
+	DefaultPageSize = 100
+	MaxPageSize     = 1000
 )
 
 // List returns events matching the request criteria.
-func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*event.EventListResponse, error) {
+func (h *eventHandler) List(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "List",
 		"publisher":   req.Publisher,
@@ -36,10 +43,10 @@ func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) 
 	// Apply defaults
 	pageSize := req.PageSize
 	if pageSize <= 0 {
-		pageSize = request.DefaultPageSize
+		pageSize = DefaultPageSize
 	}
-	if pageSize > request.MaxPageSize {
-		pageSize = request.MaxPageSize
+	if pageSize > MaxPageSize {
+		pageSize = MaxPageSize
 	}
 
 	// Query database (request pageSize + 1 to determine if more results exist)
@@ -66,7 +73,7 @@ func (h *eventHandler) List(ctx context.Context, req *request.V1DataEventsPost) 
 }
 
 // AggregatedList returns all events matching the given activeflow ID.
-func (h *eventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*event.AggregatedEventListResponse, error) {
+func (h *eventHandler) AggregatedList(ctx context.Context, req *event.AggregatedEventListRequest) (*event.AggregatedEventListResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "AggregatedList",
 		"activeflow_id": req.ActiveflowID,
@@ -80,10 +87,10 @@ func (h *eventHandler) AggregatedList(ctx context.Context, req *request.V1DataAg
 	// Apply defaults
 	pageSize := req.PageSize
 	if pageSize <= 0 {
-		pageSize = request.DefaultPageSize
+		pageSize = DefaultPageSize
 	}
-	if pageSize > request.MaxPageSize {
-		pageSize = request.MaxPageSize
+	if pageSize > MaxPageSize {
+		pageSize = MaxPageSize
 	}
 
 	// Query database (request pageSize + 1 to determine if more results exist)

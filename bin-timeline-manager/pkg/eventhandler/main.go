@@ -10,13 +10,12 @@ import (
 	"monorepo/bin-timeline-manager/models/correlation"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 )
 
 // EventHandler interface for event operations.
 type EventHandler interface {
-	List(ctx context.Context, req *request.V1DataEventsPost) (*event.EventListResponse, error)
-	AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*event.AggregatedEventListResponse, error)
+	List(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error)
+	AggregatedList(ctx context.Context, req *event.AggregatedEventListRequest) (*event.AggregatedEventListResponse, error)
 	ResourceCorrelationGet(ctx context.Context, resourceID uuid.UUID) (*correlation.ResourceCorrelation, error)
 }
 

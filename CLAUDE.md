@@ -236,22 +236,23 @@ bash docs/reference/extractor.sh <service-dir>
 
 → Detail: [docs/conventions/package-structure.md](docs/conventions/package-structure.md)
 
-## CRITICAL: Layering — response DTO ownership
+## CRITICAL: Layering — transport DTO ownership
 
-**CRITICAL: Types under `pkg/listenhandler/models/response` (the `response.*` transport DTOs) may only be constructed inside `pkg/listenhandler`.**
+**CRITICAL: The transport DTO packages under `pkg/listenhandler/models` (`request.*` and `response.*`) may only be referenced inside `pkg/listenhandler`.**
 
-This rule applies to every service in the monorepo.
+This rule applies to every service in the monorepo, and covers both directions of the listen path: the wire request that comes in and the wire response that goes out.
 
-- ✅ **Service / business handlers** (`pkg/*handler` other than `listenhandler`: `eventhandler`, `callhandler`, `aicallhandler`, `toolhandler`, etc.) MUST return **domain models** — types under the service's `models/` tree.
-- ✅ **`listenhandler` is the single layer that constructs `response.*` DTOs**, mapping a domain model into the transport DTO immediately before `json.Marshal`.
-- ❌ **NEVER** import `pkg/listenhandler/models/response` from a business/service handler, the dbhandler, or any non-listenhandler producer.
-- ❌ **NEVER** return a `response.*` value from a handler interface method.
+- ✅ **Service / business handlers** (`pkg/*handler` other than `listenhandler`: `eventhandler`, `callhandler`, `aicallhandler`, `toolhandler`, etc.) MUST take and return **domain models** — types under the service's `models/` tree.
+- ✅ **`listenhandler` is the single layer that touches transport DTOs.** On the way in it unmarshals the wire `request.*` DTO and maps it into a domain input model before calling the handler. On the way out it maps the handler's domain result into a `response.*` DTO immediately before `json.Marshal`.
+- ✅ **Business policy constants** (page-size bounds, etc.) live with the logic that enforces them (the handler), not in the transport DTO package.
+- ❌ **NEVER** import `pkg/listenhandler/models/request` or `pkg/listenhandler/models/response` from a business/service handler, the dbhandler, or any non-listenhandler producer/consumer.
+- ❌ **NEVER** accept or return a `request.*` / `response.*` value from a handler interface method.
 
-**Reference pattern:** `bin-call-manager` — `callHandler.List` returns `[]*call.Call` (a domain type) and `listenhandler.processV1CallsGet` marshals it. `bin-timeline-manager` — `eventHandler.ResourceCorrelationGet` returns `*correlation.ResourceCorrelation` (domain) and `listenhandler.v1CorrelationsGet` maps it into `response.V1DataResourceCorrelationGet`.
+**Reference pattern:** `bin-call-manager` — `callHandler.List` returns `[]*call.Call` (a domain type) and `listenhandler.processV1CallsGet` marshals it. `bin-timeline-manager` — `eventHandler.List` takes `*event.EventListRequest` and returns `*event.EventListResponse` (both domain); `listenhandler.v1EventsPost` maps the wire `request.V1DataEventsPost` into the domain input and maps the domain result into `response.V1DataEventsPost`.
 
-**Exception — the RPC client:** `bin-common-handler/pkg/requesthandler` is the client side of the inter-service RPC contract. It may reference a producing service's `response.*` types to unmarshal wire payloads. This is the one sanctioned cross-package consumer. (The cleaner long-term form, already used by some clients, is to unmarshal into the producing service's domain `models/` type instead; prefer that for new client methods.)
+**Exception — the RPC client:** `bin-common-handler/pkg/requesthandler` is the client side of the inter-service RPC contract. It may reference a producing service's transport DTOs to marshal requests / unmarshal responses. This is the one sanctioned cross-package consumer. (The cleaner long-term form, already used by some clients, is to use the producing service's domain `models/` types instead; prefer that for new client methods.)
 
-**Why:** Keeps the transport contract owned by one layer. Business logic stays free of wire-format concerns, response shapes can evolve without touching handlers, and the wire DTO has exactly one producer to audit.
+**Why:** Keeps the transport contract owned by one layer. Business logic stays free of wire-format concerns, request/response shapes can evolve without touching handlers, and each wire DTO has exactly one place to audit.
 
 ## Where to find things (index)
 

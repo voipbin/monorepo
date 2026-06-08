@@ -13,7 +13,6 @@ import (
 	context "context"
 	correlation "monorepo/bin-timeline-manager/models/correlation"
 	event "monorepo/bin-timeline-manager/models/event"
-	request "monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -45,7 +44,7 @@ func (m *MockEventHandler) EXPECT() *MockEventHandlerMockRecorder {
 }
 
 // AggregatedList mocks base method.
-func (m *MockEventHandler) AggregatedList(ctx context.Context, req *request.V1DataAggregatedEventsPost) (*event.AggregatedEventListResponse, error) {
+func (m *MockEventHandler) AggregatedList(ctx context.Context, req *event.AggregatedEventListRequest) (*event.AggregatedEventListResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AggregatedList", ctx, req)
 	ret0, _ := ret[0].(*event.AggregatedEventListResponse)
@@ -60,7 +59,7 @@ func (mr *MockEventHandlerMockRecorder) AggregatedList(ctx, req any) *gomock.Cal
 }
 
 // List mocks base method.
-func (m *MockEventHandler) List(ctx context.Context, req *request.V1DataEventsPost) (*event.EventListResponse, error) {
+func (m *MockEventHandler) List(ctx context.Context, req *event.EventListRequest) (*event.EventListResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "List", ctx, req)
 	ret0, _ := ret[0].(*event.EventListResponse)
