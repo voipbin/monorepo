@@ -763,7 +763,7 @@ func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.
 	// err == nil below: corr is safe to read.
 	// Own-session unlinked resource gets the disclosure message.
 	if corr.ActiveflowID == uuid.Nil {
-		fillSuccess(res, "correlation", resourceID.String(), "This resource exists but is not linked to any call flow.")
+		fillSuccess(res, "correlation", resourceID.String(), "This resource exists but is not linked to any activeflow.")
 		return res
 	}
 
@@ -778,7 +778,7 @@ func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.
 func formatCorrelationSummary(corr *tmcorrelation.Correlation) string {
 	var sb strings.Builder
 
-	fmt.Fprintf(&sb, "Call flow %s is linked to:\n", corr.ActiveflowID)
+	fmt.Fprintf(&sb, "Activeflow %s is linked to:\n", corr.ActiveflowID)
 	if len(corr.Resources) == 0 {
 		sb.WriteString("- (no correlated resources)\n")
 	}

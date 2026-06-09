@@ -484,13 +484,15 @@ run_llm: Always set true — you should respond to the user based on the search 
 	{
 		Name:   tool.ToolNameGetCorrelation,
 		RunLLM: true,
-		Description: `Retrieves the correlation graph for a resource: the related resources (calls, recordings, transcribes, aicalls, messages, etc.) linked to the same call flow execution.
+		Description: `Retrieves the correlation graph for a resource: the related resources (calls, messages, recordings, transcribes, aicalls, etc.) linked to the same activeflow execution.
 
-This is an internal diagnostic tool. Use it to understand what other resources are tied to a given call flow so you can reason about or chain follow-up lookups.
+An activeflow is the running instance of a flow. Its reference is not always a call; the reference type can be call, conversation, ai, api, campaign, transcribe, or recording (and may be unset). Do not assume the session is a phone call.
+
+This is an internal diagnostic tool. Use it to understand what other resources are tied to a given activeflow so you can reason about or chain follow-up lookups.
 
 WHEN TO USE:
-- You need to know what resources are linked to the current session's call flow
-- A diagnostic question requires understanding the relationships between resources of a call flow
+- You need to know what resources are linked to the current session's activeflow
+- A diagnostic question requires understanding the relationships between resources of an activeflow
 - You want to discover resource ids (e.g. an aicall id) to chain into another tool
 
 WHEN NOT TO USE:
@@ -498,7 +500,7 @@ WHEN NOT TO USE:
 - You only need a single runtime variable (use get_variables)
 
 ARGUMENTS:
-- resource_id (optional): the resource id to inspect. If omitted, the current session's call flow is used. You can only retrieve correlations for resources owned by your own account; others return "No events found for this resource.".
+- resource_id (optional): the resource id to inspect. If omitted, the current session's activeflow is used. You can only retrieve correlations for resources owned by your own account; others return "No events found for this resource.".
 
 run_llm: Set true so you can summarize and reason about the correlated resources.`,
 		Parameters: map[string]any{
@@ -511,7 +513,7 @@ run_llm: Set true so you can summarize and reason about the correlated resources
 				},
 				"resource_id": map[string]any{
 					"type":        "string",
-					"description": "Optional resource id (UUID) to inspect. If omitted, the current session's call flow is used.",
+					"description": "Optional resource id (UUID) to inspect. If omitted, the current session's activeflow is used.",
 				},
 			},
 			"required": []string{},
