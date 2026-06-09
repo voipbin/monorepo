@@ -2,6 +2,7 @@ package aicallhandler
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
 	reflect "reflect"
 	"testing"
@@ -498,5 +499,173 @@ func Test_toolHandleGetCorrelation_maskingInvariant(t *testing.T) {
 		if !reflect.DeepEqual(results[0], results[i]) {
 			t.Errorf("masking invariant violated: results differ\nresult[0]: %#v\nresult[%d]: %#v", results[0], i, results[i])
 		}
+	}
+}
+
+// Test_resolveCorrelation locks the two-tier error contract at the helper level:
+//   - the four "cannot see" paths (absent / cross-customer / ownership-lookup-fail /
+//     foreign-no-activeflow) return ErrCorrelationNotAccessible (caller masks).
+//   - the three granted paths (own-with-activeflow / supplied-owned / own-no-activeflow)
+//     return nil error.
+//   - the timeline-RPC failure returns a NON-sentinel error (caller reports an honest
+//     tool failure, not a mask). The negative stderrors.Is assertion guards against a
+//     future change that would silently mask infra errors and re-open an existence oracle.
+func Test_resolveCorrelation(t *testing.T) {
+	callerCustomerID := uuid.FromStringOrNil("22222222-0000-4000-8000-0000000000b1")
+	otherCustomerID := uuid.FromStringOrNil("99999999-0000-4000-8000-0000000000b1")
+	resourceID := uuid.FromStringOrNil("55555555-0000-4000-8000-0000000000b1")
+	activeflowID := uuid.FromStringOrNil("66666666-0000-4000-8000-0000000000b1")
+
+	tests := []struct {
+		name string
+
+		ownSession bool
+
+		mockSetup func(mockReq *requesthandler.MockRequestHandler)
+
+		// expectSentinel: err must be ErrCorrelationNotAccessible.
+		// expectNilErr:   err must be nil.
+		// neither set:    err must be non-nil AND not the sentinel (transient).
+		expectSentinel bool
+		expectNilErr   bool
+	}{
+		{
+			name:       "granted - own session with activeflow",
+			ownSession: true,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), resourceID).Return(&tmcorrelation.Correlation{
+					ResourceID:    resourceID,
+					ResourceFound: true,
+					ActiveflowID:  activeflowID,
+				}, nil)
+				mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), activeflowID).Return(&fmactiveflow.Activeflow{
+					Identity: commonidentity.Identity{ID: activeflowID, CustomerID: callerCustomerID},
+				}, nil)
+			},
+			expectNilErr: true,
+		},
+		{
+			name:       "granted - supplied owned id",
+			ownSession: false,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), resourceID).Return(&tmcorrelation.Correlation{
+					ResourceID:    resourceID,
+					ResourceFound: true,
+					ActiveflowID:  activeflowID,
+				}, nil)
+				mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), activeflowID).Return(&fmactiveflow.Activeflow{
+					Identity: commonidentity.Identity{ID: activeflowID, CustomerID: callerCustomerID},
+				}, nil)
+			},
+			expectNilErr: true,
+		},
+		{
+			name:       "granted - own session no activeflow",
+			ownSession: true,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), resourceID).Return(&tmcorrelation.Correlation{
+					ResourceID:    resourceID,
+					ResourceFound: true,
+					ActiveflowID:  uuid.Nil,
+				}, nil)
+			},
+			expectNilErr: true,
+		},
+		{
+			name:       "not accessible - resource absent",
+			ownSession: false,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), resourceID).Return(&tmcorrelation.Correlation{
+					ResourceID:    resourceID,
+					ResourceFound: false,
+				}, nil)
+			},
+			expectSentinel: true,
+		},
+		{
+			name:       "not accessible - cross customer",
+			ownSession: false,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), resourceID).Return(&tmcorrelation.Correlation{
+					ResourceID:    resourceID,
+					ResourceFound: true,
+					ActiveflowID:  activeflowID,
+				}, nil)
+				mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), activeflowID).Return(&fmactiveflow.Activeflow{
+					Identity: commonidentity.Identity{ID: activeflowID, CustomerID: otherCustomerID},
+				}, nil)
+			},
+			expectSentinel: true,
+		},
+		{
+			name:       "not accessible - ownership lookup failure",
+			ownSession: false,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), resourceID).Return(&tmcorrelation.Correlation{
+					ResourceID:    resourceID,
+					ResourceFound: true,
+					ActiveflowID:  activeflowID,
+				}, nil)
+				mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), activeflowID).Return(nil, fmt.Errorf("rpc error"))
+			},
+			expectSentinel: true,
+		},
+		{
+			name:       "not accessible - foreign id no activeflow",
+			ownSession: false,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), resourceID).Return(&tmcorrelation.Correlation{
+					ResourceID:    resourceID,
+					ResourceFound: true,
+					ActiveflowID:  uuid.Nil,
+				}, nil)
+			},
+			expectSentinel: true,
+		},
+		{
+			name:       "transient - timeline rpc failure",
+			ownSession: false,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().TimelineV1CorrelationGet(gomock.Any(), resourceID).Return(nil, fmt.Errorf("rpc error"))
+			},
+			// neither expectSentinel nor expectNilErr: must be a non-sentinel error.
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			h := &aicallHandler{reqHandler: mockReq}
+			ctx := context.Background()
+
+			if tt.mockSetup != nil {
+				tt.mockSetup(mockReq)
+			}
+
+			_, err := h.resolveCorrelation(ctx, callerCustomerID, resourceID, tt.ownSession)
+
+			switch {
+			case tt.expectNilErr:
+				if err != nil {
+					t.Errorf("expected nil error, got: %v", err)
+				}
+			case tt.expectSentinel:
+				if !stderrors.Is(err, ErrCorrelationNotAccessible) {
+					t.Errorf("expected ErrCorrelationNotAccessible, got: %v", err)
+				}
+			default:
+				// transient: non-nil, but NOT the sentinel.
+				if err == nil {
+					t.Errorf("expected a non-nil transient error, got nil")
+				}
+				if stderrors.Is(err, ErrCorrelationNotAccessible) {
+					t.Errorf("transient error must NOT match ErrCorrelationNotAccessible, got: %v", err)
+				}
+			}
+		})
 	}
 }
