@@ -234,7 +234,7 @@ func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.
 
 `formatCorrelationSummary` produces an LLM-readable summary, not raw IDs as content:
 ```
-Call flow (activeflow_id: <activeflow_id>) is linked to:
+Activeflow <activeflow_id> is linked to:
 - call-manager: 1 call (call_created, call_progressing, call_hangup), 1 recording
 - ai-manager: 1 aicall, 2 messages
 - transcribe-manager: 1 transcribe
