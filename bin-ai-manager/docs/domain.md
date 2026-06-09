@@ -96,6 +96,7 @@ Tool definitions live in `pkg/toolhandler/definitions.go`. Only tools listed in 
 | Tool name | Action |
 |-----------|--------|
 | `connect_call` | Transfer or bridge a call |
+| `create_call` | Place a new, independent outbound call (not bridged; current AI session continues) |
 | `send_email` | Send an email via email-manager |
 | `send_message` | Send SMS via message-manager |
 | `stop_media` | Stop current TTS audio playback |

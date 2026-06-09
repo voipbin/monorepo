@@ -7,6 +7,7 @@ type ToolName string
 const (
 	ToolNameAll               ToolName = "all"
 	ToolNameConnectCall       ToolName = "connect_call"
+	ToolNameCreateCall        ToolName = "create_call"
 	ToolNameGetVariables      ToolName = "get_variables"
 	ToolNameGetAIcallMessages ToolName = "get_aicall_messages"
 	ToolNameSendEmail         ToolName = "send_email"
@@ -22,6 +23,7 @@ const (
 // AllToolNames returns all available tool names (excluding "all")
 var AllToolNames = []ToolName{
 	ToolNameConnectCall,
+	ToolNameCreateCall,
 	ToolNameGetVariables,
 	ToolNameGetAIcallMessages,
 	ToolNameSendEmail,

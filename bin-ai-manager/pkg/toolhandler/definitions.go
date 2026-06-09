@@ -517,4 +517,82 @@ run_llm: Set true so you can summarize and reason about the correlated resources
 			"required": []string{},
 		},
 	},
+	{
+		Name:   tool.ToolNameCreateCall,
+		RunLLM: true,
+		Description: `Places a NEW, INDEPENDENT outbound call that is NOT connected/bridged to the current conversation. The new call runs its own predefined flow. The current AI session continues normally (it is NOT ended).
+
+WHEN TO USE:
+- User wants a separate call placed to someone: "call John and remind him about the meeting"
+- A callback / notification call should be triggered to a third party
+- You need to start an outbound call that runs a predefined scenario (flow)
+
+WHEN NOT TO USE:
+- User wants to be transferred / connected to someone in THIS call (use connect_call)
+- User wants to end the current call (use stop_flow / stop_service)
+
+DIFFERS FROM connect_call:
+- create_call = NEW independent call, NOT bridged, current session continues
+- connect_call = bridges another party INTO the current call, ends the AI session
+
+run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to confirm verbally after placing the call.",
+					"default":     true,
+				},
+				"flow_id": map[string]any{
+					"type":        "string",
+					"description": "UUID of the pre-existing flow the new call will execute. Must belong to your account.",
+				},
+				"source": map[string]any{
+					"type":        "object",
+					"description": "Optional source endpoint. If omitted, a default account number is used.",
+					"properties": map[string]any{
+						"type": map[string]any{
+							"type":        "string",
+							"description": "Source endpoint type: tel or sip",
+						},
+						"target": map[string]any{
+							"type":        "string",
+							"description": "Source address (e.g., +E.164 phone number)",
+						},
+						"target_name": map[string]any{
+							"type":        "string",
+							"description": "Display name for the source (optional)",
+						},
+					},
+				},
+				"destinations": map[string]any{
+					"type": "array",
+					"items": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"type": map[string]any{
+								"type":        "string",
+								"description": "Destination type: tel (phone number), sip (SIP address), extension, agent",
+							},
+							"target": map[string]any{
+								"type":        "string",
+								"description": "Destination address (e.g., '+155****4567', 'sip:user@domain.com')",
+							},
+							"target_name": map[string]any{
+								"type":        "string",
+								"description": "Display name for the destination (optional)",
+							},
+						},
+						"required": []string{"type", "target"},
+					},
+				},
+				"anonymous": map[string]any{
+					"type":        "string",
+					"description": "Optional caller-ID privacy: yes | no | auto (default auto).",
+				},
+			},
+			"required": []string{"flow_id", "destinations"},
+		},
+	},
 }
