@@ -28,6 +28,7 @@ const (
 	FunctionCallNameNone FunctionCallName = ""
 
 	FunctionCallNameConnectCall       FunctionCallName = "connect_call"
+	FunctionCallNameCreateCall        FunctionCallName = "create_call"
 	FunctionCallNameGetVariables      FunctionCallName = "get_variables"
 	FunctionCallNameGetAIcallMessages FunctionCallName = "get_aicall_messages"
 	FunctionCallNameSendEmail         FunctionCallName = "send_email"

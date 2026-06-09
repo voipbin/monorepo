@@ -138,6 +138,7 @@ func TestAllToolNames(t *testing.T) {
 	// Verify AllToolNames contains all expected tool names
 	expectedNames := []tool.ToolName{
 		tool.ToolNameConnectCall,
+		tool.ToolNameCreateCall,
 		tool.ToolNameGetVariables,
 		tool.ToolNameGetAIcallMessages,
 		tool.ToolNameSendEmail,

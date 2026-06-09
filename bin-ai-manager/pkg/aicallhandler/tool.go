@@ -10,6 +10,7 @@ import (
 	"monorepo/bin-ai-manager/models/aicall"
 	"monorepo/bin-ai-manager/models/message"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 
@@ -50,6 +51,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 
 	mapFunctions := map[message.FunctionCallName]func(context.Context, *aicall.AIcall, *message.ToolCall) *messageContent{
 		message.FunctionCallNameConnectCall:       h.toolHandleConnect,
+		message.FunctionCallNameCreateCall:        h.toolHandleCreateCall,
 		message.FunctionCallNameGetVariables:      h.toolHandleGetVariables,
 		message.FunctionCallNameGetAIcallMessages: h.toolHandleGetAIcallMessages,
 		message.FunctionCallNameSendEmail:         h.toolHandleEmailSend,
@@ -184,6 +186,135 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 		}
 		log.WithField("aicall", tmp).Debugf("Terminating the aicall after sending the tool actions. aicall_id: %s", c.ID)
 	}()
+
+	return res
+}
+
+// errCouldNotResolveFlow is the single masked error used for both flow-not-found and
+// cross-customer-flow paths in toolHandleCreateCall, so the tool cannot be used as a
+// flow-existence oracle. Bare sentinel (no stack, no %w wrap) keeps both paths byte-identical.
+var errCouldNotResolveFlow = stderrors.New("could not resolve flow")
+
+// toolHandleCreateCall places a NEW, INDEPENDENT outbound call that is NOT bridged to the
+// current session and does NOT terminate the current AIcall (contrast with toolHandleConnect).
+// The originated call runs its own flow_id; the current AI session continues.
+func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIcall, tool *message.ToolCall) *messageContent {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "toolHandleCreateCall",
+		"aicall_id": c.ID,
+	})
+	log.Debugf("handling tool create_call.")
+
+	res := newToolResult(tool.ID)
+
+	// 1. parse args
+	var args struct {
+		FlowID       uuid.UUID               `json:"flow_id"`
+		Source       *commonaddress.Address  `json:"source,omitempty"`
+		Destinations []commonaddress.Address `json:"destinations"`
+		Anonymous    string                  `json:"anonymous,omitempty"`
+	}
+	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &args); errUnmarshal != nil {
+		fillFailed(res, errUnmarshal)
+		return res
+	}
+	if args.FlowID == uuid.Nil {
+		fillFailed(res, fmt.Errorf("flow_id is required"))
+		return res
+	}
+	if len(args.Destinations) == 0 {
+		fillFailed(res, fmt.Errorf("at least one destination is required"))
+		return res
+	}
+	// input hygiene: an empty destination target would be silently skipped by call-manager.
+	for _, d := range args.Destinations {
+		if d.Target == "" {
+			fillFailed(res, fmt.Errorf("destination target must not be empty"))
+			return res
+		}
+	}
+
+	// 2. SECURITY: flow ownership (IDOR prevention). Both not-found and cross-customer return the
+	//    same byte-identical masked error so the tool is not a flow-existence oracle.
+	f, err := h.reqHandler.FlowV1FlowGet(ctx, args.FlowID)
+	if err != nil || f == nil {
+		log.Errorf("Could not get the flow. flow_id: %s, err: %v", args.FlowID, err)
+		fillFailed(res, errCouldNotResolveFlow)
+		return res
+	}
+	if f.CustomerID != c.CustomerID {
+		log.Warnf("Flow does not belong to the customer. flow_id: %s, flow_customer_id: %s, customer_id: %s", args.FlowID, f.CustomerID, c.CustomerID)
+		fillFailed(res, errCouldNotResolveFlow)
+		return res
+	}
+
+	// 3. originate. masterCallID = uuid.Nil (no bridge). The 8th bool (executeNextMasterOnHangup)
+	//    is false: it only governs whether a MASTER call's flow advances when a chained call hangs
+	//    up, which is irrelevant with no master. The originated call self-runs its own flow on
+	//    answer via call-manager (status.go updateStatusProgressing -> ActionNext).
+	src := commonaddress.Address{}
+	if args.Source != nil {
+		src = *args.Source
+	}
+	calls, groupcalls, err := h.reqHandler.CallV1CallsCreate(
+		ctx, c.CustomerID, args.FlowID, uuid.Nil, &src, args.Destinations, false, false, args.Anonymous, nil)
+	// CONTRACT: CreateCallsOutgoing returns an error ONLY when ALL destinations fail (nil,nil,err).
+	// Partial/full success returns (calls,groupcalls,nil). There is no (err + non-empty slices) case,
+	// so a single err!=nil check is correct and total.
+	if err != nil {
+		log.Errorf("Could not create outgoing calls for create_call. flow_id: %s, err: %v", args.FlowID, err)
+		fillFailed(res, err)
+		return res
+	}
+
+	// 4. return originated ids for tracking.
+	//    Per-destination failures are swallowed by call-manager (logged + continue), so the only
+	//    honest partial signal is requested-vs-created count. Surface it explicitly.
+	//    INVARIANT (load-bearing): each destination yields at most one leg (one call OR one
+	//    groupcall; fan-out is encapsulated inside a single groupcall). So created <= requested.
+	type createCallResult struct {
+		CallIDs      []string `json:"call_ids"`
+		GroupcallIDs []string `json:"groupcall_ids"`
+		Requested    int      `json:"requested"`
+		Created      int      `json:"created"`
+		Partial      bool     `json:"partial,omitempty"`
+	}
+	out := createCallResult{
+		CallIDs:      []string{},
+		GroupcallIDs: []string{},
+		Requested:    len(args.Destinations),
+	}
+	for _, cc := range calls {
+		out.CallIDs = append(out.CallIDs, cc.ID.String())
+	}
+	for _, gc := range groupcalls {
+		out.GroupcallIDs = append(out.GroupcallIDs, gc.ID.String())
+	}
+	out.Created = len(out.CallIDs) + len(out.GroupcallIDs)
+	out.Partial = out.Created < out.Requested
+
+	body, errMarshal := json.Marshal(out)
+	if errMarshal != nil {
+		fillFailed(res, errMarshal)
+		return res
+	}
+
+	// primary handle + correct resource type (groupcall-only must not be tagged "call").
+	// INVARIANT: err==nil guarantees Created>=1 per CreateCallsOutgoing's contract (it errors
+	// only when ALL destinations fail), so primaryID is always populated here.
+	primaryID, primaryType := "", "call"
+	if len(calls) > 0 {
+		primaryID = calls[0].ID.String()
+	} else if len(groupcalls) > 0 {
+		primaryID, primaryType = groupcalls[0].ID.String(), "groupcall"
+	}
+
+	log.WithFields(logrus.Fields{
+		"flow_id":   args.FlowID,
+		"requested": out.Requested,
+		"created":   out.Created,
+	}).Debugf("Created independent outgoing call(s) for create_call. primary_id: %s", primaryID)
+	fillSuccess(res, primaryType, primaryID, string(body))
 
 	return res
 }
