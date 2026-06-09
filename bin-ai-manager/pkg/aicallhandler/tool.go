@@ -778,7 +778,7 @@ func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.
 func formatCorrelationSummary(corr *tmcorrelation.Correlation) string {
 	var sb strings.Builder
 
-	fmt.Fprintf(&sb, "Call flow %s is linked to:\n", corr.ActiveflowID)
+	fmt.Fprintf(&sb, "Call flow (activeflow_id: %s) is linked to:\n", corr.ActiveflowID)
 	if len(corr.Resources) == 0 {
 		sb.WriteString("- (no correlated resources)\n")
 	}

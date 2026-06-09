@@ -89,7 +89,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 				ToolCallID:   "tool-1",
 				ResourceType: "correlation",
 				ResourceID:   "33333333-0000-4000-8000-000000000001",
-				Message:      "Call flow 33333333-0000-4000-8000-000000000001 is linked to:\n- call-manager: 1 resource(s)\n  - call 44444444-0000-4000-8000-000000000001 (events: call_created, call_hangup)\n- transcribe-manager: 1 resource(s)\n  - transcribe 77777777-0000-4000-8000-000000000001\n",
+				Message:      "Call flow (activeflow_id: 33333333-0000-4000-8000-000000000001) is linked to:\n- call-manager: 1 resource(s)\n  - call 44444444-0000-4000-8000-000000000001 (events: call_created, call_hangup)\n- transcribe-manager: 1 resource(s)\n  - transcribe 77777777-0000-4000-8000-000000000001\n",
 			},
 		},
 		{
@@ -133,7 +133,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 				ToolCallID:   "tool-2",
 				ResourceType: "correlation",
 				ResourceID:   "66666666-0000-4000-8000-000000000002",
-				Message:      "Call flow 66666666-0000-4000-8000-000000000002 is linked to:\n- (no correlated resources)\n",
+				Message:      "Call flow (activeflow_id: 66666666-0000-4000-8000-000000000002) is linked to:\n- (no correlated resources)\n",
 			},
 		},
 		{
