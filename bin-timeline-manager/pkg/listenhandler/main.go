@@ -125,9 +125,13 @@ func (h *listenHandler) Run(queue string) error {
 
 func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":    "processRequest",
-		"request": m,
+		"func":      "processRequest",
+		"uri":       m.URI,
+		"method":    m.Method,
+		"data_type": m.DataType,
+		"data":      m.Data,
 	})
+	log.Debugf("Received request. method: %s, uri: %s", m.Method, m.URI)
 
 	ctx := context.Background()
 
@@ -184,6 +188,10 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		}
 		err = nil
 	}
+
+	log.WithFields(logrus.Fields{
+		"response": response,
+	}).Debugf("Sending back the result. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }
