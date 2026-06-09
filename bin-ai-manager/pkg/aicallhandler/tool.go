@@ -3,6 +3,7 @@ package aicallhandler
 import (
 	"context"
 	"encoding/json"
+	stderrors "errors"
 	"fmt"
 	"strings"
 
@@ -489,15 +490,100 @@ func (h *aicallHandler) toolHandleSearchKnowledge(ctx context.Context, c *aicall
 // from being used as a cross-customer existence oracle.
 const msgCorrelationNotFound = "No events found for this resource."
 
+// ErrCorrelationNotAccessible is the single sentinel covering every outcome where
+// the caller may not see the correlation: genuinely absent, exists-but-cross-customer,
+// ownership-lookup failure, and foreign-id-with-no-activeflow. Callers MUST collapse
+// it to the byte-identical msgCorrelationNotFound so the tool cannot be used as a
+// cross-customer existence oracle. It deliberately does NOT distinguish the four
+// causes — that is the security property.
+//
+// Uses stdlib errors.New (aliased stderrors): a sentinel needs no stack trace, and
+// identity comparison via stderrors.Is is all that matters.
+var ErrCorrelationNotAccessible = stderrors.New("correlation not accessible")
+
+// resolveCorrelation fetches the correlation graph for resourceID and validates that
+// the caller (callerCustomerID) owns it.
+//
+// Returns:
+//   - (corr, nil)                         : access granted. corr is non-nil.
+//     corr.ActiveflowID may be uuid.Nil only when ownSession is true (caller's own
+//     unlinked resource).
+//   - (corr, ErrCorrelationNotAccessible) : caller may not see this. corr is non-nil
+//     but MUST NOT be exposed; the caller masks and ignores corr entirely.
+//   - (nil, <wrapped err>)                : transient/infra failure (e.g. timeline RPC
+//     down). corr is nil. Existence is unknown; caller reports a tool failure.
+//
+// CONTRACT: corr is meaningful ONLY when err == nil. On any non-nil error the caller
+// MUST NOT dereference corr (it is nil for the transient case). The handler enforces
+// this by returning inside the error block before reading corr.
+//
+// ownSession must be true iff the caller did not supply a resource_id (target is the
+// caller's own activeflow, owned by definition).
+//
+// Security: the timeline correlation endpoint is not customer-scoped, so an arbitrary
+// resource_id could otherwise expose another customer's data (IDOR). Ownership is
+// enforced by resolving the correlated activeflow via flow-manager and comparing its
+// CustomerID against the caller's. Failures that could reveal a resource's existence
+// fail closed (return the sentinel -> masked).
+func (h *aicallHandler) resolveCorrelation(
+	ctx context.Context,
+	callerCustomerID uuid.UUID,
+	resourceID uuid.UUID,
+	ownSession bool,
+) (*tmcorrelation.Correlation, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":        "resolveCorrelation",
+		"customer_id": callerCustomerID,
+		"resource_id": resourceID,
+	})
+
+	corr, err := h.reqHandler.TimelineV1CorrelationGet(ctx, resourceID)
+	if err != nil {
+		// Existence unknown -> genuine tool failure, NOT a mask. corr is nil.
+		return nil, errors.Wrap(err, "correlation lookup failed")
+	}
+
+	// Resource absent -> caller may not see it.
+	if !corr.ResourceFound {
+		return corr, ErrCorrelationNotAccessible
+	}
+
+	// Resource exists but has no activeflow: there is no activeflow to validate
+	// ownership against. Only disclose this state for the caller's own session;
+	// for a supplied foreign id, mask.
+	if corr.ActiveflowID == uuid.Nil {
+		if ownSession {
+			return corr, nil
+		}
+		return corr, ErrCorrelationNotAccessible
+	}
+
+	// Has activeflow: validate ownership via flow-manager (timeline has no customer_id).
+	af, err := h.reqHandler.FlowV1ActiveflowGet(ctx, corr.ActiveflowID)
+	if err != nil {
+		// Mask the lookup failure: do not reveal that the activeflow exists. Fail closed.
+		log.Warnf("Could not verify correlation ownership. err: %v", err)
+		return corr, ErrCorrelationNotAccessible
+	}
+	if af.CustomerID != callerCustomerID {
+		log.Warnf("Cross-customer correlation attempt blocked. resource_owner: %s", af.CustomerID)
+		return corr, ErrCorrelationNotAccessible
+	}
+
+	return corr, nil
+}
+
 // toolHandleGetCorrelation retrieves the correlation graph for a resource and
 // returns a human-readable summary. It is an internal diagnostic tool.
 //
-// Security: the timeline correlation endpoint is not customer-scoped, so an
-// arbitrary resource_id could otherwise expose another customer's data (IDOR).
-// Ownership is enforced by resolving the correlated activeflow via flow-manager
-// and comparing its CustomerID against the calling session's CustomerID. Any
-// path that would reveal existence of a resource the caller does not own returns
-// the same masking string as a genuine not-found.
+// Ownership validation and existence-oracle masking are delegated to
+// resolveCorrelation. Every "cannot see this" path collapses to the single
+// msgCorrelationNotFound emission site below.
+//
+// CRITICAL: both branches inside the `if err` block MUST return. Falling through
+// would (a) for a cross-customer error expose a foreign activeflow summary (IDOR),
+// and (b) for the transient case dereference a nil corr (panic). The returns are
+// load-bearing.
 func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.AIcall, tc *message.ToolCall) *messageContent {
 	log := logrus.WithFields(logrus.Fields{
 		"func":      "toolHandleGetCorrelation",
@@ -530,43 +616,23 @@ func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.
 		return res
 	}
 
-	corr, err := h.reqHandler.TimelineV1CorrelationGet(ctx, resourceID)
+	corr, err := h.resolveCorrelation(ctx, c.CustomerID, resourceID, ownSession)
 	if err != nil {
+		if stderrors.Is(err, ErrCorrelationNotAccessible) {
+			// Single masking site for ALL not-accessible paths.
+			fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
+			return res
+		}
+		// Transient/infra failure: existence unknown, report tool failure.
 		log.Errorf("Correlation lookup failed. err: %v", err)
 		fillFailed(res, fmt.Errorf("correlation lookup failed"))
 		return res
 	}
 
-	// Resource absent -> canonical not-found.
-	if !corr.ResourceFound {
-		fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
-		return res
-	}
-
-	// Resource exists but has no activeflow: there is no activeflow to validate
-	// ownership against. Only disclose this state for the caller's own session;
-	// for a supplied foreign id, mask as not-found.
+	// err == nil below: corr is safe to read.
+	// Own-session unlinked resource gets the disclosure message.
 	if corr.ActiveflowID == uuid.Nil {
-		if ownSession {
-			fillSuccess(res, "correlation", resourceID.String(), "This resource exists but is not linked to any call flow.")
-		} else {
-			fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
-		}
-		return res
-	}
-
-	// Has activeflow: validate ownership via flow-manager (timeline has no customer_id).
-	af, err := h.reqHandler.FlowV1ActiveflowGet(ctx, corr.ActiveflowID)
-	if err != nil {
-		// Mask the lookup failure as not-found: do not reveal that the activeflow exists.
-		log.Warnf("Could not verify correlation ownership. resource_id: %s, err: %v", resourceID, err)
-		fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
-		return res
-	}
-	if af.CustomerID != c.CustomerID {
-		log.Warnf("Cross-customer correlation attempt blocked. session_customer: %s, resource_owner: %s, resource_id: %s",
-			c.CustomerID, af.CustomerID, resourceID)
-		fillSuccess(res, "correlation", resourceID.String(), msgCorrelationNotFound)
+		fillSuccess(res, "correlation", resourceID.String(), "This resource exists but is not linked to any call flow.")
 		return res
 	}
 
