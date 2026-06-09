@@ -295,7 +295,7 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 
 	log.WithFields(logrus.Fields{
 		"response": response,
-	}).Debugf("Sending back the resulut. method: %s, uri: %s", m.Method, m.URI)
+	}).Debugf("Sending back the result. method: %s, uri: %s", m.Method, m.URI)
 
 	return response, err
 }
