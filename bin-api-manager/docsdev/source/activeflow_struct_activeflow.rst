@@ -19,6 +19,8 @@ Activeflow
         "reference_id": "<string>",
         "reference_activeflow_id": "<string>",
         "on_complete_flow_id": "<string>",
+        "webhook_uri": "<string>",
+        "webhook_method": "<string>",
         "current_action": {
             ...
         },
@@ -39,6 +41,8 @@ Activeflow
 * ``reference_id`` (UUID): The ID of the resource that triggered this activeflow (e.g., a call ID if ``reference_type`` is ``call``). Obtained from the corresponding resource endpoint (e.g., ``GET /calls/{id}``).
 * ``reference_activeflow_id`` (UUID): The parent activeflow's ID if this is a sub-flow. Obtained from ``GET /activeflows``. Set to ``00000000-0000-0000-0000-000000000000`` if this is not a sub-flow.
 * ``on_complete_flow_id`` (UUID): Flow to execute when this activeflow completes. Obtained from the ``id`` field of ``GET /flows``. Set to ``00000000-0000-0000-0000-000000000000`` if no completion flow is assigned.
+* ``webhook_uri`` (String, optional): Per-activeflow webhook destination URI. When set (at creation via ``POST /activeflows``), activeflow webhook events are delivered to this URI in addition to the customer-level webhook destination. Empty if no per-activeflow webhook is configured.
+* ``webhook_method`` (enum string, optional): HTTP method used to deliver the per-activeflow webhook. One of ``POST``, ``GET``, ``PUT`` or ``DELETE``. See detail :ref:`here <activeflow-struct-activeflow-webhook-method>`. Empty if no per-activeflow webhook is configured.
 * ``current_action`` (Object): The action currently being executed. See detail :ref:`here <flow-struct-action-action>`.
 * ``forward_action_id`` (UUID): The ID of the next action to execute. Set to ``00000000-0000-0000-0000-000000000000`` if sequential (next in array).
 * ``executed_actions`` (Array of Object): History of actions that have been executed during this activeflow's lifetime. Each element is an action object. See detail :ref:`here <flow-struct-action-action>`.
@@ -48,7 +52,7 @@ Activeflow
 
 .. note:: **AI Implementation Hint**
 
-   Activeflows are read-only from an API perspective -- you cannot create them via API. They are created automatically when a flow is triggered. You can only list them (``GET /activeflows``), inspect them (``GET /activeflows/{id}``), or stop them (``POST /activeflows/{id}/stop``). Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred.
+   Activeflows are typically created automatically when a flow is triggered (e.g., by an incoming call). You can also create one directly via ``POST /activeflows`` (with ``reference_type`` set to ``api``), optionally supplying ``webhook_uri`` and ``webhook_method`` to receive activeflow webhook events at a per-activeflow destination, additively to the customer-level webhook. You can list them (``GET /activeflows``), inspect them (``GET /activeflows/{id}``), or stop them (``POST /activeflows/{id}/stop``). Timestamps set to ``9999-01-01 00:00:00.000000`` indicate the event has not yet occurred.
 
 Example
 +++++++
@@ -64,6 +68,8 @@ Example
         "reference_id": "fd581a20-2606-47fd-a7e8-6bba7c294170",
         "reference_activeflow_id": "00000000-0000-0000-0000-000000000000",
         "on_complete_flow_id": "00000000-0000-0000-0000-000000000000",
+        "webhook_uri": "https://example.com/webhooks/activeflow",
+        "webhook_method": "POST",
         "current_action": {
             "id": "93ebcadb-ecae-4291-8d49-ca81a926b8b3",
             "next_id": "00000000-0000-0000-0000-000000000000",
@@ -111,4 +117,24 @@ transcribe   Transcription service triggered the flow.
 recording    Recording completion triggered the flow.
 ai           AI service triggered the flow.
 ============ ================================================
+
+.. _activeflow-struct-activeflow-webhook-method:
+
+Webhook method
+--------------
+HTTP method used to deliver the per-activeflow webhook. Applies only when ``webhook_uri`` is set.
+
+=========== ============
+Method      Description
+=========== ============
+``""``      No per-activeflow webhook method configured.
+POST        Deliver the webhook using an HTTP POST request.
+GET         Deliver the webhook using an HTTP GET request.
+PUT         Deliver the webhook using an HTTP PUT request.
+DELETE      Deliver the webhook using an HTTP DELETE request.
+=========== ============
+
+.. note:: **Additive per-activeflow webhook**
+
+   When ``webhook_uri`` and ``webhook_method`` are supplied at creation (``POST /activeflows``), activeflow webhook events are delivered to that destination in addition to the customer-level webhook destination. The per-activeflow webhook does not replace the customer-level webhook; both receive the events.
 

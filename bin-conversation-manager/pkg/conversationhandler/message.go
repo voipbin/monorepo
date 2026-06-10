@@ -66,6 +66,8 @@ func (h *conversationHandler) executeActiveflow(ctx context.Context, cv *convers
 		m.ConversationID,
 		uuid.Nil,
 		nil,
+		"",
+		fmactiveflow.WebhookMethodNone,
 	)
 	if errCreate != nil {
 		return errors.Wrapf(errCreate, "could not create activeflow. flow_id: %s", flowID)

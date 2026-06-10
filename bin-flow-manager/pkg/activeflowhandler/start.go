@@ -26,6 +26,8 @@ func (h *activeflowHandler) startOnCompleteFlow(ctx context.Context, af *activef
 		af.ID,
 		af.OnCompleteFlowID,
 		nil,
+		"",
+		activeflow.WebhookMethodNone,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create on complete activeflow. flow_id: %s", af.OnCompleteFlowID)

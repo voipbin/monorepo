@@ -41,17 +41,19 @@ func (h *serviceHandler) activeflowGet(ctx context.Context, activeflowID uuid.UU
 // ActiveflowCreate sends a request to flow-manager
 // to create a activeflow and execute.
 // it returns created activeflow info if it succeed.
-func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action, variables map[string]string) (*fmactiveflow.WebhookMessage, error) {
+func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action, variables map[string]string, webhookURI string, webhookMethod fmactiveflow.WebhookMethod) (*fmactiveflow.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":          "ActiveflowCreate",
-		"auth":          a.DisplayName(),
-		"activeflow_id": activeflowID,
-		"flow_id":       flowID,
-		"actions":       actions,
+		"func":           "ActiveflowCreate",
+		"auth":           a.DisplayName(),
+		"activeflow_id":  activeflowID,
+		"flow_id":        flowID,
+		"actions":        actions,
+		"webhook_uri":    webhookURI,
+		"webhook_method": webhookMethod,
 	})
 	log.Debug("Creating a new activeflow.")
 
@@ -89,7 +91,7 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdent
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, a.CustomerID, f.ID, fmactiveflow.ReferenceTypeAPI, uuid.Nil, uuid.Nil, variables)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, a.CustomerID, f.ID, fmactiveflow.ReferenceTypeAPI, uuid.Nil, uuid.Nil, variables, webhookURI, webhookMethod)
 	if err != nil {
 		log.Errorf("Could not create activeflow. erR: %v", err)
 		return nil, err

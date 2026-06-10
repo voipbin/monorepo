@@ -119,7 +119,7 @@ type ServiceHandler interface {
 	AccesskeyUpdate(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.WebhookMessage, error)
 
 	// activeflows
-	ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action, variables map[string]string) (*fmactiveflow.WebhookMessage, error)
+	ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action, variables map[string]string, webhookURI string, webhookMethod fmactiveflow.WebhookMethod) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowDelete(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowGet(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error)

@@ -241,10 +241,12 @@ func Test_ActiveflowCreate(t *testing.T) {
 				uuid.Nil,
 				uuid.Nil,
 				gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
 			).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
 
-			res, err := h.ActiveflowCreate(ctx, tt.agent, tt.activeflowID, tt.flowID, tt.actions, nil)
+			res, err := h.ActiveflowCreate(ctx, tt.agent, tt.activeflowID, tt.flowID, tt.actions, nil, "", fmactiveflow.WebhookMethodNone)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

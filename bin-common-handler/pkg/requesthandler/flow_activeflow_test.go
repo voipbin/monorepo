@@ -108,7 +108,7 @@ func Test_FlowV1ActiveflowCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockSock.EXPECT().RequestPublish(gomock.Any(), tt.expectedQueue, tt.expectedRequest).Return(tt.response, nil)
-			res, err := reqHandler.FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, nil)
+			res, err := reqHandler.FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, tt.referenceType, tt.referenceID, tt.referenceActiveflowID, nil, "", "")
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -315,6 +315,8 @@ func (h *summaryHandler) startOnEndFlow(ctx context.Context, sm *summary.Summary
 		sm.ID,
 		sm.ActiveflowID,
 		nil,
+		"",
+		fmactiveflow.WebhookMethodNone,
 	)
 	if err != nil {
 		return errors.Wrapf(err, "could not create the activeflow")

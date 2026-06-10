@@ -82,6 +82,8 @@ func (h *serviceHandler) AIcallCreate(
 		uuid.Nil,
 		uuid.Nil,
 		nil,
+		"",
+		fmactiveflow.WebhookMethodNone,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create activeflow for aicall")

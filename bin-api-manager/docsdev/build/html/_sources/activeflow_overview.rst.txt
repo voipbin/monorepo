@@ -41,7 +41,7 @@ Understanding the difference between a Flow and an ActiveFlow is essential for w
 
 .. note:: **AI Implementation Hint**
 
-   You cannot create an activeflow directly. Activeflows are created automatically when a flow is triggered (e.g., by an incoming call or by creating an outbound call with ``POST /calls``). Use ``GET /activeflows`` to list running instances, and ``POST /activeflows/{id}/stop`` to terminate one. The ``reference_type`` field tells you what triggered the activeflow (call, message, api, etc.).
+   Activeflows are usually created automatically when a flow is triggered (e.g., by an incoming call or by creating an outbound call with ``POST /calls``). You can also create one directly with ``POST /activeflows``, optionally providing ``webhook_uri`` and ``webhook_method`` so that activeflow webhook events are delivered to a per-activeflow destination, additively to the customer-level webhook. Use ``GET /activeflows`` to list running instances, and ``POST /activeflows/{id}/stop`` to terminate one. The ``reference_type`` field tells you what triggered the activeflow (call, message, api, etc.).
 
 **Analogy**: A Flow is like a recipe book. An ActiveFlow is like actually cooking that recipe - you track which step you're on, what ingredients you've used, and the current state of the dish.
 

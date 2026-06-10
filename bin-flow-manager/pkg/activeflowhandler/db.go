@@ -28,6 +28,8 @@ func (h *activeflowHandler) Create(
 	referenceActiveflowID uuid.UUID,
 	flowID uuid.UUID,
 	initialVariables map[string]string,
+	webhookURI string,
+	webhookMethod activeflow.WebhookMethod,
 ) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                    "Create",
@@ -37,6 +39,8 @@ func (h *activeflowHandler) Create(
 		"reference_id":            referenceID,
 		"reference_activeflow_id": referenceActiveflowID,
 		"flow_id":                 flowID,
+		"webhook_uri":             webhookURI,
+		"webhook_method":          webhookMethod,
 	})
 
 	// check id is valid
@@ -81,6 +85,9 @@ func (h *activeflowHandler) Create(
 		ReferenceActiveflowID: referenceActiveflowID,
 
 		OnCompleteFlowID: onCompleteFlowID,
+
+		WebhookURI:    webhookURI,
+		WebhookMethod: webhookMethod,
 
 		StackMap: stackMap,
 

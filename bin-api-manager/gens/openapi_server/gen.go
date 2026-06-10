@@ -732,6 +732,15 @@ const (
 	FlowManagerReferenceTypeTranscribe   FlowManagerReferenceType = "transcribe"
 )
 
+// Defines values for FlowManagerWebhookMethod.
+const (
+	FlowManagerWebhookMethodDelete FlowManagerWebhookMethod = "DELETE"
+	FlowManagerWebhookMethodGet    FlowManagerWebhookMethod = "GET"
+	FlowManagerWebhookMethodNone   FlowManagerWebhookMethod = ""
+	FlowManagerWebhookMethodPost   FlowManagerWebhookMethod = "POST"
+	FlowManagerWebhookMethodPut    FlowManagerWebhookMethod = "PUT"
+)
+
 // Defines values for MessageManagerMessageDirection.
 const (
 	MessageManagerMessageDirectionInbound  MessageManagerMessageDirection = "inbound"
@@ -3588,6 +3597,12 @@ type FlowManagerActiveflow struct {
 
 	// TmUpdate Timestamp when the flow was last updated.
 	TmUpdate *string `json:"tm_update,omitempty"`
+
+	// WebhookMethod HTTP method used to deliver the per-activeflow webhook.
+	WebhookMethod *FlowManagerWebhookMethod `json:"webhook_method,omitempty"`
+
+	// WebhookUri Optional per-activeflow webhook destination URI. When set, activeflow webhook events are delivered additively to this URI in addition to the customer-level webhook destination.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
 // FlowManagerActiveflowStatus Status of the activeflow.
@@ -3634,6 +3649,9 @@ type FlowManagerFlowType string
 
 // FlowManagerReferenceType Reference type of activeflow.
 type FlowManagerReferenceType string
+
+// FlowManagerWebhookMethod HTTP method used to deliver the per-activeflow webhook.
+type FlowManagerWebhookMethod string
 
 // MessageManagerMessage defines model for MessageManagerMessage.
 type MessageManagerMessage struct {
@@ -4857,6 +4875,12 @@ type PostActiveflowsJSONBody struct {
 
 	// Variables Optional flat key-value context seeded into the created activeflow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total, 32KB per value.
 	Variables *map[string]string `json:"variables,omitempty"`
+
+	// WebhookMethod HTTP method used to deliver the per-activeflow webhook.
+	WebhookMethod *FlowManagerWebhookMethod `json:"webhook_method,omitempty"`
+
+	// WebhookUri Optional per-activeflow webhook destination URI. When set, activeflow webhook events are delivered additively to this URI in addition to the customer-level webhook destination. Must be a valid http or https URL.
+	WebhookUri *string `json:"webhook_uri,omitempty"`
 }
 
 // GetAgentsParams defines parameters for GetAgents.

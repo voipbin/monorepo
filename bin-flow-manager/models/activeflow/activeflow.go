@@ -26,6 +26,10 @@ type Activeflow struct {
 
 	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty" db:"on_complete_flow_id,uuid"` // will be triggered when this activeflow is completed or terminated
 
+	// optional per-activeflow webhook destination
+	WebhookURI    string        `json:"webhook_uri,omitempty"    db:"webhook_uri"`
+	WebhookMethod WebhookMethod `json:"webhook_method,omitempty" db:"webhook_method"`
+
 	// stack
 	StackMap map[uuid.UUID]*stack.Stack `json:"stack_map,omitempty" db:"stack_map,json"`
 
@@ -54,6 +58,18 @@ const (
 	StatusNone    Status = ""
 	StatusRunning Status = "running"
 	StatusEnded   Status = "ended"
+)
+
+// WebhookMethod define
+type WebhookMethod string
+
+// list of WebhookMethod
+const (
+	WebhookMethodNone   WebhookMethod = ""       // none
+	WebhookMethodPost   WebhookMethod = "POST"   // POST
+	WebhookMethodGet    WebhookMethod = "GET"    // GET
+	WebhookMethodPut    WebhookMethod = "PUT"    // PUT
+	WebhookMethodDelete WebhookMethod = "DELETE" // DELETE
 )
 
 // ReferenceType define

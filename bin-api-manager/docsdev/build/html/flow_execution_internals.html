@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Advanced Flow Patterns" href="flow_advanced_patterns.html"><link rel="prev" title="Tutorial scenario" href="flow_tutorial_scenario.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2025.12.19 -->
         <title>Flow Execution Internals - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -689,7 +689,7 @@
 <span class="mf">1.</span> <span class="n">Get</span> <span class="n">Next</span> <span class="n">Action</span>
 <span class="o">+-----------------+</span>
 <span class="o">|</span> <span class="n">Load</span> <span class="n">activeflow</span> <span class="o">|</span>
-<span class="o">|</span> <span class="kn">from</span><span class="w"> </span><span class="nn">database</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="kn">from</span> <span class="nn">database</span>   <span class="o">|</span>
 <span class="o">+--------+--------+</span>
          <span class="o">|</span>
          <span class="n">v</span>
@@ -1017,7 +1017,7 @@ Variable Set Timing:
 <span class="o">|</span>                     <span class="n">Event</span> <span class="n">Processing</span>                             <span class="o">|</span>
 <span class="o">+------------------------------------------------------------------+</span>
 
-<span class="n">Media</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">Asterisk</span> <span class="n">via</span> <span class="n">asterisk</span><span class="o">-</span><span class="n">proxy</span><span class="p">):</span>
+<span class="n">Media</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">Asterisk</span> <span class="n">via</span> <span class="n">asterisk</span><span class="o">-</span><span class="n">proxy</span><span class="p">):</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Event</span>                <span class="o">|</span> <span class="n">Triggers</span>                                 <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
@@ -1026,7 +1026,7 @@ Variable Set Timing:
 <span class="o">|</span> <span class="n">RecordingFinished</span>    <span class="o">|</span> <span class="n">recording_stop</span> <span class="ow">or</span> <span class="n">silence</span><span class="o">/</span><span class="n">timeout</span>        <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 
-<span class="n">Call</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">call</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
+<span class="n">Call</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">call</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Event</span>                <span class="o">|</span> <span class="n">Triggers</span>                                 <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
@@ -1035,7 +1035,7 @@ Variable Set Timing:
 <span class="o">|</span> <span class="n">BridgeDestroyed</span>      <span class="o">|</span> <span class="n">connect</span> <span class="n">completion</span> <span class="p">(</span><span class="n">party</span> <span class="n">disconnected</span><span class="p">)</span>  <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 
-<span class="n">Queue</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">queue</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
+<span class="n">Queue</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">queue</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Event</span>                <span class="o">|</span> <span class="n">Triggers</span>                                 <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
@@ -1044,7 +1044,7 @@ Variable Set Timing:
 <span class="o">|</span> <span class="n">QueueEmpty</span>           <span class="o">|</span> <span class="n">queue_join</span> <span class="n">completion</span> <span class="p">(</span><span class="n">no</span> <span class="n">agents</span><span class="p">)</span>        <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 
-<span class="n">AI</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span><span class="w"> </span><span class="nn">ai</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
+<span class="n">AI</span> <span class="n">Events</span> <span class="p">(</span><span class="kn">from</span> <span class="nn">ai</span><span class="o">-</span><span class="n">manager</span><span class="p">):</span>
 <span class="o">+----------------------+------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Event</span>                <span class="o">|</span> <span class="n">Triggers</span>                                 <span class="o">|</span>
 <span class="o">+----------------------+------------------------------------------+</span>
@@ -1359,8 +1359,8 @@ Variable Set Timing:
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

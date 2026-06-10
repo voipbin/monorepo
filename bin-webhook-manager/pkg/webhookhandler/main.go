@@ -14,9 +14,11 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"monorepo/bin-webhook-manager/models/webhook"
 	"monorepo/bin-webhook-manager/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/pkg/activeflowhandler"
 	"monorepo/bin-webhook-manager/pkg/dbhandler"
 )
 
@@ -31,9 +33,29 @@ type webhookHandler struct {
 	db            dbhandler.DBHandler
 	notifyHandler notifyhandler.NotifyHandler
 
-	accoutHandler accounthandler.AccountHandler
+	accoutHandler     accounthandler.AccountHandler
+	activeflowHandler activeflowhandler.ActiveflowHandler
 
 	httpClient *http.Client
+}
+
+var (
+	metricsNamespace = "webhook_manager"
+
+	promDeliveryTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "delivery_total",
+			Help:      "Total number of webhook deliveries by destination and result.",
+		},
+		[]string{"destination", "result"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(
+		promDeliveryTotal,
+	)
 }
 
 // newSafeHTTPClient returns an *http.Client hardened against SSRF.
@@ -88,13 +110,14 @@ func newSafeHTTPClient() *http.Client {
 }
 
 // NewWebhookHandler returns new webhook handler
-func NewWebhookHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageTargetHandler accounthandler.AccountHandler) WebhookHandler {
+func NewWebhookHandler(db dbhandler.DBHandler, notifyHandler notifyhandler.NotifyHandler, messageTargetHandler accounthandler.AccountHandler, activeflowHandler activeflowhandler.ActiveflowHandler) WebhookHandler {
 
 	h := &webhookHandler{
 		db:            db,
 		notifyHandler: notifyHandler,
 
-		accoutHandler: messageTargetHandler,
+		accoutHandler:     messageTargetHandler,
+		activeflowHandler: activeflowHandler,
 
 		httpClient: newSafeHTTPClient(),
 	}

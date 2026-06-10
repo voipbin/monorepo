@@ -11,7 +11,10 @@ create table flow_activeflows(
   reference_activeflow_id binary(16),
 
   on_complete_flow_id BINARY(16) NOT NULL,
-  
+
+  webhook_uri    varchar(1024),
+  webhook_method varchar(16),
+
   stack_map json,
 
   current_stack_id  binary(16),

@@ -37,6 +37,19 @@ post:
               example:
                 campaign_id: "summer-2026"
                 customer_name: "Jane Doe"
+            webhook_uri:
+              type: string
+              description: >
+                Optional per-activeflow webhook destination URI. When set, activeflow webhook events are
+                delivered additively to this URI in addition to the customer-level webhook destination.
+                Must be a valid http or https URL.
+              example: "https://example.com/webhooks/activeflow"
+            webhook_method:
+              $ref: '#/components/schemas/FlowManagerWebhookMethod'
+              description: >
+                Optional HTTP method used to deliver the per-activeflow webhook. Must be one of
+                POST, GET, PUT or DELETE.
+              example: "POST"
   responses:
     '200':
       description: activeflow created successfully.

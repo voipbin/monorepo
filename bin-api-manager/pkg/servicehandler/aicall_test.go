@@ -160,6 +160,8 @@ func Test_AIcallCreate(t *testing.T) {
 				uuid.Nil,
 				uuid.Nil,
 				gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
 			).Return(tt.responseActiveflow, nil)
 
 			mockReq.EXPECT().AIV1AIcallStart(

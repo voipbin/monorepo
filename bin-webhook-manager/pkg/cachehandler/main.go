@@ -4,8 +4,10 @@ package cachehandler
 
 import (
 	"context"
+	"time"
 
 	"monorepo/bin-webhook-manager/models/account"
+	mwactiveflow "monorepo/bin-webhook-manager/models/activeflow"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gofrs/uuid"
@@ -25,6 +27,10 @@ type CacheHandler interface {
 
 	AccountGet(ctx context.Context, id uuid.UUID) (*account.Account, error)
 	AccountSet(ctx context.Context, u *account.Account) error
+
+	ActiveflowWebhookGet(ctx context.Context, id uuid.UUID) (*mwactiveflow.Webhook, bool, error)
+	ActiveflowWebhookSet(ctx context.Context, id uuid.UUID, w *mwactiveflow.Webhook, ttl time.Duration) error
+	ActiveflowWebhookSetNegative(ctx context.Context, id uuid.UUID, tm time.Time, tmDelete *time.Time, ttl time.Duration) error
 }
 
 // NewHandler creates DBHandler

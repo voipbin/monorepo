@@ -131,6 +131,8 @@ func Test_runExecuteModeFlowLine(t *testing.T) {
 					gomock.Any(), uuid.Nil, custID, flowID,
 					fmactiveflow.ReferenceTypeConversation, convID, uuid.Nil,
 					nil,
+				gomock.Any(),
+				gomock.Any(),
 				).Return(&fmactiveflow.Activeflow{Identity: commonidentity.Identity{ID: afID}}, nil)
 				mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), afID, gomock.Any()).Return(nil)
 				mockReq.EXPECT().FlowV1ActiveflowExecute(gomock.Any(), afID).Return(nil)
@@ -252,6 +254,8 @@ func Test_runExecuteModeFlowMessage(t *testing.T) {
 					gomock.Any(), uuid.Nil, custID, flowID,
 					fmactiveflow.ReferenceTypeConversation, convID, uuid.Nil,
 					nil,
+				gomock.Any(),
+				gomock.Any(),
 				).Return(&fmactiveflow.Activeflow{Identity: commonidentity.Identity{ID: afID}}, nil)
 				mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), afID, gomock.Any()).Return(nil)
 				mockReq.EXPECT().FlowV1ActiveflowExecute(gomock.Any(), afID).Return(nil)
@@ -373,6 +377,8 @@ func Test_runExecuteModeFlowWhatsApp(t *testing.T) {
 					gomock.Any(), uuid.Nil, custID, flowID,
 					fmactiveflow.ReferenceTypeConversation, convID, uuid.Nil,
 					nil,
+				gomock.Any(),
+				gomock.Any(),
 				).Return(&fmactiveflow.Activeflow{Identity: commonidentity.Identity{ID: afID}}, nil)
 				mockReq.EXPECT().FlowV1VariableSetVariable(gomock.Any(), afID, gomock.Any()).Return(nil)
 				mockReq.EXPECT().FlowV1ActiveflowExecute(gomock.Any(), afID).Return(nil)
