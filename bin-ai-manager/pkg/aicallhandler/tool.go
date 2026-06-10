@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"monorepo/bin-ai-manager/models/aicall"
@@ -13,6 +12,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
+	fmvariable "monorepo/bin-flow-manager/models/variable"
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 
 	"github.com/gofrs/uuid"
@@ -196,41 +196,6 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 // flow-existence oracle. Bare sentinel (no stack, no %w wrap) keeps both paths byte-identical.
 var errCouldNotResolveFlow = stderrors.New("could not resolve flow")
 
-// coerceToolVariables converts LLM-supplied variables (map[string]any) into the map[string]string
-// shape the originated activeflow needs. Scalar values (string, number, bool) are stringified;
-// non-scalar values (object, array, null) are skipped. Returns nil for an empty/nil input so the
-// downstream RPC marshals no "variables" field. Reserved-key drop and size caps are enforced by
-// flow-manager, not here.
-func coerceToolVariables(in map[string]any) map[string]string {
-	if len(in) == 0 {
-		return nil
-	}
-	out := make(map[string]string, len(in))
-	for k, v := range in {
-		switch val := v.(type) {
-		case string:
-			out[k] = val
-		case bool:
-			out[k] = strconv.FormatBool(val)
-		case float64:
-			// JSON numbers unmarshal into float64. Render integers without a trailing ".0".
-			out[k] = strconv.FormatFloat(val, 'f', -1, 64)
-		case json.Number:
-			out[k] = val.String()
-		default:
-			// object/array/null: skip with a log note, do not abort the tool call.
-			logrus.WithFields(logrus.Fields{
-				"func": "coerceToolVariables",
-				"key":  k,
-			}).Debugf("Skipping non-scalar variable value. type: %T", v)
-		}
-	}
-	if len(out) == 0 {
-		return nil
-	}
-	return out
-}
-
 // toolHandleCreateCall places a NEW, INDEPENDENT outbound call that is NOT bridged to the
 // current session and does NOT terminate the current AIcall (contrast with toolHandleConnect).
 // The originated call runs its own flow_id; the current AI session continues.
@@ -280,10 +245,10 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 		}
 	}
 
-	// coerce LLM-supplied variables to map[string]string. Scalar values (string/number/bool)
-	// are stringified; non-scalar values (object/array) are skipped with a log note. Final
-	// sanitization (reserved-key drop, size caps) is enforced by flow-manager, not here.
-	variables := coerceToolVariables(args.Variables)
+	// coerce LLM-supplied variables (map[string]any) to map[string]string. Scalar values are
+	// stringified; non-scalar values are skipped. Final sanitization (reserved-key drop, size
+	// caps) is enforced by flow-manager, not here.
+	variables := fmvariable.ToStringMap(args.Variables)
 
 	// 2. SECURITY: flow ownership (IDOR prevention). Both not-found and cross-customer return the
 	//    same byte-identical masked error so the tool is not a flow-existence oracle.
