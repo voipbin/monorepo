@@ -13,12 +13,17 @@ post:
           properties:
             id:
               type: string
-              description: ID of the activeflow.
+              description: >
+                Optional client-supplied UUID for the new activeflow. If omitted, the server generates one.
             flow_id:
               type: string
-              description: Flow id of.
+              description: >
+                UUID of an existing flow to run. Obtain it from the id field of a GET /flows or POST /flows response.
+                Provide either flow_id or an inline actions array.
             actions:
               type: array
+              description: >
+                Inline action list to run when no flow_id is provided. Provide either flow_id or actions.
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
             variables:
@@ -26,14 +31,14 @@ post:
               additionalProperties:
                 type: string
               description: >
-                Optional flat key-value context seeded into the new call's flow as runtime variables,
+                Optional flat key-value context seeded into the created activeflow as runtime variables,
                 readable in the flow via ${key}. String values only. Reserved keys starting with
-                'voipbin.' are ignored. Max 100 keys, 64KB total.
+                'voipbin.' are ignored. Max 100 keys, 64KB total, 32KB per value.
               example:
                 campaign_id: "summer-2026"
                 customer_name: "Jane Doe"
   responses:
-    '201':
+    '200':
       description: activeflow created successfully.
       content:
         application/json:
