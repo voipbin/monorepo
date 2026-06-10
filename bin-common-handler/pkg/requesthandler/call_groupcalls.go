@@ -31,6 +31,7 @@ func (r *requestHandler) CallV1GroupcallCreate(
 	ringMethod cmgroupcall.RingMethod,
 	answerMethod cmgroupcall.AnswerMethod,
 	anonymous string,
+	variables map[string]string,
 ) (*cmgroupcall.Groupcall, error) {
 	uri := "/v1/groupcalls"
 
@@ -45,6 +46,7 @@ func (r *requestHandler) CallV1GroupcallCreate(
 		RingMethod:        ringMethod,
 		AnswerMethod:      answerMethod,
 		Anonymous:         anonymous,
+		Variables:         variables,
 	}
 
 	m, err := json.Marshal(reqData)

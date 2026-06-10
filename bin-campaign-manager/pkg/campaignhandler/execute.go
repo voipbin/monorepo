@@ -263,6 +263,7 @@ func (h *campaignHandler) executeCall(
 		false,
 		"",
 		nil,
+		nil,
 	)
 	if err != nil {
 		// update camapaign call to fail
@@ -344,6 +345,7 @@ func (h *campaignHandler) executeFlow(
 		activeflow.ReferenceTypeCampaign,
 		cc.ID,
 		uuid.Nil,
+		nil,
 	)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)

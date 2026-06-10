@@ -180,7 +180,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
@@ -214,7 +214,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -364,7 +364,7 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
@@ -389,7 +389,7 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), gomock.Any(), gomock.Any(), "", "", "", gomock.Any()).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", tt.metadata)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", tt.metadata, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -631,7 +631,7 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
@@ -650,7 +650,7 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), gomock.Any(), gomock.Any(), "", "", "", gomock.Any()).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, true, "", tt.metadata)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, true, "", tt.metadata, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -832,7 +832,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				DestinationWhitelist: []string{"kr"},
 			}, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
 			// getDialURI
 			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any(), gomock.Any()).Return(tt.responseRoutes, nil)
 
@@ -880,7 +880,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 
 			mockChannel.EXPECT().StartChannel(ctx, requesthandler.AsteriskIDCall, gomock.Any(), tt.expectArgs, tt.expectEndpointDst, "", "", "", tt.expectVariables).Return(&channel.Channel{}, nil)
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -978,7 +978,7 @@ func Test_CreateCallOutgoing_TypeTel_OutboundConfigFetchError_FailClosed(t *test
 			// no further interactions: dialroutes, activeflow create, channel start, etc.
 			// must NOT be invoked. gomock will fail the test if any unexpected call lands.
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, false, "", nil)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, false, "", nil, nil)
 
 			// fail-closed: must return (nil, error)
 			if res != nil {
@@ -1129,7 +1129,7 @@ func Test_CreateCallOutgoing_TypeSIP_OutboundConfigFetchError_FailClosed(t *test
 			// no further interactions: dialroutes, activeflow create, channel start, etc.
 			// must NOT be invoked. gomock will fail the test if any unexpected call lands.
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, false, "", nil)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, false, false, "", nil, nil)
 
 			if res != nil {
 				t.Errorf("Wrong match. expect: nil call, got: %v", res)
@@ -1209,9 +1209,9 @@ func Test_createCallsOutgoingGroupcall_endpoint(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "").Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "", gomock.Any()).Return(tt.responseGroupcall, nil)
 
-			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, "")
+			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, "", nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -1285,9 +1285,9 @@ func Test_createCallsOutgoingGroupcall_agent(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "").Return(tt.responseGroupcall, nil)
+			mockGroupcall.EXPECT().Start(ctx, uuid.Nil, tt.customerID, tt.flowID, tt.source, []commonaddress.Address{*tt.destination}, tt.masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "", gomock.Any()).Return(tt.responseGroupcall, nil)
 
-			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, "")
+			res, err := h.createCallsOutgoingGroupcall(ctx, tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destination, "", nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -3515,7 +3515,7 @@ func Test_createChannelOutgoing_ProviderCodecs(t *testing.T) {
 				DestinationWhitelist: []string{"kr"},
 			}, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any(), gomock.Any()).Return(tt.responseRoutes, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
@@ -3562,7 +3562,7 @@ func Test_createChannelOutgoing_ProviderCodecs(t *testing.T) {
 				return &channel.Channel{}, nil
 			})
 
-			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil)
+			res, err := h.CreateCallOutgoing(ctx, tt.id, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, uuid.Nil, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", nil, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

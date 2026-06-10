@@ -60,7 +60,7 @@ func (h *recordingHandler) stopped(ctx context.Context, r *recording.Recording) 
 	}
 
 	log.Debugf("The on_end_flow_id is not empty. Executing the new activeflow. on_end_flow_id: %s", r.OnEndFlowID)
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, r.CustomerID, r.OnEndFlowID, activeflow.ReferenceTypeNone, uuid.Nil, r.ActiveflowID)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, r.CustomerID, r.OnEndFlowID, activeflow.ReferenceTypeNone, uuid.Nil, r.ActiveflowID, nil)
 	if err != nil {
 		return errors.Wrapf(err, "Could not create the activeflow")
 	}

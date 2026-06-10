@@ -25,6 +25,7 @@ type V1DataCallsPost struct {
 	Connect        bool                    `json:"connect,omitempty"`         // if the call is created for connect, sets this to true,
 	Anonymous      string                  `json:"anonymous,omitempty"`       // Tri-state: "yes", "no", "auto". Controls anonymous caller ID.
 	Metadata       map[string]interface{}  `json:"metadata,omitempty"`        // Internal-only metadata (e.g., route_provider_ids for admin-test overrides).
+	Variables      map[string]string       `json:"variables,omitempty"`       // Optional external initial variables seeded into the originated call's activeflow (sanitized by flow-manager).
 }
 
 // V1DataCallsIDPost is
@@ -42,6 +43,7 @@ type V1DataCallsIDPost struct {
 	Connect        bool                   `json:"connect,omitempty"`         // if the call is created for connect, sets this to true,
 	Anonymous      string                 `json:"anonymous,omitempty"`       // Tri-state: "yes", "no", "auto". Controls anonymous caller ID.
 	Metadata       map[string]interface{} `json:"metadata,omitempty"`        // Internal-only metadata (e.g., route_provider_ids for admin-test overrides).
+	Variables      map[string]string      `json:"variables,omitempty"`       // Optional external initial variables seeded into the originated call's activeflow (sanitized by flow-manager).
 }
 
 // V1DataCallsIDHealthPost is

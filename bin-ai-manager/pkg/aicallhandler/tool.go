@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	stderrors "errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"monorepo/bin-ai-manager/models/aicall"
@@ -195,6 +196,41 @@ func (h *aicallHandler) toolHandleConnect(ctx context.Context, c *aicall.AIcall,
 // flow-existence oracle. Bare sentinel (no stack, no %w wrap) keeps both paths byte-identical.
 var errCouldNotResolveFlow = stderrors.New("could not resolve flow")
 
+// coerceToolVariables converts LLM-supplied variables (map[string]any) into the map[string]string
+// shape the originated activeflow needs. Scalar values (string, number, bool) are stringified;
+// non-scalar values (object, array, null) are skipped. Returns nil for an empty/nil input so the
+// downstream RPC marshals no "variables" field. Reserved-key drop and size caps are enforced by
+// flow-manager, not here.
+func coerceToolVariables(in map[string]any) map[string]string {
+	if len(in) == 0 {
+		return nil
+	}
+	out := make(map[string]string, len(in))
+	for k, v := range in {
+		switch val := v.(type) {
+		case string:
+			out[k] = val
+		case bool:
+			out[k] = strconv.FormatBool(val)
+		case float64:
+			// JSON numbers unmarshal into float64. Render integers without a trailing ".0".
+			out[k] = strconv.FormatFloat(val, 'f', -1, 64)
+		case json.Number:
+			out[k] = val.String()
+		default:
+			// object/array/null: skip with a log note, do not abort the tool call.
+			logrus.WithFields(logrus.Fields{
+				"func": "coerceToolVariables",
+				"key":  k,
+			}).Debugf("Skipping non-scalar variable value. type: %T", v)
+		}
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
+}
+
 // toolHandleCreateCall places a NEW, INDEPENDENT outbound call that is NOT bridged to the
 // current session and does NOT terminate the current AIcall (contrast with toolHandleConnect).
 // The originated call runs its own flow_id; the current AI session continues.
@@ -213,8 +249,18 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 		Source       *commonaddress.Address  `json:"source,omitempty"`
 		Destinations []commonaddress.Address `json:"destinations"`
 		Anonymous    string                  `json:"anonymous,omitempty"`
+		// Variables is parsed as map[string]any then coerced to map[string]string, because an
+		// LLM frequently emits non-string scalar values (e.g. {"campaign_id": 123}). Unmarshaling
+		// straight into map[string]string would fail and abort the whole tool call.
+		Variables map[string]any `json:"variables,omitempty"`
 	}
-	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &args); errUnmarshal != nil {
+	// Use a json.Decoder with UseNumber() so JSON numbers in the Variables map[string]any field
+	// arrive as json.Number (preserving large-integer precision) rather than float64. UseNumber
+	// only affects numbers decoded into interface{}, so typed fields (FlowID uuid.UUID, etc.)
+	// still unmarshal correctly.
+	dec := json.NewDecoder(strings.NewReader(tool.Function.Arguments))
+	dec.UseNumber()
+	if errUnmarshal := dec.Decode(&args); errUnmarshal != nil {
 		fillFailed(res, errUnmarshal)
 		return res
 	}
@@ -233,6 +279,11 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 			return res
 		}
 	}
+
+	// coerce LLM-supplied variables to map[string]string. Scalar values (string/number/bool)
+	// are stringified; non-scalar values (object/array) are skipped with a log note. Final
+	// sanitization (reserved-key drop, size caps) is enforced by flow-manager, not here.
+	variables := coerceToolVariables(args.Variables)
 
 	// 2. SECURITY: flow ownership (IDOR prevention). Both not-found and cross-customer return the
 	//    same byte-identical masked error so the tool is not a flow-existence oracle.
@@ -257,7 +308,7 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 		src = *args.Source
 	}
 	calls, groupcalls, err := h.reqHandler.CallV1CallsCreate(
-		ctx, c.CustomerID, args.FlowID, uuid.Nil, &src, args.Destinations, false, false, args.Anonymous, nil)
+		ctx, c.CustomerID, args.FlowID, uuid.Nil, &src, args.Destinations, false, false, args.Anonymous, nil, variables)
 	// CONTRACT: CreateCallsOutgoing returns an error ONLY when ALL destinations fail (nil,nil,err).
 	// Partial/full success returns (calls,groupcalls,nil). There is no (err + non-empty slices) case,
 	// so a single err!=nil check is correct and total.

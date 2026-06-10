@@ -111,7 +111,7 @@ func Test_variableCreate(t *testing.T) {
 
 			mockVar.EXPECT().Create(ctx, tt.activeflow.ID, tt.expectedVariables).Return(tt.responseVariable, nil)
 
-			res, err := h.variableCreate(ctx, tt.activeflow)
+			res, err := h.variableCreate(ctx, tt.activeflow, nil)
 			if err != nil {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v\n", nil, err)
 			}
@@ -168,7 +168,7 @@ func Test_variableCreate_error(t *testing.T) {
 
 			mockVar.EXPECT().Get(ctx, tt.activeflow.ReferenceActiveflowID).Return(tt.responseReferenceActiveflowVariable, nil)
 
-			_, err := h.variableCreate(ctx, tt.activeflow)
+			_, err := h.variableCreate(ctx, tt.activeflow, nil)
 			if err == nil {
 				t.Errorf("Wrong match.\nexpect: error\ngot: ok\n")
 			}

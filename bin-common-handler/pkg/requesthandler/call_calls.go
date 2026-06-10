@@ -118,6 +118,7 @@ func (r *requestHandler) CallV1CallsCreate(
 	connect bool,
 	anonymous string,
 	metadata map[string]interface{},
+	variables map[string]string,
 ) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error) {
 	uri := "/v1/calls"
 
@@ -131,6 +132,7 @@ func (r *requestHandler) CallV1CallsCreate(
 		Connect:        connect,
 		Anonymous:      anonymous,
 		Metadata:       metadata,
+		Variables:      variables,
 	})
 	if err != nil {
 		return nil, nil, err
@@ -166,6 +168,7 @@ func (r *requestHandler) CallV1CallCreateWithID(
 	connect bool,
 	anonymous string,
 	metadata map[string]interface{},
+	variables map[string]string,
 ) (*cmcall.Call, error) {
 	uri := fmt.Sprintf("/v1/calls/%s", id.String())
 
@@ -181,6 +184,7 @@ func (r *requestHandler) CallV1CallCreateWithID(
 		Connect:        connect,
 		Anonymous:      anonymous,
 		Metadata:       metadata,
+		Variables:      variables,
 	})
 	if err != nil {
 		return nil, err

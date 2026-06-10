@@ -138,7 +138,7 @@ func (h *listenHandler) processV1CallsPost(ctx context.Context, m *sock.Request)
 		}
 	}
 
-	calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.Connect, req.Anonymous, req.Metadata)
+	calls, groupcalls, err := h.callHandler.CreateCallsOutgoing(ctx, req.CustomerID, req.FlowID, req.MasterCallID, req.Source, req.Destinations, req.EarlyExecution, req.Connect, req.Anonymous, req.Metadata, req.Variables)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. err: %v", err)
 		return errorResponse(err), nil
@@ -194,7 +194,7 @@ func (h *listenHandler) processV1CallsIDPost(ctx context.Context, m *sock.Reques
 		}
 	}
 
-	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.GroupcallID, req.Source, req.Destination, req.EarlyExecution, req.Connect, req.Anonymous, req.Metadata)
+	c, err := h.callHandler.CreateCallOutgoing(ctx, id, req.CustomerID, req.FlowID, req.ActiveflosID, req.MasterCallID, req.GroupcallID, req.Source, req.Destination, req.EarlyExecution, req.Connect, req.Anonymous, req.Metadata, req.Variables)
 	if err != nil {
 		log.Debugf("Could not create a outgoing call. flow: %s, source: %v, destination: %v, err: %v", req.FlowID, req.Source, req.Destination, err)
 		return errorResponse(err), nil

@@ -51,7 +51,7 @@ func (h *transcribeHandler) Stop(ctx context.Context, id uuid.UUID) (*transcribe
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, res.CustomerID, res.OnEndFlowID, fmactiveflow.ReferenceTypeTranscribe, res.ID, res.ActiveflowID)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, uuid.Nil, res.CustomerID, res.OnEndFlowID, fmactiveflow.ReferenceTypeTranscribe, res.ID, res.ActiveflowID, nil)
 	if err != nil {
 		// we could not create the activeflow, but continue to stop the transcribe
 		log.Errorf("Could not create the activeflow. err: %v", err)

@@ -67,7 +67,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 					gomock.Any(), customerID, flowID, uuid.Nil,
 					&commonaddress.Address{},
 					[]commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+111****1111"}},
-					false, false, "", nil,
+					false, false, "", nil, gomock.Any(),
 				).Return(
 					[]*cmcall.Call{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000c1")}}},
 					[]*cmgroupcall.Groupcall{},
@@ -107,7 +107,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 					gomock.Any(), customerID, flowID, uuid.Nil,
 					&commonaddress.Address{},
 					[]commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+111****1111"}},
-					false, false, "", nil,
+					false, false, "", nil, gomock.Any(),
 				).Return(
 					[]*cmcall.Call{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000c2")}}},
 					[]*cmgroupcall.Groupcall{},
@@ -149,7 +149,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 					gomock.Any(), customerID, flowID, uuid.Nil,
 					&commonaddress.Address{Type: commonaddress.TypeTel, Target: "+123****6789"},
 					[]commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+111****1111"}},
-					false, false, "yes", nil,
+					false, false, "yes", nil, gomock.Any(),
 				).Return(
 					[]*cmcall.Call{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000c3")}}},
 					[]*cmgroupcall.Groupcall{},
@@ -189,7 +189,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 					gomock.Any(), customerID, flowID, uuid.Nil,
 					&commonaddress.Address{},
 					[]commonaddress.Address{{Type: commonaddress.TypeExtension, Target: "sales"}},
-					false, false, "", nil,
+					false, false, "", nil, gomock.Any(),
 				).Return(
 					[]*cmcall.Call{},
 					[]*cmgroupcall.Groupcall{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000d1")}}},
@@ -232,7 +232,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 						{Type: commonaddress.TypeTel, Target: "+111****1111"},
 						{Type: commonaddress.TypeExtension, Target: "sales"},
 					},
-					false, false, "", nil,
+					false, false, "", nil, gomock.Any(),
 				).Return(
 					[]*cmcall.Call{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000c5")}}},
 					[]*cmgroupcall.Groupcall{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000d5")}}},
@@ -275,7 +275,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 						{Type: commonaddress.TypeTel, Target: "+111****1111"},
 						{Type: commonaddress.TypeTel, Target: "+222****2222"},
 					},
-					false, false, "", nil,
+					false, false, "", nil, gomock.Any(),
 				).Return(
 					[]*cmcall.Call{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000c6")}}},
 					[]*cmgroupcall.Groupcall{},
@@ -315,7 +315,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 					gomock.Any(), customerID, flowID, uuid.Nil,
 					&commonaddress.Address{},
 					[]commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+111****1111"}},
-					false, false, "", nil,
+					false, false, "", nil, gomock.Any(),
 				).Return(nil, nil, errTest)
 			},
 			expectRes: &messageContent{
@@ -597,7 +597,7 @@ func Test_toolHandleCreateCall_doesNotTerminateAIcall(t *testing.T) {
 		gomock.Any(), customerID, flowID, uuid.Nil,
 		&commonaddress.Address{},
 		[]commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+111****1111"}},
-		false, false, "", nil,
+		false, false, "", nil, gomock.Any(),
 	).Return(
 		[]*cmcall.Call{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("33330000-0000-4000-8000-0000000000c1")}}},
 		[]*cmgroupcall.Groupcall{},

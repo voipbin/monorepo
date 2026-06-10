@@ -41,7 +41,7 @@ func (h *serviceHandler) activeflowGet(ctx context.Context, activeflowID uuid.UU
 // ActiveflowCreate sends a request to flow-manager
 // to create a activeflow and execute.
 // it returns created activeflow info if it succeed.
-func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.WebhookMessage, error) {
+func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action, variables map[string]string) (*fmactiveflow.WebhookMessage, error) {
 	if a.IsDirect() {
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
@@ -89,7 +89,7 @@ func (h *serviceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdent
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, a.CustomerID, f.ID, fmactiveflow.ReferenceTypeAPI, uuid.Nil, uuid.Nil)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, a.CustomerID, f.ID, fmactiveflow.ReferenceTypeAPI, uuid.Nil, uuid.Nil, variables)
 	if err != nil {
 		log.Errorf("Could not create activeflow. erR: %v", err)
 		return nil, err

@@ -48,6 +48,25 @@ const (
 	variableActiveflowReferenceActiveflowID = "voipbin.activeflow.reference_activeflow_id"
 	variableActiveflowFlowID                = "voipbin.activeflow.flow_id"
 	variableActiveflowCompleteCount         = "voipbin.activeflow.complete_count" // indicates how many times the activeflow has completed(by on complete flow id)
+
+	// variableReservedPrefix is the reserved namespace for system-managed variables.
+	// All system-reserved keys above live under this prefix, so dropping externally-supplied
+	// keys with this prefix protects every reserved key (including complete_count, which
+	// guards the on-complete depth bound). Matching is case-insensitive after trimming.
+	variableReservedPrefix = "voipbin."
+)
+
+const (
+	// initialVariablesMaxKeyCount caps the number of externally-supplied variables per injection.
+	initialVariablesMaxKeyCount = 100
+	// initialVariablesMaxTotalBytes caps the total UTF-8 byte size of externally-supplied keys+values.
+	initialVariablesMaxTotalBytes = 64 * 1024
+	// initialVariablesMaxValueBytes caps a single externally-supplied value's UTF-8 byte size.
+	initialVariablesMaxValueBytes = 32 * 1024
+	// mergedVariablesMaxTotalBytes is a defense-in-depth cap on the final merged map size.
+	// Unreachable on current paths (derived/internal activeflow creation passes nil variables);
+	// it guards a future change that injects on a derived path.
+	mergedVariablesMaxTotalBytes = 256 * 1024
 )
 
 const (
@@ -65,6 +84,7 @@ type ActiveflowHandler interface {
 		referenceID uuid.UUID,
 		referenceActiveflowID uuid.UUID,
 		flowID uuid.UUID,
+		initialVariables map[string]string,
 	) (*activeflow.Activeflow, error)
 	Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
@@ -202,6 +222,19 @@ var (
 		},
 		[]string{"reference_type"},
 	)
+
+	// promActiveflowVariableInjectionTotal counts the outcome of externally-supplied
+	// initial-variable injection. The "outcome" label is a FIXED enum (accepted,
+	// dropped_reserved, rejected_value_size, rejected_count, rejected_total, rejected_merged);
+	// never use a caller-controlled string (variable key/value, customer_id) as a label value.
+	promActiveflowVariableInjectionTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: metricsNamespace,
+			Name:      "activeflow_variable_injection_total",
+			Help:      "Total number of external initial-variable injections by outcome",
+		},
+		[]string{"outcome"},
+	)
 )
 
 // actionDispatchTarget maps action types to the service they dispatch to.
@@ -231,5 +264,6 @@ func init() {
 		promActiveflowDurationSeconds,
 		promActionDispatchTotal,
 		promActiveflowExecuteIterations,
+		promActiveflowVariableInjectionTotal,
 	)
 }

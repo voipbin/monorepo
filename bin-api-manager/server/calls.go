@@ -78,7 +78,14 @@ func (h *server) PostCalls(c *gin.Context) {
 		anonymous = string(*req.Anonymous)
 	}
 
-	tmpCalls, tmpGroupcalls, err := h.serviceHandler.CallCreate(c.Request.Context(), a, flowID, actions, &source, destinations, anonymous)
+	variables := convertVariables(req.Variables)
+	if err := validateVariables(variables); err != nil {
+		log.Errorf("Invalid variables. err: %v", err)
+		abortWithError(c, err)
+		return
+	}
+
+	tmpCalls, tmpGroupcalls, err := h.serviceHandler.CallCreate(c.Request.Context(), a, flowID, actions, &source, destinations, anonymous, variables)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		abortWithServiceError(c, err)

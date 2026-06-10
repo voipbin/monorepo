@@ -7038,6 +7038,9 @@ type PostActiveflowsJSONBody struct {
 
 	// Id ID of the activeflow.
 	Id *string `json:"id,omitempty"`
+
+	// Variables Optional flat key-value context seeded into the new call's flow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total.
+	Variables *map[string]string `json:"variables,omitempty"`
 }
 
 // GetAgentsParams defines parameters for GetAgents.
@@ -7464,6 +7467,9 @@ type PostCallsJSONBody struct {
 
 	// Source Contains source or destination detail info.
 	Source *CommonAddress `json:"source,omitempty"`
+
+	// Variables Optional flat key-value context seeded into the new call's flow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total.
+	Variables *map[string]string `json:"variables,omitempty"`
 }
 
 // PostCallsJSONBodyAnonymous defines parameters for PostCalls.

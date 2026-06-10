@@ -24,6 +24,7 @@ func (r *requestHandler) FlowV1ActiveflowCreate(
 	referenceType fmactiveflow.ReferenceType,
 	referenceID uuid.UUID,
 	referenceActiveflowID uuid.UUID,
+	variables map[string]string,
 ) (*fmactiveflow.Activeflow, error) {
 
 	uri := "/v1/activeflows"
@@ -35,6 +36,7 @@ func (r *requestHandler) FlowV1ActiveflowCreate(
 		ReferenceType:         referenceType,
 		ReferenceID:           referenceID,
 		ReferenceActiveflowID: referenceActiveflowID,
+		Variables:             variables,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not marshal the request")

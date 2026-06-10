@@ -505,7 +505,7 @@ func Test_processV1CallsIDPost(t *testing.T) {
 			}
 
 			if tt.expectCreateCall {
-				mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.groupcallID, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", tt.expectMetadata).Return(tt.call, nil)
+				mockCall.EXPECT().CreateCallOutgoing(gomock.Any(), tt.callID, tt.customerID, tt.flowID, tt.activeflowID, tt.masterCallID, tt.groupcallID, tt.source, tt.destination, tt.earlyExecution, tt.connect, "", tt.expectMetadata, gomock.Any()).Return(tt.call, nil)
 			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {
@@ -768,7 +768,7 @@ func Test_processV1CallsPost(t *testing.T) {
 			}
 
 			if tt.expectCreateCall {
-				mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect, "", tt.expectMetadata).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+				mockCall.EXPECT().CreateCallsOutgoing(gomock.Any(), tt.customerID, tt.flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExeuction, tt.connect, "", tt.expectMetadata, gomock.Any()).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 			}
 			res, err := h.processRequest(tt.request)
 			if err != nil {

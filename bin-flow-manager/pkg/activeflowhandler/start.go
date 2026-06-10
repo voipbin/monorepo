@@ -15,6 +15,8 @@ func (h *activeflowHandler) startOnCompleteFlow(ctx context.Context, af *activef
 	})
 
 	// create a new activeflow
+	// on_complete_flow-derived activeflow: no external initial variables (pass nil).
+	// Inherited variables come from the reference activeflow via variableCreate.
 	res, err := h.Create(
 		ctx,
 		uuid.Nil,
@@ -23,6 +25,7 @@ func (h *activeflowHandler) startOnCompleteFlow(ctx context.Context, af *activef
 		af.ReferenceID,
 		af.ID,
 		af.OnCompleteFlowID,
+		nil,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create on complete activeflow. flow_id: %s", af.OnCompleteFlowID)

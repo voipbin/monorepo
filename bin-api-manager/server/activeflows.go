@@ -99,7 +99,14 @@ func (h *server) PostActiveflows(c *gin.Context) {
 		}
 	}
 
-	res, err := h.serviceHandler.ActiveflowCreate(c.Request.Context(), a, id, flowID, actions)
+	variables := convertVariables(req.Variables)
+	if err := validateVariables(variables); err != nil {
+		log.Errorf("Invalid variables. err: %v", err)
+		abortWithError(c, err)
+		return
+	}
+
+	res, err := h.serviceHandler.ActiveflowCreate(c.Request.Context(), a, id, flowID, actions, variables)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		abortWithServiceError(c, err)

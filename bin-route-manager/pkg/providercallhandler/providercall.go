@@ -94,6 +94,7 @@ func (h *providerCallHandler) Create(
 		false, // connect
 		anonymous,
 		metadata,
+		nil,
 	)
 	if err != nil {
 		log.Errorf("Could not create calls for providercall. err: %v", err)
