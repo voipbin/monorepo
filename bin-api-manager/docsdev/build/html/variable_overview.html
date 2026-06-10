@@ -681,6 +681,38 @@
 </div>
 <p>Variables set during execution are scoped to the current flow instance, meaning they persist only during the lifetime of that flow unless explicitly passed elsewhere.</p>
 </section>
+<section id="at-creation-time-via-the-api">
+<h2>At creation time via the API<a class="headerlink" href="#at-creation-time-via-the-api" title="Link to this heading">¶</a></h2>
+<p>When you start a new flow through the API, you can seed custom variables directly in the request body using the optional <code class="docutils literal notranslate"><span class="pre">variables</span></code> field. This is the recommended way to pass per-request context (campaign IDs, customer names, tracking tokens) into a flow without hard-coding them into the flow definition.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">variables</span></code> field is a flat key-value object. Each value must be a string, and each key becomes referenceable inside the flow as <code class="docutils literal notranslate"><span class="pre">${&lt;key&gt;}</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+155****4567&quot;</span> <span class="p">},</span>
+    <span class="s2">&quot;destinations&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">{</span> <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+155****6543&quot;</span> <span class="p">}</span> <span class="p">],</span>
+    <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;your-flow-id&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;variables&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;campaign_id&quot;</span><span class="p">:</span> <span class="s2">&quot;summer-2026&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Jane Doe&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Inside the flow, <code class="docutils literal notranslate"><span class="pre">${customer_name}</span></code> resolves to <code class="docutils literal notranslate"><span class="pre">Jane</span> <span class="pre">Doe</span></code> for that activeflow instance.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">variables</span></code> field is currently accepted on:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> - seeds variables into the call’s activeflow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows</span></code> - seeds variables into the created activeflow.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Limits and reserved keys</strong></p>
+<ul class="simple">
+<li><p>Values are strings only. Non-string values are rejected.</p></li>
+<li><p>Maximum 100 keys, 64KB total (keys + values), 32KB per individual value. The total is measured after reserved and empty keys are dropped.</p></li>
+<li><p>Keys beginning with <code class="docutils literal notranslate"><span class="pre">voipbin.</span></code> are reserved for system variables and are silently ignored if supplied. Use your own namespace (e.g. <code class="docutils literal notranslate"><span class="pre">campaign_id</span></code>, not <code class="docutils literal notranslate"><span class="pre">voipbin.campaign_id</span></code>).</p></li>
+<li><p>If a size or count limit is exceeded, the entire <code class="docutils literal notranslate"><span class="pre">variables</span></code> injection is discarded (all keys, not just the offending one). The call or activeflow is still created, but with no externally supplied variables. Reserved keys, by contrast, are dropped individually.</p></li>
+</ul>
+</div>
+</section>
 </section>
 <section id="integration-with-applications">
 <h1>Integration with Applications<a class="headerlink" href="#integration-with-applications" title="Link to this heading">¶</a></h1>
