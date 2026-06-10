@@ -248,7 +248,7 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 	// coerce LLM-supplied variables (map[string]any) to map[string]string. Scalar values are
 	// stringified; non-scalar values are skipped. Final sanitization (reserved-key drop, size
 	// caps) is enforced by flow-manager, not here.
-	variables := fmvariable.ToStringMap(args.Variables)
+	variables := fmvariable.NewVariablesFromMap(args.Variables)
 
 	// 2. SECURITY: flow ownership (IDOR prevention). Both not-found and cross-customer return the
 	//    same byte-identical masked error so the tool is not a flow-existence oracle.

@@ -13,7 +13,7 @@ type Variable struct {
 	Variables map[string]string `json:"variables"`
 }
 
-// ToStringMap converts a map[string]any into the map[string]string shape variables use.
+// NewVariablesFromMap builds a variables map (map[string]string) from a map[string]any.
 //
 // Scalar values (string, bool, float64, json.Number) are stringified; non-scalar values
 // (object, array, null) are skipped silently. Numbers decoded via a json.Decoder with
@@ -24,7 +24,7 @@ type Variable struct {
 //
 // This performs only type coercion. Reserved-key dropping and size caps are enforced
 // elsewhere (flow-manager sanitizeInitialVariables), not here.
-func ToStringMap(in map[string]any) map[string]string {
+func NewVariablesFromMap(in map[string]any) map[string]string {
 	if len(in) == 0 {
 		return nil
 	}

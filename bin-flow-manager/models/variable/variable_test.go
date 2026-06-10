@@ -70,7 +70,7 @@ func TestVariableModification(t *testing.T) {
 	}
 }
 
-func Test_ToStringMap(t *testing.T) {
+func Test_NewVariablesFromMap(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -142,7 +142,7 @@ func Test_ToStringMap(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ToStringMap(tt.in)
+			got := NewVariablesFromMap(tt.in)
 
 			if tt.expect == nil {
 				if got != nil {
