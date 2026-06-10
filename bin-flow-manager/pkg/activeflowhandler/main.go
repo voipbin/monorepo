@@ -85,6 +85,8 @@ type ActiveflowHandler interface {
 		referenceActiveflowID uuid.UUID,
 		flowID uuid.UUID,
 		initialVariables map[string]string,
+		webhookURI string,
+		webhookMethod activeflow.WebhookMethod,
 	) (*activeflow.Activeflow, error)
 	Delete(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)
 	Get(ctx context.Context, id uuid.UUID) (*activeflow.Activeflow, error)

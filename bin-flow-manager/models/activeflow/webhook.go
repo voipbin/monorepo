@@ -23,6 +23,9 @@ type WebhookMessage struct {
 
 	OnCompleteFlowID uuid.UUID `json:"on_complete_flow_id,omitempty"`
 
+	WebhookURI    string        `json:"webhook_uri,omitempty"`
+	WebhookMethod WebhookMethod `json:"webhook_method,omitempty"`
+
 	CurrentAction action.Action `json:"current_action,omitempty"`
 
 	ForwardActionID uuid.UUID `json:"forward_action_id,omitempty"`
@@ -47,6 +50,9 @@ func (h *Activeflow) ConvertWebhookMessage() *WebhookMessage {
 		ReferenceActiveflowID: h.ReferenceActiveflowID,
 
 		OnCompleteFlowID: h.OnCompleteFlowID,
+
+		WebhookURI:    h.WebhookURI,
+		WebhookMethod: h.WebhookMethod,
 
 		CurrentAction: h.CurrentAction,
 

@@ -83,7 +83,7 @@ func (h *listenHandler) v1ActiveflowsPost(ctx context.Context, m *sock.Request) 
 	}
 
 	// create active flow
-	resActiveFlow, err := h.activeflowHandler.Create(ctx, reqData.ID, reqData.CustomerID, reqData.ReferenceType, reqData.ReferenceID, reqData.ReferenceActiveflowID, reqData.FlowID, reqData.Variables)
+	resActiveFlow, err := h.activeflowHandler.Create(ctx, reqData.ID, reqData.CustomerID, reqData.ReferenceType, reqData.ReferenceID, reqData.ReferenceActiveflowID, reqData.FlowID, reqData.Variables, reqData.WebhookURI, reqData.WebhookMethod)
 	if err != nil {
 		log.Errorf("Could not create a new active flow. err: %v", err)
 		return nil, err

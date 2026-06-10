@@ -12,7 +12,9 @@ package cachehandler
 import (
 	context "context"
 	account "monorepo/bin-webhook-manager/models/account"
+	activeflow "monorepo/bin-webhook-manager/models/activeflow"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -69,6 +71,50 @@ func (m *MockCacheHandler) AccountSet(ctx context.Context, u *account.Account) e
 func (mr *MockCacheHandlerMockRecorder) AccountSet(ctx, u any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountSet", reflect.TypeOf((*MockCacheHandler)(nil).AccountSet), ctx, u)
+}
+
+// ActiveflowWebhookGet mocks base method.
+func (m *MockCacheHandler) ActiveflowWebhookGet(ctx context.Context, id uuid.UUID) (*activeflow.Webhook, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowWebhookGet", ctx, id)
+	ret0, _ := ret[0].(*activeflow.Webhook)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// ActiveflowWebhookGet indicates an expected call of ActiveflowWebhookGet.
+func (mr *MockCacheHandlerMockRecorder) ActiveflowWebhookGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowWebhookGet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveflowWebhookGet), ctx, id)
+}
+
+// ActiveflowWebhookSet mocks base method.
+func (m *MockCacheHandler) ActiveflowWebhookSet(ctx context.Context, id uuid.UUID, w *activeflow.Webhook, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowWebhookSet", ctx, id, w, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActiveflowWebhookSet indicates an expected call of ActiveflowWebhookSet.
+func (mr *MockCacheHandlerMockRecorder) ActiveflowWebhookSet(ctx, id, w, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowWebhookSet", reflect.TypeOf((*MockCacheHandler)(nil).ActiveflowWebhookSet), ctx, id, w, ttl)
+}
+
+// ActiveflowWebhookSetNegative mocks base method.
+func (m *MockCacheHandler) ActiveflowWebhookSetNegative(ctx context.Context, id uuid.UUID, tm time.Time, tmDelete *time.Time, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ActiveflowWebhookSetNegative", ctx, id, tm, tmDelete, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ActiveflowWebhookSetNegative indicates an expected call of ActiveflowWebhookSetNegative.
+func (mr *MockCacheHandlerMockRecorder) ActiveflowWebhookSetNegative(ctx, id, tm, tmDelete, ttl any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowWebhookSetNegative", reflect.TypeOf((*MockCacheHandler)(nil).ActiveflowWebhookSetNegative), ctx, id, tm, tmDelete, ttl)
 }
 
 // Connect mocks base method.

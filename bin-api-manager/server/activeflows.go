@@ -106,7 +106,28 @@ func (h *server) PostActiveflows(c *gin.Context) {
 		return
 	}
 
-	res, err := h.serviceHandler.ActiveflowCreate(c.Request.Context(), a, id, flowID, actions, variables)
+	webhookURI := ""
+	if req.WebhookUri != nil {
+		webhookURI = *req.WebhookUri
+	}
+	if err := validateWebhookURI(webhookURI); err != nil {
+		log.Errorf("Invalid webhook uri. err: %v", err)
+		abortWithError(c, err)
+		return
+	}
+
+	webhookMethodStr := ""
+	if req.WebhookMethod != nil {
+		webhookMethodStr = string(*req.WebhookMethod)
+	}
+	webhookMethod, errMethod := validateWebhookMethod(webhookMethodStr)
+	if errMethod != nil {
+		log.Errorf("Invalid webhook method. err: %v", errMethod)
+		abortWithError(c, errMethod)
+		return
+	}
+
+	res, err := h.serviceHandler.ActiveflowCreate(c.Request.Context(), a, id, flowID, actions, variables, webhookURI, webhookMethod)
 	if err != nil {
 		log.Errorf("Could not create a call for outgoing. err; %v", err)
 		abortWithServiceError(c, err)

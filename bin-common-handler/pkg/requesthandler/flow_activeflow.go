@@ -25,6 +25,8 @@ func (r *requestHandler) FlowV1ActiveflowCreate(
 	referenceID uuid.UUID,
 	referenceActiveflowID uuid.UUID,
 	variables map[string]string,
+	webhookURI string,
+	webhookMethod fmactiveflow.WebhookMethod,
 ) (*fmactiveflow.Activeflow, error) {
 
 	uri := "/v1/activeflows"
@@ -37,6 +39,8 @@ func (r *requestHandler) FlowV1ActiveflowCreate(
 		ReferenceID:           referenceID,
 		ReferenceActiveflowID: referenceActiveflowID,
 		Variables:             variables,
+		WebhookURI:            webhookURI,
+		WebhookMethod:         webhookMethod,
 	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not marshal the request")

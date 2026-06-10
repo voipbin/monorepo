@@ -4291,18 +4291,18 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowContinue(ctx, activefl
 }
 
 // FlowV1ActiveflowCreate mocks base method.
-func (m *MockRequestHandler) FlowV1ActiveflowCreate(ctx context.Context, activeflowID, customerID, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID, referenceActiveflowID uuid.UUID, variables map[string]string) (*activeflow.Activeflow, error) {
+func (m *MockRequestHandler) FlowV1ActiveflowCreate(ctx context.Context, activeflowID, customerID, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID, referenceActiveflowID uuid.UUID, variables map[string]string, webhookURI string, webhookMethod activeflow.WebhookMethod) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowV1ActiveflowCreate", ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables)
+	ret := m.ctrl.Call(m, "FlowV1ActiveflowCreate", ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables, webhookURI, webhookMethod)
 	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowV1ActiveflowCreate indicates an expected call of FlowV1ActiveflowCreate.
-func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowCreate(ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowCreate(ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables, webhookURI, webhookMethod any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowCreate), ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowCreate), ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables, webhookURI, webhookMethod)
 }
 
 // FlowV1ActiveflowDelete mocks base method.

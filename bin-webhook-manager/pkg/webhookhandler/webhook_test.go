@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-webhook-manager/models/account"
 	"monorepo/bin-webhook-manager/models/webhook"
 	"monorepo/bin-webhook-manager/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/pkg/activeflowhandler"
 	"monorepo/bin-webhook-manager/pkg/dbhandler"
 )
 
@@ -324,9 +325,137 @@ func Test_NewWebhookHandler(t *testing.T) {
 	mockDB := dbhandler.NewMockDBHandler(mc)
 	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
+	mockActiveflow := activeflowhandler.NewMockActiveflowHandler(mc)
 
-	h := NewWebhookHandler(mockDB, mockNotify, mockAccount)
+	h := NewWebhookHandler(mockDB, mockNotify, mockAccount, mockActiveflow)
 	if h == nil {
 		t.Errorf("Wrong match. expect: handler, got: nil")
+	}
+}
+
+func Test_SendWebhookToCustomer_activeflow(t *testing.T) {
+
+	activeflowID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+
+	tests := []struct {
+		name string
+
+		customerID uuid.UUID
+		dataType   webhook.DataType
+		data       json.RawMessage
+
+		responseAccount *account.Account
+		expectWebhook   *webhook.Webhook
+
+		// expectGet controls whether activeflowHandler.Get is expected at all.
+		expectGet bool
+		// expectGetID is the activeflow id Get must be called with (when expectGet).
+		expectGetID uuid.UUID
+		// responseDest is what the activeflow resolver returns.
+		responseDest *activeflowhandler.Destination
+	}{
+		{
+			name: "nested activeflow_id with positive destination - both customer and activeflow delivered",
+
+			customerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+			dataType:   "application/json",
+			data:       []byte(`{"type":"call_updated","data":{"activeflow_id":"11111111-1111-1111-1111-111111111111"}}`),
+
+			responseAccount: &account.Account{
+				ID:            uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+			},
+			expectWebhook: &webhook.Webhook{
+				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+				DataType:   "application/json",
+				Data:       json.RawMessage([]byte(`{"type":"call_updated","data":{"activeflow_id":"11111111-1111-1111-1111-111111111111"}}`)),
+			},
+
+			expectGet:    true,
+			expectGetID:  activeflowID,
+			responseDest: &activeflowhandler.Destination{URI: "af.test.com", Method: webhook.MethodTypePOST},
+		},
+		{
+			name: "nested activeflow_id with negative destination - customer only",
+
+			customerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+			dataType:   "application/json",
+			data:       []byte(`{"type":"call_updated","data":{"activeflow_id":"11111111-1111-1111-1111-111111111111"}}`),
+
+			responseAccount: &account.Account{
+				ID:            uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+			},
+			expectWebhook: &webhook.Webhook{
+				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+				DataType:   "application/json",
+				Data:       json.RawMessage([]byte(`{"type":"call_updated","data":{"activeflow_id":"11111111-1111-1111-1111-111111111111"}}`)),
+			},
+
+			expectGet:    true,
+			expectGetID:  activeflowID,
+			responseDest: nil,
+		},
+		{
+			name: "regression guard - top-level activeflow_id (not nested) is ignored",
+
+			customerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+			dataType:   "application/json",
+			data:       []byte(`{"activeflow_id":"11111111-1111-1111-1111-111111111111","data":{"type":"call"}}`),
+
+			responseAccount: &account.Account{
+				ID:            uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+				WebhookMethod: "POST",
+				WebhookURI:    "test.com",
+			},
+			expectWebhook: &webhook.Webhook{
+				CustomerID: uuid.FromStringOrNil("a27dc1d6-8254-11ec-8f09-e30cbed3e51e"),
+				DataType:   "application/json",
+				Data:       json.RawMessage([]byte(`{"activeflow_id":"11111111-1111-1111-1111-111111111111","data":{"type":"call"}}`)),
+			},
+
+			expectGet: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockMessageTargethandler := accounthandler.NewMockAccountHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockActiveflow := activeflowhandler.NewMockActiveflowHandler(mc)
+
+			h := &webhookHandler{
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				accoutHandler:     mockMessageTargethandler,
+				activeflowHandler: mockActiveflow,
+			}
+
+			ctx := context.Background()
+
+			mockMessageTargethandler.EXPECT().Get(ctx, tt.customerID).Return(tt.responseAccount, nil)
+			mockNotify.EXPECT().PublishEvent(ctx, webhook.EventTypeWebhookPublished, tt.expectWebhook)
+
+			if tt.expectGet {
+				mockActiveflow.EXPECT().Get(ctx, tt.expectGetID).Return(tt.responseDest, nil)
+			} else {
+				// regression guard: a top-level activeflow_id must NOT trigger a resolve.
+				mockActiveflow.EXPECT().Get(gomock.Any(), gomock.Any()).Times(0)
+			}
+
+			err := h.SendWebhookToCustomer(ctx, tt.customerID, tt.dataType, tt.data)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			// deliveries happen in goroutines; rely on Get expectations above.
+			time.Sleep(400 * time.Millisecond)
+		})
 	}
 }

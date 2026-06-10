@@ -991,6 +991,8 @@ type RequestHandler interface {
 		referenceID uuid.UUID,
 		referenceActiveflowID uuid.UUID,
 		variables map[string]string,
+		webhookURI string,
+		webhookMethod fmactiveflow.WebhookMethod,
 	) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)

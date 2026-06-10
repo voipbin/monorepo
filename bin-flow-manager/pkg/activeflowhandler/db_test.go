@@ -331,7 +331,7 @@ func Test_Create(t *testing.T) {
 
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseActiveflow.CustomerID, activeflow.EventTypeActiveflowCreated, tt.responseActiveflow)
 
-			res, err := h.Create(ctx, tt.id, tt.customerID, tt.refereceType, tt.referenceID, tt.referenceActiveflowID, tt.flowID, nil)
+			res, err := h.Create(ctx, tt.id, tt.customerID, tt.refereceType, tt.referenceID, tt.referenceActiveflowID, tt.flowID, nil, "", activeflow.WebhookMethodNone)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -14,6 +14,7 @@ import (
 
 	"monorepo/bin-webhook-manager/models/account"
 	"monorepo/bin-webhook-manager/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/pkg/cachehandler"
 )
 
 func TestProcessEventCSCustomerCreatedCreated(t *testing.T) {
@@ -254,8 +255,9 @@ func TestNewSubscribeHandler(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockAccount := accounthandler.NewMockAccountHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
 
-	h := NewSubscribeHandler(mockSock, "test-queue", "target1,target2", mockAccount)
+	h := NewSubscribeHandler(mockSock, "test-queue", "target1,target2", mockAccount, mockCache)
 	if h == nil {
 		t.Errorf("Wrong match. expect: handler, got: nil")
 	}

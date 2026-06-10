@@ -16,6 +16,7 @@ import (
 	"monorepo/bin-webhook-manager/internal/config"
 	"monorepo/bin-webhook-manager/models/webhook"
 	"monorepo/bin-webhook-manager/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/pkg/activeflowhandler"
 	"monorepo/bin-webhook-manager/pkg/cachehandler"
 	"monorepo/bin-webhook-manager/pkg/dbhandler"
 	"monorepo/bin-webhook-manager/pkg/webhookhandler"
@@ -65,8 +66,9 @@ func initWebhookHandler(sqlDB *sql.DB, cache cachehandler.CacheHandler) (webhook
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameWebhookEvent, serviceName)
 	accountHandler := accounthandler.NewAccountHandler(db, reqHandler)
+	activeflowHandler := activeflowhandler.NewActiveflowHandler(cache, reqHandler)
 
-	return webhookhandler.NewWebhookHandler(db, notifyHandler, accountHandler), nil
+	return webhookhandler.NewWebhookHandler(db, notifyHandler, accountHandler, activeflowHandler), nil
 }
 
 func initCommand() *cobra.Command {

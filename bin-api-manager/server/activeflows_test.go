@@ -168,6 +168,9 @@ func Test_PostActiveflows(t *testing.T) {
 		expectedID      uuid.UUID
 		expectedFlowID  uuid.UUID
 		expectedRes     string
+
+		expectedWebhookURI    string
+		expectedWebhookMethod fmactiveflow.WebhookMethod
 	}{
 		{
 			name: "full data",
@@ -191,9 +194,11 @@ func Test_PostActiveflows(t *testing.T) {
 					ID: uuid.FromStringOrNil("692de0d6-d3ab-11ef-a2cd-07af60d8bb91"),
 				},
 			},
-			expectedID:     uuid.FromStringOrNil("88eaacce-d3ab-11ef-ac99-23f970b154a2"),
-			expectedFlowID: uuid.FromStringOrNil("8917167e-d3ab-11ef-b322-b36809068d12"),
-			expectedRes:    `{"id":"893ebb34-d3ab-11ef-90e4-f31b0ef8762a","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedID:            uuid.FromStringOrNil("88eaacce-d3ab-11ef-ac99-23f970b154a2"),
+			expectedFlowID:        uuid.FromStringOrNil("8917167e-d3ab-11ef-b322-b36809068d12"),
+			expectedWebhookURI:    "",
+			expectedWebhookMethod: fmactiveflow.WebhookMethodNone,
+			expectedRes:           `{"id":"893ebb34-d3ab-11ef-90e4-f31b0ef8762a","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 		{
 			name: "empty",
@@ -212,10 +217,36 @@ func Test_PostActiveflows(t *testing.T) {
 				},
 			},
 
-			expectedActions: []fmaction.Action{},
-			expectedID:      uuid.Nil,
-			expectedFlowID:  uuid.Nil,
-			expectedRes:     `{"id":"8969817a-d3ab-11ef-b01b-c358a80962d3","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedActions:       []fmaction.Action{},
+			expectedID:            uuid.Nil,
+			expectedFlowID:        uuid.Nil,
+			expectedWebhookURI:    "",
+			expectedWebhookMethod: fmactiveflow.WebhookMethodNone,
+			expectedRes:           `{"id":"8969817a-d3ab-11ef-b01b-c358a80962d3","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "with webhook uri and method",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+				},
+			}),
+
+			reqQuery: "/activeflows",
+			reqBody:  []byte(`{"webhook_uri":"https://example.com/webhooks/activeflow","webhook_method":"POST"}`),
+
+			response: &fmactiveflow.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("8969817a-d3ab-11ef-b01b-c358a80962d3"),
+				},
+			},
+
+			expectedActions:       []fmaction.Action{},
+			expectedID:            uuid.Nil,
+			expectedFlowID:        uuid.Nil,
+			expectedWebhookURI:    "https://example.com/webhooks/activeflow",
+			expectedWebhookMethod: fmactiveflow.WebhookMethodPost,
+			expectedRes:           `{"id":"8969817a-d3ab-11ef-b01b-c358a80962d3","customer_id":"00000000-0000-0000-0000-000000000000","flow_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","reference_activeflow_id":"00000000-0000-0000-0000-000000000000","on_complete_flow_id":"00000000-0000-0000-0000-000000000000","current_action":{"id":"00000000-0000-0000-0000-000000000000","next_id":"00000000-0000-0000-0000-000000000000","tm_execute":null},"forward_action_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -246,6 +277,8 @@ func Test_PostActiveflows(t *testing.T) {
 				tt.expectedFlowID,
 				tt.expectedActions,
 				gomock.Any(),
+				tt.expectedWebhookURI,
+				tt.expectedWebhookMethod,
 			).Return(tt.response, nil)
 
 			r.ServeHTTP(w, req)

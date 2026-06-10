@@ -6,9 +6,9 @@
 <link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="next" title="Tutorial" href="activeflow_tutorial.html"><link rel="prev" title="Overview" href="activeflow_overview.html">
         <link rel="prefetch" href="_static/voipbin-high-resolution-logo-white-transparent.png" as="image">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2025.12.19 -->
         <title>Activeflow - VoIPBin Documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -612,6 +612,8 @@
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;on_complete_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;current_action&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">},</span>
@@ -634,6 +636,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): The ID of the resource that triggered this activeflow (e.g., a call ID if <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">call</span></code>). Obtained from the corresponding resource endpoint (e.g., <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls/{id}</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_activeflow_id</span></code> (UUID): The parent activeflow’s ID if this is a sub-flow. Obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if this is not a sub-flow.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">on_complete_flow_id</span></code> (UUID): Flow to execute when this activeflow completes. Obtained from the <code class="docutils literal notranslate"><span class="pre">id</span></code> field of <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/flows</span></code>. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if no completion flow is assigned.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> (String, optional): Per-activeflow webhook destination URI. When set (at creation via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows</span></code>), activeflow webhook events are delivered to this URI in addition to the customer-level webhook destination. Empty if no per-activeflow webhook is configured.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> (enum string, optional): HTTP method used to deliver the per-activeflow webhook. One of <code class="docutils literal notranslate"><span class="pre">POST</span></code>, <code class="docutils literal notranslate"><span class="pre">GET</span></code>, <code class="docutils literal notranslate"><span class="pre">PUT</span></code> or <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>. See detail <a class="reference internal" href="#activeflow-struct-activeflow-webhook-method"><span class="std std-ref">here</span></a>. Empty if no per-activeflow webhook is configured.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">current_action</span></code> (Object): The action currently being executed. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">forward_action_id</span></code> (UUID): The ID of the next action to execute. Set to <code class="docutils literal notranslate"><span class="pre">00000000-0000-0000-0000-000000000000</span></code> if sequential (next in array).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">executed_actions</span></code> (Array of Object): History of actions that have been executed during this activeflow’s lifetime. Each element is an action object. See detail <a class="reference internal" href="flow_struct_action.html#flow-struct-action-action"><span class="std std-ref">here</span></a>.</p></li>
@@ -644,7 +648,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Activeflows are read-only from an API perspective – you cannot create them via API. They are created automatically when a flow is triggered. You can only list them (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>), inspect them (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows/{id}</span></code>), or stop them (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows/{id}/stop</span></code>). Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred.</p>
+<p>Activeflows are typically created automatically when a flow is triggered (e.g., by an incoming call). You can also create one directly via <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows</span></code> (with <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> set to <code class="docutils literal notranslate"><span class="pre">api</span></code>), optionally supplying <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> to receive activeflow webhook events at a per-activeflow destination, additively to the customer-level webhook. You can list them (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows</span></code>), inspect them (<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/activeflows/{id}</span></code>), or stop them (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows/{id}/stop</span></code>). Timestamps set to <code class="docutils literal notranslate"><span class="pre">9999-01-01</span> <span class="pre">00:00:00.000000</span></code> indicate the event has not yet occurred.</p>
 </div>
 <section id="example">
 <h3>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h3>
@@ -657,6 +661,8 @@
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;fd581a20-2606-47fd-a7e8-6bba7c294170&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
     <span class="s2">&quot;on_complete_flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;webhook_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;https://example.com/webhooks/activeflow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;webhook_method&quot;</span><span class="p">:</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span>
     <span class="s2">&quot;current_action&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;93ebcadb-ecae-4291-8d49-ca81a926b8b3&quot;</span><span class="p">,</span>
         <span class="s2">&quot;next_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
@@ -736,6 +742,46 @@
 </table>
 </div>
 </section>
+<section id="webhook-method">
+<span id="activeflow-struct-activeflow-webhook-method"></span><h2>Webhook method<a class="headerlink" href="#webhook-method" title="Link to this heading">¶</a></h2>
+<p>HTTP method used to deliver the per-activeflow webhook. Applies only when <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> is set.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code></p></td>
+<td><p>No per-activeflow webhook method configured.</p></td>
+</tr>
+<tr class="row-odd"><td><p>POST</p></td>
+<td><p>Deliver the webhook using an HTTP POST request.</p></td>
+</tr>
+<tr class="row-even"><td><p>GET</p></td>
+<td><p>Deliver the webhook using an HTTP GET request.</p></td>
+</tr>
+<tr class="row-odd"><td><p>PUT</p></td>
+<td><p>Deliver the webhook using an HTTP PUT request.</p></td>
+</tr>
+<tr class="row-even"><td><p>DELETE</p></td>
+<td><p>Deliver the webhook using an HTTP DELETE request.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Additive per-activeflow webhook</strong></p>
+<p>When <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> are supplied at creation (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows</span></code>), activeflow webhook events are delivered to that destination in addition to the customer-level webhook destination. The per-activeflow webhook does not replace the customer-level webhook; both receive the events.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Do not embed secrets in ``webhook_uri``</strong></p>
+<p>The activeflow <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> is included in the activeflow lifecycle webhook payloads that are delivered to your customer-level webhook endpoint. This is your own data delivered to your own endpoint (intended behavior), but you MUST NOT embed secrets, tokens, or credentials in the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> query string, since they would be exposed in those payloads and in logs.</p>
+</div>
+</section>
 </section>
 
         </article>
@@ -803,6 +849,7 @@
 </li>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#reference-type">Reference type</a></li>
+<li><a class="reference internal" href="#webhook-method">Webhook method</a></li>
 </ul>
 </li>
 </ul>
@@ -815,8 +862,8 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=8a448e45"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
     </body>
 </html>

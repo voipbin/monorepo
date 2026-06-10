@@ -692,18 +692,18 @@ func (mr *MockServiceHandlerMockRecorder) AccesskeyUpdate(ctx, a, accesskeyID, n
 }
 
 // ActiveflowCreate mocks base method.
-func (m *MockServiceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID, flowID uuid.UUID, actions []action.Action, variables map[string]string) (*activeflow.WebhookMessage, error) {
+func (m *MockServiceHandler) ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID, flowID uuid.UUID, actions []action.Action, variables map[string]string, webhookURI string, webhookMethod activeflow.WebhookMethod) (*activeflow.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ActiveflowCreate", ctx, a, activeflowID, flowID, actions, variables)
+	ret := m.ctrl.Call(m, "ActiveflowCreate", ctx, a, activeflowID, flowID, actions, variables, webhookURI, webhookMethod)
 	ret0, _ := ret[0].(*activeflow.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ActiveflowCreate indicates an expected call of ActiveflowCreate.
-func (mr *MockServiceHandlerMockRecorder) ActiveflowCreate(ctx, a, activeflowID, flowID, actions, variables any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ActiveflowCreate(ctx, a, activeflowID, flowID, actions, variables, webhookURI, webhookMethod any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowCreate", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowCreate), ctx, a, activeflowID, flowID, actions, variables)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ActiveflowCreate", reflect.TypeOf((*MockServiceHandler)(nil).ActiveflowCreate), ctx, a, activeflowID, flowID, actions, variables, webhookURI, webhookMethod)
 }
 
 // ActiveflowDelete mocks base method.

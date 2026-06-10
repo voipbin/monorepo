@@ -7,12 +7,13 @@
 ```
 cmd/webhook-manager/main.go
     ├── pkg/dbhandler          (MySQL + Redis cache)
-    ├── pkg/cachehandler       (Redis operations)
+    ├── pkg/cachehandler       (Redis operations; incl. per-activeflow webhook cache)
     ├── pkg/listenhandler      (RabbitMQ RPC router)
-    ├── pkg/subscribehandler   (event consumer from customer-manager)
+    ├── pkg/subscribehandler   (event consumer from customer-manager + flow-manager)
     ├── pkg/webhookhandler     (core webhook delivery logic)
     ├── pkg/accounthandler     (customer webhook config: URI + method)
-    └── models/                (webhook, account, event data structures)
+    ├── pkg/activeflowhandler  (per-activeflow webhook resolver: cache + fallback RPC)
+    └── models/                (webhook, account, activeflow, event data structures)
 ```
 
 **Supporting binaries:**
@@ -23,12 +24,13 @@ cmd/webhook-manager/main.go
 | Layer | Package | Responsibility |
 |-------|---------|----------------|
 | Transport | `pkg/listenhandler` | Receives RPC requests; routes by URI regex |
-| Transport | `pkg/subscribehandler` | Consumes customer-manager events to invalidate cache |
+| Transport | `pkg/subscribehandler` | Consumes customer-manager events (cache invalidation) and flow-manager activeflow events (per-activeflow webhook cache) |
 | Transport | notifyhandler (bin-common-handler) | Publishes `webhook_published` events |
 | Domain | `pkg/webhookhandler` | Webhook delivery — resolves destination, dispatches HTTP, publishes event |
 | Domain | `pkg/accounthandler` | Retrieves and caches customer webhook config (URI, method) from customer-manager |
+| Domain | `pkg/activeflowhandler` | Resolves the optional per-activeflow webhook destination: Redis cache lookup, single-flight `FlowV1ActiveflowGet` fallback on miss, monotonic cache backfill |
 | Data | `pkg/dbhandler` | MySQL for webhook records |
-| Data | `pkg/cachehandler` | Redis cache for account webhook configuration |
+| Data | `pkg/cachehandler` | Redis cache for account webhook config and per-activeflow webhook (positive/negative tombstone, atomic monotonic writes) |
 
 ## Request Routing
 
@@ -47,6 +49,8 @@ SubscribeHandler consumes:
 | Queue | Event | Action |
 |-------|-------|--------|
 | `bin-manager.customer-manager.event` | `customer_updated`, `customer_deleted` | Invalidate `pkg/accounthandler` Redis cache so next dispatch uses current URI/method |
+| `bin-manager.flow-manager.event` | `activeflow_created`, `activeflow_updated` | Pre-populate the per-activeflow webhook cache from the event payload (Option A: the event carries `webhook_uri` / `webhook_method`): a POSITIVE entry when `webhook_uri` is set, a NEGATIVE entry when empty, using the event timestamp as the monotonic Tm. The fallback path remains the lazy/miss safety net |
+| `bin-manager.flow-manager.event` | `activeflow_deleted` | Write a negative tombstone (carrying `tm_delete`) to the per-activeflow webhook cache so a deleted destination is not resurrected |
 
 ## Events Published
 

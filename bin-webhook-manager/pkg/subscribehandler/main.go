@@ -12,16 +12,19 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	cscustomer "monorepo/bin-customer-manager/models/customer"
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"monorepo/bin-webhook-manager/pkg/accounthandler"
+	"monorepo/bin-webhook-manager/pkg/cachehandler"
 )
 
 // list of publishers
 const (
 	publisherCustomerManager = "customer-manager"
+	publisherFlowManager     = "flow-manager"
 )
 
 // SubscribeHandler interface
@@ -36,6 +39,7 @@ type subscribeHandler struct {
 	subscribesTargets string
 
 	accountHandler accounthandler.AccountHandler
+	cacheHandler   cachehandler.CacheHandler
 }
 
 var (
@@ -66,6 +70,7 @@ func NewSubscribeHandler(
 	subscribeQueue string,
 	subscribeTargets string,
 	accountHandler accounthandler.AccountHandler,
+	cacheHandler cachehandler.CacheHandler,
 ) SubscribeHandler {
 	h := &subscribeHandler{
 		sockHandler: sockHandler,
@@ -74,6 +79,7 @@ func NewSubscribeHandler(
 		subscribesTargets: subscribeTargets,
 
 		accountHandler: accountHandler,
+		cacheHandler:   cacheHandler,
 	}
 
 	return h
@@ -136,6 +142,13 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 
 	case m.Publisher == publisherCustomerManager && (m.Type == string(cscustomer.EventTypeCustomerUpdated)):
 		err = h.processEventCSCustomerCreatedUpdated(m)
+
+	// flow-manager
+	case m.Publisher == publisherFlowManager && (m.Type == fmactiveflow.EventTypeActiveflowCreated || m.Type == fmactiveflow.EventTypeActiveflowUpdated):
+		err = h.processEventFMActiveflowCreatedUpdated(m)
+
+	case m.Publisher == publisherFlowManager && (m.Type == fmactiveflow.EventTypeActiveflowDeleted):
+		err = h.processEventFMActiveflowDeleted(m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

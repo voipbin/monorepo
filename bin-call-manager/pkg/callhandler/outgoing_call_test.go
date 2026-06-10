@@ -180,7 +180,7 @@ func Test_CreateCallOutgoing_TypeSIP(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
@@ -364,7 +364,7 @@ func Test_CreateCallOutgoing_Metadata(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
@@ -631,7 +631,7 @@ func Test_CreateCallOutgoing_RTPDebug(t *testing.T) {
 
 			ctx := context.Background()
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseActiveflow, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)
 			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(tt.responseCustomer, nil)
@@ -832,7 +832,7 @@ func Test_CreateCallOutgoing_TypeTel(t *testing.T) {
 				DestinationWhitelist: []string{"kr"},
 			}, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseActiveflow, nil)
 			// getDialURI
 			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any(), gomock.Any()).Return(tt.responseRoutes, nil)
 
@@ -3515,7 +3515,7 @@ func Test_createChannelOutgoing_ProviderCodecs(t *testing.T) {
 				DestinationWhitelist: []string{"kr"},
 			}, nil)
 
-			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any()).Return(tt.responseActiveflow, nil)
+			mockReq.EXPECT().FlowV1ActiveflowCreate(ctx, tt.activeflowID, tt.customerID, tt.flowID, fmactiveflow.ReferenceTypeCall, tt.id, uuid.Nil, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().RouteV1DialrouteList(ctx, gomock.Any(), gomock.Any()).Return(tt.responseRoutes, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDChannel)

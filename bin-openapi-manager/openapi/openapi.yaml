@@ -4963,6 +4963,23 @@ components:
         - FlowManagerActiveflowStatusRunning
         - FlowManagerActiveflowStatusEnded
 
+    FlowManagerWebhookMethod:
+      type: string
+      description: HTTP method used to deliver the per-activeflow webhook.
+      example: "POST"
+      enum:
+        - ""
+        - POST
+        - GET
+        - PUT
+        - DELETE
+      x-enum-varnames:
+        - FlowManagerWebhookMethodNone
+        - FlowManagerWebhookMethodPost
+        - FlowManagerWebhookMethodGet
+        - FlowManagerWebhookMethodPut
+        - FlowManagerWebhookMethodDelete
+
     FlowManagerReferenceType:
       type: string
       description: Reference type of activeflow.
@@ -5033,6 +5050,16 @@ components:
           x-go-type: string
           description: The unique identifier of the flow to execute on completion. Returned from the `POST /flows` or `GET /flows` response.
           example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+        webhook_uri:
+          type: string
+          description: >
+            Optional per-activeflow webhook destination URI. When set, activeflow webhook events are delivered
+            additively to this URI in addition to the customer-level webhook destination.
+          example: "https://example.com/webhooks/activeflow"
+        webhook_method:
+          $ref: '#/components/schemas/FlowManagerWebhookMethod'
+          description: Optional HTTP method used to deliver the per-activeflow webhook.
+          example: "POST"
         current_action:
           $ref: '#/components/schemas/FlowManagerAction'
           description: The action currently being executed.

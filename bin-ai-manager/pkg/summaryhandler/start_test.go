@@ -386,6 +386,8 @@ func Test_startReferenceTypeTranscribe(t *testing.T) {
 					tt.expectedSummary.ID,
 					tt.expectedSummary.ActiveflowID,
 					nil,
+				gomock.Any(),
+				gomock.Any(),
 				).Return(tt.responseActiveflow, nil)
 				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables).Return(nil)
 				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
@@ -556,6 +558,8 @@ func Test_startReferenceTypeRecording(t *testing.T) {
 					tt.expectedSummary.ID,
 					tt.expectedSummary.ActiveflowID,
 					nil,
+				gomock.Any(),
+				gomock.Any(),
 				).Return(tt.responseActiveflow, nil)
 				mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables).Return(nil)
 				mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
@@ -647,6 +651,8 @@ func Test_startOnEndFlow(t *testing.T) {
 				tt.summary.ID,
 				tt.summary.ActiveflowID,
 				nil,
+			gomock.Any(),
+			gomock.Any(),
 			).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, tt.expectedVariables).Return(nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)

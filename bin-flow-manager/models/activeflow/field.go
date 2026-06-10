@@ -15,6 +15,9 @@ const (
 
 	FieldOnCompleteFlowID Field = "on_complete_flow_id" // on_complete_flow_id
 
+	FieldWebhookURI    Field = "webhook_uri"    // webhook_uri
+	FieldWebhookMethod Field = "webhook_method" // webhook_method
+
 	FieldStackMap       Field = "stack_map"        // stack_map
 	FieldCurrentStackID Field = "current_stack_id" // current_stack_id
 	FieldCurrentAction  Field = "current_action"   // current_action

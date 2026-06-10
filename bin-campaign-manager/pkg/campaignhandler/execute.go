@@ -346,6 +346,8 @@ func (h *campaignHandler) executeFlow(
 		cc.ID,
 		uuid.Nil,
 		nil,
+		"",
+		activeflow.WebhookMethodNone,
 	)
 	if err != nil {
 		log.Errorf("Could not create an activeflow. err: %v", err)
