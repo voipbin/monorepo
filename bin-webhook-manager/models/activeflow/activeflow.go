@@ -1,6 +1,7 @@
 package activeflow
 
 import (
+	"encoding/json"
 	"time"
 
 	"monorepo/bin-webhook-manager/models/webhook"
@@ -37,4 +38,42 @@ type Webhook struct {
 // per-activeflow webhook destination.
 func (w *Webhook) IsPositive() bool {
 	return w != nil && !w.Deleted && w.URI != ""
+}
+
+// webhookJSON is the wire representation of Webhook. Tm is encoded as a
+// unix-nano integer so the cachehandler Lua compare-and-set script can compare
+// it numerically in a single round trip (design 5.6).
+type webhookJSON struct {
+	URI      string             `json:"uri,omitempty"`
+	Method   webhook.MethodType `json:"method,omitempty"`
+	Deleted  bool               `json:"deleted,omitempty"`
+	TMDelete *time.Time         `json:"tm_delete,omitempty"`
+	Tm       int64              `json:"tm"`
+}
+
+// MarshalJSON encodes the entry with Tm as a unix-nano integer.
+func (w *Webhook) MarshalJSON() ([]byte, error) {
+	return json.Marshal(webhookJSON{
+		URI:      w.URI,
+		Method:   w.Method,
+		Deleted:  w.Deleted,
+		TMDelete: w.TMDelete,
+		Tm:       w.Tm.UnixNano(),
+	})
+}
+
+// UnmarshalJSON decodes the entry, reading Tm from a unix-nano integer.
+func (w *Webhook) UnmarshalJSON(data []byte) error {
+	var tmp webhookJSON
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	w.URI = tmp.URI
+	w.Method = tmp.Method
+	w.Deleted = tmp.Deleted
+	w.TMDelete = tmp.TMDelete
+	w.Tm = time.Unix(0, tmp.Tm).UTC()
+
+	return nil
 }

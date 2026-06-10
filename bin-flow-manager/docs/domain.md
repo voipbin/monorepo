@@ -18,9 +18,11 @@ Common action types: `answer`, `hangup`, `play`, `talk`, `gather`, `condition`, 
 
 A live execution instance of a Flow attached to a specific call (or other resource). Tracks the current position in the action sequence, execution stack (for nested/branching flows), and runtime variables.
 
-Key fields: `reference_id` (the call/resource UUID), `flow_id`, `current_action_id`, `stack_map` (nested execution stacks), `status`.
+Key fields: `reference_id` (the call/resource UUID), `flow_id`, `current_action_id`, `stack_map` (nested execution stacks), `status`, and the optional per-activeflow `webhook_uri` / `webhook_method`.
 
 Statuses: `executing`, `done`, `error`.
+
+**Per-activeflow webhook (`webhook_uri` / `webhook_method`)**: an activeflow may carry its own additional webhook destination, set at creation time and IMMUTABLE thereafter (the update path rejects changes). These values are the customer's OWN data and are documented response fields: they are persisted on the activeflow, returned on `GET /activeflows`, and INCLUDED in the `WebhookMessage` / `ConvertWebhookMessage` lifecycle payload (`ConvertWebhookMessage()` powers both the REST response and the lifecycle event, so the fields are kept consistent across both). They are delivered only to the customer's OWN webhook endpoint, so this is not a cross-tenant leak. NOTE: because the `webhook_uri` is echoed in the activeflow lifecycle webhook payloads delivered to the customer-level endpoint, customers MUST NOT embed secrets or tokens in the `webhook_uri` query string.
 
 ### Stack
 

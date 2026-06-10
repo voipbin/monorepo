@@ -776,6 +776,11 @@
 <p><strong>Additive per-activeflow webhook</strong></p>
 <p>When <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> and <code class="docutils literal notranslate"><span class="pre">webhook_method</span></code> are supplied at creation (<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/activeflows</span></code>), activeflow webhook events are delivered to that destination in addition to the customer-level webhook destination. The per-activeflow webhook does not replace the customer-level webhook; both receive the events.</p>
 </div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Do not embed secrets in ``webhook_uri``</strong></p>
+<p>The activeflow <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> is included in the activeflow lifecycle webhook payloads that are delivered to your customer-level webhook endpoint. This is your own data delivered to your own endpoint (intended behavior), but you MUST NOT embed secrets, tokens, or credentials in the <code class="docutils literal notranslate"><span class="pre">webhook_uri</span></code> query string, since they would be exposed in those payloads and in logs.</p>
+</div>
 </section>
 </section>
 

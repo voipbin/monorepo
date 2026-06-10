@@ -3,6 +3,8 @@ package activeflowhandler
 import (
 	"context"
 	"fmt"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -246,5 +248,87 @@ func Test_Get_missFallback_rpcError(t *testing.T) {
 	}
 	if dest != nil {
 		t.Errorf("Wrong match. expect: nil, got: %v", dest)
+	}
+}
+
+// Test_Get_singleflight asserts that N concurrent Get() calls for the same id
+// on a cache miss coalesce into a single FlowV1ActiveflowGet fallback (design
+// 10). The fallback mock blocks until all goroutines have entered Get so the
+// singleflight window is actually exercised, and a counter verifies the RPC is
+// invoked exactly once.
+func Test_Get_singleflight(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	const n = 20
+
+	activeflowID := uuid.FromStringOrNil("88888888-8888-8888-8888-888888888888")
+	tmCreate := time.Date(2026, 6, 10, 0, 0, 0, 0, time.UTC)
+
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+
+	h := NewActiveflowHandler(mockCache, mockReq)
+
+	ctx := context.Background()
+
+	// every lookup is a miss so all callers funnel into the fallback.
+	mockCache.EXPECT().ActiveflowWebhookGet(gomock.Any(), activeflowID).Return(nil, false, nil).AnyTimes()
+
+	var callCount int32
+	var release sync.WaitGroup
+	release.Add(1)
+	// FlowV1ActiveflowGet must be called exactly once. It blocks on the release
+	// gate so the concurrent callers overlap inside the singleflight window.
+	mockReq.EXPECT().FlowV1ActiveflowGet(gomock.Any(), activeflowID).DoAndReturn(
+		func(_ context.Context, _ uuid.UUID) (*fmactiveflow.Activeflow, error) {
+			atomic.AddInt32(&callCount, 1)
+			release.Wait()
+			return &fmactiveflow.Activeflow{
+				Identity: commonidentity.Identity{
+					ID: activeflowID,
+				},
+				WebhookURI:    "af.test.com",
+				WebhookMethod: fmactiveflow.WebhookMethodPost,
+				TMCreate:      &tmCreate,
+			}, nil
+		},
+	).Times(1)
+	// the single fallback caches a positive entry.
+	mockCache.EXPECT().ActiveflowWebhookSet(gomock.Any(), activeflowID, gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+	var start sync.WaitGroup
+	start.Add(n)
+
+	var done sync.WaitGroup
+	done.Add(n)
+
+	results := make([]*Destination, n)
+	for i := 0; i < n; i++ {
+		go func(idx int) {
+			defer done.Done()
+			start.Done()
+			dest, err := h.Get(ctx, activeflowID)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+			results[idx] = dest
+		}(i)
+	}
+
+	// wait for all goroutines to be in flight, then let the fallback return.
+	start.Wait()
+	time.Sleep(50 * time.Millisecond)
+	release.Done()
+
+	done.Wait()
+
+	if got := atomic.LoadInt32(&callCount); got != 1 {
+		t.Errorf("Wrong match. expect FlowV1ActiveflowGet called once, got: %d", got)
+	}
+	for i, dest := range results {
+		if dest == nil || dest.URI != "af.test.com" {
+			t.Errorf("Wrong match. idx: %d, expect: af.test.com, got: %v", i, dest)
+		}
 	}
 }

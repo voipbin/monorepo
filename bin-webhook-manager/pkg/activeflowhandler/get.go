@@ -28,6 +28,9 @@ func (h *activeflowHandler) Get(ctx context.Context, activeflowID uuid.UUID) (*D
 	entry, found, err := h.cache.ActiveflowWebhookGet(ctx, activeflowID)
 	if err != nil {
 		// Redis error: treat as a miss but do not poison the cache; fall back.
+		// Count it under a distinct label so it is not conflated with a real
+		// cache miss.
+		promActiveflowCacheTotal.WithLabelValues("error").Inc()
 		log.Errorf("Could not get the activeflow webhook from cache. err: %v", err)
 	}
 
@@ -42,7 +45,9 @@ func (h *activeflowHandler) Get(ctx context.Context, activeflowID uuid.UUID) (*D
 	}
 
 	// 2. miss -> singleflight-coalesced fallback.
-	promActiveflowCacheTotal.WithLabelValues("miss").Inc()
+	if err == nil {
+		promActiveflowCacheTotal.WithLabelValues("miss").Inc()
+	}
 
 	res, errFallback, _ := h.sfGroup.Do(activeflowID.String(), func() (interface{}, error) {
 		return h.fallback(ctx, activeflowID)

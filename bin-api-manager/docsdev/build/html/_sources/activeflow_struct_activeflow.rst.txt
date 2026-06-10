@@ -138,3 +138,7 @@ DELETE      Deliver the webhook using an HTTP DELETE request.
 
    When ``webhook_uri`` and ``webhook_method`` are supplied at creation (``POST /activeflows``), activeflow webhook events are delivered to that destination in addition to the customer-level webhook destination. The per-activeflow webhook does not replace the customer-level webhook; both receive the events.
 
+.. warning:: **Do not embed secrets in ``webhook_uri``**
+
+   The activeflow ``webhook_uri`` is included in the activeflow lifecycle webhook payloads that are delivered to your customer-level webhook endpoint. This is your own data delivered to your own endpoint (intended behavior), but you MUST NOT embed secrets, tokens, or credentials in the ``webhook_uri`` query string, since they would be exposed in those payloads and in logs.
+

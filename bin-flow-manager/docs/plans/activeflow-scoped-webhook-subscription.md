@@ -73,9 +73,9 @@ carries that activeflow_id" in this section is to be read literally (only payloa
 ```
 [populate cache]
   bin-webhook-manager subscribes to bin-manager.flow-manager.event
-    activeflow_created → if webhook_uri set: Redis SET webhook:activeflow:{id} = {uri,method}, TTL=T_live
-                         else:               Redis SET webhook:activeflow:{id} = {NEGATIVE}, TTL=T_neg
-    activeflow_deleted → Redis DEL webhook:activeflow:{id}
+    activeflow_created/updated → if webhook_uri set: Redis SET webhook:activeflow:{id} = {uri,method}, TTL=T_live
+                                 else:               Redis SET webhook:activeflow:{id} = {NEGATIVE}, TTL=T_neg
+    activeflow_deleted → Redis SET webhook:activeflow:{id} = {NEGATIVE tombstone, tm_delete}, TTL=T_neg
 
 [deliver on hot path]
   Existing event arrives at SendWebhookToCustomer(customerID, dataType, data)
@@ -131,6 +131,30 @@ nested envelope shape, otherwise tests pass against a wrong fixture (false posit
 Only resources that embed `activeflow_id` (call, recording, and future ones) resolve a
 non-nil id. Everything else falls through unchanged. No change required in producers.
 
+SECURITY (Option A, final decision): the per-activeflow `webhook_uri` / `webhook_method`
+are the customer's OWN data, returned only to the customer's OWN webhook endpoint. They
+are NOT a cross-tenant secret. The activeflow lifecycle events
+(`activeflow_created` / `activeflow_updated` / `activeflow_deleted`) DO carry
+`webhook_uri` / `webhook_method` on `models/activeflow/webhook.go WebhookMessage`. This is
+consistent with the customer-level webhook behavior and with the documented
+`GET /activeflows` REST response + OpenAPI response schema + RST docs, which all expose
+`webhook_uri` / `webhook_method` as response fields. Because `ConvertWebhookMessage()` is
+used for BOTH the webhook event payload AND the REST API response, keeping the fields
+maintains doc/spec/response consistency.
+
+Consequently webhook-manager pre-populates the cache eagerly from the lifecycle event:
+`activeflow_created` / `activeflow_updated` set a POSITIVE entry when `webhook_uri` is
+present, or a NEGATIVE entry when it is empty; `activeflow_deleted` writes a NEGATIVE
+tombstone carrying `tm_delete`. The fallback path (`FlowV1ActiveflowGet`, full Activeflow
+over the internal RPC channel) remains the lazy/miss safety net for events that arrive
+before the lifecycle event is consumed (see 5.6).
+
+CUSTOMER GUIDANCE: because the activeflow `webhook_uri` is included in the activeflow
+lifecycle webhook payloads delivered to the customer-level webhook endpoint, customers
+MUST NOT embed secrets or tokens in the `webhook_uri` query string. This is the customer's
+own data delivered to the customer's own endpoint (intended behavior), but a query-string
+secret would be visible in those payloads and logs.
+
 ### 5.3 Activeflow webhook lifecycle (positive/negative cache)
 
 - `T_live`: TTL for a positive entry. This is a cache lifetime safety net only, NOT a
@@ -184,12 +208,23 @@ SAME hazard 5.4 guards against, reached via a different path.
 Mitigation (REQUIRED): make cache writes monotonic. Store the activeflow's `tm_update`
 (or `tm_delete`) timestamp alongside the entry. A write only applies if its source event
 timestamp is >= the stored one. Concretely:
+- `activeflow_created` / `activeflow_updated` write a POSITIVE entry (T_live) when
+  `webhook_uri` is set, otherwise a NEGATIVE entry (T_neg), carrying the event timestamp
+  as the monotonic Tm (the lifecycle event carries `webhook_uri`, see 5.2 / Option A).
 - `activeflow_deleted` writes a NEGATIVE tombstone (T_neg) carrying the delete timestamp,
   rather than a bare DEL.
-- `activeflow_created`/`updated` SET positive only if the incoming event timestamp is not
-  older than the stored entry's timestamp. A late `created` (older timestamp) will NOT
-  overwrite a newer delete tombstone.
-This converts the race into a self-correcting, last-writer-wins-by-timestamp scheme.
+- The fallback path (5.4) remains the lazy/miss safety net and also writes monotonically,
+  SETting positive only if the resolved source timestamp is not older than the stored
+  entry's timestamp.
+
+The monotonic compare-and-set MUST be ATOMIC. A non-atomic GET-then-SET has a
+read-modify-write race: two concurrent writers can both read the same stale timestamp and
+both decide to write, so the older one can still clobber the newer one. The implementation
+therefore performs the read+compare+set in a single Redis round trip via a Lua script
+(`h.Cache.Eval`): the script GETs the stored entry, decodes its `tm` (stored as a
+unix-nano integer so Lua can compare it numerically), and only `SET ... PX <ttl>` when the
+incoming unix-nano `tm` is >= the stored `tm` (or the key is absent). This converts the
+race into a self-correcting, atomic, last-writer-wins-by-timestamp scheme.
 
 ## 6. Data model changes
 
@@ -220,8 +255,12 @@ when dispatching (same as it already does for the customer-level method via
 the API layer (POST/PUT/GET/DELETE).
 
 - `models/activeflow/field.go` — add `FieldWebhookURI`, `FieldWebhookMethod`.
-- `models/activeflow/webhook.go` — add both fields to `WebhookMessage` +
-  `ConvertWebhookMessage` so `activeflow_created` carries them to webhook-manager.
+- `models/activeflow/webhook.go` — `WebhookMessage` / `ConvertWebhookMessage` DO carry
+  `webhook_uri` / `webhook_method` (Option A, see 5.2). These are the customer's OWN data
+  returned to the customer's OWN endpoint and are documented response fields; the same
+  `ConvertWebhookMessage()` powers BOTH the webhook event payload AND the REST response, so
+  the fields are kept for consistency. webhook-manager pre-populates the cache from these
+  fields and also uses the fallback RPC as a miss safety net.
   (`Matches()` uses reflect.DeepEqual, no change needed there.)
 - `pkg/activeflowhandler/db.go Create(...)` — accept and persist the two new fields.
   DB persistence is automatic via `PrepareFields` reflection on `db` tags
@@ -277,7 +316,12 @@ fallback. No new RPC needed for the read path.
 - `pkg/subscribehandler` WIRING (explicit, added round 1):
   - constructor `NewSubscribeHandler` gains the new activeflow handler dependency.
   - `processEvent` switch gains `publisher == flow-manager && (activeflow_created |
-    activeflow_deleted)` cases; add a `publisherFlowManager` constant.
+    activeflow_updated | activeflow_deleted)` cases; add a `publisherFlowManager` constant.
+    `activeflow_created` / `activeflow_updated` pre-populate the cache from the event
+    payload (the event carries `webhook_uri`, see 5.2 / Option A): POSITIVE when
+    `webhook_uri` is set, NEGATIVE when empty, using the event timestamp as the monotonic
+    Tm. `activeflow_deleted` writes the negative tombstone (id + tm_delete). The fallback
+    path on the first resource event remains the lazy/miss safety net.
   - `cmd/webhook-manager/main.go`: `subscribeTargets` currently single
     `QueueNameCustomerEvent`; add `QueueNameFlowEvent` (=`bin-manager.flow-manager.event`).
     `runSubscribe` signature/wiring updated; pass cacheHandler + reqHandler to the new
@@ -368,16 +412,18 @@ format, see 5.2 and existing `webhook_test.go:39`). A regression guard test MUST
 that an `activeflow_id` placed at the TOP level (wrong shape) does NOT trigger the extra
 delivery — this locks the round-1 blocker.
 
-- flow-manager: Create persists/echoes new fields; ConvertWebhookMessage carries them;
-  update path rejects/ignores webhook_uri (immutability).
+- flow-manager: Create persists new fields; `ConvertWebhookMessage` DOES carry them
+  (Option A: customer's own data, documented response fields, see 5.2); update path
+  rejects/ignores webhook_uri (immutability).
 - webhook-manager cachehandler: positive/negative round-trip; tombstone with timestamp.
 - webhook-manager activeflowhandler: cache hit (positive/negative), miss→fallback→deliver,
   miss→fallback(empty uri)→negative, miss→fallback(tm_delete!=nil)→negative (no positive),
   miss→fallback(NotFound)→transient (not 10m negative), miss→fallback(rpc error)→no cache.
 - single-flight: concurrent misses for one id issue exactly one fallback RPC.
 - monotonic writes (5.6): out-of-order created-after-deleted does NOT resurrect positive.
-- webhook-manager subscribehandler: created(set positive/negative by timestamp),
-  deleted(tombstone), out-of-order resilience.
+- webhook-manager subscribehandler: created/updated pre-populate the cache from the event
+  payload (positive when webhook_uri present, negative when empty), deleted writes the
+  tombstone (id + tm_delete), out-of-order resilience.
 - webhook-manager webhookhandler: SendWebhookToCustomer with
   (a) no activeflow_id (customer-only), (b) positive hit (additive), (c) negative hit
   (customer-only), (d) miss→fallback→additive, (e) miss→fallback error→customer-only,
