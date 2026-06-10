@@ -672,6 +672,45 @@ When the destination answers the call, it will speak the given text message.</p>
 </div>
 <p>For more details on flows, see the <a class="reference internal" href="flow.html#flow-main"><span class="std std-ref">Flow tutorial</span></a>.</p>
 </section>
+<section id="passing-custom-variables-into-the-call-s-flow">
+<h3>Passing custom variables into the call’s flow<a class="headerlink" href="#passing-custom-variables-into-the-call-s-flow" title="Link to this heading">¶</a></h3>
+<p>You can seed per-call context into the flow by adding an optional <code class="docutils literal notranslate"><span class="pre">variables</span></code> object to the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request. Each key becomes referenceable inside the flow as <code class="docutils literal notranslate"><span class="pre">${&lt;key&gt;}</span></code> (for example, in a <code class="docutils literal notranslate"><span class="pre">talk</span></code> action’s text or a <code class="docutils literal notranslate"><span class="pre">webhook</span></code> action’s body).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/calls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
+    --header &#39;Content-Type: application/json&#39; \
+    --data-raw &#39;{
+        &quot;source&quot;: {
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+155****4567&quot;
+        },
+        &quot;destinations&quot;: [
+            {
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+155****6543&quot;
+            }
+        ],
+        &quot;actions&quot;: [
+            {
+                &quot;type&quot;: &quot;talk&quot;,
+                &quot;option&quot;: {
+                    &quot;text&quot;: &quot;Hello ${customer_name}, this is a call about campaign ${campaign_id}.&quot;,
+                    &quot;language&quot;: &quot;en-US&quot;
+                }
+            }
+        ],
+        &quot;variables&quot;: {
+            &quot;campaign_id&quot;: &quot;summer-2026&quot;,
+            &quot;customer_name&quot;: &quot;Jane Doe&quot;
+        }
+    }&#39;
+</pre></div>
+</div>
+<p>At runtime the destination hears “Hello Jane Doe, this is a call about campaign summer-2026.”</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Variable limits and reserved keys</strong></p>
+<p>Values must be strings. The injection accepts at most 100 keys, 64KB total (keys plus values), and 32KB per individual value. Keys beginning with <code class="docutils literal notranslate"><span class="pre">voipbin.</span></code> are reserved for system variables and are silently ignored. See the <a class="reference internal" href="variable_overview.html#variable-overview"><span class="std std-ref">Variables overview</span></a> for the full reference.</p>
+</div>
+</section>
 <section id="anonymous-outbound-call-api-initiated">
 <h3>Anonymous outbound call (API-initiated)<a class="headerlink" href="#anonymous-outbound-call-api-initiated" title="Link to this heading">¶</a></h3>
 <p>You can hide your caller ID on outgoing PSTN calls by setting <code class="docutils literal notranslate"><span class="pre">&quot;anonymous&quot;:</span> <span class="pre">&quot;yes&quot;</span></code> in the <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/calls</span></code> request. The destination sees “Anonymous” or “Private number” instead of your real phone number.</p>
@@ -1604,6 +1643,7 @@ When the destination answer the call, it will play the given media file.</p>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
 <li><a class="reference internal" href="#simple-outbound-call-with-tts">Simple outbound call with TTS</a></li>
 <li><a class="reference internal" href="#simple-outbound-call-with-an-existing-flow">Simple outbound call with an existing flow</a></li>
+<li><a class="reference internal" href="#passing-custom-variables-into-the-call-s-flow">Passing custom variables into the call’s flow</a></li>
 <li><a class="reference internal" href="#anonymous-outbound-call-api-initiated">Anonymous outbound call (API-initiated)</a></li>
 <li><a class="reference internal" href="#anonymous-outbound-call-within-a-flow-connect-action">Anonymous outbound call within a flow (connect action)</a></li>
 <li><a class="reference internal" href="#anonymous-outbound-call-within-a-flow-call-action">Anonymous outbound call within a flow (call action)</a></li>

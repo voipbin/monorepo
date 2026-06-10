@@ -102,6 +102,39 @@ Developers can explicitly define or override values in the flow.
 
 Variables set during execution are scoped to the current flow instance, meaning they persist only during the lifetime of that flow unless explicitly passed elsewhere.
 
+At creation time via the API
+----------------------------
+
+When you start a new flow through the API, you can seed custom variables directly in the request body using the optional ``variables`` field. This is the recommended way to pass per-request context (campaign IDs, customer names, tracking tokens) into a flow without hard-coding them into the flow definition.
+
+The ``variables`` field is a flat key-value object. Each value must be a string, and each key becomes referenceable inside the flow as ``${<key>}``:
+
+.. code::
+
+    {
+        "source": { "type": "tel", "target": "+155****4567" },
+        "destinations": [ { "type": "tel", "target": "+155****6543" } ],
+        "flow_id": "<your-flow-id>",
+        "variables": {
+            "campaign_id": "summer-2026",
+            "customer_name": "Jane Doe"
+        }
+    }
+
+Inside the flow, ``${customer_name}`` resolves to ``Jane Doe`` for that activeflow instance.
+
+The ``variables`` field is currently accepted on:
+
+* ``POST /calls`` - seeds variables into the call's activeflow.
+* ``POST /activeflows`` - seeds variables into the created activeflow.
+
+.. note:: **Limits and reserved keys**
+
+   * Values are strings only. Non-string values are rejected.
+   * Maximum 100 keys, 64KB total (keys + values), 32KB per individual value. The total is measured after reserved and empty keys are dropped.
+   * Keys beginning with ``voipbin.`` are reserved for system variables and are silently ignored if supplied. Use your own namespace (e.g. ``campaign_id``, not ``voipbin.campaign_id``).
+   * If a size or count limit is exceeded, the entire ``variables`` injection is discarded (all keys, not just the offending one). The call or activeflow is still created, but with no externally supplied variables. Reserved keys, by contrast, are dropped individually.
+
 Integration with Applications
 =============================
 

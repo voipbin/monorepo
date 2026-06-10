@@ -79,6 +79,47 @@ If you have already created a flow, you can reference it by ``flow_id`` instead 
 
 For more details on flows, see the :ref:`Flow tutorial <flow-main>`.
 
+Passing custom variables into the call's flow
+---------------------------------------------
+
+You can seed per-call context into the flow by adding an optional ``variables`` object to the ``POST /calls`` request. Each key becomes referenceable inside the flow as ``${<key>}`` (for example, in a ``talk`` action's text or a ``webhook`` action's body).
+
+.. code::
+
+    $ curl --location --request POST 'https://api.voipbin.net/v1.0/calls?token=<YOUR_AUTH_TOKEN>' \
+        --header 'Content-Type: application/json' \
+        --data-raw '{
+            "source": {
+                "type": "tel",
+                "target": "+155****4567"
+            },
+            "destinations": [
+                {
+                    "type": "tel",
+                    "target": "+155****6543"
+                }
+            ],
+            "actions": [
+                {
+                    "type": "talk",
+                    "option": {
+                        "text": "Hello ${customer_name}, this is a call about campaign ${campaign_id}.",
+                        "language": "en-US"
+                    }
+                }
+            ],
+            "variables": {
+                "campaign_id": "summer-2026",
+                "customer_name": "Jane Doe"
+            }
+        }'
+
+At runtime the destination hears "Hello Jane Doe, this is a call about campaign summer-2026."
+
+.. note:: **Variable limits and reserved keys**
+
+   Values must be strings. The injection accepts at most 100 keys, 64KB total (keys plus values), and 32KB per individual value. Keys beginning with ``voipbin.`` are reserved for system variables and are silently ignored. See the :ref:`Variables overview <variable-overview>` for the full reference.
+
 Anonymous outbound call (API-initiated)
 ---------------------------------------
 
