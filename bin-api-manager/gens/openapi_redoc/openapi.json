@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "VoipBin API",
+    "title": "VoIPBin API",
     "version": "1.0.0",
     "x-logo": {
       "url": "https://github.com/pchero/voipbin/blob/master/logos/voipbin-high-resolution-logo-black-transparent.png?raw=true",
@@ -554,6 +554,17 @@
                     "type": "array",
                     "items": {
                       "$ref": "#/components/schemas/FlowManagerAction"
+                    }
+                  },
+                  "variables": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Optional flat key-value context seeded into the new call's flow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total.\n",
+                    "example": {
+                      "campaign_id": "summer-2026",
+                      "customer_name": "Jane Doe"
                     }
                   }
                 }
@@ -5554,6 +5565,17 @@
                     ],
                     "example": "auto",
                     "description": "Controls anonymous caller ID for outbound PSTN calls. \"yes\" — always send anonymous caller ID (RFC 3323 Privacy header). \"no\" — never anonymize, always show real caller ID. \"auto\" — inherit from incoming call's Privacy header (default).\n"
+                  },
+                  "variables": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Optional flat key-value context seeded into the new call's flow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total.\n",
+                    "example": {
+                      "campaign_id": "summer-2026",
+                      "customer_name": "Jane Doe"
+                    }
                   }
                 }
               }

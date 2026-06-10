@@ -264,6 +264,7 @@ func Test_executeActiveflow(t *testing.T) {
 						fmactiveflow.ReferenceTypeConversation,
 						tt.message.ConversationID,
 						uuid.Nil,
+						nil,
 					).Return(nil, fmt.Errorf("create failed"))
 
 				case "variable":
@@ -275,6 +276,7 @@ func Test_executeActiveflow(t *testing.T) {
 						fmactiveflow.ReferenceTypeConversation,
 						tt.message.ConversationID,
 						uuid.Nil,
+						nil,
 					).Return(tt.responseActiveflow, nil)
 					mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, gomock.Any()).Return(fmt.Errorf("variable failed"))
 
@@ -287,6 +289,7 @@ func Test_executeActiveflow(t *testing.T) {
 						fmactiveflow.ReferenceTypeConversation,
 						tt.message.ConversationID,
 						uuid.Nil,
+						nil,
 					).Return(tt.responseActiveflow, nil)
 					mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, gomock.Any()).Return(nil)
 					mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(fmt.Errorf("execute failed"))
@@ -301,6 +304,7 @@ func Test_executeActiveflow(t *testing.T) {
 						fmactiveflow.ReferenceTypeConversation,
 						tt.message.ConversationID,
 						uuid.Nil,
+						nil,
 					).Return(tt.responseActiveflow, nil)
 					mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.responseActiveflow.ID, gomock.Any()).Return(nil)
 					mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)

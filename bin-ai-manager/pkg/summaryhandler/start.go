@@ -314,6 +314,7 @@ func (h *summaryHandler) startOnEndFlow(ctx context.Context, sm *summary.Summary
 		fmactiveflow.ReferenceTypeAI,
 		sm.ID,
 		sm.ActiveflowID,
+		nil,
 	)
 	if err != nil {
 		return errors.Wrapf(err, "could not create the activeflow")

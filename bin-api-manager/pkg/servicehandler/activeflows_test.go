@@ -240,10 +240,11 @@ func Test_ActiveflowCreate(t *testing.T) {
 				fmactiveflow.ReferenceTypeAPI,
 				uuid.Nil,
 				uuid.Nil,
+				gomock.Any(),
 			).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)
 
-			res, err := h.ActiveflowCreate(ctx, tt.agent, tt.activeflowID, tt.flowID, tt.actions)
+			res, err := h.ActiveflowCreate(ctx, tt.agent, tt.activeflowID, tt.flowID, tt.actions, nil)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

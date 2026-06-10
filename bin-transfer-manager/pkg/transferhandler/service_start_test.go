@@ -120,7 +120,7 @@ func TestServiceStart_BlindTransfer(t *testing.T) {
 
 						if tt.callHangupErr == nil {
 							mockReq.EXPECT().CallV1ConfbridgeRing(ctx, tt.transfererCall.ConfbridgeID).Return(nil)
-							mockReq.EXPECT().CallV1GroupcallCreate(ctx, uuid.Nil, tt.transfererCall.CustomerID, tt.flow.ID, tt.transfererCall.Source, tt.transfereeAddresses, gomock.Any(), uuid.Nil, cmgroupcall.RingMethodRingAll, cmgroupcall.AnswerMethodHangupOthers, "").Return(tt.groupcall, tt.groupcallCreateErr)
+							mockReq.EXPECT().CallV1GroupcallCreate(ctx, uuid.Nil, tt.transfererCall.CustomerID, tt.flow.ID, tt.transfererCall.Source, tt.transfereeAddresses, gomock.Any(), uuid.Nil, cmgroupcall.RingMethodRingAll, cmgroupcall.AnswerMethodHangupOthers, "", nil).Return(tt.groupcall, tt.groupcallCreateErr)
 
 							if tt.groupcallCreateErr == nil {
 								mockDB.EXPECT().TransferCreate(ctx, gomock.Any()).Return(nil)
@@ -241,7 +241,7 @@ func TestServiceStart_AttendedTransfer(t *testing.T) {
 						}
 
 						// attendedExecute calls
-						mockReq.EXPECT().CallV1GroupcallCreate(ctx, uuid.Nil, tt.transfererCall.CustomerID, tt.flow.ID, tt.transfererCall.Source, tt.transfereeAddresses, gomock.Any(), uuid.Nil, cmgroupcall.RingMethodRingAll, cmgroupcall.AnswerMethodHangupOthers, "").Return(tt.groupcall, tt.groupcallCreateErr)
+						mockReq.EXPECT().CallV1GroupcallCreate(ctx, uuid.Nil, tt.transfererCall.CustomerID, tt.flow.ID, tt.transfererCall.Source, tt.transfereeAddresses, gomock.Any(), uuid.Nil, cmgroupcall.RingMethodRingAll, cmgroupcall.AnswerMethodHangupOthers, "", nil).Return(tt.groupcall, tt.groupcallCreateErr)
 
 						if tt.groupcallCreateErr == nil {
 							mockDB.EXPECT().TransferCreate(ctx, gomock.Any()).Return(nil)

@@ -81,6 +81,7 @@ func (h *serviceHandler) AIcallCreate(
 		fmactiveflow.ReferenceTypeAPI,
 		uuid.Nil,
 		uuid.Nil,
+		nil,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create activeflow for aicall")

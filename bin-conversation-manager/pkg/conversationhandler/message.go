@@ -65,6 +65,7 @@ func (h *conversationHandler) executeActiveflow(ctx context.Context, cv *convers
 		fmactiveflow.ReferenceTypeConversation,
 		m.ConversationID,
 		uuid.Nil,
+		nil,
 	)
 	if errCreate != nil {
 		return errors.Wrapf(errCreate, "could not create activeflow. flow_id: %s", flowID)

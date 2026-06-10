@@ -192,18 +192,18 @@ func (mr *MockGroupcallHandlerMockRecorder) List(ctx, size, token, filters any) 
 }
 
 // Start mocks base method.
-func (m *MockGroupcallHandler) Start(ctx context.Context, id, customerID, flowID uuid.UUID, source *address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod, anonymous string) (*groupcall.Groupcall, error) {
+func (m *MockGroupcallHandler) Start(ctx context.Context, id, customerID, flowID uuid.UUID, source *address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod, anonymous string, variables map[string]string) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous)
+	ret := m.ctrl.Call(m, "Start", ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous, variables)
 	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockGroupcallHandlerMockRecorder) Start(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous any) *gomock.Call {
+func (mr *MockGroupcallHandlerMockRecorder) Start(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous, variables any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockGroupcallHandler)(nil).Start), ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockGroupcallHandler)(nil).Start), ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous, variables)
 }
 
 // UpdateAnswerCallID mocks base method.

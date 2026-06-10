@@ -71,6 +71,7 @@ type CallHandler interface {
 		connect bool,
 		anonymous string,
 		metadata map[string]interface{},
+		variables map[string]string,
 	) ([]*call.Call, []*groupcall.Groupcall, error)
 	CreateCallOutgoing(
 		ctx context.Context,
@@ -86,6 +87,7 @@ type CallHandler interface {
 		connect bool,
 		anonymous string,
 		metadata map[string]interface{},
+		variables map[string]string,
 	) (*call.Call, error)
 	Start(ctx context.Context, cn *channel.Channel) error
 	Hangup(ctx context.Context, cn *channel.Channel) (*call.Call, error)

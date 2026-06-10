@@ -967,7 +967,7 @@ func Test_actionHandleConnect(t *testing.T) {
 
 			mockReq.EXPECT().CallV1ConfbridgeCreate(ctx, tt.af.CustomerID, tt.af.ID, cmconfbridge.ReferenceTypeCall, tt.af.ReferenceID, cmconfbridge.TypeConnect).Return(tt.responseConfbridge, nil)
 			mockReq.EXPECT().FlowV1FlowCreate(ctx, tt.af.CustomerID, flow.TypeFlow, gomock.Any(), gomock.Any(), tt.expectFlowCreateActions, uuid.Nil, false).Return(tt.responseFlow, nil)
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup, tt.expectAnonymous, nil).Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.responseFlow.CustomerID, tt.responseFlow.ID, tt.af.ReferenceID, tt.expectCallSource, tt.expectCallDestinations, tt.expectEarlyExecution, tt.expectExecuteNextMasterOnHangup, tt.expectAnonymous, nil, nil).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDConfbridgeJoin)
 			if tt.responseUUIDHangup != uuid.Nil {
@@ -4506,7 +4506,7 @@ func Test_actionHandleCall(t *testing.T) {
 				flowID = tt.responseFlow.ID
 			}
 
-			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false, tt.expectAnonymous, nil).Return(tt.responseCall, tt.responseGroupcall, nil)
+			mockReq.EXPECT().CallV1CallsCreate(ctx, tt.af.CustomerID, flowID, tt.masterCallID, tt.source, tt.destinations, tt.earlyExecution, false, tt.expectAnonymous, nil, nil).Return(tt.responseCall, tt.responseGroupcall, nil)
 
 			if errCall := h.actionHandleCall(ctx, tt.af); errCall != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", errCall)

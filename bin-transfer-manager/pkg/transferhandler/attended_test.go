@@ -268,6 +268,7 @@ func Test_attendedExecute(t *testing.T) {
 				cmgroupcall.RingMethodRingAll,
 				cmgroupcall.AnswerMethodHangupOthers,
 				"",
+				nil,
 			).Return(tt.responseGroupcall, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUIDTransfer)
 			mockDB.EXPECT().TransferCreate(ctx, tt.expectTransfer).Return(nil)

@@ -115,6 +115,7 @@ func Test_processV1GroupcallsPost(t *testing.T) {
 				tt.expectRingMethod,
 				tt.expectAnswerMethod,
 				"",
+				gomock.Any(),
 			).Return(tt.responseGroupcall, nil)
 
 			res, err := h.processRequest(tt.request)

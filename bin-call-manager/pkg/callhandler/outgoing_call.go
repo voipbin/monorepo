@@ -52,6 +52,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	connect bool,
 	anonymous string,
 	metadata map[string]interface{},
+	variables map[string]string,
 ) ([]*call.Call, []*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "CreateCallsOutgoing",
@@ -71,7 +72,7 @@ func (h *callHandler) CreateCallsOutgoing(
 	for _, destination := range destinations {
 		switch {
 		case destination.Type == commonaddress.TypeSIP || destination.Type == commonaddress.TypeTel:
-			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect, anonymous, metadata)
+			c, err := h.CreateCallOutgoing(ctx, uuid.Nil, customerID, flowID, uuid.Nil, masterCallID, uuid.Nil, source, destination, earlyExecution, connect, anonymous, metadata, variables)
 			if err != nil {
 				log.WithField("destination", destination).Errorf("Could not create an outgoing call. destination_type: %s, err: %v", destination.Type, err)
 				continue
@@ -81,7 +82,7 @@ func (h *callHandler) CreateCallsOutgoing(
 			resCalls = append(resCalls, c)
 
 		case h.groupcallHandler.IsGroupcallTypeAddress(&destination):
-			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, &source, &destination, anonymous)
+			gc, err := h.createCallsOutgoingGroupcall(ctx, customerID, flowID, masterCallID, &source, &destination, anonymous, variables)
 			if err != nil {
 				log.Errorf("Could not create outgoing groupcall. err: %v", err)
 				continue
@@ -117,6 +118,7 @@ func (h *callHandler) CreateCallOutgoing(
 	executeNextMasterOnHangup bool,
 	anonymous string,
 	metadata map[string]interface{},
+	variables map[string]string,
 ) (*call.Call, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"funcs":                         "CreateCallOutgoing",
@@ -231,7 +233,7 @@ func (h *callHandler) CreateCallOutgoing(
 	}
 
 	// create activeflow
-	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, customerID, flowID, fmactiveflow.ReferenceTypeCall, id, uuid.Nil)
+	af, err := h.reqHandler.FlowV1ActiveflowCreate(ctx, activeflowID, customerID, flowID, fmactiveflow.ReferenceTypeCall, id, uuid.Nil, variables)
 	if err != nil {
 		af = &fmactiveflow.Activeflow{}
 		log.Errorf("Could not get an active flow for outgoing call. Created dummy active flow. This call will be hungup. call: %s, flow: %s, err: %v", id, flowID, err)
@@ -489,6 +491,7 @@ func (h *callHandler) createCallsOutgoingGroupcall(
 	source *commonaddress.Address,
 	destination *commonaddress.Address,
 	anonymous string,
+	variables map[string]string,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "createCallsOutgoingGroupcall",
@@ -501,7 +504,7 @@ func (h *callHandler) createCallsOutgoingGroupcall(
 	})
 
 	// start groupcall
-	res, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, source, []commonaddress.Address{*destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, anonymous)
+	res, err := h.groupcallHandler.Start(ctx, uuid.Nil, customerID, flowID, source, []commonaddress.Address{*destination}, masterCallID, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, anonymous, variables)
 	if err != nil {
 		log.Errorf("Could not start the groupcall. err: %v", err)
 		return nil, errors.Wrap(err, "Could not start the groupcall.")

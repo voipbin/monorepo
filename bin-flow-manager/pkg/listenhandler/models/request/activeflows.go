@@ -19,6 +19,11 @@ type V1DataActiveFlowsPost struct {
 	ReferenceType         activeflow.ReferenceType `json:"reference_type"`
 	ReferenceID           uuid.UUID                `json:"reference_id"`
 	ReferenceActiveflowID uuid.UUID                `json:"reference_activeflow_id,omitempty"`
+
+	// Variables are optional externally-supplied initial variables seeded into the new
+	// activeflow. Reserved keys (voipbin.*) and over-limit injections are dropped by
+	// flow-manager's sanitizer; this is best-effort and never fails activeflow creation.
+	Variables map[string]string `json:"variables,omitempty"`
 }
 
 // V1DataActiveFlowsIDNextGet is

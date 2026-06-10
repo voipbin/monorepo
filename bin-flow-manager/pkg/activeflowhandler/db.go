@@ -27,6 +27,7 @@ func (h *activeflowHandler) Create(
 	referenceID uuid.UUID,
 	referenceActiveflowID uuid.UUID,
 	flowID uuid.UUID,
+	initialVariables map[string]string,
 ) (*activeflow.Activeflow, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                    "Create",
@@ -105,7 +106,7 @@ func (h *activeflowHandler) Create(
 	}
 
 	// variable create
-	v, err := h.variableCreate(ctx, res)
+	v, err := h.variableCreate(ctx, res, initialVariables)
 	if err != nil {
 		// we could not set the variable. but write the log only.
 		log.Errorf("Could not set the variable. err: %v", err)

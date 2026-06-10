@@ -27,6 +27,7 @@ func (h *groupcallHandler) Start(
 	ringMethod groupcall.RingMethod,
 	answerMethod groupcall.AnswerMethod,
 	anonymous string,
+	variables map[string]string,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                "Start",
@@ -60,10 +61,10 @@ func (h *groupcallHandler) Start(
 
 	switch ringMethod {
 	case groupcall.RingMethodRingAll:
-		return h.startRingall(ctx, id, customerID, source, destinations, flowID, masterCallID, masterGroupcallID, answerMethod, anonymous)
+		return h.startRingall(ctx, id, customerID, source, destinations, flowID, masterCallID, masterGroupcallID, answerMethod, anonymous, variables)
 
 	case groupcall.RingMethodLinear:
-		return h.startLinear(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, answerMethod, anonymous)
+		return h.startLinear(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, answerMethod, anonymous, variables)
 
 	default:
 		log.Errorf("Unsupported ring method. ring_method: %s", ringMethod)
@@ -83,6 +84,7 @@ func (h *groupcallHandler) startRingall(
 	masterGroupcallID uuid.UUID,
 	answerMethod groupcall.AnswerMethod,
 	anonymous string,
+	variables map[string]string,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                "startRingall",
@@ -99,7 +101,7 @@ func (h *groupcallHandler) startRingall(
 
 	if len(destinations) == 1 {
 		// single destination
-		res, err := h.startWithDestination(ctx, id, customerID, flowID, source, &destinations[0], masterCallID, masterGroupcallID, groupcall.RingMethodRingAll, answerMethod, anonymous)
+		res, err := h.startWithDestination(ctx, id, customerID, flowID, source, &destinations[0], masterCallID, masterGroupcallID, groupcall.RingMethodRingAll, answerMethod, anonymous, variables)
 		if err != nil {
 			log.Errorf("Could not start the groupcall with destination. err: %v", err)
 			return nil, errors.Wrap(err, "could not start the groupcall with destination")
@@ -134,7 +136,7 @@ func (h *groupcallHandler) startRingall(
 	for chainedGroupcallID, destination := range mapGroupcalls {
 		go func(groupcallID uuid.UUID, destination *commonaddress.Address) {
 			// create subgroupcalls
-			tmp, err := h.startWithDestination(ctx, groupcallID, customerID, flowID, source, destination, masterCallID, id, groupcall.RingMethodRingAll, answerMethod, anonymous)
+			tmp, err := h.startWithDestination(ctx, groupcallID, customerID, flowID, source, destination, masterCallID, id, groupcall.RingMethodRingAll, answerMethod, anonymous, variables)
 			if err != nil {
 				log.WithField("dial_destination", destination).Errorf("Could not create the chained groupcall info. err: %v", err)
 				_, _ = h.HangupGroupcall(ctx, id)
@@ -148,7 +150,7 @@ func (h *groupcallHandler) startRingall(
 	for chainedCallID, destination := range mapCalls {
 		go func(callID uuid.UUID, destination *commonaddress.Address) {
 			// we don't allow to add the connect option for groupcall
-			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, id, false, false, anonymous, nil)
+			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, callID, customerID, flowID, uuid.Nil, masterCallID, source, destination, id, false, false, anonymous, nil, variables)
 			if err != nil {
 				log.WithField("dial_destination", destination).Errorf("Could not create a chained call. err: %v", err)
 				_, _ = h.HangupGroupcall(ctx, id)
@@ -173,6 +175,7 @@ func (h *groupcallHandler) startLinear(
 	masterGroupcallID uuid.UUID,
 	answerMethod groupcall.AnswerMethod,
 	anonymous string,
+	variables map[string]string,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                "startLinear",
@@ -213,7 +216,7 @@ func (h *groupcallHandler) startLinear(
 	go func() {
 		// create chained groupcall/call
 		if h.IsGroupcallTypeAddress(&destination) {
-			tmp, err := h.startWithDestination(ctx, tmpID, customerID, flowID, source, &destination, masterCallID, masterGroupcallID, groupcall.RingMethodLinear, groupcall.AnswerMethodHangupOthers, anonymous)
+			tmp, err := h.startWithDestination(ctx, tmpID, customerID, flowID, source, &destination, masterCallID, masterGroupcallID, groupcall.RingMethodLinear, groupcall.AnswerMethodHangupOthers, anonymous, variables)
 
 			// tmp, err := h.dialChainedGroupcall(ctx, tmpID, customerID, flowID, source, &dialDestination, masterCallID, id)
 			if err != nil {
@@ -224,7 +227,7 @@ func (h *groupcallHandler) startLinear(
 			log.WithField("chained_groupcall", tmp).Debugf("Created chained groupcall info. chained_groupcall_id: %s", tmp.ID)
 		} else {
 			// we don't allow to add the connect option for groupcall
-			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, tmpID, customerID, flowID, uuid.Nil, masterCallID, source, &destination, res.ID, false, false, anonymous, nil)
+			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, tmpID, customerID, flowID, uuid.Nil, masterCallID, source, &destination, res.ID, false, false, anonymous, nil, variables)
 			if err != nil {
 				log.Errorf("Could not create the chained call info. err: %v", err)
 				_, _ = h.HangupGroupcall(ctx, id)
@@ -260,6 +263,7 @@ func (h *groupcallHandler) startWithDestination(
 	ringMethod groupcall.RingMethod,
 	answerMethod groupcall.AnswerMethod,
 	anonymous string,
+	variables map[string]string,
 ) (*groupcall.Groupcall, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":                "startWithDestination",
@@ -328,7 +332,7 @@ func (h *groupcallHandler) startWithDestination(
 				*targetDestination,
 			}
 
-			tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, targetGroupcallID, customerID, flowID, *source, dests, masterCallID, id, dialRingMethod, groupcall.AnswerMethodHangupOthers, anonymous)
+			tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, targetGroupcallID, customerID, flowID, *source, dests, masterCallID, id, dialRingMethod, groupcall.AnswerMethodHangupOthers, anonymous, variables)
 			if err != nil {
 				log.Errorf("Could not create chained groupcall info. err: %v", err)
 				return
@@ -348,7 +352,7 @@ func (h *groupcallHandler) startWithDestination(
 			log.Debugf("Creating chained call. chained_groupcall_id: %v", targetCallID)
 
 			// we don't allow to add the connect option for groupcall
-			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, targetCallID, customerID, flowID, uuid.Nil, masterCallID, source, targetDestination, id, false, false, anonymous, nil)
+			tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, targetCallID, customerID, flowID, uuid.Nil, masterCallID, source, targetDestination, id, false, false, anonymous, nil, variables)
 			if err != nil {
 				log.WithField("dial_destination", targetDestination).Errorf("Could not create a chained call. err: %v", err)
 				_, _ = h.HangupCall(ctx, id)

@@ -45,7 +45,7 @@ func (h *queuecallHandler) Execute(ctx context.Context, id uuid.UUID, agentID uu
 		},
 	}
 
-	calls, groupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, qc.CustomerID, f.ID, qc.ReferenceID, &qc.Source, destinations, false, false, "", nil)
+	calls, groupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, qc.CustomerID, f.ID, qc.ReferenceID, &qc.Source, destinations, false, false, "", nil, nil)
 	if err != nil {
 		log.Errorf("Could not create a call to the agent. err: %v", err)
 		return nil, errors.Wrap(err, "Could not create a call to the agent.")

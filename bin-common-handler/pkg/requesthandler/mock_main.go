@@ -1843,18 +1843,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallAddChainedCall(ctx, callID, 
 }
 
 // CallV1CallCreateWithID mocks base method.
-func (m *MockRequestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, groupcallID uuid.UUID, ealryExecution, connect bool, anonymous string, metadata map[string]any) (*call.Call, error) {
+func (m *MockRequestHandler) CallV1CallCreateWithID(ctx context.Context, id, customerID, flowID, activeflowID, masterCallID uuid.UUID, source, destination *address.Address, groupcallID uuid.UUID, ealryExecution, connect bool, anonymous string, metadata map[string]any, variables map[string]string) (*call.Call, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, connect, anonymous, metadata)
+	ret := m.ctrl.Call(m, "CallV1CallCreateWithID", ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, connect, anonymous, metadata, variables)
 	ret0, _ := ret[0].(*call.Call)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1CallCreateWithID indicates an expected call of CallV1CallCreateWithID.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallCreateWithID(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, connect, anonymous, metadata any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallCreateWithID(ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, connect, anonymous, metadata, variables any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallCreateWithID), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, connect, anonymous, metadata)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallCreateWithID", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallCreateWithID), ctx, id, customerID, flowID, activeflowID, masterCallID, source, destination, groupcallID, ealryExecution, connect, anonymous, metadata, variables)
 }
 
 // CallV1CallDelete mocks base method.
@@ -2205,9 +2205,9 @@ func (mr *MockRequestHandlerMockRecorder) CallV1CallUpdateConfbridgeID(ctx, call
 }
 
 // CallV1CallsCreate mocks base method.
-func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address, ealryExecution, connect bool, anonymous string, metadata map[string]any) ([]*call.Call, []*groupcall.Groupcall, error) {
+func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, flowID, masterCallID uuid.UUID, source *address.Address, destinations []address.Address, ealryExecution, connect bool, anonymous string, metadata map[string]any, variables map[string]string) ([]*call.Call, []*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1CallsCreate", ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect, anonymous, metadata)
+	ret := m.ctrl.Call(m, "CallV1CallsCreate", ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect, anonymous, metadata, variables)
 	ret0, _ := ret[0].([]*call.Call)
 	ret1, _ := ret[1].([]*groupcall.Groupcall)
 	ret2, _ := ret[2].(error)
@@ -2215,9 +2215,9 @@ func (m *MockRequestHandler) CallV1CallsCreate(ctx context.Context, customerID, 
 }
 
 // CallV1CallsCreate indicates an expected call of CallV1CallsCreate.
-func (mr *MockRequestHandlerMockRecorder) CallV1CallsCreate(ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect, anonymous, metadata any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1CallsCreate(ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect, anonymous, metadata, variables any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallsCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallsCreate), ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect, anonymous, metadata)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1CallsCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1CallsCreate), ctx, customerID, flowID, masterCallID, source, destinations, ealryExecution, connect, anonymous, metadata, variables)
 }
 
 // CallV1ChannelGet mocks base method.
@@ -2516,18 +2516,18 @@ func (mr *MockRequestHandlerMockRecorder) CallV1ExternalMediaStop(ctx, externalM
 }
 
 // CallV1GroupcallCreate mocks base method.
-func (m *MockRequestHandler) CallV1GroupcallCreate(ctx context.Context, id, customerID, flowID uuid.UUID, source address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod, anonymous string) (*groupcall.Groupcall, error) {
+func (m *MockRequestHandler) CallV1GroupcallCreate(ctx context.Context, id, customerID, flowID uuid.UUID, source address.Address, destinations []address.Address, masterCallID, masterGroupcallID uuid.UUID, ringMethod groupcall.RingMethod, answerMethod groupcall.AnswerMethod, anonymous string, variables map[string]string) (*groupcall.Groupcall, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CallV1GroupcallCreate", ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous)
+	ret := m.ctrl.Call(m, "CallV1GroupcallCreate", ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous, variables)
 	ret0, _ := ret[0].(*groupcall.Groupcall)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CallV1GroupcallCreate indicates an expected call of CallV1GroupcallCreate.
-func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallCreate(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) CallV1GroupcallCreate(ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous, variables any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallCreate), ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallV1GroupcallCreate", reflect.TypeOf((*MockRequestHandler)(nil).CallV1GroupcallCreate), ctx, id, customerID, flowID, source, destinations, masterCallID, masterGroupcallID, ringMethod, answerMethod, anonymous, variables)
 }
 
 // CallV1GroupcallDelete mocks base method.
@@ -4291,18 +4291,18 @@ func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowContinue(ctx, activefl
 }
 
 // FlowV1ActiveflowCreate mocks base method.
-func (m *MockRequestHandler) FlowV1ActiveflowCreate(ctx context.Context, activeflowID, customerID, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID, referenceActiveflowID uuid.UUID) (*activeflow.Activeflow, error) {
+func (m *MockRequestHandler) FlowV1ActiveflowCreate(ctx context.Context, activeflowID, customerID, flowID uuid.UUID, referenceType activeflow.ReferenceType, referenceID, referenceActiveflowID uuid.UUID, variables map[string]string) (*activeflow.Activeflow, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FlowV1ActiveflowCreate", ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID)
+	ret := m.ctrl.Call(m, "FlowV1ActiveflowCreate", ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables)
 	ret0, _ := ret[0].(*activeflow.Activeflow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // FlowV1ActiveflowCreate indicates an expected call of FlowV1ActiveflowCreate.
-func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowCreate(ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) FlowV1ActiveflowCreate(ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowCreate), ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FlowV1ActiveflowCreate", reflect.TypeOf((*MockRequestHandler)(nil).FlowV1ActiveflowCreate), ctx, activeflowID, customerID, flowID, referenceType, referenceID, referenceActiveflowID, variables)
 }
 
 // FlowV1ActiveflowDelete mocks base method.

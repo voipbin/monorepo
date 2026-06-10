@@ -474,6 +474,7 @@ func Test_hookLine(t *testing.T) {
 					fmactiveflow.ReferenceTypeConversation,
 					r.Message.ConversationID,
 					uuid.Nil,
+					nil,
 				).Return(nil, fmt.Errorf("activeflow create failed"))
 			} else if tt.expectActiveflowCalls > 0 {
 				for _, r := range flowResults {
@@ -486,6 +487,7 @@ func Test_hookLine(t *testing.T) {
 						fmactiveflow.ReferenceTypeConversation,
 						r.Message.ConversationID,
 						uuid.Nil,
+						nil,
 					).Return(tt.responseActiveflow, nil)
 					mockReq.EXPECT().FlowV1VariableSetVariable(ctx, activeflowID, gomock.Any()).Return(nil)
 					mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, activeflowID).Return(nil)

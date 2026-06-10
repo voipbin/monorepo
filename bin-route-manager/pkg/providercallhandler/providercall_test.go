@@ -110,8 +110,8 @@ func Test_Create_NoActions_HappyPath(t *testing.T) {
 
 	// No FlowV1FlowCreate — caller provided a flow_id.
 	mockReq.EXPECT().
-		CallV1CallsCreate(ctx, customerID, flowID, uuid.Nil, source, destinations, false, false, "auto", gomock.Any()).
-		DoAndReturn(func(_ context.Context, _, _, _ uuid.UUID, _ *commonaddress.Address, _ []commonaddress.Address, _, _ bool, _ string, md map[string]any) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error) {
+		CallV1CallsCreate(ctx, customerID, flowID, uuid.Nil, source, destinations, false, false, "auto", gomock.Any(), gomock.Any()).
+		DoAndReturn(func(_ context.Context, _, _, _ uuid.UUID, _ *commonaddress.Address, _ []commonaddress.Address, _, _ bool, _ string, md map[string]any, _ map[string]string) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error) {
 			// Verify server-side metadata — both keys must be set by this handler.
 			if md[string(cmcall.MetadataKeyRouteProviderIDs)] == nil {
 				t.Errorf("expected metadata.route_provider_ids to be set, got %v", md)
@@ -159,7 +159,7 @@ func Test_Create_TempFlowCleanup_OnCallsCreateFailure(t *testing.T) {
 		Return(stubFlow(tempFlowID), nil)
 	// Call creation fails downstream.
 	mockReq.EXPECT().
-		CallV1CallsCreate(ctx, customerID, tempFlowID, uuid.Nil, nil, destinations, false, false, "auto", gomock.Any()).
+		CallV1CallsCreate(ctx, customerID, tempFlowID, uuid.Nil, nil, destinations, false, false, "auto", gomock.Any(), gomock.Any()).
 		Return(nil, nil, errTestFailure)
 	// Cleanup of the orphaned temp flow MUST fire.
 	mockReq.EXPECT().FlowV1FlowDelete(ctx, tempFlowID).Return(stubFlow(tempFlowID), nil)
@@ -195,7 +195,7 @@ func Test_Create_WithActions_CreatesTempFlow(t *testing.T) {
 		Return(stubFlow(tempFlowID), nil)
 	// Call-create uses the temp flow's ID.
 	mockReq.EXPECT().
-		CallV1CallsCreate(ctx, customerID, tempFlowID, uuid.Nil, nil, destinations, false, false, "auto", gomock.Any()).
+		CallV1CallsCreate(ctx, customerID, tempFlowID, uuid.Nil, nil, destinations, false, false, "auto", gomock.Any(), gomock.Any()).
 		Return([]*cmcall.Call{{Identity: commonidentity.Identity{ID: createdCallID}}}, nil, nil)
 	mockDB.EXPECT().ProviderCallCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().ProviderCallGet(ctx, gomock.Any()).Return(persistedPC, nil)

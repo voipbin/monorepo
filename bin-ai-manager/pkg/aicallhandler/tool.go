@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
+	fmvariable "monorepo/bin-flow-manager/models/variable"
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 
 	"github.com/gofrs/uuid"
@@ -213,8 +214,18 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 		Source       *commonaddress.Address  `json:"source,omitempty"`
 		Destinations []commonaddress.Address `json:"destinations"`
 		Anonymous    string                  `json:"anonymous,omitempty"`
+		// Variables is parsed as map[string]any then coerced to map[string]string, because an
+		// LLM frequently emits non-string scalar values (e.g. {"campaign_id": 123}). Unmarshaling
+		// straight into map[string]string would fail and abort the whole tool call.
+		Variables map[string]any `json:"variables,omitempty"`
 	}
-	if errUnmarshal := json.Unmarshal([]byte(tool.Function.Arguments), &args); errUnmarshal != nil {
+	// Use a json.Decoder with UseNumber() so JSON numbers in the Variables map[string]any field
+	// arrive as json.Number (preserving large-integer precision) rather than float64. UseNumber
+	// only affects numbers decoded into interface{}, so typed fields (FlowID uuid.UUID, etc.)
+	// still unmarshal correctly.
+	dec := json.NewDecoder(strings.NewReader(tool.Function.Arguments))
+	dec.UseNumber()
+	if errUnmarshal := dec.Decode(&args); errUnmarshal != nil {
 		fillFailed(res, errUnmarshal)
 		return res
 	}
@@ -233,6 +244,11 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 			return res
 		}
 	}
+
+	// coerce LLM-supplied variables (map[string]any) to map[string]string. Scalar values are
+	// stringified; non-scalar values are skipped. Final sanitization (reserved-key drop, size
+	// caps) is enforced by flow-manager, not here.
+	variables := fmvariable.NewVariablesFromMap(args.Variables)
 
 	// 2. SECURITY: flow ownership (IDOR prevention). Both not-found and cross-customer return the
 	//    same byte-identical masked error so the tool is not a flow-existence oracle.
@@ -257,7 +273,7 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 		src = *args.Source
 	}
 	calls, groupcalls, err := h.reqHandler.CallV1CallsCreate(
-		ctx, c.CustomerID, args.FlowID, uuid.Nil, &src, args.Destinations, false, false, args.Anonymous, nil)
+		ctx, c.CustomerID, args.FlowID, uuid.Nil, &src, args.Destinations, false, false, args.Anonymous, nil, variables)
 	// CONTRACT: CreateCallsOutgoing returns an error ONLY when ALL destinations fail (nil,nil,err).
 	// Partial/full success returns (calls,groupcalls,nil). There is no (err + non-empty slices) case,
 	// so a single err!=nil check is correct and total.

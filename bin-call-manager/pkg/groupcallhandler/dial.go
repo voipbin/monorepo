@@ -84,7 +84,10 @@ func (h *groupcallHandler) dialNextDestinationGroupcall(ctx context.Context, gc 
 
 	// create a chained groupcall
 	go func() {
-		tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, id, res.CustomerID, res.FlowID, *res.Source, dialDestinations, res.MasterCallID, res.ID, ringMethod, res.AnswerMethod, gc.Anonymous)
+		// variables: nil by design. The groupcall model does not persist initial variables, so
+		// subsequent Linear-ring legs cannot replay them. Only the first leg (via Start) receives
+		// injected variables. Persisting variables on the groupcall is deferred to a follow-up.
+		tmp, err := h.reqHandler.CallV1GroupcallCreate(ctx, id, res.CustomerID, res.FlowID, *res.Source, dialDestinations, res.MasterCallID, res.ID, ringMethod, res.AnswerMethod, gc.Anonymous, nil)
 		if err != nil {
 			log.Errorf("Could not create a chained groupcall info. err: %v", err)
 			_, _ = h.HangupGroupcall(ctx, gc.ID)
@@ -116,7 +119,10 @@ func (h *groupcallHandler) dialNextDestinationCall(ctx context.Context, gc *grou
 	// create chained call
 	go func() {
 		// about the connect option. and because the groupcall is making the multiple outgoing calls, it is not possible to add the connect option.
-		tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, id, gc.CustomerID, gc.FlowID, uuid.Nil, gc.MasterCallID, gc.Source, destination, res.ID, false, false, gc.Anonymous, nil)
+		// variables: nil by design. The groupcall model does not persist initial variables, so
+		// subsequent Linear-ring legs cannot replay them. Only the first leg (via Start) receives
+		// injected variables. Persisting variables on the groupcall is deferred to a follow-up.
+		tmp, err := h.reqHandler.CallV1CallCreateWithID(ctx, id, gc.CustomerID, gc.FlowID, uuid.Nil, gc.MasterCallID, gc.Source, destination, res.ID, false, false, gc.Anonymous, nil, nil)
 		if err != nil {
 			// could not create a call, but we don't stop the call creating.
 			log.Errorf("Could not create a chained call. err: %v", err)

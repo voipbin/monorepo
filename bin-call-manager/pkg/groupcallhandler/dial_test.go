@@ -114,7 +114,7 @@ func Test_dialNextDestination_call(t *testing.T) {
 			mockDB.EXPECT().GroupcallSetCallIDsAndCallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectCallIDs, tt.expectCallCount, tt.expectDialIndex).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.responseGroupcall, nil)
 
-			mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.groupcall.CustomerID, tt.groupcall.FlowID, uuid.Nil, tt.groupcall.MasterCallID, tt.groupcall.Source, tt.expectDestination, tt.responseGroupcall.ID, false, false, "", nil).Return(tt.responseCall, nil)
+			mockReq.EXPECT().CallV1CallCreateWithID(ctx, tt.responseUUID, tt.groupcall.CustomerID, tt.groupcall.FlowID, uuid.Nil, tt.groupcall.MasterCallID, tt.groupcall.Source, tt.expectDestination, tt.responseGroupcall.ID, false, false, "", nil, gomock.Any()).Return(tt.responseCall, nil)
 
 			res, err := h.dialNextDestination(ctx, tt.groupcall)
 			if err != nil {
@@ -244,7 +244,7 @@ func Test_dialNextDestination_groupcall(t *testing.T) {
 			mockDB.EXPECT().GroupcallSetGroupcallIDsAndGroupcallCountAndDialIndex(ctx, tt.groupcall.ID, tt.expectGroupcallIDs, tt.expectGroupcallCount, tt.expectDialIndex).Return(nil)
 			mockDB.EXPECT().GroupcallGet(ctx, tt.groupcall.ID).Return(tt.responseGroupcall, nil)
 
-			mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.responseUUID, tt.responseGroupcall.CustomerID, tt.responseGroupcall.FlowID, *tt.responseGroupcall.Source, tt.responseAgent.Addresses, tt.responseGroupcall.MasterCallID, tt.responseGroupcall.ID, tt.expectGroupcallRingMethod, tt.responseGroupcall.AnswerMethod, "").Return(&groupcall.Groupcall{}, nil)
+			mockReq.EXPECT().CallV1GroupcallCreate(ctx, tt.responseUUID, tt.responseGroupcall.CustomerID, tt.responseGroupcall.FlowID, *tt.responseGroupcall.Source, tt.responseAgent.Addresses, tt.responseGroupcall.MasterCallID, tt.responseGroupcall.ID, tt.expectGroupcallRingMethod, tt.responseGroupcall.AnswerMethod, "", gomock.Any()).Return(&groupcall.Groupcall{}, nil)
 
 			res, err := h.dialNextDestination(ctx, tt.groupcall)
 			if err != nil {

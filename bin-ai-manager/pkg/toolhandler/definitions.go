@@ -593,6 +593,15 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 					"type":        "string",
 					"description": "Optional caller-ID privacy: yes | no | auto (default auto).",
 				},
+				"variables": map[string]any{
+					"type": "object",
+					"description": "Optional flat key-value context seeded into the new call's flow as runtime " +
+						"variables, readable in the flow via ${key}. String values only. Reserved keys are " +
+						"ignored: any key starting with 'voipbin.'. Max 100 keys, 64KB total.",
+					"additionalProperties": map[string]any{
+						"type": "string",
+					},
+				},
 			},
 			"required": []string{"flow_id", "destinations"},
 		},

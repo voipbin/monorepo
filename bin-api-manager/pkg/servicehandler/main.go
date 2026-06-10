@@ -119,7 +119,7 @@ type ServiceHandler interface {
 	AccesskeyUpdate(ctx context.Context, a *auth.AuthIdentity, accesskeyID uuid.UUID, name string, detail string) (*csaccesskey.WebhookMessage, error)
 
 	// activeflows
-	ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action) (*fmactiveflow.WebhookMessage, error)
+	ActiveflowCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, flowID uuid.UUID, actions []fmaction.Action, variables map[string]string) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowDelete(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowGet(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID) (*fmactiveflow.WebhookMessage, error)
 	ActiveflowList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*fmactiveflow.WebhookMessage, error)
@@ -178,7 +178,7 @@ type ServiceHandler interface {
 	BillingGet(ctx context.Context, a *auth.AuthIdentity, billingID uuid.UUID) (*bmbilling.WebhookMessage, error)
 
 	// call handlers
-	CallCreate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address, anonymous string) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error)
+	CallCreate(ctx context.Context, a *auth.AuthIdentity, flowID uuid.UUID, actions []fmaction.Action, source *commonaddress.Address, destinations []commonaddress.Address, anonymous string, variables map[string]string) ([]*cmcall.WebhookMessage, []*cmgroupcall.WebhookMessage, error)
 	CallGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error)
 	CallList(ctx context.Context, a *auth.AuthIdentity, size uint64, token string) ([]*cmcall.WebhookMessage, error)
 	CallDelete(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*cmcall.WebhookMessage, error)

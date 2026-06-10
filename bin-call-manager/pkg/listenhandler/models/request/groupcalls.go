@@ -22,6 +22,7 @@ type V1DataGroupcallsPost struct {
 	RingMethod        groupcall.RingMethod    `json:"ring_method,omitempty"`
 	AnswerMethod      groupcall.AnswerMethod  `json:"answer_method,omitempty"`
 	Anonymous         string                  `json:"anonymous,omitempty"`
+	Variables         map[string]string       `json:"variables,omitempty"` // Optional external initial variables seeded into each leg's activeflow (sanitized by flow-manager).
 }
 
 // V1DataGroupcallsIDAnswerGroupcallIDPost is

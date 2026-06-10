@@ -112,7 +112,7 @@ func Test_CallsPOST(t *testing.T) {
 			req, _ := http.NewRequest("POST", "/calls", bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().CallCreate(req.Context(), tt.agent, tt.expectFlowID, tt.expectActions, tt.expectSource, tt.expectDestinations, "").Return(tt.responseCalls, tt.responseGroupcalls, nil)
+			mockSvc.EXPECT().CallCreate(req.Context(), tt.agent, tt.expectFlowID, tt.expectActions, tt.expectSource, tt.expectDestinations, "", gomock.Any()).Return(tt.responseCalls, tt.responseGroupcalls, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

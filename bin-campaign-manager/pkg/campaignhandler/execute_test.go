@@ -168,6 +168,7 @@ func Test_ExecuteWithTypeFlow(t *testing.T) {
 				activeflow.ReferenceTypeCampaign,
 				tt.responseCampaigncall.ID,
 				uuid.Nil,
+				nil,
 			).Return(tt.responseActiveflow, nil)
 			mockReq.EXPECT().FlowV1ActiveflowExecute(ctx, tt.responseActiveflow.ID).Return(nil)
 

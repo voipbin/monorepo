@@ -21,6 +21,17 @@ post:
               type: array
               items:
                 $ref: '#/components/schemas/FlowManagerAction'
+            variables:
+              type: object
+              additionalProperties:
+                type: string
+              description: >
+                Optional flat key-value context seeded into the new call's flow as runtime variables,
+                readable in the flow via ${key}. String values only. Reserved keys starting with
+                'voipbin.' are ignored. Max 100 keys, 64KB total.
+              example:
+                campaign_id: "summer-2026"
+                customer_name: "Jane Doe"
   responses:
     '201':
       description: activeflow created successfully.

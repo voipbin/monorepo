@@ -508,6 +508,7 @@ type RequestHandler interface {
 		connect bool,
 		anonymous string,
 		metadata map[string]interface{},
+		variables map[string]string,
 	) ([]*cmcall.Call, []*cmgroupcall.Groupcall, error)
 	CallV1CallCreateWithID(
 		ctx context.Context,
@@ -523,6 +524,7 @@ type RequestHandler interface {
 		connect bool,
 		anonymous string,
 		metadata map[string]interface{},
+		variables map[string]string,
 	) (*cmcall.Call, error)
 	CallV1CallDelete(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
 	CallV1CallGet(ctx context.Context, callID uuid.UUID) (*cmcall.Call, error)
@@ -630,6 +632,7 @@ type RequestHandler interface {
 		ringMethod cmgroupcall.RingMethod,
 		answerMethod cmgroupcall.AnswerMethod,
 		anonymous string,
+		variables map[string]string,
 	) (*cmgroupcall.Groupcall, error)
 	CallV1GroupcallList(ctx context.Context, pageToken string, pageSize uint64, filters map[cmgroupcall.Field]any) ([]cmgroupcall.Groupcall, error)
 	CallV1GroupcallGet(ctx context.Context, groupcallID uuid.UUID) (*cmgroupcall.Groupcall, error)
@@ -987,6 +990,7 @@ type RequestHandler interface {
 		referenceType fmactiveflow.ReferenceType,
 		referenceID uuid.UUID,
 		referenceActiveflowID uuid.UUID,
+		variables map[string]string,
 	) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowDelete(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)
 	FlowV1ActiveflowGet(ctx context.Context, activeflowID uuid.UUID) (*fmactiveflow.Activeflow, error)

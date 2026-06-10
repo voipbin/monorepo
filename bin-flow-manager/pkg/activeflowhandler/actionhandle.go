@@ -536,7 +536,7 @@ func (h *activeflowHandler) actionHandleConnect(ctx context.Context, af *activef
 	}
 
 	// create a call for connect
-	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, af.ReferenceID, &opt.Source, opt.Destinations, earlyExecution, executeNext, opt.Anonymous, nil)
+	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, f.CustomerID, f.ID, af.ReferenceID, &opt.Source, opt.Destinations, earlyExecution, executeNext, opt.Anonymous, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
@@ -930,7 +930,7 @@ func (h *activeflowHandler) actionHandleCall(ctx context.Context, af *activeflow
 		masterCallID = af.ReferenceID
 	}
 
-	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution, false, opt.Anonymous, nil)
+	resCalls, resGroupcalls, err := h.reqHandler.CallV1CallsCreate(ctx, af.CustomerID, flowID, masterCallID, opt.Source, opt.Destinations, opt.EarlyExecution, false, opt.Anonymous, nil, nil)
 	if err != nil {
 		log.Errorf("Could not create a outgoing call for connect. err: %v", err)
 		return err
