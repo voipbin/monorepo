@@ -7031,15 +7031,16 @@ type GetActiveflowsParams struct {
 
 // PostActiveflowsJSONBody defines parameters for PostActiveflows.
 type PostActiveflowsJSONBody struct {
+	// Actions Inline action list to run when no flow_id is provided. Provide either flow_id or actions.
 	Actions *[]FlowManagerAction `json:"actions,omitempty"`
 
-	// FlowId Flow id of.
+	// FlowId UUID of an existing flow to run. Obtain it from the id field of a GET /flows or POST /flows response. Provide either flow_id or an inline actions array.
 	FlowId *string `json:"flow_id,omitempty"`
 
-	// Id ID of the activeflow.
+	// Id Optional client-supplied UUID for the new activeflow. If omitted, the server generates one.
 	Id *string `json:"id,omitempty"`
 
-	// Variables Optional flat key-value context seeded into the new call's flow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total.
+	// Variables Optional flat key-value context seeded into the created activeflow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total, 32KB per value.
 	Variables *map[string]string `json:"variables,omitempty"`
 }
 
@@ -7468,7 +7469,7 @@ type PostCallsJSONBody struct {
 	// Source Contains source or destination detail info.
 	Source *CommonAddress `json:"source,omitempty"`
 
-	// Variables Optional flat key-value context seeded into the new call's flow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total.
+	// Variables Optional flat key-value context seeded into the new call's flow as runtime variables, readable in the flow via ${key}. String values only. Reserved keys starting with 'voipbin.' are ignored. Max 100 keys, 64KB total, 32KB per value.
 	Variables *map[string]string `json:"variables,omitempty"`
 }
 
