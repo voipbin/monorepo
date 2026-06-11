@@ -89,7 +89,7 @@ func Test_toolHandleGetCorrelation(t *testing.T) {
 				ToolCallID:   "tool-1",
 				ResourceType: "correlation",
 				ResourceID:   "33333333-0000-4000-8000-000000000001",
-				Message:      "Activeflow 33333333-0000-4000-8000-000000000001 is linked to:\n- call-manager: 1 resource(s)\n  - call 44444444-0000-4000-8000-000000000001 (events: call_created, call_hangup)\n- transcribe-manager: 1 resource(s)\n  - transcribe 77777777-0000-4000-8000-000000000001\n",
+				Message:      "Activeflow 33333333-0000-4000-8000-000000000001 is linked to:\n- call-manager: 1 resource(s)\n  - call 44444444-0000-4000-8000-000000000001 (events: call_created, call_hangup)\n- transcribe-manager: 1 resource(s)\n  - resource 77777777-0000-4000-8000-000000000001\n",
 			},
 		},
 		{
@@ -667,5 +667,44 @@ func Test_resolveCorrelation(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// Test_correlationResourceLabel locks the OQ5 label derivation: event-type
+// prefix via first-underscore cut, with the neutral fallback for empty
+// event types. The envelope data_type is always "application/json" and must
+// never be used as the label.
+func Test_correlationResourceLabel(t *testing.T) {
+	tests := []struct {
+		name       string
+		eventTypes []string
+		want       string
+	}{
+		{"call event", []string{"call_created", "call_hangup"}, "call"},
+		{"aicall multi-segment event", []string{"aicall_status_progressing"}, "aicall"},
+		{"conferencecall event", []string{"conferencecall_joined"}, "conferencecall"},
+		{"empty event types fallback", []string{}, "resource"},
+		{"nil event types fallback", nil, "resource"},
+		{"no underscore passes through", []string{"weird"}, "weird"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := correlationResourceLabel(tt.eventTypes); got != tt.want {
+				t.Errorf("correlationResourceLabel(%v) = %q, want %q", tt.eventTypes, got, tt.want)
+			}
+		})
+	}
+}
+
+// Additional correlationResourceLabel edge cases (round-1 PR review L8):
+// empty-string and leading-underscore first event types must fall back to the
+// neutral label instead of rendering "" or "_x".
+func Test_correlationResourceLabel_edges(t *testing.T) {
+	if got := correlationResourceLabel([]string{""}); got != "resource" {
+		t.Errorf(`correlationResourceLabel([""]) = %q, want "resource"`, got)
+	}
+	if got := correlationResourceLabel([]string{"_oddball"}); got != "resource" {
+		t.Errorf(`correlationResourceLabel(["_oddball"]) = %q, want "resource"`, got)
 	}
 }

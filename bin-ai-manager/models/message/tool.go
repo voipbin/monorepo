@@ -39,4 +39,5 @@ const (
 	FunctionCallNameStopService       FunctionCallName = "stop_service"
 	FunctionCallNameSearchKnowledge   FunctionCallName = "search_knowledge"
 	FunctionCallNameGetCorrelation    FunctionCallName = "get_correlation"
+	FunctionCallNameGetResource       FunctionCallName = "get_resource"
 )

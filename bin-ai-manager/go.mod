@@ -92,6 +92,7 @@ require (
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000
+	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da
 	monorepo/bin-timeline-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-transcribe-manager v0.0.0-20240405044227-febd49f8b700
 )
@@ -161,7 +162,6 @@ require (
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0 // indirect
 	monorepo/bin-number-manager v0.0.0-20240328055052-ec1c723aa183 // indirect
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
-	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
 	monorepo/bin-rag-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-registrar-manager v0.0.0-20240402051305-cf14186e380d // indirect
 	monorepo/bin-route-manager v0.0.0-20240313065038-1498b922bb24 // indirect

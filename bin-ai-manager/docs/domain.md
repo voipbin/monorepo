@@ -105,6 +105,9 @@ Tool definitions live in `pkg/toolhandler/definitions.go`. Only tools listed in 
 | `set_variables` | Write to flow context variables |
 | `get_variables` | Read from flow context variables |
 | `get_aicall_messages` | Retrieve conversation history |
+| `search_knowledge` | Query the AI's knowledge base (RAG) |
+| `get_correlation` | Retrieve the correlation graph (related resource ids) for an activeflow |
+| `get_resource` | Retrieve a curated summary of a single resource by type+id (call, groupcall, recording, transcribe incl. transcripts, summary, aicall incl. conversation history, conferencecall, queuecall); customer-ownership enforced |
 
 Tool execution flow:
 1. LLM in Pipecat emits a function call
