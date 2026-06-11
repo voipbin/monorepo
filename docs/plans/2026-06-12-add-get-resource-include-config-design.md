@@ -362,7 +362,7 @@ and an inconsistency for zero disclosure benefit):
 | bin-ai-manager/pkg/toolhandler/definitions.go | add include_config param |
 | bin-ai-manager/pkg/toolhandler/definitions_resource_test.go | schema assertion |
 | bin-ai-manager/pkg/aicallhandler/tool_resource.go | args field, flag threading, config block renderer, escape helper, header-append budget mechanism |
-| bin-ai-manager/pkg/aicallhandler/tool_resource_test.go | tests §8 |
+| bin-ai-manager/pkg/aicallhandler/tool_resource_config_test.go | tests §8 (new file; chosen over extending tool_resource_test.go for readability) |
 | bin-ai-manager/docs/domain.md | get_resource row: note include_config |
 | docs/plans/2026-06-11-add-get-resource-tool-design.md | invariant wording amendment note |
 

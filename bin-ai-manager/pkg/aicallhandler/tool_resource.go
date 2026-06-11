@@ -88,18 +88,23 @@ type resourceFetchResult struct {
 // owner plus a deferred renderer.
 type resourceFetcher func(ctx context.Context, h *aicallHandler, id uuid.UUID) (*resourceFetchResult, error)
 
+// resourceTypeAIcall is the aicall key of mapResourceFetchers, hoisted so the
+// include_config branch in toolHandleGetResource cannot silently desync from
+// the map if the key is ever renamed.
+const resourceTypeAIcall = "aicall"
+
 // mapResourceFetchers is the source of truth for the supported resource
 // types. The tool definition's JSON-schema enum is asserted equal to the
 // sorted keys of this map by a unit test so the two cannot drift.
 var mapResourceFetchers = map[string]resourceFetcher{
-	"call":           fetchResourceCall,
-	"groupcall":      fetchResourceGroupcall,
-	"recording":      fetchResourceRecording,
-	"transcribe":     fetchResourceTranscribe,
-	"summary":        fetchResourceSummary,
-	"aicall":         fetchResourceAIcall,
-	"conferencecall": fetchResourceConferencecall,
-	"queuecall":      fetchResourceQueuecall,
+	"call":             fetchResourceCall,
+	"groupcall":        fetchResourceGroupcall,
+	"recording":        fetchResourceRecording,
+	"transcribe":       fetchResourceTranscribe,
+	"summary":          fetchResourceSummary,
+	resourceTypeAIcall: fetchResourceAIcall,
+	"conferencecall":   fetchResourceConferencecall,
+	"queuecall":        fetchResourceQueuecall,
 }
 
 // SupportedResourceTypes returns the sorted list of resource types supported
@@ -163,7 +168,7 @@ func (h *aicallHandler) toolHandleGetResource(ctx context.Context, c *aicall.AIc
 	// accepted and ignored (an error would only trigger a pointless LLM
 	// self-correct round-trip). The flag's behavioral effect lives entirely
 	// inside the render path, which runs only after ownership validation.
-	if args.IncludeConfig && args.ResourceType == "aicall" {
+	if args.IncludeConfig && args.ResourceType == resourceTypeAIcall {
 		fetcher = func(ctx context.Context, h *aicallHandler, id uuid.UUID) (*resourceFetchResult, error) {
 			return fetchResourceAIcallOpts(ctx, h, id, true)
 		}
