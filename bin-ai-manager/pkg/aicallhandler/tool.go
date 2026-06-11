@@ -63,6 +63,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameStopService:         h.toolHandleServiceStop,
 		message.FunctionCallNameSearchKnowledge:     h.toolHandleSearchKnowledge,
 		message.FunctionCallNameGetCorrelation:      h.toolHandleGetCorrelation,
+		message.FunctionCallNameGetResource:         h.toolHandleGetResource,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()
@@ -788,6 +789,23 @@ func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.
 	return res
 }
 
+// correlationResourceLabel derives a human/LLM-readable resource-type label
+// from a resource's event types (e.g. "call_created" → "call",
+// "aicall_status_progressing" → "aicall"). The event envelope's data_type is
+// always "application/json" (the content type), so the event-type prefix is
+// the only usable label source. Empty event types fall back to the neutral
+// label "resource".
+func correlationResourceLabel(eventTypes []string) string {
+	if len(eventTypes) == 0 {
+		return "resource"
+	}
+	first := eventTypes[0]
+	if idx := strings.Index(first, "_"); idx > 0 {
+		return first[:idx]
+	}
+	return first
+}
+
 // formatCorrelationSummary renders an LLM-readable summary of a correlation
 // graph. It leads with prose grouped by publisher and includes compact resource
 // ids so the LLM can chain follow-up tool calls.
@@ -809,9 +827,9 @@ func formatCorrelationSummary(corr *tmcorrelation.Correlation) string {
 				continue
 			}
 			if len(r.EventTypes) > 0 {
-				fmt.Fprintf(&sb, "  - %s %s (events: %s)\n", r.DataType, r.ID, strings.Join(r.EventTypes, ", "))
+				fmt.Fprintf(&sb, "  - %s %s (events: %s)\n", correlationResourceLabel(r.EventTypes), r.ID, strings.Join(r.EventTypes, ", "))
 			} else {
-				fmt.Fprintf(&sb, "  - %s %s\n", r.DataType, r.ID)
+				fmt.Fprintf(&sb, "  - %s %s\n", correlationResourceLabel(r.EventTypes), r.ID)
 			}
 		}
 	}

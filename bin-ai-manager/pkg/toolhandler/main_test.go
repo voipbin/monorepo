@@ -149,6 +149,7 @@ func TestAllToolNames(t *testing.T) {
 		tool.ToolNameStopService,
 		tool.ToolNameSearchKnowledge,
 		tool.ToolNameGetCorrelation,
+		tool.ToolNameGetResource,
 	}
 
 	if len(tool.AllToolNames) != len(expectedNames) {

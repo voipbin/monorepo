@@ -488,7 +488,7 @@ run_llm: Always set true — you should respond to the user based on the search 
 
 An activeflow is the running instance of a flow. Its reference is not always a call; the reference type can be call, conversation, ai, api, campaign, transcribe, or recording (and may be unset). Do not assume the session is a phone call.
 
-This is an internal diagnostic tool. Use it to understand what other resources are tied to a given activeflow so you can reason about or chain follow-up lookups.
+This is an internal diagnostic tool. Use it to understand what other resources are tied to a given activeflow so you can reason about or chain follow-up lookups. Use get_resource to fetch the content of a discovered resource.
 
 WHEN TO USE:
 - You need to know what resources are linked to the current session's activeflow
@@ -517,6 +517,52 @@ run_llm: Set true so you can summarize and reason about the correlated resources
 				},
 			},
 			"required": []string{},
+		},
+	},
+	{
+		Name:   tool.ToolNameGetResource,
+		RunLLM: true,
+		Description: `Retrieves the content of a single VoIPBin resource by its id and returns a readable summary.
+
+Use this as the follow-up to get_correlation: get_correlation returns the ids and types of resources linked to an activeflow; get_resource fetches the actual content of one of them. An activeflow's reference is not always a call; do not assume the session is a phone call.
+
+Supported resource types: call, groupcall, recording, transcribe, summary, aicall, conferencecall, queuecall. Derive the type from the event names shown by get_correlation: the type is the leading part of the event name (call_created means type call, transcribe_done means type transcribe, aicall_status_progressing means type aicall). Not every type get_correlation lists is retrievable here; unsupported types return an error listing the supported set. Transcript entries are retrieved via their parent transcribe id (type transcribe), not their own id. For transcribe, the response includes the transcript messages. For aicall, the response includes the session's conversation messages.
+
+WHEN TO USE:
+- You discovered a resource id (e.g. via get_correlation) and need its details
+- A diagnostic question requires the content of a related resource (e.g. what was said in a transcribed call, why a call ended, how long a caller waited in a queue)
+
+WHEN NOT TO USE:
+- A raw, unfiltered JSON dump of an aicall's messages (use get_aicall_messages; get_resource returns a curated readable summary)
+- Runtime variables (use get_variables)
+- Knowledge-base questions (use search_knowledge)
+
+ARGUMENTS:
+- resource_type (required): one of the supported types above.
+- resource_id (required): the resource id (UUID).
+
+You can only retrieve resources owned by your own account; others return "Resource not found.". A wrong resource_type for a correct id also returns "Resource not found." — retry with the type matching the event prefix before concluding the resource is gone.
+
+run_llm: Set true so you can reason about the resource content.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to reason about the resource content.",
+					"default":     true,
+				},
+				"resource_type": map[string]any{
+					"type":        "string",
+					"enum":        []string{"aicall", "call", "conferencecall", "groupcall", "queuecall", "recording", "summary", "transcribe"},
+					"description": "The type of the resource to retrieve.",
+				},
+				"resource_id": map[string]any{
+					"type":        "string",
+					"description": "The resource id (UUID) to retrieve.",
+				},
+			},
+			"required": []string{"resource_type", "resource_id"},
 		},
 	},
 	{
