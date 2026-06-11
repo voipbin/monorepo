@@ -463,6 +463,12 @@ zero UUIDs are omitted.
      ToolCalls. The `Direction` field is deliberately unused for message
      lines (role labels carry the speaker; do not graft transcript-style
      `[in]` prefixes).
+     NOTE (amended 2026-06-12): the "system rows are never rendered"
+     invariant still holds for the message-row allowlist, but the
+     customer-authored session config is now additionally exposed via the
+     opt-in `include_config` parameter, sourced from the aicall Metadata
+     prompt_snapshots (NOT from system message rows). See
+     2026-06-12-add-get-resource-include-config-design.md.
   Ordering/truncation identical to transcripts (whole-line, most recent
   kept, chronological render, page_size 101 detection), marker
   `...(earlier messages omitted; showing the most recent N)`.

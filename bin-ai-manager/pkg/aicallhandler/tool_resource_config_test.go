@@ -91,6 +91,12 @@ func Test_getResource_config_defaultOffRegression(t *testing.T) {
 	if !reflect.DeepEqual(resOff, resFalse) {
 		t.Errorf("flag absent and flag=false must be byte-identical.\nabsent: %+v\nfalse:  %+v", resOff, resFalse)
 	}
+	// GOLDEN pin (design test 1): exact pre-change render for this fixture.
+	// If the flag-off path ever changes shape, this must be a conscious edit.
+	wantGolden := "status: terminated\n[user] tricky <<<CONFIG attempt"
+	if resOff.Message != wantGolden {
+		t.Errorf("flag-off render drifted from the golden pre-change output.\ngot:  %q\nwant: %q", resOff.Message, wantGolden)
+	}
 	if strings.Contains(resOff.Message, configFrameOpenPrefix) || strings.Contains(resOff.Message, "\n"+configBlockOpen+"\n") {
 		t.Errorf("flag-off output must not contain any config block. got:\n%s", resOff.Message)
 	}
@@ -433,8 +439,8 @@ func Test_getResource_config_strictBool(t *testing.T) {
 	}
 }
 
-// Test_escapeConfigBoundaries pins the escape mechanics: single-pass,
-// overlap-safe, framing phrases only.
+// Test_escapeConfigBoundaries pins the escape mechanics: two ordered passes
+// (close-delimiter first), overlap-safe, framing phrases only.
 func Test_escapeConfigBoundaries(t *testing.T) {
 	tests := []struct {
 		in   string

@@ -196,8 +196,12 @@ Rules:
   - Escaping is applied when the flag is ON (when OFF, no block exists to
     forge, and the default-off byte-identical regression in §8 test 1 must
     hold; conversation lines are NOT escaped when the flag is off).
-  - Single-pass replacement; overlapping sequences cannot regenerate a
-    literal delimiter (verified in review round 1).
+  - Two ordered replacement passes, close-delimiter (`CONFIG>>>`) first:
+    a single combined pass fails on overlaps like `<<<<CONFIG>>>>` (after
+    consuming `<<<CONFIG` it skips the shared `CONFIG` and leaves a literal
+    `CONFIG>>>`). With close-first ordering, the later `<<<CONFIG`
+    replacement cannot regenerate a literal close delimiter (amended during
+    implementation; found by the unit test pinning the overlap case).
 - **Pipeline order (review round 2, NEW-L1):** escape → 800-rune
   head-truncation → framing wrap → append to header → `renderBodyLines`
   budget math. The 800 budget counts POST-escape runes (escaping inflates
