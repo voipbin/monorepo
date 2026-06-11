@@ -2,7 +2,7 @@
 
 - Date: 2026-06-11
 - Service: bin-ai-manager (toolhandler / aicallhandler)
-- Status: v5 (review rounds 1-3 CHANGES REQUESTED applied; round 4 APPROVE)
+- Status: v6 (rounds 1-3 CHANGES REQUESTED applied; round 4 APPROVE; post-approval design change: aicall history INCLUDED per pchero — fresh re-review round pending)
 
 ## 1. Problem Statement
 
@@ -10,9 +10,12 @@ The `get_correlation` tool returns the correlation graph for an activeflow: an I
 graph of related resources grouped by publisher (`call-manager: call <uuid>`,
 `transcribe-manager: transcribe <uuid>`, ...). It deliberately stops at IDs.
 
-There is no follow-up tool to retrieve the content of those resources. The only
-read tools today are `get_aicall_messages` (own session only), `get_variables`,
-and `search_knowledge` (RAG). An LLM that discovers a transcribe id via
+There is no follow-up tool to retrieve the content of those resources. The
+read tools today are `get_aicall_messages` (single-purpose: raw JSON dump of
+one aicall's messages — it DOES accept an arbitrary aicall_id with a
+customer-ownership check, but returns the unfiltered marshal including system
+prompts, and covers no other resource type), `get_variables`, and
+`search_knowledge` (RAG). An LLM that discovers a transcribe id via
 `get_correlation` cannot answer "what was said in that call" because it has no
 way to fetch the transcript. The chaining mechanism (run_llm=true sequential
 tool calling) exists and works; the missing piece is the second link.
@@ -98,14 +101,14 @@ FunctionCallNameGetResource FunctionCallName = "get_resource"
 
 Use this as the follow-up to get_correlation: get_correlation returns the ids and types of resources linked to an activeflow; get_resource fetches the actual content of one of them. An activeflow's reference is not always a call; do not assume the session is a phone call.
 
-Supported resource types: call, groupcall, recording, transcribe, summary, aicall, conferencecall, queuecall. Derive the type from the event names shown by get_correlation: the type is the leading part of the event name (call_created means type call, transcribe_done means type transcribe, aicall_status_progressing means type aicall). Not every type get_correlation lists is retrievable here; unsupported types return an error listing the supported set. Transcript entries are retrieved via their parent transcribe id (type transcribe), not their own id. For transcribe, the response includes the transcript messages.
+Supported resource types: call, groupcall, recording, transcribe, summary, aicall, conferencecall, queuecall. Derive the type from the event names shown by get_correlation: the type is the leading part of the event name (call_created means type call, transcribe_done means type transcribe, aicall_status_progressing means type aicall). Not every type get_correlation lists is retrievable here; unsupported types return an error listing the supported set. Transcript entries are retrieved via their parent transcribe id (type transcribe), not their own id. For transcribe, the response includes the transcript messages. For aicall, the response includes the session's conversation messages.
 
 WHEN TO USE:
 - You discovered a resource id (e.g. via get_correlation) and need its details
 - A diagnostic question requires the content of a related resource (e.g. what was said in a transcribed call, why a call ended, how long a caller waited in a queue)
 
 WHEN NOT TO USE:
-- Messages of the current AI session (use get_aicall_messages)
+- A raw, unfiltered JSON dump of an aicall's messages (use get_aicall_messages; get_resource returns a curated readable summary)
 - Runtime variables (use get_variables)
 - Knowledge-base questions (use search_knowledge)
 
@@ -424,9 +427,24 @@ zero UUIDs are omitted.
   whole-message cap governs: content gets whatever budget remains after the
   metadata lines; marker `...(truncated)`.
 - **aicall**: status, reference_type/reference_id, engine model, tts/stt type,
-  tm_create/tm_end. NOT the message history (that is get_aicall_messages'
-  job; for foreign aicalls exposing history would be a new data surface —
-  explicitly out of scope).
+  tm_create/tm_end, followed by the CONVERSATION HISTORY (settled: include —
+  pchero, 2026-06-11; transcribe/summary are different resources, and for
+  chat/conversation-referenced aicalls the ai_messages table is the only
+  record of what was said). Mechanics mirror the transcribe body: messages
+  fetched inside the render closure (post-ownership) via the LOCAL
+  `h.messageHandler.List` (same call shape as `toolHandleGetAIcallMessages`:
+  filter `FieldAIcallID`, page_size 101 for page-cap detection — messages are
+  local to bin-ai-manager, no RPC). Rendered roles: `user` and `assistant`
+  content as `[user] ...` / `[assistant] ...` lines; an assistant message
+  whose ToolCalls is non-empty renders a compact `[assistant called <name>]`
+  line per call. EXCLUDED from rendering: `system` (substituted prompt
+  snapshot — prompt engineering exposure has no place in a readable summary;
+  the full raw dump including system is already available via
+  get_aicall_messages, which validates the same ownership), `notification`,
+  `tool` result bodies (bulk; the assistant's visible reply reflects them),
+  and empty-content rows. Ordering/truncation identical to transcripts:
+  most recent kept, chronological render, marker
+  `...(earlier messages omitted; showing the most recent N)`.
 - **conferencecall**: status, conference_id, reference_type/reference_id,
   timestamps.
 - **queuecall**: status, queue_id, routing_method, duration_waiting,
@@ -538,6 +556,13 @@ Table-driven, gomock requesthandler. Cases:
    nil TMTranscript line rendering. Cross-customer transcribe: assert the
    transcript list RPC is NEVER called (strict gomock, no EXPECT registered —
    locks the post-ownership enrichment contract).
+2b. aicall success including conversation lines: user/assistant rendering,
+   compact `[assistant called <name>]` tool-call markers, system/notification/
+   tool-role and empty-content rows excluded from output (assert prompt text
+   never appears); message list error → metadata + `(messages unavailable)`,
+   still success; empty list → `(no messages)`. Cross-customer aicall: assert
+   the message list is NEVER fetched (mock messageHandler, no EXPECT — same
+   post-ownership contract as transcribe).
 3. Summary/transcript truncation at the 4000-rune cap with markers.
 4. Cross-customer → masked `msgResourceNotFound` (fillSuccess, not failure).
 5. Absent (RPC returns `requesthandler.ErrNotFound`) → masked, PER RESOURCE
@@ -567,7 +592,7 @@ Table-driven, gomock requesthandler. Cases:
 
 | # | Question | Recommendation | Owner |
 |---|---|---|---|
-| 1 | Should foreign (own-customer) aicall summaries include message history? | No. Keep aicall metadata-only in Phase 1; history via a future scoped extension of get_aicall_messages if demanded. | CEO/CTO |
+| 1 | Should aicall summaries include conversation history? | YES (settled — pchero, 2026-06-11: "적극적으로 포함"; transcribe/summary are different resources, and chat/conversation aicalls have no transcribe). Curated rendering: user/assistant lines + compact tool-call markers; system/notification/tool bodies excluded. Note: `get_aicall_messages` already exposes the full raw dump (incl. system) cross-session with the same ownership check, so this adds no new data surface. | settled |
 | 2 | Add `conversation` / `campaigncall` in Phase 1? | No. Correlation coverage for them is unverified (event payload activeflow_id); add in Phase 2 after verifying. | CPO |
 | 3 | Per-AI gating beyond tool_names? | No. Ownership check is the control, consistent with get_correlation precedent. | settled |
 | 4 | PII: resource content (transcripts, summaries) flows to the customer's own LLM engine. | No new exposure: the same engine already receives the live conversation. No action. | settled |
@@ -658,6 +683,25 @@ contract confirmed with no constructible oracle or IDOR path. Notes applied:
 - L3: `supportedResourceTypes` declaration added to the sketch.
 - L4: "the single marker" → "the marker template" (degenerate variant
   cross-referenced).
+
+### Post-approval design change (pchero, 2026-06-11 → v6)
+
+OQ1 reversed from "metadata only" to "include conversation history" by pchero:
+transcribe/summary are DIFFERENT resources; for chat/conversation-referenced
+aicalls the ai_messages table is the only record of the dialogue. Changes:
+- aicall summary now renders user/assistant lines + compact tool-call markers
+  after the metadata block; system (prompt snapshot), notification, tool
+  bodies, and empty-content rows excluded.
+- Fetch is local `h.messageHandler.List` (no RPC), inside the render closure
+  (post-ownership), page-cap/truncation/ordering identical to transcripts.
+- Precedent note: `get_aicall_messages` already exposes the full raw dump
+  (including system) for any own-customer aicall_id with the same ownership
+  check — so this adds no new cross-session data surface; it is a curated
+  subset of an existing one.
+- Tool description, Problem Statement, WHEN-NOT-TO-USE, and test plan (new
+  case 2b) updated accordingly.
+Per the mandatory re-review rule, a fresh review round on the changed doc is
+required before implementation.
 
 ## 12. Checklist deltas vs the standard template
 
