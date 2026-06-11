@@ -694,3 +694,62 @@ func Test_toolHandleGetResource_transcribePageCap(t *testing.T) {
 		t.Errorf("page cap must keep newest and drop the 101st oldest")
 	}
 }
+
+// Test_resolveResource_nilResultFailsClosed locks the broken-fetcher-contract
+// guard: a fetcher returning (nil, nil) must mask, not panic (round-2 L1).
+func Test_resolveResource_nilResultFailsClosed(t *testing.T) {
+	h := &aicallHandler{}
+	stub := func(ctx context.Context, h *aicallHandler, id uuid.UUID) (*resourceFetchResult, error) {
+		return nil, nil
+	}
+	_, err := h.resolveResource(context.Background(), uuid.FromStringOrNil(trCustomerID), stub, uuid.FromStringOrNil(trResourceID))
+	if !stderrors.Is(err, ErrResourceNotAccessible) {
+		t.Errorf("expected ErrResourceNotAccessible for nil fetch result, got %v", err)
+	}
+}
+
+// Test_renderAIcall_emptyRenders locks the empty-render branches: genuine
+// "(no messages)" vs pagedOut-but-all-dropped disclosure (round-2 L2).
+func Test_renderAIcall_emptyRenders(t *testing.T) {
+	rid := uuid.FromStringOrNil(trResourceID)
+
+	t.Run("no messages at all", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockMsg := messagehandler.NewMockMessageHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq, messageHandler: mockMsg}
+
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), rid).Return(&aicall.AIcall{Identity: trIdentity(trCustomerID)}, nil)
+		mockMsg.EXPECT().List(gomock.Any(), gomock.Any(), "", gomock.Any()).Return([]*message.Message{}, nil)
+
+		res := h.toolHandleGetResource(context.Background(), trNewAicall(), trNewTool(`{"resource_type": "aicall", "resource_id": "`+trResourceID+`"}`))
+		if res.Result != "success" || !strings.Contains(res.Message, "(no messages)") {
+			t.Errorf("expected (no messages), got %+v", res)
+		}
+	})
+
+	t.Run("paged out but newest page all allowlist-dropped", func(t *testing.T) {
+		mc := gomock.NewController(t)
+		defer mc.Finish()
+		mockReq := requesthandler.NewMockRequestHandler(mc)
+		mockMsg := messagehandler.NewMockMessageHandler(mc)
+		h := &aicallHandler{reqHandler: mockReq, messageHandler: mockMsg}
+
+		mockReq.EXPECT().AIV1AIcallGet(gomock.Any(), rid).Return(&aicall.AIcall{Identity: trIdentity(trCustomerID)}, nil)
+		// 101 rows, all tool-role → every line dropped, pagedOut true.
+		msgs := make([]*message.Message, resourceListPageSize+1)
+		for i := range msgs {
+			msgs[i] = &message.Message{Role: message.RoleTool, Content: "tool body"}
+		}
+		mockMsg.EXPECT().List(gomock.Any(), gomock.Any(), "", gomock.Any()).Return(msgs, nil)
+
+		res := h.toolHandleGetResource(context.Background(), trNewAicall(), trNewTool(`{"resource_type": "aicall", "resource_id": "`+trResourceID+`"}`))
+		if res.Result != "success" || !strings.Contains(res.Message, "(earlier messages exist beyond the fetched page)") {
+			t.Errorf("expected paged-out disclosure, got %+v", res)
+		}
+		if strings.Contains(res.Message, "(no messages)") {
+			t.Errorf("must not claim (no messages) when older rows exist")
+		}
+	})
+}

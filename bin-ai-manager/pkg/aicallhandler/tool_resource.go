@@ -257,6 +257,13 @@ func renderBodyLines(header string, lines []string, pagedOut bool, noun string) 
 		sep = ""
 	}
 
+	// Callers guard len(lines)==0 before calling; if a future caller passes
+	// an empty slice with pagedOut=true, fall back to the bare header rather
+	// than emitting a "most recent 0" marker.
+	if len(lines) == 0 {
+		return capSummaryRunes(header)
+	}
+
 	// Fast path: everything fits and nothing was paged out — no marker.
 	if !pagedOut {
 		full := header + sep + strings.Join(lines, "\n")
