@@ -179,6 +179,11 @@ func (h *aicallHandler) resolveResource(ctx context.Context, callerCustomerID uu
 		// Transient: honest failure, no masking.
 		return "", errors.Wrap(err, "could not fetch resource")
 	}
+	if r == nil {
+		// Broken fetcher contract (nil result, nil error). Fail closed.
+		log.Warnf("Fetcher returned nil result without error; failing closed.")
+		return "", ErrResourceNotAccessible
+	}
 
 	if r.ownerID != callerCustomerID || r.ownerID == uuid.Nil {
 		// ownerID == uuid.Nil is treated as not-accessible (fail closed): a
@@ -244,13 +249,33 @@ func capSummaryRunes(s string) string {
 // lines and drops the oldest; the marker is placed at the top of the block
 // (where the omitted earlier lines were). pagedOut indicates the source list
 // had more rows than the fetched page (page cap), which also forces the
-// marker. noun is "transcripts" or "messages".
+// marker. noun is "transcripts" or "messages". The final return is passed
+// through capSummaryRunes as a hard safety net so no path can exceed the cap.
 func renderBodyLines(header string, lines []string, pagedOut bool, noun string) string {
-	budget := maxResourceSummaryRunes - len([]rune(header)) - 1 // newline joining header/body
+	sep := "\n"
+	if header == "" {
+		sep = ""
+	}
+
+	// Fast path: everything fits and nothing was paged out — no marker.
+	if !pagedOut {
+		full := header + sep + strings.Join(lines, "\n")
+		if len([]rune(full)) <= maxResourceSummaryRunes {
+			return full
+		}
+	}
+
+	budget := maxResourceSummaryRunes - len([]rune(header)) - len([]rune(sep))
 
 	// Walk backwards keeping the newest lines that fit, reserving marker room.
+	// Reserve for the LONGER (degenerate) marker variant so neither variant
+	// can push past the cap.
 	marker := fmt.Sprintf("...(earlier %s omitted; showing the most recent %%d)", noun)
+	degenerateMarker := fmt.Sprintf("...(earlier %s omitted; showing the most recent 1, truncated)", noun)
 	markerRoom := len([]rune(fmt.Sprintf(marker, len(lines)))) + 1
+	if dr := len([]rune(degenerateMarker)) + 1; dr > markerRoom {
+		markerRoom = dr
+	}
 
 	kept := make([]string, 0, len(lines))
 	used := 0
@@ -276,18 +301,17 @@ func renderBodyLines(header string, lines []string, pagedOut bool, noun string) 
 		if len(newest) > room {
 			newest = newest[:room]
 		}
-		degenerate := fmt.Sprintf("...(earlier %s omitted; showing the most recent 1, truncated)", noun)
-		return header + "\n" + degenerate + "\n" + string(newest)
+		return capSummaryRunes(header + sep + degenerateMarker + "\n" + string(newest))
 	}
 
 	var sb strings.Builder
 	sb.WriteString(header)
-	sb.WriteString("\n")
+	sb.WriteString(sep)
 	if truncated {
 		fmt.Fprintf(&sb, marker+"\n", len(kept))
 	}
 	sb.WriteString(strings.Join(kept, "\n"))
-	return sb.String()
+	return capSummaryRunes(sb.String())
 }
 
 // ---- per-type fetchers ----
@@ -517,6 +541,12 @@ func (h *aicallHandler) renderAIcall(ctx context.Context, r *aicall.AIcall) stri
 		lines = append(lines, renderAIcallMessageLines(messages[i])...)
 	}
 	if len(lines) == 0 {
+		if pagedOut {
+			// The newest page rendered nothing (all allowlist-dropped) but
+			// older rows exist beyond the page — say so instead of a
+			// misleading "(no messages)".
+			return capSummaryRunes(header + "\n(earlier messages exist beyond the fetched page)")
+		}
 		return capSummaryRunes(header + "\n(no messages)")
 	}
 

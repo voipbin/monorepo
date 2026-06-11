@@ -796,12 +796,15 @@ func (h *aicallHandler) toolHandleGetCorrelation(ctx context.Context, c *aicall.
 // the only usable label source. Empty event types fall back to the neutral
 // label "resource".
 func correlationResourceLabel(eventTypes []string) string {
-	if len(eventTypes) == 0 {
+	if len(eventTypes) == 0 || eventTypes[0] == "" {
 		return "resource"
 	}
 	first := eventTypes[0]
 	if idx := strings.Index(first, "_"); idx > 0 {
 		return first[:idx]
+	}
+	if strings.HasPrefix(first, "_") {
+		return "resource"
 	}
 	return first
 }

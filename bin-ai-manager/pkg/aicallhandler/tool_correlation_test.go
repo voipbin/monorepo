@@ -696,3 +696,15 @@ func Test_correlationResourceLabel(t *testing.T) {
 		})
 	}
 }
+
+// Additional correlationResourceLabel edge cases (round-1 PR review L8):
+// empty-string and leading-underscore first event types must fall back to the
+// neutral label instead of rendering "" or "_x".
+func Test_correlationResourceLabel_edges(t *testing.T) {
+	if got := correlationResourceLabel([]string{""}); got != "resource" {
+		t.Errorf(`correlationResourceLabel([""]) = %q, want "resource"`, got)
+	}
+	if got := correlationResourceLabel([]string{"_oddball"}); got != "resource" {
+		t.Errorf(`correlationResourceLabel(["_oddball"]) = %q, want "resource"`, got)
+	}
+}

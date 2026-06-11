@@ -3,6 +3,8 @@ package aicallhandler
 import (
 	"context"
 	stderrors "errors"
+	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -167,11 +169,22 @@ func Test_toolHandleGetResource_success(t *testing.T) {
 				}).Return([]tmtranscript.Transcript{
 					{Direction: tmtranscript.DirectionOut, Message: "how can I help", TMTranscript: &offset2},
 					{Direction: tmtranscript.DirectionIn, Message: "hello there", TMTranscript: &offset1},
+					{Direction: tmtranscript.DirectionIn, Message: "very first words", TMTranscript: nil},
 				}, nil)
 			},
-			// chronological order after reversal: in line precedes out line
-			expectContains:    []string{"status: done", "language: en-US", "[in 00:00:03] hello there", "[out 00:00:08] how can I help"},
+			// chronological order after reversal; nil TMTranscript renders --:--:--
+			expectContains:    []string{"status: done", "language: en-US", "[in --:--:--] very first words", "[in 00:00:03] hello there", "[out 00:00:08] how can I help"},
 			expectNotContains: []string{"66666666-0000-4000-8000-000000000001"},
+		},
+		{
+			name: "summary",
+			args: `{"resource_type": "summary", "resource_id": "` + trResourceID + `"}`,
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler, mockMsg *messagehandler.MockMessageHandler) {
+				s := summaryModelOwnWithContent("the caller asked about billing")
+				s.Language = "en-US"
+				mockReq.EXPECT().AIV1SummaryGet(gomock.Any(), uuid.FromStringOrNil(trResourceID)).Return(s, nil)
+			},
+			expectContains: []string{"status: done", "language: en-US", "content: the caller asked about billing"},
 		},
 		{
 			name: "aicall with conversation history",
@@ -188,8 +201,12 @@ func Test_toolHandleGetResource_success(t *testing.T) {
 					message.FieldDeleted:  false,
 				}).Return([]*message.Message{
 					{Role: message.RoleAssistant, Content: "goodbye"},
+					{Role: message.RoleAssistant, Content: "sending it now", ToolCalls: []message.ToolCall{{Function: message.FunctionCall{Name: message.FunctionCallNameSendMessage}}}},
 					{Role: message.RoleAssistant, Content: "", ToolCalls: []message.ToolCall{{Function: message.FunctionCall{Name: message.FunctionCallNameSendEmail}}}},
 					{Role: message.RoleTool, Content: `{"tool_call_id": "x", "result": "success"}`},
+					{Role: message.RoleNotification, Content: "internal notification body"},
+					{Role: message.RoleFunction, Content: "function role body"},
+					{Role: message.RoleNone, Content: "empty role body"},
 					{Role: message.RoleUser, Content: "send me the report"},
 					{Role: message.RoleSystem, Content: "SECRET PROMPT SNAPSHOT"},
 				}, nil)
@@ -198,9 +215,11 @@ func Test_toolHandleGetResource_success(t *testing.T) {
 				"status: terminated",
 				"[user] send me the report",
 				"[assistant called send_email]",
+				"[assistant] sending it now",
+				"[assistant called send_message]",
 				"[assistant] goodbye",
 			},
-			expectNotContains: []string{"SECRET PROMPT SNAPSHOT", "tool_call_id"},
+			expectNotContains: []string{"SECRET PROMPT SNAPSHOT", "tool_call_id", "internal notification body", "function role body", "empty role body"},
 		},
 		{
 			name: "conferencecall",
@@ -386,11 +405,7 @@ func Test_toolHandleGetResource_maskingInvariant(t *testing.T) {
 }
 
 func messageContentEqual(a, b *messageContent) bool {
-	return a.ToolCallID == b.ToolCallID &&
-		a.Result == b.Result &&
-		a.Message == b.Message &&
-		a.ResourceType == b.ResourceType &&
-		a.ResourceID == b.ResourceID
+	return reflect.DeepEqual(a, b)
 }
 
 // Test_toolHandleGetResource_errors covers transient failure, argument
@@ -588,4 +603,94 @@ func Test_toolHandleGetResource_truncation(t *testing.T) {
 			t.Errorf("marker must be at the top of the block")
 		}
 	})
+}
+
+// Test_renderBodyLines_capMechanics locks the rune-budget truncation
+// arithmetic directly: most-recent-kept line dropping, top-of-block marker,
+// the degenerate single-line hard-cut, and the absolute cap guarantee.
+func Test_renderBodyLines_capMechanics(t *testing.T) {
+	t.Run("rune budget drops oldest lines, marker at top", func(t *testing.T) {
+		header := "status: done"
+		// 200 lines x ~30 runes ≈ 6000 runes > 4000 cap
+		lines := make([]string, 200)
+		for i := range lines {
+			lines[i] = strings.Repeat("x", 25) + "L" + fmt.Sprintf("%03d", i)
+		}
+		out := renderBodyLines(header, lines, false, "messages")
+
+		if got := len([]rune(out)); got > maxResourceSummaryRunes {
+			t.Fatalf("output exceeds cap: %d > %d", got, maxResourceSummaryRunes)
+		}
+		if !strings.Contains(out, "earlier messages omitted; showing the most recent") {
+			t.Fatalf("expected truncation marker, got head: %.120s", out)
+		}
+		if !strings.Contains(out, "L199") {
+			t.Errorf("newest line must be kept")
+		}
+		if strings.Contains(out, "L000") {
+			t.Errorf("oldest line must be dropped")
+		}
+		if strings.Index(out, "omitted") > strings.Index(out, "L199") {
+			t.Errorf("marker must precede the kept lines")
+		}
+	})
+
+	t.Run("degenerate single oversized line is hard-cut and capped", func(t *testing.T) {
+		header := "status: done"
+		lines := []string{strings.Repeat("y", maxResourceSummaryRunes*2)}
+		out := renderBodyLines(header, lines, false, "transcripts")
+
+		if got := len([]rune(out)); got > maxResourceSummaryRunes {
+			t.Fatalf("degenerate output exceeds cap: %d > %d", got, maxResourceSummaryRunes)
+		}
+		if !strings.Contains(out, "showing the most recent 1, truncated") {
+			t.Errorf("expected degenerate marker, got head: %.150s", out)
+		}
+		if !strings.Contains(out, "yyyy") {
+			t.Errorf("hard-cut line content must still be shown")
+		}
+	})
+
+	t.Run("everything fits, no marker", func(t *testing.T) {
+		out := renderBodyLines("h: v", []string{"[user] hi", "[assistant] hello"}, false, "messages")
+		if strings.Contains(out, "omitted") {
+			t.Errorf("no marker expected when everything fits: %s", out)
+		}
+		if out != "h: v\n[user] hi\n[assistant] hello" {
+			t.Errorf("unexpected output: %q", out)
+		}
+	})
+}
+
+// Test_toolHandleGetResource_transcribePageCap exercises the transcribe leg of
+// the page-cap detection (duplicated per type, so the aicall test does not
+// protect this copy).
+func Test_toolHandleGetResource_transcribePageCap(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+	mockReq := requesthandler.NewMockRequestHandler(mc)
+	h := &aicallHandler{reqHandler: mockReq, messageHandler: messagehandler.NewMockMessageHandler(mc)}
+
+	rid := uuid.FromStringOrNil(trResourceID)
+	mockReq.EXPECT().TranscribeV1TranscribeGet(gomock.Any(), rid).Return(&tmtranscribe.Transcribe{Identity: trIdentity(trCustomerID)}, nil)
+
+	// 101 rows (DESC: index 0 newest) → page cap fires.
+	rows := make([]tmtranscript.Transcript, resourceListPageSize+1)
+	for i := range rows {
+		rows[i] = tmtranscript.Transcript{Direction: tmtranscript.DirectionIn, Message: "t" + fmt.Sprintf("%03d", i)}
+	}
+	rows[0].Message = "NEWEST"
+	rows[len(rows)-1].Message = "OLDEST"
+	mockReq.EXPECT().TranscribeV1TranscriptList(gomock.Any(), "", uint64(resourceListPageSize+1), gomock.Any()).Return(rows, nil)
+
+	res := h.toolHandleGetResource(context.Background(), trNewAicall(), trNewTool(`{"resource_type": "transcribe", "resource_id": "`+trResourceID+`"}`))
+	if res.Result != "success" {
+		t.Fatalf("expected success, got %+v", res)
+	}
+	if !strings.Contains(res.Message, "earlier transcripts omitted; showing the most recent") {
+		t.Errorf("expected page-cap marker, got:\n%.200s", res.Message)
+	}
+	if !strings.Contains(res.Message, "NEWEST") || strings.Contains(res.Message, "OLDEST") {
+		t.Errorf("page cap must keep newest and drop the 101st oldest")
+	}
 }
