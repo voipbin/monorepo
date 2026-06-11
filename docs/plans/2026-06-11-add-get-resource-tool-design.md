@@ -2,7 +2,7 @@
 
 - Date: 2026-06-11
 - Service: bin-ai-manager (toolhandler / aicallhandler)
-- Status: v6 (rounds 1-3 CHANGES REQUESTED applied; round 4 APPROVE; post-approval design change: aicall history INCLUDED per pchero — fresh re-review round pending)
+- Status: v7 (rounds 1-3 CHANGES REQUESTED applied; round 4 APPROVE; post-approval aicall-history change re-reviewed in round 5, fixes applied)
 
 ## 1. Problem Statement
 
@@ -367,6 +367,16 @@ contract. The residual timing difference (cross-customer does one successful
 RPC before rejecting) is not measurable through the LLM boundary;
 accept-with-note.
 
+Known sibling-tool caveat (honest scoping of the oracle claim): the
+pre-existing `get_aicall_messages` tool returns DISTINGUISHABLE honest errors
+for absent vs cross-customer aicall ids (it predates the masking convention).
+An LLM combining both tools can therefore still infer "exists but foreign"
+for aicall ids specifically — get_resource's masking protects content, but
+the existence-oracle property does not hold platform-wide until the sibling
+is aligned. Aligning `get_aicall_messages`' two failure paths behind a single
+masked response is logged as a follow-up (out of this PR's minimal-change
+scope; see Open Question 7).
+
 ### tool_names:["all"] reality
 
 Adding the definition exposes the tool to every AI configured with the `all`
@@ -434,16 +444,27 @@ zero UUIDs are omitted.
   fetched inside the render closure (post-ownership) via the LOCAL
   `h.messageHandler.List` (same call shape as `toolHandleGetAIcallMessages`:
   filter `FieldAIcallID`, page_size 101 for page-cap detection — messages are
-  local to bin-ai-manager, no RPC). Rendered roles: `user` and `assistant`
-  content as `[user] ...` / `[assistant] ...` lines; an assistant message
-  whose ToolCalls is non-empty renders a compact `[assistant called <name>]`
-  line per call. EXCLUDED from rendering: `system` (substituted prompt
-  snapshot — prompt engineering exposure has no place in a readable summary;
-  the full raw dump including system is already available via
-  get_aicall_messages, which validates the same ownership), `notification`,
-  `tool` result bodies (bulk; the assistant's visible reply reflects them),
-  and empty-content rows. Ordering/truncation identical to transcripts:
-  most recent kept, chronological render, marker
+  local to bin-ai-manager, no RPC, plus `FieldDeleted: false` — same
+  deleted-row exclusion as the transcribe leg; value encoding shares the
+  step-0 verification). Rendering is an ALLOWLIST with explicit precedence
+  (code fact: ToolHandle persists assistant tool-call rows with
+  `Content == ""`, so the checks must run in this order):
+  1. role == assistant AND len(ToolCalls) > 0: render one compact
+     `[assistant called <name>]` line per call (ToolCalls order); if Content
+     is ALSO non-empty, render the `[assistant] ...` content line first,
+     then the marker lines.
+  2. role == user or assistant with non-empty Content: `[user] ...` /
+     `[assistant] ...` line.
+  3. Everything else is dropped: system (substituted prompt snapshot —
+     prompt engineering exposure has no place in a readable summary; the
+     full raw dump including system is already available via
+     get_aicall_messages, which validates the same ownership), notification,
+     tool, function, empty role, and rows with empty Content and no
+     ToolCalls. The `Direction` field is deliberately unused for message
+     lines (role labels carry the speaker; do not graft transcript-style
+     `[in]` prefixes).
+  Ordering/truncation identical to transcripts (whole-line, most recent
+  kept, chronological render, page_size 101 detection), marker
   `...(earlier messages omitted; showing the most recent N)`.
 - **conferencecall**: status, conference_id, reference_type/reference_id,
   timestamps.
@@ -458,14 +479,14 @@ The global cap `maxResourceSummaryRunes = 4000` (const, rune-counted as the
 name says; code change to raise) applies to the WHOLE rendered message of
 every type — metadata + body + marker together can never exceed it. Cap
 mechanics, uniform across types:
-- Truncation is whole-line for line-structured bodies (transcripts): drop
-  oldest lines until the remainder + marker fits. The marker is placed at the
-  TOP of the transcript block (where the omitted earlier lines were), before
-  the chronological lines.
+- Truncation is whole-line for line-structured bodies (transcripts, aicall
+  messages): drop oldest lines until the remainder + marker fits. The marker
+  is placed at the TOP of the block (where the omitted earlier lines were),
+  before the chronological lines.
 - Degenerate case: if even the newest single line cannot fit the remaining
-  budget, hard-truncate that line mid-text and still show it; the transcript
-  marker then reads `...(earlier transcripts omitted; showing the most
-  recent 1, truncated)`.
+  budget, hard-truncate that line mid-text and still show it; the marker
+  then reads `...(earlier transcripts omitted; showing the most
+  recent 1, truncated)` (aicall messages: same variant with "messages").
 - Free-text bodies (summary content) hard-truncate mid-text with marker
   `...(truncated)`.
 - Any OTHER type whose rendered message exceeds the cap (e.g. a groupcall
@@ -508,7 +529,11 @@ Single-service PR. No schema, no migration, no OpenAPI, no RST.
    precedent vs typed bool). Confirm the dbhandler accepts `page_size 101`
    (if a max page size < 101 exists, the page-cap detection scheme breaks —
    fall back to page_size = max, render max-1 rows + marker when len == max,
-   keeping the marker truthful).
+   keeping the marker truthful). Same verification leg for the aicall message
+   list: confirm `messageHandler.List` ordering (`tm_create DESC` at the
+   dbhandler, empty token seeded with now — design-time verified at
+   dbhandler.MessageList; confirm the handler wrapper passes size through
+   unclamped) and the `FieldDeleted` encoding for messages.
 1. `models/tool/main.go`: `ToolNameGetResource` + `AllToolNames` (fix
    `TestAllToolNames` expected set).
 2. `models/message/tool.go`: `FunctionCallNameGetResource`.
@@ -556,13 +581,18 @@ Table-driven, gomock requesthandler. Cases:
    nil TMTranscript line rendering. Cross-customer transcribe: assert the
    transcript list RPC is NEVER called (strict gomock, no EXPECT registered —
    locks the post-ownership enrichment contract).
-2b. aicall success including conversation lines: user/assistant rendering,
-   compact `[assistant called <name>]` tool-call markers, system/notification/
-   tool-role and empty-content rows excluded from output (assert prompt text
-   never appears); message list error → metadata + `(messages unavailable)`,
-   still success; empty list → `(no messages)`. Cross-customer aicall: assert
-   the message list is NEVER fetched (mock messageHandler, no EXPECT — same
-   post-ownership contract as transcribe).
+2b. aicall success including conversation lines: allowlist precedence
+   (assistant+ToolCalls renders markers even with empty Content — the
+   persisted shape; assistant with both Content and ToolCalls renders content
+   line then markers), system/notification/tool/function/empty-role and
+   empty-content-no-toolcalls rows excluded (assert prompt text never
+   appears); message list error → metadata + `(messages unavailable)`, still
+   success; empty list → `(no messages)`; one aicall truncation/page-cap case
+   asserting the `...(earlier messages omitted; showing the most recent N)`
+   marker. Cross-customer aicall: assert the message list is NEVER fetched
+   (mock messageHandler, no EXPECT on List — note: tests must invoke
+   `toolHandleGetResource` directly, not via ToolHandle, since ToolHandle
+   itself calls messageHandler.Create before dispatch).
 3. Summary/transcript truncation at the 4000-rune cap with markers.
 4. Cross-customer → masked `msgResourceNotFound` (fillSuccess, not failure).
 5. Absent (RPC returns `requesthandler.ErrNotFound`) → masked, PER RESOURCE
@@ -598,6 +628,7 @@ Table-driven, gomock requesthandler. Cases:
 | 4 | PII: resource content (transcripts, summaries) flows to the customer's own LLM engine. | No new exposure: the same engine already receives the live conversation. No action. | settled |
 | 5 | `formatCorrelationSummary` prints `r.DataType` per line, which is the envelope content-type (`application/json`), not the model name — it is the exact line the LLM reads to pick `resource_type`. | Fix IN THIS PR: derive the label via first-underscore cut of `EventTypes[0]` (empty → `resource`); see Implementation Order step 5b + test case 11. | settled (round 3) |
 | 6 | Phase 1 carries 8 types; the motivating chain needs ~5 (call, transcribe, recording, summary, queuecall). Trim to reduce PR size? | Keep 8 per pchero's explicit scope direction (aicall, conferencecall included). Each fetcher is small; architecture identical either way. | settled (pchero, 2026-06-11) |
+| 7 | `get_aicall_messages` (pre-existing) returns distinguishable errors for absent vs cross-customer aicall ids — an existence oracle that coexists with get_resource's masking (see Section 5 caveat). Align its two failure paths behind one masked response? | Yes, as a small follow-up PR (behavior change to an existing tool's error copy; out of this PR's minimal-change scope). | CPO follow-up |
 
 ## Review Summary
 
@@ -702,6 +733,30 @@ aicalls the ai_messages table is the only record of the dialogue. Changes:
   case 2b) updated accordingly.
 Per the mandatory re-review rule, a fresh review round on the changed doc is
 required before implementation.
+
+### Round 5 (fresh delegate_task re-review of the v6 change, CHANGES REQUESTED → v7)
+
+Scope: the aicall-history change only; security core confirmed sound (curated
+render = strict subset of get_aicall_messages' existing raw dump, same
+ownership gate, enrichment post-ownership). Fixes applied:
+- H1: rendering rewritten as an ALLOWLIST with explicit precedence — code
+  fact that assistant tool-call rows persist with `Content == ""` made the
+  old "empty-content rows excluded" wording delete every marker; precedence
+  now: ToolCalls check first, both-non-empty case defined (content line then
+  markers), function/empty-role explicitly dropped, Direction explicitly
+  unused.
+- M2: Section 5 now honestly scopes the oracle claim — sibling
+  `get_aicall_messages` leaks absent-vs-foreign for aicall ids; alignment
+  logged as OQ7 follow-up (out of minimal-change scope).
+- M3: `FieldDeleted: false` added to the message list (was inconsistent with
+  the transcribe leg).
+- M4: step-0 gains the messagehandler verification leg (ordering design-time
+  verified at dbhandler.MessageList; wrapper clamp + FieldDeleted encoding to
+  confirm); test 2b gains the aicall truncation/page-cap case.
+- L5/L6/L7: allowlist wording airtight; cap-mechanics block covers both
+  line-structured bodies + message marker variant; test 2b notes direct
+  `toolHandleGetResource` invocation (ToolHandle calls messageHandler.Create
+  pre-dispatch, which would break the no-EXPECT trick).
 
 ## 12. Checklist deltas vs the standard template
 
