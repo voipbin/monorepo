@@ -52,3 +52,46 @@ func TestGetResourceEnumMatchesFetchers(t *testing.T) {
 		}
 	}
 }
+
+// TestGetResourceIncludeConfigSchema locks the include_config parameter shape
+// in the get_resource JSON schema (design 2026-06-12 test 13): it must exist
+// as a boolean property and must NOT be required (opt-in, default off).
+func TestGetResourceIncludeConfigSchema(t *testing.T) {
+	var def *tool.Tool
+	for i := range toolDefinitions {
+		if toolDefinitions[i].Name == tool.ToolNameGetResource {
+			def = &toolDefinitions[i]
+			break
+		}
+	}
+	if def == nil {
+		t.Fatalf("get_resource tool definition not found in definitions.go")
+	}
+
+	props, ok := def.Parameters["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_resource parameters has no properties map")
+	}
+
+	ic, ok := props["include_config"].(map[string]any)
+	if !ok {
+		t.Fatalf("get_resource has no include_config property")
+	}
+	if got, _ := ic["type"].(string); got != "boolean" {
+		t.Errorf("include_config type = %q, want \"boolean\"", got)
+	}
+
+	req, ok := def.Parameters["required"].([]string)
+	if !ok {
+		t.Fatalf("get_resource required is not []string: %T", def.Parameters["required"])
+	}
+	wantReq := []string{"resource_type", "resource_id"}
+	if len(req) != len(wantReq) {
+		t.Fatalf("required = %v, want exactly %v (include_config must stay optional)", req, wantReq)
+	}
+	for i := range wantReq {
+		if req[i] != wantReq[i] {
+			t.Errorf("required[%d] = %s, want %s", i, req[i], wantReq[i])
+		}
+	}
+}
