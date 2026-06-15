@@ -370,5 +370,26 @@ send-action denylist and an id/next_id graph-reset, which were superseded in v3.
   behavior); branch/goto work, and loop/recursion budgets are flow-manager's
   concern (#991).
 
+### v3 -> v4 (action-type enum, owner decision)
+
+- **Action-type enum added to the tool schema:** the `actions[].type` JSON schema
+  now carries the full `enum` of all 42 flow-manager action types (locked to
+  `action.TypeListAll` by a drift test `TestCreateCallActionsEnumMatchesTypeListAll`).
+  This stops the LLM from inventing a non-existent action type at the input layer
+  instead of failing later in flow-manager `ValidateActions`. The enum is the
+  authoritative offered set; `ValidateActions` is the authoritative accepted set;
+  the test keeps them identical.
+- **Per-action OPTION schema is NOT inlined (owner decision, approach 1).** The
+  tool only tells the LLM the valid action TYPES and a short "common ones" hint,
+  plus a pointer to the VoIPBin flow action reference. Teaching the LLM each
+  action's option fields (42 option structs) is a separate concern (catalog /
+  discovery) tracked as its own issue, to avoid bloating every tool-call payload
+  and to avoid hand-maintained drift from the canonical sources
+  (`bin-flow-manager/models/action/option.go` and the user-facing
+  `flow_struct_action.rst`). Preferred future approach: a dedicated
+  `list_flow_actions` / `describe_action` lookup tool generated from those
+  canonical sources. Tracked in #994.
+
 Deferred (not blocking, by owner decision): composition guards (#991), webhook
-egress hardening (#979), resource-manager send gating (#989).
+egress hardening (#979), resource-manager send gating (#989), per-action option
+catalog/discovery for the LLM (#994).

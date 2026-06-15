@@ -610,8 +610,20 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 						"type": "object",
 						"properties": map[string]any{
 							"type": map[string]any{
-								"type":        "string",
-								"description": "Flow action type, e.g. talk, play, hangup, connect, variable_set, branch, goto, sleep, digits_receive.",
+								"type": "string",
+								"enum": []string{
+									"amd", "answer", "ai_summary", "ai_talk", "ai_task", "beep", "block",
+									"branch", "call", "condition_call_digits", "condition_call_status",
+									"condition_datetime", "condition_variable", "confbridge_join",
+									"conference_join", "connect", "conversation_send", "digits_receive",
+									"digits_send", "echo", "email_send", "external_media_start",
+									"external_media_stop", "fetch", "fetch_flow", "goto", "hangup",
+									"message_send", "mute", "play", "queue_join", "recording_start",
+									"recording_stop", "sleep", "stop", "stream_echo", "talk",
+									"transcribe_start", "transcribe_stop", "transcribe_recording",
+									"variable_set", "webhook_send",
+								},
+								"description": "Flow action type. Common ones: talk (speak text), play (play audio url), hangup, connect (bridge to another endpoint), variable_set, branch, goto, sleep, digits_receive. See the VoIPBin flow action reference for each type's option fields.",
 							},
 							"option": map[string]any{
 								"type":        "object",

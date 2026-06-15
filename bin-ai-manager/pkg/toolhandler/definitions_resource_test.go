@@ -6,6 +6,7 @@ import (
 
 	"monorepo/bin-ai-manager/models/tool"
 	"monorepo/bin-ai-manager/pkg/aicallhandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
 )
 
 // TestGetResourceEnumMatchesFetchers locks the get_resource JSON-schema enum
@@ -92,6 +93,68 @@ func TestGetResourceIncludeConfigSchema(t *testing.T) {
 	for i := range wantReq {
 		if req[i] != wantReq[i] {
 			t.Errorf("required[%d] = %s, want %s", i, req[i], wantReq[i])
+		}
+	}
+}
+
+// TestCreateCallActionsEnumMatchesTypeListAll locks the create_call inline-actions
+// 'type' JSON-schema enum to flow-manager's authoritative action.TypeListAll, so the
+// two cannot drift when a new action type is added to flow-manager. The enum is what
+// the LLM is offered; TypeListAll is what flow-manager ValidateActions accepts. They
+// must stay identical (every offered type is accepted; no accepted type is hidden).
+func TestCreateCallActionsEnumMatchesTypeListAll(t *testing.T) {
+	var def *tool.Tool
+	for i := range toolDefinitions {
+		if toolDefinitions[i].Name == tool.ToolNameCreateCall {
+			def = &toolDefinitions[i]
+			break
+		}
+	}
+	if def == nil {
+		t.Fatalf("create_call tool definition not found in definitions.go")
+	}
+
+	props, ok := def.Parameters["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("create_call parameters has no properties map")
+	}
+	actions, ok := props["actions"].(map[string]any)
+	if !ok {
+		t.Fatalf("create_call has no actions property")
+	}
+	items, ok := actions["items"].(map[string]any)
+	if !ok {
+		t.Fatalf("create_call actions has no items map")
+	}
+	itemProps, ok := items["properties"].(map[string]any)
+	if !ok {
+		t.Fatalf("create_call actions.items has no properties map")
+	}
+	typeProp, ok := itemProps["type"].(map[string]any)
+	if !ok {
+		t.Fatalf("create_call actions.items has no type property")
+	}
+	enum, ok := typeProp["enum"].([]string)
+	if !ok {
+		t.Fatalf("actions.items.type enum is not []string: %T", typeProp["enum"])
+	}
+
+	gotEnum := make([]string, len(enum))
+	copy(gotEnum, enum)
+	sort.Strings(gotEnum)
+
+	want := make([]string, len(fmaction.TypeListAll))
+	for i, ty := range fmaction.TypeListAll {
+		want[i] = string(ty)
+	}
+	sort.Strings(want)
+
+	if len(gotEnum) != len(want) {
+		t.Fatalf("enum length %d != TypeListAll length %d. enum: %v, TypeListAll: %v", len(gotEnum), len(want), gotEnum, want)
+	}
+	for i := range want {
+		if gotEnum[i] != want[i] {
+			t.Errorf("enum[%d] = %s, want %s (enum: %v, TypeListAll: %v)", i, gotEnum[i], want[i], gotEnum, want)
 		}
 	}
 }
