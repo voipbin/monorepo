@@ -37,7 +37,7 @@ Send an email by providing the destination, subject, content, and attachments:
             "attachments": []
         }'
 
-To attach a call recording, add an entry to ``attachments``. The only supported attachment ``reference_type`` is ``recording``; ``reference_id`` is a recording ID from ``GET /recordings``.
+To attach a call recording, replace the empty ``attachments`` array above with an entry like the following. The only supported attachment ``reference_type`` is ``recording``; ``reference_id`` is a recording ID from ``GET /recordings``.
 
 .. code::
 
@@ -75,7 +75,7 @@ Response:
 
 .. note:: **AI Implementation Hint**
 
-   The email ``id`` (UUID) can be used to check delivery status via ``GET /emails/{id}``. The ``status`` starts as ``initiated`` and transitions to ``processed`` then ``delivered``. The response includes the ``source`` address (sender) that VoIPBIN applied from your account's verified sending domain. For the full email lifecycle and advanced scenarios (attachments, HTML content), see :ref:`Email overview <email-overview>`.
+   The email ``id`` (UUID) can be used to check delivery status via ``GET /emails/{id}``. The ``status`` starts as ``initiated`` and transitions to ``processed`` then ``delivered``. The response includes the ``source`` address (sender) that VoIPBIN applied from your account's verified sending domain. For the full email lifecycle and advanced scenarios (such as HTML content), see :ref:`Email overview <email-overview>`.
 
 Troubleshooting
 +++++++++++++++
