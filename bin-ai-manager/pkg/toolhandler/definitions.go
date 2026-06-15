@@ -573,12 +573,14 @@ run_llm: Set true so you can reason about the resource content.`,
 	{
 		Name:   tool.ToolNameCreateCall,
 		RunLLM: true,
-		Description: `Places a NEW, INDEPENDENT outbound call that is NOT connected/bridged to the current conversation. The new call runs its own predefined flow. The current AI session continues normally (it is NOT ended).
+		Description: `Places a NEW, INDEPENDENT outbound call that is NOT connected/bridged to the current conversation. The new call runs its own flow. The current AI session continues normally (it is NOT ended).
+
+Provide EITHER flow_id (reuse a flow your account already built) OR actions (assemble the call scenario inline now), not both. Use actions for ad-hoc scenarios that no pre-built flow covers (e.g. "call John, say the meeting moved to 3pm, then hang up").
 
 WHEN TO USE:
 - User wants a separate call placed to someone: "call John and remind him about the meeting"
 - A callback / notification call should be triggered to a third party
-- You need to start an outbound call that runs a predefined scenario (flow)
+- You need to start an outbound call that runs a predefined scenario (flow_id) or an ad-hoc one you assemble (actions)
 
 WHEN NOT TO USE:
 - User wants to be transferred / connected to someone in THIS call (use connect_call)
@@ -599,7 +601,37 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 				},
 				"flow_id": map[string]any{
 					"type":        "string",
-					"description": "UUID of the pre-existing flow the new call will execute. Must belong to your account.",
+					"description": "UUID of a pre-existing flow the new call will execute. Provide EITHER flow_id OR actions, not both. Must belong to your account.",
+				},
+				"actions": map[string]any{
+					"type": "array",
+					"description": "Assemble the call scenario inline as an ordered list of flow actions, INSTEAD OF flow_id. Provide EITHER flow_id OR actions, not both. Each item is a flow action with a 'type' and a type-specific 'option' object. Example to speak a message then hang up: [{\"type\":\"talk\",\"option\":{\"text\":\"Hi, the meeting moved to 3pm\",\"language\":\"en-US\"}},{\"type\":\"hangup\"}].",
+					"items": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"type": map[string]any{
+								"type": "string",
+								"enum": []string{
+									"amd", "answer", "ai_summary", "ai_talk", "ai_task", "beep", "block",
+									"branch", "call", "condition_call_digits", "condition_call_status",
+									"condition_datetime", "condition_variable", "confbridge_join",
+									"conference_join", "connect", "conversation_send", "digits_receive",
+									"digits_send", "echo", "email_send", "external_media_start",
+									"external_media_stop", "fetch", "fetch_flow", "goto", "hangup",
+									"message_send", "mute", "play", "queue_join", "recording_start",
+									"recording_stop", "sleep", "stop", "stream_echo", "talk",
+									"transcribe_start", "transcribe_stop", "transcribe_recording",
+									"variable_set", "webhook_send",
+								},
+								"description": "Flow action type. Common ones: talk (speak text), play (play audio url), hangup, connect (bridge to another endpoint), variable_set, branch, goto, sleep, digits_receive. See the VoIPBin flow action reference for each type's option fields.",
+							},
+							"option": map[string]any{
+								"type":        "object",
+								"description": "Action-type-specific options. Shape depends on type. e.g. talk -> {text, language, gender}. Omit for actions with no options (e.g. hangup).",
+							},
+						},
+						"required": []string{"type"},
+					},
 				},
 				"source": map[string]any{
 					"type":        "object",
@@ -654,7 +686,7 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 					},
 				},
 			},
-			"required": []string{"flow_id", "destinations"},
+			"required": []string{"destinations"},
 		},
 	},
 }

@@ -19,6 +19,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	fmaction "monorepo/bin-flow-manager/models/action"
 	fmflow "monorepo/bin-flow-manager/models/flow"
 
 	"github.com/gofrs/uuid"
@@ -31,6 +32,7 @@ var errTest = stderrors.New("test error")
 func Test_toolHandleCreateCall(t *testing.T) {
 	customerID := uuid.FromStringOrNil("11110000-0000-4000-8000-000000000001")
 	flowID := uuid.FromStringOrNil("11110000-0000-4000-8000-000000000002")
+	ephemeralFlowID := uuid.FromStringOrNil("11110000-0000-4000-8000-00000000000e")
 
 	tests := []struct {
 		name string
@@ -325,7 +327,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 			},
 		},
 		{
-			name: "missing flow_id",
+			name: "neither flow_id nor actions",
 			aicall: &aicall.AIcall{
 				Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000a8"), CustomerID: customerID},
 				ReferenceType: aicall.ReferenceTypeCall,
@@ -342,7 +344,7 @@ func Test_toolHandleCreateCall(t *testing.T) {
 			expectRes: &messageContent{
 				Result:     "failed",
 				ToolCallID: "tool-noflow",
-				Message:    "flow_id is required",
+				Message:    "either flow_id or actions is required",
 			},
 		},
 		{
@@ -455,6 +457,135 @@ func Test_toolHandleCreateCall(t *testing.T) {
 				Result:     "failed",
 				ToolCallID: "tool-flowerr",
 				Message:    "could not resolve flow",
+			},
+		},
+		{
+			name: "success with inline actions creates ephemeral flow (ids preserved, branch/goto intact)",
+			aicall: &aicall.AIcall{
+				Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000b1"), CustomerID: customerID},
+				ReferenceType: aicall.ReferenceTypeCall,
+			},
+			tool: &message.ToolCall{
+				ID:   "tool-actions",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name: message.FunctionCallNameCreateCall,
+					Arguments: `{
+						"actions": [
+							{"id": "22220000-0000-4000-8000-000000000001", "type": "talk", "option": {"text": "Hi, the meeting moved to 3pm", "language": "en-US"}},
+							{"type": "hangup"}
+						],
+						"destinations": [{"type": "tel", "target": "+111****1111"}]
+					}`,
+				},
+			},
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				// actions are passed through unchanged (LLM-supplied id preserved so option-level
+				// branch/goto targets stay valid). persist=false ephemeral flow.
+				mockReq.EXPECT().FlowV1FlowCreate(
+					gomock.Any(), customerID, fmflow.TypeFlow, "tmp", "tmp flow for ai create_call action assembly",
+					[]fmaction.Action{
+						{ID: uuid.FromStringOrNil("22220000-0000-4000-8000-000000000001"), Type: fmaction.TypeTalk, Option: map[string]any{"text": "Hi, the meeting moved to 3pm", "language": "en-US"}},
+						{Type: fmaction.TypeHangup},
+					},
+					uuid.Nil, false,
+				).Return(&fmflow.Flow{
+					Identity: commonidentity.Identity{ID: ephemeralFlowID, CustomerID: customerID},
+				}, nil)
+				mockReq.EXPECT().CallV1CallsCreate(
+					gomock.Any(), customerID, ephemeralFlowID, uuid.Nil,
+					&commonaddress.Address{},
+					[]commonaddress.Address{{Type: commonaddress.TypeTel, Target: "+111****1111"}},
+					false, false, "", nil, gomock.Any(),
+				).Return(
+					[]*cmcall.Call{{Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000e1")}}},
+					[]*cmgroupcall.Groupcall{},
+					nil,
+				)
+			},
+			expectRes: &messageContent{
+				Result:       "success",
+				ToolCallID:   "tool-actions",
+				ResourceType: "call",
+				ResourceID:   "11110000-0000-4000-8000-0000000000e1",
+				Message:      `{"call_ids":["11110000-0000-4000-8000-0000000000e1"],"groupcall_ids":[],"requested":1,"created":1}`,
+			},
+		},
+		{
+			name: "both flow_id and actions rejected",
+			aicall: &aicall.AIcall{
+				Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000b2"), CustomerID: customerID},
+				ReferenceType: aicall.ReferenceTypeCall,
+			},
+			tool: &message.ToolCall{
+				ID:   "tool-both",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name: message.FunctionCallNameCreateCall,
+					Arguments: `{
+						"flow_id": "11110000-0000-4000-8000-000000000002",
+						"actions": [{"type": "hangup"}],
+						"destinations": [{"type": "tel", "target": "+111****1111"}]
+					}`,
+				},
+			},
+			// no RPC expected: XOR validation short-circuits before any RPC.
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {},
+			expectRes: &messageContent{
+				Result:     "failed",
+				ToolCallID: "tool-both",
+				Message:    "provide either flow_id or actions, not both",
+			},
+		},
+		{
+			name: "empty actions array treated as not provided",
+			aicall: &aicall.AIcall{
+				Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000b3"), CustomerID: customerID},
+				ReferenceType: aicall.ReferenceTypeCall,
+			},
+			tool: &message.ToolCall{
+				ID:   "tool-emptyactions",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name:      message.FunctionCallNameCreateCall,
+					Arguments: `{"actions": [], "destinations": [{"type": "tel", "target": "+111****1111"}]}`,
+				},
+			},
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {},
+			expectRes: &messageContent{
+				Result:     "failed",
+				ToolCallID: "tool-emptyactions",
+				Message:    "either flow_id or actions is required",
+			},
+		},
+		{
+			name: "ephemeral flow creation failure (e.g. invalid action type) is surfaced",
+			aicall: &aicall.AIcall{
+				Identity:      commonidentity.Identity{ID: uuid.FromStringOrNil("11110000-0000-4000-8000-0000000000b4"), CustomerID: customerID},
+				ReferenceType: aicall.ReferenceTypeCall,
+			},
+			tool: &message.ToolCall{
+				ID:   "tool-badaction",
+				Type: message.ToolTypeFunction,
+				Function: message.FunctionCall{
+					Name: message.FunctionCallNameCreateCall,
+					Arguments: `{
+						"actions": [{"type": "not_a_real_action"}],
+						"destinations": [{"type": "tel", "target": "+111****1111"}]
+					}`,
+				},
+			},
+			mockSetup: func(mockReq *requesthandler.MockRequestHandler) {
+				mockReq.EXPECT().FlowV1FlowCreate(
+					gomock.Any(), customerID, fmflow.TypeFlow, "tmp", "tmp flow for ai create_call action assembly",
+					[]fmaction.Action{{Type: fmaction.Type("not_a_real_action")}},
+					uuid.Nil, false,
+				).Return(nil, errTest)
+			},
+			expectRes: &messageContent{
+				Result:     "failed",
+				ToolCallID: "tool-badaction",
+				Message:    "test error",
 			},
 		},
 	}
