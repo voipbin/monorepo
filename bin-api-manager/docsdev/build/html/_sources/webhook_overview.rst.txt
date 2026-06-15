@@ -50,6 +50,31 @@ Resource Type             Events
 ``number``                Number provisioning events
 ========================= ======================================================
 
+Payload Structure
+-----------------
+Every webhook delivered to your endpoint is a JSON object with a common two-field envelope:
+
+* ``type`` (string): The event type, for example ``"call_hungup"`` or ``"activeflow_updated"``. Use this field to decide how to parse ``data``.
+* ``data`` (object): The full resource payload. Its shape matches the resource that the event belongs to (call, message, activeflow, and so on).
+
+.. code::
+
+    {
+        "type": "call_hungup",
+        "data": {
+            "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
+            "flow_id": "d157ce07-0360-4cad-9007-c8ab89fccf9c",
+            "status": "hangup",
+            "...": "remaining resource fields"
+        }
+    }
+
+.. note:: **AI Implementation Hint**
+
+   Resource-specific fields always live one level deep, inside ``data``. Read ``payload["type"]`` first, then parse ``payload["data"]`` against the matching resource struct (see :ref:`Webhook struct reference <webhook-struct-webhook>`). Do not expect resource fields such as ``id``, ``status``, ``flow_id``, or ``activeflow_id`` at the top level of the payload. They are nested inside ``data``.
+
+The ``activeflow_id`` field, when present on a resource, is part of that resource and therefore appears at ``data.activeflow_id``, not at the top level of the envelope.
+
 Benefits of Webhooks
 --------------------
 Webhooks deliver a range of advantages for VoIPBIN users:
