@@ -84,7 +84,7 @@ Troubleshooting
     * **Cause:** Missing required fields (``destinations``, ``subject``, ``content``, ``attachments``), or a destination address type is not ``email``.
     * **Fix:** Ensure all required fields are present (send ``attachments`` as an empty array ``[]`` if there is nothing to attach) and each ``destinations[].type`` is ``"email"``.
 
-* **Email status shows "bounced":**
+* **Email status shows ``bounce``:**
     * **Cause:** The destination email address is invalid, the mailbox does not exist, or the mailbox is full.
     * **Fix:** Verify the destination email address. Check the email details via ``GET /emails/{id}`` for bounce details.
 
