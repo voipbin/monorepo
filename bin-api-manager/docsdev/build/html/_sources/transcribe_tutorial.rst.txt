@@ -66,6 +66,10 @@ Start Transcription via API (Manual)
 
 For existing calls or conferences, start transcription manually by making an API request.
 
+.. note:: **Optional parameter:** ``on_end_flow_id``
+
+   You may include an optional ``on_end_flow_id`` (a flow UUID) in the request body. When the transcription ends, VoIPBIN executes that flow, which is useful for post-transcription processing (for example, running an AI summary flow). If omitted, no follow-up flow is triggered. The ``reference_type``, ``reference_id``, and ``language`` fields are required.
+
 **Transcribe an Active Call:**
 
 .. code::
@@ -200,22 +204,30 @@ Subscribe to real-time transcription events via WebSocket to get transcripts as 
 
 **2. Subscribe to Transcription Events:**
 
+Topics follow the pattern ``customer_id:<your-customer-id>:<resource>:<resource-id>`` and are matched by **prefix**. Transcribe session events (``transcribe_created``, ``transcribe_progressing``, ``transcribe_done``, ``transcribe_deleted``) are published under the ``transcribe`` resource, while individual transcript segments (``transcript_created``, ``transcript_deleted``) are published under the ``transcript`` resource. To receive transcript segments in real time, subscribe to the ``transcript`` resource. Subscribe by prefix (omit the trailing resource ID) to receive events for all resources of that type under your customer account.
+
 .. code::
 
     {
         "type": "subscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"
+            "customer_id:12345678-1234-1234-1234-123456789012:transcript:",
+            "customer_id:12345678-1234-1234-1234-123456789012:transcribe:"
         ]
     }
 
+.. note::
+
+   Topics are matched by prefix, not by glob. A trailing ``:`` (for example ``...:transcript:``) subscribes to every transcript event for your customer. To target a single resource, append its ID (for example ``...:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce``). Do not use ``*`` as a wildcard.
+
 **3. Receive Real-Time Transcripts:**
+
+Real-time events delivered over the WebSocket use the same envelope as webhooks: a ``type`` field (the event type) and a ``data`` field (the resource payload).
 
 .. code::
 
     {
-        "event_type": "transcript_created",
-        "timestamp": "2026-01-20T12:00:00.000000Z",
+        "type": "transcript_created",
         "data": {
             "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
@@ -236,7 +248,7 @@ Subscribe to real-time transcription events via WebSocket to get transcripts as 
     def on_message(ws, message):
         data = json.loads(message)
 
-        if data.get('event_type') == 'transcript_created':
+        if data.get('type') == 'transcript_created':
             transcript = data['data']
             direction = transcript['direction']
             text = transcript['message']
@@ -249,11 +261,12 @@ Subscribe to real-time transcription events via WebSocket to get transcripts as 
             # - Detect keywords
 
     def on_open(ws):
-        # Subscribe to transcription events
+        # Subscribe to transcription events (prefix match, no wildcard)
         subscription = {
             "type": "subscribe",
             "topics": [
-                "customer_id:12345678-1234-1234-1234-123456789012:transcribe:*"
+                "customer_id:12345678-1234-1234-1234-123456789012:transcript:",
+                "customer_id:12345678-1234-1234-1234-123456789012:transcribe:"
             ]
         }
         ws.send(json.dumps(subscription))
@@ -273,34 +286,46 @@ Subscribe to real-time transcription events via WebSocket to get transcripts as 
 Receive Transcripts via Webhook
 --------------------------------
 
-Configure webhooks to automatically receive transcription events.
+Webhooks are configured at the **customer account level**, not as separate resources. There is no ``/webhooks`` CRUD endpoint. You set a single delivery URL on your customer profile, and VoIPBIN sends **all** event types (including transcribe and transcript events) to that URL. For the full configuration guide, see :ref:`Webhook Tutorial <webhook-tutorial>`.
 
-**1. Create Webhook:**
+**1. Configure Your Webhook Endpoint:**
+
+Set the ``webhook_uri`` and ``webhook_method`` on your customer profile.
 
 .. code::
 
-    $ curl --location --request POST 'https://api.voipbin.net/v1.0/webhooks?token=<YOUR_AUTH_TOKEN>' \
+    $ curl --location --request PUT 'https://api.voipbin.net/v1.0/customer?token=<YOUR_AUTH_TOKEN>' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "name": "Transcription Webhook",
-            "uri": "https://your-server.com/webhook",
-            "method": "POST",
-            "event_types": [
-                "transcribe.started",
-                "transcribe.completed",
-                "transcript.created"
-            ]
+            "webhook_uri": "https://your-server.com/voipbin/webhook",
+            "webhook_method": "POST"
         }'
 
-**2. Webhook Payload Example:**
+**2. Transcription-Related Event Types:**
+
+The following event types are delivered to your webhook endpoint:
+
+========================== ======================================================
+Event type                 Description
+========================== ======================================================
+``transcribe_created``     A transcription session was created
+``transcribe_progressing`` A transcription session started progressing
+``transcribe_done``        A transcription session finished
+``transcribe_deleted``     A transcription session was deleted
+``transcript_created``     A new transcript (text segment) was generated
+``transcript_deleted``     A transcript was deleted
+========================== ======================================================
+
+**3. Webhook Payload Example:**
+
+Every webhook is a JSON object with a common two-field envelope: ``type`` (the event type) and ``data`` (the resource payload).
 
 .. code::
 
-    POST https://your-server.com/webhook
+    POST https://your-server.com/voipbin/webhook
 
     {
-        "event_type": "transcript_created",
-        "timestamp": "2026-01-20T12:00:00.000000Z",
+        "type": "transcript_created",
         "data": {
             "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
@@ -311,7 +336,7 @@ Configure webhooks to automatically receive transcription events.
         }
     }
 
-**3. Process Webhook in Your Server:**
+**4. Process Webhook in Your Server:**
 
 .. code::
 
@@ -320,10 +345,10 @@ Configure webhooks to automatically receive transcription events.
 
     app = Flask(__name__)
 
-    @app.route('/webhook', methods=['POST'])
+    @app.route('/voipbin/webhook', methods=['POST'])
     def transcription_webhook():
         payload = request.get_json()
-        event_type = payload.get('event_type')
+        event_type = payload.get('type')
 
         if event_type == 'transcript_created':
             transcript = payload['data']
@@ -473,22 +498,20 @@ Common Use Cases
 
 **6. Multi-Language Customer Support:**
 
+VoIPBIN does not auto-detect the spoken language. The ``language`` parameter is required, so determine the language out of band (for example, from the customer's account profile, IVR menu selection, or the dialed number) and pass the corresponding BCP47 code when starting transcription.
+
 .. code::
 
-    # Auto-detect and transcribe in customer's language
-    def start_multilingual_transcription(call_id):
-        # Detect language from first few seconds
-        detected_language = detect_language(call_id)
+    # Transcribe in the customer's known language
+    def start_multilingual_transcription(call_id, customer):
+        # Resolve language from your own data (profile, IVR selection, etc.)
+        language = customer.preferred_language  # e.g. "es-ES", "ko-KR"
 
-        # Start transcription in detected language
+        # Start transcription in the resolved language
         start_transcribe(
             resource_id=call_id,
-            language=detected_language
+            language=language
         )
-
-        # Optionally translate to agent's language
-        if detected_language != 'en-US':
-            enable_translation(call_id, target_lang='en-US')
 
 Best Practices
 --------------
@@ -503,8 +526,8 @@ Best Practices
 - Use queues for high-volume scenarios
 
 **3. Language Selection:**
-- Auto-detect language when possible
-- Set correct language for better accuracy
+- Set the correct ``language`` explicitly (there is no auto-detect mode)
+- Resolve the language from your own data (customer profile, IVR selection, dialed number)
 - Test with actual customer accents and dialects
 
 **4. Data Management:**
