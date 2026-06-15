@@ -661,7 +661,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>Optional parameter:</strong> <code class="docutils literal notranslate"><span class="pre">on_end_flow_id</span></code></p>
-<p>You may include an optional <code class="docutils literal notranslate"><span class="pre">on_end_flow_id</span></code> (a flow UUID) in the request body. When the transcription ends, VoIPBIN executes that flow, which is useful for post-transcription processing (for example, running an AI summary flow). If omitted, no follow-up flow is triggered. All other listed fields (<code class="docutils literal notranslate"><span class="pre">reference_type</span></code>, <code class="docutils literal notranslate"><span class="pre">reference_id</span></code>, <code class="docutils literal notranslate"><span class="pre">language</span></code>, <code class="docutils literal notranslate"><span class="pre">direction</span></code>) are required.</p>
+<p>You may include an optional <code class="docutils literal notranslate"><span class="pre">on_end_flow_id</span></code> (a flow UUID) in the request body. When the transcription ends, VoIPBIN executes that flow, which is useful for post-transcription processing (for example, running an AI summary flow). If omitted, no follow-up flow is triggered. The <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>, <code class="docutils literal notranslate"><span class="pre">reference_id</span></code>, and <code class="docutils literal notranslate"><span class="pre">language</span></code> fields are required.</p>
 </div>
 <p><strong>Transcribe an Active Call:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/transcribes?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
@@ -786,9 +786,9 @@
 </pre></div>
 </div>
 <p><strong>3. Receive Real-Time Transcripts:</strong></p>
+<p>Real-time events delivered over the WebSocket use the same envelope as webhooks: a <code class="docutils literal notranslate"><span class="pre">type</span></code> field (the event type) and a <code class="docutils literal notranslate"><span class="pre">data</span></code> field (the resource payload).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;event_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2026-01-20T12:00:00.000000Z&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcript_created&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;9d59e7f0-7bdc-4c52-bb8c-bab718952050&quot;</span><span class="p">,</span>
         <span class="s2">&quot;transcribe_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span><span class="p">,</span>
@@ -807,7 +807,7 @@
 <span class="k">def</span> <span class="nf">on_message</span><span class="p">(</span><span class="n">ws</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event_type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;transcript_created&#39;</span><span class="p">:</span>
         <span class="n">transcript</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
         <span class="n">direction</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">transcript</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span>

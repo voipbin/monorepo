@@ -68,7 +68,7 @@ For existing calls or conferences, start transcription manually by making an API
 
 .. note:: **Optional parameter:** ``on_end_flow_id``
 
-   You may include an optional ``on_end_flow_id`` (a flow UUID) in the request body. When the transcription ends, VoIPBIN executes that flow, which is useful for post-transcription processing (for example, running an AI summary flow). If omitted, no follow-up flow is triggered. All other listed fields (``reference_type``, ``reference_id``, ``language``, ``direction``) are required.
+   You may include an optional ``on_end_flow_id`` (a flow UUID) in the request body. When the transcription ends, VoIPBIN executes that flow, which is useful for post-transcription processing (for example, running an AI summary flow). If omitted, no follow-up flow is triggered. The ``reference_type``, ``reference_id``, and ``language`` fields are required.
 
 **Transcribe an Active Call:**
 
@@ -215,11 +215,12 @@ Subscribe to real-time transcription events via WebSocket to get transcripts as 
 
 **3. Receive Real-Time Transcripts:**
 
+Real-time events delivered over the WebSocket use the same envelope as webhooks: a ``type`` field (the event type) and a ``data`` field (the resource payload).
+
 .. code::
 
     {
-        "event_type": "transcript_created",
-        "timestamp": "2026-01-20T12:00:00.000000Z",
+        "type": "transcript_created",
         "data": {
             "id": "9d59e7f0-7bdc-4c52-bb8c-bab718952050",
             "transcribe_id": "8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce",
@@ -240,7 +241,7 @@ Subscribe to real-time transcription events via WebSocket to get transcripts as 
     def on_message(ws, message):
         data = json.loads(message)
 
-        if data.get('event_type') == 'transcript_created':
+        if data.get('type') == 'transcript_created':
             transcript = data['data']
             direction = transcript['direction']
             text = transcript['message']

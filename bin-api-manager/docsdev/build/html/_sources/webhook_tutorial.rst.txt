@@ -86,10 +86,12 @@ VoIPBIN sends different event types to your webhook endpoint. For the complete l
 
 **Transcription Events:**
 
-- ``transcribe_created`` - Transcription started
-- ``transcribe_updated`` - Transcription progress update
-- ``transcribe_deleted`` - Transcription deleted
+- ``transcribe_created`` - Transcription session created
+- ``transcribe_progressing`` - Transcription session started progressing
+- ``transcribe_done`` - Transcription session finished
+- ``transcribe_deleted`` - Transcription session deleted
 - ``transcript_created`` - Transcript segment created
+- ``transcript_deleted`` - Transcript segment deleted
 
 **Queue Events:**
 
