@@ -54,7 +54,7 @@ post:
                 or actions; if both are set, flow_id takes precedence and
                 actions is ignored. The flow ID returned from the POST /flows
                 or GET /flows response.
-              example: "d4e5f6a7-b8c9-0123-4567-890abcdef012"
+              example: "c1d2e3f4-a5b6-7890-cdef-1234567890ab"
             actions:
               type: array
               minItems: 1
