@@ -887,7 +887,7 @@ Make a groupcall to the multiple destinations.
 
 .. note::
 
-   Provide either ``flow_id`` or ``actions``, but not both. If ``flow_id`` is set, that flow runs and ``actions`` is ignored. If ``flow_id`` is omitted (or empty), VoIPBIN builds a temporary flow from ``actions``. When both are provided, ``flow_id`` takes precedence and ``actions`` is ignored.
+   Provide either ``flow_id`` or ``actions``, but not both. If ``flow_id`` is set, that flow runs and ``actions`` is ignored. If ``flow_id`` is omitted (or empty), VoIPBIN builds a temporary flow from ``actions``. If both are present, ``flow_id`` wins.
 
    ``ring_method`` controls how destinations are dialed: ``ring_all`` (dial all at once) or ``linear`` (dial one at a time). ``answer_method`` controls what happens once a destination answers: ``hangup_others`` hangs up the remaining calls. See :ref:`Groupcall struct <call-struct-groupcall>` for details.
 
