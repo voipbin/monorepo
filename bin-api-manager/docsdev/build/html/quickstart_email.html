@@ -606,25 +606,20 @@
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>A valid authentication token (String) or accesskey (String). See <a class="reference internal" href="quickstart.html#quickstart-authentication"><span class="std std-ref">Authentication</span></a>.</p></li>
-<li><p>A source email address with a verified domain in VoIPBIN (e.g., <code class="docutils literal notranslate"><span class="pre">service&#64;yourdomain.com</span></code>).</p></li>
+<li><p>A sending domain verified with VoIPBIN. The sender address is configured on your account and applied automatically; you do not set it in the request.</p></li>
 <li><p>A destination email address.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> email address must use a domain that has been verified with VoIPBIN. Using an unverified domain will cause delivery failures. Both <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">destinations</span></code> use the Address format with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">email</span></code>. Sending emails incurs charges per email sent.</p>
+<p>The sender address is determined by your account’s verified sending domain and is not part of the request body. The request body has no <code class="docutils literal notranslate"><span class="pre">source</span></code> field. The <code class="docutils literal notranslate"><span class="pre">destinations</span></code> field uses the Address format with <code class="docutils literal notranslate"><span class="pre">type</span></code> set to <code class="docutils literal notranslate"><span class="pre">email</span></code>. The <code class="docutils literal notranslate"><span class="pre">attachments</span></code> field is required (send an empty array <code class="docutils literal notranslate"><span class="pre">[]</span></code> when there is nothing to attach). Sending emails incurs charges per email sent.</p>
 </div>
 <section id="id1">
 <h3>Send an email<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
-<p>Send an email by providing a source address, destination, subject, and content:</p>
+<p>Send an email by providing the destination, subject, content, and attachments:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --request POST &#39;https://api.voipbin.net/v1.0/emails?token=&lt;your-token&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;source&quot;: {
-            &quot;type&quot;: &quot;email&quot;,
-            &quot;target&quot;: &quot;service@yourdomain.com&quot;,
-            &quot;target_name&quot;: &quot;Your Service&quot;
-        },
         &quot;destinations&quot;: [
             {
                 &quot;type&quot;: &quot;email&quot;,
@@ -632,8 +627,18 @@
             }
         ],
         &quot;subject&quot;: &quot;Hello from VoIPBIN&quot;,
-        &quot;content&quot;: &quot;This is a test email sent via the VoIPBIN API.&quot;
+        &quot;content&quot;: &quot;This is a test email sent via the VoIPBIN API.&quot;,
+        &quot;attachments&quot;: []
     }&#39;
+</pre></div>
+</div>
+<p>To attach a call recording, add an entry to <code class="docutils literal notranslate"><span class="pre">attachments</span></code>. The only supported attachment <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> is <code class="docutils literal notranslate"><span class="pre">recording</span></code>; <code class="docutils literal notranslate"><span class="pre">reference_id</span></code> is a recording ID from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;attachments&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;recording&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;e5f6a7b8-c9d0-1234-5678-90abcdef0123&quot;</span>
+    <span class="p">}</span>
+<span class="p">]</span>
 </pre></div>
 </div>
 <p>Response:</p>
@@ -662,7 +667,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>The email <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) can be used to check delivery status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/emails/{id}</span></code>. The <code class="docutils literal notranslate"><span class="pre">status</span></code> starts as <code class="docutils literal notranslate"><span class="pre">initiated</span></code> and transitions to <code class="docutils literal notranslate"><span class="pre">processed</span></code> → <code class="docutils literal notranslate"><span class="pre">delivered</span></code>. The <code class="docutils literal notranslate"><span class="pre">target_name</span></code> (String, Optional) on the source address sets the sender display name. For the full email lifecycle and advanced scenarios (attachments, HTML content), see <a class="reference internal" href="email_overview.html#email-overview"><span class="std std-ref">Email overview</span></a>.</p>
+<p>The email <code class="docutils literal notranslate"><span class="pre">id</span></code> (UUID) can be used to check delivery status via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/emails/{id}</span></code>. The <code class="docutils literal notranslate"><span class="pre">status</span></code> starts as <code class="docutils literal notranslate"><span class="pre">initiated</span></code> and transitions to <code class="docutils literal notranslate"><span class="pre">processed</span></code> then <code class="docutils literal notranslate"><span class="pre">delivered</span></code>. The response includes the <code class="docutils literal notranslate"><span class="pre">source</span></code> address (sender) that VoIPBIN applied from your account’s verified sending domain. For the full email lifecycle and advanced scenarios (attachments, HTML content), see <a class="reference internal" href="email_overview.html#email-overview"><span class="std std-ref">Email overview</span></a>.</p>
 </div>
 </section>
 </section>
@@ -671,8 +676,8 @@
 <ul class="simple">
 <li><dl class="simple">
 <dt><strong>400 Bad Request:</strong></dt><dd><ul>
-<li><p><strong>Cause:</strong> Missing required fields (<code class="docutils literal notranslate"><span class="pre">source</span></code>, <code class="docutils literal notranslate"><span class="pre">destinations</span></code>, <code class="docutils literal notranslate"><span class="pre">subject</span></code>, <code class="docutils literal notranslate"><span class="pre">content</span></code>), or the source address type is not <code class="docutils literal notranslate"><span class="pre">email</span></code>.</p></li>
-<li><p><strong>Fix:</strong> Ensure all required fields are present and <code class="docutils literal notranslate"><span class="pre">source.type</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;email&quot;</span></code>.</p></li>
+<li><p><strong>Cause:</strong> Missing required fields (<code class="docutils literal notranslate"><span class="pre">destinations</span></code>, <code class="docutils literal notranslate"><span class="pre">subject</span></code>, <code class="docutils literal notranslate"><span class="pre">content</span></code>, <code class="docutils literal notranslate"><span class="pre">attachments</span></code>), or a destination address type is not <code class="docutils literal notranslate"><span class="pre">email</span></code>.</p></li>
+<li><p><strong>Fix:</strong> Ensure all required fields are present (send <code class="docutils literal notranslate"><span class="pre">attachments</span></code> as an empty array <code class="docutils literal notranslate"><span class="pre">[]</span></code> if there is nothing to attach) and each <code class="docutils literal notranslate"><span class="pre">destinations[].type</span></code> is <code class="docutils literal notranslate"><span class="pre">&quot;email&quot;</span></code>.</p></li>
 </ul>
 </dd>
 </dl>
