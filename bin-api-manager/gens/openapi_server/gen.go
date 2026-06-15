@@ -5934,12 +5934,15 @@ type GetGroupcallsParams struct {
 
 // PostGroupcallsJSONBody defines parameters for PostGroupcalls.
 type PostGroupcallsJSONBody struct {
-	Actions []FlowManagerAction `json:"actions"`
+	// Actions Inline actions used to build a temporary flow when flow_id is not provided. Provide either flow_id or actions.
+	Actions *[]FlowManagerAction `json:"actions,omitempty"`
 
 	// AnswerMethod Method to handle answered calls
 	AnswerMethod CallManagerGroupcallAnswerMethod `json:"answer_method"`
 	Destinations []CommonAddress                  `json:"destinations"`
-	FlowId       string                           `json:"flow_id"`
+
+	// FlowId The flow to execute for the groupcall. Provide either flow_id or actions; if both are set, flow_id takes precedence and actions is ignored. The flow ID returned from the POST /flows or GET /flows response.
+	FlowId *string `json:"flow_id,omitempty"`
 
 	// RingMethod Method used for dialing
 	RingMethod CallManagerGroupcallRingMethod `json:"ring_method"`
@@ -6889,8 +6892,8 @@ type PostTranscribesJSONBody struct {
 	// Language The language of the transcription.
 	Language string `json:"language"`
 
-	// OnEndFlowId The ID of the flow to be executed when the transcription ends.
-	OnEndFlowId string                               `json:"on_end_flow_id"`
+	// OnEndFlowId The flow to execute when the transcription ends. The flow ID returned from the POST /flows or GET /flows response. If omitted, no follow-up flow is executed.
+	OnEndFlowId *string                              `json:"on_end_flow_id,omitempty"`
 	Provider    *TranscribeManagerTranscribeProvider `json:"provider,omitempty"`
 
 	// ReferenceId The ID of the reference for the transcription.

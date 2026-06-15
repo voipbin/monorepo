@@ -47,10 +47,15 @@ func (h *server) PostGroupcalls(c *gin.Context) {
 	for _, v := range req.Destinations {
 		destinations = append(destinations, ConvertCommonAddress(v))
 	}
-	flowID := uuid.FromStringOrNil(req.FlowId)
+	flowID := uuid.Nil
+	if req.FlowId != nil {
+		flowID = uuid.FromStringOrNil(*req.FlowId)
+	}
 	actions := []fmaction.Action{}
-	for _, v := range req.Actions {
-		actions = append(actions, ConvertFlowManagerAction(v))
+	if req.Actions != nil {
+		for _, v := range *req.Actions {
+			actions = append(actions, ConvertFlowManagerAction(v))
+		}
 	}
 
 	res, err := h.serviceHandler.GroupcallCreate(c.Request.Context(), a, source, destinations, flowID, actions, cmgroupcall.RingMethod(req.RingMethod), cmgroupcall.AnswerMethod(req.AnswerMethod))
