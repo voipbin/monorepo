@@ -66,6 +66,81 @@ func Test_transcribesPOST(t *testing.T) {
 			expectProvider:      tmtranscribe.ProviderEmpty,
 			expectRes:           `{"id":"72e68b78-8286-11ed-8875-378ced61c021","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
+		{
+			name: "direction in",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			}),
+
+			reqQuery: "/transcribes",
+			reqBody:  []byte(`{"reference_type":"call","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf","language":"en-US","direction":"in","on_end_flow_id":"199a8a78-0944-11f0-b57c-dbf18b86df64"}`),
+
+			responseTranscribe: &tmtranscribe.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021"),
+				},
+			},
+
+			expectReferenceType: "call",
+			expectReferenceID:   uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
+			expectLanguage:      "en-US",
+			expectDirection:     tmtranscribe.DirectionIn,
+			expectOnEndFlowID:   uuid.FromStringOrNil("199a8a78-0944-11f0-b57c-dbf18b86df64"),
+			expectProvider:      tmtranscribe.ProviderEmpty,
+			expectRes:           `{"id":"72e68b78-8286-11ed-8875-378ced61c021","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "direction out",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			}),
+
+			reqQuery: "/transcribes",
+			reqBody:  []byte(`{"reference_type":"call","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf","language":"en-US","direction":"out","on_end_flow_id":"199a8a78-0944-11f0-b57c-dbf18b86df64"}`),
+
+			responseTranscribe: &tmtranscribe.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021"),
+				},
+			},
+
+			expectReferenceType: "call",
+			expectReferenceID:   uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
+			expectLanguage:      "en-US",
+			expectDirection:     tmtranscribe.DirectionOut,
+			expectOnEndFlowID:   uuid.FromStringOrNil("199a8a78-0944-11f0-b57c-dbf18b86df64"),
+			expectProvider:      tmtranscribe.ProviderEmpty,
+			expectRes:           `{"id":"72e68b78-8286-11ed-8875-378ced61c021","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "direction omitted defaults to both",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("4e72f3ea-8285-11ed-a55b-6bf44eeb8a87"),
+				},
+			}),
+
+			reqQuery: "/transcribes",
+			reqBody:  []byte(`{"reference_type":"call","reference_id":"4ecc56ec-8285-11ed-9958-8b0a60b665bf","language":"en-US","on_end_flow_id":"199a8a78-0944-11f0-b57c-dbf18b86df64"}`),
+
+			responseTranscribe: &tmtranscribe.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("72e68b78-8286-11ed-8875-378ced61c021"),
+				},
+			},
+
+			expectReferenceType: "call",
+			expectReferenceID:   uuid.FromStringOrNil("4ecc56ec-8285-11ed-9958-8b0a60b665bf"),
+			expectLanguage:      "en-US",
+			expectDirection:     tmtranscribe.DirectionBoth,
+			expectOnEndFlowID:   uuid.FromStringOrNil("199a8a78-0944-11f0-b57c-dbf18b86df64"),
+			expectProvider:      tmtranscribe.ProviderEmpty,
+			expectRes:           `{"id":"72e68b78-8286-11ed-8875-378ced61c021","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","on_end_flow_id":"00000000-0000-0000-0000-000000000000","reference_type":"","reference_id":"00000000-0000-0000-0000-000000000000","status":"","language":"","direction":"","provider":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
 	}
 
 	for _, tt := range tests {

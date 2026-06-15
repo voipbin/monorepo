@@ -5550,13 +5550,19 @@
                 "type": "object",
                 "properties": {
                   "flow_id": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "uuid",
+                    "x-go-type": "string",
+                    "description": "The flow to execute for this call. The flow ID returned from the POST /flows or GET /flows response. Provide either flow_id or actions. If both are supplied, flow_id takes precedence and actions is ignored.",
+                    "example": "f1a2b3c4-d5e6-7890-1234-567890abcdef"
                   },
                   "actions": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                       "$ref": "#/components/schemas/FlowManagerAction"
-                    }
+                    },
+                    "description": "Inline flow actions used to build an ephemeral flow for this call. Provide either flow_id or actions. Ignored if flow_id is set."
                   },
                   "source": {
                     "$ref": "#/components/schemas/CommonAddress"
@@ -19435,7 +19441,12 @@
                     "description": "The language of the transcription."
                   },
                   "direction": {
-                    "$ref": "#/components/schemas/TranscribeManagerTranscribeDirection"
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/TranscribeManagerTranscribeDirection"
+                      }
+                    ],
+                    "description": "Which audio legs to transcribe. If omitted, defaults to \"both\"."
                   },
                   "provider": {
                     "$ref": "#/components/schemas/TranscribeManagerTranscribeProvider"
@@ -19451,8 +19462,7 @@
                 "required": [
                   "reference_type",
                   "reference_id",
-                  "language",
-                  "direction"
+                  "language"
                 ]
               }
             }

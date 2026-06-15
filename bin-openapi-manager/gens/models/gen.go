@@ -7501,12 +7501,15 @@ type GetCallsParams struct {
 
 // PostCallsJSONBody defines parameters for PostCalls.
 type PostCallsJSONBody struct {
+	// Actions Inline flow actions used to build an ephemeral flow for this call. Provide either flow_id or actions. Ignored if flow_id is set.
 	Actions *[]FlowManagerAction `json:"actions,omitempty"`
 
 	// Anonymous Controls anonymous caller ID for outbound PSTN calls. "yes" — always send anonymous caller ID (RFC 3323 Privacy header). "no" — never anonymize, always show real caller ID. "auto" — inherit from incoming call's Privacy header (default).
 	Anonymous    *PostCallsJSONBodyAnonymous `json:"anonymous,omitempty"`
 	Destinations *[]CommonAddress            `json:"destinations,omitempty"`
-	FlowId       *string                     `json:"flow_id,omitempty"`
+
+	// FlowId The flow to execute for this call. The flow ID returned from the POST /flows or GET /flows response. Provide either flow_id or actions. If both are supplied, flow_id takes precedence and actions is ignored.
+	FlowId *string `json:"flow_id,omitempty"`
 
 	// Source Contains source or destination detail info.
 	Source *CommonAddress `json:"source,omitempty"`
@@ -9090,7 +9093,8 @@ type GetTranscribesParams struct {
 
 // PostTranscribesJSONBody defines parameters for PostTranscribes.
 type PostTranscribesJSONBody struct {
-	Direction TranscribeManagerTranscribeDirection `json:"direction"`
+	// Direction Which audio legs to transcribe. If omitted, defaults to "both".
+	Direction *TranscribeManagerTranscribeDirection `json:"direction,omitempty"`
 
 	// Language The language of the transcription.
 	Language string `json:"language"`
