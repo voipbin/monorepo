@@ -680,6 +680,31 @@
 </table>
 </div>
 </section>
+<section id="payload-structure">
+<h2>Payload Structure<a class="headerlink" href="#payload-structure" title="Link to this heading">¶</a></h2>
+<p>Every webhook delivered to your endpoint is a JSON object with a common two-field envelope:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (string): The event type, for example <code class="docutils literal notranslate"><span class="pre">&quot;call_hungup&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_updated&quot;</span></code>. Use this field to decide how to parse <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (object): The full resource payload. Its shape matches the resource that the event belongs to (call, message, activeflow, and so on).</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;5371e9db-d035-4db6-a8d6-0994d33e744e&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d157ce07-0360-4cad-9007-c8ab89fccf9c&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;hangup&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;...&quot;</span><span class="p">:</span> <span class="s2">&quot;remaining resource fields&quot;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>AI Implementation Hint</strong></p>
+<p>Resource-specific fields always live one level deep, inside <code class="docutils literal notranslate"><span class="pre">data</span></code>. Read <code class="docutils literal notranslate"><span class="pre">payload[&quot;type&quot;]</span></code> first, then parse <code class="docutils literal notranslate"><span class="pre">payload[&quot;data&quot;]</span></code> against the matching resource struct (see <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook struct reference</span></a>). Do not expect resource fields such as <code class="docutils literal notranslate"><span class="pre">id</span></code>, <code class="docutils literal notranslate"><span class="pre">status</span></code>, <code class="docutils literal notranslate"><span class="pre">flow_id</span></code>, or <code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> at the top level of the payload. They are nested inside <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">activeflow_id</span></code> field, when present on a resource, is part of that resource and therefore appears at <code class="docutils literal notranslate"><span class="pre">data.activeflow_id</span></code>, not at the top level of the envelope.</p>
+</section>
 <section id="benefits-of-webhooks">
 <h2>Benefits of Webhooks<a class="headerlink" href="#benefits-of-webhooks" title="Link to this heading">¶</a></h2>
 <p>Webhooks deliver a range of advantages for VoIPBIN users:</p>
@@ -793,6 +818,7 @@
 <li><a class="reference internal" href="#types-of-webhooks">Types of Webhooks</a></li>
 <li><a class="reference internal" href="#custom-endpoints">Custom Endpoints</a></li>
 <li><a class="reference internal" href="#webhook-event-types">Webhook Event Types</a></li>
+<li><a class="reference internal" href="#payload-structure">Payload Structure</a></li>
 <li><a class="reference internal" href="#benefits-of-webhooks">Benefits of Webhooks</a></li>
 <li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
 <li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
