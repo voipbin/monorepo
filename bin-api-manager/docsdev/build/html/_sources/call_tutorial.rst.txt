@@ -889,6 +889,10 @@ Make a groupcall to the multiple destinations.
 
    Provide either ``flow_id`` or ``actions``, but not both. If ``flow_id`` is set, that flow runs and ``actions`` is ignored. If ``flow_id`` is omitted (or empty), VoIPBIN builds a temporary flow from ``actions``. When both are provided, ``flow_id`` takes precedence and ``actions`` is ignored.
 
+   ``ring_method`` controls how destinations are dialed: ``ring_all`` (dial all at once) or ``linear`` (dial one at a time). ``answer_method`` controls what happens once a destination answers: ``hangup_others`` hangs up the remaining calls. See :ref:`Groupcall struct <call-struct-groupcall>` for details.
+
+   The ``+155****XXXX`` values below are masked placeholders. Replace them with real E.164 numbers (the source must be a number you own; see Prerequisites above).
+
 .. code::
 
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/groupcalls?token=<YOUR_AUTH_TOKEN>' \
