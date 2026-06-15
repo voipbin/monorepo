@@ -18,6 +18,7 @@ var ConversationSafeTools = map[tool.ToolName]bool{
 	tool.ToolNameStopService:       true,
 	tool.ToolNameGetAIcallMessages: true,
 	tool.ToolNameSearchKnowledge:   true,
+	tool.ToolNameDescribeAction:    true,
 }
 
 // FilterToolsForConversation returns the subset of names that are safe for a

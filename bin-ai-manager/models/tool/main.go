@@ -19,6 +19,7 @@ const (
 	ToolNameSearchKnowledge   ToolName = "search_knowledge"
 	ToolNameGetCorrelation    ToolName = "get_correlation"
 	ToolNameGetResource       ToolName = "get_resource"
+	ToolNameDescribeAction    ToolName = "describe_action"
 )
 
 // AllToolNames returns all available tool names (excluding "all")
@@ -36,6 +37,7 @@ var AllToolNames = []ToolName{
 	ToolNameSearchKnowledge,
 	ToolNameGetCorrelation,
 	ToolNameGetResource,
+	ToolNameDescribeAction,
 }
 
 // Tool defines a tool with its schema for LLM function calling.

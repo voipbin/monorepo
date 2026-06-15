@@ -65,6 +65,7 @@ func (h *aicallHandler) ToolHandle(ctx context.Context, id uuid.UUID, toolID str
 		message.FunctionCallNameSearchKnowledge:     h.toolHandleSearchKnowledge,
 		message.FunctionCallNameGetCorrelation:      h.toolHandleGetCorrelation,
 		message.FunctionCallNameGetResource:         h.toolHandleGetResource,
+		message.FunctionCallNameDescribeAction:      h.toolHandleDescribeAction,
 	}
 
 	promAIcallToolExecuteTotal.WithLabelValues(string(tool.Function.Name)).Inc()

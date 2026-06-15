@@ -2,6 +2,7 @@ package toolhandler
 
 import (
 	"monorepo/bin-ai-manager/models/tool"
+	"monorepo/bin-ai-manager/pkg/actioncatalog"
 )
 
 var toolDefinitions = []tool.Tool{
@@ -610,20 +611,9 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 						"type": "object",
 						"properties": map[string]any{
 							"type": map[string]any{
-								"type": "string",
-								"enum": []string{
-									"amd", "answer", "ai_summary", "ai_talk", "ai_task", "beep", "block",
-									"branch", "call", "condition_call_digits", "condition_call_status",
-									"condition_datetime", "condition_variable", "confbridge_join",
-									"conference_join", "connect", "conversation_send", "digits_receive",
-									"digits_send", "echo", "email_send", "external_media_start",
-									"external_media_stop", "fetch", "fetch_flow", "goto", "hangup",
-									"message_send", "mute", "play", "queue_join", "recording_start",
-									"recording_stop", "sleep", "stop", "stream_echo", "talk",
-									"transcribe_start", "transcribe_stop", "transcribe_recording",
-									"variable_set", "webhook_send",
-								},
-								"description": "Flow action type. Common ones: talk (speak text), play (play audio url), hangup, connect (bridge to another endpoint), variable_set, branch, goto, sleep, digits_receive. See the VoIPBin flow action reference for each type's option fields.",
+								"type":        "string",
+								"enum":        actioncatalog.ActionTypeEnum(),
+								"description": "Flow action type. Common ones: talk (speak text), play (play audio url), hangup, connect (bridge to another endpoint), variable_set, branch, goto, sleep, digits_receive. Use the describe_action tool to look up an action type's option fields before assembling it.",
 							},
 							"option": map[string]any{
 								"type":        "object",
@@ -687,6 +677,39 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 				},
 			},
 			"required": []string{"destinations"},
+		},
+	},
+	{
+		Name:   tool.ToolNameDescribeAction,
+		RunLLM: true,
+		Description: `Returns the option fields a given flow action type accepts, so you can correctly assemble actions for create_call's 'actions' parameter.
+
+WHEN TO USE:
+- Before assembling a create_call action whose options you are unsure of (e.g. connect, branch, condition_variable, talk, play)
+- To check the exact option field names and whether they are required
+
+WHEN NOT TO USE:
+- General conversation or knowledge-base questions (use search_knowledge)
+- You already know the action's options
+
+The action_type must be one of the create_call action types. The response lists each option field as 'name (type, required|optional): description'.
+
+run_llm: Set true so you can use the returned schema to build the action.`,
+		Parameters: map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"run_llm": map[string]any{
+					"type":        "boolean",
+					"description": "Set true to use the returned schema to assemble the action.",
+					"default":     true,
+				},
+				"action_type": map[string]any{
+					"type":        "string",
+					"enum":        actioncatalog.ActionTypeEnum(),
+					"description": "The flow action type to describe (e.g. talk, connect, branch).",
+				},
+			},
+			"required": []string{"action_type"},
 		},
 	},
 }
