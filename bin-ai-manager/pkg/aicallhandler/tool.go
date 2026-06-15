@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	commonaddress "monorepo/bin-common-handler/models/address"
 	fmaction "monorepo/bin-flow-manager/models/action"
+	fmflow "monorepo/bin-flow-manager/models/flow"
 	fmvariable "monorepo/bin-flow-manager/models/variable"
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 
@@ -212,6 +213,7 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 	// 1. parse args
 	var args struct {
 		FlowID       uuid.UUID               `json:"flow_id"`
+		Actions      []fmaction.Action       `json:"actions,omitempty"`
 		Source       *commonaddress.Address  `json:"source,omitempty"`
 		Destinations []commonaddress.Address `json:"destinations"`
 		Anonymous    string                  `json:"anonymous,omitempty"`
@@ -230,10 +232,20 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 		fillFailed(res, errUnmarshal)
 		return res
 	}
-	if args.FlowID == uuid.Nil {
-		fillFailed(res, fmt.Errorf("flow_id is required"))
+
+	// flow_id XOR actions: exactly one must be provided. An empty actions array ([]) counts as
+	// "not provided" (len check), so it falls into the neither-provided rejection.
+	hasFlowID := args.FlowID != uuid.Nil
+	hasActions := len(args.Actions) > 0
+	switch {
+	case hasFlowID && hasActions:
+		fillFailed(res, fmt.Errorf("provide either flow_id or actions, not both"))
+		return res
+	case !hasFlowID && !hasActions:
+		fillFailed(res, fmt.Errorf("either flow_id or actions is required"))
 		return res
 	}
+
 	if len(args.Destinations) == 0 {
 		fillFailed(res, fmt.Errorf("at least one destination is required"))
 		return res
@@ -251,18 +263,43 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 	// caps) is enforced by flow-manager, not here.
 	variables := fmvariable.NewVariablesFromMap(args.Variables)
 
-	// 2. SECURITY: flow ownership (IDOR prevention). Both not-found and cross-customer return the
-	//    same byte-identical masked error so the tool is not a flow-existence oracle.
-	f, err := h.reqHandler.FlowV1FlowGet(ctx, args.FlowID)
-	if err != nil || f == nil {
-		log.Errorf("Could not get the flow. flow_id: %s, err: %v", args.FlowID, err)
-		fillFailed(res, errCouldNotResolveFlow)
-		return res
-	}
-	if f.CustomerID != c.CustomerID {
-		log.Warnf("Flow does not belong to the customer. flow_id: %s, flow_customer_id: %s, customer_id: %s", args.FlowID, f.CustomerID, c.CustomerID)
-		fillFailed(res, errCouldNotResolveFlow)
-		return res
+	// 2. resolve the target flow.
+	//    - actions path: assemble an ephemeral (persist=false, cache-only, TTL-expiring) flow
+	//      from the LLM-supplied actions. The actions are passed through unchanged: the LLM may
+	//      include id/next_id to express non-linear control flow (goto/branch/condition_* carry
+	//      their jump targets inside option referencing actions by id), so resetting ids would
+	//      dangle those targets. flow-manager ValidateActions (via FlowV1FlowCreate) rejects
+	//      unknown action types and invalid anonymous values. Composition limits (count,
+	//      recursion, loop) are enforced at the flow-manager activeflow layer, not here.
+	//      The ephemeral flow is owned by c.CustomerID by construction, so no ownership check is
+	//      needed and there is no caller-supplied flow id to leak as an existence oracle.
+	//    - flow_id path: SECURITY: flow ownership (IDOR prevention). Both not-found and
+	//      cross-customer return the same byte-identical masked error so the tool is not a
+	//      flow-existence oracle.
+	var targetFlowID uuid.UUID
+	if hasActions {
+		f, err := h.reqHandler.FlowV1FlowCreate(
+			ctx, c.CustomerID, fmflow.TypeFlow, "tmp", "tmp flow for ai create_call action assembly", args.Actions, uuid.Nil, false)
+		if err != nil {
+			log.Errorf("Could not create the ephemeral flow for create_call actions. err: %v", err)
+			fillFailed(res, err)
+			return res
+		}
+		log.WithField("flow_id", f.ID).Debugf("Created ephemeral flow for create_call actions. flow_id: %s, action_count: %d", f.ID, len(args.Actions))
+		targetFlowID = f.ID
+	} else {
+		f, err := h.reqHandler.FlowV1FlowGet(ctx, args.FlowID)
+		if err != nil || f == nil {
+			log.Errorf("Could not get the flow. flow_id: %s, err: %v", args.FlowID, err)
+			fillFailed(res, errCouldNotResolveFlow)
+			return res
+		}
+		if f.CustomerID != c.CustomerID {
+			log.Warnf("Flow does not belong to the customer. flow_id: %s, flow_customer_id: %s, customer_id: %s", args.FlowID, f.CustomerID, c.CustomerID)
+			fillFailed(res, errCouldNotResolveFlow)
+			return res
+		}
+		targetFlowID = args.FlowID
 	}
 
 	// 3. originate. masterCallID = uuid.Nil (no bridge). The 8th bool (executeNextMasterOnHangup)
@@ -274,12 +311,12 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 		src = *args.Source
 	}
 	calls, groupcalls, err := h.reqHandler.CallV1CallsCreate(
-		ctx, c.CustomerID, args.FlowID, uuid.Nil, &src, args.Destinations, false, false, args.Anonymous, nil, variables)
+		ctx, c.CustomerID, targetFlowID, uuid.Nil, &src, args.Destinations, false, false, args.Anonymous, nil, variables)
 	// CONTRACT: CreateCallsOutgoing returns an error ONLY when ALL destinations fail (nil,nil,err).
 	// Partial/full success returns (calls,groupcalls,nil). There is no (err + non-empty slices) case,
 	// so a single err!=nil check is correct and total.
 	if err != nil {
-		log.Errorf("Could not create outgoing calls for create_call. flow_id: %s, err: %v", args.FlowID, err)
+		log.Errorf("Could not create outgoing calls for create_call. flow_id: %s, err: %v", targetFlowID, err)
 		fillFailed(res, err)
 		return res
 	}
@@ -327,7 +364,7 @@ func (h *aicallHandler) toolHandleCreateCall(ctx context.Context, c *aicall.AIca
 	}
 
 	log.WithFields(logrus.Fields{
-		"flow_id":   args.FlowID,
+		"flow_id":   targetFlowID,
 		"requested": out.Requested,
 		"created":   out.Created,
 	}).Debugf("Created independent outgoing call(s) for create_call. primary_id: %s", primaryID)
