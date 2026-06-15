@@ -35,7 +35,10 @@ func (h *server) PostTranscribes(c *gin.Context) {
 	}
 
 	referenceID := uuid.FromStringOrNil(req.ReferenceId)
-	onEndFlowID := uuid.FromStringOrNil(req.OnEndFlowId)
+	onEndFlowID := uuid.Nil
+	if req.OnEndFlowId != nil {
+		onEndFlowID = uuid.FromStringOrNil(*req.OnEndFlowId)
+	}
 
 	var provider tmtranscribe.Provider
 	if req.Provider != nil {

@@ -10688,6 +10688,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "description": "Provide either flow_id or actions. If both are set, flow_id takes precedence and actions is ignored.",
                 "properties": {
                   "source": {
                     "$ref": "#/components/schemas/CommonAddress"
@@ -10699,13 +10700,19 @@
                     }
                   },
                   "flow_id": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "uuid",
+                    "x-go-type": "string",
+                    "description": "The flow to execute for the groupcall. Provide either flow_id or actions; if both are set, flow_id takes precedence and actions is ignored. The flow ID returned from the POST /flows or GET /flows response.",
+                    "example": "c1d2e3f4-a5b6-7890-cdef-1234567890ab"
                   },
                   "actions": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                       "$ref": "#/components/schemas/FlowManagerAction"
-                    }
+                    },
+                    "description": "Inline actions used to build a temporary flow when flow_id is not provided. Provide either flow_id or actions."
                   },
                   "ring_method": {
                     "$ref": "#/components/schemas/CallManagerGroupcallRingMethod"
@@ -10717,8 +10724,6 @@
                 "required": [
                   "source",
                   "destinations",
-                  "flow_id",
-                  "actions",
                   "ring_method",
                   "answer_method"
                 ]
@@ -19437,15 +19442,17 @@
                   },
                   "on_end_flow_id": {
                     "type": "string",
-                    "description": "The ID of the flow to be executed when the transcription ends."
+                    "format": "uuid",
+                    "x-go-type": "string",
+                    "description": "The flow to execute when the transcription ends. The flow ID returned from the POST /flows or GET /flows response. If omitted, no follow-up flow is executed.",
+                    "example": "d4e5f6a7-b8c9-0123-4567-890abcdef012"
                   }
                 },
                 "required": [
                   "reference_type",
                   "reference_id",
                   "language",
-                  "direction",
-                  "on_end_flow_id"
+                  "direction"
                 ]
               }
             }
