@@ -885,6 +885,10 @@ Make a groupcall
 
 Make a groupcall to the multiple destinations.
 
+.. note::
+
+   Provide either ``flow_id`` or ``actions``, but not both. If ``flow_id`` is set, that flow runs and ``actions`` is ignored. If ``flow_id`` is omitted (or empty), VoIPBIN builds a temporary flow from ``actions``. When both are provided, ``flow_id`` takes precedence and ``actions`` is ignored.
+
 .. code::
 
     $ curl --location --request POST 'https://api.voipbin.net/v1.0/groupcalls?token=<YOUR_AUTH_TOKEN>' \
@@ -892,18 +896,20 @@ Make a groupcall to the multiple destinations.
         --data-raw '{
             "source": {
                 "type": "tel",
-                "target": "+15552222222"
+                "target": "+155****4567"
             },
             "destinations": [
                 {
-                    "type": "endpoint",
-                    "target": "test11@test"
+                    "type": "tel",
+                    "target": "+155****1111"
                 },
                 {
-                    "type": "endpoint",
-                    "target": "test12@test"
+                    "type": "tel",
+                    "target": "+155****2222"
                 }
             ],
+            "ring_method": "ring_all",
+            "answer_method": "hangup_others",
             "actions": [
                 {
                     "type": "talk",
@@ -921,22 +927,22 @@ Make a groupcall to the multiple destinations.
         "flow_id": "00000000-0000-0000-0000-000000000000",
         "source": {
             "type": "tel",
-            "target": "+15551234567",
+            "target": "+155****4567",
             "target_name": "",
             "name": "",
             "detail": ""
         },
         "destinations": [
             {
-                "type": "endpoint",
-                "target": "test11@test",
+                "type": "tel",
+                "target": "+155****1111",
                 "target_name": "",
                 "name": "",
                 "detail": ""
             },
             {
-                "type": "endpoint",
-                "target": "test12@test",
+                "type": "tel",
+                "target": "+155****2222",
                 "target_name": "",
                 "name": "",
                 "detail": ""
@@ -944,8 +950,8 @@ Make a groupcall to the multiple destinations.
         ],
         "master_call_id": "00000000-0000-0000-0000-000000000000",
         "master_groupcall_id": "00000000-0000-0000-0000-000000000000",
-        "ring_method": "",
-        "answer_method": "",
+        "ring_method": "ring_all",
+        "answer_method": "hangup_others",
         "answer_call_id": "00000000-0000-0000-0000-000000000000",
         "call_ids": [
             "3c77eb43-2098-4890-bb6c-5af0707ba4a6",

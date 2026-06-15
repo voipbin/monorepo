@@ -1444,23 +1444,29 @@ When the destination answer the call, it will play the given media file.</p>
 <section id="make-a-groupcall">
 <h3>Make a groupcall<a class="headerlink" href="#make-a-groupcall" title="Link to this heading">¶</a></h3>
 <p>Make a groupcall to the multiple destinations.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Provide either <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> or <code class="docutils literal notranslate"><span class="pre">actions</span></code>, but not both. If <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> is set, that flow runs and <code class="docutils literal notranslate"><span class="pre">actions</span></code> is ignored. If <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> is omitted (or empty), VoIPBIN builds a temporary flow from <code class="docutils literal notranslate"><span class="pre">actions</span></code>. When both are provided, <code class="docutils literal notranslate"><span class="pre">flow_id</span></code> takes precedence and <code class="docutils literal notranslate"><span class="pre">actions</span></code> is ignored.</p>
+</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/groupcalls?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
         &quot;source&quot;: {
             &quot;type&quot;: &quot;tel&quot;,
-            &quot;target&quot;: &quot;+15552222222&quot;
+            &quot;target&quot;: &quot;+155****4567&quot;
         },
         &quot;destinations&quot;: [
             {
-                &quot;type&quot;: &quot;endpoint&quot;,
-                &quot;target&quot;: &quot;test11@test&quot;
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+155****1111&quot;
             },
             {
-                &quot;type&quot;: &quot;endpoint&quot;,
-                &quot;target&quot;: &quot;test12@test&quot;
+                &quot;type&quot;: &quot;tel&quot;,
+                &quot;target&quot;: &quot;+155****2222&quot;
             }
         ],
+        &quot;ring_method&quot;: &quot;ring_all&quot;,
+        &quot;answer_method&quot;: &quot;hangup_others&quot;,
         &quot;actions&quot;: [
             {
                 &quot;type&quot;: &quot;talk&quot;,
@@ -1478,22 +1484,22 @@ When the destination answer the call, it will play the given media file.</p>
     &quot;flow_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;source&quot;: {
         &quot;type&quot;: &quot;tel&quot;,
-        &quot;target&quot;: &quot;+15551234567&quot;,
+        &quot;target&quot;: &quot;+155****4567&quot;,
         &quot;target_name&quot;: &quot;&quot;,
         &quot;name&quot;: &quot;&quot;,
         &quot;detail&quot;: &quot;&quot;
     },
     &quot;destinations&quot;: [
         {
-            &quot;type&quot;: &quot;endpoint&quot;,
-            &quot;target&quot;: &quot;test11@test&quot;,
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+155****1111&quot;,
             &quot;target_name&quot;: &quot;&quot;,
             &quot;name&quot;: &quot;&quot;,
             &quot;detail&quot;: &quot;&quot;
         },
         {
-            &quot;type&quot;: &quot;endpoint&quot;,
-            &quot;target&quot;: &quot;test12@test&quot;,
+            &quot;type&quot;: &quot;tel&quot;,
+            &quot;target&quot;: &quot;+155****2222&quot;,
             &quot;target_name&quot;: &quot;&quot;,
             &quot;name&quot;: &quot;&quot;,
             &quot;detail&quot;: &quot;&quot;
@@ -1501,8 +1507,8 @@ When the destination answer the call, it will play the given media file.</p>
     ],
     &quot;master_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;master_groupcall_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
-    &quot;ring_method&quot;: &quot;&quot;,
-    &quot;answer_method&quot;: &quot;&quot;,
+    &quot;ring_method&quot;: &quot;ring_all&quot;,
+    &quot;answer_method&quot;: &quot;hangup_others&quot;,
     &quot;answer_call_id&quot;: &quot;00000000-0000-0000-0000-000000000000&quot;,
     &quot;call_ids&quot;: [
         &quot;3c77eb43-2098-4890-bb6c-5af0707ba4a6&quot;,
