@@ -10,7 +10,7 @@ package action
 // SYNC NOTE (read before editing option.go):
 //   - Adding/removing/renaming an OptionXxx field changes what the LLM should be
 //     told. After such a change, update the ai-manager describe_action catalog
-//     (bin-ai-manager/pkg/toolhandler/action_catalog.go). The reflection test
+//     (bin-ai-manager/pkg/actioncatalog/main.go). The reflection test
 //     TestActionCatalogFieldsMatchOptionStructs will FAIL until the catalog's
 //     option field names match again.
 //   - Field TYPE / meaning changes (e.g. string->int, or a reworded purpose) are

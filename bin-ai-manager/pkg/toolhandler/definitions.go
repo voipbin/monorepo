@@ -610,6 +610,14 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 					"items": map[string]any{
 						"type": "object",
 						"properties": map[string]any{
+							"id": map[string]any{
+								"type":        "string",
+								"description": "Optional UUID you assign to this action so other actions can target it. Required only when a branch/goto/condition action must jump to it (referenced via target_id, false_target_id, default_target_id, or target_ids). If omitted, actions simply run in array order.",
+							},
+							"next_id": map[string]any{
+								"type":        "string",
+								"description": "Optional UUID of the action to run next instead of the following array item. Omit for normal linear flow.",
+							},
 							"type": map[string]any{
 								"type":        "string",
 								"enum":        actioncatalog.ActionTypeEnum(),
@@ -617,7 +625,7 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 							},
 							"option": map[string]any{
 								"type":        "object",
-								"description": "Action-type-specific options. Shape depends on type. e.g. talk -> {text, language, gender}. Omit for actions with no options (e.g. hangup).",
+								"description": "Action-type-specific options. Shape depends on type. Call describe_action with this type to get the exact option fields. Omit for actions with no options (e.g. hangup).",
 							},
 						},
 						"required": []string{"type"},
@@ -693,6 +701,8 @@ WHEN NOT TO USE:
 - You already know the action's options
 
 The action_type must be one of the create_call action types. The response lists each option field as 'name (type, required|optional): description'.
+
+When an option references a target action (target_id, false_target_id, default_target_id, target_ids), it refers to the 'id' field of another action in the same create_call 'actions' array. Assign that action an 'id' (any UUID) and use it as the target.
 
 run_llm: Set true so you can use the returned schema to build the action.`,
 		Parameters: map[string]any{

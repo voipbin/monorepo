@@ -1,5 +1,20 @@
 package action
 
+// SYNC NOTE: The OptionXxx structs below are the authoritative source for the
+// option fields each flow action accepts. They are mirrored, for the AI agent's
+// describe_action tool, by the hand-authored catalog in
+// bin-ai-manager/pkg/actioncatalog/main.go.
+//
+// When you ADD / REMOVE / RENAME an option field here, update that catalog or
+// the test TestActionCatalogFieldsMatchOptionStructs (in pkg/actioncatalog)
+// will fail. When you change a field's TYPE or MEANING (e.g. add an enum value,
+// reword a purpose), the reflection test does NOT catch it (it cannot read
+// comments); update the catalog's human-readable Type/Description text by hand,
+// and the user-facing docs in
+// bin-api-manager/docsdev/source/flow_struct_action.rst.
+//
+// See also OptionStructByType in option_registry.go.
+
 import (
 	"encoding/json"
 	commonaddress "monorepo/bin-common-handler/models/address"

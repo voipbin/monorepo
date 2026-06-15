@@ -58,13 +58,13 @@ type actionCatalogEntry struct {
 //     checked; keep it in sync by hand when option.go changes.
 var actionCatalog = []actionCatalogEntry{
 	{Type: fmaction.TypeAMD, Summary: "Detect whether a human or an answering machine answered the call.", Options: []actionOptionField{
-		{Name: "machine_handle", Type: "string", Required: false, Description: "What to do if a machine answered: hangup or continue."},
+		{Name: "machine_handle", Type: "string (hangup|continue)", Required: false, Description: "What to do if a machine answered: \"hangup\" or \"continue\"."},
 		{Name: "async", Type: "bool", Required: false, Description: "If false, the flow waits until AMD finishes before continuing."},
 	}},
 	{Type: fmaction.TypeAnswer, Summary: "Answer the incoming call.", Options: nil},
 	{Type: fmaction.TypeAISummary, Summary: "Generate an AI summary of a reference (e.g. a recording or transcribe).", Options: []actionOptionField{
 		{Name: "on_end_flow_id", Type: "uuid", Required: false, Description: "Flow id to run when the summary finishes."},
-		{Name: "reference_type", Type: "string", Required: true, Description: "Type of the resource to summarize."},
+		{Name: "reference_type", Type: "string (call|conference|transcribe|recording)", Required: true, Description: "Type of the resource to summarize."},
 		{Name: "reference_id", Type: "uuid", Required: true, Description: "Id of the resource to summarize."},
 		{Name: "language", Type: "string", Required: false, Description: "Output language (IETF locale, e.g. en-US)."},
 	}},
@@ -101,11 +101,11 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
 	{Type: fmaction.TypeConditionCallStatus, Summary: "Branch to a false target unless the call's status matches.", Options: []actionOptionField{
-		{Name: "status", Type: "string", Required: true, Description: "Call status to test for."},
+		{Name: "status", Type: "string (dialing|ringing|progressing|terminating|canceling|hangup)", Required: true, Description: "Call status to test for."},
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
 	{Type: fmaction.TypeConditionDatetime, Summary: "Branch to a false target unless the current date/time matches the condition.", Options: []actionOptionField{
-		{Name: "condition", Type: "string", Required: true, Description: "Comparison operator."},
+		{Name: "condition", Type: "string (==|!=|>|>=|<|<=)", Required: true, Description: "Comparison operator."},
 		{Name: "minute", Type: "int (0-59)", Required: false, Description: "Minute component."},
 		{Name: "hour", Type: "int (0-23)", Required: false, Description: "Hour component."},
 		{Name: "day", Type: "int (1-31)", Required: false, Description: "Day of month."},
@@ -114,9 +114,9 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "false_target_id", Type: "uuid", Required: true, Description: "Action id to jump to when the condition is false."},
 	}},
 	{Type: fmaction.TypeConditionVariable, Summary: "Branch to a false target unless a flow variable matches the condition.", Options: []actionOptionField{
-		{Name: "condition", Type: "string", Required: true, Description: "Comparison operator."},
+		{Name: "condition", Type: "string (==|!=|>|>=|<|<=)", Required: true, Description: "Comparison operator."},
 		{Name: "variable", Type: "string", Required: true, Description: "Variable name to test."},
-		{Name: "value_type", Type: "string", Required: true, Description: "Type of the value to compare (string/number/length)."},
+		{Name: "value_type", Type: "string (string|number|length)", Required: true, Description: "Type of the value to compare."},
 		{Name: "value_string", Type: "string", Required: false, Description: "String value to compare against."},
 		{Name: "value_number", Type: "number", Required: false, Description: "Numeric value to compare against."},
 		{Name: "value_length", Type: "int", Required: false, Description: "Length value to compare against."},
@@ -219,7 +219,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "language", Type: "string", Required: false, Description: "IETF locale, e.g. ko-KR, en-US."},
 		{Name: "provider", Type: "string", Required: false, Description: "TTS provider (gcp/aws)."},
 		{Name: "voice_id", Type: "string", Required: false, Description: "Provider-specific voice ID."},
-		{Name: "digits_handle", Type: "object", Required: false, Description: "What to do when DTMF digits are received during talk."},
+		{Name: "digits_handle", Type: "string (next or empty)", Required: false, Description: "What to do when DTMF digits are received during talk: \"next\" moves to the next action; empty does nothing."},
 		{Name: "async", Type: "bool", Required: false, Description: "If true, the flow continues without waiting for talk to finish."},
 	}},
 	{Type: fmaction.TypeTranscribeStart, Summary: "Start live transcription of the call.", Options: []actionOptionField{
