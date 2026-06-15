@@ -777,13 +777,19 @@
 </pre></div>
 </div>
 <p><strong>2. Subscribe to Transcription Events:</strong></p>
+<p>Topics follow the pattern <code class="docutils literal notranslate"><span class="pre">customer_id:&lt;your-customer-id&gt;:&lt;resource&gt;:&lt;resource-id&gt;</span></code> and are matched by <strong>prefix</strong>. Transcribe session events (<code class="docutils literal notranslate"><span class="pre">transcribe_created</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe_progressing</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe_done</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe_deleted</span></code>) are published under the <code class="docutils literal notranslate"><span class="pre">transcribe</span></code> resource, while individual transcript segments (<code class="docutils literal notranslate"><span class="pre">transcript_created</span></code>, <code class="docutils literal notranslate"><span class="pre">transcript_deleted</span></code>) are published under the <code class="docutils literal notranslate"><span class="pre">transcript</span></code> resource. To receive transcript segments in real time, subscribe to the <code class="docutils literal notranslate"><span class="pre">transcript</span></code> resource. Subscribe by prefix (omit the trailing resource ID) to receive events for all resources of that type under your customer account.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
     <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce&quot;</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcript:&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcribe:&quot;</span>
     <span class="p">]</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Topics are matched by prefix, not by glob. A trailing <code class="docutils literal notranslate"><span class="pre">:</span></code> (for example <code class="docutils literal notranslate"><span class="pre">...:transcript:</span></code>) subscribes to every transcript event for your customer. To target a single resource, append its ID (for example <code class="docutils literal notranslate"><span class="pre">...:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce</span></code>). Do not use <code class="docutils literal notranslate"><span class="pre">*</span></code> as a wildcard.</p>
 </div>
 <p><strong>3. Receive Real-Time Transcripts:</strong></p>
 <p>Real-time events delivered over the WebSocket use the same envelope as webhooks: a <code class="docutils literal notranslate"><span class="pre">type</span></code> field (the event type) and a <code class="docutils literal notranslate"><span class="pre">data</span></code> field (the resource payload).</p>
@@ -820,11 +826,12 @@
         <span class="c1"># - Detect keywords</span>
 
 <span class="k">def</span> <span class="nf">on_open</span><span class="p">(</span><span class="n">ws</span><span class="p">):</span>
-    <span class="c1"># Subscribe to transcription events</span>
+    <span class="c1"># Subscribe to transcription events (prefix match, no wildcard)</span>
     <span class="n">subscription</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;subscribe&quot;</span><span class="p">,</span>
         <span class="s2">&quot;topics&quot;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcribe:*&quot;</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcript:&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;customer_id:12345678-1234-1234-1234-123456789012:transcribe:&quot;</span>
         <span class="p">]</span>
     <span class="p">}</span>
     <span class="n">ws</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">subscription</span><span class="p">))</span>

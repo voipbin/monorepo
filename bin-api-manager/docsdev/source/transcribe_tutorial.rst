@@ -204,14 +204,21 @@ Subscribe to real-time transcription events via WebSocket to get transcripts as 
 
 **2. Subscribe to Transcription Events:**
 
+Topics follow the pattern ``customer_id:<your-customer-id>:<resource>:<resource-id>`` and are matched by **prefix**. Transcribe session events (``transcribe_created``, ``transcribe_progressing``, ``transcribe_done``, ``transcribe_deleted``) are published under the ``transcribe`` resource, while individual transcript segments (``transcript_created``, ``transcript_deleted``) are published under the ``transcript`` resource. To receive transcript segments in real time, subscribe to the ``transcript`` resource. Subscribe by prefix (omit the trailing resource ID) to receive events for all resources of that type under your customer account.
+
 .. code::
 
     {
         "type": "subscribe",
         "topics": [
-            "customer_id:12345678-1234-1234-1234-123456789012:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce"
+            "customer_id:12345678-1234-1234-1234-123456789012:transcript:",
+            "customer_id:12345678-1234-1234-1234-123456789012:transcribe:"
         ]
     }
+
+.. note::
+
+   Topics are matched by prefix, not by glob. A trailing ``:`` (for example ``...:transcript:``) subscribes to every transcript event for your customer. To target a single resource, append its ID (for example ``...:transcribe:8c5a9e2a-2a7f-4a6f-9f1d-debd72c279ce``). Do not use ``*`` as a wildcard.
 
 **3. Receive Real-Time Transcripts:**
 
@@ -254,11 +261,12 @@ Real-time events delivered over the WebSocket use the same envelope as webhooks:
             # - Detect keywords
 
     def on_open(ws):
-        # Subscribe to transcription events
+        # Subscribe to transcription events (prefix match, no wildcard)
         subscription = {
             "type": "subscribe",
             "topics": [
-                "customer_id:12345678-1234-1234-1234-123456789012:transcribe:*"
+                "customer_id:12345678-1234-1234-1234-123456789012:transcript:",
+                "customer_id:12345678-1234-1234-1234-123456789012:transcribe:"
             ]
         }
         ws.send(json.dumps(subscription))
