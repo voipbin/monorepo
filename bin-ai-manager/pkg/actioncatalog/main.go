@@ -87,8 +87,8 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "target_ids", Type: "object (map of value -> action id)", Required: true, Description: "Map of matched value to the action id to jump to."},
 	}},
 	{Type: fmaction.TypeCall, Summary: "Originate one or more new outbound calls (each runs its own flow or actions).", Options: []actionOptionField{
-		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id."},
-		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destinations to call."},
+		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id. type is one of tel, sip, extension, agent."},
+		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destinations to call. type is one of tel, sip, extension, agent, conference."},
 		{Name: "flow_id", Type: "uuid", Required: false, Description: "Pre-built flow the new call runs (use flow_id OR actions)."},
 		{Name: "actions", Type: "array of action objects", Required: false, Description: "Inline actions the new call runs (use flow_id OR actions)."},
 		{Name: "chained", Type: "bool", Required: false, Description: "If true, the created calls hang up when the master call hangs up."},
@@ -129,8 +129,8 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "conference_id", Type: "uuid", Required: true, Description: "Conference id to join."},
 	}},
 	{Type: fmaction.TypeConnect, Summary: "Originate new call(s) and bridge them into the current call (transfer/connect).", Options: []actionOptionField{
-		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id."},
-		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Endpoints to connect to."},
+		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source endpoint / caller id. type is one of tel, sip, extension, agent."},
+		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Endpoints to connect to. type is one of tel, sip, extension, agent, conference."},
 		{Name: "early_media", Type: "bool", Required: false, Description: "If true, get early media from the destination."},
 		{Name: "relay_reason", Type: "bool", Required: false, Description: "If true, hang up the master call with the destination's hangup reason."},
 		{Name: "anonymous", Type: "string (yes|no|auto)", Required: false, Description: "Anonymous caller id on outbound PSTN."},
@@ -154,7 +154,7 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "duration", Type: "int", Required: false, Description: "Echo duration."},
 	}},
 	{Type: fmaction.TypeEmailSend, Summary: "Send an email.", Options: []actionOptionField{
-		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Email recipients."},
+		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Email recipients. type is email."},
 		{Name: "subject", Type: "string", Required: true, Description: "Email subject."},
 		{Name: "content", Type: "string", Required: true, Description: "Email body (HTML or plain text)."},
 		{Name: "attachments", Type: "array of attachment objects {reference_type,reference_id}", Required: false, Description: "Optional attachments."},
@@ -187,8 +187,8 @@ var actionCatalog = []actionCatalogEntry{
 		{Name: "reference_id", Type: "uuid", Required: false, Description: "Hang up with the same reason as this referenced call id (overrides reason)."},
 	}},
 	{Type: fmaction.TypeMessageSend, Summary: "Send an SMS text message.", Options: []actionOptionField{
-		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source phone number."},
-		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destination phone numbers."},
+		{Name: "source", Type: "address object {type,target,target_name}", Required: false, Description: "Source phone number. type is tel."},
+		{Name: "destinations", Type: "array of address objects {type,target,target_name}", Required: true, Description: "Destination phone numbers. type is tel."},
 		{Name: "text", Type: "string", Required: true, Description: "Message text."},
 	}},
 	{Type: fmaction.TypeMute, Summary: "Mute audio on the call.", Options: nil},
