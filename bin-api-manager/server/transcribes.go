@@ -45,13 +45,22 @@ func (h *server) PostTranscribes(c *gin.Context) {
 		provider = tmtranscribe.Provider(*req.Provider)
 	}
 
+	// Default to "both" when direction is omitted. direction is optional in the
+	// spec; before this handler honored it, the value was always DirectionBoth.
+	// Preserve that so callers that omit direction keep capturing both legs
+	// instead of a broken empty-direction stream.
+	direction := tmtranscribe.DirectionBoth
+	if req.Direction != nil {
+		direction = tmtranscribe.Direction(*req.Direction)
+	}
+
 	res, err := h.serviceHandler.TranscribeStart(
 		c.Request.Context(),
 		a,
 		string(req.ReferenceType),
 		referenceID,
 		req.Language,
-		tmtranscribe.DirectionBoth,
+		direction,
 		onEndFlowID,
 		provider,
 	)

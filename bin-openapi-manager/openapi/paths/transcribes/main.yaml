@@ -46,7 +46,10 @@ post:
               type: string
               description: The language of the transcription.
             direction:
-              $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+              allOf:
+                - $ref: '#/components/schemas/TranscribeManagerTranscribeDirection'
+              description: >-
+                Which audio legs to transcribe. If omitted, defaults to "both".
             provider:
               $ref: '#/components/schemas/TranscribeManagerTranscribeProvider'
             on_end_flow_id:
@@ -62,7 +65,6 @@ post:
             - reference_type
             - reference_id
             - language
-            - direction
   responses:
     '200':
       description: The created transcribe details.
