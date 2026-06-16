@@ -358,3 +358,155 @@ func Test_startLive(t *testing.T) {
 		})
 	}
 }
+
+func Test_Start_direction_normalize(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID    uuid.UUID
+		activeflowID  uuid.UUID
+		onEndFlowID   uuid.UUID
+		referenceType transcribe.ReferenceType
+		referenceID   uuid.UUID
+		language      string
+		direction     transcribe.Direction
+		provider      transcribe.Provider
+
+		responseCall       *cmcall.Call
+		responseUUID       uuid.UUID
+		responseStreamings []*streaming.Streaming
+		responseTranscribe *transcribe.Transcribe
+
+		// expectDirection is the normalized direction stored on the transcribe.
+		expectDirection transcribe.Direction
+	}{
+		{
+			name: "invalid direction falls back to both",
+
+			customerID:    uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
+			activeflowID:  uuid.FromStringOrNil("6d6d22b6-0924-11f0-aed1-73724fe094ac"),
+			onEndFlowID:   uuid.FromStringOrNil("6d9af948-0924-11f0-9f13-cb27276eae80"),
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+			language:      "en-US",
+			direction:     transcribe.Direction("foo"),
+			provider:      transcribe.ProviderEmpty,
+
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+				},
+				Status:   cmcall.StatusProgressing,
+				TMDelete: nil,
+			},
+			responseUUID: uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
+			responseStreamings: []*streaming.Streaming{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("049c01c4-9876-11ed-968a-0f8060a7f327"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0b7ca494-9876-11ed-8927-3b1f974a4122"),
+					},
+				},
+			},
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+				},
+			},
+
+			expectDirection: transcribe.DirectionBoth,
+		},
+		{
+			name: "empty direction falls back to both",
+
+			customerID:    uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
+			activeflowID:  uuid.FromStringOrNil("6d6d22b6-0924-11f0-aed1-73724fe094ac"),
+			onEndFlowID:   uuid.FromStringOrNil("6d9af948-0924-11f0-9f13-cb27276eae80"),
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+			language:      "en-US",
+			direction:     transcribe.Direction(""),
+			provider:      transcribe.ProviderEmpty,
+
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+				},
+				Status:   cmcall.StatusProgressing,
+				TMDelete: nil,
+			},
+			responseUUID: uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
+			responseStreamings: []*streaming.Streaming{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("049c01c4-9876-11ed-968a-0f8060a7f327"),
+					},
+				},
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("0b7ca494-9876-11ed-8927-3b1f974a4122"),
+					},
+				},
+			},
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+				},
+			},
+
+			expectDirection: transcribe.DirectionBoth,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockTranscript := transcripthandler.NewMockTranscriptHandler(mc)
+			mockStreaming := streaminghandler.NewMockStreamingHandler(mc)
+
+			h := &transcribeHandler{
+				utilHandler:       mockUtil,
+				reqHandler:        mockReq,
+				db:                mockDB,
+				notifyHandler:     mockNotify,
+				transcriptHandler: mockTranscript,
+				streamingHandler:  mockStreaming,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+
+			// because the direction normalizes to "both", both in and out
+			// streamings must be started.
+			mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn, tt.provider).Return(tt.responseStreamings[0], nil)
+			mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut, tt.provider).Return(tt.responseStreamings[1], nil)
+
+			// the created transcribe must carry the normalized direction.
+			mockDB.EXPECT().TranscribeCreate(ctx, gomock.Cond(func(x any) bool {
+				tr, ok := x.(*transcribe.Transcribe)
+				return ok && tr.Direction == tt.expectDirection
+			})).Return(nil)
+			mockDB.EXPECT().TranscribeGet(ctx, gomock.Any()).Return(tt.responseTranscribe, nil)
+			mockReq.EXPECT().FlowV1VariableSetVariable(ctx, tt.activeflowID, gomock.Any()).Return(nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+
+			_, err := h.Start(ctx, tt.customerID, tt.activeflowID, tt.onEndFlowID, tt.referenceType, tt.referenceID, tt.language, tt.direction, tt.provider)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

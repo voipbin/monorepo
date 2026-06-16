@@ -117,6 +117,30 @@ func TestDirectionConstants(t *testing.T) {
 	}
 }
 
+func TestDirectionNormalize(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    Direction
+		expected Direction
+	}{
+		{"both_stays_both", DirectionBoth, DirectionBoth},
+		{"in_stays_in", DirectionIn, DirectionIn},
+		{"out_stays_out", DirectionOut, DirectionOut},
+		{"empty_falls_back_to_both", Direction(""), DirectionBoth},
+		{"invalid_falls_back_to_both", Direction("foo"), DirectionBoth},
+		{"uppercase_falls_back_to_both", Direction("BOTH"), DirectionBoth},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := tt.input.Normalize()
+			if result != tt.expected {
+				t.Errorf("Direction(%q).Normalize() = %v, expected %v", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
 func TestStatusConstants(t *testing.T) {
 	tests := []struct {
 		name     string

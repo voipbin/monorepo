@@ -36,6 +36,17 @@ func (h *transcribeHandler) Start(
 		"provider":       provider,
 	})
 
+	// normalize the direction. an empty or invalid direction (e.g. a typo) would
+	// otherwise flow into the streaming/snoop layer and fail at runtime, so we
+	// fall back to DirectionBoth. an omitted direction already defaults to both,
+	// so this preserves that behavior. note: unlike provider, direction is
+	// case-sensitive (no trim/case-fold), consistent with how the rest of the
+	// codebase treats it.
+	if normalized := direction.Normalize(); normalized != direction {
+		log.Warnf("Invalid direction. Falling back to both. direction: %s", direction)
+		direction = normalized
+	}
+
 	// check the reference is valid
 	if valid := h.isValidReference(ctx, referenceType, referenceID); !valid {
 		return nil, fmt.Errorf("the given reference info is not valid for transcribe. reference_type: %s, reference_id: %s", referenceType, referenceID)
