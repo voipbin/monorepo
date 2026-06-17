@@ -25,6 +25,12 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 	})
 	log.Debugf("Sending the message. message_len: %d", len(text))
 
+	// gate: customer identity verification (fail-closed for unverified customers).
+	// The helper logs the rejection reason, so we do not log again here.
+	if !h.validateCustomerIdentityVerified(ctx, customerID) {
+		return nil, fmt.Errorf("customer identity verification required to send message")
+	}
+
 	// create targets
 	targets := []target.Target{}
 	for _, destination := range destinations {

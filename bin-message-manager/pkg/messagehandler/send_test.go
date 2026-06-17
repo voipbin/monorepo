@@ -12,6 +12,7 @@ import (
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
+	cucustomer "monorepo/bin-customer-manager/models/customer"
 
 	"github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -146,6 +147,11 @@ func Test_Send(t *testing.T) {
 				messageHandlerTelnyx:      mockTelnyx,
 			}
 			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			}, nil)
 
 			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeSMS, "", len(tt.destinations)).Return(true, nil)
 
