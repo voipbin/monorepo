@@ -45,13 +45,23 @@ func (h *server) PostTranscribes(c *gin.Context) {
 		provider = tmtranscribe.Provider(*req.Provider)
 	}
 
-	// Default to "both" when direction is omitted. direction is optional in the
+	// Default to "both" when direction is omitted or empty, and fall back to
+	// "both" for a non-empty but invalid value. direction is optional in the
 	// spec; before this handler honored it, the value was always DirectionBoth.
-	// Preserve that so callers that omit direction keep capturing both legs
-	// instead of a broken empty-direction stream.
+	// Preserve that so callers that omit or mistype direction keep capturing
+	// both legs instead of a broken empty/invalid-direction stream.
+	// transcribe-manager's Start is the authoritative guard and normalizes
+	// again for all callers; this REST-boundary normalization only exists to
+	// attribute the warn log to the gateway (the client receives the same
+	// success response either way). An explicit empty string is treated as
+	// "use default", so it is not warned about.
 	direction := tmtranscribe.DirectionBoth
-	if req.Direction != nil {
+	if req.Direction != nil && *req.Direction != "" {
 		direction = tmtranscribe.Direction(*req.Direction)
+		if normalized := direction.Normalize(); normalized != direction {
+			log.Warnf("Invalid direction. Falling back to both. direction: %s", direction)
+			direction = normalized
+		}
 	}
 
 	res, err := h.serviceHandler.TranscribeStart(

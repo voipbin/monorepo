@@ -53,6 +53,23 @@ const (
 	DirectionOut  Direction = "out"
 )
 
+// Normalize returns the direction if it is a known value (both/in/out),
+// otherwise it falls back to DirectionBoth. An empty or invalid direction
+// (e.g. a typo) would otherwise flow into the Asterisk snoop layer and fail at
+// runtime, so callers normalize the value before use. DirectionBoth is the
+// safe catch-all default and matches the long-standing behavior where an
+// omitted direction captured both legs, so this fallback is backward
+// compatible. The match is case-sensitive (no trim or case-folding): the
+// direction enum is exposed only in lowercase, so a mismatched case is treated
+// as an invalid value rather than silently accepted.
+func (d Direction) Normalize() Direction {
+	switch d {
+	case DirectionBoth, DirectionIn, DirectionOut:
+		return d
+	}
+	return DirectionBoth
+}
+
 // Provider defines the STT provider type
 type Provider string
 
