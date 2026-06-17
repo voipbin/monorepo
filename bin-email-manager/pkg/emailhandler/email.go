@@ -3,6 +3,7 @@ package emailhandler
 import (
 	"context"
 	stderrors "errors"
+	"fmt"
 
 	bmbilling "monorepo/bin-billing-manager/models/billing"
 	commonaddress "monorepo/bin-common-handler/models/address"
@@ -31,6 +32,11 @@ func (h *emailHandler) Create(
 		if !h.validateEmailAddress(destination) {
 			return nil, errors.New("destination is not valid")
 		}
+	}
+
+	// gate: customer identity verification (fail-closed for unverified customers)
+	if !h.validateCustomerIdentityVerified(ctx, customerID) {
+		return nil, fmt.Errorf("customer identity verification required to send email")
 	}
 
 	// validate balance before sending
