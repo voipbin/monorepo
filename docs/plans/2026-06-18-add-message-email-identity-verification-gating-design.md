@@ -154,7 +154,7 @@ func (h *messageHandler) validateCustomerIdentityVerified(ctx context.Context, c
 	}
 
 	if cu.IdentityVerificationStatus != cucustomer.IdentityVerificationStatusVerified {
-		log.Infof("Customer identity not verified. Rejecting message send. status: %s", cu.IdentityVerificationStatus)
+		log.Warnf("Customer identity not verified. Rejecting message send. customer_id: %s, status: %s", customerID, cu.IdentityVerificationStatus)
 		return false
 	}
 
