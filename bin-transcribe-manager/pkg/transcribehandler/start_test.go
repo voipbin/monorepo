@@ -496,6 +496,41 @@ func Test_Start_direction_normalize(t *testing.T) {
 
 			expectDirection: transcribe.DirectionIn,
 		},
+		{
+			name: "valid single direction out is preserved and starts only the out streaming",
+
+			customerID:    uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
+			activeflowID:  uuid.FromStringOrNil("6d6d22b6-0924-11f0-aed1-73724fe094ac"),
+			onEndFlowID:   uuid.FromStringOrNil("6d9af948-0924-11f0-9f13-cb27276eae80"),
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+			language:      "en-US",
+			direction:     transcribe.DirectionOut,
+			provider:      transcribe.ProviderEmpty,
+
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+				},
+				Status:   cmcall.StatusProgressing,
+				TMDelete: nil,
+			},
+			responseUUID: uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
+			responseStreamings: []*streaming.Streaming{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("049c01c4-9876-11ed-968a-0f8060a7f327"),
+					},
+				},
+			},
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+				},
+			},
+
+			expectDirection: transcribe.DirectionOut,
+		},
 	}
 
 	for _, tt := range tests {

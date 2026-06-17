@@ -800,7 +800,7 @@
 <td><p>Language code (e.g., <code class="docutils literal notranslate"><span class="pre">en-US</span></code>, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>)</p></td>
 </tr>
 <tr class="row-odd"><td><p>direction</p></td>
-<td><p>Which audio to transcribe: <code class="docutils literal notranslate"><span class="pre">in</span></code>, <code class="docutils literal notranslate"><span class="pre">out</span></code>, or <code class="docutils literal notranslate"><span class="pre">both</span></code></p></td>
+<td><p>(Optional) Which audio to transcribe: <code class="docutils literal notranslate"><span class="pre">in</span></code>, <code class="docutils literal notranslate"><span class="pre">out</span></code>, or <code class="docutils literal notranslate"><span class="pre">both</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">both</span></code> when omitted or empty. An invalid or unrecognized value also falls back to <code class="docutils literal notranslate"><span class="pre">both</span></code> rather than being rejected. The value is case-sensitive (use lowercase).</p></td>
 </tr>
 <tr class="row-even"><td><p>provider</p></td>
 <td><p>(Optional) STT provider: <code class="docutils literal notranslate"><span class="pre">gcp</span></code> or <code class="docutils literal notranslate"><span class="pre">aws</span></code>. If omitted, VoIPBIN selects the best available provider automatically.</p></td>
