@@ -18,6 +18,11 @@ import (
 )
 
 // Create creates a new message.
+//
+// Create only persists the message; it does NOT perform identity-verification
+// gating. Outbound sends must route through Send (which gates before creating),
+// so any new outbound caller must call Send rather than Create directly. The
+// inbound webhook path (DirectionInbound) is intentionally ungated.
 func (h *messageHandler) Create(ctx context.Context, id uuid.UUID, customerID uuid.UUID, source *commonaddress.Address, targets []target.Target, providerName message.ProviderName, text string, direction message.Direction) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":          "Create",
