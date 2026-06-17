@@ -36,14 +36,21 @@ func (h *transcribeHandler) Start(
 		"provider":       provider,
 	})
 
-	// normalize the direction. an empty or invalid direction (e.g. a typo) would
-	// otherwise flow into the streaming/snoop layer and fail at runtime, so we
-	// fall back to DirectionBoth. an omitted direction already defaults to both,
-	// so this preserves that behavior. note: unlike provider, direction is
-	// case-sensitive (no trim/case-fold), consistent with how the rest of the
-	// codebase treats it.
+	// Normalize the direction. This is the authoritative guard: it protects all
+	// callers (flow-manager, transcribe-control, and the api-manager REST path),
+	// so an empty or invalid direction (e.g. a typo) is coerced to DirectionBoth
+	// instead of flowing into the streaming/snoop layer and failing at runtime.
+	// DirectionBoth is the safe catch-all default and matches the long-standing
+	// behavior where an omitted direction captured both legs, so this is
+	// backward compatible. An empty direction is the "use default" signal and is
+	// not warned about; only a non-empty unknown value is logged as invalid.
+	// Note: matching is case-sensitive (no trim/case-fold). The direction enum is
+	// exposed only in lowercase (both/in/out), so a mismatched case is treated as
+	// an invalid value rather than silently accepted.
 	if normalized := direction.Normalize(); normalized != direction {
-		log.Warnf("Invalid direction. Falling back to both. direction: %s", direction)
+		if direction != "" {
+			log.Warnf("Invalid direction. Falling back to both. direction: %s", direction)
+		}
 		direction = normalized
 	}
 

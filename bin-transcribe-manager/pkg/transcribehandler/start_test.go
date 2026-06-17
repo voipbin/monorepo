@@ -461,6 +461,41 @@ func Test_Start_direction_normalize(t *testing.T) {
 
 			expectDirection: transcribe.DirectionBoth,
 		},
+		{
+			name: "valid single direction in is preserved and starts only the in streaming",
+
+			customerID:    uuid.FromStringOrNil("0e259c1c-8211-11ed-a907-5bf5bd61fa6a"),
+			activeflowID:  uuid.FromStringOrNil("6d6d22b6-0924-11f0-aed1-73724fe094ac"),
+			onEndFlowID:   uuid.FromStringOrNil("6d9af948-0924-11f0-9f13-cb27276eae80"),
+			referenceType: transcribe.ReferenceTypeCall,
+			referenceID:   uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+			language:      "en-US",
+			direction:     transcribe.DirectionIn,
+			provider:      transcribe.ProviderEmpty,
+
+			responseCall: &cmcall.Call{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("0e5ecd0c-8211-11ed-9c0a-4fa1d29f93c2"),
+				},
+				Status:   cmcall.StatusProgressing,
+				TMDelete: nil,
+			},
+			responseUUID: uuid.FromStringOrNil("a4b155b6-9875-11ed-9117-1f7140765600"),
+			responseStreamings: []*streaming.Streaming{
+				{
+					Identity: commonidentity.Identity{
+						ID: uuid.FromStringOrNil("049c01c4-9876-11ed-968a-0f8060a7f327"),
+					},
+				},
+			},
+			responseTranscribe: &transcribe.Transcribe{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("5241c614-8216-11ed-9e05-ab1368296bbd"),
+				},
+			},
+
+			expectDirection: transcribe.DirectionIn,
+		},
 	}
 
 	for _, tt := range tests {
@@ -489,10 +524,17 @@ func Test_Start_direction_normalize(t *testing.T) {
 			mockReq.EXPECT().CallV1CallGet(ctx, tt.referenceID).Return(tt.responseCall, nil)
 			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
 
-			// because the direction normalizes to "both", both in and out
-			// streamings must be started.
-			mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionIn, tt.provider).Return(tt.responseStreamings[0], nil)
-			mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, transcript.DirectionOut, tt.provider).Return(tt.responseStreamings[1], nil)
+			// the streamings started must match the normalized direction:
+			// "both" starts in and out, a single direction starts only that leg.
+			var expectStreamingDirections []transcript.Direction
+			if tt.expectDirection == transcribe.DirectionBoth {
+				expectStreamingDirections = []transcript.Direction{transcript.DirectionIn, transcript.DirectionOut}
+			} else {
+				expectStreamingDirections = []transcript.Direction{transcript.Direction(tt.expectDirection)}
+			}
+			for i, dr := range expectStreamingDirections {
+				mockStreaming.EXPECT().Start(ctx, tt.customerID, tt.responseUUID, tt.referenceType, tt.referenceID, tt.language, dr, tt.provider).Return(tt.responseStreamings[i], nil)
+			}
 
 			// the created transcribe must carry the normalized direction.
 			mockDB.EXPECT().TranscribeCreate(ctx, gomock.Cond(func(x any) bool {
