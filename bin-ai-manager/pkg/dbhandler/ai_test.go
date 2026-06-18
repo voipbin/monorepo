@@ -47,7 +47,7 @@ func Test_AICreate(t *testing.T) {
 				InitPrompt: "test init prompt",
 				TTSType:    ai.TTSTypeCartesia,
 				TTSVoiceID: "test tts voice id",
-				STTType:    ai.STTTypeElevenLabs,
+				STTType:    ai.STTTypeDeepgram,
 			},
 
 			responseCurTime: curTime,
@@ -66,7 +66,7 @@ func Test_AICreate(t *testing.T) {
 				InitPrompt: "test init prompt",
 				TTSType:    ai.TTSTypeCartesia,
 				TTSVoiceID: "test tts voice id",
-				STTType:    ai.STTTypeElevenLabs,
+				STTType:    ai.STTTypeDeepgram,
 
 				TMCreate: curTime,
 				TMUpdate: nil,
@@ -355,7 +355,7 @@ func Test_AIUpdate(t *testing.T) {
 				ai.FieldInitPrompt: "new init prompt",
 				ai.FieldTTSType:    ai.TTSTypeCartesia,
 				ai.FieldTTSVoiceID: "new tts voice id",
-				ai.FieldSTTType:    ai.STTTypeElevenLabs,
+				ai.FieldSTTType:    ai.STTTypeDeepgram,
 			},
 
 			responseCurTime: curTime,
@@ -374,7 +374,7 @@ func Test_AIUpdate(t *testing.T) {
 				InitPrompt: "new init prompt",
 				TTSType:    ai.TTSTypeCartesia,
 				TTSVoiceID: "new tts voice id",
-				STTType:    ai.STTTypeElevenLabs,
+				STTType:    ai.STTTypeDeepgram,
 				TMCreate:   curTime,
 				TMUpdate:   curTime,
 				TMDelete:   nil,

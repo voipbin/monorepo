@@ -51,7 +51,7 @@ func TestAI(t *testing.T) {
 			initPrompt:  "",
 			ttsType:     TTSTypeGoogle,
 			ttsVoiceID:  "",
-			sttType:     STTTypeCartesia,
+			sttType:     STTTypeDeepgram,
 		},
 	}
 
@@ -391,16 +391,6 @@ func TestTTSTypeConstants(t *testing.T) {
 			expected: "google",
 		},
 		{
-			name:     "tts_type_openai",
-			constant: TTSTypeOpenAI,
-			expected: "openai",
-		},
-		{
-			name:     "tts_type_deepgram",
-			constant: TTSTypeDeepgram,
-			expected: "deepgram",
-		},
-		{
 			name:     "tts_type_cartesia",
 			constant: TTSTypeCartesia,
 			expected: "cartesia",
@@ -428,19 +418,9 @@ func TestSTTTypeConstants(t *testing.T) {
 			expected: "",
 		},
 		{
-			name:     "stt_type_cartesia",
-			constant: STTTypeCartesia,
-			expected: "cartesia",
-		},
-		{
 			name:     "stt_type_deepgram",
 			constant: STTTypeDeepgram,
 			expected: "deepgram",
-		},
-		{
-			name:     "stt_type_elevenlabs",
-			constant: STTTypeElevenLabs,
-			expected: "elevenlabs",
 		},
 		{
 			name:     "stt_type_google",
@@ -466,26 +446,13 @@ func TestTTSTypeIsValid(t *testing.T) {
 	}{
 		{"empty_string_is_valid", TTSTypeNone, true},
 		{"google_is_valid", TTSTypeGoogle, true},
-		{"openai_is_valid", TTSTypeOpenAI, true},
 		{"elevenlabs_is_valid", TTSTypeElevenLabs, true},
 		{"cartesia_is_valid", TTSTypeCartesia, true},
-		{"deepgram_is_valid", TTSTypeDeepgram, true},
-		{"aws_is_valid", TTSTypeAWS, true},
-		{"azure_is_valid", TTSTypeAzure, true},
-		{"async_is_valid", TTSTypeAsync, true},
-		{"fish_is_valid", TTSTypeFish, true},
-		{"groq_is_valid", TTSTypeGroq, true},
-		{"hume_is_valid", TTSTypeHume, true},
-		{"inworld_is_valid", TTSTypeInworld, true},
-		{"lmnt_is_valid", TTSTypeLMNT, true},
-		{"minimax_is_valid", TTSTypeMiniMax, true},
-		{"neuphonic_is_valid", TTSTypeNeuphonic, true},
-		{"nvidia_riva_is_valid", TTSTypeNvidiaRiva, true},
-		{"piper_is_valid", TTSTypePiper, true},
-		{"playht_is_valid", TTSTypePlayHT, true},
-		{"rime_is_valid", TTSTypeRime, true},
-		{"sarvam_is_valid", TTSTypeSarvam, true},
-		{"xtts_is_valid", TTSTypeXTTS, true},
+		{"openai_is_invalid", TTSType("openai"), false},
+		{"deepgram_is_invalid", TTSType("deepgram"), false},
+		{"aws_is_invalid", TTSType("aws"), false},
+		{"azure_is_invalid", TTSType("azure"), false},
+		{"playht_is_invalid", TTSType("playht"), false},
 		{"gcp_is_invalid", TTSType("gcp"), false},
 		{"random_string_is_invalid", TTSType("random"), false},
 		{"polly_is_invalid", TTSType("polly"), false},
@@ -523,7 +490,7 @@ func TestTTSTypeValidValues(t *testing.T) {
 
 	// Should contain known values
 	knownValues := map[string]bool{
-		"google": false, "openai": false, "elevenlabs": false, "cartesia": false,
+		"google": false, "elevenlabs": false, "cartesia": false,
 	}
 	for _, v := range values {
 		if _, ok := knownValues[v]; ok {
@@ -544,10 +511,10 @@ func TestSTTTypeIsValid(t *testing.T) {
 		expected bool
 	}{
 		{"empty_string_is_valid", STTTypeNone, true},
-		{"cartesia_is_valid", STTTypeCartesia, true},
 		{"deepgram_is_valid", STTTypeDeepgram, true},
-		{"elevenlabs_is_valid", STTTypeElevenLabs, true},
 		{"google_is_valid", STTTypeGoogle, true},
+		{"cartesia_is_invalid", STTType("cartesia"), false},
+		{"elevenlabs_is_invalid", STTType("elevenlabs"), false},
 		{"gcp_is_invalid", STTType("gcp"), false},
 		{"random_string_is_invalid", STTType("random"), false},
 	}
@@ -584,7 +551,7 @@ func TestSTTTypeValidValues(t *testing.T) {
 
 	// Should contain known values
 	knownValues := map[string]bool{
-		"deepgram": false, "cartesia": false, "elevenlabs": false, "google": false,
+		"deepgram": false, "google": false,
 	}
 	for _, v := range values {
 		if _, ok := knownValues[v]; ok {

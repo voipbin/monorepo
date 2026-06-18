@@ -22847,51 +22847,15 @@
         "example": "elevenlabs",
         "enum": [
           "",
-          "async",
-          "aws",
-          "azure",
           "cartesia",
-          "deepgram",
           "elevenlabs",
-          "fish",
-          "google",
-          "groq",
-          "hume",
-          "inworld",
-          "lmnt",
-          "minimax",
-          "neuphonic",
-          "nvidia-riva",
-          "openai",
-          "piper",
-          "playht",
-          "rime",
-          "sarvam",
-          "xtts"
+          "google"
         ],
         "x-enum-varnames": [
           "AIManagerAITTSTypeNone",
-          "AIManagerAITTSTypeAsync",
-          "AIManagerAITTSTypeAWS",
-          "AIManagerAITTSTypeAzure",
           "AIManagerAITTSTypeCartesia",
-          "AIManagerAITTSTypeDeepgram",
           "AIManagerAITTSTypeElevenLabs",
-          "AIManagerAITTSTypeFish",
-          "AIManagerAITTSTypeGoogle",
-          "AIManagerAITTSTypeGroq",
-          "AIManagerAITTSTypeHume",
-          "AIManagerAITTSTypeInworld",
-          "AIManagerAITTSTypeLMNT",
-          "AIManagerAITTSTypeMiniMax",
-          "AIManagerAITTSTypeNeuphonic",
-          "AIManagerAITTSTypeNvidiaRiva",
-          "AIManagerAITTSTypeOpenAI",
-          "AIManagerAITTSTypePiper",
-          "AIManagerAITTSTypePlayHT",
-          "AIManagerAITTSTypeRime",
-          "AIManagerAITTSTypeSarvam",
-          "AIManagerAITTSTypeXTTS"
+          "AIManagerAITTSTypeGoogle"
         ]
       },
       "AIManagerAISTTType": {
@@ -22900,15 +22864,13 @@
         "example": "deepgram",
         "enum": [
           "",
-          "cartesia",
           "deepgram",
-          "elevenlabs"
+          "google"
         ],
         "x-enum-varnames": [
           "AIManagerAISTTTypeNone",
-          "AIManagerAISTTTypeCartesia",
           "AIManagerAISTTTypeDeepgram",
-          "AIManagerAISTTTypeElevenLabs"
+          "AIManagerAISTTTypeGoogle"
         ]
       },
       "AIManagerToolName": {

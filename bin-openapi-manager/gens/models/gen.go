@@ -107,20 +107,17 @@ func (e AIManagerAIPromptProposalStatus) Valid() bool {
 
 // Defines values for AIManagerAISTTType.
 const (
-	AIManagerAISTTTypeCartesia   AIManagerAISTTType = "cartesia"
-	AIManagerAISTTTypeDeepgram   AIManagerAISTTType = "deepgram"
-	AIManagerAISTTTypeElevenLabs AIManagerAISTTType = "elevenlabs"
-	AIManagerAISTTTypeNone       AIManagerAISTTType = ""
+	AIManagerAISTTTypeDeepgram AIManagerAISTTType = "deepgram"
+	AIManagerAISTTTypeGoogle   AIManagerAISTTType = "google"
+	AIManagerAISTTTypeNone     AIManagerAISTTType = ""
 )
 
 // Valid indicates whether the value is a known member of the AIManagerAISTTType enum.
 func (e AIManagerAISTTType) Valid() bool {
 	switch e {
-	case AIManagerAISTTTypeCartesia:
-		return true
 	case AIManagerAISTTTypeDeepgram:
 		return true
-	case AIManagerAISTTTypeElevenLabs:
+	case AIManagerAISTTTypeGoogle:
 		return true
 	case AIManagerAISTTTypeNone:
 		return true
@@ -131,76 +128,22 @@ func (e AIManagerAISTTType) Valid() bool {
 
 // Defines values for AIManagerAITTSType.
 const (
-	AIManagerAITTSTypeAWS        AIManagerAITTSType = "aws"
-	AIManagerAITTSTypeAsync      AIManagerAITTSType = "async"
-	AIManagerAITTSTypeAzure      AIManagerAITTSType = "azure"
 	AIManagerAITTSTypeCartesia   AIManagerAITTSType = "cartesia"
-	AIManagerAITTSTypeDeepgram   AIManagerAITTSType = "deepgram"
 	AIManagerAITTSTypeElevenLabs AIManagerAITTSType = "elevenlabs"
-	AIManagerAITTSTypeFish       AIManagerAITTSType = "fish"
 	AIManagerAITTSTypeGoogle     AIManagerAITTSType = "google"
-	AIManagerAITTSTypeGroq       AIManagerAITTSType = "groq"
-	AIManagerAITTSTypeHume       AIManagerAITTSType = "hume"
-	AIManagerAITTSTypeInworld    AIManagerAITTSType = "inworld"
-	AIManagerAITTSTypeLMNT       AIManagerAITTSType = "lmnt"
-	AIManagerAITTSTypeMiniMax    AIManagerAITTSType = "minimax"
-	AIManagerAITTSTypeNeuphonic  AIManagerAITTSType = "neuphonic"
 	AIManagerAITTSTypeNone       AIManagerAITTSType = ""
-	AIManagerAITTSTypeNvidiaRiva AIManagerAITTSType = "nvidia-riva"
-	AIManagerAITTSTypeOpenAI     AIManagerAITTSType = "openai"
-	AIManagerAITTSTypePiper      AIManagerAITTSType = "piper"
-	AIManagerAITTSTypePlayHT     AIManagerAITTSType = "playht"
-	AIManagerAITTSTypeRime       AIManagerAITTSType = "rime"
-	AIManagerAITTSTypeSarvam     AIManagerAITTSType = "sarvam"
-	AIManagerAITTSTypeXTTS       AIManagerAITTSType = "xtts"
 )
 
 // Valid indicates whether the value is a known member of the AIManagerAITTSType enum.
 func (e AIManagerAITTSType) Valid() bool {
 	switch e {
-	case AIManagerAITTSTypeAWS:
-		return true
-	case AIManagerAITTSTypeAsync:
-		return true
-	case AIManagerAITTSTypeAzure:
-		return true
 	case AIManagerAITTSTypeCartesia:
-		return true
-	case AIManagerAITTSTypeDeepgram:
 		return true
 	case AIManagerAITTSTypeElevenLabs:
 		return true
-	case AIManagerAITTSTypeFish:
-		return true
 	case AIManagerAITTSTypeGoogle:
 		return true
-	case AIManagerAITTSTypeGroq:
-		return true
-	case AIManagerAITTSTypeHume:
-		return true
-	case AIManagerAITTSTypeInworld:
-		return true
-	case AIManagerAITTSTypeLMNT:
-		return true
-	case AIManagerAITTSTypeMiniMax:
-		return true
-	case AIManagerAITTSTypeNeuphonic:
-		return true
 	case AIManagerAITTSTypeNone:
-		return true
-	case AIManagerAITTSTypeNvidiaRiva:
-		return true
-	case AIManagerAITTSTypeOpenAI:
-		return true
-	case AIManagerAITTSTypePiper:
-		return true
-	case AIManagerAITTSTypePlayHT:
-		return true
-	case AIManagerAITTSTypeRime:
-		return true
-	case AIManagerAITTSTypeSarvam:
-		return true
-	case AIManagerAITTSTypeXTTS:
 		return true
 	default:
 		return false

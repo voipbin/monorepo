@@ -55,7 +55,7 @@ func Test_PostAis(t *testing.T) {
 			}),
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -73,7 +73,7 @@ func Test_PostAis(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
@@ -88,7 +88,7 @@ func Test_PostAis(t *testing.T) {
 			}),
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["connect_call","send_email"]}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram","tool_names":["connect_call","send_email"]}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -106,7 +106,7 @@ func Test_PostAis(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
@@ -121,7 +121,7 @@ func Test_PostAis(t *testing.T) {
 			}),
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["all"]}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram","tool_names":["all"]}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -139,7 +139,7 @@ func Test_PostAis(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameAll},
@@ -154,7 +154,7 @@ func Test_PostAis(t *testing.T) {
 			}),
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","rag_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","rag_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -172,7 +172,7 @@ func Test_PostAis(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 			expectedToolNames:   nil,
@@ -187,7 +187,7 @@ func Test_PostAis(t *testing.T) {
 			}),
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","rag_id":"","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","rag_id":"","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -205,7 +205,7 @@ func Test_PostAis(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
@@ -220,7 +220,7 @@ func Test_PostAis(t *testing.T) {
 			}),
 
 			reqQuery: "/ais",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","stt_language":"ko-KR"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram","stt_language":"ko-KR"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -238,7 +238,7 @@ func Test_PostAis(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "ko-KR",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
@@ -577,7 +577,7 @@ func Test_PutAisId(t *testing.T) {
 			}),
 
 			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -596,7 +596,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
@@ -611,7 +611,7 @@ func Test_PutAisId(t *testing.T) {
 			}),
 
 			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","tool_names":["connect_call","send_email"]}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram","tool_names":["connect_call","send_email"]}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -630,7 +630,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   []amtool.ToolName{amtool.ToolNameConnectCall, amtool.ToolNameSendEmail},
@@ -645,7 +645,7 @@ func Test_PutAisId(t *testing.T) {
 			}),
 
 			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","rag_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","rag_id":"a1b2c3d4-e5f6-7890-abcd-ef1234567890","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -664,7 +664,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.FromStringOrNil("a1b2c3d4-e5f6-7890-abcd-ef1234567890"),
 			expectedToolNames:   nil,
@@ -679,7 +679,7 @@ func Test_PutAisId(t *testing.T) {
 			}),
 
 			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","rag_id":"","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","rag_id":"","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -698,7 +698,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,
@@ -713,7 +713,7 @@ func Test_PutAisId(t *testing.T) {
 			}),
 
 			reqQuery: "/ais/2a2ec0ba-8004-11ec-aea5-439829c92a7c",
-			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"cartesia","stt_language":"ko-KR"}`),
+			reqBody:  []byte(`{"name":"test name","detail":"test detail","engine_model":"openai.gpt-5","parameter":{"key1":"val1"},"engine_key":"test engine key","init_prompt":"test init prompt","tts_type":"elevenlabs","tts_voice_id":"test voice id","stt_type":"deepgram","stt_language":"ko-KR"}`),
 
 			responseAI: &amai.WebhookMessage{
 				Identity: commonidentity.Identity{
@@ -732,7 +732,7 @@ func Test_PutAisId(t *testing.T) {
 			expectedInitPrompt:  "test init prompt",
 			expectedTTSType:     amai.TTSTypeElevenLabs,
 			expectedTTSVoiceID:  "test voice id",
-			expectedSTTType:     amai.STTTypeCartesia,
+			expectedSTTType:     amai.STTTypeDeepgram,
 			expectedSTTLanguage: "ko-KR",
 			expectedRagID:       uuid.Nil,
 			expectedToolNames:   nil,

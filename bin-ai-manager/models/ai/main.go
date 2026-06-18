@@ -202,38 +202,16 @@ type TTSType string
 
 const (
 	TTSTypeNone       TTSType = ""
-	TTSTypeAsync      TTSType = "async"       // Generic async TTS adapter
-	TTSTypeAWS        TTSType = "aws"         // AWS Polly or Bedrock TTS
-	TTSTypeAzure      TTSType = "azure"       // Azure Cognitive TTS
-	TTSTypeCartesia   TTSType = "cartesia"    // Cartesia TTS
-	TTSTypeDeepgram   TTSType = "deepgram"    // Deepgram TTS
-	TTSTypeElevenLabs TTSType = "elevenlabs"  // ElevenLabs TTS
-	TTSTypeFish       TTSType = "fish"        // Fish TTS (experimental)
-	TTSTypeGoogle     TTSType = "google"      // Google Cloud TTS
-	TTSTypeGroq       TTSType = "groq"        // Groq TTS (fast inference)
-	TTSTypeHume       TTSType = "hume"        // Hume AI TTS (emotion-driven)
-	TTSTypeInworld    TTSType = "inworld"     // Inworld TTS (character voices)
-	TTSTypeLMNT       TTSType = "lmnt"        // LMNT TTS
-	TTSTypeMiniMax    TTSType = "minimax"     // MiniMax TTS
-	TTSTypeNeuphonic  TTSType = "neuphonic"   // Neuphonic TTS
-	TTSTypeNvidiaRiva TTSType = "nvidia-riva" // NVIDIA Riva TTS
-	TTSTypeOpenAI     TTSType = "openai"      // OpenAI TTS (e.g., tts-1)
-	TTSTypePiper      TTSType = "piper"       // Piper open-source TTS
-	TTSTypePlayHT     TTSType = "playht"      // PlayHT TTS
-	TTSTypeRime       TTSType = "rime"        // Rime TTS
-	TTSTypeSarvam     TTSType = "sarvam"      // Sarvam AI TTS
-	TTSTypeXTTS       TTSType = "xtts"        // XTTS (cross-lingual TTS)
+	TTSTypeCartesia   TTSType = "cartesia"   // Cartesia TTS
+	TTSTypeElevenLabs TTSType = "elevenlabs" // ElevenLabs TTS
+	TTSTypeGoogle     TTSType = "google"     // Google Cloud TTS
 )
 
 var validTTSTypes = map[TTSType]bool{
-	TTSTypeNone: true, TTSTypeAsync: true, TTSTypeAWS: true,
-	TTSTypeAzure: true, TTSTypeCartesia: true, TTSTypeDeepgram: true,
-	TTSTypeElevenLabs: true, TTSTypeFish: true, TTSTypeGoogle: true,
-	TTSTypeGroq: true, TTSTypeHume: true, TTSTypeInworld: true,
-	TTSTypeLMNT: true, TTSTypeMiniMax: true, TTSTypeNeuphonic: true,
-	TTSTypeNvidiaRiva: true, TTSTypeOpenAI: true, TTSTypePiper: true,
-	TTSTypePlayHT: true, TTSTypeRime: true, TTSTypeSarvam: true,
-	TTSTypeXTTS: true,
+	TTSTypeNone:       true,
+	TTSTypeCartesia:   true,
+	TTSTypeElevenLabs: true,
+	TTSTypeGoogle:     true,
 }
 
 // IsValid returns true if the TTSType is a known valid value.
@@ -257,17 +235,15 @@ func (t TTSType) ValidValues() []string {
 type STTType string
 
 const (
-	STTTypeNone       STTType = ""
-	STTTypeCartesia   STTType = "cartesia"
-	STTTypeDeepgram   STTType = "deepgram"
-	STTTypeElevenLabs STTType = "elevenlabs"
-	STTTypeGoogle     STTType = "google"
+	STTTypeNone     STTType = ""
+	STTTypeDeepgram STTType = "deepgram"
+	STTTypeGoogle   STTType = "google"
 )
 
 var validSTTTypes = map[STTType]bool{
-	STTTypeNone: true, STTTypeCartesia: true,
-	STTTypeDeepgram: true, STTTypeElevenLabs: true,
-	STTTypeGoogle: true,
+	STTTypeNone:     true,
+	STTTypeDeepgram: true,
+	STTTypeGoogle:   true,
 }
 
 // IsValid returns true if the STTType is a known valid value.

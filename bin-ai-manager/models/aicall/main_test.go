@@ -68,7 +68,7 @@ func TestAIcall(t *testing.T) {
 			aiEngineModel:  ai.EngineModelGeminiGemini2Dot5Flash,
 			aiTTSType:     ai.TTSTypeGoogle,
 			aiTTSVoiceID:  "",
-			aiSTTType:     ai.STTTypeCartesia,
+			aiSTTType:     ai.STTTypeDeepgram,
 			activeflowID:  uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440007"),
 			referenceType: ReferenceTypeConversation,
 			referenceID:   uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440008"),

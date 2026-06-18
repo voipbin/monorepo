@@ -93,27 +93,9 @@ const (
 
 var mapDefaultTTSVoiceIDByTTSType = map[ai.TTSType]string{
 	ai.TTSTypeNone:       "",
-	ai.TTSTypeAsync:      "",
-	ai.TTSTypeAWS:        "Joanna",                               // Joanna (US female). https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
-	ai.TTSTypeAzure:      "en-US-JennyNeural",                    // Jenny Neural. https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support
 	ai.TTSTypeCartesia:   "71a7ad14-091c-4e8e-a314-022ece01c121", // British Reading Lady. https://developer.signalwire.com/voice/tts/cartesia/
-	ai.TTSTypeDeepgram:   "aura-2-thalia-en",                     // Thalia (neutral, English). https://developers.deepgram.com/docs/tts-models#aura-2-all-available-spanish-voices
 	ai.TTSTypeElevenLabs: "EXAVITQu4vr4xnSDxMaL",                 // Rachel. https://api.elevenlabs.io/docs
-	ai.TTSTypeFish:       "",
-	ai.TTSTypeGoogle:     "en-US-Chirp3-HD-Charon",                 // Male, Chirp 3 HD (required for streaming synthesis). https://cloud.google.com/text-to-speech/docs/chirp3-hd
-	ai.TTSTypeGroq:       "llama-voice-en",                        // Placeholder (Groq doesn't expose standard TTS, assumed)
-	ai.TTSTypeHume:       "emotional-neutral-en",                  // Neutral English emotional TTS. https://dev.hume.ai/docs/tts
-	ai.TTSTypeInworld:    "English_Female_Generic",                // Generic female character. https://docs.inworld.ai/voices
-	ai.TTSTypeLMNT:       "lmnt-english-1",                        // English base voice. https://lmnt.ai/
-	ai.TTSTypeMiniMax:    "english_female",                        // English female voice. https://platform.minimaxi.ai/docs/tts
-	ai.TTSTypeNeuphonic:  "neuphonic-en-female",                   // Neutral English female. https://pipecat-docs.readthedocs.io/en/latest/api/pipecat.services.neuphonic.tts.html
-	ai.TTSTypeNvidiaRiva: "English-US-Female-1",                   // US Female. https://docs.nvidia.com/deeplearning/riva/user-guide/docs/tts/voices.html
-	ai.TTSTypeOpenAI:     "alloy",                                 // Alloy (male, neutral)
-	ai.TTSTypePiper:      "en_US-amy-low",                         // Amy (US female). https://github.com/rhasspy/piper/tree/master/voices
-	ai.TTSTypePlayHT:     "s3://voice-cloning-zero-shot/20b9e...", // Olivia (English Female). https://docs.play.ht/reference/api-get-voices
-	ai.TTSTypeRime:       "rime-en-001",                           // English default. https://rime.ai/
-	ai.TTSTypeSarvam:     "en_default",                            // English generic. https://sarvam.ai/docs
-	ai.TTSTypeXTTS:       "en_male",                               // English male (cross-lingual). https://coqui.ai/docs/tts/xtts
+	ai.TTSTypeGoogle:     "en-US-Chirp3-HD-Charon",               // Male, Chirp 3 HD (required for streaming synthesis). https://cloud.google.com/text-to-speech/docs/chirp3-hd
 }
 
 // aicallHandler define

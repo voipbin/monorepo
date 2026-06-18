@@ -239,7 +239,7 @@ func TestUpdate(t *testing.T) {
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
 			engineModel: ai.EngineModelOpenaiGPT5Mini,
-			ttsType:     ai.TTSTypeOpenAI,
+			ttsType:     ai.TTSTypeElevenLabs,
 			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				updatedAI := &ai.AI{Name: "Updated AI"}
@@ -256,7 +256,7 @@ func TestUpdate(t *testing.T) {
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
 			engineModel: ai.EngineModel("unknown.invalid"),
-			ttsType:     ai.TTSTypeOpenAI,
+			ttsType:     ai.TTSTypeElevenLabs,
 			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				// Should not call database
@@ -282,7 +282,7 @@ func TestUpdate(t *testing.T) {
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
 			engineModel: ai.EngineModelOpenaiGPT5,
-			ttsType:     ai.TTSTypeOpenAI,
+			ttsType:     ai.TTSTypeElevenLabs,
 			sttType:     ai.STTType("gcp"),
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				// Should not call database
@@ -295,7 +295,7 @@ func TestUpdate(t *testing.T) {
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
 			engineModel: ai.EngineModelGeminiGeminiProLatest,
-			ttsType:     ai.TTSTypeOpenAI,
+			ttsType:     ai.TTSTypeElevenLabs,
 			sttType:     ai.STTTypeDeepgram,
 			setupMock: func(m *dbhandler.MockDBHandler) {
 				// pre-fetch succeeds (initPrompt is non-empty "Updated prompt"), then AIUpdate fails
@@ -312,7 +312,7 @@ func TestUpdate(t *testing.T) {
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI",
 			engineModel: ai.EngineModelOpenaiGPT5,
-			ttsType:     ai.TTSTypeOpenAI,
+			ttsType:     ai.TTSTypeElevenLabs,
 			sttType:     ai.STTTypeDeepgram,
 			vadConfig:   &ai.VADConfig{MinVolume: float64Ptr(-0.1)},
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -326,7 +326,7 @@ func TestUpdate(t *testing.T) {
 			aiID:        uuid.Must(uuid.NewV4()),
 			aiName:      "Updated AI with VAD",
 			engineModel: ai.EngineModelOpenaiGPT5,
-			ttsType:     ai.TTSTypeOpenAI,
+			ttsType:     ai.TTSTypeElevenLabs,
 			sttType:     ai.STTTypeDeepgram,
 			vadConfig:   &ai.VADConfig{StopSecs: float64Ptr(0.3), MinVolume: float64Ptr(0.5)},
 			setupMock: func(m *dbhandler.MockDBHandler) {
@@ -344,7 +344,7 @@ func TestUpdate(t *testing.T) {
 			aiID:             uuid.Must(uuid.NewV4()),
 			aiName:           "Updated AI with Smart Turn",
 			engineModel:      ai.EngineModelOpenaiGPT5,
-			ttsType:          ai.TTSTypeOpenAI,
+			ttsType:          ai.TTSTypeElevenLabs,
 			sttType:          ai.STTTypeDeepgram,
 			smartTurnEnabled: true,
 			setupMock: func(m *dbhandler.MockDBHandler) {

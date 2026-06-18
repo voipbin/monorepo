@@ -52,36 +52,17 @@ const (
 
 // Defines values for AIManagerAISTTType.
 const (
-	AIManagerAISTTTypeCartesia   AIManagerAISTTType = "cartesia"
-	AIManagerAISTTTypeDeepgram   AIManagerAISTTType = "deepgram"
-	AIManagerAISTTTypeElevenLabs AIManagerAISTTType = "elevenlabs"
-	AIManagerAISTTTypeNone       AIManagerAISTTType = ""
+	AIManagerAISTTTypeDeepgram AIManagerAISTTType = "deepgram"
+	AIManagerAISTTTypeGoogle   AIManagerAISTTType = "google"
+	AIManagerAISTTTypeNone     AIManagerAISTTType = ""
 )
 
 // Defines values for AIManagerAITTSType.
 const (
-	AIManagerAITTSTypeAWS        AIManagerAITTSType = "aws"
-	AIManagerAITTSTypeAsync      AIManagerAITTSType = "async"
-	AIManagerAITTSTypeAzure      AIManagerAITTSType = "azure"
 	AIManagerAITTSTypeCartesia   AIManagerAITTSType = "cartesia"
-	AIManagerAITTSTypeDeepgram   AIManagerAITTSType = "deepgram"
 	AIManagerAITTSTypeElevenLabs AIManagerAITTSType = "elevenlabs"
-	AIManagerAITTSTypeFish       AIManagerAITTSType = "fish"
 	AIManagerAITTSTypeGoogle     AIManagerAITTSType = "google"
-	AIManagerAITTSTypeGroq       AIManagerAITTSType = "groq"
-	AIManagerAITTSTypeHume       AIManagerAITTSType = "hume"
-	AIManagerAITTSTypeInworld    AIManagerAITTSType = "inworld"
-	AIManagerAITTSTypeLMNT       AIManagerAITTSType = "lmnt"
-	AIManagerAITTSTypeMiniMax    AIManagerAITTSType = "minimax"
-	AIManagerAITTSTypeNeuphonic  AIManagerAITTSType = "neuphonic"
 	AIManagerAITTSTypeNone       AIManagerAITTSType = ""
-	AIManagerAITTSTypeNvidiaRiva AIManagerAITTSType = "nvidia-riva"
-	AIManagerAITTSTypeOpenAI     AIManagerAITTSType = "openai"
-	AIManagerAITTSTypePiper      AIManagerAITTSType = "piper"
-	AIManagerAITTSTypePlayHT     AIManagerAITTSType = "playht"
-	AIManagerAITTSTypeRime       AIManagerAITTSType = "rime"
-	AIManagerAITTSTypeSarvam     AIManagerAITTSType = "sarvam"
-	AIManagerAITTSTypeXTTS       AIManagerAITTSType = "xtts"
 )
 
 // Defines values for AIManagerAIcallAssistanceType.
