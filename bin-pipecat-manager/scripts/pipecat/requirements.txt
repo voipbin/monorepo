@@ -2,5 +2,8 @@ python-dotenv
 uvicorn
 pipecat-ai[silero,deepgram,openai,cartesia,websocket,google,local-smart-turn]>=1.4.0,<2.0
 pipecat-ai-flows>=1.2.0,<2.0
+# onnxruntime is minor-capped (<1.25) on purpose: it is coupled to the
+# smart-turn-v3.x ONNX model shipped by pipecat-ai's local-smart-turn extra.
+# Do not widen to <2.0; bump deliberately in lockstep with pipecat-ai.
 onnxruntime>=1.24.3,<1.25
 loguru

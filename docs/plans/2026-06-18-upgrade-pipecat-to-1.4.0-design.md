@@ -494,3 +494,31 @@ Mock suite after round 1: 132 passed, 2 failed (the two out-of-scope google_tts
 pre-existing failures only). The R1 "test files not in the diff" finding was an
 artifact of the reviewer receiving only the production-code diff; the test changes
 are in the same commit/PR.
+
+## 12. PR Review Loop (rounds 2 and 3) — APPROVE
+
+Two further independent reviewers (fresh `delegate_task`) reviewed the round-1
+fixes and the complete change holistically. Both returned **APPROVE**.
+
+- **Round 2 (round-1 fix verification):** confirmed all round-1 fixes mechanically
+  correct with no new defect. Raised one Medium (the CPU-torch Dockerfile line was
+  unpinned -> reproducibility drift) and Lows (onnxruntime minor-cap rationale
+  comment; warn log-noise). **Applied:** pinned `torch==2.12.1 torchaudio==2.11.0`
+  in the Dockerfile (the exact versions the validated 1.7GB image resolved) and
+  added a comment to requirements.txt explaining the deliberate onnxruntime `<1.25`
+  minor cap (coupled to the smart-turn ONNX model). Re-verified in a real
+  `python:3.12-slim` container that the pinned CPU torch survives the subsequent
+  requirements.txt install (not re-pulled as CUDA) and smart-turn still loads.
+- **Round 3 (holistic production-readiness):** APPROVE. Confirmed the 132/2 mock
+  result, that the 2 failures are pre-existing google_tts tests identical to main,
+  that the custom transport (barge-in FLUSH_MEDIA, push_frame monkeypatch) and
+  16kHz are unchanged from main, that the universal-context migration is
+  behavior-preserving (gemini+team already run it), the deferral list is
+  appropriate, and `git revert` rollback is adequate. The only remaining gate is
+  the documented Tier-3 live-smoke matrix, which is a separate pre-merge
+  operational gate, not a code defect.
+
+Review loop status: 3 rounds completed (round 1 = 3 reviewers with fixes applied,
+rounds 2 and 3 = APPROVE). All Critical/High/Medium findings resolved. The PR is
+code-complete and merge-eligible pending the mandatory Tier-3 live-smoke matrix
+(7 real calls) and explicit merge authorization.

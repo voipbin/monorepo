@@ -30,10 +30,11 @@ COPY --from=build /app/scripts/pipecat /app/scripts/pipecat
 COPY --from=build /app/scripts/pipecat/requirements.txt /tmp/requirements.txt
 # pipecat-ai 1.4.0's silero/local-smart-turn extras pull in torch. The smart-turn
 # model runs on CPU (smart-turn-v3.x-cpu.onnx) and this runner does no GPU work,
-# so install the CPU-only torch/torchaudio wheels FIRST. This satisfies the torch
-# requirement before the requirements.txt install (pip then skips the default
-# CUDA wheel), cutting the image's site-packages from ~5.5GB to ~1.7GB.
-RUN pip install --no-cache-dir torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+# so install the CPU-only torch/torchaudio wheels FIRST (pinned for a reproducible
+# build). This satisfies the torch requirement before the requirements.txt install
+# (pip then skips the default CUDA wheel), cutting the image's site-packages from
+# ~5.5GB to ~1.7GB. Bump these in lockstep with the pipecat-ai version.
+RUN pip install --no-cache-dir torch==2.12.1 torchaudio==2.11.0 --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r /tmp/requirements.txt && rm /tmp/requirements.txt
 
 # Install runtime dependencies: ffmpeg for media processing, libsoxr for audio resampling
