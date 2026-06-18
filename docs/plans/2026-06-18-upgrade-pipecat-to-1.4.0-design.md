@@ -435,3 +435,62 @@ all applied here:
 After v3 edits the design is internally consistent and the load-bearing fixes are
 each backed by an executable gate. Treated as design-approved; remaining risk is
 execution (implementation + the mandatory live smoke matrix), not design.
+
+## 11. Implementation + PR Review Loop (round 1)
+
+Implementation landed on this branch. Three independent PR reviewers (fresh
+`delegate_task`) reviewed the verbatim code diff + the updated tests; the author
+re-verified every code-level claim against the real 1.4.0 install rather than
+trusting self-reports. Findings and dispositions:
+
+- **smart-turn extra (R1/R3, raised as High):** the `local-smart-turn-v3` ->
+  `local-smart-turn` rename was flagged as a possible real-call ImportError since
+  the lazy `local_smart_turn_v3.LocalSmartTurnAnalyzerV3` import isn't exercised by
+  the mocked suite. **Disposition: false alarm, verified.** In a `uv sync --frozen`
+  env built from the new pins, `LocalSmartTurnAnalyzerV3` imports AND instantiates.
+  The extra is named `local-smart-turn` in 1.4.0 and the V3 model ships inside it.
+- **cancel_on_interruption None vs True (R1, Medium):** flagged as a possible
+  behavior change. **Disposition: confirmed safe.** 1.4.0
+  `LLMService.register_function` resolves `cancel_on_interruption=None` via
+  `_resolve_tool_option(..., default=True)`, so `None` means "use the default
+  (True)" — identical to the 0.0.x behavior. The `None` default is the correct
+  upstream mirror.
+- **FlowManager _llm guard untested (R2, High):** **fixed.** Added
+  `test_init_team_pipeline_flowmanager_missing_llm_attr_guard` (RuntimeError when
+  `_llm` absent, via `MagicMock(spec=[])`) and
+  `test_init_team_pipeline_swaps_flowmanager_llm_to_router` (asserts
+  `flow_manager._llm is routing_llm` on success).
+- **Two in-scope team-init tests left red (R2, High):** **fixed.**
+  `test_init_team_pipeline_start_member_not_found` had a stale regex
+  (`"Unknown member_id"` -> `"start_member_id .* not found"`);
+  `test_init_team_pipeline_active_service_none_guard` needed
+  `mock_routing.cleanup = AsyncMock()` (awaited in the except path). Both now green.
+- **requirements.txt unbounded floors (R3, High):** **fixed.** Capped majors:
+  `pipecat-ai>=1.4.0,<2.0`, `pipecat-ai-flows>=1.2.0,<2.0`,
+  `onnxruntime>=1.24.3,<1.25` in both requirements.txt and pyproject.toml. This
+  neutralizes the named horizon breaks (pipecat 2.0 removes the deepgram
+  LiveOptions wrapper; onnxruntime 1.25 exits the silero ceiling).
+- **torch/libgomp on python:3.12-slim (R3, Medium):** the 1.4.0 silero/local-smart-turn
+  extras newly pull torch 2.12.x (0.0.103 did NOT). Verified on a bare
+  `python:3.12-slim` container running the exact Dockerfile install path: torch,
+  `LocalSmartTurnAnalyzerV3` (loads `smart-turn-v3.2-cpu.onnx`), and deepgram
+  `LiveOptions` all import/instantiate with no libgomp or missing-syslib error.
+  However the default wheel is CUDA (`2.12.1+cu130`), ballooning site-packages to
+  **5.5GB**. Since the smart-turn model is CPU-only and the runner does no GPU
+  work, the **Dockerfile now installs CPU torch/torchaudio first**
+  (`--index-url https://download.pytorch.org/whl/cpu`), which pip then satisfies
+  before the requirements install, cutting site-packages to **1.7GB** (verified in
+  the same container test). Functionally identical, 3.8GB smaller image.
+- **tool-schema fidelity runtime guard (R1, Medium):** **added.**
+  `_openai_tools_to_standard` now emits a WARNING when a tool carries top-level
+  `strict`/`additionalProperties` (which FunctionSchema cannot carry), so a future
+  catalog change fails loud instead of silently dropping them.
+- **Pre-existing out-of-scope failures left as-is:** `test_google_tts_service_creation`
+  and `test_google_tts_default_voice` are byte-identical to origin/main and fail on
+  a mock-env TTS `InputParams` mismatch unrelated to this PR (both reviewers
+  concurred these are acceptable to leave under minimal-change bias).
+
+Mock suite after round 1: 132 passed, 2 failed (the two out-of-scope google_tts
+pre-existing failures only). The R1 "test files not in the diff" finding was an
+artifact of the reviewer receiving only the production-code diff; the test changes
+are in the same commit/PR.

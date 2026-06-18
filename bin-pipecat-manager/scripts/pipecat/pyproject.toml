@@ -6,9 +6,9 @@ requires-python = ">=3.11"
 dependencies = [
     "python-dotenv",
     "uvicorn",
-    "pipecat-ai[silero,deepgram,openai,cartesia,websocket,google,local-smart-turn]>=1.4.0",
-    "pipecat-ai-flows>=1.2.0",
-    "onnxruntime>=1.24.3",
+    "pipecat-ai[silero,deepgram,openai,cartesia,websocket,google,local-smart-turn]>=1.4.0,<2.0",
+    "pipecat-ai-flows>=1.2.0,<2.0",
+    "onnxruntime>=1.24.3,<1.25",
     "pillow>=12.1.1",
     "protobuf>=5.29.6",
     "loguru",

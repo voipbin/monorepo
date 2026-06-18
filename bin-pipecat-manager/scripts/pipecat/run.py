@@ -427,6 +427,16 @@ def _openai_tools_to_standard(openai_tools: list[dict]) -> list[FunctionSchema]:
     for tool in openai_tools:
         func = tool.get("function", {})
         params = func.get("parameters", {})
+        # Warn if a tool carries top-level fields FunctionSchema cannot represent,
+        # so a future ai-manager catalog change that relies on top-level
+        # strict / additionalProperties fails loud here instead of silently
+        # losing them. Nested (per-property) additionalProperties is preserved.
+        if func.get("strict") is not None or params.get("additionalProperties") is not None:
+            logger.warning(
+                f"Tool '{func.get('name', '')}' sets top-level strict/additionalProperties "
+                "which FunctionSchema does not carry; these are dropped on the universal "
+                "LLMContext path. Extend _openai_tools_to_standard if they are required."
+            )
         schemas.append(FunctionSchema(
             name=func.get("name", ""),
             description=func.get("description", ""),
