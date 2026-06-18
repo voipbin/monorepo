@@ -6,17 +6,22 @@ import inspect
 
 
 class TestCreateLLMService:
-    """Tests for create_llm_service function."""
+    """Tests for create_llm_service function.
 
+    pipecat 1.x removed OpenAILLMContext + create_context_aggregator. All
+    providers (openai/grok/gemini) now build the universal LLMContext +
+    LLMContextAggregatorPair, with tools converted via ToolsSchema/FunctionSchema.
+    """
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
     @patch("run.OpenAILLMService")
-    @patch("run.OpenAILLMContext")
-    def test_openai_service_creation(self, mock_context, mock_service):
+    def test_openai_service_creation(self, mock_service, mock_context, mock_pair):
         """Test OpenAI service is created with correct parameters."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
 
         llm, aggregator = create_llm_service(
             type="openai.gpt-4o",
@@ -26,16 +31,18 @@ class TestCreateLLMService:
         )
 
         mock_service.assert_called_once_with(api_key="test-key", model="gpt-4o")
+        assert llm is mock_llm
+        assert aggregator is mock_pair.return_value
 
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
     @patch("run.OpenAILLMService")
-    @patch("run.OpenAILLMContext")
-    def test_grok_service_creation(self, mock_context, mock_service):
+    def test_grok_service_creation(self, mock_service, mock_context, mock_pair):
         """Test Grok service is created with xAI base URL."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
 
         llm, aggregator = create_llm_service(
             type="grok.grok-3",
@@ -50,15 +57,15 @@ class TestCreateLLMService:
             base_url="https://api.x.ai/v1"
         )
 
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
     @patch("run.OpenAILLMService")
-    @patch("run.OpenAILLMContext")
-    def test_grok_uses_env_var_fallback(self, mock_context, mock_service):
+    def test_grok_uses_env_var_fallback(self, mock_service, mock_context, mock_pair):
         """Test Grok falls back to XAI_API_KEY env var."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
 
         with patch.dict(os.environ, {"XAI_API_KEY": "env-xai-key"}):
             llm, aggregator = create_llm_service(
@@ -74,15 +81,15 @@ class TestCreateLLMService:
             base_url="https://api.x.ai/v1"
         )
 
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
     @patch("run.GoogleLLMService")
-    @patch("run.OpenAILLMContext")
-    def test_gemini_service_creation(self, mock_context, mock_service):
+    def test_gemini_service_creation(self, mock_service, mock_context, mock_pair):
         """Test Gemini service is created with GoogleLLMService and correct parameters."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
 
         llm, aggregator = create_llm_service(
             type="gemini.gemini-2.5-flash",
@@ -93,15 +100,15 @@ class TestCreateLLMService:
 
         mock_service.assert_called_once_with(api_key="google-test-key", model="gemini-2.5-flash")
 
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
     @patch("run.GoogleLLMService")
-    @patch("run.OpenAILLMContext")
-    def test_gemini_uses_env_var_fallback(self, mock_context, mock_service):
+    def test_gemini_uses_env_var_fallback(self, mock_service, mock_context, mock_pair):
         """Test Gemini falls back to GOOGLE_API_KEY env var when key is empty."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
 
         with patch.dict(os.environ, {"GOOGLE_API_KEY": "env-google-key"}):
             llm, aggregator = create_llm_service(
@@ -113,15 +120,15 @@ class TestCreateLLMService:
 
         mock_service.assert_called_once_with(api_key="env-google-key", model="gemini-1.5-pro")
 
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
     @patch("run.GoogleLLMService")
-    @patch("run.OpenAILLMContext")
-    def test_gemini_with_colon_separator(self, mock_context, mock_service):
+    def test_gemini_with_colon_separator(self, mock_service, mock_context, mock_pair):
         """Test Gemini service works with colon separator format."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
 
         llm, aggregator = create_llm_service(
             type="gemini:gemini-flash",
@@ -132,15 +139,15 @@ class TestCreateLLMService:
 
         mock_service.assert_called_once_with(api_key="test-key", model="gemini-flash")
 
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
     @patch("run.GoogleLLMService")
-    @patch("run.OpenAILLMContext")
-    def test_gemini_case_insensitive(self, mock_context, mock_service):
+    def test_gemini_case_insensitive(self, mock_service, mock_context, mock_pair):
         """Test Gemini service name matching is case-insensitive."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
 
         llm, aggregator = create_llm_service(
             type="Gemini.gemini-2.5-flash",
@@ -151,15 +158,15 @@ class TestCreateLLMService:
 
         mock_service.assert_called_once_with(api_key="test-key", model="gemini-2.5-flash")
 
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
     @patch("run.GoogleLLMService")
-    @patch("run.OpenAILLMContext")
-    def test_gemini_model_name_with_dots_preserved(self, mock_context, mock_service):
+    def test_gemini_model_name_with_dots_preserved(self, mock_service, mock_context, mock_pair):
         """Test model names containing dots are preserved (split on first dot only)."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
 
         llm, aggregator = create_llm_service(
             type="gemini.gemini-1.5-pro-latest",
@@ -170,15 +177,14 @@ class TestCreateLLMService:
 
         mock_service.assert_called_once_with(api_key="test-key", model="gemini-1.5-pro-latest")
 
-    @patch("run.GoogleLLMService")
-    @patch("run.OpenAILLMContext")
-    def test_gemini_filters_invalid_messages(self, mock_context, mock_service):
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenAILLMService")
+    def test_openai_filters_invalid_messages(self, mock_service, mock_context, mock_pair):
         """Test messages without role or content are filtered before passing to context."""
         from run import create_llm_service
 
-        mock_llm = MagicMock()
-        mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
+        mock_service.return_value = MagicMock()
 
         messages = [
             {"role": "system", "content": "You are helpful."},
@@ -190,7 +196,7 @@ class TestCreateLLMService:
         ]
 
         create_llm_service(
-            type="gemini.gemini-2.5-flash",
+            type="openai.gpt-4o",
             key="test-key",
             messages=messages,
             tools=[]
@@ -202,51 +208,77 @@ class TestCreateLLMService:
         assert passed_messages[0] == {"role": "system", "content": "You are helpful."}
         assert passed_messages[1] == {"role": "user", "content": "valid message"}
 
-    @patch("run.GoogleLLMService")
-    @patch("run.OpenAILLMContext")
-    def test_gemini_passes_tools_to_context(self, mock_context, mock_service):
-        """Test tools list is correctly passed to OpenAILLMContext."""
+    @patch("run.ToolsSchema")
+    @patch("run._openai_tools_to_standard")
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenAILLMService")
+    def test_openai_passes_tools_via_tools_schema(self, mock_service, mock_context, mock_pair, mock_to_std, mock_tools_schema):
+        """Tools are converted to FunctionSchema/ToolsSchema, not passed raw."""
         from run import create_llm_service
 
-        mock_llm = MagicMock()
-        mock_service.return_value = mock_llm
-        mock_llm.create_context_aggregator.return_value = MagicMock()
+        mock_service.return_value = MagicMock()
+        mock_to_std.return_value = [MagicMock()]  # non-empty -> ToolsSchema path
 
         tools = [{"type": "function", "function": {"name": "connect_call", "parameters": {}}}]
 
         create_llm_service(
-            type="gemini.gemini-2.5-flash",
+            type="openai.gpt-4o",
             key="test-key",
             messages=[],
             tools=tools
         )
 
-        mock_context.assert_called_once_with(messages=[], tools=tools)
+        mock_to_std.assert_called_once_with(tools)
+        mock_tools_schema.assert_called_once_with(standard_tools=mock_to_std.return_value)
+        # LLMContext receives the ToolsSchema instance, not the raw OpenAI tools.
+        assert mock_context.call_args[1]["tools"] is mock_tools_schema.return_value
 
-    @patch("run.GoogleLLMService")
-    @patch("run.OpenAILLMContext")
-    def test_gemini_returns_llm_and_aggregator(self, mock_context, mock_service):
-        """Test Gemini returns the correct (llm, aggregator) tuple."""
+    @patch("run.NOT_GIVEN", "NOT_GIVEN_SENTINEL")
+    @patch("run._openai_tools_to_standard")
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenAILLMService")
+    def test_openai_empty_tools_uses_not_given(self, mock_service, mock_context, mock_pair, mock_to_std):
+        """With no tools, LLMContext is built with the NOT_GIVEN sentinel."""
+        from run import create_llm_service
+
+        mock_service.return_value = MagicMock()
+        mock_to_std.return_value = []  # empty -> NOT_GIVEN path
+
+        create_llm_service(
+            type="openai.gpt-4o",
+            key="test-key",
+            messages=[],
+            tools=[]
+        )
+
+        assert mock_context.call_args[1]["tools"] == "NOT_GIVEN_SENTINEL"
+
+    @patch("run.LLMContextAggregatorPair")
+    @patch("run.LLMContext")
+    @patch("run.OpenAILLMService")
+    def test_returns_llm_and_aggregator(self, mock_service, mock_context, mock_pair):
+        """Test create_llm_service returns the (llm, LLMContextAggregatorPair) tuple."""
         from run import create_llm_service
 
         mock_llm = MagicMock()
         mock_service.return_value = mock_llm
-        mock_aggregator = MagicMock()
-        mock_llm.create_context_aggregator.return_value = mock_aggregator
-
+        mock_pair_instance = MagicMock()
+        mock_pair.return_value = mock_pair_instance
         mock_ctx_instance = MagicMock()
         mock_context.return_value = mock_ctx_instance
 
         llm, aggregator = create_llm_service(
-            type="gemini.gemini-2.5-flash",
+            type="openai.gpt-4o",
             key="test-key",
             messages=[],
             tools=[]
         )
 
         assert llm is mock_llm
-        assert aggregator is mock_aggregator
-        mock_llm.create_context_aggregator.assert_called_once_with(mock_ctx_instance)
+        assert aggregator is mock_pair_instance
+        mock_pair.assert_called_once_with(mock_ctx_instance)
 
     def test_unsupported_service_raises_error(self):
         """Test unsupported service raises ValueError."""

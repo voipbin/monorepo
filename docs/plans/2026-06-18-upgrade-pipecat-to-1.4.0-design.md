@@ -224,23 +224,26 @@ pyproject, not a rename:
 # requirements.txt
 pipecat-ai[silero,deepgram,openai,cartesia,websocket,google,local-smart-turn]>=1.4.0
 pipecat-ai-flows>=1.2.0
-onnxruntime==1.20.1   # keep the existing exact pin (reproducible Docker image)
+onnxruntime>=1.24.3   # pipecat-ai 1.4.0 silero extra requires >=1.24.3,<1.25
 
-# pyproject.toml dependencies
+# pyproject.toml
+requires-python = ">=3.11"   # pipecat-ai 1.4.0 requires >=3.11 (Docker base is python:3.12-slim)
 "pipecat-ai[silero,deepgram,openai,cartesia,websocket,google,local-smart-turn]>=1.4.0",  # ADD local-smart-turn
 "pipecat-ai-flows>=1.2.0",
-"onnxruntime==1.20.1",   # tighten to match requirements (round-2: reconcile toward the pinned value, not the floor)
+"onnxruntime>=1.24.3",
 ```
 
-Reconcile the onnxruntime divergence toward the **pinned** value (round-2
-finding: loosening the Docker floor would un-pin a runtime dep and reduce
-reproducibility, the opposite of minimal-change). If `uv lock` reports a conflict
-between `onnxruntime==1.20.1` and pipecat-ai 1.4.0's resolver, that surfaces as a
-hard error to resolve explicitly (bump both to the exact version 1.4.0 needs),
-not silently via a floor. `requirements.txt` is what the runner Dockerfile
-installs; `pyproject.toml`/`uv.lock` drive local dev. Both must carry the
-identical pipecat extras set and the identical onnxruntime pin. Regenerate
-`uv.lock` via `uv lock`.
+**Implementation note (resolved during `uv lock`):** the original plan kept the
+exact `onnxruntime==1.20.1` pin, but `uv lock` surfaced a HARD conflict (exactly
+as §4.5 anticipated): pipecat-ai 1.4.0's `silero` extra requires
+`onnxruntime>=1.24.3,<1.25`. Per the design's stated reconciliation rule (resolve
+the conflict explicitly by bumping to the version 1.4.0 needs, not by silently
+loosening to a floor that picks something arbitrary), the pin was raised to
+`>=1.24.3`; `uv.lock` resolves it to 1.24.4 (the same build the clean 1.4.0 venv
+pulled). A second `uv lock` error surfaced that pipecat-ai 1.4.0 requires Python
+`>=3.11` while `pyproject.toml` declared `requires-python = ">=3.10"`; bumped to
+`>=3.11` (the runner Docker base is `python:3.12-slim`, so no runtime impact).
+Both files carry the identical pipecat extras set and onnxruntime floor.
 
 ## 5. Survivors (no change required, verified)
 

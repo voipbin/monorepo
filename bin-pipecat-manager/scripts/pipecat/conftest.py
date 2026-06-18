@@ -38,9 +38,7 @@ _mocks = {
     "pipecat.services.google.stt": _make_mock_module("GoogleSTTService"),
     "pipecat.services.google.llm": _make_mock_module("GoogleLLMService"),
     "pipecat.services.deepgram": MagicMock(),
-    "pipecat.services.deepgram.stt": _make_mock_module("DeepgramSTTService"),
-    "pipecat.services.whisper": MagicMock(),
-    "pipecat.services.whisper.stt": _make_mock_module("Model", "WhisperSTTService"),
+    "pipecat.services.deepgram.stt": _make_mock_module("DeepgramSTTService", "LiveOptions"),
     "pipecat.services.openai": MagicMock(),
     "pipecat.services.openai.llm": _make_mock_module("OpenAILLMService"),
     "pipecat.transcriptions": MagicMock(),
@@ -50,12 +48,7 @@ _mocks = {
         "FrameDirection", "FrameProcessor",
         FrameProcessorSetup=type("FrameProcessorSetup", (), {}),
     ),
-    "pipecat.processors.filters": MagicMock(),
-    "pipecat.processors.filters.stt_mute_filter": _make_mock_module(
-        "STTMuteConfig", "STTMuteFilter", "STTMuteStrategy"
-    ),
     "pipecat.processors.aggregators": MagicMock(),
-    "pipecat.processors.aggregators.openai_llm_context": _make_mock_module("OpenAILLMContext"),
     "pipecat.processors.aggregators.llm_context": _make_mock_module("LLMContext", "NOT_GIVEN"),
     "pipecat.processors.aggregators.llm_response_universal": _make_mock_module("LLMContextAggregatorPair"),
     "pipecat.adapters": MagicMock(),

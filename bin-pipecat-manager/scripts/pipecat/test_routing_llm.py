@@ -112,74 +112,82 @@ class TestActiveServiceProperty:
 
 
 class TestRegisterFunction:
-    """Tests for register_function pipecat LLMService API compatibility.
+    """Tests for register_function pipecat 1.4.0 LLMService API compatibility.
 
-    FlowManager calls register_function with keyword args including
-    cancel_on_interruption. The signature must accept all pipecat kwargs.
+    flows 1.2.0 calls register_function positionally with (name, handler) plus
+    keyword cancel_on_interruption / timeout_secs. The 0.0.x start_callback
+    parameter was removed; the wrapper must reject it loudly.
     """
 
     def test_delegates_to_all_services(self):
         services = _make_services()
         routing = RoutingLLMService(services)
         handler = MagicMock()
-        routing.register_function(function_name="test_fn", handler=handler)
+        routing.register_function("test_fn", handler)
 
         for svc in services.values():
             svc.register_function.assert_called_once_with(
-                function_name="test_fn",
-                handler=handler,
-                start_callback=None,
-                cancel_on_interruption=True,
+                "test_fn",
+                handler,
+                cancel_on_interruption=None,
+                timeout_secs=None,
             )
 
     def test_forwards_cancel_on_interruption_false(self):
         services = _make_services()
         routing = RoutingLLMService(services)
         handler = MagicMock()
-        routing.register_function(
-            function_name="fn", handler=handler, cancel_on_interruption=False,
-        )
+        routing.register_function("fn", handler, cancel_on_interruption=False)
 
         for svc in services.values():
             svc.register_function.assert_called_once_with(
-                function_name="fn",
-                handler=handler,
-                start_callback=None,
+                "fn",
+                handler,
                 cancel_on_interruption=False,
+                timeout_secs=None,
             )
 
-    def test_forwards_start_callback(self):
+    def test_forwards_timeout_secs(self):
         services = _make_services()
         routing = RoutingLLMService(services)
         handler = MagicMock()
-        start_cb = MagicMock()
-        routing.register_function(
-            function_name="fn", handler=handler, start_callback=start_cb,
-        )
+        routing.register_function("fn", handler, timeout_secs=12.5)
 
         for svc in services.values():
             svc.register_function.assert_called_once_with(
-                function_name="fn",
-                handler=handler,
-                start_callback=start_cb,
-                cancel_on_interruption=True,
+                "fn",
+                handler,
+                cancel_on_interruption=None,
+                timeout_secs=12.5,
             )
 
-    def test_accepts_keyword_only_cancel_on_interruption(self):
-        """cancel_on_interruption must be keyword-only (after *)."""
+    def test_default_cancel_on_interruption_is_none(self):
+        """Default mirrors pipecat 1.4.0 LLMService.register_function (None, not True)."""
         services = _make_services()
         routing = RoutingLLMService(services)
         handler = MagicMock()
-        routing.register_function(function_name="fn", handler=handler, cancel_on_interruption=True)
-        assert services["member-a"].register_function.called
+        routing.register_function("fn", handler)
+        _, kwargs = services["member-a"].register_function.call_args
+        assert kwargs["cancel_on_interruption"] is None
 
-    def test_accepts_extra_kwargs(self):
-        """Signature includes **kwargs for forward compatibility."""
+    def test_rejects_removed_start_callback(self):
+        """The removed 0.0.x start_callback kwarg must raise, not be swallowed."""
         services = _make_services()
         routing = RoutingLLMService(services)
         handler = MagicMock()
-        # Should not raise even with unknown kwargs
-        routing.register_function(function_name="fn", handler=handler, some_future_param="value")
+        with pytest.raises(TypeError, match="start_callback"):
+            routing.register_function("fn", handler, start_callback=MagicMock())
+        # No inner service should have been called on the rejected path.
+        for svc in services.values():
+            svc.register_function.assert_not_called()
+
+    def test_rejects_unknown_kwargs(self):
+        """Unknown kwargs are rejected loudly rather than silently dropped."""
+        services = _make_services()
+        routing = RoutingLLMService(services)
+        handler = MagicMock()
+        with pytest.raises(TypeError, match="some_future_param"):
+            routing.register_function("fn", handler, some_future_param="value")
 
 
 class TestUnregisterFunction:

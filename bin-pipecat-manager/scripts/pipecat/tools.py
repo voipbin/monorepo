@@ -78,6 +78,9 @@ def tool_register(llm_service, pipecatcall_id: str, tool_names: List[str], tools
     for tool_name in tool_names:
         default_run_llm = run_llm_defaults.get(tool_name, False)
         wrapper = create_wrapper(tool_name, pipecatcall_id, default_run_llm)
+        # Single-AI registers directly on the raw pipecat LLMService (positional
+        # name + handler), bypassing RoutingLLMService — single-AI has no router.
+        # Team pipelines register via RoutingLLMService.register_function instead.
         llm_service.register_function(tool_name, wrapper)
     logger.info(f"Registered {len(tool_names)} tools for pipecatcall {pipecatcall_id}. run_llm_defaults: {run_llm_defaults}")
 
