@@ -57,15 +57,23 @@ class RoutingLLMService(FrameProcessor):
             await self.push_frame(frame, direction)
 
     # Delegate FlowManager-facing methods to all services so transitions work.
-    # Signature matches pipecat's LLMService.register_function so FlowManager
-    # can call us with cancel_on_interruption and other kwargs.
-    def register_function(self, function_name=None, handler=None, start_callback=None, *, cancel_on_interruption=True, **kwargs):
+    # Signature matches pipecat 1.4.0 LLMService.register_function
+    # (name, handler, *, cancel_on_interruption=None, timeout_secs=None); the
+    # 0.0.x `start_callback` parameter was removed. flows 1.2.0 calls this
+    # positionally with (name, transition_func) plus keyword cancel_on_interruption
+    # / timeout_secs. `**kwargs` is kept only to reject unknown args loudly (e.g. a
+    # re-introduced start_callback) rather than silently swallow them.
+    def register_function(self, name=None, handler=None, *, cancel_on_interruption=None, timeout_secs=None, **kwargs):
+        if kwargs:
+            raise TypeError(
+                f"RoutingLLMService.register_function got unexpected kwargs: {list(kwargs)}"
+            )
         for svc in self._services.values():
             svc.register_function(
-                function_name=function_name,
-                handler=handler,
-                start_callback=start_callback,
+                name,
+                handler,
                 cancel_on_interruption=cancel_on_interruption,
+                timeout_secs=timeout_secs,
             )
 
     def unregister_function(self, name):

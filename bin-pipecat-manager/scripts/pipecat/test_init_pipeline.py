@@ -74,7 +74,7 @@ async def test_init_team_pipeline_start_member_not_found():
             }
         ],
     }
-    with pytest.raises(ValueError, match="Unknown member_id"):
+    with pytest.raises(ValueError, match="start_member_id .* not found"):
         await init_team_pipeline(
             id="test-5",
             resolved_team=resolved_team,
@@ -136,6 +136,7 @@ async def test_init_team_pipeline_active_service_none_guard():
 
     mock_routing = MagicMock()
     mock_routing.active_service = None  # Simulate None active_service
+    mock_routing.cleanup = AsyncMock()  # awaited in the except cleanup path
 
     resolved_team = {
         "id": "team-4",
@@ -176,3 +177,117 @@ async def test_init_team_pipeline_active_service_none_guard():
                 id="test-8",
                 resolved_team=resolved_team,
             )
+
+
+@pytest.mark.asyncio
+async def test_init_team_pipeline_flowmanager_missing_llm_attr_guard():
+    """FlowManager without a _llm attribute raises RuntimeError.
+
+    The runner swaps flow_manager._llm = routing_llm so register_function fans
+    out to all team members. If a future pipecat-ai-flows renames that private
+    attribute, the swap would silently no-op (non-start members get no tool
+    registrations). The hasattr guard must fail loudly instead.
+    """
+    mock_llm = MagicMock()
+
+    mock_routing = MagicMock()
+    mock_routing.active_service = mock_llm  # valid -> proceeds to FlowManager
+    mock_routing.cleanup = AsyncMock()
+
+    resolved_team = {
+        "id": "team-5",
+        "start_member_id": "member-1",
+        "members": [
+            {
+                "id": "member-1",
+                "name": "Agent A",
+                "ai": {"engine_model": "openai.gpt-4o", "engine_key": "fake-key"},
+                "tools": [],
+                "transitions": [],
+            }
+        ],
+    }
+
+    mock_task = MagicMock()
+    mock_task.cancel = AsyncMock()
+    mock_transport = MagicMock()
+    mock_transport.cleanup = AsyncMock()
+
+    # FlowManager stub WITHOUT a _llm attribute. Use spec=[] so hasattr(_, "_llm")
+    # is False (a bare MagicMock would auto-create the attribute and pass).
+    flow_manager_stub = MagicMock(spec=[])
+
+    with patch("run.create_llm_service", return_value=(mock_llm, MagicMock())), \
+         patch("run.RoutingLLMService", return_value=mock_routing), \
+         patch("run.create_websocket_transport", return_value=mock_transport), \
+         patch("run.PipelineTask", return_value=mock_task), \
+         patch("run.Pipeline"), \
+         patch("run.build_team_flow", return_value=({}, MagicMock())), \
+         patch("run.FlowManager", return_value=flow_manager_stub), \
+         patch("run.task_manager") as mock_task_mgr:
+        mock_task_mgr.add = AsyncMock()
+        mock_task_mgr.remove = AsyncMock()
+
+        with pytest.raises(RuntimeError, match="no longer exposes _llm"):
+            await init_team_pipeline(
+                id="test-9",
+                resolved_team=resolved_team,
+            )
+
+
+@pytest.mark.asyncio
+async def test_init_team_pipeline_swaps_flowmanager_llm_to_router():
+    """On success, flow_manager._llm is swapped to the routing service.
+
+    This is the load-bearing behavior that makes register_function /
+    unregister_function fan out to ALL team members (not just the start member).
+    """
+    mock_llm = MagicMock()
+
+    mock_routing = MagicMock()
+    mock_routing.active_service = mock_llm
+    mock_routing.cleanup = AsyncMock()
+
+    resolved_team = {
+        "id": "team-6",
+        "start_member_id": "member-1",
+        "members": [
+            {
+                "id": "member-1",
+                "name": "Agent A",
+                "ai": {"engine_model": "openai.gpt-4o", "engine_key": "fake-key"},
+                "tools": [],
+                "transitions": [],
+            }
+        ],
+    }
+
+    mock_task = MagicMock()
+    mock_task.cancel = AsyncMock()
+    mock_task.queue_frames = AsyncMock()
+    mock_transport = MagicMock()
+    mock_transport.cleanup = AsyncMock()
+
+    # FlowManager stub WITH a _llm attribute (so the guard passes) and an async
+    # initialize() so the success path completes.
+    flow_manager_stub = MagicMock()
+    flow_manager_stub._llm = MagicMock()
+    flow_manager_stub.initialize = AsyncMock()
+
+    with patch("run.create_llm_service", return_value=(mock_llm, MagicMock())), \
+         patch("run.RoutingLLMService", return_value=mock_routing), \
+         patch("run.create_websocket_transport", return_value=mock_transport), \
+         patch("run.Pipeline"), \
+         patch("run.PipelineTask", return_value=mock_task), \
+         patch("run.build_team_flow", return_value=({}, MagicMock())), \
+         patch("run.FlowManager", return_value=flow_manager_stub), \
+         patch("run.task_manager") as mock_task_mgr:
+        mock_task_mgr.add = AsyncMock()
+        mock_task_mgr.remove = AsyncMock()
+
+        await init_team_pipeline(
+            id="test-10",
+            resolved_team=resolved_team,
+        )
+
+    assert flow_manager_stub._llm is mock_routing

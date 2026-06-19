@@ -13,19 +13,15 @@ from pipecat.services.elevenlabs.tts import ElevenLabsTTSService
 from pipecat.services.google.tts import GoogleTTSService
 
 # stt
-from pipecat.services.deepgram.stt import DeepgramSTTService
-from deepgram import LiveOptions
-from pipecat.services.whisper.stt import Model, WhisperSTTService
+from pipecat.services.deepgram.stt import DeepgramSTTService, LiveOptions
 from pipecat.services.google.stt import GoogleSTTService
 from pipecat.transcriptions.language import Language
-from pipecat.processors.filters.stt_mute_filter import STTMuteConfig, STTMuteFilter, STTMuteStrategy
 
 # llm
 from pipecat.services.openai.llm import OpenAILLMService
 from pipecat.services.google.llm import GoogleLLMService
 
 # aggregators / context
-from pipecat.processors.aggregators.openai_llm_context import OpenAILLMContext
 from pipecat.processors.aggregators.llm_context import LLMContext, NOT_GIVEN
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.adapters.schemas.function_schema import FunctionSchema
@@ -415,6 +411,14 @@ def _openai_tools_to_standard(openai_tools: list[dict]) -> list[FunctionSchema]:
 
     OpenAI format: [{"type": "function", "function": {"name": ..., "description": ..., "parameters": {...}}}]
     FunctionSchema: FunctionSchema(name=..., description=..., properties=..., required=...)
+
+    NOTE: FunctionSchema carries only name/description/properties/required.
+    Anything inside `properties` (nested `additionalProperties`, `enum`, `pattern`,
+    nested types) is preserved, but top-level `parameters.additionalProperties`
+    and `function.strict` are NOT carried. The current ai-manager tool catalog
+    uses only nested `additionalProperties` and no top-level `strict`, so this is
+    lossless today. If a tool ever needs top-level strict/additionalProperties,
+    extend this conversion rather than relying on passthrough.
     """
     if not openai_tools:
         return []
@@ -423,6 +427,16 @@ def _openai_tools_to_standard(openai_tools: list[dict]) -> list[FunctionSchema]:
     for tool in openai_tools:
         func = tool.get("function", {})
         params = func.get("parameters", {})
+        # Warn if a tool carries top-level fields FunctionSchema cannot represent,
+        # so a future ai-manager catalog change that relies on top-level
+        # strict / additionalProperties fails loud here instead of silently
+        # losing them. Nested (per-property) additionalProperties is preserved.
+        if func.get("strict") is not None or params.get("additionalProperties") is not None:
+            logger.warning(
+                f"Tool '{func.get('name', '')}' sets top-level strict/additionalProperties "
+                "which FunctionSchema does not carry; these are dropped on the universal "
+                "LLMContext path. Extend _openai_tools_to_standard if they are required."
+            )
         schemas.append(FunctionSchema(
             name=func.get("name", ""),
             description=func.get("description", ""),
@@ -447,8 +461,14 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
         api_key = key or os.getenv("OPENAI_API_KEY")
         llm = OpenAILLMService(api_key=api_key, model=model_name)
 
-        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
-        aggregator = llm.create_context_aggregator(ctx)
+        # Universal LLMContext + LLMContextAggregatorPair (the legacy
+        # OpenAILLMContext + create_context_aggregator API was removed in
+        # pipecat 1.x). Tools are converted to FunctionSchema/ToolsSchema so the
+        # provider adapter serializes them correctly, matching the Gemini path.
+        standard_tools = _openai_tools_to_standard(tools)
+        tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
+        ctx = LLMContext(messages=valid_messages, tools=tools_schema)
+        aggregator = LLMContextAggregatorPair(ctx)
 
         return llm, aggregator
 
@@ -460,8 +480,10 @@ def create_llm_service(type: str, key: str, messages: list[dict], tools: list[di
             base_url="https://api.x.ai/v1"
         )
 
-        ctx = OpenAILLMContext(messages=valid_messages, tools=tools)
-        aggregator = llm.create_context_aggregator(ctx)
+        standard_tools = _openai_tools_to_standard(tools)
+        tools_schema = ToolsSchema(standard_tools=standard_tools) if standard_tools else NOT_GIVEN
+        ctx = LLMContext(messages=valid_messages, tools=tools_schema)
+        aggregator = LLMContextAggregatorPair(ctx)
 
         return llm, aggregator
 
@@ -668,11 +690,12 @@ async def init_team_pipeline(
             llm_messages=llm_messages,
         )
 
-        # FlowManager's create_adapter checks the LLM class type to determine
-        # the provider adapter (OpenAI, Google, Anthropic, etc.). Pass the start
-        # member's actual LLM service so the adapter is created correctly, then
-        # swap the internal reference to routing_llm so register_function and
-        # unregister_function delegate to ALL member services.
+        # flows 1.2.0 uses a universal adapter (`LLMAdapter()`) regardless of the
+        # passed LLM type, so the constructor `llm=` argument no longer selects a
+        # provider adapter. We still pass the start member's real LLM service for
+        # a valid construction, then swap the internal reference to routing_llm so
+        # register_function / unregister_function fan out to ALL member services
+        # (the swap is the reason; the adapter is universal either way).
         active_llm = routing_llm.active_service
         if active_llm is None:
             raise ValueError(f"No active LLM service for start_member_id={start_member_id}")
@@ -682,8 +705,15 @@ async def init_team_pipeline(
             llm=active_llm,
             context_aggregator=context_aggregator,
         )
-        # CAUTION: Relies on FlowManager storing the LLM as _llm.
-        # Verified with pipecat-ai-flows>=0.0.10. Re-verify after upgrades.
+        # CAUTION: relies on FlowManager storing the LLM as _llm. Verified with
+        # pipecat-ai-flows 1.2.0. The guard fails loudly if a future flows version
+        # renames the attribute, instead of silently leaving non-start members
+        # without tool registrations.
+        if not hasattr(flow_manager, "_llm"):
+            raise RuntimeError(
+                "FlowManager no longer exposes _llm; team tool-routing fan-out broken. "
+                "Re-verify pipecat-ai-flows internals after the upgrade."
+            )
         flow_manager._llm = routing_llm
 
         # --- Step 8: Event handlers ---
