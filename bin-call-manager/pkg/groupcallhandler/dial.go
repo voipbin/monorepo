@@ -264,7 +264,11 @@ func (h *groupcallHandler) getAddressOwner(ctx context.Context, customerID uuid.
 			return commonidentity.OwnerTypeNone, uuid.Nil, err
 		}
 	} else {
-		tmp, err = h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, *addr)
+		// normalize the lookup key so it matches the canonical stored target
+		// (loss-proof + idempotent; original kept on non-normalizable)
+		normalized := *addr
+		normalized.Target, _ = commonaddress.NormalizeTarget(normalized.Type, normalized.Target)
+		tmp, err = h.reqHandler.AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, customerID, normalized)
 		if err != nil {
 			log.Errorf("Could not get agent info. err: %v", err)
 			return commonidentity.OwnerTypeNone, uuid.Nil, nil

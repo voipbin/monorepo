@@ -65,7 +65,12 @@ func (h *agentHandler) GetByCustomerIDAndAddress(ctx context.Context, customerID
 		"address":     addr,
 	})
 
-	res, err := h.db.AgentGetByCustomerIDAndAddress(ctx, customerID, addr)
+	// normalize the lookup key so it matches the canonical stored target
+	// (loss-proof + idempotent; error discarded, original kept on non-normalizable)
+	normalized := *addr
+	normalized.Target, _ = commonaddress.NormalizeTarget(normalized.Type, normalized.Target)
+
+	res, err := h.db.AgentGetByCustomerIDAndAddress(ctx, customerID, &normalized)
 	if err != nil {
 		log.Errorf("Could not get agents info. err: %v", err)
 		return nil, err
@@ -107,6 +112,12 @@ func (h *agentHandler) Create(ctx context.Context, customerID uuid.UUID, usernam
 		"permission":  permission,
 	})
 	log.Debug("Creating a new user.")
+
+	// normalize the stored addresses so they are canonical at rest (loss-proof +
+	// idempotent), keeping store == normalized(lookup key) for the exact-match join
+	for i := range addresses {
+		addresses[i].Target, _ = commonaddress.NormalizeTarget(addresses[i].Type, addresses[i].Target)
+	}
 
 	// check resource limit
 	rpcStart := time.Now()
@@ -372,6 +383,13 @@ func (h *agentHandler) UpdateAddresses(ctx context.Context, id uuid.UUID, addres
 		return nil, errors.Wrap(err, "could not get the agent")
 	}
 	log.WithField("agent", a).Debugf("Found agent info. agent_id: %s", a.ID)
+
+	// normalize the addresses up front (loss-proof + idempotent) so the
+	// validation/dup-check loop below and the persisted values are all canonical,
+	// keeping store == normalized(lookup key) for the exact-match join
+	for i := range addresses {
+		addresses[i].Target, _ = commonaddress.NormalizeTarget(addresses[i].Type, addresses[i].Target)
+	}
 
 	// validate the addresses
 	for _, address := range addresses {

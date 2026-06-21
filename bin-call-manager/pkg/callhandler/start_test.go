@@ -1166,9 +1166,10 @@ func Test_getAddressOwner(t *testing.T) {
 
 		responseAgent *amagent.Agent
 
-		expectAgentID      uuid.UUID
-		expectResOwnerType commonidentity.OwnerType
-		expectResOwnerID   uuid.UUID
+		expectAgentID       uuid.UUID
+		expectFilterAddress commonaddress.Address
+		expectResOwnerType  commonidentity.OwnerType
+		expectResOwnerID    uuid.UUID
 	}{
 		{
 			name: "normal - address type is agent",
@@ -1197,6 +1198,37 @@ func Test_getAddressOwner(t *testing.T) {
 			address: &commonaddress.Address{
 				Type:   commonaddress.TypeTel,
 				Target: "+123456789",
+			},
+
+			// already canonical: normalize is a no-op, so input == lookup key
+			expectFilterAddress: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: mustNormalizeStart(commonaddress.TypeTel, "+123456789"),
+			},
+
+			responseAgent: &amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
+					CustomerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+				},
+			},
+
+			expectResOwnerType: commonidentity.OwnerTypeAgent,
+			expectResOwnerID:   uuid.FromStringOrNil("91e8e824-2fd5-11ef-a8d1-6f57a27e6c6f"),
+		},
+		{
+			name: "raw tel address is normalized before the lookup",
+
+			customerID: uuid.FromStringOrNil("9129ad1a-2fd5-11ef-af80-1f74bf8dbf2b"),
+			address: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+1-234-567-89",
+			},
+
+			// the RPC lookup key must be the canonical form
+			expectFilterAddress: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: mustNormalizeStart(commonaddress.TypeTel, "+1-234-567-89"),
 			},
 
 			responseAgent: &amagent.Agent{
@@ -1234,7 +1266,7 @@ func Test_getAddressOwner(t *testing.T) {
 			if tt.expectAgentID != uuid.Nil {
 				mockReq.EXPECT().AgentV1AgentGet(ctx, tt.expectAgentID).Return(tt.responseAgent, nil)
 			} else {
-				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, *tt.address).Return(tt.responseAgent, nil)
+				mockReq.EXPECT().AgentV1AgentGetByCustomerIDAndAddress(ctx, 1000, tt.customerID, tt.expectFilterAddress).Return(tt.responseAgent, nil)
 			}
 
 			resOwnerType, resOwnerID, err := h.getAddressOwner(ctx, tt.customerID, tt.address)
@@ -1250,4 +1282,11 @@ func Test_getAddressOwner(t *testing.T) {
 			}
 		})
 	}
+}
+
+// mustNormalizeStart returns the canonical target via the shared normalizer so
+// tests assert against real canonicalization rather than hardcoded literals.
+func mustNormalizeStart(addressType commonaddress.Type, target string) string {
+	res, _ := commonaddress.NormalizeTarget(addressType, target)
+	return res
 }
