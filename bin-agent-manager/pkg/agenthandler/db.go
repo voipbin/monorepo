@@ -2,6 +2,7 @@ package agenthandler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	dmdirect "monorepo/bin-direct-manager/models/direct"
 
+	"monorepo/bin-agent-manager/pkg/dbhandler"
 	"monorepo/bin-agent-manager/pkg/metricshandler"
 
 	"github.com/gofrs/uuid"
@@ -122,6 +124,17 @@ func (h *agentHandler) dbCreate(ctx context.Context, customerID uuid.UUID, usern
 		// cleanup orphaned direct
 		if _, errDelete := h.reqHandler.DirectV1DirectDelete(ctx, d.ID); errDelete != nil {
 			log.Errorf("Could not cleanup orphaned direct. direct_id: %s, err: %v", d.ID, errDelete)
+		}
+
+		// a duplicate-key violation means one of the requested addresses is
+		// already owned by another agent (UNIQUE(customer_id,type,target)).
+		// Surface a typed 409-class error instead of a generic internal error.
+		if errors.Is(err, dbhandler.ErrAlreadyExists) {
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameAgentManager,
+				"ADDRESS_ALREADY_ASSIGNED",
+				"one of the requested addresses is already assigned to another agent",
+			)
 		}
 
 		return nil, err
@@ -310,6 +323,17 @@ func (h *agentHandler) dbUpdateAddresses(ctx context.Context, id uuid.UUID, addr
 
 	if err := h.db.AgentSetAddresses(ctx, id, addresses); err != nil {
 		log.Errorf("Could not set the addresses. err: %v", err)
+
+		// a duplicate-key violation means one of the requested addresses is
+		// already owned by another agent (UNIQUE(customer_id,type,target)).
+		if errors.Is(err, dbhandler.ErrAlreadyExists) {
+			return nil, cerrors.AlreadyExists(
+				commonoutline.ServiceNameAgentManager,
+				"ADDRESS_ALREADY_ASSIGNED",
+				"one of the requested addresses is already assigned to another agent",
+			)
+		}
+
 		return nil, err
 	}
 

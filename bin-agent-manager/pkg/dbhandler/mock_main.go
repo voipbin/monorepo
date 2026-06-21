@@ -11,6 +11,7 @@ package dbhandler
 
 import (
 	context "context"
+	sql "database/sql"
 	agent "monorepo/bin-agent-manager/models/agent"
 	address "monorepo/bin-common-handler/models/address"
 	reflect "reflect"
@@ -242,4 +243,68 @@ func (m *MockDBHandler) AgentUpdate(ctx context.Context, id uuid.UUID, fields ma
 func (mr *MockDBHandlerMockRecorder) AgentUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentUpdate", reflect.TypeOf((*MockDBHandler)(nil).AgentUpdate), ctx, id, fields)
+}
+
+// MockdbExecQuerier is a mock of dbExecQuerier interface.
+type MockdbExecQuerier struct {
+	ctrl     *gomock.Controller
+	recorder *MockdbExecQuerierMockRecorder
+	isgomock struct{}
+}
+
+// MockdbExecQuerierMockRecorder is the mock recorder for MockdbExecQuerier.
+type MockdbExecQuerierMockRecorder struct {
+	mock *MockdbExecQuerier
+}
+
+// NewMockdbExecQuerier creates a new mock instance.
+func NewMockdbExecQuerier(ctrl *gomock.Controller) *MockdbExecQuerier {
+	mock := &MockdbExecQuerier{ctrl: ctrl}
+	mock.recorder = &MockdbExecQuerierMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockdbExecQuerier) EXPECT() *MockdbExecQuerierMockRecorder {
+	return m.recorder
+}
+
+// ExecContext mocks base method.
+func (m *MockdbExecQuerier) ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, query}
+	for _, a := range args {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ExecContext", varargs...)
+	ret0, _ := ret[0].(sql.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExecContext indicates an expected call of ExecContext.
+func (mr *MockdbExecQuerierMockRecorder) ExecContext(ctx, query any, args ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, query}, args...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecContext", reflect.TypeOf((*MockdbExecQuerier)(nil).ExecContext), varargs...)
+}
+
+// QueryContext mocks base method.
+func (m *MockdbExecQuerier) QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, query}
+	for _, a := range args {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "QueryContext", varargs...)
+	ret0, _ := ret[0].(*sql.Rows)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// QueryContext indicates an expected call of QueryContext.
+func (mr *MockdbExecQuerierMockRecorder) QueryContext(ctx, query any, args ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, query}, args...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueryContext", reflect.TypeOf((*MockdbExecQuerier)(nil).QueryContext), varargs...)
 }

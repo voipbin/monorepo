@@ -81,6 +81,17 @@ func (h *handler) AgentSet(ctx context.Context, u *agent.Agent) error {
 	return nil
 }
 
+// AgentDel deletes the cached agent information for the given ID.
+func (h *handler) AgentDel(ctx context.Context, id uuid.UUID) error {
+	key := fmt.Sprintf("agent:agent:%d", id)
+
+	if err := h.Cache.Del(ctx, key).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // PasswordResetTokenSet stores a password reset token in Redis with a TTL.
 func (h *handler) PasswordResetTokenSet(ctx context.Context, token string, agentID uuid.UUID, ttl time.Duration) error {
 	key := passwordResetKeyPrefix + token

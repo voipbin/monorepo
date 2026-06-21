@@ -115,9 +115,20 @@ func (h *handler) AgentCreate(ctx context.Context, a *agent.Agent) error {
 		return fmt.Errorf("could not build query. AgentCreate. err: %v", err)
 	}
 
-	if _, err := h.db.ExecContext(ctx, query, args...); err != nil {
+	// insert the agent row and its address rows in a single transaction
+	if err := h.withTx(ctx, func(tx *sql.Tx) error {
+		if _, err := tx.ExecContext(ctx, query, args...); err != nil {
+			return fmt.Errorf("could not execute query. AgentCreate. err: %v", err)
+		}
+
+		if err := h.agentAddressInsert(ctx, tx, a.ID, a.CustomerID, a.Addresses); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		dbErr = err
-		return fmt.Errorf("could not execute query. AgentCreate. err: %v", err)
+		return err
 	}
 
 	// update the cache
@@ -213,6 +224,24 @@ func (h *handler) agentGetFromDB(ctx context.Context, id uuid.UUID) (*agent.Agen
 		return nil, errors.Wrapf(err, "could not get data from row. agentGetFromDB. id: %s", id)
 	}
 
+	// Release the agent row's connection back to the pool before issuing the
+	// address query. Holding the row open across a second query deadlocks when
+	// the pool is limited to a single connection (e.g. the sqlite test harness
+	// with cache=shared, MaxOpenConns=1). Closing twice (here and via defer) is
+	// safe and idempotent.
+	if err := row.Close(); err != nil {
+		dbErr = err
+		return nil, fmt.Errorf("could not close agent row. agentGetFromDB. err: %v", err)
+	}
+
+	// hydrate addresses from the child table
+	addresses, err := h.agentAddressListByAgentID(ctx, h.db, res.ID)
+	if err != nil {
+		dbErr = err
+		return nil, fmt.Errorf("could not hydrate addresses. agentGetFromDB. err: %v", err)
+	}
+	res.Addresses = addresses
+
 	return res, nil
 }
 
@@ -299,6 +328,28 @@ func (h *handler) AgentList(ctx context.Context, size uint64, token string, filt
 		return nil, fmt.Errorf("rows iteration error. AgentList. err: %v", err)
 	}
 
+	// batch-hydrate addresses for all agents in a single query (avoid N+1)
+	if len(res) > 0 {
+		agentIDs := make([]uuid.UUID, 0, len(res))
+		for _, u := range res {
+			agentIDs = append(agentIDs, u.ID)
+		}
+
+		addrMap, err := h.agentAddressListByAgentIDs(ctx, h.db, agentIDs)
+		if err != nil {
+			dbErr = err
+			return nil, fmt.Errorf("could not hydrate addresses. AgentList. err: %v", err)
+		}
+
+		for _, u := range res {
+			if addrs, ok := addrMap[u.ID]; ok {
+				u.Addresses = addrs
+			} else {
+				u.Addresses = []commonaddress.Address{}
+			}
+		}
+	}
+
 	return res, nil
 }
 
@@ -318,39 +369,21 @@ func (h *handler) AgentGetByCustomerIDAndAddress(ctx context.Context, customerID
 		metricshandler.DBOperationTotal.WithLabelValues("get_by_customer_id_address", "agent", status).Inc()
 	}()
 
-	fields := commondatabasehandler.GetDBFields(&agent.Agent{})
-
-	query, args, err := squirrel.
-		Select(fields...).
-		From(agentTable).
-		Where(squirrel.Eq{string(agent.FieldCustomerID): customerID.Bytes()}).
-		Where(squirrel.Eq{string(agent.FieldTMDelete): nil}).
-		Where("json_contains(addresses, JSON_OBJECT('type', ?, 'target', ?))", address.Type, address.Target).
-		PlaceholderFormat(squirrel.Question).
-		ToSql()
+	// indexed equality lookup on the child table to find the owning agent
+	agentID, err := h.agentAddressLookupOwnerAgentID(ctx, h.db, customerID, address.Type, address.Target)
 	if err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not build sql. AgentGetByCustomerIDAndAddress. err: %v", err)
+		if err == ErrNotFound {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("could not lookup owner. AgentGetByCustomerIDAndAddress. err: %v", err)
 	}
 
-	row, err := h.db.QueryContext(ctx, query, args...)
+	// load the agent by id (cache-first)
+	res, err := h.AgentGet(ctx, agentID)
 	if err != nil {
 		dbErr = err
-		return nil, fmt.Errorf("could not query. AgentGetByCustomerIDAndAddress. err: %v", err)
-	}
-	defer func() {
-		_ = row.Close()
-	}()
-
-	if !row.Next() {
-		dbErr = ErrNotFound
-		return nil, ErrNotFound
-	}
-
-	res, err := h.agentGetFromRow(row)
-	if err != nil {
-		dbErr = err
-		return nil, fmt.Errorf("could not scan the row. AgentGetByCustomerIDAndAddress. err: %v", err)
+		return nil, err
 	}
 
 	return res, nil
@@ -377,15 +410,61 @@ func (h *handler) AgentGetByUsername(ctx context.Context, username string) (*age
 
 // AgentDelete deletes the agent.
 func (h *handler) AgentDelete(ctx context.Context, id uuid.UUID) error {
+	start := time.Now()
+	var dbErr error
+	defer func() {
+		elapsed := time.Since(start)
+		metricshandler.DBOperationDuration.WithLabelValues("delete", "agent").Observe(float64(elapsed.Milliseconds()))
+		status := "success"
+		if dbErr != nil {
+			status = "failure"
+		}
+		metricshandler.DBOperationTotal.WithLabelValues("delete", "agent", status).Inc()
+	}()
+
 	now := h.utilHandler.TimeNow()
 	fields := map[agent.Field]any{
 		agent.FieldTMDelete: now,
 		agent.FieldTMUpdate: now,
 	}
 
-	if err := h.agentUpdate(ctx, id, fields); err != nil {
-		return fmt.Errorf("could not update agent for delete. AgentDelete. err: %v", err)
+	tmpFields, err := commondatabasehandler.PrepareFields(fields)
+	if err != nil {
+		dbErr = err
+		return fmt.Errorf("could not prepare fields. AgentDelete. err: %v", err)
 	}
+
+	sqlStr, args, err := squirrel.
+		Update(agentTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{"id": id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		dbErr = err
+		return fmt.Errorf("could not build query. AgentDelete. err: %v", err)
+	}
+
+	// soft-delete the agent row and hard-delete its address rows in one tx
+	if err := h.withTx(ctx, func(tx *sql.Tx) error {
+		if _, err := tx.ExecContext(ctx, sqlStr, args...); err != nil {
+			return fmt.Errorf("could not execute update. AgentDelete. err: %v", err)
+		}
+
+		if err := h.agentAddressDeleteByAgentID(ctx, tx, id); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		dbErr = err
+		return err
+	}
+
+	// the agent is deleted: invalidate the cache unconditionally so a cache-first
+	// by-id read does not serve a deleted agent's stale Addresses. Re-caching via
+	// a DB refresh here would actively re-store the soft-deleted record.
+	_ = h.cache.AgentDel(ctx, id)
 
 	return nil
 }
@@ -492,9 +571,88 @@ func (h *handler) AgentSetTagIDs(ctx context.Context, id uuid.UUID, tagIDs []uui
 
 // AgentSetAddresses sets the agent addresses.
 func (h *handler) AgentSetAddresses(ctx context.Context, id uuid.UUID, addresses []commonaddress.Address) error {
-	fields := map[agent.Field]any{
-		agent.FieldAddresses: addresses,
+	start := time.Now()
+	var dbErr error
+	defer func() {
+		elapsed := time.Since(start)
+		metricshandler.DBOperationDuration.WithLabelValues("update", "agent").Observe(float64(elapsed.Milliseconds()))
+		status := "success"
+		if dbErr != nil {
+			status = "failure"
+		}
+		metricshandler.DBOperationTotal.WithLabelValues("update", "agent", status).Inc()
+	}()
+
+	now := h.utilHandler.TimeNow()
+
+	tmpFields, err := commondatabasehandler.PrepareFields(map[agent.Field]any{
+		agent.FieldTMUpdate: now,
+	})
+	if err != nil {
+		dbErr = err
+		return fmt.Errorf("could not prepare fields. AgentSetAddresses. err: %v", err)
 	}
 
-	return h.AgentUpdate(ctx, id, fields)
+	sqlStr, args, err := squirrel.
+		Update(agentTable).
+		SetMap(tmpFields).
+		Where(squirrel.Eq{"id": id.Bytes()}).
+		PlaceholderFormat(squirrel.Question).
+		ToSql()
+	if err != nil {
+		dbErr = err
+		return fmt.Errorf("could not build query. AgentSetAddresses. err: %v", err)
+	}
+
+	// replace the address rows and bump tm_update in one tx.
+	//
+	// The parent agent row is locked FOR UPDATE first. This (1) serializes
+	// concurrent AgentSetAddresses for the same agent (last-writer-wins on the
+	// full set, no interleaving), and (2) closes the race with AgentDelete: a
+	// SetAddresses that loses the lock to a committing delete then sees the row
+	// already soft-deleted (zero rows) and aborts with ErrNotFound instead of
+	// re-inserting orphan child rows for a deleted agent. The customer_id for
+	// the child rows is read from the same locked row, so it is always
+	// consistent with the parent.
+	if err := h.withTx(ctx, func(tx *sql.Tx) error {
+		var customerIDRaw []byte
+		lockRow := tx.QueryRowContext(ctx,
+			"SELECT customer_id FROM "+agentTable+" WHERE id = ? AND tm_delete IS NULL FOR UPDATE",
+			id.Bytes(),
+		)
+		if errScan := lockRow.Scan(&customerIDRaw); errScan != nil {
+			if errScan == sql.ErrNoRows {
+				return ErrNotFound
+			}
+			return fmt.Errorf("could not lock agent row. AgentSetAddresses. err: %v", errScan)
+		}
+		customerID, errParse := uuid.FromBytes(customerIDRaw)
+		if errParse != nil {
+			return fmt.Errorf("could not parse customer_id. AgentSetAddresses. err: %v", errParse)
+		}
+
+		if err := h.agentAddressDeleteByAgentID(ctx, tx, id); err != nil {
+			return err
+		}
+
+		if err := h.agentAddressInsert(ctx, tx, id, customerID, addresses); err != nil {
+			return err
+		}
+
+		if _, err := tx.ExecContext(ctx, sqlStr, args...); err != nil {
+			return fmt.Errorf("could not execute update. AgentSetAddresses. err: %v", err)
+		}
+
+		return nil
+	}); err != nil {
+		dbErr = err
+		return err
+	}
+
+	// refresh the cache; on failure invalidate to avoid serving stale addresses
+	if err := h.agentUpdateToCache(ctx, id); err != nil {
+		_ = h.cache.AgentDel(ctx, id)
+	}
+
+	return nil
 }
