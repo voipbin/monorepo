@@ -100,6 +100,10 @@ func initCommand() *cobra.Command {
 	cmdSub.AddCommand(cmdDelete())
 
 	cmdRoot.AddCommand(cmdSub)
+
+	// one-time operational backfill (not part of the agent CRUD group)
+	cmdSub.AddCommand(cmdNormalizeAddresses())
+
 	return cmdRoot
 }
 

@@ -22,6 +22,14 @@ import (
 	"monorepo/bin-agent-manager/pkg/dbhandler"
 )
 
+// mustNormalize returns the canonical form of target for addressType using the
+// shared normalizer, so tests assert against the real canonicalization rather
+// than hardcoded digit literals.
+func mustNormalize(addressType commonaddress.Type, target string) string {
+	res, _ := commonaddress.NormalizeTarget(addressType, target)
+	return res
+}
+
 func Test_List(t *testing.T) {
 
 	tests := []struct {
@@ -137,6 +145,62 @@ func Test_Create(t *testing.T) {
 				Addresses:    []commonaddress.Address{},
 				DirectID:     uuid.FromStringOrNil("d1e2f3a4-b5c6-7890-abcd-ef1234567890"),
 				DirectHash:   "direct_hash_value",
+			},
+			expectedRes: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+				},
+			},
+		},
+		{
+			name: "addresses are normalized before persist",
+
+			customerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+			username:   "test-norm@voipbin.net",
+			password:   "test1password",
+			agentName:  "test norm name",
+			detail:     "test norm detail",
+			ringMethod: agent.RingMethodRingAll,
+			permission: agent.PermissionNone,
+			tags:       []uuid.UUID{},
+			addresses: []commonaddress.Address{
+				{Type: commonaddress.TypeTel, Target: "+1-555-0100"},
+				{Type: commonaddress.TypeExtension, Target: "ac810dc4-298c-11ee-984c-ebb7811c4114"},
+			},
+
+			responseUUID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+			responseHash: "hash_string",
+			responseDirect: &dmdirect.Direct{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d1e2f3a4-b5c6-7890-abcd-ef1234567890"),
+				},
+				Hash: "direct_hash_value",
+			},
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+				},
+			},
+			expectedAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("ac810dc4-298c-11ee-984c-ebb7811c4114"),
+					CustomerID: uuid.FromStringOrNil("91aed1d4-7fe2-11ec-848d-97c8e986acfc"),
+				},
+				Username:     "test-norm@voipbin.net",
+				PasswordHash: "hash_string",
+				Name:         "test norm name",
+				Detail:       "test norm detail",
+				RingMethod:   agent.RingMethodRingAll,
+				Status:       agent.StatusOffline,
+				Permission:   agent.PermissionNone,
+				TagIDs:       []uuid.UUID{},
+				// tel canonicalized (punctuation stripped); extension UUID kept verbatim
+				Addresses: []commonaddress.Address{
+					{Type: commonaddress.TypeTel, Target: mustNormalize(commonaddress.TypeTel, "+1-555-0100")},
+					{Type: commonaddress.TypeExtension, Target: "ac810dc4-298c-11ee-984c-ebb7811c4114"},
+				},
+				DirectID:   uuid.FromStringOrNil("d1e2f3a4-b5c6-7890-abcd-ef1234567890"),
+				DirectHash: "direct_hash_value",
 			},
 			expectedRes: &agent.Agent{
 				Identity: commonidentity.Identity{
@@ -384,6 +448,8 @@ func Test_GetByCustomerIDAndAddress(t *testing.T) {
 		customerID uuid.UUID
 		address    *commonaddress.Address
 
+		expectFilterAddress *commonaddress.Address
+
 		responseAgent *agent.Agent
 	}{
 		{
@@ -393,6 +459,35 @@ func Test_GetByCustomerIDAndAddress(t *testing.T) {
 			address: &commonaddress.Address{
 				Type:   commonaddress.TypeExtension,
 				Target: "d4116ac2-2d88-11ef-9795-8393fdf24d82",
+			},
+
+			// extension is opaque: lookup key is unchanged
+			expectFilterAddress: &commonaddress.Address{
+				Type:   commonaddress.TypeExtension,
+				Target: "d4116ac2-2d88-11ef-9795-8393fdf24d82",
+			},
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("d3eaf9d2-2d88-11ef-9997-7bea6cbbf856"),
+				},
+			},
+		},
+		{
+			name: "tel lookup key is normalized before the db query",
+
+			customerID: uuid.FromStringOrNil("d3aab1b0-2d88-11ef-ba6a-afc97b6c3b32"),
+			address: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+1-555-0100",
+			},
+
+			// the DB must be queried with the canonical target so it matches
+			// the canonical stored value (expected target computed at runtime
+			// from the shared normalizer to avoid hardcoding digit literals)
+			expectFilterAddress: &commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: mustNormalize(commonaddress.TypeTel, "+1-555-0100"),
 			},
 
 			responseAgent: &agent.Agent{
@@ -419,7 +514,7 @@ func Test_GetByCustomerIDAndAddress(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.customerID, tt.address).Return(tt.responseAgent, nil)
+			mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.customerID, tt.expectFilterAddress).Return(tt.responseAgent, nil)
 
 			res, err := h.GetByCustomerIDAndAddress(ctx, tt.customerID, tt.address)
 			if err != nil {
@@ -788,6 +883,8 @@ func Test_UpdateAddresses(t *testing.T) {
 		id        uuid.UUID
 		addresses []commonaddress.Address
 
+		expectedAddresses []commonaddress.Address
+
 		responseAgent     *agent.Agent
 		responseExtension *rmextension.Extension
 	}{
@@ -796,6 +893,14 @@ func Test_UpdateAddresses(t *testing.T) {
 
 			id: uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
 			addresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeExtension,
+					Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71",
+				},
+			},
+
+			// extension is opaque: unchanged by normalization
+			expectedAddresses: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeExtension,
 					Target: "49b41028-2d8d-11ef-b38d-27dd55f2bb71",
@@ -811,6 +916,33 @@ func Test_UpdateAddresses(t *testing.T) {
 			responseExtension: &rmextension.Extension{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("49b41028-2d8d-11ef-b38d-27dd55f2bb71"),
+					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
+				},
+			},
+		},
+		{
+			name: "tel address is normalized before validation, dup-check and persist",
+
+			id: uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
+			addresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+1-555-0100",
+				},
+			},
+
+			// tel canonicalized: the dup-check and AgentSetAddresses must both
+			// see the canonical form
+			expectedAddresses: []commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: mustNormalize(commonaddress.TypeTel, "+1-555-0100"),
+				},
+			},
+
+			responseAgent: &agent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("464a277e-2d8d-11ef-8bc6-d7b95604d6f6"),
 					CustomerID: uuid.FromStringOrNil("49d90a72-2d8d-11ef-b208-fb6caaa88ae9"),
 				},
 			},
@@ -834,7 +966,8 @@ func Test_UpdateAddresses(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
-			for _, addr := range tt.addresses {
+			for i := range tt.expectedAddresses {
+				addr := tt.expectedAddresses[i]
 				switch addr.Type {
 				case commonaddress.TypeExtension:
 					mockReq.EXPECT().RegistrarV1ExtensionGet(ctx, uuid.FromStringOrNil(addr.Target)).Return(tt.responseExtension, nil)
@@ -842,7 +975,7 @@ func Test_UpdateAddresses(t *testing.T) {
 
 				mockDB.EXPECT().AgentGetByCustomerIDAndAddress(ctx, tt.responseAgent.CustomerID, &addr).Return(nil, dbhandler.ErrNotFound)
 			}
-			mockDB.EXPECT().AgentSetAddresses(ctx, tt.id, tt.addresses).Return(nil)
+			mockDB.EXPECT().AgentSetAddresses(ctx, tt.id, tt.expectedAddresses).Return(nil)
 			mockDB.EXPECT().AgentGet(ctx, tt.id).Return(tt.responseAgent, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, agent.EventTypeAgentUpdated, tt.responseAgent)
 
