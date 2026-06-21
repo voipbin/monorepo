@@ -111,6 +111,13 @@ func runNormalizeAddresses(cmd *cobra.Command, args []string) error {
 		if visited == total {
 			break
 		}
+		// visited > total cannot be fixed by a larger page (page-grow only
+		// recovers under-counting from a same-tm_create boundary skip). It
+		// signals concurrent agent creation/deletion during the scan, i.e. the
+		// maintenance-window consumer stop was not in effect. Abort immediately.
+		if visited > total {
+			return fmt.Errorf("scan over-counted: visited %d agents but only %d non-deleted exist; concurrent mutation likely (consumers not stopped). Aborting (no writes performed)", visited, total)
+		}
 		if attempt >= backfillMaxScanRetries {
 			return fmt.Errorf("scan completeness check failed after %d attempts: visited %d agents but %d non-deleted agents exist; aborting (no writes performed)", attempt+1, visited, total)
 		}
@@ -213,7 +220,9 @@ func scanAgents(ctx context.Context, db dbhandler.DBHandler, pageSize uint64) ([
 		// advance the cursor to the oldest tm_create of this page
 		last := agents[len(agents)-1]
 		if last.TMCreate == nil {
-			// defensive: cannot advance safely; stop to avoid an infinite loop
+			// defensive: cannot advance safely; stop to avoid an infinite loop.
+			// The count reconciliation will catch the resulting short scan.
+			fmt.Printf("warning: agent %s has a nil tm_create; stopping scan early (completeness check will flag it)\n", last.ID)
 			break
 		}
 		token = last.TMCreate.UTC().Format(backfillTokenLayout)
