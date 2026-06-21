@@ -152,15 +152,17 @@ Subcommand behavior:
   RPC and the cross-agent dup-check (which would REJECT a backfill write the
   moment normalization creates a collision — exactly the rows we need to write and
   then surface).
-- **Full-scan completeness (count reconciliation).** `AgentList` uses a strict
-  `tm_create < token` cursor (microsecond resolution). To guarantee no agent is
-  skipped at a page boundary where multiple rows share an identical `tm_create`,
-  the subcommand (a) SELECTs the total non-deleted agent COUNT before the scan,
-  (b) counts agents actually visited during the scan, and (c) FAILS LOUDLY if the
-  two disagree. A skipped agent would otherwise stay raw and route-miss forever
-  after the window closes, and a second dry-run using the same pagination would
-  not detect it. (Using a large page size makes a same-microsecond straddle
-  vanishingly unlikely; the count check turns "unlikely" into "verified".)
+- **Full-scan completeness (count reconciliation + page-grow retry).** `AgentList`
+  uses a strict `tm_create < token` cursor (microsecond resolution) with no
+  tie-breaker. To guarantee no agent is skipped at a page boundary where multiple
+  rows share an identical `tm_create`, the subcommand (a) SELECTs the total
+  non-deleted agent COUNT before the scan, (b) counts agents actually visited
+  during the scan, and (c) on a mismatch RETRIES the whole scan with a larger page
+  size (so an equal-`tm_create` cluster fits inside one page), up to a bounded
+  number of retries, and only then FAILS LOUDLY. This converts the count check
+  from a potential dead-end into a self-healing guard. A skipped agent would
+  otherwise stay raw and route-miss forever after the window closes, and a second
+  dry-run using the same pagination would not detect it.
 - **`--dry-run` (default true).** First pass logs every intended change
   (`agent_id`, `type`, raw -> canonical), the full collision report, and the
   count reconciliation, WITHOUT writing. The operator inspects, then re-runs with

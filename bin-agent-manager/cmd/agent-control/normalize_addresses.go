@@ -31,6 +31,13 @@ const backfillTokenLayout = "2006-01-02T15:04:05.000000Z"
 // reconciliation turns "unlikely" into "verified".
 const backfillPageSize = 1000
 
+// backfillPageGrowthFactor / backfillMaxScanRetries bound the page-size growth
+// used to recover from a same-tm_create page-boundary skip (count mismatch).
+const (
+	backfillPageGrowthFactor = 10
+	backfillMaxScanRetries   = 3
+)
+
 // addressChange records one agent whose stored addresses are not yet canonical.
 type addressChange struct {
 	agentID    uuid.UUID
@@ -83,16 +90,32 @@ func runNormalizeAddresses(cmd *cobra.Command, args []string) error {
 		return errors.Wrap(err, "could not count agents")
 	}
 
-	// 2. full scan: collect changes + a global collision map, count visited
-	changes, collisions, visited, err := scanAgents(ctx, db)
-	if err != nil {
-		return errors.Wrap(err, "could not scan agents")
-	}
+	// 2. full scan: collect changes + a global collision map, count visited.
+	// AgentList paginates on a strict `tm_create < token` cursor with no
+	// tie-breaker, so a cluster of rows sharing one microsecond that straddles a
+	// page boundary could skip an agent. The count reconciliation (step 3) would
+	// catch that as visited != total. Rather than dead-end there, retry the whole
+	// scan with a larger page so the equal-tm_create cluster fits inside one page.
+	pageSize := uint64(backfillPageSize)
+	var changes []addressChange
+	var collisions map[string][]uuid.UUID
+	var visited int
+	for attempt := 0; ; attempt++ {
+		changes, collisions, visited, err = scanAgents(ctx, db, pageSize)
+		if err != nil {
+			return errors.Wrap(err, "could not scan agents")
+		}
 
-	// 3. completeness reconciliation: a page-boundary skip would leave an agent
-	// raw and route-miss forever; fail loudly rather than silently miss it.
-	if visited != total {
-		return fmt.Errorf("scan completeness check failed: visited %d agents but %d non-deleted agents exist; aborting (no writes performed)", visited, total)
+		// 3. completeness reconciliation: a page-boundary skip would leave an
+		// agent raw and route-miss forever; never write on a mismatch.
+		if visited == total {
+			break
+		}
+		if attempt >= backfillMaxScanRetries {
+			return fmt.Errorf("scan completeness check failed after %d attempts: visited %d agents but %d non-deleted agents exist; aborting (no writes performed)", attempt+1, visited, total)
+		}
+		pageSize *= backfillPageGrowthFactor
+		fmt.Printf("scan visited %d but table has %d; retrying with larger page size %d (same-tm_create boundary)\n", visited, total, pageSize)
 	}
 
 	// 4. always report
@@ -144,7 +167,7 @@ func countNonDeletedAgents(ctx context.Context, sqlDB *sql.DB) (int, error) {
 // (customer_id, type, canonical_target) populated from every agent's
 // post-normalization addresses (so cross-page and already-canonical collisions
 // are caught).
-func scanAgents(ctx context.Context, db dbhandler.DBHandler) ([]addressChange, map[string][]uuid.UUID, int, error) {
+func scanAgents(ctx context.Context, db dbhandler.DBHandler, pageSize uint64) ([]addressChange, map[string][]uuid.UUID, int, error) {
 	filters := map[agent.Field]any{
 		agent.FieldDeleted: false,
 	}
@@ -155,7 +178,7 @@ func scanAgents(ctx context.Context, db dbhandler.DBHandler) ([]addressChange, m
 
 	token := "" // empty -> AgentList defaults to current time (newest first)
 	for {
-		agents, err := db.AgentList(ctx, backfillPageSize, token, filters)
+		agents, err := db.AgentList(ctx, pageSize, token, filters)
 		if err != nil {
 			return nil, nil, 0, errors.Wrap(err, "could not list agents")
 		}
@@ -183,7 +206,7 @@ func scanAgents(ctx context.Context, db dbhandler.DBHandler) ([]addressChange, m
 			}
 		}
 
-		if len(agents) < backfillPageSize {
+		if uint64(len(agents)) < pageSize {
 			break
 		}
 
