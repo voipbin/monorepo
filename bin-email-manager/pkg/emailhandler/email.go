@@ -27,6 +27,14 @@ func (h *emailHandler) Create(
 	content string,
 	attachments []email.Attachment,
 ) (*email.Email, error) {
+	// Canonicalize destinations through the shared address normalization
+	// authority BEFORE validation (Normalize-then-Validate). Email normalization
+	// is lossless; the error is discarded. Normalize by index (range copy would
+	// discard the result).
+	for i := range destinations {
+		destinations[i].Target, _ = commonaddress.NormalizeTarget(destinations[i].Type, destinations[i].Target)
+	}
+
 	// validate destinations
 	for _, destination := range destinations {
 		if !h.validateEmailAddress(destination) {

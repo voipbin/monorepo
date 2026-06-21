@@ -24,7 +24,7 @@ func ValidateTarget(addressType Type, target string) error {
 	switch addressType {
 	case TypeNone:
 		return nil
-	case TypeTel:
+	case TypeTel, TypeWhatsApp:
 		return validateTel(target)
 	case TypeEmail:
 		return validateEmail(target)

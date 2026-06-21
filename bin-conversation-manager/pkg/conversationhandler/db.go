@@ -54,6 +54,13 @@ func (h *conversationHandler) GetOrCreateBySelfAndPeer(
 		"peer": peer,
 	})
 
+	// Canonicalize self/peer BEFORE the dedup lookup so the lookup key and the
+	// stored value share one canonical form. NormalizeTarget is loss-proof, so
+	// the error is discarded. DialogID is the provider wire/dedup key and is NOT
+	// normalized.
+	self.Target, _ = commonaddress.NormalizeTarget(self.Type, self.Target)
+	peer.Target, _ = commonaddress.NormalizeTarget(peer.Type, peer.Target)
+
 	res, err := h.db.ConversationGetBySelfAndPeer(ctx, self, peer)
 	if err != nil {
 		log.Debugf("Could not find conversation. Create a new conversation. err: %v", err)
@@ -111,6 +118,14 @@ func (h *conversationHandler) Create(
 	})
 
 	id := h.utilHandler.UUIDCreate()
+
+	// Canonicalize self/peer through the shared address normalization authority.
+	// Idempotent, so callers that already normalized (GetOrCreateBySelfAndPeer)
+	// pass through unchanged. Loss-proof, so the error is discarded. DialogID is
+	// the provider wire/dedup key and is NOT normalized.
+	self.Target, _ = commonaddress.NormalizeTarget(self.Type, self.Target)
+	peer.Target, _ = commonaddress.NormalizeTarget(peer.Type, peer.Target)
+
 	tmp := &conversation.Conversation{
 		Identity: commonidentity.Identity{
 			ID:         id,

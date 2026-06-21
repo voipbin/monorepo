@@ -51,6 +51,17 @@ func (h *groupcallHandler) Create(
 		"anonymous":      anonymous,
 	})
 
+	// Canonicalize the stored source/destinations through the shared address
+	// normalization authority. NormalizeTarget is loss-proof, so the error is
+	// safely discarded. Nil-guard the source pointer; normalize destinations by
+	// index (range copy would discard the result).
+	if source != nil {
+		source.Target, _ = commonaddress.NormalizeTarget(source.Type, source.Target)
+	}
+	for i := range destinations {
+		destinations[i].Target, _ = commonaddress.NormalizeTarget(destinations[i].Type, destinations[i].Target)
+	}
+
 	// create groupcall
 	tmp := &groupcall.Groupcall{
 		Identity: commonidentity.Identity{

@@ -5,38 +5,29 @@ import (
 	stderrors "errors"
 	"fmt"
 	"strings"
-	"unicode"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	cerrors "monorepo/bin-common-handler/models/errors"
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
-// normalizeE164 normalizes a phone number to E.164 format by stripping
-// all characters except digits and the leading '+'.
-// If the input is empty, it derives E.164 from the raw number.
+// normalizeE164 normalizes a phone number to E.164 canonical form. The source
+// is the e164 field if non-empty, otherwise the raw number (a contact-manager
+// model concern). The actual canonicalization is delegated to the shared
+// commonaddress.NormalizeTarget authority so every channel normalizes phone
+// targets identically. Tel normalization never returns an error.
 func normalizeE164(e164, number string) string {
-	src := strings.TrimSpace(e164)
-	if src == "" {
-		src = strings.TrimSpace(number)
+	src := e164
+	if strings.TrimSpace(src) == "" {
+		src = number
 	}
-	if src == "" {
-		return ""
-	}
-
-	var b strings.Builder
-	for i, r := range src {
-		if r == '+' && i == 0 {
-			b.WriteRune(r)
-		} else if unicode.IsDigit(r) {
-			b.WriteRune(r)
-		}
-	}
-	return b.String()
+	out, _ := commonaddress.NormalizeTarget(commonaddress.TypeTel, src)
+	return out
 }
 
 // Create creates a new contact with optional phone numbers, emails, and tags
@@ -95,8 +86,8 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		e.ID = h.utilHandler.UUIDCreate()
 		e.CustomerID = c.CustomerID
 		e.ContactID = c.ID
-		// Normalize email to lowercase
-		e.Address = strings.ToLower(strings.TrimSpace(e.Address))
+		// Normalize email via the shared canonicalization authority
+		e.Address, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, e.Address)
 
 		if e.IsPrimary {
 			if err := h.db.EmailResetPrimary(ctx, c.ID); err != nil {
@@ -210,6 +201,9 @@ func (h *contactHandler) Delete(ctx context.Context, id uuid.UUID) (*contact.Con
 
 // LookupByPhone finds a contact by phone number (E.164 format)
 func (h *contactHandler) LookupByPhone(ctx context.Context, customerID uuid.UUID, phoneE164 string) (*contact.Contact, error) {
+	// Canonicalize the lookup input so it matches the stored canonical form,
+	// closing the write/lookup normalization asymmetry.
+	phoneE164 = normalizeE164(phoneE164, "")
 	res, err := h.db.ContactLookupByPhone(ctx, customerID, phoneE164)
 	if err != nil {
 		if stderrors.Is(err, dbhandler.ErrNotFound) {
@@ -226,8 +220,8 @@ func (h *contactHandler) LookupByPhone(ctx context.Context, customerID uuid.UUID
 
 // LookupByEmail finds a contact by email address
 func (h *contactHandler) LookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error) {
-	// Normalize email to lowercase
-	email = strings.ToLower(strings.TrimSpace(email))
+	// Normalize email via the shared canonicalization authority
+	email, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, email)
 	res, err := h.db.ContactLookupByEmail(ctx, customerID, email)
 	if err != nil {
 		if stderrors.Is(err, dbhandler.ErrNotFound) {
@@ -368,8 +362,8 @@ func (h *contactHandler) AddEmail(ctx context.Context, contactID uuid.UUID, e *c
 	e.ID = h.utilHandler.UUIDCreate()
 	e.CustomerID = c.CustomerID
 	e.ContactID = contactID
-	// Normalize email to lowercase
-	e.Address = strings.ToLower(strings.TrimSpace(e.Address))
+	// Normalize email via the shared canonicalization authority
+	e.Address, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, e.Address)
 
 	// Enforce single primary: reset existing primaries before setting new one
 	if e.IsPrimary {
@@ -417,7 +411,7 @@ func (h *contactHandler) UpdateEmail(ctx context.Context, contactID, emailID uui
 	// Normalize email address if being updated
 	if address, ok := fields["address"]; ok {
 		if addrStr, isStr := address.(string); isStr {
-			fields["address"] = strings.ToLower(strings.TrimSpace(addrStr))
+			fields["address"], _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, addrStr)
 		}
 	}
 

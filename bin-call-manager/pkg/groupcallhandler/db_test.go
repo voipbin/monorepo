@@ -740,3 +740,127 @@ func Test_UpdateStatus(t *testing.T) {
 		})
 	}
 }
+
+func Test_Create_NormalizesAddress(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id         uuid.UUID
+		customerID uuid.UUID
+
+		source       *commonaddress.Address
+		destinations []commonaddress.Address
+
+		expectSourceTarget       string
+		expectDestinationTargets []string
+
+		responseGroupcall *groupcall.Groupcall
+	}{
+		{
+			"canonicalizes punctuated tel source and uppercase email destination",
+
+			uuid.FromStringOrNil("2b1d1f20-5d20-11ed-9f01-1ff0bb0c0001"),
+			uuid.FromStringOrNil("2b1d1f20-5d20-11ed-9f01-1ff0bb0c0002"),
+
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+1 (555) 123-4567",
+			},
+			[]commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+1 (555) 987-6543",
+				},
+				{
+					Type:   commonaddress.TypeEmail,
+					Target: "User@Example.COM",
+				},
+			},
+
+			"+15551234567",
+			[]string{"+15559876543", "user@example.com"},
+
+			&groupcall.Groupcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2b1d1f20-5d20-11ed-9f01-1ff0bb0c0001"),
+					CustomerID: uuid.FromStringOrNil("2b1d1f20-5d20-11ed-9f01-1ff0bb0c0002"),
+				},
+			},
+		},
+		{
+			"preserves no-digit tel source verbatim",
+
+			uuid.FromStringOrNil("2b1d1f20-5d20-11ed-9f01-1ff0bb0c0101"),
+			uuid.FromStringOrNil("2b1d1f20-5d20-11ed-9f01-1ff0bb0c0102"),
+
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "anonymous",
+			},
+			[]commonaddress.Address{
+				{
+					Type:   commonaddress.TypeTel,
+					Target: "+1 (555) 987-6543",
+				},
+			},
+
+			"anonymous",
+			[]string{"+15559876543"},
+
+			&groupcall.Groupcall{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2b1d1f20-5d20-11ed-9f01-1ff0bb0c0101"),
+					CustomerID: uuid.FromStringOrNil("2b1d1f20-5d20-11ed-9f01-1ff0bb0c0102"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &groupcallHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			// Assert the persisted *groupcall.Groupcall carries canonical source/destinations targets.
+			mockDB.EXPECT().GroupcallCreate(ctx, gomock.Cond(func(x any) bool {
+				g, ok := x.(*groupcall.Groupcall)
+				if !ok {
+					return false
+				}
+				if g.Source.Target != tt.expectSourceTarget {
+					return false
+				}
+				if len(g.Destinations) != len(tt.expectDestinationTargets) {
+					return false
+				}
+				for i := range g.Destinations {
+					if g.Destinations[i].Target != tt.expectDestinationTargets[i] {
+						return false
+					}
+				}
+				return true
+			})).Return(nil)
+			mockDB.EXPECT().GroupcallGet(ctx, tt.responseGroupcall.ID).Return(tt.responseGroupcall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseGroupcall.CustomerID, groupcall.EventTypeGroupcallCreated, tt.responseGroupcall)
+
+			_, err := h.Create(ctx, tt.id, tt.customerID, commonidentity.OwnerTypeAgent, uuid.Nil, uuid.Nil, tt.source, tt.destinations, []uuid.UUID{}, []uuid.UUID{}, uuid.Nil, uuid.Nil, groupcall.RingMethodRingAll, groupcall.AnswerMethodHangupOthers, "")
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}
