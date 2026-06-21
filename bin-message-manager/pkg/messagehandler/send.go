@@ -31,6 +31,18 @@ func (h *messageHandler) Send(ctx context.Context, id uuid.UUID, customerID uuid
 		return nil, fmt.Errorf("customer identity verification required to send message")
 	}
 
+	// Canonicalize source/destinations through the shared address normalization
+	// authority so BOTH the persisted message and the provider wire value are in
+	// canonical form. NormalizeTarget is loss-proof (an alphanumeric/sentinel
+	// sender with no digit is preserved verbatim), so the error is discarded.
+	// Nil-guard the source pointer; normalize destinations by index.
+	if source != nil {
+		source.Target, _ = commonaddress.NormalizeTarget(source.Type, source.Target)
+	}
+	for i := range destinations {
+		destinations[i].Target, _ = commonaddress.NormalizeTarget(destinations[i].Type, destinations[i].Target)
+	}
+
 	// create targets
 	targets := []target.Target{}
 	for _, destination := range destinations {

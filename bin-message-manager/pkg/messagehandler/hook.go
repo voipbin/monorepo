@@ -8,6 +8,8 @@ import (
 
 	nmnumber "monorepo/bin-number-manager/models/number"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
+
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -86,6 +88,17 @@ func (h *messageHandler) hookTelnyx(ctx context.Context, data []byte) (*message.
 	source := hm.GetSource()
 	targets := hm.GetTargets()
 	text := hm.GetText()
+
+	// Canonicalize inbound source/targets through the shared address
+	// normalization authority. NormalizeTarget is loss-proof, so the error is
+	// discarded. Nil-guard the source pointer; normalize targets by index.
+	if source != nil {
+		source.Target, _ = commonaddress.NormalizeTarget(source.Type, source.Target)
+	}
+	for i := range targets {
+		targets[i].Destination.Target, _ = commonaddress.NormalizeTarget(targets[i].Destination.Type, targets[i].Destination.Target)
+	}
+
 	res, err := h.Create(ctx, uuid.Nil, num.CustomerID, source, targets, message.ProviderNameTelnyx, text, message.DirectionInbound)
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "Could not create a message. number_id: %s, number: %s", num.ID, num.Number)

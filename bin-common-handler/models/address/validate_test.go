@@ -21,6 +21,11 @@ func TestValidate(t *testing.T) {
 		{"tel with letters", Address{Type: TypeTel, Target: "+1415555abcd"}, true},
 		{"tel empty", Address{Type: TypeTel, Target: ""}, true},
 
+		// TypeWhatsApp (reuses tel E.164 rule)
+		{"whatsapp valid", Address{Type: TypeWhatsApp, Target: "+14155551234"}, false},
+		{"whatsapp missing plus", Address{Type: TypeWhatsApp, Target: "14155551234"}, true},
+		{"whatsapp empty", Address{Type: TypeWhatsApp, Target: ""}, true},
+
 		// TypeEmail
 		{"email valid", Address{Type: TypeEmail, Target: "user@example.com"}, false},
 		{"email valid with name", Address{Type: TypeEmail, Target: "User <user@example.com>"}, false},
@@ -78,6 +83,10 @@ func TestValidateTarget(t *testing.T) {
 		// TypeTel
 		{"tel valid", TypeTel, "+14155551234", false},
 		{"tel invalid", TypeTel, "14155551234", true},
+
+		// TypeWhatsApp
+		{"whatsapp valid", TypeWhatsApp, "+14155551234", false},
+		{"whatsapp invalid", TypeWhatsApp, "14155551234", true},
 
 		// TypeEmail
 		{"email valid", TypeEmail, "user@example.com", false},

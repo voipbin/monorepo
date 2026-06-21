@@ -860,3 +860,142 @@ func Test_UpdateMuteDirection(t *testing.T) {
 		})
 	}
 }
+
+func Test_Create_NormalizesAddress(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		id         uuid.UUID
+		customerID uuid.UUID
+
+		source      *commonaddress.Address
+		destination *commonaddress.Address
+
+		expectSourceTarget      string
+		expectDestinationTarget string
+
+		responseCall *call.Call
+	}{
+		{
+			"canonicalizes punctuated tel source and uppercase email destination",
+
+			uuid.FromStringOrNil("1a0c0e10-5d20-11ed-9f01-1ff0aa0c0001"),
+			uuid.FromStringOrNil("1a0c0e10-5d20-11ed-9f01-1ff0aa0c0002"),
+
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+1 (555) 123-4567",
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeEmail,
+				Target: "User@Example.COM",
+			},
+
+			"+15551234567",
+			"user@example.com",
+
+			&call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1a0c0e10-5d20-11ed-9f01-1ff0aa0c0099"),
+					CustomerID: uuid.FromStringOrNil("1a0c0e10-5d20-11ed-9f01-1ff0aa0c0002"),
+				},
+			},
+		},
+		{
+			"preserves no-digit tel source verbatim",
+
+			uuid.FromStringOrNil("1a0c0e10-5d20-11ed-9f01-1ff0aa0c0101"),
+			uuid.FromStringOrNil("1a0c0e10-5d20-11ed-9f01-1ff0aa0c0102"),
+
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "anonymous",
+			},
+			&commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+1 (555) 123-4567",
+			},
+
+			"anonymous",
+			"+15551234567",
+
+			&call.Call{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("1a0c0e10-5d20-11ed-9f01-1ff0aa0c0199"),
+					CustomerID: uuid.FromStringOrNil("1a0c0e10-5d20-11ed-9f01-1ff0aa0c0102"),
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+
+			h := &callHandler{
+				utilHandler:   mockUtil,
+				reqHandler:    mockReq,
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+
+			ctx := context.Background()
+
+			// Assert the persisted *call.Call carries the canonical source/destination targets.
+			mockDB.EXPECT().CallCreate(ctx, gomock.Cond(func(x any) bool {
+				c, ok := x.(*call.Call)
+				if !ok {
+					return false
+				}
+				return c.Source.Target == tt.expectSourceTarget && c.Destination.Target == tt.expectDestinationTarget
+			})).Return(nil)
+			mockDB.EXPECT().CallGet(ctx, tt.id).Return(tt.responseCall, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseCall.CustomerID, call.EventTypeCallCreated, tt.responseCall)
+			mockReq.EXPECT().CallV1CallHealth(ctx, tt.responseCall.ID, defaultHealthDelay, 0).Return(nil)
+
+			_, err := h.Create(
+				ctx,
+
+				tt.id,
+				tt.customerID,
+				commonidentity.OwnerTypeAgent,
+				uuid.Nil,
+
+				"",
+				"",
+
+				uuid.Nil,
+				uuid.Nil,
+				uuid.Nil,
+
+				call.TypeFlow,
+
+				uuid.Nil,
+
+				tt.source,
+				tt.destination,
+
+				call.StatusRinging,
+				map[call.DataType]string{},
+
+				fmaction.Action{},
+				call.DirectionOutgoing,
+
+				uuid.Nil,
+				[]rmroute.Route{},
+
+				nil,
+			)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+		})
+	}
+}

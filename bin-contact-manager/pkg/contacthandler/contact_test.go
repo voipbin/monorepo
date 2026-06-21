@@ -1618,6 +1618,40 @@ func Test_LookupByEmail_NormalizesEmail(t *testing.T) {
 	}
 }
 
+func Test_LookupByPhone_NormalizesInput(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := contactHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	responseContact := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+			CustomerID: customerID,
+		},
+	}
+
+	// Expect the canonical E.164 form, not the raw punctuated input.
+	mockDB.EXPECT().ContactLookupByPhone(ctx, customerID, "+15551234567").Return(responseContact, nil)
+
+	res, err := h.LookupByPhone(ctx, customerID, "+1 (555) 123-4567")
+	if err != nil {
+		t.Errorf("LookupByPhone() error = %v", err)
+	}
+	if res.ID != responseContact.ID {
+		t.Errorf("LookupByPhone() ID = %v, want %v", res.ID, responseContact.ID)
+	}
+}
+
 func Test_Create_WithDefaultSource(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()

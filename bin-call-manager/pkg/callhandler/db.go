@@ -71,6 +71,18 @@ func (h *callHandler) Create(
 		callID = h.utilHandler.UUIDCreate()
 	}
 
+	// Canonicalize the stored source/destination through the shared address
+	// normalization authority so identity resolution is consistent across
+	// channels. NormalizeTarget is loss-proof (returns the original value on a
+	// non-normalizable input such as an "anonymous" caller-id), so the error is
+	// safely discarded. Nil-guard each pointer before dereferencing.
+	if source != nil {
+		source.Target, _ = commonaddress.NormalizeTarget(source.Type, source.Target)
+	}
+	if destination != nil {
+		destination.Target, _ = commonaddress.NormalizeTarget(destination.Type, destination.Target)
+	}
+
 	c := &call.Call{
 		Identity: commonidentity.Identity{
 			ID:         callID,

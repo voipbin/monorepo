@@ -716,3 +716,125 @@ func Test_GetOrCreateBySelfAndPeer_Create(t *testing.T) {
 		t.Errorf("Wrong ID. expect: %s, got: %s", newID, res.ID)
 	}
 }
+
+// Test_GetOrCreateBySelfAndPeer_NormalizesSelfPeer is a regression test proving
+// that GetOrCreateBySelfAndPeer canonicalizes self.Target/peer.Target via
+// commonaddress.NormalizeTarget BEFORE the dedup lookup
+// (ConversationGetBySelfAndPeer). A punctuated tel target must reach the DB in
+// its canonical '+'-prefixed digit-only form so a caller's formatting variant
+// hits the same stored conversation. A whatsapp waID with no '+' must normalize
+// to itself (digit-only, idempotent, no '+' injected). DialogID is NOT
+// normalized and must pass through untouched.
+func Test_GetOrCreateBySelfAndPeer_NormalizesSelfPeer(t *testing.T) {
+	tests := []struct {
+		name string
+
+		dialogID string
+		self     commonaddress.Address
+		peer     commonaddress.Address
+
+		expectSelf commonaddress.Address
+		expectPeer commonaddress.Address
+	}{
+		{
+			name: "punctuated tel self and peer are canonicalized",
+
+			dialogID: "dialog-keep-me-untouched",
+			self: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: " +1 (650) 555-7890 ",
+			},
+			peer: commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+1-202-555-0123",
+				TargetName: "Peer Name",
+			},
+
+			expectSelf: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+16505557890",
+			},
+			expectPeer: commonaddress.Address{
+				Type:       commonaddress.TypeTel,
+				Target:     "+12025550123",
+				TargetName: "Peer Name",
+			},
+		},
+		{
+			name: "whatsapp waID without '+' normalizes to itself (idempotent, no '+' injected)",
+
+			dialogID: "wa-dialog-id",
+			self: commonaddress.Address{
+				Type:   commonaddress.TypeWhatsApp,
+				Target: "15551234567",
+			},
+			peer: commonaddress.Address{
+				Type:   commonaddress.TypeWhatsApp,
+				Target: "15559876543",
+			},
+
+			expectSelf: commonaddress.Address{
+				Type:   commonaddress.TypeWhatsApp,
+				Target: "15551234567",
+			},
+			expectPeer: commonaddress.Address{
+				Type:   commonaddress.TypeWhatsApp,
+				Target: "15559876543",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			h := &conversationHandler{
+				db:            mockDB,
+				notifyHandler: mockNotify,
+			}
+			ctx := context.Background()
+
+			customerID := uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440001")
+			conversationType := conversation.TypeMessage
+
+			expectedConv := &conversation.Conversation{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440099"),
+					CustomerID: customerID,
+				},
+				Type:     conversationType,
+				DialogID: tt.dialogID,
+				Self:     tt.expectSelf,
+				Peer:     tt.expectPeer,
+			}
+
+			// Assert the dedup lookup receives the CANONICAL self/peer.
+			matchSelf := gomock.Cond(func(x any) bool {
+				a, ok := x.(commonaddress.Address)
+				return ok && reflect.DeepEqual(a, tt.expectSelf)
+			})
+			matchPeer := gomock.Cond(func(x any) bool {
+				a, ok := x.(commonaddress.Address)
+				return ok && reflect.DeepEqual(a, tt.expectPeer)
+			})
+			mockDB.EXPECT().ConversationGetBySelfAndPeer(ctx, matchSelf, matchPeer).Return(expectedConv, nil)
+
+			res, err := h.GetOrCreateBySelfAndPeer(ctx, customerID, conversationType, tt.dialogID, tt.self, tt.peer)
+			if err != nil {
+				t.Errorf("Expected no error, got: %v", err)
+			}
+
+			if res.ID != expectedConv.ID {
+				t.Errorf("Wrong ID. expect: %s, got: %s", expectedConv.ID, res.ID)
+			}
+
+			// DialogID must pass through untouched (NOT normalized).
+			if res.DialogID != tt.dialogID {
+				t.Errorf("DialogID changed. expect: %q, got: %q", tt.dialogID, res.DialogID)
+			}
+		})
+	}
+}

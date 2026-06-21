@@ -120,7 +120,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 				Type: commonaddress.TypeTel,
 			},
 			responseDestination: &commonaddress.Address{
-				Type:   commonaddress.TypeTel,
+				Type:   commonaddress.TypeConference,
 				Target: "bad943d8-9b59-11ea-b409-4ba263721f17",
 			},
 			responseUUIDCall:   uuid.FromStringOrNil("666ae678-5e55-11ed-8bbd-bbd66d73cbaf"),
@@ -199,7 +199,7 @@ func Test_Start_incoming_typeConferenceStart(t *testing.T) {
 					Type: commonaddress.TypeTel,
 				},
 				Destination: commonaddress.Address{
-					Type:   commonaddress.TypeTel,
+					Type:   commonaddress.TypeConference,
 					Target: "bad943d8-9b59-11ea-b409-4ba263721f17",
 				},
 				Status: call.StatusRinging,

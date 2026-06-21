@@ -939,3 +939,139 @@ func Test_UpdateStatus_DBError(t *testing.T) {
 		})
 	}
 }
+
+// Test_Create_NormalizesDestinations is a regression test proving that
+// Create canonicalizes destination email Targets via
+// commonaddress.NormalizeTarget (lowercase + trim) BEFORE validation and
+// persist. An UPPERCASE/whitespace-padded email is lowercased and trimmed in
+// the persisted email (EmailCreate). TargetName (display name) is preserved
+// untouched.
+func Test_Create_NormalizesDestinations(t *testing.T) {
+
+	tests := []struct {
+		name string
+
+		customerID   uuid.UUID
+		activeflowID uuid.UUID
+		destinations []commonaddress.Address
+		subject      string
+		content      string
+		attachments  []email.Attachment
+
+		responseUUID                uuid.UUID
+		responseProviderReferenceID string
+
+		expectEmail *email.Email
+		expectRes   *email.Email
+	}{
+		{
+			name: "uppercase destination email is lowercased, display name preserved",
+
+			customerID:   uuid.FromStringOrNil("86e92dc4-0083-11f0-a8c4-0f10cc7d6102"),
+			activeflowID: uuid.FromStringOrNil("871bddaa-0083-11f0-8d2f-a32510551821"),
+			destinations: []commonaddress.Address{
+				{
+					Type:       commonaddress.TypeEmail,
+					Target:     "  Test.User@VoipBin.NET  ",
+					TargetName: "Test User",
+				},
+			},
+			subject: "test subject",
+			content: "test content",
+
+			responseUUID:                uuid.FromStringOrNil("8756a2dc-0083-11f0-a7bd-bf369e143079"),
+			responseProviderReferenceID: "877ba028-0083-11f0-9831-3b71bd00b552",
+
+			expectEmail: &email.Email{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("8756a2dc-0083-11f0-a7bd-bf369e143079"),
+					CustomerID: uuid.FromStringOrNil("86e92dc4-0083-11f0-a8c4-0f10cc7d6102"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("871bddaa-0083-11f0-8d2f-a32510551821"),
+				ProviderType: email.ProviderTypeSendgrid,
+				Source:       defaultSource,
+				Destinations: []commonaddress.Address{
+					{
+						Type:       commonaddress.TypeEmail,
+						Target:     "test.user@voipbin.net",
+						TargetName: "Test User",
+					},
+				},
+				Status:  email.StatusInitiated,
+				Subject: "test subject",
+				Content: "test content",
+			},
+			expectRes: &email.Email{
+				Identity: identity.Identity{
+					ID:         uuid.FromStringOrNil("8756a2dc-0083-11f0-a7bd-bf369e143079"),
+					CustomerID: uuid.FromStringOrNil("86e92dc4-0083-11f0-a8c4-0f10cc7d6102"),
+				},
+				ActiveflowID: uuid.FromStringOrNil("871bddaa-0083-11f0-8d2f-a32510551821"),
+				ProviderType: email.ProviderTypeSendgrid,
+				Source:       defaultSource,
+				Destinations: []commonaddress.Address{
+					{
+						Type:       commonaddress.TypeEmail,
+						Target:     "test.user@voipbin.net",
+						TargetName: "Test User",
+					},
+				},
+				Status:  email.StatusInitiated,
+				Subject: "test subject",
+				Content: "test content",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockDB := dbhandler.NewMockDBHandler(mc)
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+			mockUtil := utilhandler.NewMockUtilHandler(mc)
+			mockSendgrid := NewMockEngineSendgrid(mc)
+			mockMailgun := NewMockEngineMailgun(mc)
+
+			h := &emailHandler{
+				db:            mockDB,
+				reqHandler:    mockReq,
+				notifyHandler: mockNotify,
+				utilHandler:   mockUtil,
+
+				engineSendgrid: mockSendgrid,
+				engineMailgun:  mockMailgun,
+			}
+
+			ctx := context.Background()
+
+			mockReq.EXPECT().CustomerV1CustomerGet(ctx, tt.customerID).Return(&cucustomer.Customer{
+				ID:                         tt.customerID,
+				IdentityVerificationStatus: cucustomer.IdentityVerificationStatusVerified,
+			}, nil)
+			mockReq.EXPECT().BillingV1AccountIsValidBalanceByCustomerID(ctx, tt.customerID, bmbilling.ReferenceTypeEmail, "", len(tt.destinations)).Return(true, nil)
+			mockUtil.EXPECT().UUIDCreate().Return(tt.responseUUID)
+			// EmailCreate must receive the canonical (lowercased+trimmed)
+			// destination with the display name preserved.
+			mockDB.EXPECT().EmailCreate(ctx, tt.expectEmail).Return(nil)
+			mockDB.EXPECT().EmailGet(ctx, tt.responseUUID).Return(tt.expectEmail, nil)
+			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.expectEmail.CustomerID, email.EventTypeCreated, tt.expectEmail)
+
+			mockSendgrid.EXPECT().Send(ctx, tt.expectEmail).Return(tt.responseProviderReferenceID, nil)
+			mockDB.EXPECT().EmailUpdateProviderReferenceID(ctx, tt.expectEmail.ID, tt.responseProviderReferenceID).Return(nil)
+
+			res, err := h.Create(ctx, tt.customerID, tt.activeflowID, tt.destinations, tt.subject, tt.content, tt.attachments)
+			if err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
+
+			if reflect.DeepEqual(res, tt.expectRes) != true {
+				t.Errorf("Wrong match.\nexepct: %v\ngot: %v", tt.expectRes, res)
+			}
+
+			time.Sleep(100 * time.Millisecond)
+		})
+	}
+}
