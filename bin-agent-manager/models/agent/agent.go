@@ -24,7 +24,7 @@ type Agent struct {
 	Status     Status                  `json:"status" db:"status"`           // agent's status
 	Permission Permission              `json:"permission" db:"permission"`   // agent's permission.
 	TagIDs     []uuid.UUID             `json:"tag_ids" db:"tag_ids,json"`    // agent's tag ids
-	Addresses  []commonaddress.Address `json:"addresses" db:"addresses,json"` // agent's endpoint addresses
+	Addresses  []commonaddress.Address `json:"addresses" db:"-"` // agent's endpoint addresses (stored in agent_addresses child table)
 
 	DirectID   uuid.UUID `json:"direct_id" db:"direct_id,uuid"`  // direct id for direct hash
 	DirectHash string    `json:"direct_hash" db:"direct_hash"`    // direct hash

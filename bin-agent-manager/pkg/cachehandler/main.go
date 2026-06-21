@@ -26,6 +26,7 @@ type CacheHandler interface {
 
 	AgentGet(ctx context.Context, id uuid.UUID) (*agent.Agent, error)
 	AgentSet(ctx context.Context, u *agent.Agent) error
+	AgentDel(ctx context.Context, id uuid.UUID) error
 
 	PasswordResetTokenSet(ctx context.Context, token string, agentID uuid.UUID, ttl time.Duration) error
 	PasswordResetTokenGet(ctx context.Context, token string) (uuid.UUID, error)

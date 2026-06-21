@@ -43,8 +43,43 @@ type handler struct {
 
 // handler errors
 var (
-	ErrNotFound = fmt.Errorf("record not found")
+	ErrNotFound      = fmt.Errorf("record not found")
+	ErrAlreadyExists = fmt.Errorf("record already exists")
 )
+
+// dbExecQuerier is satisfied by both *sql.DB and *sql.Tx, so the child-table
+// helpers can run either standalone or inside a transaction.
+type dbExecQuerier interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+}
+
+// withTx runs the given function within a single transaction. It commits on
+// success and rolls back on error (or panic).
+func (h *handler) withTx(ctx context.Context, fn func(tx *sql.Tx) error) error {
+	tx, err := h.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("could not begin transaction. err: %v", err)
+	}
+
+	defer func() {
+		if p := recover(); p != nil {
+			_ = tx.Rollback()
+			panic(p)
+		}
+	}()
+
+	if err := fn(tx); err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("could not commit transaction. err: %v", err)
+	}
+
+	return nil
+}
 
 
 // NewHandler creates DBHandler
