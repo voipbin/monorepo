@@ -31,6 +31,11 @@ type Config struct {
 	GoogleAPIKey            string // GoogleAPIKey is the Google API key used for Gemini audit evaluation.
 
 	AIcallConversationIdleTimeoutHours int // Idle timeout (hours) after which a conversation-typed AIcall is treated as expired and a new one is created on the next inbound message.
+
+	AnalysisDefaultModel    string // AnalysisDefaultModel is the default model for the generic analysis gateway.
+	AnalysisAllowedModels   string // AnalysisAllowedModels is a comma-separated allow-set of models the analysis gateway accepts.
+	AnalysisMaxInputBytes   int    // AnalysisMaxInputBytes caps the prompt+data byte size accepted by the analysis gateway.
+	AnalysisMaxOutputTokens int    // AnalysisMaxOutputTokens caps the output tokens of the analysis gateway (runaway guard).
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -58,6 +63,10 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("engine_key_chatgpt", "", "Engine key for chatgpt")
 	f.String("google_api_key", "", "Google API key for Gemini audit evaluation")
 	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
+	f.String("analysis_default_model", "gpt-4o", "Default model for the generic analysis gateway")
+	f.String("analysis_allowed_models", "gpt-4o,gpt-4o-mini,gpt-4-turbo", "Comma-separated allow-set of models for the analysis gateway")
+	f.Int("analysis_max_input_bytes", 262144, "Max prompt+data bytes accepted by the analysis gateway")
+	f.Int("analysis_max_output_tokens", 8192, "Max output tokens for the analysis gateway (runaway guard)")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -71,6 +80,11 @@ func bindConfig(cmd *cobra.Command) error {
 		"google_api_key":            "GOOGLE_API_KEY",
 
 		"aicall_conversation_idle_timeout_hours": "AICALL_CONVERSATION_IDLE_TIMEOUT_HOURS",
+
+		"analysis_default_model":     "ANALYSIS_DEFAULT_MODEL",
+		"analysis_allowed_models":    "ANALYSIS_ALLOWED_MODELS",
+		"analysis_max_input_bytes":   "ANALYSIS_MAX_INPUT_BYTES",
+		"analysis_max_output_tokens": "ANALYSIS_MAX_OUTPUT_TOKENS",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -107,6 +121,11 @@ func LoadGlobalConfig() {
 			GoogleAPIKey:            viper.GetString("google_api_key"),
 
 			AIcallConversationIdleTimeoutHours: viper.GetInt("aicall_conversation_idle_timeout_hours"),
+
+			AnalysisDefaultModel:    viper.GetString("analysis_default_model"),
+			AnalysisAllowedModels:   viper.GetString("analysis_allowed_models"),
+			AnalysisMaxInputBytes:   viper.GetInt("analysis_max_input_bytes"),
+			AnalysisMaxOutputTokens: viper.GetInt("analysis_max_output_tokens"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

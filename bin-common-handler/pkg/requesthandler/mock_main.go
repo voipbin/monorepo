@@ -18,6 +18,7 @@ import (
 	aicall "monorepo/bin-ai-manager/models/aicall"
 	aiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	aipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
+	analysis "monorepo/bin-ai-manager/models/analysis"
 	message "monorepo/bin-ai-manager/models/message"
 	participant "monorepo/bin-ai-manager/models/participant"
 	summary "monorepo/bin-ai-manager/models/summary"
@@ -84,6 +85,7 @@ import (
 	chat "monorepo/bin-talk-manager/models/chat"
 	message3 "monorepo/bin-talk-manager/models/message"
 	participant0 "monorepo/bin-talk-manager/models/participant"
+	analysis0 "monorepo/bin-timeline-manager/models/analysis"
 	correlation "monorepo/bin-timeline-manager/models/correlation"
 	event "monorepo/bin-timeline-manager/models/event"
 	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
@@ -615,6 +617,21 @@ func (m *MockRequestHandler) AIV1ServiceTypeAIcallStart(ctx context.Context, ass
 func (mr *MockRequestHandlerMockRecorder) AIV1ServiceTypeAIcallStart(ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, requestTimeout any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ServiceTypeAIcallStart", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ServiceTypeAIcallStart), ctx, assistanceType, assistanceID, activeflowID, referenceType, referenceID, requestTimeout)
+}
+
+// AIV1ServiceTypeAnalysisRun mocks base method.
+func (m *MockRequestHandler) AIV1ServiceTypeAnalysisRun(ctx context.Context, req *analysis.Request, requestTimeout int) (*analysis.Response, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AIV1ServiceTypeAnalysisRun", ctx, req, requestTimeout)
+	ret0, _ := ret[0].(*analysis.Response)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AIV1ServiceTypeAnalysisRun indicates an expected call of AIV1ServiceTypeAnalysisRun.
+func (mr *MockRequestHandlerMockRecorder) AIV1ServiceTypeAnalysisRun(ctx, req, requestTimeout any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AIV1ServiceTypeAnalysisRun", reflect.TypeOf((*MockRequestHandler)(nil).AIV1ServiceTypeAnalysisRun), ctx, req, requestTimeout)
 }
 
 // AIV1ServiceTypeSummaryStart mocks base method.
@@ -6895,6 +6912,66 @@ func (m *MockRequestHandler) TimelineV1AggregatedEventList(ctx context.Context, 
 func (mr *MockRequestHandlerMockRecorder) TimelineV1AggregatedEventList(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1AggregatedEventList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1AggregatedEventList), ctx, req)
+}
+
+// TimelineV1AnalysisCreate mocks base method.
+func (m *MockRequestHandler) TimelineV1AnalysisCreate(ctx context.Context, customerID, activeflowID uuid.UUID, reanalyze bool) (*analysis0.Analysis, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1AnalysisCreate", ctx, customerID, activeflowID, reanalyze)
+	ret0, _ := ret[0].(*analysis0.Analysis)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1AnalysisCreate indicates an expected call of TimelineV1AnalysisCreate.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1AnalysisCreate(ctx, customerID, activeflowID, reanalyze any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1AnalysisCreate", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1AnalysisCreate), ctx, customerID, activeflowID, reanalyze)
+}
+
+// TimelineV1AnalysisDelete mocks base method.
+func (m *MockRequestHandler) TimelineV1AnalysisDelete(ctx context.Context, customerID, analysisID uuid.UUID) (*analysis0.Analysis, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1AnalysisDelete", ctx, customerID, analysisID)
+	ret0, _ := ret[0].(*analysis0.Analysis)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1AnalysisDelete indicates an expected call of TimelineV1AnalysisDelete.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1AnalysisDelete(ctx, customerID, analysisID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1AnalysisDelete", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1AnalysisDelete), ctx, customerID, analysisID)
+}
+
+// TimelineV1AnalysisGet mocks base method.
+func (m *MockRequestHandler) TimelineV1AnalysisGet(ctx context.Context, customerID, analysisID uuid.UUID) (*analysis0.Analysis, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1AnalysisGet", ctx, customerID, analysisID)
+	ret0, _ := ret[0].(*analysis0.Analysis)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1AnalysisGet indicates an expected call of TimelineV1AnalysisGet.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1AnalysisGet(ctx, customerID, analysisID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1AnalysisGet", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1AnalysisGet), ctx, customerID, analysisID)
+}
+
+// TimelineV1AnalysisList mocks base method.
+func (m *MockRequestHandler) TimelineV1AnalysisList(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[analysis0.Field]any) ([]analysis0.Analysis, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineV1AnalysisList", ctx, customerID, pageToken, pageSize, filters)
+	ret0, _ := ret[0].([]analysis0.Analysis)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineV1AnalysisList indicates an expected call of TimelineV1AnalysisList.
+func (mr *MockRequestHandlerMockRecorder) TimelineV1AnalysisList(ctx, customerID, pageToken, pageSize, filters any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineV1AnalysisList", reflect.TypeOf((*MockRequestHandler)(nil).TimelineV1AnalysisList), ctx, customerID, pageToken, pageSize, filters)
 }
 
 // TimelineV1CorrelationGet mocks base method.

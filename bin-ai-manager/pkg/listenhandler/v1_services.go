@@ -8,6 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-ai-manager/models/analysis"
 	"monorepo/bin-ai-manager/pkg/listenhandler/models/request"
 )
 
@@ -69,6 +70,44 @@ func (h *listenHandler) processV1ServicesTypeSummaryPost(ctx context.Context, m 
 	)
 	if err != nil {
 		log.Errorf("Could not start summary service. err: %v", err)
+		return errorResponse(err), nil
+	}
+
+	data, err := json.Marshal(tmp)
+	if err != nil {
+		log.Errorf("Could not marshal the response message. message: %v, err: %v", tmp, err)
+		return simpleResponse(500), nil
+	}
+
+	res := &sock.Response{
+		StatusCode: 200,
+		DataType:   "application/json",
+		Data:       data,
+	}
+
+	return res, nil
+}
+
+// processV1ServicesTypeAnalysisPost handles POST /v1/services/type/analysis request.
+//
+// This is the generic internal-only LLM gateway: it takes a prompt + data + JSON
+// schema and returns the schema-conformant structured JSON. The request and
+// response are the analysis domain types directly (pass-through internal contract).
+func (h *listenHandler) processV1ServicesTypeAnalysisPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"handler": "processV1ServicesTypeAnalysisPost",
+		"request": m,
+	})
+
+	var req analysis.Request
+	if err := json.Unmarshal([]byte(m.Data), &req); err != nil {
+		log.Errorf("Could not unmarshal the requested data. err: %v", err)
+		return simpleResponse(400), nil
+	}
+
+	tmp, err := h.analysisHandler.Run(ctx, &req)
+	if err != nil {
+		log.Errorf("Could not run the analysis gateway. err: %v", err)
 		return errorResponse(err), nil
 	}
 
