@@ -1,6 +1,6 @@
 # Timeline Activeflow AI Analysis
 
-Status: Draft (v4)
+Status: Draft (v5)
 Services: bin-timeline-manager (analysis owner + storage), bin-ai-manager (generic LLM gateway), bin-common-handler (requesthandler client)
 Date: 2026-06-23
 
@@ -189,7 +189,7 @@ type AnalysisHandler interface {
 **Ownership on every read/delete (review C1 — IDOR fix).** `Get`/`GetByActiveflowID`/`Delete` resolve the row, then compare `row.CustomerID == customerID`; on mismatch return the SAME not-found error as a truly-absent row (no existence oracle). `List` ALWAYS injects `customer_id = <caller>` into the filter set server-side and never trusts a client-supplied `customer_id` as the authority. The internal RPC endpoints (§7) therefore carry `customer_id` on every analysis operation, not just the trigger.
 
 `Start` internal flow:
-1. **Ended gate (mandatory).** Resolve the activeflow via `reqHandler.FlowV1ActiveflowGet(activeflowID)`. If `Status != ended` -> reject (`ErrActiveflowNotEnded`). This is also the **ownership** source: `activeflow.CustomerID` must equal the requesting `customerID` (timeline events carry no customer_id; flow-manager is the authority, same pattern as the correlation IDOR fix). Mismatch and not-found both masked as not-found.
+1. **Ownership FIRST, then ended gate (review F3 — order matters on a customer surface).** Resolve the activeflow via `reqHandler.FlowV1ActiveflowGet(activeflowID)`. **(a)** If the activeflow is absent OR `activeflow.CustomerID != customerID` -> masked not-found (no existence oracle). Only an owner proceeds past this point. **(b)** THEN the ended gate: if `Status != ended` -> reject (`ErrActiveflowNotEnded`). This ordering ensures a customer can never receive the distinct "not-ended" signal for a foreign activeflow (which would confirm it exists and is running). timeline events carry no customer_id; flow-manager is the ownership authority (same pattern as the correlation IDOR fix).
 2. **Existing-record policy (with race handling — review H3/#5).**
    - `GetByActiveflowID` exists and `reanalyze=false` and status `completed` -> return existing (idempotent, no LLM).
    - exists and status `failed` and `reanalyze=false` -> return existing failed (caller decides; re-run requires `reanalyze=true`).
@@ -281,16 +281,35 @@ A stage failure fails the whole chain (`failed` + error). Stage prompts are cons
 
 ### 7.1 Customer-facing REST (bin-api-manager — externally exposed, pchero decision Q5)
 
-api-manager authenticates the agent (JWT), resolves the agent's `customer_id`, and forwards to timeline-manager. **The customer NEVER supplies `customer_id`; it is server-injected from the authenticated token** (the IDOR authority). A customer can only trigger/read analyses for activeflows their own customer owns (enforced in timeline-manager via the FlowV1ActiveflowGet ownership check + row ownership).
+api-manager authenticates the agent (JWT), resolves the agent's `customer_id`, and forwards to timeline-manager. **The customer NEVER supplies `customer_id`; it is server-injected from the authenticated token** (the IDOR authority). A customer can only trigger/read analyses for activeflows their own customer owns (enforced in timeline-manager via the FlowV1ActiveflowGet ownership check + row ownership). **The request schemas (POST body, query params) MUST NOT contain a `customer_id` field (review F2)** so no client value can ever be forwarded; reads/deletes mask via the stored-row predicate `WHERE id=? AND customer_id=?`, not a re-resolved activeflow lookup.
 
 | Method/URI | Purpose | Notes |
 |---|---|---|
-| `POST /v1/timeline-analyses` | Trigger analysis. Body `{activeflow_id, reanalyze?}`. | `customer_id` injected from JWT. Returns the (progressing or existing) record. 1-minute per-activeflow reanalyze cooldown (Q7). |
+| `POST /v1/timeline-analyses` | Trigger analysis. Body `{activeflow_id, reanalyze?}`. | `customer_id` injected from JWT. Returns the (progressing or existing) record. 1-min per-activeflow reanalyze cooldown (Q7). **Cost surface — see F1 note below.** |
 | `GET /v1/timeline-analyses/<id>` | Get one analysis. | ownership-checked; masked not-found on mismatch. |
 | `GET /v1/timeline-analyses?activeflow_id=&status=&page_token=&page_size=` | List the customer's analyses. | `customer_id` server-injected as authority filter. |
 | `DELETE /v1/timeline-analyses/<id>` | Soft-delete. | ownership-checked. |
 
-Permissions follow the existing RBAC (`src/etc.js` bitwise flags): a CustomerAgent+ can read/trigger their own customer's analyses. OpenAPI spec + RST `docsdev` updated (externally exposed).
+**RBAC (review F6 — asymmetric).** Read is low-privilege; trigger/delete spend money or mutate state, so they require a higher floor: **GET/LIST = CustomerAgent+; POST (paid LLM) + DELETE (mutating) = CustomerAdmin+** (existing bitwise flags, `src/etc.js`). This prevents the lowest-privilege agent from driving spend.
+
+**Customer-facing projection (review F5 — do NOT return the raw stored record).** A deliberate internal-record -> customer-response converter drops/coarsens internal fields:
+- `model` (raw engine/stage model id): DROPPED from the customer response (couples public API to vendor/infra naming).
+- gateway `finish_reason` / token counts: never persisted into the customer result; not exposed.
+- evidence tuple: exposes `{evidence_index, event_type, timestamp, resource_id}` only. `publisher` (internal service name), `data_type`, raw `data` are EXCLUDED. `event_type` values must be the customer-facing event keys (same taxonomy as webhook docs), not internal-only types.
+- `error`: only the sanitized operator-safe string (never raw provider/stack).
+
+**REST error mapping (review F7).** api-manager maps timeline-manager sentinels:
+| Sentinel / state | HTTP |
+|---|---|
+| `ErrActiveflowNotEnded` | 409 Conflict |
+| `ErrReanalyzeCooldown` | 429 Too Many Requests |
+| not-owned / not-found / cross-customer read/delete | 404 (masked, byte-identical) |
+| trigger accepted (new or in-flight/existing) | 200 with current `status` (consistent across all return-in-flight branches) |
+| analysis ran but `status:failed` | 200 with `status:failed` (NOT a 5xx — failure is a record state) |
+
+**OpenAPI / oapi-codegen (review F4 — the recurring trap).** Every uuid field needs `format: uuid` + `x-go-type: string` or oapi-codegen v2 generates `*openapi_types.UUID` and breaks the `gofrs/uuid.FromStringOrNil(*string)` handlers: the GET/DELETE path param `{id}` AND the POST body `activeflow_id` (prior art: groupcalls `flow_id`, teams `start_member_id`). `reanalyze` stays OUT of `required:` -> generates `*bool`, handler nil-checks (default false). The `result` JSON is typed as a generic passthrough object (not deeply modeled in OpenAPI) to decouple the public schema from the internal verdict shape. Dual-generate (bin-openapi-manager models THEN bin-api-manager server), keep gen.go `@latest` marker for the CI validate gate, revert only go.mod/go.sum tool pollution. Verify post-generate that `ActiveflowId` stays `string`.
+
+> **F1 (HIGH, requires pchero decision — cost/DoS on the now-public trigger).** The 1-min cooldown only gates re-analysis of the SAME activeflow. It does NOT cap a customer triggering analysis across thousands of DISTINCT ended activeflows, each a fresh 1-3 LLM calls on the best model (plus a flow-manager RPC + a ClickHouse scan + a transcript list per call). On a customer-facing trigger this is an uncapped paid-LLM faucet and a backend-DoS amplifier. This was acceptable while internal-only (v1-v3); the Q5 exposure decision changes the calculus. **Pending pchero decision (§15 Q8):** add a per-customer control to P1 (concurrent/queued `progressing` cap returning 429, and/or a per-customer/day analysis quota). Given pchero's cost sensitivity this should likely be P1, not deferred.
 
 ### 7.2 Internal RPC (bin-timeline-manager — `bin-manager.timeline-manager.request`)
 
@@ -384,6 +403,7 @@ bin-timeline-manager:
 | Q5 | ~~Customer-facing exposure~~ RESOLVED | **pchero = customer-exposed**: api-manager <-> timeline-manager REST IS public (P1); only timeline-manager <-> ai-manager gateway stays internal. Completion webhook still deferred. | resolved |
 | Q6 | Gateway genericity vs lock-down | Internal-only + schema-required + model allow-set + input cap is the agreed control; keep prompt/data free-form for reuse. (Open: caller whitelist + cost attribution label — defer.) | CPO/CTO |
 | Q7 | ~~Cost cap / abuse ceiling~~ RESOLVED | **pchero = cooldown only, 1 minute**: per-call `analysisMaxOutputTokens` (runaway guard) + per-activeflow re-analysis cooldown `analysisReanalyzeCooldown = 1m`. No per-customer/day cap in P1. | resolved |
+| Q8 | **Customer-facing fan-out cap (review F1, NEW — needs pchero)** | Q7's cooldown only covers same-activeflow reanalyze. The Q5 customer-facing trigger lets one customer analyze thousands of DISTINCT activeflows = uncapped paid-LLM + backend DoS. Options: (a) per-customer concurrent/queued `progressing` cap -> 429; (b) per-customer/day analysis quota; (c) both. Recommend at least (a) in P1. Cooldown alone is insufficient for a public trigger. | CPO/CTO (immediate) |
 
 ## 16. Review Summary (v1 -> v2)
 
@@ -435,3 +455,16 @@ pchero decided all open questions; the design is updated accordingly:
 - **Q7 = cooldown only, 1 minute.** Per-call `analysisMaxOutputTokens` (runaway guard) + per-activeflow `analysisReanalyzeCooldown = 1m`. No per-customer/day cap in P1. (§5.2, §3.1)
 
 Remaining open (non-blocking): Q6 caller-whitelist + cost-attribution label on the generic gateway (deferred); completion webhook (deferred).
+
+## 19. Review Summary (v4 -> v5, round-3 — post customer-exposure)
+
+Round-3 review (fresh, on the Q5 customer-facing scope change) returned CHANGES REQUESTED: exposing the resource publicly introduced gaps the internal-only design did not have. Applied in v5:
+
+- **F3 (High) ownership-before-ended-gate:** reordered Start so absent/foreign activeflow is masked not-found BEFORE the not-ended check, closing a foreign-activeflow state oracle. (§5.2)
+- **F4 (High) oapi-codegen uuid trap:** `{id}` path param + `activeflow_id` body need `format:uuid`+`x-go-type:string`; `reanalyze` optional `*bool`; result as passthrough; dual-generate + verify. (§7.1)
+- **F2 (Med) no client customer_id:** request schemas carry no `customer_id`; reads/deletes mask via stored predicate. (§7.1)
+- **F5 (Med) customer projection:** drop `model`/tokens/`finish_reason`, exclude `publisher`/`data_type`/raw `data` from evidence, sanitized `error` only. (§7.1)
+- **F6 (Med) asymmetric RBAC:** GET/LIST CustomerAgent+, POST/DELETE CustomerAdmin+ (spend/mutate). (§7.1)
+- **F7 (Med) REST error mapping:** cooldown->429, not-ended->409, masked->404, failed-record->200 status:failed. (§7.1)
+- **F1 (High) customer-facing fan-out cap:** the 1-min cooldown does NOT cap analyzing thousands of DISTINCT activeflows. NOT silently overridden — raised as **Q8 for pchero** (per-customer concurrent/daily cap), since it conflicts with the earlier Q7=cooldown-only decision. (§7.1, Q8)
+- **F8/F9 (Low):** REST<->RPC name remap documented; soft-delete/resurrection-guard/enum confirmed consistent (the async `tm_delete=sentinel` guard is now security-relevant since customers can DELETE mid-analysis).
