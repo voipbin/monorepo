@@ -11,10 +11,10 @@ import (
 
 // Analysis is the persisted AI analysis of an ended activeflow.
 //
-// One live row per activeflow (UNIQUE(activeflow_id, tm_delete)). The structured
-// verdict lives in Result (a versioned JSON document, see models/verdict). The
-// analysis is produced on demand, stored once, and may be manually re-analyzed
-// (overwrite in place).
+// One live row per activeflow (UNIQUE(activeflow_id)). The structured verdict
+// lives in Result (a versioned JSON document, see models/verdict). The analysis
+// is produced on demand, stored once, and may be manually re-analyzed (overwrite
+// in place; the superseded snapshot is archived to timeline_analysis_histories).
 type Analysis struct {
 	commonidentity.Identity
 

@@ -13,6 +13,9 @@ replace monorepo/bin-contact-manager => ../bin-contact-manager
 require (
 	cloud.google.com/go/storage v1.60.0
 	github.com/ClickHouse/clickhouse-go/v2 v2.43.0
+	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/Masterminds/squirrel v1.5.4
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/gopacket v1.1.19
@@ -35,6 +38,7 @@ require (
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	cloud.google.com/go/iam v1.5.3 // indirect
 	cloud.google.com/go/monitoring v1.24.3 // indirect
+	filippo.io/edwards25519 v1.1.1 // indirect
 	github.com/ClickHouse/ch-go v0.71.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.30.0 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.55.0 // indirect
@@ -60,6 +64,8 @@ require (
 	github.com/googleapis/gax-go/v2 v2.17.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.18.3 // indirect
+	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
+	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/paulmach/orb v0.12.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
