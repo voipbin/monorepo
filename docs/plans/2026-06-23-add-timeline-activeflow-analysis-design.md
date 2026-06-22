@@ -1,6 +1,6 @@
 # Timeline Activeflow AI Analysis
 
-Status: Draft (v3)
+Status: Draft (v4)
 Services: bin-timeline-manager (analysis owner + storage), bin-ai-manager (generic LLM gateway), bin-common-handler (requesthandler client)
 Date: 2026-06-23
 
@@ -19,14 +19,16 @@ The analysis is owned and stored by timeline-manager (its domain, its format). T
 ## 2. Scope
 
 ### In scope (Phase 1)
-- **bin-ai-manager**: a generic internal-only RPC `POST /v1/services/type/analysis` that takes `{prompt, data, schema, schema_name, model?}`, calls `engine_openai_handler.Send` with `ResponseFormat=json_schema` (`Strict:true`), and returns the structured JSON (raw `json.RawMessage`) plus finish-reason/truncation and token usage. Synchronous request/response (the caller owns async). NOT exposed via api-manager / OpenAPI / RST.
+- **bin-ai-manager**: a generic internal-only RPC `POST /v1/services/type/analysis` that takes `{prompt, data, schema, schema_name, model?}`, calls `engine_openai_handler.Send` with `ResponseFormat=json_schema` (`Strict:true`), and returns the structured JSON (raw `json.RawMessage`) plus finish-reason/truncation and token usage. Synchronous request/response (the caller owns async). NOT exposed via api-manager / OpenAPI / RST. **This is the ONLY internal-only boundary (pchero decision Q5): the LLM gateway stays internal; the analysis resource itself IS customer-exposed.**
 - **bin-timeline-manager**: new MySQL dependency + `timeline_analyses` table; a new `requesthandler` capability to call ai-manager; `analysishandler` that orchestrates a **multi-stage** analysis chain over an ended activeflow and persists the structured result; new internal RPC endpoints (trigger / get / list / re-analyze / delete).
-- **bin-common-handler**: `AIV1ServiceTypeAnalysisRun` requesthandler method + interface + mock; timeline-manager's own requesthandler wiring (timeline-manager currently has no requesthandler at all).
+- **bin-api-manager**: customer-facing REST endpoints (`/v1/timeline-analyses` family, see §7) that authenticate the agent, inject the JWT-resolved `customer_id`, and forward to timeline-manager. This is the externally-exposed leg (pchero decision Q5: api-manager <-> timeline-manager is public; only timeline-manager <-> ai-manager is internal).
+- **bin-openapi-manager**: OpenAPI spec for the new customer REST endpoints. **RST docs (`docsdev`)** updated since these are externally exposed.
+- **bin-common-handler**: `AIV1ServiceTypeAnalysisRun` requesthandler method + interface + mock; the timeline-analysis requesthandler methods api-manager needs; timeline-manager's own requesthandler wiring (timeline-manager currently has no requesthandler at all).
 
 ### Out of scope (Phase 1, deferred)
-- **square-admin UI** (analysis panel, trigger button, result rendering). Separate frontend task after backend lands. Backend ships first and is exercised via RPC/CLI.
-- **Auto-trigger** on activeflow end. Unbounded LLM cost; Phase 2 minimum, requires a cost estimate first.
-- **External REST exposure** of either the gateway or the analysis (explicit pchero decision: gateway internal-only). A customer-facing analysis read endpoint can be a later phase if desired.
+- **square-admin / square-dev UI** (analysis panel, trigger button, result rendering). Separate frontend task after backend + REST land. Backend ships first and is exercised via RPC/REST/CLI.
+- **Auto-trigger** on activeflow end. Unbounded LLM cost; Phase 2 minimum, requires a cost estimate first. (pchero decision Q4: later.)
+- **External REST exposure of the LLM gateway**. The `/v1/services/type/analysis` gateway stays internal-only (pchero decision Q5). Only the analysis RESOURCE is customer-exposed.
 - **on_end_flow** trigger and **webhook events** for analysis completion. Not requested; analysis is a pull/diagnostic feature, not an event source. Listed in Open Questions.
 
 ### Rationale
@@ -191,7 +193,7 @@ type AnalysisHandler interface {
 2. **Existing-record policy (with race handling — review H3/#5).**
    - `GetByActiveflowID` exists and `reanalyze=false` and status `completed` -> return existing (idempotent, no LLM).
    - exists and status `failed` and `reanalyze=false` -> return existing failed (caller decides; re-run requires `reanalyze=true`).
-   - exists and `reanalyze=true` -> **conditionally** reset row to `progressing` via `UPDATE ... SET status='progressing', result=NULL, error='' WHERE id=? AND status != 'progressing'`. If 0 rows affected, another reanalyze already won the transition -> return the in-flight row (no second goroutine, no double-spend — review H2). On success, continue.
+   - exists and `reanalyze=true` -> **cooldown check first (Q7): reject with `ErrReanalyzeCooldown` if `now - tm_update < analysisReanalyzeCooldown` (1 minute)** so repeated manual reanalyze on one activeflow cannot loop-spend. If past cooldown, **conditionally** reset row to `progressing` via `UPDATE ... SET status='progressing', result=NULL, error='' WHERE id=? AND status != 'progressing'`. If 0 rows affected, another reanalyze already won the transition -> return the in-flight row (no second goroutine, no double-spend — review H2). On success, continue.
    - exists and status `progressing` -> return existing (a run is in flight; do not double-spend). `reanalyze=true` while `progressing` is also a no-op return of the in-flight row (does NOT restart; documented for callers). The conditional UPDATE above makes the completed->progressing transition atomic so two concurrent reanalyze calls cannot both spawn a job.
    - not exists -> create `progressing` row. **The create wraps the `UNIQUE(activeflow_id, tm_delete)` violation: if a concurrent trigger won the insert, catch the duplicate-key error, re-SELECT, and return the in-flight `progressing` row instead of surfacing a 500.** (Check-then-act race made safe by the unique constraint + dup-key catch.)
 3. **Async chain** (goroutine, `aiaudithandler` pattern): bounded by a `semaphore`, `context.WithTimeout(context.Background(), analysisJobTimeout)`, `defer recover()+debug.Stack()`, final write on a fresh 10s `context.Background()` timeout so the result persists even if the parent ctx is gone. **The final write-back guards on `tm_delete = <sentinel>` so a row soft-deleted while the goroutine ran is NOT resurrected (review #8).** The persisted `Error` string is a sanitized, operator-safe message (no raw provider errors or stack traces; the stack goes to logs only — review L2).
@@ -277,22 +279,35 @@ A stage failure fails the whole chain (`failed` + error). Stage prompts are cons
 
 ## 7. REST API
 
-None for customers. Phase 1 is internal RPC only (pchero decision). Internal RPC over `bin-manager.timeline-manager.request`. **Every analysis operation carries `customer_id` for ownership enforcement (review C1), not just the trigger:**
+### 7.1 Customer-facing REST (bin-api-manager — externally exposed, pchero decision Q5)
+
+api-manager authenticates the agent (JWT), resolves the agent's `customer_id`, and forwards to timeline-manager. **The customer NEVER supplies `customer_id`; it is server-injected from the authenticated token** (the IDOR authority). A customer can only trigger/read analyses for activeflows their own customer owns (enforced in timeline-manager via the FlowV1ActiveflowGet ownership check + row ownership).
+
+| Method/URI | Purpose | Notes |
+|---|---|---|
+| `POST /v1/timeline-analyses` | Trigger analysis. Body `{activeflow_id, reanalyze?}`. | `customer_id` injected from JWT. Returns the (progressing or existing) record. 1-minute per-activeflow reanalyze cooldown (Q7). |
+| `GET /v1/timeline-analyses/<id>` | Get one analysis. | ownership-checked; masked not-found on mismatch. |
+| `GET /v1/timeline-analyses?activeflow_id=&status=&page_token=&page_size=` | List the customer's analyses. | `customer_id` server-injected as authority filter. |
+| `DELETE /v1/timeline-analyses/<id>` | Soft-delete. | ownership-checked. |
+
+Permissions follow the existing RBAC (`src/etc.js` bitwise flags): a CustomerAgent+ can read/trigger their own customer's analyses. OpenAPI spec + RST `docsdev` updated (externally exposed).
+
+### 7.2 Internal RPC (bin-timeline-manager — `bin-manager.timeline-manager.request`)
+
+api-manager calls these via requesthandler; CLI can exercise them directly. **Every analysis operation carries `customer_id` for ownership enforcement (review C1):**
 
 | Method/URI | Purpose |
 |---|---|
-| `POST /v1/analyses` | Trigger analysis. Body `{customer_id, activeflow_id, reanalyze}`. Returns the (progressing or existing) record. |
-| `GET /v1/analyses/<uuid>?customer_id=` | Get one analysis by id; ownership-checked, masked not-found on mismatch. |
-| `GET /v1/analyses?customer_id=&activeflow_id=&status=&page_token=&page_size=` | List; `customer_id` is mandatory and server-injected as the authority filter. |
+| `POST /v1/analyses` | Trigger. Body `{customer_id, activeflow_id, reanalyze}`. |
+| `GET /v1/analyses/<uuid>?customer_id=` | Get; ownership-checked, masked not-found. |
+| `GET /v1/analyses?customer_id=&activeflow_id=&status=&page_token=&page_size=` | List; `customer_id` mandatory authority filter. |
 | `DELETE /v1/analyses/<uuid>?customer_id=` | Soft-delete; ownership-checked. |
 
-(The admin UI later calls these via api-manager only if/when a Phase 2 customer-facing read endpoint is added. Phase 1 ships backend RPC + CLI exercise.)
-
-ai-manager gateway internal RPC:
+### 7.3 Internal-only LLM gateway (bin-ai-manager — NOT exposed)
 
 | Method/URI | Purpose |
 |---|---|
-| `POST /v1/services/type/analysis` | Generic gateway: `{prompt, data, schema, schema_name, model?}` -> `{result, model, finish_reason, truncated, prompt_tokens, output_tokens}`. Internal only. |
+| `POST /v1/services/type/analysis` | Generic gateway: `{prompt, data, schema, schema_name, model?}` -> `{result, model, finish_reason, truncated, prompt_tokens, output_tokens}`. **Internal only** (pchero decision Q5: this is the single internal-only boundary). |
 
 ## 8. Webhook Events
 
@@ -327,17 +342,20 @@ bin-timeline-manager:
 ## 12. Security & Compliance
 
 - **Ownership**: every `Start` resolves `FlowV1ActiveflowGet(activeflow_id).CustomerID == customerID`; mismatch and not-found both masked as not-found (no existence oracle). `Get`/`GetByActiveflowID`/`List`/`Delete` all take `customer_id` and enforce row ownership with the same masked not-found (§5.2).
+- **Customer-facing REST authority (pchero decision Q5)**: api-manager exposes the analysis resource externally but the `customer_id` is ALWAYS server-injected from the authenticated JWT, never client-supplied. A customer can only ever reach analyses for activeflows their own customer owns. The externally-exposed leg is api-manager <-> timeline-manager; the LLM gateway leg (timeline-manager <-> ai-manager) stays internal-only.
 - **Gateway is internal-only**: not on api-manager/OpenAPI/RST; only internal managers can reach the RPC queue. Generic prompt+data is therefore not a customer-exposed LLM injection surface. Model passthrough is restricted to an allowed set; input size capped.
-- **PII / external LLM**: transcripts and event data (which may contain PII) are sent to the external LLM provider (OpenAI/compatible) via the gateway, exactly as the existing `summaryhandler`/`aiaudithandler` already do. This is consistent with current platform behavior but must be acknowledged. **Flag for CEO/CTO**: confirm activeflow analysis sending full transcripts + event payloads to the external provider is acceptable (same posture as summary/audit) — yes/no, and whether a per-customer opt-out is needed.
+- **PII / external LLM (pchero decision Q1 = A, accepted)**: transcripts and event data (which may contain PII) are sent to the external LLM provider (OpenAI/compatible) via the gateway, exactly as the existing `summaryhandler`/`aiaudithandler` already do. pchero accepted this posture (same as summary/audit). A per-customer opt-out is NOT in Phase 1; if platform-wide consent-gating of external transcript transmission is later adopted, it should cover summary/audit/analysis together, not this feature alone.
 
 ## 13. Affected Services
 
 | Service | Change | Phase |
 |---|---|---|
-| bin-ai-manager | generic analysis gateway: `models/analysis`, `pkg/analysishandler`, listenhandler route, config (allowed models, default model, input cap, timeout), metrics; unit tests | 1 |
-| bin-timeline-manager | NEW MySQL dep as a SECOND persistence engine (separate handler pkg + pool + lifecycle + mock target; ClickHouse `dbhandler` untouched) + `timeline_analyses` (Alembic, shared DB); `models/analysis` (+`Validate()`); analysis CRUD; `pkg/analysishandler` orchestration + adaptive stage chain + prompts; FIRST requesthandler wiring (publisher name, prom-collision check, CB/timeout config); listenhandler routes; metrics; unit tests | 1 |
-| bin-common-handler | `AIV1ServiceTypeAnalysisRun` requesthandler method + interface + mock | 1 |
-| square-admin | analysis panel + trigger/re-analyze button + structured render (status badge, resource chips, issues with evidence links) | 2 (separate) |
+| bin-ai-manager | generic internal-only analysis gateway: `models/analysis`, `pkg/analysishandler`, listenhandler route, config (allowed models, default model, input cap, max output tokens, timeout), metrics; unit tests | 1 |
+| bin-timeline-manager | NEW MySQL dep as a SECOND persistence engine (separate handler pkg + pool + lifecycle + mock target; ClickHouse `dbhandler` untouched) + `timeline_analyses` (Alembic, shared DB); `models/analysis` (+`Validate()`); analysis CRUD; `pkg/analysishandler` orchestration + adaptive stage chain + prompts + reanalyze cooldown; FIRST requesthandler wiring (publisher name, prom-collision check, CB/timeout config); listenhandler routes; metrics; unit tests | 1 |
+| bin-api-manager | customer-facing REST `/v1/timeline-analyses` (POST/GET/LIST/DELETE): auth + JWT customer_id injection + forward to timeline-manager via requesthandler; RBAC; unit tests | 1 |
+| bin-openapi-manager | OpenAPI spec for `/v1/timeline-analyses` + RST `docsdev` (externally exposed) | 1 |
+| bin-common-handler | `AIV1ServiceTypeAnalysisRun` + the `TimelineV1Analysis*` requesthandler methods (api-manager + timeline use) + interface + mocks | 1 |
+| square-admin / square-dev | analysis panel + trigger/re-analyze button + structured render (status badge, resource chips, issues with evidence links) | 2 (separate frontend) |
 
 ## 14. Implementation Order
 
@@ -348,21 +366,24 @@ bin-timeline-manager:
 5. bin-timeline-manager: add MySQL connection + `timeline_analyses` migration (Alembic convention) + `models/analysis` (+ `Validate()`).
 6. bin-timeline-manager: `pkg/dbhandler` analysis CRUD (Create/Get/GetByActiveflowID/List/Update/Delete).
 7. bin-timeline-manager: add requesthandler wiring (Flow/AI/Transcribe clients).
-8. bin-timeline-manager: `pkg/analysishandler` (Start gate + ownership + async chain + deterministic pre-extraction + adaptive single/3-stage chain + evidence-index resolution) + metrics + unit tests (ended-gate, ownership-mask, idempotent-existing, reanalyze-overwrite, in-flight-skip, dup-key-race, truncation, single-call-small, 3-stage-large, stage-fail->failed, validate-fail-evidence-index->failed, success).
+8. bin-timeline-manager: `pkg/analysishandler` (Start gate + ownership + reanalyze cooldown + async chain + deterministic pre-extraction + adaptive single/3-stage chain + evidence-index resolution) + metrics + unit tests (ended-gate, ownership-mask, idempotent-existing, reanalyze-overwrite, reanalyze-cooldown-reject, in-flight-skip, dup-key-race, truncation, single-call-small, 3-stage-large, stage-fail->failed, validate-fail-evidence-index->failed, success).
 9. bin-timeline-manager: listenhandler routes (POST/GET/LIST/DELETE analyses).
-10. Full verification workflow per touched service; PR review loop.
+10. bin-common-handler: `TimelineV1Analysis*` requesthandler methods (trigger/get/list/delete) + interface + mocks (used by api-manager).
+11. bin-api-manager: customer REST `/v1/timeline-analyses` (POST/GET/LIST/DELETE) with JWT customer_id injection + RBAC + forward via requesthandler; unit tests.
+12. bin-openapi-manager: OpenAPI spec for `/v1/timeline-analyses` (+ regenerate api-manager server types) + RST `docsdev`.
+13. Full verification workflow per touched service; PR review loop.
 
 ## 15. Open Questions
 
 | # | Question | Recommendation | Owner |
 |---|---|---|---|
-| Q1 | External LLM receives transcripts + event payloads (PII) for analysis | Same posture as summary/audit (already do this); confirm acceptable, consider per-customer opt-out later | CEO/CTO (immediate) |
+| Q1 | ~~External LLM receives transcripts + event payloads (PII)~~ RESOLVED | **pchero = A**: accept, same posture as summary/audit. No per-customer opt-out in P1. | resolved |
 | Q2 | ~~Alembic vs golang-migrate~~ RESOLVED | Alembic, shared MySQL instance, table in `bin-dbscheme-manager/bin-manager`; timeline-manager does no DDL. (review C2) | resolved |
-| Q3 | Stage model defaults (cost) | Stage1 cheap, Stage2 mid, Stage3 best; all overridable via env; all ⊆ gateway allow-set; document defaults | CPO/CTO |
-| Q4 | Auto-trigger on activeflow end | Defer to Phase 2 with a cost estimate (unbounded) | CPO/CTO |
-| Q5 | Customer-facing read endpoint (api-manager) + webhook on completion | Defer; add when the UI phase lands if customers (not just admins) should see it | CPO |
-| Q6 | Gateway genericity vs lock-down | Internal-only + schema-required + model allow-set + input cap is the agreed control; keep prompt/data free-form for reuse | CPO/CTO |
-| Q7 | Cost cap / abuse ceiling (review M2/H4) | Generic internal gateway + manual re-analysis + adaptive 1-3 LLM calls per run = unbounded token spend if a caller loops. P1: per-call `analysisMaxOutputTokens` (runaway guard, not cost lever) + a per-activeflow re-analysis cooldown (`analysisReanalyzeCooldown`) so repeated manual reanalyze on one activeflow cannot loop-spend. Defer a coarse per-customer/day analysis-run cap to Phase 2 (with the auto-trigger cost work). Decide whether the daily cap is needed before any non-controlled rollout | CPO/CTO |
+| Q3 | ~~Stage model defaults (cost)~~ RESOLVED | **pchero = ok**: Stage1 cheap, Stage2 mid, Stage3 best (and the SMALL combined call); all overridable via env; all ⊆ gateway allow-set. Concrete model names pinned at implementation. | resolved |
+| Q4 | ~~Auto-trigger on activeflow end~~ RESOLVED | **pchero = later**: on-demand only in P1; auto-trigger deferred to a later phase with a cost estimate. | resolved |
+| Q5 | ~~Customer-facing exposure~~ RESOLVED | **pchero = customer-exposed**: api-manager <-> timeline-manager REST IS public (P1); only timeline-manager <-> ai-manager gateway stays internal. Completion webhook still deferred. | resolved |
+| Q6 | Gateway genericity vs lock-down | Internal-only + schema-required + model allow-set + input cap is the agreed control; keep prompt/data free-form for reuse. (Open: caller whitelist + cost attribution label — defer.) | CPO/CTO |
+| Q7 | ~~Cost cap / abuse ceiling~~ RESOLVED | **pchero = cooldown only, 1 minute**: per-call `analysisMaxOutputTokens` (runaway guard) + per-activeflow re-analysis cooldown `analysisReanalyzeCooldown = 1m`. No per-customer/day cap in P1. | resolved |
 
 ## 16. Review Summary (v1 -> v2)
 
@@ -402,3 +423,15 @@ Round-2 review (fresh, post-v2) returned CHANGES REQUESTED: the v2 adaptive-stag
 - **L2 error hygiene / L3 §5.1 Name+Strict / L4 short-transcript const / L5 Stage1 outline indices:** all applied. (§5.1, §5.2, §6.3)
 
 Round-2 confirmed the round-1 fixes hold and the storage/ownership/security architecture is sound.
+
+## 18. Decisions Applied (v3 -> v4, pchero)
+
+pchero decided all open questions; the design is updated accordingly:
+
+- **Q1 = A (accept PII to external LLM).** Same posture as summary/audit; no per-customer opt-out in P1. (§12)
+- **Q3 = ok (stage models).** Stage1 cheap / Stage2 mid / Stage3 best (+ SMALL combined call uses Stage3 model); env-overridable; all in the gateway allow-set. (§6.3)
+- **Q4 = later (auto-trigger).** On-demand only in P1. (§2)
+- **Q5 = customer-exposed.** The analysis RESOURCE is externally exposed via api-manager REST (`/v1/timeline-analyses`, JWT customer_id injection, OpenAPI + RST). ONLY the timeline-manager <-> ai-manager LLM gateway stays internal-only. This added bin-api-manager + bin-openapi-manager to P1 scope. (§2, §7.1, §13)
+- **Q7 = cooldown only, 1 minute.** Per-call `analysisMaxOutputTokens` (runaway guard) + per-activeflow `analysisReanalyzeCooldown = 1m`. No per-customer/day cap in P1. (§5.2, §3.1)
+
+Remaining open (non-blocking): Q6 caller-whitelist + cost-attribution label on the generic gateway (deferred); completion webhook (deferred).
