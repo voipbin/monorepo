@@ -61,14 +61,15 @@ func Test_AgentCreate(t *testing.T) {
 			name: "have address",
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
+					ID:         uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
+					CustomerID: uuid.FromStringOrNil("00000001-0000-0000-0000-000000000000"),
 				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Addresses: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeTel,
-						Target: "+821021656521",
+						Target: "+821****6521",
 						Name:   "",
 					},
 				},
@@ -77,7 +78,8 @@ func Test_AgentCreate(t *testing.T) {
 			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
+					ID:         uuid.FromStringOrNil("0e2f3d1c-4b4e-11ec-9455-9f4517cb3460"),
+					CustomerID: uuid.FromStringOrNil("00000001-0000-0000-0000-000000000000"),
 				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
@@ -85,7 +87,7 @@ func Test_AgentCreate(t *testing.T) {
 				Addresses: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeTel,
-						Target: "+821021656521",
+						Target: "+821****6521",
 						Name:   "",
 					},
 				},
@@ -98,19 +100,20 @@ func Test_AgentCreate(t *testing.T) {
 			name: "have addresses",
 			agent: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
+					ID:         uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
+					CustomerID: uuid.FromStringOrNil("00000002-0000-0000-0000-000000000000"),
 				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
 				Addresses: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeTel,
-						Target: "+821021656521",
+						Target: "+821****6521",
 						Name:   "",
 					},
 					{
 						Type:   commonaddress.TypeTel,
-						Target: "+821021656522",
+						Target: "+821****6522",
 						Name:   "",
 					},
 				},
@@ -119,7 +122,8 @@ func Test_AgentCreate(t *testing.T) {
 			responseCurTime: testTime("2020-04-18T03:22:17.995000Z"),
 			expectRes: &agent.Agent{
 				Identity: commonidentity.Identity{
-					ID: uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
+					ID:         uuid.FromStringOrNil("523b3a6a-4b4e-11ec-b8fc-03aa2e2902d4"),
+					CustomerID: uuid.FromStringOrNil("00000002-0000-0000-0000-000000000000"),
 				},
 				Username:     "test",
 				PasswordHash: "sifD7dbCmUiBA4XqRMpZce8Bvuz8U5Wil7fwCcH8fhezEPwSNopzO",
@@ -127,12 +131,12 @@ func Test_AgentCreate(t *testing.T) {
 				Addresses: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeTel,
-						Target: "+821021656521",
+						Target: "+821****6521",
 						Name:   "",
 					},
 					{
 						Type:   commonaddress.TypeTel,
-						Target: "+821021656522",
+						Target: "+821****6522",
 						Name:   "",
 					},
 				},
@@ -481,7 +485,7 @@ func Test_AgentSetAddresses(t *testing.T) {
 			addresses: []commonaddress.Address{
 				{
 					Type:   commonaddress.TypeTel,
-					Target: "+821021656521",
+					Target: "+821****6521",
 				},
 			},
 
@@ -501,7 +505,7 @@ func Test_AgentSetAddresses(t *testing.T) {
 				Addresses: []commonaddress.Address{
 					{
 						Type:   commonaddress.TypeTel,
-						Target: "+821021656521",
+						Target: "+821****6521",
 					},
 				},
 				TMCreate: testTime("2020-04-18T03:22:17.995000Z"),

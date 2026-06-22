@@ -14,7 +14,6 @@ create table agent_agents(
   status      varchar(255),  -- agent's status
   permission  integer,
   tag_ids     json,
-  addresses   json,
 
   direct_id   binary(16),
   direct_hash varchar(255),

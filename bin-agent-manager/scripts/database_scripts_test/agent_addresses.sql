@@ -20,8 +20,6 @@ create table agent_addresses(
 );
 
 create index idx_agent_addresses_agent_id on agent_addresses(agent_id);
--- Non-unique lookup index, matching the expand-phase Alembic migration
--- (14bca52528f5). The UNIQUE(customer_id, type, target) constraint is promoted
--- in a separate operational step AFTER the backfill + duplicate-resolution gate,
--- so it is intentionally NOT present here.
-create index idx_agent_addresses_owner on agent_addresses(customer_id, type, target);
+-- UNIQUE lookup index. The UNIQUE(customer_id, type, target) constraint was
+-- promoted in ffeb3808129c after the backfill + duplicate-resolution gate.
+create unique index idx_agent_addresses_owner on agent_addresses(customer_id, type, target);
