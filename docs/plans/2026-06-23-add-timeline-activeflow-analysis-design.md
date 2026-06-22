@@ -403,7 +403,7 @@ bin-timeline-manager:
 | Q5 | ~~Customer-facing exposure~~ RESOLVED | **pchero = customer-exposed**: api-manager <-> timeline-manager REST IS public (P1); only timeline-manager <-> ai-manager gateway stays internal. Completion webhook still deferred. | resolved |
 | Q6 | Gateway genericity vs lock-down | Internal-only + schema-required + model allow-set + input cap is the agreed control; keep prompt/data free-form for reuse. (Open: caller whitelist + cost attribution label — defer.) | CPO/CTO |
 | Q7 | ~~Cost cap / abuse ceiling~~ RESOLVED | **pchero = cooldown only, 1 minute**: per-call `analysisMaxOutputTokens` (runaway guard) + per-activeflow re-analysis cooldown `analysisReanalyzeCooldown = 1m`. No per-customer/day cap in P1. | resolved |
-| Q8 | **Customer-facing fan-out cap (review F1, NEW — needs pchero)** | Q7's cooldown only covers same-activeflow reanalyze. The Q5 customer-facing trigger lets one customer analyze thousands of DISTINCT activeflows = uncapped paid-LLM + backend DoS. Options: (a) per-customer concurrent/queued `progressing` cap -> 429; (b) per-customer/day analysis quota; (c) both. Recommend at least (a) in P1. Cooldown alone is insufficient for a public trigger. | CPO/CTO (immediate) |
+| Q8 | ~~Customer-facing fan-out cap (review F1)~~ RESOLVED | **pchero = 그냥 가도 돼**: no per-customer fan-out cap in P1. The 1-min per-activeflow cooldown (Q7) + `analysisMaxOutputTokens` are the only P1 spend guards; the distinct-activeflow fan-out cap is accepted as a known, deferred risk (can be added later if abuse appears). | resolved |
 
 ## 16. Review Summary (v1 -> v2)
 
