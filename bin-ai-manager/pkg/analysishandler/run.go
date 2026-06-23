@@ -86,6 +86,15 @@ func (h *analysisHandler) Run(ctx context.Context, req *analysis.Request) (*anal
 		},
 	}
 
+	// reasoning_effort="none" disables Gemini 2.5 "thinking" so the whole
+	// max_tokens budget is available for the JSON output. Without this, large
+	// staged inputs make the model spend the budget on internal reasoning and the
+	// JSON is truncated (finish_reason=length -> unmarshal failure). Only set when
+	// configured, so an OpenAI rollback can clear it.
+	if h.reasoningEffort != "" {
+		chatReq.ReasoningEffort = h.reasoningEffort
+	}
+
 	resp, err := h.engineOpenaiHandler.Send(ctx, chatReq)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not run the chat completion")

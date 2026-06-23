@@ -160,6 +160,18 @@ func TestBootstrap(t *testing.T) {
 			} else if flagAnalysisBaseURL.DefValue != "https://generativelanguage.googleapis.com/v1beta/openai/" {
 				t.Errorf("Wrong analysis_engine_base_url default. got: %s", flagAnalysisBaseURL.DefValue)
 			}
+			flagAnalysisReasoning := rootCmd.PersistentFlags().Lookup("analysis_reasoning_effort")
+			if flagAnalysisReasoning == nil {
+				t.Errorf("Expected analysis_reasoning_effort flag to be registered")
+			} else if flagAnalysisReasoning.DefValue != "none" {
+				t.Errorf("Wrong analysis_reasoning_effort default. expect: none, got: %s", flagAnalysisReasoning.DefValue)
+			}
+			flagAnalysisMaxOut := rootCmd.PersistentFlags().Lookup("analysis_max_output_tokens")
+			if flagAnalysisMaxOut == nil {
+				t.Errorf("Expected analysis_max_output_tokens flag to be registered")
+			} else if flagAnalysisMaxOut.DefValue != "16384" {
+				t.Errorf("Wrong analysis_max_output_tokens default. expect: 16384, got: %s", flagAnalysisMaxOut.DefValue)
+			}
 		})
 	}
 }

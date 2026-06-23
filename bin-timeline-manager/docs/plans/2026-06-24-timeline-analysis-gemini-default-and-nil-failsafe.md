@@ -202,6 +202,50 @@ geminiaudithandler which runs in prod):**
 | api key env | `GOOGLE_API_KEY` (`AIza...`) | config/main.go:80, prod secret verified |
 | model (default) | `gemini-2.5-flash` | geminiaudithandler uses gemini-2.5-flash in prod |
 | response_format | `json_schema`, `Strict:false` | geminiaudithandler/main.go:251-257 |
+| reasoning_effort | `none` (disable Gemini thinking) | empirically verified, see §5.2a |
+
+### 5.2a G2 — disable Gemini thinking (reasoning_effort=none)
+
+**Production defect found post-deploy (2026-06-24).** After the branch image
+shipped to prod, large staged analyses failed with status=failed / "analysis
+failed to produce a result". Root cause confirmed from prod ai-manager logs:
+Stage 2 returned `finish_reason=length` with only ~311 output tokens, so the
+JSON was truncated → `unexpected end of JSON input` → chain fails. Gemini 2.5
+Flash enables internal "thinking" by default, and the OpenAI-compat `max_tokens`
+is a HARD cap covering thinking + output. On large inputs the model spends the
+budget on thinking and the JSON gets cut off.
+
+**Empirical verification (real Gemini OpenAI-compat endpoint, 2026-06-24):**
+same prompt, `max_tokens=120`:
+- thinking ON (no reasoning_effort): `finish_reason=length`, total 143 tokens,
+  JSON truncated — reproduces the prod failure.
+- `reasoning_effort=none`: `finish_reason=stop`, total 59 tokens, JSON complete.
+The endpoint accepts `reasoning_effort` (HTTP 200, no 400). go-openai v1.41.2
+exposes the field (`ReasoningEffort string json:"reasoning_effort,omitempty"`,
+chat.go:311).
+
+**Fix.** Set `ReasoningEffort: "none"` on the analysis gateway chat request.
+The analysis output is structured JSON; internal chain-of-thought adds no value
+and only steals the token budget. Side benefit: ~60% fewer tokens (cost down,
+aligns with the cost-sensitivity goal). This is the analysis gateway only;
+conversational AIcall is untouched (N1).
+
+Also raise `analysis_max_output_tokens` default 8192 → 16384 for headroom on
+large staged outputs (the real Stage outputs observed up to ~2261 tokens with
+thinking off; 16384 leaves comfortable margin). The `finish_reason=length`
+truncation guard stays as the backstop.
+
+Edge note: `reasoning_effort=none` is Gemini-specific. If an operator rolls the
+gateway back to OpenAI (base URL cleared), OpenAI also accepts `reasoning_effort`
+on reasoning models and ignores/permits it on others; for non-reasoning OpenAI
+models the field is a no-op. Acceptable. If a future OpenAI model rejects
+`none`, the operator can override via config (see below).
+
+Implementation: thread a `reasoning_effort` value through. Simplest: a config
+flag `analysis_reasoning_effort` (default `none`) so it is tunable per-env and
+an OpenAI rollback can clear it. Wired the same 4-site way as
+`analysis_engine_base_url`. `run.go` sets `ReasoningEffort: h.reasoningEffort`
+only when non-empty.
 
 ### 5.4 G2 — existing test updates (`run_test.go`, `config/main_test.go`)
 

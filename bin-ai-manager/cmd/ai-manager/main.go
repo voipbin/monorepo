@@ -147,6 +147,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 		strings.Split(cfg.AnalysisAllowedModels, ","),
 		cfg.AnalysisMaxInputBytes,
 		cfg.AnalysisMaxOutputTokens,
+		cfg.AnalysisReasoningEffort,
 	)
 
 	utilHandler := utilhandler.NewUtilHandler()

@@ -20,6 +20,7 @@ func newTestHandler(mockEngine engine_openai_handler.EngineOpenaiHandler) *analy
 		[]string{"gemini-2.5-flash", "gemini-2.5-pro"},
 		1024,
 		2048,
+		"none",
 	)
 	return h.(*analysisHandler)
 }
@@ -55,6 +56,10 @@ func Test_Run_success(t *testing.T) {
 			}
 			if chatReq.ResponseFormat.JSONSchema == nil || chatReq.ResponseFormat.JSONSchema.Strict {
 				t.Errorf("json schema strict must be false for Gemini compat")
+			}
+			// reasoning_effort must be propagated to disable Gemini thinking
+			if chatReq.ReasoningEffort != "none" {
+				t.Errorf("wrong reasoning_effort. expected: none, got: %s", chatReq.ReasoningEffort)
 			}
 			if chatReq.ResponseFormat.JSONSchema.Name != "verdict" {
 				t.Errorf("wrong schema name. got: %s", chatReq.ResponseFormat.JSONSchema.Name)
