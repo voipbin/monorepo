@@ -85,7 +85,7 @@ func (h *server) GetTimelineAnalyses(c *gin.Context, params openapi_server.GetTi
 
 	activeflowID := uuid.Nil
 	if params.ActiveflowId != nil {
-		activeflowID = uuid.UUID(*params.ActiveflowId)
+		activeflowID = uuid.FromStringOrNil(*params.ActiveflowId)
 	}
 
 	status := tmanalysis.Status("")

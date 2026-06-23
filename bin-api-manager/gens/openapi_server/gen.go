@@ -6913,7 +6913,7 @@ type GetTimelineAnalysesParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 
 	// ActiveflowId Filter by the analyzed activeflow ID.
-	ActiveflowId *openapi_types.UUID `form:"activeflow_id,omitempty" json:"activeflow_id,omitempty"`
+	ActiveflowId *string `form:"activeflow_id,omitempty" json:"activeflow_id,omitempty"`
 
 	// Status Filter by analysis status.
 	Status *TimelineManagerAnalysisStatus `form:"status,omitempty" json:"status,omitempty"`

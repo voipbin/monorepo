@@ -32,7 +32,7 @@ get:
 
 delete:
   summary: Delete a timeline analysis.
-  description: Soft-deletes an analysis record. The analyzed activeflow and its events are not affected. Requires CustomerAdmin or CustomerManager permission.
+  description: Permanently deletes (hard delete) an analysis record. The analyzed activeflow and its events are not affected, and the activeflow can be analyzed again afterward. Requires CustomerAdmin or CustomerManager permission.
   tags:
     - Timeline
   parameters:

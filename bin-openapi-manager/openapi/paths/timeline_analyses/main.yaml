@@ -11,6 +11,7 @@ get:
       schema:
         type: string
         format: uuid
+        x-go-type: string
       description: Filter by the analyzed activeflow ID.
     - name: status
       in: query

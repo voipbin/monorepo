@@ -20228,7 +20228,8 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "x-go-type": "string"
             },
             "description": "Filter by the analyzed activeflow ID."
           },
@@ -20396,7 +20397,7 @@
       },
       "delete": {
         "summary": "Delete a timeline analysis.",
-        "description": "Soft-deletes an analysis record. The analyzed activeflow and its events are not affected. Requires CustomerAdmin or CustomerManager permission.",
+        "description": "Permanently deletes (hard delete) an analysis record. The analyzed activeflow and its events are not affected, and the activeflow can be analyzed again afterward. Requires CustomerAdmin or CustomerManager permission.",
         "tags": [
           "Timeline"
         ],
@@ -28347,12 +28348,12 @@
             "description": "The structured analysis verdict. Null while progressing or on failure. Present on successful completion. Includes an overall status, a narrative, detected issues with evidence pointers, and per-type resource usage.\n",
             "example": {
               "version": 1,
-              "overall_status": "success",
+              "overall_status": "warning",
               "input_reduced": false,
               "narrative": "The call connected, the IVR collected the customer's intent, and the call was routed to an available agent who resolved the request.",
               "issues": [
                 {
-                  "severity": "low",
+                  "severity": "warning",
                   "area": "routing",
                   "summary": "The queue wait exceeded the configured target by 8 seconds.",
                   "evidence": [

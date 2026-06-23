@@ -6867,11 +6867,11 @@ components:
             resource usage.
           example:
             version: 1
-            overall_status: "success"
+            overall_status: "warning"
             input_reduced: false
             narrative: "The call connected, the IVR collected the customer's intent, and the call was routed to an available agent who resolved the request."
             issues:
-              - severity: "low"
+              - severity: "warning"
                 area: "routing"
                 summary: "The queue wait exceeded the configured target by 8 seconds."
                 evidence:
