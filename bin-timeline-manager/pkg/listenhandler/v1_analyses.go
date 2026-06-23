@@ -26,6 +26,8 @@ func analysisErrorResponse(err error) *sock.Response {
 	switch {
 	case errors.Is(err, analysishandler.ErrReanalyzeCooldown):
 		return simpleResponse(http.StatusTooManyRequests)
+	case errors.Is(err, analysishandler.ErrConcurrencyLimit):
+		return simpleResponse(http.StatusTooManyRequests)
 	case errors.Is(err, analysishandler.ErrActiveflowNotEnded):
 		return simpleResponse(http.StatusConflict)
 	case errors.Is(err, analysishandler.ErrNotFound):
@@ -71,6 +73,9 @@ func (h *listenHandler) v1AnalysesPost(ctx context.Context, m *sock.Request) (*s
 }
 
 // v1AnalysesGet handles GET /v1/analyses — list the customer's analyses.
+// customer_id / page_token / page_size are carried as query params (the
+// requesthandler authority), while additional filters (activeflow_id, status,
+// deleted) arrive as a JSON-marshaled filter map in the body.
 func (h *listenHandler) v1AnalysesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithField("func", "v1AnalysesGet")
 
@@ -80,14 +85,26 @@ func (h *listenHandler) v1AnalysesGet(ctx context.Context, m *sock.Request) (*so
 		return simpleResponse(http.StatusBadRequest), nil
 	}
 
+	// always inject customer_id as the server-side authority filter, plus
+	// non-deleted by default.
 	filters := map[analysis.Field]any{
 		analysis.FieldDeleted: false,
 	}
-	if af := uuid.FromStringOrNil(q.Get("activeflow_id")); af != uuid.Nil {
-		filters[analysis.FieldActiveflowID] = af
-	}
-	if st := q.Get("status"); st != "" {
-		filters[analysis.FieldStatus] = st
+
+	// merge body-supplied filters (activeflow_id, status, ...). Never let a
+	// body value override the customer_id authority.
+	if len(m.Data) > 0 {
+		var raw map[string]any
+		if err := json.Unmarshal(m.Data, &raw); err != nil {
+			log.Errorf("Could not unmarshal filters. err: %v", err)
+			return simpleResponse(http.StatusBadRequest), nil
+		}
+		for k, v := range raw {
+			if k == string(analysis.FieldCustomerID) {
+				continue // authority comes from the query param only.
+			}
+			filters[analysis.Field(k)] = normalizeFilterValue(analysis.Field(k), v)
+		}
 	}
 
 	pageToken := q.Get("page_token")
@@ -108,6 +125,18 @@ func (h *listenHandler) v1AnalysesGet(ctx context.Context, m *sock.Request) (*so
 	}
 
 	return marshalAnalysis(out)
+}
+
+// normalizeFilterValue converts JSON-decoded filter values into the concrete
+// types ApplyFields expects (uuid.UUID for *_id fields).
+func normalizeFilterValue(field analysis.Field, v any) any {
+	switch field {
+	case analysis.FieldID, analysis.FieldActiveflowID, analysis.FieldCustomerID:
+		if s, ok := v.(string); ok {
+			return uuid.FromStringOrNil(s)
+		}
+	}
+	return v
 }
 
 // v1AnalysesIDGet handles GET /v1/analyses/<uuid> — get one (ownership-checked).

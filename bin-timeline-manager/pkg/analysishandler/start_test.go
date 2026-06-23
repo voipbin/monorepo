@@ -161,6 +161,8 @@ func Test_Start_create_dup_returns_inflight(t *testing.T) {
 	reqMock.EXPECT().FlowV1ActiveflowGet(gomock.Any(), afID).Return(endedActiveflow(afID, cust), nil)
 	// no existing row.
 	dbMock.EXPECT().AnalysisGetByActiveflowID(gomock.Any(), cust, afID).Return(nil, analysisdbhandler.ErrNotFound)
+	// under the concurrency cap.
+	dbMock.EXPECT().AnalysisCountProgressing(gomock.Any(), cust).Return(int64(0), nil)
 	// create loses the race -> duplicate.
 	dbMock.EXPECT().AnalysisCreate(gomock.Any(), gomock.Any()).Return(analysisdbhandler.ErrDuplicate)
 	// re-read returns the concurrent in-flight row.
@@ -175,5 +177,24 @@ func Test_Start_create_dup_returns_inflight(t *testing.T) {
 	}
 	if res.Status != analysis.StatusProgressing {
 		t.Fatalf("expected in-flight progressing return, got %v", res.Status)
+	}
+}
+
+func Test_Start_concurrency_cap(t *testing.T) {
+	h, reqMock, dbMock, mc := newStartTestHandler(t)
+	defer mc.Finish()
+
+	cust := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	afID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+
+	reqMock.EXPECT().FlowV1ActiveflowGet(gomock.Any(), afID).Return(endedActiveflow(afID, cust), nil)
+	// no existing row -> new analysis path.
+	dbMock.EXPECT().AnalysisGetByActiveflowID(gomock.Any(), cust, afID).Return(nil, analysisdbhandler.ErrNotFound)
+	// at the cap -> reject, never create.
+	dbMock.EXPECT().AnalysisCountProgressing(gomock.Any(), cust).Return(int64(analysisMaxProgressingPerCustomer), nil)
+
+	_, err := h.Start(context.Background(), cust, afID, false)
+	if err != ErrConcurrencyLimit {
+		t.Fatalf("expected ErrConcurrencyLimit, got %v", err)
 	}
 }

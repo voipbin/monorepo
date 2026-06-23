@@ -81,6 +81,13 @@ const (
 
 	// analysisMaxConcurrentJobs bounds in-flight async chains (semaphore).
 	analysisMaxConcurrentJobs = 8
+
+	// analysisMaxProgressingPerCustomer caps the number of in-flight (progressing)
+	// analyses a single customer can have at once (design F1 — cost/DoS guard on
+	// the now-public trigger). A new-activeflow trigger past this cap returns
+	// ErrConcurrencyLimit (HTTP 429). Re-analyze of an existing row and idempotent
+	// returns do NOT count against this (they do not increase concurrency).
+	analysisMaxProgressingPerCustomer = 20
 )
 
 type analysisHandler struct {

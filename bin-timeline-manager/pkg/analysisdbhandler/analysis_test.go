@@ -270,3 +270,24 @@ func Test_AnalysisHistoryList(t *testing.T) {
 		t.Errorf("expected reason=reanalyze, got %s", res[0].Reason)
 	}
 }
+
+func Test_AnalysisCountProgressing(t *testing.T) {
+	h, mock, mc := newTestHandler(t)
+	defer mc.Finish()
+
+	cust := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+
+	rows := sqlmock.NewRows([]string{"count"}).AddRow(int64(3))
+	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM timeline_analyses").WillReturnRows(rows)
+
+	n, err := h.AnalysisCountProgressing(context.Background(), cust)
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if n != 3 {
+		t.Fatalf("expected count=3, got %d", n)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("expectations not met: %v", err)
+	}
+}

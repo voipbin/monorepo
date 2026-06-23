@@ -429,3 +429,21 @@ func (h *handler) AnalysisHistoryList(ctx context.Context, customerID, activeflo
 
 	return res, nil
 }
+
+// AnalysisCountProgressing returns the number of in-flight (progressing,
+// non-deleted) analyses for a customer (design F1 per-customer cap).
+func (h *handler) AnalysisCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error) {
+	query := fmt.Sprintf(`
+		SELECT COUNT(*) FROM %s
+		WHERE customer_id = ? AND status = 'progressing' AND tm_delete IS NULL
+	`, analysisTable)
+
+	row := h.db.QueryRowContext(ctx, query, customerID.Bytes())
+
+	var count int64
+	if err := row.Scan(&count); err != nil {
+		return 0, fmt.Errorf("AnalysisCountProgressing: could not scan. err: %v", err)
+	}
+
+	return count, nil
+}

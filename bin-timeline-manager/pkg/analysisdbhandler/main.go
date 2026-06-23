@@ -60,6 +60,11 @@ type AnalysisDBHandler interface {
 	// AnalysisHistoryList returns the append-only history for an activeflow,
 	// newest first, always filtered by customer_id.
 	AnalysisHistoryList(ctx context.Context, customerID, activeflowID uuid.UUID, size uint64, token string) ([]*analysishistory.History, error)
+
+	// AnalysisCountProgressing returns the number of in-flight (progressing,
+	// non-deleted) analyses for a customer. Used by the per-customer concurrency
+	// cap (design F1).
+	AnalysisCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error)
 }
 
 type handler struct {

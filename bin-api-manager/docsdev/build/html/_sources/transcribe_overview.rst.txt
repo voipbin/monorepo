@@ -205,7 +205,7 @@ Start transcription on an active call or conference programmatically.
    * - language
      - Language code (e.g., ``en-US``, ``ko-KR``)
    * - direction
-     - Which audio to transcribe: ``in``, ``out``, or ``both``
+     - (Optional) Which audio to transcribe: ``in``, ``out``, or ``both``. Defaults to ``both`` when omitted or empty. An invalid or unrecognized value also falls back to ``both`` rather than being rejected. The value is case-sensitive (use lowercase).
    * - provider
      - (Optional) STT provider: ``gcp`` or ``aws``. If omitted, VoIPBIN selects the best available provider automatically.
 

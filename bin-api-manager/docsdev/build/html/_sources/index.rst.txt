@@ -82,6 +82,7 @@ What you can build
    ai
    ai_voice_agent_integration
    rag
+   timeline_analysis
    team
    campaign
    outdial

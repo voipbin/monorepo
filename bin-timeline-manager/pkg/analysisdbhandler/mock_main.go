@@ -73,6 +73,21 @@ func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisArchiveAndReset(ctx, id any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisArchiveAndReset", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisArchiveAndReset), ctx, id)
 }
 
+// AnalysisCountProgressing mocks base method.
+func (m *MockAnalysisDBHandler) AnalysisCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AnalysisCountProgressing", ctx, customerID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AnalysisCountProgressing indicates an expected call of AnalysisCountProgressing.
+func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisCountProgressing(ctx, customerID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisCountProgressing", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisCountProgressing), ctx, customerID)
+}
+
 // AnalysisCreate mocks base method.
 func (m *MockAnalysisDBHandler) AnalysisCreate(ctx context.Context, a *analysis.Analysis) error {
 	m.ctrl.T.Helper()

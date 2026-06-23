@@ -56,10 +56,20 @@ func (h *analysisHandler) Start(ctx context.Context, customerID, activeflowID uu
 		return res, nil
 
 	case errors.Is(err, analysisdbhandler.ErrNotFound):
-		// no record -> create progressing, handle the concurrent-create race.
-		created, cerr := h.createProgressing(ctx, customerID, activeflowID)
+		// no record -> a genuinely new analysis. Enforce the per-customer
+		// concurrency cap BEFORE spending on a new chain (design F1).
+		count, cerr := h.dbHandler.AnalysisCountProgressing(ctx, customerID)
 		if cerr != nil {
-			return nil, cerr
+			return nil, fmt.Errorf("Start: could not count progressing analyses. err: %v", cerr)
+		}
+		if count >= analysisMaxProgressingPerCustomer {
+			return nil, ErrConcurrencyLimit
+		}
+
+		// create progressing, handle the concurrent-create race.
+		created, createErr := h.createProgressing(ctx, customerID, activeflowID)
+		if createErr != nil {
+			return nil, createErr
 		}
 		// only kick the chain when WE created the row (not when we returned a
 		// concurrent in-flight one).
