@@ -45,9 +45,9 @@ func (h *analysisHandler) List(ctx context.Context, customerID uuid.UUID, pageTo
 	return res, nil
 }
 
-// Delete soft-deletes (archive-then-delete), ownership-checked.
+// Delete hard-deletes the analysis, ownership-checked.
 func (h *analysisHandler) Delete(ctx context.Context, customerID, id uuid.UUID) (*analysis.Analysis, error) {
-	res, err := h.dbHandler.AnalysisArchiveAndDelete(ctx, customerID, id)
+	res, err := h.dbHandler.AnalysisDelete(ctx, customerID, id)
 	if err != nil {
 		if errors.Is(err, analysisdbhandler.ErrNotFound) {
 			return nil, ErrNotFound

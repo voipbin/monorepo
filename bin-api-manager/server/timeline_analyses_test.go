@@ -53,7 +53,7 @@ func Test_PostTimelineAnalyses(t *testing.T) {
 
 			expectedActiveflowID: uuid.FromStringOrNil("11110000-0000-0000-0000-000000000002"),
 			expectedReanalyze:    true,
-			expectedRes:          `{"id":"11110000-0000-0000-0000-000000000003","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"11110000-0000-0000-0000-000000000002","status":"progressing","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:          `{"id":"11110000-0000-0000-0000-000000000003","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"11110000-0000-0000-0000-000000000002","status":"progressing","tm_create":null,"tm_update":null}`,
 		},
 		{
 			name: "reanalyze omitted defaults to false",
@@ -76,7 +76,7 @@ func Test_PostTimelineAnalyses(t *testing.T) {
 
 			expectedActiveflowID: uuid.FromStringOrNil("11110000-0000-0000-0000-000000000012"),
 			expectedReanalyze:    false,
-			expectedRes:          `{"id":"11110000-0000-0000-0000-000000000013","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"11110000-0000-0000-0000-000000000012","status":"completed","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes:          `{"id":"11110000-0000-0000-0000-000000000013","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"11110000-0000-0000-0000-000000000012","status":"completed","tm_create":null,"tm_update":null}`,
 		},
 	}
 
@@ -155,7 +155,7 @@ func Test_GetTimelineAnalyses(t *testing.T) {
 			expectedPageToken:    "2020-09-20T03:23:20.995000Z",
 			expectedActiveflowID: uuid.FromStringOrNil("22220000-0000-0000-0000-000000000009"),
 			expectedStatus:       tmanalysis.StatusCompleted,
-			expectedRes:          `{"result":[{"id":"22220000-0000-0000-0000-000000000002","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","status":"completed","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectedRes:          `{"result":[{"id":"22220000-0000-0000-0000-000000000002","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","status":"completed","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 		{
 			name: "no filters",
@@ -244,7 +244,7 @@ func Test_GetTimelineAnalysesId(t *testing.T) {
 			},
 
 			expectedID:  uuid.FromStringOrNil("33330000-0000-0000-0000-000000000002"),
-			expectedRes: `{"id":"33330000-0000-0000-0000-000000000002","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","status":"completed","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes: `{"id":"33330000-0000-0000-0000-000000000002","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","status":"completed","tm_create":null,"tm_update":null}`,
 		},
 	}
 
@@ -308,7 +308,7 @@ func Test_DeleteTimelineAnalysesId(t *testing.T) {
 			},
 
 			expectedID:  uuid.FromStringOrNil("44440000-0000-0000-0000-000000000002"),
-			expectedRes: `{"id":"44440000-0000-0000-0000-000000000002","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","status":"completed","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectedRes: `{"id":"44440000-0000-0000-0000-000000000002","customer_id":"00000000-0000-0000-0000-000000000000","activeflow_id":"00000000-0000-0000-0000-000000000000","status":"completed","tm_create":null,"tm_update":null}`,
 		},
 	}
 

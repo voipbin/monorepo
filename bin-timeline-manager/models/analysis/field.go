@@ -15,8 +15,4 @@ const (
 
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
-	FieldTMDelete Field = "tm_delete"
-
-	// FieldDeleted is a synthetic filter (maps to a tm_delete predicate).
-	FieldDeleted Field = "deleted"
 )

@@ -74,8 +74,8 @@ func (h *listenHandler) v1AnalysesPost(ctx context.Context, m *sock.Request) (*s
 
 // v1AnalysesGet handles GET /v1/analyses — list the customer's analyses.
 // customer_id / page_token / page_size are carried as query params (the
-// requesthandler authority), while additional filters (activeflow_id, status,
-// deleted) arrive as a JSON-marshaled filter map in the body.
+// requesthandler authority), while additional filters (activeflow_id, status)
+// arrive as a JSON-marshaled filter map in the body.
 func (h *listenHandler) v1AnalysesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithField("func", "v1AnalysesGet")
 
@@ -85,11 +85,10 @@ func (h *listenHandler) v1AnalysesGet(ctx context.Context, m *sock.Request) (*so
 		return simpleResponse(http.StatusBadRequest), nil
 	}
 
-	// always inject customer_id as the server-side authority filter, plus
-	// non-deleted by default.
-	filters := map[analysis.Field]any{
-		analysis.FieldDeleted: false,
-	}
+	// customer_id is injected by the requesthandler authority (query param); any
+	// additional filters arrive in the body. There is no soft-delete predicate
+	// (delete is a hard delete, so every stored row is live).
+	filters := map[analysis.Field]any{}
 
 	// merge body-supplied filters (activeflow_id, status, ...). Never let a
 	// body value override the customer_id authority.

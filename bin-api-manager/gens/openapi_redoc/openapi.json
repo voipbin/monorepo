@@ -28396,14 +28396,6 @@
             "nullable": true,
             "description": "Timestamp when the analysis was last updated.",
             "example": "2026-01-15T09:30:05.000000Z"
-          },
-          "tm_delete": {
-            "type": "string",
-            "format": "date-time",
-            "x-go-type": "string",
-            "nullable": true,
-            "description": "Timestamp when the analysis was deleted.",
-            "example": "9999-01-01T00:00:00.000000Z"
           }
         }
       },

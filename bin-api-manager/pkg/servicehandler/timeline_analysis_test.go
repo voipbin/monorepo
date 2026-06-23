@@ -267,7 +267,6 @@ func Test_TimelineAnalysisGetsByCustomerID(t *testing.T) {
 			},
 
 			expectFilters: map[tmanalysis.Field]any{
-				tmanalysis.FieldDeleted:      false,
 				tmanalysis.FieldActiveflowID: uuid.FromStringOrNil("a3110000-0000-0000-0000-000000000009"),
 				tmanalysis.FieldStatus:       "completed",
 			},
@@ -297,10 +296,8 @@ func Test_TimelineAnalysisGetsByCustomerID(t *testing.T) {
 			mockToken:        "2021-01-01T00:00:00.000000Z",
 			responseAnalyses: []tmanalysis.Analysis{},
 
-			expectFilters: map[tmanalysis.Field]any{
-				tmanalysis.FieldDeleted: false,
-			},
-			expectRes: []*tmanalysis.WebhookMessage{},
+			expectFilters: map[tmanalysis.Field]any{},
+			expectRes:     []*tmanalysis.WebhookMessage{},
 		},
 	}
 

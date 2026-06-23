@@ -18,8 +18,7 @@ Timeline analysis
         "result": { ... },
         "error": "<string>",
         "tm_create": "<string>",
-        "tm_update": "<string>",
-        "tm_delete": "<string>"
+        "tm_update": "<string>"
     }
 
 * ``id`` (UUID): The analysis's unique identifier. Returned when creating via ``POST /timeline-analyses`` or listing via ``GET /timeline-analyses``.
@@ -30,7 +29,6 @@ Timeline analysis
 * ``error`` (string): A sanitized, operator-safe failure reason. Present only when ``status`` is ``failed``.
 * ``tm_create`` (string, ISO 8601): Timestamp when this analysis was created.
 * ``tm_update`` (string, ISO 8601): Timestamp when this analysis was last updated.
-* ``tm_delete`` (string, ISO 8601): Timestamp when this analysis was deleted.
 
 .. _timeline-analysis-struct-timeline-analysis-status:
 
@@ -130,6 +128,5 @@ Example
         },
         "error": "",
         "tm_create": "2024-03-01T10:06:00.000000Z",
-        "tm_update": "2024-03-01T10:06:20.000000Z",
-        "tm_delete": "9999-01-01T00:00:00.000000Z"
+        "tm_update": "2024-03-01T10:06:20.000000Z"
     }

@@ -105,9 +105,8 @@ func (h *serviceHandler) TimelineAnalysisGetsByCustomerID(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	filters := map[tmanalysis.Field]any{
-		tmanalysis.FieldDeleted: false,
-	}
+	// no soft-delete predicate: delete is a hard delete, so every stored row is live.
+	filters := map[tmanalysis.Field]any{}
 	if activeflowID != uuid.Nil {
 		filters[tmanalysis.FieldActiveflowID] = activeflowID
 	}

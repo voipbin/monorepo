@@ -4635,9 +4635,6 @@ type TimelineManagerAnalysis struct {
 	// TmCreate Timestamp when the analysis was created.
 	TmCreate *string `json:"tm_create,omitempty"`
 
-	// TmDelete Timestamp when the analysis was deleted.
-	TmDelete *string `json:"tm_delete"`
-
 	// TmUpdate Timestamp when the analysis was last updated.
 	TmUpdate *string `json:"tm_update"`
 }

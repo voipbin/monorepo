@@ -102,7 +102,6 @@ type Analysis struct {
 
     TMCreate string `json:"tm_create"`
     TMUpdate string `json:"tm_update"`
-    TMDelete string `json:"tm_delete"`
 }
 ```
 
@@ -111,21 +110,23 @@ Lifecycle:
 (trigger on ended activeflow) -> progressing
     -> [stage chain succeeds] -> completed (Result set)
     -> [stage chain fails]    -> failed   (Error set, Result empty)
-(manual re-analyze) -> overwrite same row -> progressing -> completed/failed
+(manual re-analyze) -> reset same row in place -> progressing -> completed/failed
+(delete) -> hard delete (row removed; activeflow freshly analyzable again)
 ```
 
-One **live** row per activeflow (`UNIQUE(activeflow_id)` on the live table — see §4 for why this is a single-column unique, not a `(activeflow_id, tm_delete)` composite). Re-analysis overwrites in place (status back to progressing, then result replaced); the prior result is archived to a separate append-only history table BEFORE the overwrite, so re-analysis never loses the previous verdict. Customer ownership carried on the row for read filtering.
+One row per activeflow (`UNIQUE(activeflow_id)`). Re-analysis resets the row in place (status back to progressing, then result replaced); the superseded verdict is NOT retained (the analysis is a reproducible derivative of the timeline, so there is no history/archive table — pchero decision 2026-06-23). Delete is a HARD delete: the row is physically removed, so the activeflow becomes freshly analyzable again and there is no soft-delete column. Customer ownership carried on the row for read filtering.
 
 ## 4. Database Schema (bin-timeline-manager, NEW MySQL — shared instance, Alembic)
 
-timeline-manager has no MySQL today (ClickHouse only; its `dbhandler` is ClickHouse-typed). This adds a **second, distinct persistence engine**. To avoid confusion with the ClickHouse handler, the MySQL access lives in a **separate handler package** (e.g. `pkg/analysisdbhandler` or `pkg/dbhandler/mysql`) with its own connection pool, lifecycle, config (`DATABASE_DSN`, pool sizing), and its own `go generate` mock target. The existing ClickHouse `dbhandler` is untouched. (Review #4 / blast-radius.)
+timeline-manager has no MySQL today (ClickHouse only; its `dbhandler` is ClickHouse-typed). This adds a **second, distinct persistence engine**. To avoid confusion with the ClickHouse handler, the MySQL access lives in a **separate handler package** (`pkg/analysisdbhandler`) with its own connection pool, lifecycle, config (`DATABASE_DSN`, pool sizing), and its own `go generate` mock target. The existing ClickHouse `dbhandler` is untouched. (Review #4 / blast-radius.)
 
 **Migration ownership (review C2/#2 — corrected from v1).** The monorepo manages ALL MySQL schema via **Alembic** in `bin-dbscheme-manager/bin-manager` against the **shared** MySQL instance. The v1 Open Question "Alembic vs golang-migrate" is resolved: **Alembic, shared DB.** timeline-manager's in-process `runMigrations()` stays ClickHouse/golang-migrate only and does NOT own this table. The `timeline_analyses` table is added to the shared Alembic tree; timeline-manager only reads/writes rows, never issues DDL. This is a shared-DB table (not a new timeline-private database).
 
 ```sql
 -- Added to bin-dbscheme-manager/bin-manager Alembic revision (shared MySQL instance).
 
--- Live table: exactly one row per activeflow.
+-- Single table: exactly one row per activeflow. No soft-delete column (delete is
+-- a hard delete), no history/archive table (re-analyze resets in place).
 CREATE TABLE timeline_analyses (
   id            BINARY(16)   NOT NULL,
   customer_id   BINARY(16)   NOT NULL,
@@ -138,39 +139,18 @@ CREATE TABLE timeline_analyses (
 
   tm_create     DATETIME(6)  NOT NULL,
   tm_update     DATETIME(6)  NULL,
-  tm_delete     DATETIME(6)  NULL,
 
   PRIMARY KEY (id),
   UNIQUE KEY uq_timeline_analyses_activeflow (activeflow_id),
   INDEX idx_timeline_analyses_customer_create (customer_id, tm_create)
 );
-
--- History table: append-only archive of superseded/deleted analyses.
-CREATE TABLE timeline_analysis_histories (
-  id            BINARY(16)   NOT NULL,  -- new id per history row (the archived analysis id is analysis_id)
-  analysis_id   BINARY(16)   NOT NULL,  -- the live-table id this snapshot came from
-  customer_id   BINARY(16)   NOT NULL,
-  activeflow_id BINARY(16)   NOT NULL,
-
-  status        VARCHAR(32)  NOT NULL,
-  result        JSON         NULL,
-  model         VARCHAR(255) NOT NULL DEFAULT '',
-  error         TEXT         NULL,
-  reason        VARCHAR(32)  NOT NULL,  -- 'reanalyze' | 'delete'
-
-  tm_create     DATETIME(6)  NOT NULL,  -- when this history row was written
-
-  PRIMARY KEY (id),
-  INDEX idx_timeline_analysis_histories_activeflow (activeflow_id, tm_create),
-  INDEX idx_timeline_analysis_histories_analysis (analysis_id, tm_create)
-);
 ```
 
 Notes:
-- **Two tables (pchero decision, 2026-06-23).** The original single-table `UNIQUE(activeflow_id, tm_delete)` sentinel design conflicted with the codebase's current persistence convention: migration `071504ef41d0_timestamp_sentinel_to_null` (2026-02-05) converted `tm_update`/`tm_delete` across all 40+ tables from the `'9999-01-01 ...'` sentinel to `NULL`, and the shared `databasehandler.ApplyFields` helper hardcodes `deleted=false -> tm_delete IS NULL`. Under the NULL convention a `(activeflow_id, tm_delete)` composite unique cannot enforce "one live row" (MySQL treats each NULL as distinct, allowing duplicate live rows). Splitting concerns removes the conflict: the **live** table uses a single-column `UNIQUE(activeflow_id)` (NULL convention, codebase-consistent — same as the latest async-LLM table `ai_ai_audits`), and the **history** table is append-only with no unique constraint, so it preserves the full re-analysis/deletion lineage that the single-table sentinel design was trying to encode in `tm_delete`.
-- **Archive-then-mutate.** Re-analyze and delete BOTH first `INSERT ... SELECT` the current non-progressing live row into `timeline_analysis_histories` (with `reason`), then mutate the live row, in a single transaction. So history is the durable record; the live row always reflects the latest state.
+- **Single table + hard delete (pchero decision, 2026-06-23).** Earlier iterations explored a soft-delete column plus an append-only history table. Both were dropped. The problem they created: a soft-deleted row keeps its `activeflow_id`, but `UNIQUE(activeflow_id)` does not distinguish live from deleted rows, so once an analysis was deleted the same activeflow could never be re-analyzed (the re-INSERT hit a 1062 dup that the `tm_delete IS NULL` re-read could not resolve — permanent internal error). Rather than work around this with a generated-column partial unique or a tombstone table, the model was simplified: **delete is a HARD delete** (the row is physically removed, freeing the `activeflow_id`), and there is **no history/archive table** (the analysis is a reproducible derivative of the timeline — the source events live forever in ClickHouse — so superseded verdicts are not worth retaining). The result is a single table with a single-column `UNIQUE(activeflow_id)` that cleanly enforces "one analysis per activeflow" with no lifecycle dead-ends.
+- **Re-analyze resets in place.** A re-analyze flips the existing non-progressing row back to `progressing` (CAS on `status != 'progressing'`) and clears `result`/`error`; the superseded verdict is overwritten, not archived. No transaction is needed (single UPDATE).
 - `result` JSON includes a top-level `"version"` for schema evolution.
-- **Deploy ordering (review M5):** the Alembic migration creating both tables MUST run before bin-timeline-manager's new MySQL dbhandler serves `Start`/`Get`/etc. Standard monorepo ordering (dbscheme-manager migration precedes dependent service rollout) applies; called out because timeline-manager is gaining its first MySQL tables.
+- **Deploy ordering (review M5):** the Alembic migration creating the table MUST run before bin-timeline-manager's new MySQL dbhandler serves `Start`/`Get`/etc. Standard monorepo ordering (dbscheme-manager migration precedes dependent service rollout) applies; called out because timeline-manager is gaining its first MySQL table.
 
 ## 5. Handler Interface
 
@@ -214,10 +194,10 @@ type AnalysisHandler interface {
 2. **Existing-record policy (with race handling — review H3/#5).**
    - `GetByActiveflowID` exists and `reanalyze=false` and status `completed` -> return existing (idempotent, no LLM).
    - exists and status `failed` and `reanalyze=false` -> return existing failed (caller decides; re-run requires `reanalyze=true`).
-   - exists and `reanalyze=true` -> **cooldown check first (Q7): reject with `ErrReanalyzeCooldown` if `now - tm_update < analysisReanalyzeCooldown` (1 minute)** so repeated manual reanalyze on one activeflow cannot loop-spend. If past cooldown, **conditionally** archive-then-reset in ONE transaction: `INSERT INTO timeline_analysis_histories ... SELECT ... FROM timeline_analyses WHERE activeflow_id=? AND status!='progressing'` (reason='reanalyze'), then `UPDATE ... SET status='progressing', result=NULL, error='' WHERE id=? AND status != 'progressing'`. If the UPDATE affects 0 rows, another reanalyze already won the transition -> roll back the archive insert and return the in-flight row (no second goroutine, no double-spend — review H2). On success, continue.
+   - exists and `reanalyze=true` -> **cooldown check first (Q7): reject with `ErrReanalyzeCooldown` if `now - tm_update < analysisReanalyzeCooldown` (1 minute)** so repeated manual reanalyze on one activeflow cannot loop-spend. If past cooldown, **conditionally** reset in place: `UPDATE timeline_analyses SET status='progressing', result=NULL, error='', tm_update=? WHERE id=? AND status!='progressing'` (CAS). If the UPDATE affects 0 rows, another reanalyze already won the transition (or the row is already progressing) -> return the in-flight row (no second goroutine, no double-spend — review H2). The superseded verdict is overwritten, not archived (no history table). On success, continue.
    - exists and status `progressing` -> return existing (a run is in flight; do not double-spend). `reanalyze=true` while `progressing` is also a no-op return of the in-flight row (does NOT restart; documented for callers). The conditional UPDATE above makes the completed->progressing transition atomic so two concurrent reanalyze calls cannot both spawn a job.
    - not exists -> create `progressing` row. **The create wraps the `UNIQUE(activeflow_id)` violation: if a concurrent trigger won the insert, catch the duplicate-key error, re-SELECT, and return the in-flight `progressing` row instead of surfacing a 500.** (Check-then-act race made safe by the unique constraint + dup-key catch.)
-3. **Async chain** (goroutine, `aiaudithandler` pattern): bounded by a `semaphore`, `context.WithTimeout(context.Background(), analysisJobTimeout)`, `defer recover()+debug.Stack()`, final write on a fresh 10s `context.Background()` timeout so the result persists even if the parent ctx is gone. **The final write-back guards on `status='progressing' AND tm_delete IS NULL` so a row soft-deleted while the goroutine ran is NOT resurrected (review #8).** The persisted `Error` string is a sanitized, operator-safe message (no raw provider errors or stack traces; the stack goes to logs only — review L2).
+3. **Async chain** (goroutine, `aiaudithandler` pattern): bounded by a `semaphore`, `context.WithTimeout(context.Background(), analysisJobTimeout)`, `defer recover()+debug.Stack()`, final write on a fresh 10s `context.Background()` timeout so the result persists even if the parent ctx is gone. **The final write-back guards on `status='progressing'` so a row hard-deleted while the goroutine ran is NOT resurrected (the row is gone, the UPDATE affects 0 rows — review #8).** The persisted `Error` string is a sanitized, operator-safe message (no raw provider errors or stack traces; the stack goes to logs only — review L2).
 4. Return the `progressing` row immediately to the caller (poll `Get`/`GetByActiveflowID` for completion).
 
 The async chain (see 6) collects inputs, runs the multi-stage LLM gateway calls, validates the final JSON, then `Update` the row to `completed`+result or `failed`+error.
@@ -309,7 +289,7 @@ api-manager authenticates the agent (JWT), resolves the agent's `customer_id`, a
 | `POST /v1/timeline-analyses` | Trigger analysis. Body `{activeflow_id, reanalyze?}`. | `customer_id` injected from JWT. Returns the (progressing or existing) record. 1-min per-activeflow reanalyze cooldown (Q7). **Cost surface — see F1 note below.** |
 | `GET /v1/timeline-analyses/<id>` | Get one analysis. | ownership-checked; masked not-found on mismatch. |
 | `GET /v1/timeline-analyses?activeflow_id=&status=&page_token=&page_size=` | List the customer's analyses. | `customer_id` server-injected as authority filter. |
-| `DELETE /v1/timeline-analyses/<id>` | Soft-delete. | ownership-checked. |
+| `DELETE /v1/timeline-analyses/<id>` | Hard-delete. | ownership-checked. |
 
 **RBAC (review F6 — asymmetric).** Read is low-privilege; trigger/delete spend money or mutate state, so they require a higher floor: **GET/LIST = CustomerAgent+; POST (paid LLM) + DELETE (mutating) = CustomerAdmin+** (existing bitwise flags, `src/etc.js`). This prevents the lowest-privilege agent from driving spend.
 
@@ -341,7 +321,7 @@ api-manager calls these via requesthandler; CLI can exercise them directly. **Ev
 | `POST /v1/analyses` | Trigger. Body `{customer_id, activeflow_id, reanalyze}`. |
 | `GET /v1/analyses/<uuid>?customer_id=` | Get; ownership-checked, masked not-found. |
 | `GET /v1/analyses?customer_id=&activeflow_id=&status=&page_token=&page_size=` | List; `customer_id` mandatory authority filter. |
-| `DELETE /v1/analyses/<uuid>?customer_id=` | Soft-delete; ownership-checked. |
+| `DELETE /v1/analyses/<uuid>?customer_id=` | Hard-delete; ownership-checked. |
 
 ### 7.3 Internal-only LLM gateway (bin-ai-manager — NOT exposed)
 
@@ -441,7 +421,7 @@ Two independent reviewers (both with live codebase access) returned CHANGES REQU
 - **#6 3-stage cost/latency on trivial flows:** staging made ADAPTIVE — single combined call below a size threshold, full 3-stage chain above; Stage 2/3 consume prior STRUCTURED output, not raw events again. (§6.3)
 - **M1 json_schema plumbing:** added `schema_name` (required by OpenAI), `Strict:true`, and the `additionalProperties:false` + all-required schema requirement. (§3.1)
 - **#7/M4 gateway shape:** added `finish_reason`/`truncated` so the caller detects length-truncation before `Validate()`; documented the deliberate divergence from the `service.Service` shape. (§3.1, §6.5)
-- **#8 write-back resurrection:** final async write guards on `status='progressing' AND tm_delete IS NULL`. (§5.2)
+- **#8 write-back resurrection:** final async write guards on `status='progressing'` (a hard-deleted row is gone, so the write is a no-op). (§5.2)
 - **M2 cost cap:** added as Q7 (per-call token ceiling now, per-customer/day cap before rollout).
 
 Deferred (Medium/Low, Open Questions or Phase 2): per-customer/day run cap (Q7), customer-facing read endpoint + completion webhook (Q5), auto-trigger (Q4).

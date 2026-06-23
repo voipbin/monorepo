@@ -34,8 +34,7 @@ Start an analysis for an ended activeflow. The request returns immediately with 
         "activeflow_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "status": "progressing",
         "tm_create": "2026-01-20 12:00:00.000000",
-        "tm_update": "9999-01-01 00:00:00.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_update": null
     }
 
 Triggering again for the same activeflow returns the existing analysis (it does not start a second run) unless you request a re-analysis.
@@ -80,8 +79,7 @@ Poll the analysis by ID until ``status`` becomes ``completed`` or ``failed``.
             ]
         },
         "tm_create": "2026-01-20 12:00:00.000000",
-        "tm_update": "2026-01-20 12:00:20.000000",
-        "tm_delete": "9999-01-01 00:00:00.000000"
+        "tm_update": "2026-01-20 12:00:20.000000"
     }
 
 List Analyses

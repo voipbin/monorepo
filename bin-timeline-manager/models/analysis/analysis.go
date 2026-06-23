@@ -13,8 +13,10 @@ import (
 //
 // One live row per activeflow (UNIQUE(activeflow_id)). The structured verdict
 // lives in Result (a versioned JSON document, see models/verdict). The analysis
-// is produced on demand, stored once, and may be manually re-analyzed (overwrite
-// in place; the superseded snapshot is archived to timeline_analysis_histories).
+// is produced on demand, stored once, and may be manually re-analyzed (the live
+// row is reset in place). Delete is a hard delete: the row is removed and the
+// activeflow becomes freshly analyzable again. There is no soft-delete column
+// and no history table.
 type Analysis struct {
 	commonidentity.Identity
 
@@ -27,7 +29,6 @@ type Analysis struct {
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
-	TMDelete *time.Time `json:"tm_delete" db:"tm_delete"`
 }
 
 // Status is the analysis lifecycle state. No StatusNone="" (zero-value hazard).

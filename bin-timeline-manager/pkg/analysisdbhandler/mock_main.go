@@ -12,7 +12,6 @@ package analysisdbhandler
 import (
 	context "context"
 	analysis "monorepo/bin-timeline-manager/models/analysis"
-	analysishistory "monorepo/bin-timeline-manager/models/analysishistory"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -43,36 +42,6 @@ func (m *MockAnalysisDBHandler) EXPECT() *MockAnalysisDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// AnalysisArchiveAndDelete mocks base method.
-func (m *MockAnalysisDBHandler) AnalysisArchiveAndDelete(ctx context.Context, customerID, id uuid.UUID) (*analysis.Analysis, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AnalysisArchiveAndDelete", ctx, customerID, id)
-	ret0, _ := ret[0].(*analysis.Analysis)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AnalysisArchiveAndDelete indicates an expected call of AnalysisArchiveAndDelete.
-func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisArchiveAndDelete(ctx, customerID, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisArchiveAndDelete", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisArchiveAndDelete), ctx, customerID, id)
-}
-
-// AnalysisArchiveAndReset mocks base method.
-func (m *MockAnalysisDBHandler) AnalysisArchiveAndReset(ctx context.Context, id uuid.UUID) (int64, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AnalysisArchiveAndReset", ctx, id)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AnalysisArchiveAndReset indicates an expected call of AnalysisArchiveAndReset.
-func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisArchiveAndReset(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisArchiveAndReset", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisArchiveAndReset), ctx, id)
-}
-
 // AnalysisCountProgressing mocks base method.
 func (m *MockAnalysisDBHandler) AnalysisCountProgressing(ctx context.Context, customerID uuid.UUID) (int64, error) {
 	m.ctrl.T.Helper()
@@ -100,6 +69,21 @@ func (m *MockAnalysisDBHandler) AnalysisCreate(ctx context.Context, a *analysis.
 func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisCreate(ctx, a any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisCreate", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisCreate), ctx, a)
+}
+
+// AnalysisDelete mocks base method.
+func (m *MockAnalysisDBHandler) AnalysisDelete(ctx context.Context, customerID, id uuid.UUID) (*analysis.Analysis, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AnalysisDelete", ctx, customerID, id)
+	ret0, _ := ret[0].(*analysis.Analysis)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AnalysisDelete indicates an expected call of AnalysisDelete.
+func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisDelete(ctx, customerID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisDelete", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisDelete), ctx, customerID, id)
 }
 
 // AnalysisGet mocks base method.
@@ -132,21 +116,6 @@ func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisGetByActiveflowID(ctx, cust
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisGetByActiveflowID", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisGetByActiveflowID), ctx, customerID, activeflowID)
 }
 
-// AnalysisHistoryList mocks base method.
-func (m *MockAnalysisDBHandler) AnalysisHistoryList(ctx context.Context, customerID, activeflowID uuid.UUID, size uint64, token string) ([]*analysishistory.History, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AnalysisHistoryList", ctx, customerID, activeflowID, size, token)
-	ret0, _ := ret[0].([]*analysishistory.History)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AnalysisHistoryList indicates an expected call of AnalysisHistoryList.
-func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisHistoryList(ctx, customerID, activeflowID, size, token any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisHistoryList", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisHistoryList), ctx, customerID, activeflowID, size, token)
-}
-
 // AnalysisList mocks base method.
 func (m *MockAnalysisDBHandler) AnalysisList(ctx context.Context, customerID uuid.UUID, size uint64, token string, filters map[analysis.Field]any) ([]*analysis.Analysis, error) {
 	m.ctrl.T.Helper()
@@ -160,6 +129,21 @@ func (m *MockAnalysisDBHandler) AnalysisList(ctx context.Context, customerID uui
 func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisList(ctx, customerID, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisList", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisList), ctx, customerID, size, token, filters)
+}
+
+// AnalysisReset mocks base method.
+func (m *MockAnalysisDBHandler) AnalysisReset(ctx context.Context, id uuid.UUID) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AnalysisReset", ctx, id)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AnalysisReset indicates an expected call of AnalysisReset.
+func (mr *MockAnalysisDBHandlerMockRecorder) AnalysisReset(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnalysisReset", reflect.TypeOf((*MockAnalysisDBHandler)(nil).AnalysisReset), ctx, id)
 }
 
 // AnalysisUpdateResult mocks base method.

@@ -29,7 +29,6 @@ type WebhookMessage struct {
 
 	TMCreate *time.Time `json:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update"`
-	TMDelete *time.Time `json:"tm_delete"`
 }
 
 // ConvertWebhookMessage converts the internal Analysis to its customer-facing
@@ -46,7 +45,6 @@ func (h *Analysis) ConvertWebhookMessage() *WebhookMessage {
 
 		TMCreate: h.TMCreate,
 		TMUpdate: h.TMUpdate,
-		TMDelete: h.TMDelete,
 	}
 }
 

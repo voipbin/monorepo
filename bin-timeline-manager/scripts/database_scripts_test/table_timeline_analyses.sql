@@ -11,7 +11,6 @@ CREATE TABLE timeline_analyses (
 
   tm_create datetime(6) NOT NULL,
   tm_update datetime(6),
-  tm_delete datetime(6),
 
   PRIMARY KEY(id)
 );

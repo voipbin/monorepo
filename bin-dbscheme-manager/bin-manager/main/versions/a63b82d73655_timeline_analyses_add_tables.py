@@ -19,7 +19,10 @@ depends_on = None
 def upgrade():
     # Live table: exactly one row per activeflow.
     # NULL timestamp convention (see 071504ef41d0_timestamp_sentinel_to_null);
-    # single-column UNIQUE(activeflow_id) enforces "one live analysis per activeflow".
+    # single-column UNIQUE(activeflow_id) enforces "one analysis per activeflow".
+    # Delete is a hard delete (no tm_delete column); re-analyze resets the row
+    # in place. There is no history/archive table (the analysis is a reproducible
+    # derivative of the timeline, so superseded verdicts are not retained).
     op.execute("""
         CREATE TABLE IF NOT EXISTS timeline_analyses (
             id            BINARY(16)   NOT NULL,
@@ -33,7 +36,6 @@ def upgrade():
 
             tm_create     DATETIME(6)  NOT NULL,
             tm_update     DATETIME(6)  NULL,
-            tm_delete     DATETIME(6)  NULL,
 
             PRIMARY KEY (id),
             UNIQUE KEY uq_timeline_analyses_activeflow (activeflow_id),
@@ -41,29 +43,6 @@ def upgrade():
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     """)
 
-    # History table: append-only archive of superseded/deleted analyses.
-    op.execute("""
-        CREATE TABLE IF NOT EXISTS timeline_analysis_histories (
-            id            BINARY(16)   NOT NULL,
-            analysis_id   BINARY(16)   NOT NULL,
-            customer_id   BINARY(16)   NOT NULL,
-            activeflow_id BINARY(16)   NOT NULL,
-
-            status        VARCHAR(32)  NOT NULL,
-            result        JSON         NULL,
-            model         VARCHAR(255) NOT NULL DEFAULT '',
-            error         TEXT         NULL,
-            reason        VARCHAR(32)  NOT NULL,
-
-            tm_create     DATETIME(6)  NOT NULL,
-
-            PRIMARY KEY (id),
-            INDEX idx_timeline_analysis_histories_activeflow (activeflow_id, tm_create),
-            INDEX idx_timeline_analysis_histories_analysis (analysis_id, tm_create)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    """)
-
 
 def downgrade():
-    op.execute("DROP TABLE IF EXISTS timeline_analysis_histories")
     op.execute("DROP TABLE IF EXISTS timeline_analyses")
