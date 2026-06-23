@@ -13,6 +13,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/clickhouse"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
@@ -20,9 +21,13 @@ import (
 
 	commonoutline "monorepo/bin-common-handler/models/outline"
 	"monorepo/bin-common-handler/models/sock"
+	commondatabasehandler "monorepo/bin-common-handler/pkg/databasehandler"
+	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 
 	"monorepo/bin-timeline-manager/internal/config"
+	"monorepo/bin-timeline-manager/pkg/analysisdbhandler"
+	"monorepo/bin-timeline-manager/pkg/analysishandler"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/homerhandler"
@@ -182,7 +187,31 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 
 	sipH := siphandler.NewSIPHandler(homerH, gcsReader, gcsBucket)
 
-	if errListen := runListen(sockHandler, evtHandler, sipH); errListen != nil {
+	// Build the analysis handler (MySQL store + requesthandler client). It is
+	// optional: if DATABASE_DSN is unset the analysis endpoints are not served
+	// (timeline-manager keeps its read-only ClickHouse role).
+	var analysisH analysishandler.AnalysisHandler
+	cfg := config.Get()
+	if cfg.DatabaseDSN != "" {
+		sqlDB, err := commondatabasehandler.Connect(cfg.DatabaseDSN)
+		if err != nil {
+			return nil, errors.Wrapf(err, "could not connect to analysis MySQL store")
+		}
+
+		analysisDB := analysisdbhandler.NewAnalysisDBHandler(sqlDB)
+		reqHandler := requesthandler.NewRequestHandler(sockHandler, commonoutline.ServiceNameTimelineManager)
+		models := analysishandler.StageModels{
+			Stage1: cfg.AnalysisModelStage1,
+			Stage2: cfg.AnalysisModelStage2,
+			Stage3: cfg.AnalysisModelStage3,
+		}
+		analysisH = analysishandler.NewAnalysisHandler(reqHandler, analysisDB, evtHandler, models)
+		logrus.Info("Analysis handler initialized (MySQL store + requesthandler).")
+	} else {
+		logrus.Warn("DATABASE_DSN not configured; analysis endpoints are disabled.")
+	}
+
+	if errListen := runListen(sockHandler, evtHandler, sipH, analysisH); errListen != nil {
 		return nil, errors.Wrapf(errListen, "failed to run service listen")
 	}
 
@@ -195,10 +224,10 @@ func runServices(ctx context.Context) (<-chan struct{}, error) {
 	return subscribeDone, nil
 }
 
-func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.EventHandler, sipH siphandler.SIPHandler) error {
+func runListen(sockListen sockhandler.SockHandler, evtHandler eventhandler.EventHandler, sipH siphandler.SIPHandler, analysisH analysishandler.AnalysisHandler) error {
 	log := logrus.WithField("func", "runListen")
 
-	listenHdlr := listenhandler.NewListenHandler(sockListen, evtHandler, sipH)
+	listenHdlr := listenhandler.NewListenHandler(sockListen, evtHandler, sipH, analysisH)
 
 	if errRun := listenHdlr.Run(string(commonoutline.QueueNameTimelineRequest)); errRun != nil {
 		log.Errorf("Error occurred in listen handler. err: %v", errRun)

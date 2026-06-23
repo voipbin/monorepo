@@ -15,6 +15,7 @@ import (
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-timeline-manager/models/event"
 	"monorepo/bin-timeline-manager/models/sipmessage"
+	"monorepo/bin-timeline-manager/pkg/analysishandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
@@ -28,8 +29,9 @@ func TestNewListenHandler(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
 	mockSIP := siphandler.NewMockSIPHandler(ctrl)
+	mockAnalysis := analysishandler.NewMockAnalysisHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent, mockSIP)
+	handler := NewListenHandler(mockSock, mockEvent, mockSIP, mockAnalysis)
 	if handler == nil {
 		t.Error("NewListenHandler() returned nil")
 	}
@@ -242,8 +244,9 @@ func TestRun_QueueCreateError(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
 	mockSIP := siphandler.NewMockSIPHandler(ctrl)
+	mockAnalysis := analysishandler.NewMockAnalysisHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent, mockSIP)
+	handler := NewListenHandler(mockSock, mockEvent, mockSIP, mockAnalysis)
 
 	mockSock.EXPECT().
 		QueueCreate("test-queue", "normal").
@@ -262,8 +265,9 @@ func TestRun_Success(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
 	mockSIP := siphandler.NewMockSIPHandler(ctrl)
+	mockAnalysis := analysishandler.NewMockAnalysisHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent, mockSIP)
+	handler := NewListenHandler(mockSock, mockEvent, mockSIP, mockAnalysis)
 
 	mockSock.EXPECT().
 		QueueCreate("test-queue", "normal").
@@ -1225,8 +1229,9 @@ func TestRun_ConsumeError(t *testing.T) {
 	mockSock := sockhandler.NewMockSockHandler(ctrl)
 	mockEvent := eventhandler.NewMockEventHandler(ctrl)
 	mockSIP := siphandler.NewMockSIPHandler(ctrl)
+	mockAnalysis := analysishandler.NewMockAnalysisHandler(ctrl)
 
-	handler := NewListenHandler(mockSock, mockEvent, mockSIP)
+	handler := NewListenHandler(mockSock, mockEvent, mockSIP, mockAnalysis)
 
 	mockSock.EXPECT().
 		QueueCreate("test-queue", "normal").
