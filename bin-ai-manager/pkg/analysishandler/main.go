@@ -31,6 +31,11 @@ type analysisHandler struct {
 	allowedModels map[string]bool
 	maxInputBytes int
 	maxOutputToks int
+	// reasoningEffort, when non-empty, is sent as reasoning_effort on the chat
+	// request. "none" disables Gemini 2.5 "thinking" so the token budget is spent
+	// on the JSON output, not internal reasoning (prevents finish_reason=length
+	// truncation on large staged analyses).
+	reasoningEffort string
 }
 
 var (
@@ -76,6 +81,7 @@ func NewAnalysisHandler(
 	allowedModels []string,
 	maxInputBytes int,
 	maxOutputTokens int,
+	reasoningEffort string,
 ) AnalysisHandler {
 	allowed := map[string]bool{}
 	for _, m := range allowedModels {
@@ -89,9 +95,10 @@ func NewAnalysisHandler(
 
 		engineOpenaiHandler: engineOpenaiHandler,
 
-		defaultModel:  defaultModel,
-		allowedModels: allowed,
-		maxInputBytes: maxInputBytes,
-		maxOutputToks: maxOutputTokens,
+		defaultModel:    defaultModel,
+		allowedModels:   allowed,
+		maxInputBytes:   maxInputBytes,
+		maxOutputToks:   maxOutputTokens,
+		reasoningEffort: reasoningEffort,
 	}
 }

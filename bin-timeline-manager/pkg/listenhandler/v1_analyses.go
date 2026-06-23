@@ -54,6 +54,10 @@ func marshalAnalysis(v any) (*sock.Response, error) {
 func (h *listenHandler) v1AnalysesPost(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithField("func", "v1AnalysesPost")
 
+	if h.analysisHandler == nil {
+		return simpleResponse(http.StatusServiceUnavailable), nil
+	}
+
 	var req request.V1DataAnalysesPost
 	if err := json.Unmarshal(m.Data, &req); err != nil {
 		log.Errorf("Could not unmarshal request. err: %v", err)
@@ -78,6 +82,10 @@ func (h *listenHandler) v1AnalysesPost(ctx context.Context, m *sock.Request) (*s
 // arrive as a JSON-marshaled filter map in the body.
 func (h *listenHandler) v1AnalysesGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithField("func", "v1AnalysesGet")
+
+	if h.analysisHandler == nil {
+		return simpleResponse(http.StatusServiceUnavailable), nil
+	}
 
 	q := queryValues(m.URI)
 	customerID := uuid.FromStringOrNil(q.Get("customer_id"))
@@ -142,6 +150,10 @@ func normalizeFilterValue(field analysis.Field, v any) any {
 func (h *listenHandler) v1AnalysesIDGet(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithField("func", "v1AnalysesIDGet")
 
+	if h.analysisHandler == nil {
+		return simpleResponse(http.StatusServiceUnavailable), nil
+	}
+
 	id, ok := analysisIDFromURI(m.URI)
 	if !ok {
 		return simpleResponse(http.StatusBadRequest), nil
@@ -163,6 +175,10 @@ func (h *listenHandler) v1AnalysesIDGet(ctx context.Context, m *sock.Request) (*
 // v1AnalysesIDDelete handles DELETE /v1/analyses/<uuid> — hard-delete (ownership-checked).
 func (h *listenHandler) v1AnalysesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithField("func", "v1AnalysesIDDelete")
+
+	if h.analysisHandler == nil {
+		return simpleResponse(http.StatusServiceUnavailable), nil
+	}
 
 	id, ok := analysisIDFromURI(m.URI)
 	if !ok {

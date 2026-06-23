@@ -186,3 +186,53 @@ func Test_v1Analyses_routing_id_vs_collection(t *testing.T) {
 		t.Fatalf("unexpected err: %v", err)
 	}
 }
+
+// Test_v1Analyses_nilHandler_503 verifies that when the analysisHandler is nil
+// (e.g. DATABASE_DSN unset, feature disabled), every analysis route returns
+// 503 Service Unavailable instead of panicking (VOIP-1197 fail-safe).
+func Test_v1Analyses_nilHandler_503(t *testing.T) {
+	h := &listenHandler{analysisHandler: nil}
+
+	cust := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	af := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	id := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+
+	postBody, _ := json.Marshal(map[string]any{
+		"customer_id":   cust.String(),
+		"activeflow_id": af.String(),
+	})
+
+	tests := []struct {
+		name string
+		m    *sock.Request
+	}{
+		{
+			name: "post",
+			m:    &sock.Request{URI: "/v1/analyses", Method: sock.RequestMethodPost, Data: postBody},
+		},
+		{
+			name: "list",
+			m:    &sock.Request{URI: "/v1/analyses?customer_id=" + cust.String(), Method: sock.RequestMethodGet},
+		},
+		{
+			name: "id_get",
+			m:    &sock.Request{URI: "/v1/analyses/" + id.String() + "?customer_id=" + cust.String(), Method: sock.RequestMethodGet},
+		},
+		{
+			name: "id_delete",
+			m:    &sock.Request{URI: "/v1/analyses/" + id.String() + "?customer_id=" + cust.String(), Method: sock.RequestMethodDelete},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res, err := h.processRequest(tt.m)
+			if err != nil {
+				t.Fatalf("unexpected err: %v", err)
+			}
+			if res.StatusCode != http.StatusServiceUnavailable {
+				t.Fatalf("expected 503, got %d", res.StatusCode)
+			}
+		})
+	}
+}

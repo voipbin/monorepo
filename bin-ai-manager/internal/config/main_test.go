@@ -141,6 +141,37 @@ func TestBootstrap(t *testing.T) {
 			} else if flagAIcallIdle.DefValue != "24" {
 				t.Errorf("Wrong aicall_conversation_idle_timeout_hours default. expect: 24, got: %s", flagAIcallIdle.DefValue)
 			}
+
+			flagAnalysisModel := rootCmd.PersistentFlags().Lookup("analysis_default_model")
+			if flagAnalysisModel == nil {
+				t.Errorf("Expected analysis_default_model flag to be registered")
+			} else if flagAnalysisModel.DefValue != "gemini-2.5-flash" {
+				t.Errorf("Wrong analysis_default_model default. expect: gemini-2.5-flash, got: %s", flagAnalysisModel.DefValue)
+			}
+			flagAnalysisAllowed := rootCmd.PersistentFlags().Lookup("analysis_allowed_models")
+			if flagAnalysisAllowed == nil {
+				t.Errorf("Expected analysis_allowed_models flag to be registered")
+			} else if flagAnalysisAllowed.DefValue != "gemini-2.5-flash,gemini-2.5-pro" {
+				t.Errorf("Wrong analysis_allowed_models default. expect: gemini-2.5-flash,gemini-2.5-pro, got: %s", flagAnalysisAllowed.DefValue)
+			}
+			flagAnalysisBaseURL := rootCmd.PersistentFlags().Lookup("analysis_engine_base_url")
+			if flagAnalysisBaseURL == nil {
+				t.Errorf("Expected analysis_engine_base_url flag to be registered")
+			} else if flagAnalysisBaseURL.DefValue != "https://generativelanguage.googleapis.com/v1beta/openai/" {
+				t.Errorf("Wrong analysis_engine_base_url default. got: %s", flagAnalysisBaseURL.DefValue)
+			}
+			flagAnalysisReasoning := rootCmd.PersistentFlags().Lookup("analysis_reasoning_effort")
+			if flagAnalysisReasoning == nil {
+				t.Errorf("Expected analysis_reasoning_effort flag to be registered")
+			} else if flagAnalysisReasoning.DefValue != "none" {
+				t.Errorf("Wrong analysis_reasoning_effort default. expect: none, got: %s", flagAnalysisReasoning.DefValue)
+			}
+			flagAnalysisMaxOut := rootCmd.PersistentFlags().Lookup("analysis_max_output_tokens")
+			if flagAnalysisMaxOut == nil {
+				t.Errorf("Expected analysis_max_output_tokens flag to be registered")
+			} else if flagAnalysisMaxOut.DefValue != "16384" {
+				t.Errorf("Wrong analysis_max_output_tokens default. expect: 16384, got: %s", flagAnalysisMaxOut.DefValue)
+			}
 		})
 	}
 }

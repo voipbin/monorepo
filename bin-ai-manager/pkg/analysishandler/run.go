@@ -78,9 +78,21 @@ func (h *analysisHandler) Run(ctx context.Context, req *analysis.Request) (*anal
 			JSONSchema: &openai.ChatCompletionResponseFormatJSONSchema{
 				Name:   req.SchemaName,
 				Schema: json.RawMessage(req.Schema),
-				Strict: true,
+				// Strict json_schema is not fully supported by the Gemini
+				// OpenAI-compatible endpoint (the analysis gateway provider).
+				// Matches the proven geminiaudithandler behavior.
+				Strict: false,
 			},
 		},
+	}
+
+	// reasoning_effort="none" disables Gemini 2.5 "thinking" so the whole
+	// max_tokens budget is available for the JSON output. Without this, large
+	// staged inputs make the model spend the budget on internal reasoning and the
+	// JSON is truncated (finish_reason=length -> unmarshal failure). Only set when
+	// configured, so an OpenAI rollback can clear it.
+	if h.reasoningEffort != "" {
+		chatReq.ReasoningEffort = h.reasoningEffort
 	}
 
 	resp, err := h.engineOpenaiHandler.Send(ctx, chatReq)
