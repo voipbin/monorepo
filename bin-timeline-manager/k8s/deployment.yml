@@ -24,6 +24,11 @@ spec:
           command:
             - './timeline-manager'
           env:
+            - name: DATABASE_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: DATABASE_DSN_BIN
             - name: NODE_IP
               valueFrom:
                 fieldRef:

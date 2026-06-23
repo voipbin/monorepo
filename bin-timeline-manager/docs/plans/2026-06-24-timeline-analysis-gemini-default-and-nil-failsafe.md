@@ -66,9 +66,10 @@ a Google Gemini model instead of OpenAI `gpt-4o`, for cost reasons.
 Note: `bin-ai-manager/pkg/analysishandler/main.go` (`NewAnalysisHandler`) needs
 NO change — it already accepts the engine handler as a parameter. The only
 analysishandler edit is `run.go` (Strict flag).
-| install | `k8s/backend/services/timeline-manager.yaml` | G3: add DATABASE_DSN env |
+| monorepo | `bin-timeline-manager/k8s/deployment.yml` | G3: add DATABASE_DSN env (real internal prod deploy source, replicas=2) |
+| install | `k8s/backend/services/timeline-manager.yaml` | G3: add DATABASE_DSN env (external self-hosting installer, replicas=1) |
 | install | `scripts/secret_schema.py` | G3: add (DATABASE_DSN, DATABASE_DSN_BIN) to timeline-manager secret_env |
-| (live) | GKE prod `deploy/timeline-manager` | G3: apply via install pipeline (NOT manual edit) |
+| (live) | GKE prod `deploy/timeline-manager` | G3: apply via the internal deploy pipeline (monorepo k8s), NOT manual edit |
 
 ## Exact changes (per-file)
 
@@ -222,9 +223,22 @@ Enumerate and update:
 The implementation step MUST re-grep `run_test.go` for `Strict`, `gpt-4o`,
 `gpt-4o-mini`, `gpt-4-turbo` and update every hit; the verification grep below
 asserts zero residual `gpt-` literals in ai-manager analysis test/code (except
-intentional rollback-doc comments).
+### 5.3 G3 — prod enablement (two deploy manifests)
 
-`k8s/backend/services/timeline-manager.yaml`, add to the `env:` list:
+**Deploy-source distinction (corrected post design-approval).** VoIPBin has TWO
+k8s manifest sources for the same service, and both must carry the env change:
+- **Internal production**: `monorepo/bin-timeline-manager/k8s/deployment.yml`
+  (replicas=2). This is the REAL source the internal prod GKE deploy uses.
+- **External self-hosting installer**: `install/k8s/backend/services/timeline-manager.yaml`
+  (replicas=1) + `install/scripts/secret_schema.py`. This packages the first-time
+  installer for external operators.
+
+An env/secret change like DATABASE_DSN MUST be applied to BOTH or the two drift.
+(Initial draft only touched the install repo; corrected to add the monorepo k8s
+manifest, which is what actually reaches internal prod.)
+
+**monorepo `bin-timeline-manager/k8s/deployment.yml`**, add as the first `env:`
+entry (mirrors `bin-ai-manager/k8s/deployment.yml:27-31`):
 
 ```yaml
             - name: DATABASE_DSN
@@ -234,7 +248,17 @@ intentional rollback-doc comments).
                   key: DATABASE_DSN_BIN
 ```
 
-`scripts/secret_schema.py`, in the `"timeline-manager"` block `secret_env` list
+**install `k8s/backend/services/timeline-manager.yaml`**, add to the `env:` list:
+
+```yaml
+            - name: DATABASE_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: voipbin
+                  key: DATABASE_DSN_BIN
+```
+
+`install/scripts/secret_schema.py`, in the `"timeline-manager"` block `secret_env`
 (line ~630), add as the first entry (matching ai-manager's ordering):
 
 ```python
