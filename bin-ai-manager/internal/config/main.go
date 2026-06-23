@@ -34,6 +34,7 @@ type Config struct {
 
 	AnalysisDefaultModel    string // AnalysisDefaultModel is the default model for the generic analysis gateway.
 	AnalysisAllowedModels   string // AnalysisAllowedModels is a comma-separated allow-set of models the analysis gateway accepts.
+	AnalysisEngineBaseURL   string // AnalysisEngineBaseURL is the base URL for the analysis gateway LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI).
 	AnalysisMaxInputBytes   int    // AnalysisMaxInputBytes caps the prompt+data byte size accepted by the analysis gateway.
 	AnalysisMaxOutputTokens int    // AnalysisMaxOutputTokens caps the output tokens of the analysis gateway (runaway guard).
 }
@@ -63,8 +64,9 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("engine_key_chatgpt", "", "Engine key for chatgpt")
 	f.String("google_api_key", "", "Google API key for Gemini audit evaluation")
 	f.Int("aicall_conversation_idle_timeout_hours", 24, "Idle timeout (hours) for conversation-typed AIcalls before they expire")
-	f.String("analysis_default_model", "gpt-4o", "Default model for the generic analysis gateway")
-	f.String("analysis_allowed_models", "gpt-4o,gpt-4o-mini,gpt-4-turbo", "Comma-separated allow-set of models for the analysis gateway")
+	f.String("analysis_default_model", "gemini-2.5-flash", "Default model for the generic analysis gateway")
+	f.String("analysis_allowed_models", "gemini-2.5-flash,gemini-2.5-pro", "Comma-separated allow-set of models for the analysis gateway")
+	f.String("analysis_engine_base_url", "https://generativelanguage.googleapis.com/v1beta/openai/", "Base URL for the analysis gateway LLM engine (Gemini OpenAI-compat by default; clear to use OpenAI)")
 	f.Int("analysis_max_input_bytes", 262144, "Max prompt+data bytes accepted by the analysis gateway")
 	f.Int("analysis_max_output_tokens", 8192, "Max output tokens for the analysis gateway (runaway guard)")
 
@@ -83,6 +85,7 @@ func bindConfig(cmd *cobra.Command) error {
 
 		"analysis_default_model":     "ANALYSIS_DEFAULT_MODEL",
 		"analysis_allowed_models":    "ANALYSIS_ALLOWED_MODELS",
+		"analysis_engine_base_url":   "ANALYSIS_ENGINE_BASE_URL",
 		"analysis_max_input_bytes":   "ANALYSIS_MAX_INPUT_BYTES",
 		"analysis_max_output_tokens": "ANALYSIS_MAX_OUTPUT_TOKENS",
 	}
@@ -124,6 +127,7 @@ func LoadGlobalConfig() {
 
 			AnalysisDefaultModel:    viper.GetString("analysis_default_model"),
 			AnalysisAllowedModels:   viper.GetString("analysis_allowed_models"),
+			AnalysisEngineBaseURL:   viper.GetString("analysis_engine_base_url"),
 			AnalysisMaxInputBytes:   viper.GetInt("analysis_max_input_bytes"),
 			AnalysisMaxOutputTokens: viper.GetInt("analysis_max_output_tokens"),
 		}

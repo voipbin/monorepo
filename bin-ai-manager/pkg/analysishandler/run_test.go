@@ -16,8 +16,8 @@ import (
 func newTestHandler(mockEngine engine_openai_handler.EngineOpenaiHandler) *analysisHandler {
 	h := NewAnalysisHandler(
 		mockEngine,
-		"gpt-4o",
-		[]string{"gpt-4o", "gpt-4o-mini"},
+		"gemini-2.5-flash",
+		[]string{"gemini-2.5-flash", "gemini-2.5-pro"},
 		1024,
 		2048,
 	)
@@ -36,25 +36,25 @@ func Test_Run_success(t *testing.T) {
 		Data:       json.RawMessage(`{"k":"v"}`),
 		Schema:     json.RawMessage(`{"type":"object"}`),
 		SchemaName: "verdict",
-		Model:      "gpt-4o-mini",
+		Model:      "gemini-2.5-pro",
 	}
 
 	mockEngine.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(_ context.Context, chatReq *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
 			// the requested (allowed) model must be used
-			if chatReq.Model != "gpt-4o-mini" {
-				t.Errorf("wrong model. expected: gpt-4o-mini, got: %s", chatReq.Model)
+			if chatReq.Model != "gemini-2.5-pro" {
+				t.Errorf("wrong model. expected: gemini-2.5-pro, got: %s", chatReq.Model)
 			}
 			// max tokens must be set
 			if chatReq.MaxTokens != 2048 {
 				t.Errorf("wrong max tokens. expected: 2048, got: %d", chatReq.MaxTokens)
 			}
-			// strict json_schema must be set
+			// response format must be json_schema (Strict is false for Gemini compat)
 			if chatReq.ResponseFormat == nil || chatReq.ResponseFormat.Type != openai.ChatCompletionResponseFormatTypeJSONSchema {
 				t.Errorf("response format not json_schema")
 			}
-			if chatReq.ResponseFormat.JSONSchema == nil || !chatReq.ResponseFormat.JSONSchema.Strict {
-				t.Errorf("json schema not strict")
+			if chatReq.ResponseFormat.JSONSchema == nil || chatReq.ResponseFormat.JSONSchema.Strict {
+				t.Errorf("json schema strict must be false for Gemini compat")
 			}
 			if chatReq.ResponseFormat.JSONSchema.Name != "verdict" {
 				t.Errorf("wrong schema name. got: %s", chatReq.ResponseFormat.JSONSchema.Name)
@@ -78,7 +78,7 @@ func Test_Run_success(t *testing.T) {
 	if string(res.Result) != `{"ok":true}` {
 		t.Errorf("wrong result. got: %s", res.Result)
 	}
-	if res.Model != "gpt-4o-mini" {
+	if res.Model != "gemini-2.5-pro" {
 		t.Errorf("wrong model. got: %s", res.Model)
 	}
 	if res.FinishReason != "stop" {
@@ -108,8 +108,8 @@ func Test_Run_modelFallbackToDefault(t *testing.T) {
 
 	mockEngine.EXPECT().Send(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(_ context.Context, chatReq *openai.ChatCompletionRequest) (*openai.ChatCompletionResponse, error) {
-			if chatReq.Model != "gpt-4o" {
-				t.Errorf("expected fallback to default gpt-4o, got: %s", chatReq.Model)
+			if chatReq.Model != "gemini-2.5-flash" {
+				t.Errorf("expected fallback to default gemini-2.5-flash, got: %s", chatReq.Model)
 			}
 			return &openai.ChatCompletionResponse{
 				Choices: []openai.ChatCompletionChoice{
@@ -123,7 +123,7 @@ func Test_Run_modelFallbackToDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if res.Model != "gpt-4o" {
+	if res.Model != "gemini-2.5-flash" {
 		t.Errorf("wrong model. got: %s", res.Model)
 	}
 }

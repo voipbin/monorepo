@@ -78,7 +78,10 @@ func (h *analysisHandler) Run(ctx context.Context, req *analysis.Request) (*anal
 			JSONSchema: &openai.ChatCompletionResponseFormatJSONSchema{
 				Name:   req.SchemaName,
 				Schema: json.RawMessage(req.Schema),
-				Strict: true,
+				// Strict json_schema is not fully supported by the Gemini
+				// OpenAI-compatible endpoint (the analysis gateway provider).
+				// Matches the proven geminiaudithandler behavior.
+				Strict: false,
 			},
 		},
 	}

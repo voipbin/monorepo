@@ -131,8 +131,18 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler, participantHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
+	// Build a dedicated engine for the analysis gateway. The provider is
+	// selectable by base URL (Gemini OpenAI-compat by default), and the API key
+	// is selected to match the provider so an OpenAI rollback is fully env-driven
+	// (VOIP-1197). The conversational engineOpenaiHandler (OpenAI) is unchanged.
+	analysisKey := cfg.EngineKeyChatGPT // OpenAI default
+	if strings.Contains(cfg.AnalysisEngineBaseURL, "generativelanguage") {
+		analysisKey = cfg.GoogleAPIKey
+	}
+	analysisEngine := engine_openai_handler.NewEngineOpenaiHandlerWithConfig(analysisKey, cfg.AnalysisEngineBaseURL)
+
 	analysisHandler := analysishandler.NewAnalysisHandler(
-		engineOpenaiHandler,
+		analysisEngine,
 		cfg.AnalysisDefaultModel,
 		strings.Split(cfg.AnalysisAllowedModels, ","),
 		cfg.AnalysisMaxInputBytes,

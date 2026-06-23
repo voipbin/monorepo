@@ -37,6 +37,21 @@ func NewEngineOpenaiHandler(apiKey string) EngineOpenaiHandler {
 	}
 }
 
+// NewEngineOpenaiHandlerWithConfig builds an engine against a custom base URL
+// (e.g. the Gemini OpenAI-compatible endpoint). Used by the analysis gateway so
+// the provider is selectable by config. When baseURL is empty the SDK default
+// (OpenAI, https://api.openai.com/v1) is used.
+func NewEngineOpenaiHandlerWithConfig(apiKey, baseURL string) EngineOpenaiHandler {
+	cfg := openai.DefaultConfig(apiKey)
+	if baseURL != "" {
+		cfg.BaseURL = baseURL
+	}
+
+	return &engineOpenaiHandler{
+		client: openai.NewClientWithConfig(cfg),
+	}
+}
+
 const (
 	defaultSystemPrompt = `
 	Role:
