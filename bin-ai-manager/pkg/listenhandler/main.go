@@ -18,6 +18,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
+	"monorepo/bin-ai-manager/pkg/analysishandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/messagehandler"
 	"monorepo/bin-ai-manager/pkg/participanthandler"
@@ -60,6 +61,7 @@ type listenHandler struct {
 	toolHandler             toolhandler.ToolHandler
 	teamHandler             teamhandler.TeamHandler
 	participantHandler      participanthandler.ParticipantHandler
+	analysisHandler         analysishandler.AnalysisHandler
 }
 
 var (
@@ -107,6 +109,7 @@ var (
 	regV1ServicesTypeAIcall  = regexp.MustCompile("/v1/services/type/aicall$")
 	regV1ServicesTypeSummary = regexp.MustCompile("/v1/services/type/summary$")
 	regV1ServicesTypeTask    = regexp.MustCompile("/v1/services/type/task$")
+	regV1ServicesTypeAnalysis = regexp.MustCompile("/v1/services/type/analysis$")
 
 	// summary
 	regV1SummariesGet = regexp.MustCompile(`/v1/summaries\?`)
@@ -196,6 +199,7 @@ func NewListenHandler(
 	toolHandler toolhandler.ToolHandler,
 	teamHandler teamhandler.TeamHandler,
 	participantHandler participanthandler.ParticipantHandler,
+	analysisHandler analysishandler.AnalysisHandler,
 ) ListenHandler {
 	h := &listenHandler{
 		sockHandler:   sockHandler,
@@ -214,6 +218,7 @@ func NewListenHandler(
 		toolHandler:             toolHandler,
 		teamHandler:             teamHandler,
 		participantHandler:      participantHandler,
+		analysisHandler:         analysisHandler,
 	}
 
 	return h
@@ -434,6 +439,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ServicesTypeTask.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		response, err = h.processV1ServicesTypeTaskPost(ctx, m)
 		requestType = "/v1/services/type/task"
+
+	// POST /services/type/analysis
+	case regV1ServicesTypeAnalysis.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ServicesTypeAnalysisPost(ctx, m)
+		requestType = "/v1/services/type/analysis"
 
 	/////////////////
 	// summaries

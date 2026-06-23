@@ -16,6 +16,7 @@ import (
 	cerrors "monorepo/bin-common-handler/models/errors"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	"monorepo/bin-timeline-manager/pkg/analysishandler"
 	"monorepo/bin-timeline-manager/pkg/dbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
 	"monorepo/bin-timeline-manager/pkg/siphandler"
@@ -29,6 +30,11 @@ var (
 	regV1Correlations     = regexp.MustCompile("/v1/correlations/" + regUUID + "$")
 	regV1SIPAnalysis      = regexp.MustCompile("/v1/sip/analysis$")
 	regV1SIPPcap          = regexp.MustCompile("/v1/sip/pcap$")
+
+	// analysis endpoints. The list/collection form may carry a query string, so
+	// these match the path prefix rather than anchoring on $.
+	regV1AnalysesID = regexp.MustCompile("/v1/analyses/" + regUUID)
+	regV1Analyses   = regexp.MustCompile(`/v1/analyses(\?|$)`)
 )
 
 var (
@@ -55,9 +61,10 @@ type ListenHandler interface {
 }
 
 type listenHandler struct {
-	sockHandler  sockhandler.SockHandler
-	eventHandler eventhandler.EventHandler
-	sipHandler   siphandler.SIPHandler
+	sockHandler     sockhandler.SockHandler
+	eventHandler    eventhandler.EventHandler
+	sipHandler      siphandler.SIPHandler
+	analysisHandler analysishandler.AnalysisHandler
 }
 
 // NewListenHandler creates a new ListenHandler.
@@ -65,11 +72,13 @@ func NewListenHandler(
 	sockHandler sockhandler.SockHandler,
 	eventHandler eventhandler.EventHandler,
 	sipHandler siphandler.SIPHandler,
+	analysisHandler analysishandler.AnalysisHandler,
 ) ListenHandler {
 	return &listenHandler{
-		sockHandler:  sockHandler,
-		eventHandler: eventHandler,
-		sipHandler:   sipHandler,
+		sockHandler:     sockHandler,
+		eventHandler:    eventHandler,
+		sipHandler:      sipHandler,
+		analysisHandler: analysisHandler,
 	}
 }
 
@@ -157,6 +166,23 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1Correlations.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
 		requestType = "/correlations"
 		response, err = h.v1CorrelationsGet(ctx, m)
+
+	// analysis: the /<uuid> form MUST be matched before the collection form.
+	case regV1AnalysesID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/analyses/<id>"
+		response, err = h.v1AnalysesIDGet(ctx, m)
+
+	case regV1AnalysesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		requestType = "/analyses/<id>"
+		response, err = h.v1AnalysesIDDelete(ctx, m)
+
+	case regV1Analyses.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		requestType = "/analyses"
+		response, err = h.v1AnalysesPost(ctx, m)
+
+	case regV1Analyses.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		requestType = "/analyses"
+		response, err = h.v1AnalysesGet(ctx, m)
 
 	case regV1SIPAnalysis.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
 		requestType = "/sip/analysis"

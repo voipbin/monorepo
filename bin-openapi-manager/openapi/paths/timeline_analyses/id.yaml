@@ -1,0 +1,63 @@
+get:
+  summary: Get a timeline analysis by ID.
+  description: Returns a single activeflow AI analysis record owned by the authenticated customer.
+  tags:
+    - Timeline
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+      description: The analysis ID.
+  responses:
+    '200':
+      description: The analysis record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TimelineManagerAnalysis'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Delete a timeline analysis.
+  description: Permanently deletes (hard delete) an analysis record. The analyzed activeflow and its events are not affected, and the activeflow can be analyzed again afterward. Requires CustomerAdmin or CustomerManager permission.
+  tags:
+    - Timeline
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+        x-go-type: string
+      description: The analysis ID.
+  responses:
+    '200':
+      description: The deleted analysis record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TimelineManagerAnalysis'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

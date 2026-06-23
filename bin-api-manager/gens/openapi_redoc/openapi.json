@@ -20209,6 +20209,240 @@
         }
       }
     },
+    "/timeline-analyses": {
+      "get": {
+        "summary": "Get a list of timeline analyses.",
+        "description": "Retrieves a paginated list of activeflow AI analyses for the authenticated customer.",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          },
+          {
+            "name": "activeflow_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string"
+            },
+            "description": "Filter by the analyzed activeflow ID."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TimelineManagerAnalysisStatus"
+            },
+            "description": "Filter by analysis status."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of timeline analyses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/CommonPagination"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "result": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TimelineManagerAnalysis"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Trigger an AI analysis of an ended activeflow.",
+        "description": "Analyzes a completed (ended) activeflow asynchronously, producing a structured verdict. Returns the progressing record on a fresh trigger, or the existing record when one is already present (idempotent unless `reanalyze` is set). Requires CustomerAdmin or CustomerManager permission. The analysis is scoped to the authenticated customer; the activeflow must belong to that customer and must be in the ended state.\n",
+        "tags": [
+          "Timeline"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "activeflow_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "x-go-type": "string",
+                    "description": "The ID of the ended activeflow to analyze. Returned from the `GET /activeflows` response.",
+                    "example": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+                  },
+                  "reanalyze": {
+                    "type": "boolean",
+                    "description": "When true, discards the existing completed/failed verdict and runs a fresh analysis (subject to a short cooldown). When false or omitted, an existing record is returned unchanged.\n",
+                    "example": false
+                  }
+                },
+                "required": [
+                  "activeflow_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The progressing or existing analysis record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineManagerAnalysis"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/timeline-analyses/{id}": {
+      "get": {
+        "summary": "Get a timeline analysis by ID.",
+        "description": "Returns a single activeflow AI analysis record owned by the authenticated customer.",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string"
+            },
+            "description": "The analysis ID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The analysis record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineManagerAnalysis"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a timeline analysis.",
+        "description": "Permanently deletes (hard delete) an analysis record. The analyzed activeflow and its events are not affected, and the activeflow can be analyzed again afterward. Requires CustomerAdmin or CustomerManager permission.",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "x-go-type": "string"
+            },
+            "description": "The analysis ID."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted analysis record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimelineManagerAnalysis"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/aggregated-events": {
       "get": {
         "summary": "Get aggregated timeline events",
@@ -28062,6 +28296,107 @@
             "type": "object",
             "description": "Event data in WebhookMessage format",
             "example": {}
+          }
+        }
+      },
+      "TimelineManagerAnalysisStatus": {
+        "type": "string",
+        "description": "Lifecycle state of the analysis.",
+        "example": "completed",
+        "enum": [
+          "progressing",
+          "completed",
+          "failed"
+        ],
+        "x-enum-varnames": [
+          "TimelineManagerAnalysisStatusProgressing",
+          "TimelineManagerAnalysisStatusCompleted",
+          "TimelineManagerAnalysisStatusFailed"
+        ]
+      },
+      "TimelineManagerAnalysis": {
+        "type": "object",
+        "description": "AI analysis of an ended activeflow. Produced on demand, stored once, and optionally re-analyzed. The structured verdict lives in `result` once the analysis completes.\n",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The unique identifier of the analysis. Returned from the `POST /timeline-analyses` or `GET /timeline-analyses` response.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The customer who owns this analysis.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "activeflow_id": {
+            "type": "string",
+            "format": "uuid",
+            "x-go-type": "string",
+            "description": "The ended activeflow that was analyzed. Returned from the `GET /activeflows` response.",
+            "example": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TimelineManagerAnalysisStatus"
+          },
+          "result": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The structured analysis verdict. Null while progressing or on failure. Present on successful completion. Includes an overall status, a narrative, detected issues with evidence pointers, and per-type resource usage.\n",
+            "example": {
+              "version": 1,
+              "overall_status": "warning",
+              "input_reduced": false,
+              "narrative": "The call connected, the IVR collected the customer's intent, and the call was routed to an available agent who resolved the request.",
+              "issues": [
+                {
+                  "severity": "warning",
+                  "area": "routing",
+                  "summary": "The queue wait exceeded the configured target by 8 seconds.",
+                  "evidence": [
+                    {
+                      "evidence_index": 12,
+                      "event_type": "queue_joined",
+                      "timestamp": "2026-01-15T09:30:12.000000Z",
+                      "resource_id": "5e3f8b2a-9c1d-4e6f-8a7b-2d3c4e5f6a7b"
+                    }
+                  ]
+                }
+              ],
+              "resources_used": [
+                {
+                  "type": "call",
+                  "count": 1
+                },
+                {
+                  "type": "queuecall",
+                  "count": 1
+                }
+              ]
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Sanitized failure reason when status is failed.",
+            "example": "analysis engine timed out"
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "description": "Timestamp when the analysis was created.",
+            "example": "2026-01-15T09:30:00.000000Z"
+          },
+          "tm_update": {
+            "type": "string",
+            "format": "date-time",
+            "x-go-type": "string",
+            "nullable": true,
+            "description": "Timestamp when the analysis was last updated.",
+            "example": "2026-01-15T09:30:05.000000Z"
           }
         }
       },

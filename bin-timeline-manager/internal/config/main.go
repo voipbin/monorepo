@@ -26,6 +26,14 @@ type Config struct {
 	HomerAPIAddress         string
 	HomerAuthToken          string
 	GCSBucketName           string
+
+	// MySQL (analysis store).
+	DatabaseDSN string
+
+	// Analysis stage models (must be in the ai-manager gateway allow-set).
+	AnalysisModelStage1 string
+	AnalysisModelStage2 string
+	AnalysisModelStage3 string
 }
 
 func Bootstrap(cmd *cobra.Command) error {
@@ -49,6 +57,10 @@ func bindConfig(cmd *cobra.Command) error {
 	f.String("homer_api_address", "", "Homer API address")
 	f.String("homer_auth_token", "", "Homer auth token")
 	f.String("gcs_bucket_name", "", "GCS bucket for RTP pcap recordings")
+	f.String("database_dsn", "", "MySQL DSN for the analysis store")
+	f.String("analysis_model_stage1", "", "LLM model for analysis stage 1 (inventory)")
+	f.String("analysis_model_stage2", "", "LLM model for analysis stage 2 (content)")
+	f.String("analysis_model_stage3", "", "LLM model for analysis stage 3 (diagnosis / combined)")
 
 	bindings := map[string]string{
 		"rabbitmq_address":          "RABBITMQ_ADDRESS",
@@ -60,6 +72,10 @@ func bindConfig(cmd *cobra.Command) error {
 		"homer_api_address":         "HOMER_API_ADDRESS",
 		"homer_auth_token":          "HOMER_AUTH_TOKEN",
 		"gcs_bucket_name":           "GCS_BUCKET_NAME",
+		"database_dsn":              "DATABASE_DSN",
+		"analysis_model_stage1":     "ANALYSIS_MODEL_STAGE1",
+		"analysis_model_stage2":     "ANALYSIS_MODEL_STAGE2",
+		"analysis_model_stage3":     "ANALYSIS_MODEL_STAGE3",
 	}
 
 	for flagKey, envKey := range bindings {
@@ -90,6 +106,10 @@ func LoadGlobalConfig() {
 			HomerAPIAddress:         viper.GetString("homer_api_address"),
 			HomerAuthToken:          viper.GetString("homer_auth_token"),
 			GCSBucketName:           viper.GetString("gcs_bucket_name"),
+			DatabaseDSN:             viper.GetString("database_dsn"),
+			AnalysisModelStage1:     viper.GetString("analysis_model_stage1"),
+			AnalysisModelStage2:     viper.GetString("analysis_model_stage2"),
+			AnalysisModelStage3:     viper.GetString("analysis_model_stage3"),
 		}
 		logrus.Debug("Configuration has been loaded and locked.")
 	})

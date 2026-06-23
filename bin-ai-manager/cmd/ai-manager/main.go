@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 	"monorepo/bin-ai-manager/pkg/aihandler"
 	"monorepo/bin-ai-manager/pkg/aiprompthistoryhandler"
 	"monorepo/bin-ai-manager/pkg/aipromptproposalhandler"
+	"monorepo/bin-ai-manager/pkg/analysishandler"
 	"monorepo/bin-ai-manager/pkg/cachehandler"
 	"monorepo/bin-ai-manager/pkg/dbhandler"
 	"monorepo/bin-ai-manager/pkg/engine_dialogflow_handler"
@@ -129,6 +131,14 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	aicallHandler := aicallhandler.NewAIcallHandler(requestHandler, notifyHandler, db, aiHandler, teamHandler, messageHandler, participantHandler)
 	summaryHandler := summaryhandler.NewSummaryHandler(requestHandler, notifyHandler, db, engineOpenaiHandler)
 
+	analysisHandler := analysishandler.NewAnalysisHandler(
+		engineOpenaiHandler,
+		cfg.AnalysisDefaultModel,
+		strings.Split(cfg.AnalysisAllowedModels, ","),
+		cfg.AnalysisMaxInputBytes,
+		cfg.AnalysisMaxOutputTokens,
+	)
+
 	utilHandler := utilhandler.NewUtilHandler()
 	aiprompthistoryHandler := aiprompthistoryhandler.New(db, utilHandler)
 
@@ -156,7 +166,7 @@ func run(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	}()
 
 	// run listen
-	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler); errListen != nil {
+	if errListen := runListen(sockHandler, aiHandler, aicallHandler, aiauditHandler, aiprompthistoryHandler, aipromptproposalHandler, messageHandler, summaryHandler, teamHandler, participantHandler, analysisHandler); errListen != nil {
 		log.Errorf("Could not start runListen. err: %v", errListen)
 		return errListen
 	}
@@ -216,6 +226,7 @@ func runListen(
 	summaryHandler summaryhandler.SummaryHandler,
 	teamHandler teamhandler.TeamHandler,
 	participantHandler participanthandler.ParticipantHandler,
+	analysisHandler analysishandler.AnalysisHandler,
 ) error {
 	utilHandler := utilhandler.NewUtilHandler()
 	toolHandler := toolhandler.NewToolHandler()
@@ -235,6 +246,7 @@ func runListen(
 		toolHandler,
 		teamHandler,
 		participantHandler,
+		analysisHandler,
 	)
 
 	// run

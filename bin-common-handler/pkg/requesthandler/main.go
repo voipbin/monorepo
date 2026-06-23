@@ -30,6 +30,7 @@ import (
 	amai "monorepo/bin-ai-manager/models/ai"
 	amaicall "monorepo/bin-ai-manager/models/aicall"
 	amaiaudit "monorepo/bin-ai-manager/models/aiaudit"
+	amanalysis "monorepo/bin-ai-manager/models/analysis"
 	amaiprompthistory "monorepo/bin-ai-manager/models/aiprompthistory"
 	amaipromptproposal "monorepo/bin-ai-manager/models/aipromptproposal"
 	ammessage "monorepo/bin-ai-manager/models/message"
@@ -87,6 +88,7 @@ import (
 
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
+	tmanalysis "monorepo/bin-timeline-manager/models/analysis"
 	tmcorrelation "monorepo/bin-timeline-manager/models/correlation"
 	tmevent "monorepo/bin-timeline-manager/models/event"
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
@@ -316,6 +318,7 @@ type RequestHandler interface {
 		requestTimeout int,
 	) (*service.Service, error)
 	AIV1ServiceTypeTaskStart(ctx context.Context, assistanceType amaicall.AssistanceType, assistanceID uuid.UUID, activeflowID uuid.UUID) (*service.Service, error)
+	AIV1ServiceTypeAnalysisRun(ctx context.Context, req *amanalysis.Request, requestTimeout int) (*amanalysis.Response, error)
 
 	// ai-manager summary
 	AIV1SummaryList(ctx context.Context, pageToken string, pageSize uint64, filters map[amsummary.Field]any) ([]amsummary.Summary, error)
@@ -1405,6 +1408,12 @@ type RequestHandler interface {
 	TimelineV1EventList(ctx context.Context, req *tmevent.EventListRequest) (*tmevent.EventListResponse, error)
 	TimelineV1AggregatedEventList(ctx context.Context, req *tmevent.AggregatedEventListRequest) (*tmevent.AggregatedEventListResponse, error)
 	TimelineV1CorrelationGet(ctx context.Context, resourceID uuid.UUID) (*tmcorrelation.Correlation, error)
+
+	// timeline-manager analyses
+	TimelineV1AnalysisCreate(ctx context.Context, customerID uuid.UUID, activeflowID uuid.UUID, reanalyze bool) (*tmanalysis.Analysis, error)
+	TimelineV1AnalysisGet(ctx context.Context, customerID uuid.UUID, analysisID uuid.UUID) (*tmanalysis.Analysis, error)
+	TimelineV1AnalysisList(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[tmanalysis.Field]any) ([]tmanalysis.Analysis, error)
+	TimelineV1AnalysisDelete(ctx context.Context, customerID uuid.UUID, analysisID uuid.UUID) (*tmanalysis.Analysis, error)
 
 	// timeline-manager sip
 	TimelineV1SIPAnalysisGet(ctx context.Context, callID uuid.UUID, sipCallID string, fromTime, toTime string) (*tmsipmessage.SIPAnalysisResponse, error)
