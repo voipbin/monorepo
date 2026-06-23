@@ -105,7 +105,7 @@ func (h *analysisHandler) applyExistingPolicy(ctx context.Context, existing *ana
 				return nil, true, ErrReanalyzeCooldown
 			}
 		}
-		// archive-then-reset (CAS). 0 rows means another reanalyze already won.
+		// reset in place (CAS). 0 rows means another reanalyze already won.
 		n, err := h.dbHandler.AnalysisReset(ctx, existing.ID)
 		if err != nil {
 			return nil, true, fmt.Errorf("applyExistingPolicy: could not reset for reanalyze. err: %v", err)

@@ -140,7 +140,7 @@ func (h *server) GetTimelineAnalysesId(c *gin.Context, id string) {
 	c.JSON(200, res)
 }
 
-// DeleteTimelineAnalysesId handles DELETE /timeline-analyses/{id} — soft-delete
+// DeleteTimelineAnalysesId handles DELETE /timeline-analyses/{id} — hard-delete
 // (ownership-checked). Requires CustomerAdmin+ (enforced in the servicehandler).
 func (h *server) DeleteTimelineAnalysesId(c *gin.Context, id string) {
 	log := logrus.WithFields(logrus.Fields{

@@ -33,7 +33,7 @@ type AnalysisHandler interface {
 	GetByActiveflowID(ctx context.Context, customerID, activeflowID uuid.UUID) (*analysis.Analysis, error)
 	// List returns a paginated list, always filtered by customer_id (authority).
 	List(ctx context.Context, customerID uuid.UUID, pageToken string, pageSize uint64, filters map[analysis.Field]any) ([]*analysis.Analysis, error)
-	// Delete soft-deletes (archive-then-delete), ownership-checked.
+	// Delete hard-deletes the analysis, ownership-checked.
 	Delete(ctx context.Context, customerID, id uuid.UUID) (*analysis.Analysis, error)
 }
 

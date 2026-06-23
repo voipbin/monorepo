@@ -160,7 +160,7 @@ func (h *listenHandler) v1AnalysesIDGet(ctx context.Context, m *sock.Request) (*
 	return marshalAnalysis(res)
 }
 
-// v1AnalysesIDDelete handles DELETE /v1/analyses/<uuid> — soft-delete (ownership-checked).
+// v1AnalysesIDDelete handles DELETE /v1/analyses/<uuid> — hard-delete (ownership-checked).
 func (h *listenHandler) v1AnalysesIDDelete(ctx context.Context, m *sock.Request) (*sock.Response, error) {
 	log := logrus.WithField("func", "v1AnalysesIDDelete")
 

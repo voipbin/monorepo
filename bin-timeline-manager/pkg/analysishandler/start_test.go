@@ -198,3 +198,69 @@ func Test_Start_concurrency_cap(t *testing.T) {
 		t.Fatalf("expected ErrConcurrencyLimit, got %v", err)
 	}
 }
+
+// Test_applyExistingPolicy_reanalyze_resets covers the reanalyze success path in
+// isolation (without h.kickoff's async goroutine, which would race gomock): a
+// completed row past the cooldown is reset in place (CAS wins, n=1), re-read, and
+// returned with handled=false so the caller kicks the chain.
+func Test_applyExistingPolicy_reanalyze_resets(t *testing.T) {
+	h, _, dbMock, mc := newStartTestHandler(t)
+	defer mc.Finish()
+
+	cust := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	id := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+
+	old := time.Now().Add(-10 * time.Minute) // past the 1-min cooldown
+	existing := &analysis.Analysis{Status: analysis.StatusCompleted, TMUpdate: &old}
+	existing.Identity = commonidentity.Identity{ID: id, CustomerID: cust}
+
+	// CAS reset wins (1 row affected).
+	dbMock.EXPECT().AnalysisReset(gomock.Any(), id).Return(int64(1), nil)
+	// re-read returns the now-progressing row.
+	reset := &analysis.Analysis{Status: analysis.StatusProgressing}
+	reset.Identity = commonidentity.Identity{ID: id, CustomerID: cust}
+	dbMock.EXPECT().AnalysisGet(gomock.Any(), cust, id).Return(reset, nil)
+
+	res, handled, err := h.applyExistingPolicy(context.Background(), existing, true)
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if handled {
+		t.Fatalf("expected handled=false (caller must start the chain), got true")
+	}
+	if res.Status != analysis.StatusProgressing {
+		t.Fatalf("expected progressing reset row, got %v", res.Status)
+	}
+}
+
+// Test_applyExistingPolicy_reanalyze_reset_lost_race covers the CAS-lost branch:
+// another reanalyze already flipped the row, so AnalysisReset affects 0 rows and
+// we return the concurrent in-flight row with handled=true (no second goroutine).
+func Test_applyExistingPolicy_reanalyze_reset_lost_race(t *testing.T) {
+	h, _, dbMock, mc := newStartTestHandler(t)
+	defer mc.Finish()
+
+	cust := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	id := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+
+	old := time.Now().Add(-10 * time.Minute)
+	existing := &analysis.Analysis{Status: analysis.StatusFailed, TMUpdate: &old}
+	existing.Identity = commonidentity.Identity{ID: id, CustomerID: cust}
+
+	// CAS reset loses (0 rows affected) -> someone else won the reanalyze.
+	dbMock.EXPECT().AnalysisReset(gomock.Any(), id).Return(int64(0), nil)
+	inflight := &analysis.Analysis{Status: analysis.StatusProgressing}
+	inflight.Identity = commonidentity.Identity{ID: id, CustomerID: cust}
+	dbMock.EXPECT().AnalysisGet(gomock.Any(), cust, id).Return(inflight, nil)
+
+	res, handled, err := h.applyExistingPolicy(context.Background(), existing, true)
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if !handled {
+		t.Fatalf("expected handled=true (no second chain), got false")
+	}
+	if res.Status != analysis.StatusProgressing {
+		t.Fatalf("expected in-flight progressing row, got %v", res.Status)
+	}
+}

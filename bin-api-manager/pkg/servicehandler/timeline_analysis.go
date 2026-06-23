@@ -127,7 +127,7 @@ func (h *serviceHandler) TimelineAnalysisGetsByCustomerID(
 	return res, nil
 }
 
-// TimelineAnalysisDelete soft-deletes an analysis after an ownership check. The
+// TimelineAnalysisDelete hard-deletes an analysis after checking ownership. The
 // associated activeflow and its events are not affected. customer_id is
 // server-injected; cross-customer/absent records are masked as not-found (404).
 func (h *serviceHandler) TimelineAnalysisDelete(
