@@ -16,7 +16,6 @@ import (
 	"monorepo/bin-timeline-manager/models/analysis"
 	"monorepo/bin-timeline-manager/pkg/analysishandler"
 	"monorepo/bin-timeline-manager/pkg/listenhandler/models/request"
-	"monorepo/bin-timeline-manager/pkg/listenhandler/models/response"
 )
 
 // analysisErrorResponse maps analysishandler sentinels to HTTP status codes
@@ -123,15 +122,10 @@ func (h *listenHandler) v1AnalysesGet(ctx context.Context, m *sock.Request) (*so
 		return analysisErrorResponse(err), nil
 	}
 
-	out := &response.V1DataAnalysesList{Result: res}
-	if uint64(len(res)) == pageSize && pageSize > 0 {
-		last := res[len(res)-1]
-		if last.TMCreate != nil {
-			out.NextPageToken = last.TMCreate.Format("2006-01-02 15:04:05.000000")
-		}
-	}
-
-	return marshalAnalysis(out)
+	// Return a bare array, matching the platform-majority list contract
+	// (call/message/etc.): the requesthandler unmarshals into []analysis.Analysis
+	// and the api-manager server computes next_page_token from the last row.
+	return marshalAnalysis(res)
 }
 
 // normalizeFilterValue converts JSON-decoded filter values into the concrete

@@ -149,6 +149,47 @@ func Test_v1AnalysesGet_list(t *testing.T) {
 	defer ctrl.Finish()
 
 	cust := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
+	af := uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444")
+	m := &sock.Request{
+		URI:    "/v1/analyses?customer_id=" + cust.String() + "&page_size=10",
+		Method: sock.RequestMethodGet,
+	}
+
+	mockAnalysis.EXPECT().
+		List(gomock.Any(), cust, "", uint64(10), gomock.Any()).
+		Return([]*analysis.Analysis{{ActiveflowID: af}}, nil)
+
+	res, err := h.processRequest(m)
+	if err != nil {
+		t.Fatalf("unexpected err: %v", err)
+	}
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200, got %d", res.StatusCode)
+	}
+
+	// The list response MUST be a bare JSON array, matching the platform-majority
+	// list contract that the bin-common-handler requesthandler unmarshals into
+	// []analysis.Analysis. Emitting an object wrapper ({result,next_page_token})
+	// here is what caused the VOIP-1199 "cannot unmarshal object into
+	// []analysis.Analysis" 500. Guard the wire shape, not just the status code.
+	var got []*analysis.Analysis
+	if err := json.Unmarshal(res.Data, &got); err != nil {
+		t.Fatalf("response body is not a bare array (VOIP-1199 regression): %v; body=%s", err, string(res.Data))
+	}
+	if len(got) != 1 || got[0].ActiveflowID != af {
+		t.Fatalf("unexpected list payload: %s", string(res.Data))
+	}
+}
+
+// Test_v1AnalysesGet_list_empty verifies that an empty result set still
+// serializes as a bare JSON array ("[]"), not an object wrapper or "null".
+// This pins the empty-list edge of the VOIP-1199 bare-array contract so the
+// requesthandler's []analysis.Analysis unmarshal stays valid for zero rows.
+func Test_v1AnalysesGet_list_empty(t *testing.T) {
+	h, mockAnalysis, ctrl := newAnalysisListenHandler(t)
+	defer ctrl.Finish()
+
+	cust := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
 	m := &sock.Request{
 		URI:    "/v1/analyses?customer_id=" + cust.String() + "&page_size=10",
 		Method: sock.RequestMethodGet,
@@ -164,6 +205,14 @@ func Test_v1AnalysesGet_list(t *testing.T) {
 	}
 	if res.StatusCode != http.StatusOK {
 		t.Fatalf("expected 200, got %d", res.StatusCode)
+	}
+
+	var got []*analysis.Analysis
+	if err := json.Unmarshal(res.Data, &got); err != nil {
+		t.Fatalf("empty list body is not a bare array (VOIP-1199 regression): %v; body=%s", err, string(res.Data))
+	}
+	if len(got) != 0 {
+		t.Fatalf("expected empty list, got %d elements: %s", len(got), string(res.Data))
 	}
 }
 
