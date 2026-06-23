@@ -75,6 +75,7 @@ import (
 	tmtag "monorepo/bin-tag-manager/models/tag"
 
 	tmsipmessage "monorepo/bin-timeline-manager/models/sipmessage"
+	tmanalysis "monorepo/bin-timeline-manager/models/analysis"
 
 	tkchat "monorepo/bin-talk-manager/models/chat"
 	tkmessage "monorepo/bin-talk-manager/models/message"
@@ -986,6 +987,12 @@ type ServiceHandler interface {
 	TimelineEventList(ctx context.Context, a *auth.AuthIdentity, resourceType string, resourceID uuid.UUID, pageSize int, pageToken string) ([]*TimelineEvent, string, error)
 	TimelineSIPAnalysisGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) (*tmsipmessage.SIPAnalysisResponse, error)
 	TimelineSIPPcapGet(ctx context.Context, a *auth.AuthIdentity, callID uuid.UUID) ([]byte, error)
+
+	// timeline analysis (AI analysis of ended activeflows)
+	TimelineAnalysisCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, reanalyze bool) (*tmanalysis.WebhookMessage, error)
+	TimelineAnalysisGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*tmanalysis.WebhookMessage, error)
+	TimelineAnalysisGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, activeflowID uuid.UUID, status tmanalysis.Status) ([]*tmanalysis.WebhookMessage, error)
+	TimelineAnalysisDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*tmanalysis.WebhookMessage, error)
 
 	WebsockCreate(ctx context.Context, a *auth.AuthIdentity, w http.ResponseWriter, r *http.Request) error
 

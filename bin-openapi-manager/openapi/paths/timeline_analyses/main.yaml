@@ -1,0 +1,94 @@
+get:
+  summary: Get a list of timeline analyses.
+  description: Retrieves a paginated list of activeflow AI analyses for the authenticated customer.
+  tags:
+    - Timeline
+  parameters:
+    - $ref: '#/components/parameters/PageSize'
+    - $ref: '#/components/parameters/PageToken'
+    - name: activeflow_id
+      in: query
+      schema:
+        type: string
+        format: uuid
+      description: Filter by the analyzed activeflow ID.
+    - name: status
+      in: query
+      schema:
+        $ref: '#/components/schemas/TimelineManagerAnalysisStatus'
+      description: Filter by analysis status.
+  responses:
+    '200':
+      description: A list of timeline analyses.
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/CommonPagination'
+              - type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TimelineManagerAnalysis'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+post:
+  summary: Trigger an AI analysis of an ended activeflow.
+  description: >
+    Analyzes a completed (ended) activeflow asynchronously, producing a
+    structured verdict. Returns the progressing record on a fresh trigger, or the
+    existing record when one is already present (idempotent unless `reanalyze` is
+    set). Requires CustomerAdmin or CustomerManager permission. The analysis is
+    scoped to the authenticated customer; the activeflow must belong to that
+    customer and must be in the ended state.
+  tags:
+    - Timeline
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            activeflow_id:
+              type: string
+              format: uuid
+              x-go-type: string
+              description: "The ID of the ended activeflow to analyze. Returned from the `GET /activeflows` response."
+              example: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+            reanalyze:
+              type: boolean
+              description: >
+                When true, discards the existing completed/failed verdict and runs
+                a fresh analysis (subject to a short cooldown). When false or
+                omitted, an existing record is returned unchanged.
+              example: false
+          required:
+            - activeflow_id
+  responses:
+    '200':
+      description: The progressing or existing analysis record.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TimelineManagerAnalysis'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '429':
+      $ref: '#/components/responses/TooManyRequests'
+    '500':
+      $ref: '#/components/responses/InternalError'

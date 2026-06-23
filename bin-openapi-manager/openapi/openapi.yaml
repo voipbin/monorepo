@@ -6817,6 +6817,98 @@ components:
           description: Event data in WebhookMessage format
           example: {}
 
+    TimelineManagerAnalysisStatus:
+      type: string
+      description: Lifecycle state of the analysis.
+      example: "completed"
+      enum:
+        - "progressing"
+        - "completed"
+        - "failed"
+      x-enum-varnames:
+        - TimelineManagerAnalysisStatusProgressing
+        - TimelineManagerAnalysisStatusCompleted
+        - TimelineManagerAnalysisStatusFailed
+
+    TimelineManagerAnalysis:
+      type: object
+      description: >
+        AI analysis of an ended activeflow. Produced on demand, stored once, and
+        optionally re-analyzed. The structured verdict lives in `result` once the
+        analysis completes.
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The unique identifier of the analysis. Returned from the `POST /timeline-analyses` or `GET /timeline-analyses` response."
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        customer_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The customer who owns this analysis."
+          example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+        activeflow_id:
+          type: string
+          format: uuid
+          x-go-type: string
+          description: "The ended activeflow that was analyzed. Returned from the `GET /activeflows` response."
+          example: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d"
+        status:
+          $ref: '#/components/schemas/TimelineManagerAnalysisStatus'
+        result:
+          type: object
+          additionalProperties: true
+          description: >
+            The structured analysis verdict. Null while progressing or on failure.
+            Present on successful completion. Includes an overall status, a
+            narrative, detected issues with evidence pointers, and per-type
+            resource usage.
+          example:
+            version: 1
+            overall_status: "success"
+            input_reduced: false
+            narrative: "The call connected, the IVR collected the customer's intent, and the call was routed to an available agent who resolved the request."
+            issues:
+              - severity: "low"
+                area: "routing"
+                summary: "The queue wait exceeded the configured target by 8 seconds."
+                evidence:
+                  - evidence_index: 12
+                    event_type: "queue_joined"
+                    timestamp: "2026-01-15T09:30:12.000000Z"
+                    resource_id: "5e3f8b2a-9c1d-4e6f-8a7b-2d3c4e5f6a7b"
+            resources_used:
+              - type: "call"
+                count: 1
+              - type: "queuecall"
+                count: 1
+        error:
+          type: string
+          description: Sanitized failure reason when status is failed.
+          example: "analysis engine timed out"
+        tm_create:
+          type: string
+          format: date-time
+          x-go-type: string
+          description: "Timestamp when the analysis was created."
+          example: "2026-01-15T09:30:00.000000Z"
+        tm_update:
+          type: string
+          format: date-time
+          x-go-type: string
+          nullable: true
+          description: "Timestamp when the analysis was last updated."
+          example: "2026-01-15T09:30:05.000000Z"
+        tm_delete:
+          type: string
+          format: date-time
+          x-go-type: string
+          nullable: true
+          description: "Timestamp when the analysis was deleted."
+          example: "9999-01-01T00:00:00.000000Z"
+
 
 #########################################
 # Tag Manager
@@ -8068,6 +8160,12 @@ paths:
 
   /timelines/calls/{call_id}/pcap:
     $ref: './paths/timelines/call_pcap.yaml'
+
+  /timeline-analyses:
+    $ref: './paths/timeline_analyses/main.yaml'
+
+  /timeline-analyses/{id}:
+    $ref: './paths/timeline_analyses/id.yaml'
 
   /aggregated-events:
     $ref: './paths/timelines/aggregated_events.yaml'

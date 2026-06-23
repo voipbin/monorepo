@@ -69,6 +69,7 @@ import (
 	chat "monorepo/bin-talk-manager/models/chat"
 	message2 "monorepo/bin-talk-manager/models/message"
 	participant0 "monorepo/bin-talk-manager/models/participant"
+	analysis "monorepo/bin-timeline-manager/models/analysis"
 	sipmessage "monorepo/bin-timeline-manager/models/sipmessage"
 	transcribe "monorepo/bin-transcribe-manager/models/transcribe"
 	transcript "monorepo/bin-transcribe-manager/models/transcript"
@@ -5253,6 +5254,66 @@ func (m *MockServiceHandler) TeamUpdate(ctx context.Context, a *auth.AuthIdentit
 func (mr *MockServiceHandlerMockRecorder) TeamUpdate(ctx, a, id, name, detail, startMemberID, members, parameter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TeamUpdate", reflect.TypeOf((*MockServiceHandler)(nil).TeamUpdate), ctx, a, id, name, detail, startMemberID, members, parameter)
+}
+
+// TimelineAnalysisCreate mocks base method.
+func (m *MockServiceHandler) TimelineAnalysisCreate(ctx context.Context, a *auth.AuthIdentity, activeflowID uuid.UUID, reanalyze bool) (*analysis.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineAnalysisCreate", ctx, a, activeflowID, reanalyze)
+	ret0, _ := ret[0].(*analysis.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineAnalysisCreate indicates an expected call of TimelineAnalysisCreate.
+func (mr *MockServiceHandlerMockRecorder) TimelineAnalysisCreate(ctx, a, activeflowID, reanalyze any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineAnalysisCreate", reflect.TypeOf((*MockServiceHandler)(nil).TimelineAnalysisCreate), ctx, a, activeflowID, reanalyze)
+}
+
+// TimelineAnalysisDelete mocks base method.
+func (m *MockServiceHandler) TimelineAnalysisDelete(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*analysis.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineAnalysisDelete", ctx, a, id)
+	ret0, _ := ret[0].(*analysis.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineAnalysisDelete indicates an expected call of TimelineAnalysisDelete.
+func (mr *MockServiceHandlerMockRecorder) TimelineAnalysisDelete(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineAnalysisDelete", reflect.TypeOf((*MockServiceHandler)(nil).TimelineAnalysisDelete), ctx, a, id)
+}
+
+// TimelineAnalysisGet mocks base method.
+func (m *MockServiceHandler) TimelineAnalysisGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*analysis.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineAnalysisGet", ctx, a, id)
+	ret0, _ := ret[0].(*analysis.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineAnalysisGet indicates an expected call of TimelineAnalysisGet.
+func (mr *MockServiceHandlerMockRecorder) TimelineAnalysisGet(ctx, a, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineAnalysisGet", reflect.TypeOf((*MockServiceHandler)(nil).TimelineAnalysisGet), ctx, a, id)
+}
+
+// TimelineAnalysisGetsByCustomerID mocks base method.
+func (m *MockServiceHandler) TimelineAnalysisGetsByCustomerID(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, activeflowID uuid.UUID, status analysis.Status) ([]*analysis.WebhookMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TimelineAnalysisGetsByCustomerID", ctx, a, size, token, activeflowID, status)
+	ret0, _ := ret[0].([]*analysis.WebhookMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TimelineAnalysisGetsByCustomerID indicates an expected call of TimelineAnalysisGetsByCustomerID.
+func (mr *MockServiceHandlerMockRecorder) TimelineAnalysisGetsByCustomerID(ctx, a, size, token, activeflowID, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimelineAnalysisGetsByCustomerID", reflect.TypeOf((*MockServiceHandler)(nil).TimelineAnalysisGetsByCustomerID), ctx, a, size, token, activeflowID, status)
 }
 
 // TimelineEventList mocks base method.

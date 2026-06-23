@@ -901,6 +901,13 @@ const (
 	TalkManagerTalkTypeTalk   TalkManagerTalkType = "talk"
 )
 
+// Defines values for TimelineManagerAnalysisStatus.
+const (
+	TimelineManagerAnalysisStatusCompleted   TimelineManagerAnalysisStatus = "completed"
+	TimelineManagerAnalysisStatusFailed      TimelineManagerAnalysisStatus = "failed"
+	TimelineManagerAnalysisStatusProgressing TimelineManagerAnalysisStatus = "progressing"
+)
+
 // Defines values for TranscribeManagerTranscribeDirection.
 const (
 	TranscribeManagerTranscribeDirectionBoth TranscribeManagerTranscribeDirection = "both"
@@ -4605,6 +4612,39 @@ type TalkManagerTalk struct {
 // TalkManagerTalkType Type of the talk.
 type TalkManagerTalkType string
 
+// TimelineManagerAnalysis AI analysis of an ended activeflow. Produced on demand, stored once, and optionally re-analyzed. The structured verdict lives in `result` once the analysis completes.
+type TimelineManagerAnalysis struct {
+	// ActiveflowId The ended activeflow that was analyzed. Returned from the `GET /activeflows` response.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// CustomerId The customer who owns this analysis.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Error Sanitized failure reason when status is failed.
+	Error *string `json:"error,omitempty"`
+
+	// Id The unique identifier of the analysis. Returned from the `POST /timeline-analyses` or `GET /timeline-analyses` response.
+	Id *string `json:"id,omitempty"`
+
+	// Result The structured analysis verdict. Null while progressing or on failure. Present on successful completion. Includes an overall status, a narrative, detected issues with evidence pointers, and per-type resource usage.
+	Result *map[string]interface{} `json:"result,omitempty"`
+
+	// Status Lifecycle state of the analysis.
+	Status *TimelineManagerAnalysisStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the analysis was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the analysis was deleted.
+	TmDelete *string `json:"tm_delete"`
+
+	// TmUpdate Timestamp when the analysis was last updated.
+	TmUpdate *string `json:"tm_update"`
+}
+
+// TimelineManagerAnalysisStatus Lifecycle state of the analysis.
+type TimelineManagerAnalysisStatus string
+
 // TimelineManagerEvent A timeline event with WebhookMessage data
 type TimelineManagerEvent struct {
 	// Data Event data in WebhookMessage format
@@ -6867,6 +6907,30 @@ type PutTeamsIdJSONBody struct {
 	StartMemberId string `json:"start_member_id"`
 }
 
+// GetTimelineAnalysesParams defines parameters for GetTimelineAnalyses.
+type GetTimelineAnalysesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ActiveflowId Filter by the analyzed activeflow ID.
+	ActiveflowId *openapi_types.UUID `form:"activeflow_id,omitempty" json:"activeflow_id,omitempty"`
+
+	// Status Filter by analysis status.
+	Status *TimelineManagerAnalysisStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// PostTimelineAnalysesJSONBody defines parameters for PostTimelineAnalyses.
+type PostTimelineAnalysesJSONBody struct {
+	// ActiveflowId The ID of the ended activeflow to analyze. Returned from the `GET /activeflows` response.
+	ActiveflowId string `json:"activeflow_id"`
+
+	// Reanalyze When true, discards the existing completed/failed verdict and runs a fresh analysis (subject to a short cooldown). When false or omitted, an existing record is returned unchanged.
+	Reanalyze *bool `json:"reanalyze,omitempty"`
+}
+
 // GetTimelinesResourceTypeResourceIdEventsParams defines parameters for GetTimelinesResourceTypeResourceIdEvents.
 type GetTimelinesResourceTypeResourceIdEventsParams struct {
 	// PageSize Number of results to return per page.
@@ -7336,6 +7400,9 @@ type PostTeamsJSONRequestBody PostTeamsJSONBody
 
 // PutTeamsIdJSONRequestBody defines body for PutTeamsId for application/json ContentType.
 type PutTeamsIdJSONRequestBody PutTeamsIdJSONBody
+
+// PostTimelineAnalysesJSONRequestBody defines body for PostTimelineAnalyses for application/json ContentType.
+type PostTimelineAnalysesJSONRequestBody PostTimelineAnalysesJSONBody
 
 // PostTranscribesJSONRequestBody defines body for PostTranscribes for application/json ContentType.
 type PostTranscribesJSONRequestBody PostTranscribesJSONBody
@@ -8368,6 +8435,18 @@ type ServerInterface interface {
 	// Regenerate direct hash for team
 	// (POST /teams/{id}/direct-hash-regenerate)
 	PostTeamsIdDirectHashRegenerate(c *gin.Context, id openapi_types.UUID)
+	// Get a list of timeline analyses.
+	// (GET /timeline-analyses)
+	GetTimelineAnalyses(c *gin.Context, params GetTimelineAnalysesParams)
+	// Trigger an AI analysis of an ended activeflow.
+	// (POST /timeline-analyses)
+	PostTimelineAnalyses(c *gin.Context)
+	// Delete a timeline analysis.
+	// (DELETE /timeline-analyses/{id})
+	DeleteTimelineAnalysesId(c *gin.Context, id string)
+	// Get a timeline analysis by ID.
+	// (GET /timeline-analyses/{id})
+	GetTimelineAnalysesId(c *gin.Context, id string)
 	// Get PCAP download for a call
 	// (GET /timelines/calls/{call_id}/pcap)
 	GetTimelinesCallsCallIdPcap(c *gin.Context, callId openapi_types.UUID)
@@ -16853,6 +16932,117 @@ func (siw *ServerInterfaceWrapper) PostTeamsIdDirectHashRegenerate(c *gin.Contex
 	siw.Handler.PostTeamsIdDirectHashRegenerate(c, id)
 }
 
+// GetTimelineAnalyses operation middleware
+func (siw *ServerInterfaceWrapper) GetTimelineAnalyses(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTimelineAnalysesParams
+
+	// ------------- Optional query parameter "page_size" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_size", c.Request.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_size: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "page_token" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "page_token", c.Request.URL.Query(), &params.PageToken)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter page_token: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "activeflow_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "activeflow_id", c.Request.URL.Query(), &params.ActiveflowId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter activeflow_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetTimelineAnalyses(c, params)
+}
+
+// PostTimelineAnalyses operation middleware
+func (siw *ServerInterfaceWrapper) PostTimelineAnalyses(c *gin.Context) {
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostTimelineAnalyses(c)
+}
+
+// DeleteTimelineAnalysesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteTimelineAnalysesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteTimelineAnalysesId(c, id)
+}
+
+// GetTimelineAnalysesId operation middleware
+func (siw *ServerInterfaceWrapper) GetTimelineAnalysesId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetTimelineAnalysesId(c, id)
+}
+
 // GetTimelinesCallsCallIdPcap operation middleware
 func (siw *ServerInterfaceWrapper) GetTimelinesCallsCallIdPcap(c *gin.Context) {
 
@@ -17632,6 +17822,10 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/teams/:id", wrapper.GetTeamsId)
 	router.PUT(options.BaseURL+"/teams/:id", wrapper.PutTeamsId)
 	router.POST(options.BaseURL+"/teams/:id/direct-hash-regenerate", wrapper.PostTeamsIdDirectHashRegenerate)
+	router.GET(options.BaseURL+"/timeline-analyses", wrapper.GetTimelineAnalyses)
+	router.POST(options.BaseURL+"/timeline-analyses", wrapper.PostTimelineAnalyses)
+	router.DELETE(options.BaseURL+"/timeline-analyses/:id", wrapper.DeleteTimelineAnalysesId)
+	router.GET(options.BaseURL+"/timeline-analyses/:id", wrapper.GetTimelineAnalysesId)
 	router.GET(options.BaseURL+"/timelines/calls/:call_id/pcap", wrapper.GetTimelinesCallsCallIdPcap)
 	router.GET(options.BaseURL+"/timelines/calls/:call_id/sip-analysis", wrapper.GetTimelinesCallsCallIdSipAnalysis)
 	router.GET(options.BaseURL+"/timelines/:resource_type/:resource_id/events", wrapper.GetTimelinesResourceTypeResourceIdEvents)
@@ -36712,6 +36906,258 @@ func (response PostTeamsIdDirectHashRegenerate500JSONResponse) VisitPostTeamsIdD
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetTimelineAnalysesRequestObject struct {
+	Params GetTimelineAnalysesParams
+}
+
+type GetTimelineAnalysesResponseObject interface {
+	VisitGetTimelineAnalysesResponse(w http.ResponseWriter) error
+}
+
+type GetTimelineAnalyses200JSONResponse struct {
+	// NextPageToken Cursor token for the next page of results. Pass this value as the page_token parameter in the next request.
+	NextPageToken *string                    `json:"next_page_token,omitempty"`
+	Result        *[]TimelineManagerAnalysis `json:"result,omitempty"`
+}
+
+func (response GetTimelineAnalyses200JSONResponse) VisitGetTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalyses401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetTimelineAnalyses401JSONResponse) VisitGetTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalyses403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetTimelineAnalyses403JSONResponse) VisitGetTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalyses500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetTimelineAnalyses500JSONResponse) VisitGetTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTimelineAnalysesRequestObject struct {
+	Body *PostTimelineAnalysesJSONRequestBody
+}
+
+type PostTimelineAnalysesResponseObject interface {
+	VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error
+}
+
+type PostTimelineAnalyses200JSONResponse TimelineManagerAnalysis
+
+func (response PostTimelineAnalyses200JSONResponse) VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTimelineAnalyses400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostTimelineAnalyses400JSONResponse) VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTimelineAnalyses401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostTimelineAnalyses401JSONResponse) VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTimelineAnalyses403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostTimelineAnalyses403JSONResponse) VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTimelineAnalyses404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostTimelineAnalyses404JSONResponse) VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTimelineAnalyses409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostTimelineAnalyses409JSONResponse) VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTimelineAnalyses429JSONResponse struct{ TooManyRequestsJSONResponse }
+
+func (response PostTimelineAnalyses429JSONResponse) VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(429)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostTimelineAnalyses500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostTimelineAnalyses500JSONResponse) VisitPostTimelineAnalysesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteTimelineAnalysesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type DeleteTimelineAnalysesIdResponseObject interface {
+	VisitDeleteTimelineAnalysesIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteTimelineAnalysesId200JSONResponse TimelineManagerAnalysis
+
+func (response DeleteTimelineAnalysesId200JSONResponse) VisitDeleteTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteTimelineAnalysesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response DeleteTimelineAnalysesId400JSONResponse) VisitDeleteTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteTimelineAnalysesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response DeleteTimelineAnalysesId401JSONResponse) VisitDeleteTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteTimelineAnalysesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response DeleteTimelineAnalysesId403JSONResponse) VisitDeleteTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteTimelineAnalysesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response DeleteTimelineAnalysesId404JSONResponse) VisitDeleteTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteTimelineAnalysesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response DeleteTimelineAnalysesId500JSONResponse) VisitDeleteTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalysesIdRequestObject struct {
+	Id string `json:"id"`
+}
+
+type GetTimelineAnalysesIdResponseObject interface {
+	VisitGetTimelineAnalysesIdResponse(w http.ResponseWriter) error
+}
+
+type GetTimelineAnalysesId200JSONResponse TimelineManagerAnalysis
+
+func (response GetTimelineAnalysesId200JSONResponse) VisitGetTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalysesId400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetTimelineAnalysesId400JSONResponse) VisitGetTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalysesId401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response GetTimelineAnalysesId401JSONResponse) VisitGetTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalysesId403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response GetTimelineAnalysesId403JSONResponse) VisitGetTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalysesId404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetTimelineAnalysesId404JSONResponse) VisitGetTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimelineAnalysesId500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response GetTimelineAnalysesId500JSONResponse) VisitGetTimelineAnalysesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetTimelinesCallsCallIdPcapRequestObject struct {
 	CallId openapi_types.UUID `json:"call_id"`
 }
@@ -38676,6 +39122,18 @@ type StrictServerInterface interface {
 	// Regenerate direct hash for team
 	// (POST /teams/{id}/direct-hash-regenerate)
 	PostTeamsIdDirectHashRegenerate(ctx context.Context, request PostTeamsIdDirectHashRegenerateRequestObject) (PostTeamsIdDirectHashRegenerateResponseObject, error)
+	// Get a list of timeline analyses.
+	// (GET /timeline-analyses)
+	GetTimelineAnalyses(ctx context.Context, request GetTimelineAnalysesRequestObject) (GetTimelineAnalysesResponseObject, error)
+	// Trigger an AI analysis of an ended activeflow.
+	// (POST /timeline-analyses)
+	PostTimelineAnalyses(ctx context.Context, request PostTimelineAnalysesRequestObject) (PostTimelineAnalysesResponseObject, error)
+	// Delete a timeline analysis.
+	// (DELETE /timeline-analyses/{id})
+	DeleteTimelineAnalysesId(ctx context.Context, request DeleteTimelineAnalysesIdRequestObject) (DeleteTimelineAnalysesIdResponseObject, error)
+	// Get a timeline analysis by ID.
+	// (GET /timeline-analyses/{id})
+	GetTimelineAnalysesId(ctx context.Context, request GetTimelineAnalysesIdRequestObject) (GetTimelineAnalysesIdResponseObject, error)
 	// Get PCAP download for a call
 	// (GET /timelines/calls/{call_id}/pcap)
 	GetTimelinesCallsCallIdPcap(ctx context.Context, request GetTimelinesCallsCallIdPcapRequestObject) (GetTimelinesCallsCallIdPcapResponseObject, error)
@@ -48794,6 +49252,120 @@ func (sh *strictHandler) PostTeamsIdDirectHashRegenerate(ctx *gin.Context, id op
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostTeamsIdDirectHashRegenerateResponseObject); ok {
 		if err := validResponse.VisitPostTeamsIdDirectHashRegenerateResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetTimelineAnalyses operation middleware
+func (sh *strictHandler) GetTimelineAnalyses(ctx *gin.Context, params GetTimelineAnalysesParams) {
+	var request GetTimelineAnalysesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetTimelineAnalyses(ctx, request.(GetTimelineAnalysesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetTimelineAnalyses")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetTimelineAnalysesResponseObject); ok {
+		if err := validResponse.VisitGetTimelineAnalysesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostTimelineAnalyses operation middleware
+func (sh *strictHandler) PostTimelineAnalyses(ctx *gin.Context) {
+	var request PostTimelineAnalysesRequestObject
+
+	var body PostTimelineAnalysesJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostTimelineAnalyses(ctx, request.(PostTimelineAnalysesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostTimelineAnalyses")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostTimelineAnalysesResponseObject); ok {
+		if err := validResponse.VisitPostTimelineAnalysesResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteTimelineAnalysesId operation middleware
+func (sh *strictHandler) DeleteTimelineAnalysesId(ctx *gin.Context, id string) {
+	var request DeleteTimelineAnalysesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteTimelineAnalysesId(ctx, request.(DeleteTimelineAnalysesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteTimelineAnalysesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteTimelineAnalysesIdResponseObject); ok {
+		if err := validResponse.VisitDeleteTimelineAnalysesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetTimelineAnalysesId operation middleware
+func (sh *strictHandler) GetTimelineAnalysesId(ctx *gin.Context, id string) {
+	var request GetTimelineAnalysesIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetTimelineAnalysesId(ctx, request.(GetTimelineAnalysesIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetTimelineAnalysesId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetTimelineAnalysesIdResponseObject); ok {
+		if err := validResponse.VisitGetTimelineAnalysesIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

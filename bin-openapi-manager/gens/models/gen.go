@@ -2658,6 +2658,27 @@ func (e TalkManagerTalkType) Valid() bool {
 	}
 }
 
+// Defines values for TimelineManagerAnalysisStatus.
+const (
+	TimelineManagerAnalysisStatusCompleted   TimelineManagerAnalysisStatus = "completed"
+	TimelineManagerAnalysisStatusFailed      TimelineManagerAnalysisStatus = "failed"
+	TimelineManagerAnalysisStatusProgressing TimelineManagerAnalysisStatus = "progressing"
+)
+
+// Valid indicates whether the value is a known member of the TimelineManagerAnalysisStatus enum.
+func (e TimelineManagerAnalysisStatus) Valid() bool {
+	switch e {
+	case TimelineManagerAnalysisStatusCompleted:
+		return true
+	case TimelineManagerAnalysisStatusFailed:
+		return true
+	case TimelineManagerAnalysisStatusProgressing:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TranscribeManagerTranscribeDirection.
 const (
 	TranscribeManagerTranscribeDirectionBoth TranscribeManagerTranscribeDirection = "both"
@@ -6808,6 +6829,39 @@ type TalkManagerTalk struct {
 // TalkManagerTalkType Type of the talk.
 type TalkManagerTalkType string
 
+// TimelineManagerAnalysis AI analysis of an ended activeflow. Produced on demand, stored once, and optionally re-analyzed. The structured verdict lives in `result` once the analysis completes.
+type TimelineManagerAnalysis struct {
+	// ActiveflowId The ended activeflow that was analyzed. Returned from the `GET /activeflows` response.
+	ActiveflowId *string `json:"activeflow_id,omitempty"`
+
+	// CustomerId The customer who owns this analysis.
+	CustomerId *string `json:"customer_id,omitempty"`
+
+	// Error Sanitized failure reason when status is failed.
+	Error *string `json:"error,omitempty"`
+
+	// Id The unique identifier of the analysis. Returned from the `POST /timeline-analyses` or `GET /timeline-analyses` response.
+	Id *string `json:"id,omitempty"`
+
+	// Result The structured analysis verdict. Null while progressing or on failure. Present on successful completion. Includes an overall status, a narrative, detected issues with evidence pointers, and per-type resource usage.
+	Result *map[string]interface{} `json:"result,omitempty"`
+
+	// Status Lifecycle state of the analysis.
+	Status *TimelineManagerAnalysisStatus `json:"status,omitempty"`
+
+	// TmCreate Timestamp when the analysis was created.
+	TmCreate *string `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the analysis was deleted.
+	TmDelete *string `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the analysis was last updated.
+	TmUpdate *string `json:"tm_update,omitempty"`
+}
+
+// TimelineManagerAnalysisStatus Lifecycle state of the analysis.
+type TimelineManagerAnalysisStatus string
+
 // TimelineManagerEvent A timeline event with WebhookMessage data
 type TimelineManagerEvent struct {
 	// Data Event data in WebhookMessage format
@@ -9070,6 +9124,30 @@ type PutTeamsIdJSONBody struct {
 	StartMemberId string `json:"start_member_id"`
 }
 
+// GetTimelineAnalysesParams defines parameters for GetTimelineAnalyses.
+type GetTimelineAnalysesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ActiveflowId Filter by the analyzed activeflow ID.
+	ActiveflowId *openapi_types.UUID `form:"activeflow_id,omitempty" json:"activeflow_id,omitempty"`
+
+	// Status Filter by analysis status.
+	Status *TimelineManagerAnalysisStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// PostTimelineAnalysesJSONBody defines parameters for PostTimelineAnalyses.
+type PostTimelineAnalysesJSONBody struct {
+	// ActiveflowId The ID of the ended activeflow to analyze. Returned from the `GET /activeflows` response.
+	ActiveflowId string `json:"activeflow_id"`
+
+	// Reanalyze When true, discards the existing completed/failed verdict and runs a fresh analysis (subject to a short cooldown). When false or omitted, an existing record is returned unchanged.
+	Reanalyze *bool `json:"reanalyze,omitempty"`
+}
+
 // GetTimelinesResourceTypeResourceIdEventsParams defines parameters for GetTimelinesResourceTypeResourceIdEvents.
 type GetTimelinesResourceTypeResourceIdEventsParams struct {
 	// PageSize Number of results to return per page.
@@ -9539,6 +9617,9 @@ type PostTeamsJSONRequestBody PostTeamsJSONBody
 
 // PutTeamsIdJSONRequestBody defines body for PutTeamsId for application/json ContentType.
 type PutTeamsIdJSONRequestBody PutTeamsIdJSONBody
+
+// PostTimelineAnalysesJSONRequestBody defines body for PostTimelineAnalyses for application/json ContentType.
+type PostTimelineAnalysesJSONRequestBody PostTimelineAnalysesJSONBody
 
 // PostTranscribesJSONRequestBody defines body for PostTranscribes for application/json ContentType.
 type PostTranscribesJSONRequestBody PostTranscribesJSONBody
