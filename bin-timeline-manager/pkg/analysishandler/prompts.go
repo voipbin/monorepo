@@ -26,7 +26,7 @@ const stage1Prompt = `You are a VoIP communication-flow analyst. Stage 1 of 3: I
 
 const stage2Prompt = `You are a VoIP communication-flow analyst. Stage 2 of 3: CONTENT. ` +
 	`Given the Stage 1 structured inventory/outline and any transcripts, summarize what was communicated and the ` +
-	`intent/outcome of each interaction, plus an overall narrative. Emit ONLY the schema JSON.`
+	`intent/outcome of each resource/channel used, one entry per resource_type, plus an overall narrative. Emit ONLY the schema JSON.`
 
 const stage3Prompt = `You are a VoIP communication-flow analyst. Stage 3 of 3: DIAGNOSIS. ` +
 	`Given the Stage 1 inventory/outline, the Stage 2 content summary, and the deterministic error signals, ` +
