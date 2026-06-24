@@ -33,7 +33,7 @@ Start an analysis for an ended activeflow. The request returns immediately with 
         "customer_id": "12345678-1234-1234-1234-123456789012",
         "activeflow_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "status": "progressing",
-        "tm_create": "2026-01-20 12:00:00.000000",
+        "tm_create": "2026-01-20T12:00:00.000000Z",
         "tm_update": null
     }
 
@@ -78,8 +78,8 @@ Poll the analysis by ID until ``status`` becomes ``completed`` or ``failed``.
                 }
             ]
         },
-        "tm_create": "2026-01-20 12:00:00.000000",
-        "tm_update": "2026-01-20 12:00:20.000000"
+        "tm_create": "2026-01-20T12:00:00.000000Z",
+        "tm_update": "2026-01-20T12:00:20.000000Z"
     }
 
 List Analyses
@@ -94,7 +94,7 @@ List the analyses for your customer account, optionally filtered by ``activeflow
 Re-analyze
 ----------
 
-Re-run the analysis for an activeflow. The previous verdict is archived internally and replaced in place.
+Re-run the analysis for an activeflow. The previous verdict is discarded and replaced in place by the new run.
 
 .. code::
 
@@ -112,7 +112,7 @@ Re-run the analysis for an activeflow. The previous verdict is archived internal
 Delete an Analysis
 ------------------
 
-Delete an analysis you no longer need.
+Permanently delete an analysis you no longer need. This is a hard delete: the record is removed and cannot be recovered. The analyzed activeflow and its timeline events are not affected, and the activeflow can be analyzed again afterward.
 
 .. code::
 

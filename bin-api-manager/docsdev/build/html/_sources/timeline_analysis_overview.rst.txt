@@ -82,4 +82,4 @@ You can re-run an analysis with ``reanalyze: true``. To control cost, VoIPBIN ap
 - A short per-activeflow cooldown between re-analyses (a too-frequent re-analyze returns HTTP ``429``).
 - A per-customer cap on the number of analyses running at once (triggering past the cap returns HTTP ``429``).
 
-When you re-analyze, the previous verdict is archived internally and the live analysis is replaced in place.
+When you re-analyze, the previous verdict is discarded and the analysis is replaced in place by the new run.

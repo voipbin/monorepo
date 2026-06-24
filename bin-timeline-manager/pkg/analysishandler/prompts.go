@@ -17,7 +17,13 @@ Rules:
 - For interactions, summarize what was communicated and the intent/outcome of each resource/channel
   used, one entry per resource_type. Provide the same level of content detail you would in a
   dedicated content pass; do not leave interactions empty when there is anything to summarize.
-- Be concise and factual. Narrate what happened and where any problems occurred.`
+- Be concise and factual. Narrate what happened and where any problems occurred.
+- A "context" object may be provided (session_context, outcome, metrics). These are
+  AUTHORITATIVE deterministic facts (who the participants were, how the session ended,
+  who ended it, turn counts, latencies). Treat them as ground truth: do NOT restate them
+  verbatim, do NOT contradict them, and do NOT recompute counts. Use them to make the
+  narrative specific (e.g. reference who ended the call and the outcome) and to focus
+  issue-detection. You cannot author these fields; they are attached deterministically.`
 
 const stage1Prompt = `You are a VoIP communication-flow analyst. Stage 1 of 3: INVENTORY. ` +
 	`Given the deterministic inventory and the indexed chronological event list, identify the resources/channels ` +
@@ -39,4 +45,6 @@ Rules:
 - Every non-ok issue MUST cite at least one evidence_index.
 - Only cite evidence_index values present in the provided inputs.
 - Do NOT invent resource counts; resources_used will be recomputed deterministically.
+- A "context" object (session_context, outcome, metrics) may be provided as AUTHORITATIVE
+  deterministic facts. Do NOT restate or contradict them; use them to focus diagnosis.
 - Be concise and factual.`

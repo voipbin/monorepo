@@ -660,9 +660,39 @@
 <span id="timeline-analysis-struct-timeline-analysis-result"></span><h2>Result<a class="headerlink" href="#result" title="Link to this heading">¶</a></h2>
 <p>The structured verdict produced for a <code class="docutils literal notranslate"><span class="pre">completed</span></code> analysis.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
     <span class="s2">&quot;overall_status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;input_reduced&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+    <span class="s2">&quot;session_context&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;direction_raw&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;participants&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;flow_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;started_at&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;origin_kind&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;origin_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;multi_leg&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="s2">&quot;ai_handled&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="s2">&quot;human_involved&quot;</span><span class="p">:</span> <span class="n">false</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;outcome&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;ended_by&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;metrics&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;turns_user&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;turns_bot&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;first_response_ms&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;avg_response_ms&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;max_response_ms&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s2">&quot;max_gap_ms&quot;</span><span class="p">:</span> <span class="mi">0</span>
+    <span class="p">},</span>
     <span class="s2">&quot;resources_used&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
     <span class="p">],</span>
@@ -689,9 +719,12 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code> (integer): The verdict schema version. <code class="docutils literal notranslate"><span class="pre">2</span></code> adds the <code class="docutils literal notranslate"><span class="pre">interactions</span></code> field; <code class="docutils literal notranslate"><span class="pre">1</span></code> records have no <code class="docutils literal notranslate"><span class="pre">interactions</span></code> key.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code> (integer): The verdict schema version. <code class="docutils literal notranslate"><span class="pre">3</span></code> adds the <code class="docutils literal notranslate"><span class="pre">session_context</span></code>, <code class="docutils literal notranslate"><span class="pre">outcome</span></code>, and <code class="docutils literal notranslate"><span class="pre">metrics</span></code> blocks; <code class="docutils literal notranslate"><span class="pre">2</span></code> adds <code class="docutils literal notranslate"><span class="pre">interactions</span></code>; <code class="docutils literal notranslate"><span class="pre">1</span></code> records have neither.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">overall_status</span></code> (enum string): The holistic verdict. One of <code class="docutils literal notranslate"><span class="pre">ok</span></code>, <code class="docutils literal notranslate"><span class="pre">warning</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">input_reduced</span></code> (boolean): True when the analyzed input was reduced (very large flow) before the verdict was produced.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">session_context</span></code> (object): The channel-neutral 5W1H header describing what the session was (who, when, how, which channel). Present on <code class="docutils literal notranslate"><span class="pre">version</span></code> <code class="docutils literal notranslate"><span class="pre">3</span></code> and later when the activeflow’s reference resolves; the key is OMITTED (not <code class="docutils literal notranslate"><span class="pre">null</span></code>) when nothing resolves. See <a class="reference internal" href="#timeline-analysis-struct-timeline-analysis-session-context"><span class="std std-ref">Session context</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outcome</span></code> (object): How the session ended and, for a call, who ended it. Present on <code class="docutils literal notranslate"><span class="pre">version</span></code> <code class="docutils literal notranslate"><span class="pre">3</span></code> and later for <code class="docutils literal notranslate"><span class="pre">call</span></code>/<code class="docutils literal notranslate"><span class="pre">conversation</span></code>/<code class="docutils literal notranslate"><span class="pre">ai</span></code> references (best-effort for <code class="docutils literal notranslate"><span class="pre">ai</span></code>); the key is OMITTED when not applicable. See <a class="reference internal" href="#timeline-analysis-struct-timeline-analysis-outcome"><span class="std std-ref">Outcome</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metrics</span></code> (object): Deterministic voice/AI interaction metrics (turn counts and latencies). Present on <code class="docutils literal notranslate"><span class="pre">version</span></code> <code class="docutils literal notranslate"><span class="pre">3</span></code> and later for voice/AI references only; the key is OMITTED for chat/API references and when there are no interaction turns. See <a class="reference internal" href="#timeline-analysis-struct-timeline-analysis-metrics"><span class="std std-ref">Metrics</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">resources_used</span></code> (array): The resources involved in the flow, with per-type counts.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">interactions</span></code> (array): The per-resource content summary of what was communicated and the intent/outcome. Present on <code class="docutils literal notranslate"><span class="pre">version</span></code> <code class="docutils literal notranslate"><span class="pre">2</span></code> and later (always an array, <code class="docutils literal notranslate"><span class="pre">[]</span></code> when there is nothing to summarize).</p>
 <ul>
@@ -709,6 +742,90 @@
 </ul>
 </li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">session_context</span></code>, <code class="docutils literal notranslate"><span class="pre">outcome</span></code>, and <code class="docutils literal notranslate"><span class="pre">metrics</span></code> are computed deterministically by the platform (never by the AI). Consumers should branch on key-presence: an absent block is an omitted key, not <code class="docutils literal notranslate"><span class="pre">null</span></code> or an empty object. <code class="docutils literal notranslate"><span class="pre">interactions</span></code> and <code class="docutils literal notranslate"><span class="pre">issues</span></code> keep their existing always-array contract.</p>
+</div>
+</section>
+<section id="session-context">
+<span id="timeline-analysis-struct-timeline-analysis-session-context"></span><h2>Session context<a class="headerlink" href="#session-context" title="Link to this heading">¶</a></h2>
+<p>The channel-neutral header. Fields marked optional are omitted when not resolvable.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (string): The activeflow’s reference type, verbatim. One of <code class="docutils literal notranslate"><span class="pre">call</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation</span></code>, <code class="docutils literal notranslate"><span class="pre">ai</span></code>, <code class="docutils literal notranslate"><span class="pre">api</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe</span></code>, <code class="docutils literal notranslate"><span class="pre">recording</span></code>, <code class="docutils literal notranslate"><span class="pre">campaign</span></code>, or empty.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">channel</span></code> (string): The normalized channel. One of <code class="docutils literal notranslate"><span class="pre">voice</span></code>, <code class="docutils literal notranslate"><span class="pre">chat</span></code>, <code class="docutils literal notranslate"><span class="pre">ai</span></code>, <code class="docutils literal notranslate"><span class="pre">api</span></code>, or empty. There is no <code class="docutils literal notranslate"><span class="pre">sms</span></code>/<code class="docutils literal notranslate"><span class="pre">email</span></code> channel (SMS/email are actions inside a call or conversation, not standalone sessions).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction</span></code> (string, optional): The normalized direction. One of <code class="docutils literal notranslate"><span class="pre">inbound</span></code>, <code class="docutils literal notranslate"><span class="pre">outbound</span></code>. For a <code class="docutils literal notranslate"><span class="pre">conversation</span></code> this is empty (a thread is bidirectional; per-message direction lives in <code class="docutils literal notranslate"><span class="pre">outcome.detail</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">direction_raw</span></code> (string, optional): The source-channel direction verbatim (e.g. a call’s <code class="docutils literal notranslate"><span class="pre">incoming</span></code>/<code class="docutils literal notranslate"><span class="pre">outgoing</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">participants</span></code> (array, optional): The session participants. Omitted (not <code class="docutils literal notranslate"><span class="pre">[]</span></code>) when none resolve. Each entry has <code class="docutils literal notranslate"><span class="pre">role</span></code> (<code class="docutils literal notranslate"><span class="pre">source</span></code>/<code class="docutils literal notranslate"><span class="pre">destination</span></code> for a call, <code class="docutils literal notranslate"><span class="pre">self</span></code>/<code class="docutils literal notranslate"><span class="pre">peer</span></code> for a conversation) and <code class="docutils literal notranslate"><span class="pre">address</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">flow_name</span></code> (string, optional): The name of the executed flow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">started_at</span></code> (string, ISO 8601, optional): The channel-appropriate session start time.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">origin_kind</span></code> (string, optional): For a <code class="docutils literal notranslate"><span class="pre">transcribe</span></code>/<code class="docutils literal notranslate"><span class="pre">recording</span></code> reference, marks that this card shows the underlying source it was made from. One of <code class="docutils literal notranslate"><span class="pre">transcription</span></code>, <code class="docutils literal notranslate"><span class="pre">recording</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">origin_type</span></code> (string, optional): For a <code class="docutils literal notranslate"><span class="pre">transcribe</span></code>/<code class="docutils literal notranslate"><span class="pre">recording</span></code> reference, the type of the chased origin (<code class="docutils literal notranslate"><span class="pre">call</span></code>, <code class="docutils literal notranslate"><span class="pre">conversation</span></code>, or <code class="docutils literal notranslate"><span class="pre">confbridge</span></code>). The body (participants/direction/outcome) is the origin’s, while <code class="docutils literal notranslate"><span class="pre">reference_type</span></code> stays <code class="docutils literal notranslate"><span class="pre">transcribe</span></code>/<code class="docutils literal notranslate"><span class="pre">recording</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">multi_leg</span></code> (boolean): True when the reference expands to more than one leg (e.g. a group call).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ai_handled</span></code> (boolean): True when an AI (pipecat) session was present. Suppressed (false) on a chased <code class="docutils literal notranslate"><span class="pre">transcribe</span></code>/<code class="docutils literal notranslate"><span class="pre">recording</span></code> card.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">human_involved</span></code> (boolean): True when a human agent leg connected. Suppressed (false) on a chased <code class="docutils literal notranslate"><span class="pre">transcribe</span></code>/<code class="docutils literal notranslate"><span class="pre">recording</span></code> card.</p></li>
+</ul>
+</section>
+<section id="outcome">
+<span id="timeline-analysis-struct-timeline-analysis-outcome"></span><h2>Outcome<a class="headerlink" href="#outcome" title="Link to this heading">¶</a></h2>
+<p>How the session ended. Its meaning depends on <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">result</span></code> (enum string): The normalized result. One of <code class="docutils literal notranslate"><span class="pre">completed</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code>, <code class="docutils literal notranslate"><span class="pre">no_answer</span></code>, <code class="docutils literal notranslate"><span class="pre">busy</span></code>, <code class="docutils literal notranslate"><span class="pre">in_progress</span></code>, <code class="docutils literal notranslate"><span class="pre">unknown</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ended_by</span></code> (string, optional): For a <code class="docutils literal notranslate"><span class="pre">call</span></code> only, who ended it, relative to the platform: <code class="docutils literal notranslate"><span class="pre">remote</span></code> or <code class="docutils literal notranslate"><span class="pre">local</span></code>. Omitted for non-call references. The UI derives a human label from <code class="docutils literal notranslate"><span class="pre">(reference_type,</span> <span class="pre">direction,</span> <span class="pre">ended_by)</span></code>:</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>reference_type</p></th>
+<th class="head"><p>direction</p></th>
+<th class="head"><p>ended_by</p></th>
+<th class="head"><p>label</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>call</p></td>
+<td><p>inbound</p></td>
+<td><p>remote</p></td>
+<td><p>Customer ended</p></td>
+</tr>
+<tr class="row-odd"><td><p>call</p></td>
+<td><p>inbound</p></td>
+<td><p>local</p></td>
+<td><p>System ended</p></td>
+</tr>
+<tr class="row-even"><td><p>call</p></td>
+<td><p>outbound</p></td>
+<td><p>remote</p></td>
+<td><p>Callee ended</p></td>
+</tr>
+<tr class="row-odd"><td><p>call</p></td>
+<td><p>outbound</p></td>
+<td><p>local</p></td>
+<td><p>System ended</p></td>
+</tr>
+<tr class="row-even"><td><p>call</p></td>
+<td><p>(any)</p></td>
+<td><p>(empty)</p></td>
+<td><p>No answer / N/A</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>There is no <code class="docutils literal notranslate"><span class="pre">abandoned</span></code> result: a customer hanging up early is <code class="docutils literal notranslate"><span class="pre">result</span></code> <code class="docutils literal notranslate"><span class="pre">completed</span></code> with <code class="docutils literal notranslate"><span class="pre">ended_by</span></code> <code class="docutils literal notranslate"><span class="pre">remote</span></code> and a short <code class="docutils literal notranslate"><span class="pre">duration_sec</span></code>; the interpretation is left to the consumer.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reason</span></code> (string, optional): The channel-raw reason (a call’s hangup reason, a conversation’s last-message status).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">detail</span></code> (object, optional): Channel-raw extras. For a <code class="docutils literal notranslate"><span class="pre">call</span></code>: <code class="docutils literal notranslate"><span class="pre">duration_sec</span></code>, <code class="docutils literal notranslate"><span class="pre">hangup_reason</span></code>. For a <code class="docutils literal notranslate"><span class="pre">conversation</span></code>: <code class="docutils literal notranslate"><span class="pre">chat_platform</span></code> (<code class="docutils literal notranslate"><span class="pre">message</span></code>/<code class="docutils literal notranslate"><span class="pre">line</span></code>/<code class="docutils literal notranslate"><span class="pre">whatsapp</span></code>), <code class="docutils literal notranslate"><span class="pre">last_activity_by</span></code> (<code class="docutils literal notranslate"><span class="pre">self</span></code>/<code class="docutils literal notranslate"><span class="pre">peer</span></code>), <code class="docutils literal notranslate"><span class="pre">turns_self</span></code>, <code class="docutils literal notranslate"><span class="pre">turns_peer</span></code>, <code class="docutils literal notranslate"><span class="pre">unanswered</span></code> (<code class="docutils literal notranslate"><span class="pre">true</span></code> when the end-user spoke last and the business did not reply), <code class="docutils literal notranslate"><span class="pre">delivery_failures</span></code> (a count, not a thread-wide failure verdict), <code class="docutils literal notranslate"><span class="pre">thread_span_sec</span></code>, <code class="docutils literal notranslate"><span class="pre">truncated</span></code>.</p></li>
+</ul>
+</section>
+<section id="metrics">
+<span id="timeline-analysis-struct-timeline-analysis-metrics"></span><h2>Metrics<a class="headerlink" href="#metrics" title="Link to this heading">¶</a></h2>
+<p>Deterministic voice/AI interaction metrics. Present for <code class="docutils literal notranslate"><span class="pre">call</span></code>/<code class="docutils literal notranslate"><span class="pre">ai</span></code> references only; omitted otherwise and when there are no interaction turns.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">turns_user</span></code> (integer): Number of end-user transcription turns.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">turns_bot</span></code> (integer): Number of bot transcription turns (intermediate LLM ticks are excluded).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">first_response_ms</span></code> (integer, optional): Milliseconds from session answer to the first bot turn. Omitted when the inputs are not available.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">avg_response_ms</span></code> (integer, optional): Average bot response latency over user-then-bot turn pairs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_response_ms</span></code> (integer, optional): Maximum bot response latency.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_gap_ms</span></code> (integer, optional): The largest gap between adjacent interaction events.</p></li>
+</ul>
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Link to this heading">¶</a></h2>
@@ -718,9 +835,38 @@
     <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span><span class="p">,</span>
     <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
         <span class="s2">&quot;overall_status&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
         <span class="s2">&quot;input_reduced&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+        <span class="s2">&quot;session_context&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="s2">&quot;voice&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;inbound&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;direction_raw&quot;</span><span class="p">:</span> <span class="s2">&quot;incoming&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;participants&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;+14155550100&quot;</span><span class="p">},</span>
+                <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;destination&quot;</span><span class="p">,</span> <span class="s2">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;+14155550199&quot;</span><span class="p">}</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;flow_name&quot;</span><span class="p">:</span> <span class="s2">&quot;support-ivr&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;started_at&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-03-01T10:00:05Z&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;multi_leg&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;ai_handled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+            <span class="s2">&quot;human_involved&quot;</span><span class="p">:</span> <span class="n">true</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;outcome&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ended_by&quot;</span><span class="p">:</span> <span class="s2">&quot;remote&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;reason&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;duration_sec&quot;</span><span class="p">:</span> <span class="s2">&quot;312&quot;</span><span class="p">,</span> <span class="s2">&quot;hangup_reason&quot;</span><span class="p">:</span> <span class="s2">&quot;normal&quot;</span><span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;metrics&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;turns_user&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+            <span class="s2">&quot;turns_bot&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+            <span class="s2">&quot;first_response_ms&quot;</span><span class="p">:</span> <span class="mi">1200</span><span class="p">,</span>
+            <span class="s2">&quot;avg_response_ms&quot;</span><span class="p">:</span> <span class="mi">1450</span><span class="p">,</span>
+            <span class="s2">&quot;max_response_ms&quot;</span><span class="p">:</span> <span class="mi">2600</span><span class="p">,</span>
+            <span class="s2">&quot;max_gap_ms&quot;</span><span class="p">:</span> <span class="mi">4100</span>
+        <span class="p">},</span>
         <span class="s2">&quot;resources_used&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
             <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
@@ -817,6 +963,9 @@
 <li><a class="reference internal" href="#timeline-analysis-struct-timeline-analysis-timeline-analysis">Timeline analysis</a></li>
 <li><a class="reference internal" href="#status">Status</a></li>
 <li><a class="reference internal" href="#result">Result</a></li>
+<li><a class="reference internal" href="#session-context">Session context</a></li>
+<li><a class="reference internal" href="#outcome">Outcome</a></li>
+<li><a class="reference internal" href="#metrics">Metrics</a></li>
 <li><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>

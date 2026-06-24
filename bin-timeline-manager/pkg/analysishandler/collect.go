@@ -37,6 +37,15 @@ type collectedInput struct {
 	errorSignals []*canonicalEvent
 	transcripts  []string
 	inputReduced bool
+
+	// allEvents is the COMPLETE collected event list BEFORE reduceEvents drops
+	// low-signal entries. The LLM pipeline uses the reduced+frozen `events`, but
+	// deterministic enrichment (metrics aggregation, AIHandled/HumanInvolved
+	// detection) reads allEvents so a low-signal-but-load-bearing boundary event
+	// (e.g. an "agent connected" or a bot-turn on a long session) is not
+	// undercounted. Indices are NOT assigned here (only the frozen list is
+	// evidence-indexed); enrichment keys off Timestamp/EventType/Publisher.
+	allEvents []*canonicalEvent
 }
 
 type resourceCount struct {
@@ -83,6 +92,7 @@ func (h *analysisHandler) collectInput(ctx context.Context, customerID, activefl
 		errorSignals: errorSignals,
 		transcripts:  transcripts,
 		inputReduced: inputReduced,
+		allEvents:    raw,
 	}, nil
 }
 

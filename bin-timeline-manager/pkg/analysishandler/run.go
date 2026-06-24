@@ -8,13 +8,17 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
 
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
 	"monorepo/bin-timeline-manager/models/analysis"
 )
 
 // kickoff launches the async analysis chain for a progressing row. It is
 // bounded by a semaphore, recovers from panics, and persists the terminal
-// result on a fresh context so the row never stays stuck in progressing.
-func (h *analysisHandler) kickoff(analysisID, customerID, activeflowID uuid.UUID) {
+// result on a fresh context so the row never stays stuck in progressing. The
+// activeflow fetched in Start is threaded in (not re-Got) so enrichment keys off
+// the same snapshot (#10).
+func (h *analysisHandler) kickoff(analysisID, customerID, activeflowID uuid.UUID, af *fmactiveflow.Activeflow) {
 	h.metricStarted.Inc()
 
 	go func() {
@@ -41,7 +45,7 @@ func (h *analysisHandler) kickoff(analysisID, customerID, activeflowID uuid.UUID
 		ctx, cancel := context.WithTimeout(context.Background(), analysisJobTimeout)
 		defer cancel()
 
-		verdictJSON, modelUsed, err := h.runChain(ctx, customerID, activeflowID)
+		verdictJSON, modelUsed, err := h.runChain(ctx, customerID, activeflowID, af)
 		if err != nil {
 			log.Errorf("analysis chain failed. err: %v", err)
 			// sanitized, operator-safe message (no raw provider errors/stacks — review L2).

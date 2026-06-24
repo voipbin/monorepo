@@ -13,6 +13,8 @@ import (
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
 	"monorepo/bin-timeline-manager/models/analysis"
 	"monorepo/bin-timeline-manager/pkg/analysisdbhandler"
 	"monorepo/bin-timeline-manager/pkg/eventhandler"
@@ -105,6 +107,7 @@ type analysisHandler struct {
 	metricStarted   prometheus.Counter
 	metricCompleted *prometheus.CounterVec
 	metricDuration  prometheus.Histogram
+	metricEnrichment *prometheus.CounterVec
 }
 
 var (
@@ -127,6 +130,12 @@ var (
 		Help:      "Duration of the async analysis chain in seconds.",
 		Buckets:   []float64{1, 5, 10, 30, 60, 120, 300},
 	})
+	promAnalysisEnrichment = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "timeline_manager",
+		Subsystem: "analysis",
+		Name:      "enrichment_total",
+		Help:      "Per-reference_type context enrichment outcome (resolved/unresolved).",
+	}, []string{"reference_type", "outcome"})
 )
 
 // NewAnalysisHandler creates a new AnalysisHandler.
@@ -147,5 +156,16 @@ func NewAnalysisHandler(
 		metricStarted:   promAnalysisStarted,
 		metricCompleted: promAnalysisCompleted,
 		metricDuration:  promAnalysisDuration,
+		metricEnrichment: promAnalysisEnrichment,
 	}
+}
+
+// metricEnrichmentOutcome records a per-reference_type enrichment outcome so a
+// provider silently failing in prod is visible (design §9).
+func (h *analysisHandler) metricEnrichmentOutcome(refType fmactiveflow.ReferenceType, outcome string) {
+	rt := string(refType)
+	if rt == "" {
+		rt = "none"
+	}
+	h.metricEnrichment.WithLabelValues(rt, outcome).Inc()
 }

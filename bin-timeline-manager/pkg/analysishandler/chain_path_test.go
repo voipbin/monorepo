@@ -69,7 +69,7 @@ func Test_runStaged_carries_stage2_interactions_end_to_end(t *testing.T) {
 			}
 		}).Times(3)
 
-	_, _, interactions, err := h.runStaged(context.Background(), stagedInput())
+	_, _, interactions, err := h.runStaged(context.Background(), stagedInput(), nil)
 	if err != nil {
 		t.Fatalf("runStaged failed: %v", err)
 	}
@@ -106,7 +106,7 @@ func Test_runCombined_emits_interactions_end_to_end(t *testing.T) {
 			return gatewayResp(t, combinedBody), nil
 		}).Times(1)
 
-	rawVerdict, _, err := h.runCombined(context.Background(), minimalInput())
+	rawVerdict, _, err := h.runCombined(context.Background(), minimalInput(), nil)
 	if err != nil {
 		t.Fatalf("runCombined failed: %v", err)
 	}
@@ -122,7 +122,7 @@ func Test_runCombined_emits_interactions_end_to_end(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ValidateRaw failed: %v", err)
 	}
-	final := h.buildFinalVerdict(raw, raw.Interactions, minimalInput())
+	final := h.buildFinalVerdict(raw, raw.Interactions, minimalInput(), nil)
 	if len(final.Interactions) != 1 || final.Interactions[0].Summary == "" {
 		t.Fatalf("combined-path interaction did not flow into final verdict: %+v", final.Interactions)
 	}
