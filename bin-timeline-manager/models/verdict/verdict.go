@@ -7,7 +7,11 @@ import (
 )
 
 // CurrentVersion is the schema version of the persisted verdict JSON.
-const CurrentVersion = 1
+//
+// v2 (VOIP-1200): added Interactions (the Stage 2 content summary, previously
+// computed then discarded). v1 records have no interactions key; consumers use
+// Version to disambiguate.
+const CurrentVersion = 2
 
 // OverallStatus is the holistic verdict status.
 type OverallStatus string
@@ -46,6 +50,15 @@ type ResourceUsed struct {
 	Count int    `json:"count"`
 }
 
+// Interaction is one resource's content summary: what was communicated and the
+// intent/outcome. Carried forward from the Stage 2 content pass (staged path)
+// or emitted directly by the combined call (single-call path). Customer-facing:
+// it carries no internal fields (no model id, no token counts).
+type Interaction struct {
+	ResourceType string `json:"resource_type"`
+	Summary      string `json:"summary"`
+}
+
 // Issue is a single detected problem.
 type Issue struct {
 	Severity Severity   `json:"severity"`
@@ -60,6 +73,7 @@ type Verdict struct {
 	OverallStatus OverallStatus  `json:"overall_status"`
 	InputReduced  bool           `json:"input_reduced"`
 	ResourcesUsed []ResourceUsed `json:"resources_used"`
+	Interactions  []Interaction  `json:"interactions"`
 	Narrative     string         `json:"narrative"`
 	Issues        []Issue        `json:"issues"`
 }
@@ -70,6 +84,7 @@ type Verdict struct {
 type RawVerdict struct {
 	OverallStatus OverallStatus  `json:"overall_status"`
 	ResourcesUsed []ResourceUsed `json:"resources_used"`
+	Interactions  []Interaction  `json:"interactions"`
 	Narrative     string         `json:"narrative"`
 	Issues        []RawIssue     `json:"issues"`
 }

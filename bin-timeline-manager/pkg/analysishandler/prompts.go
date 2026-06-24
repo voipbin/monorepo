@@ -14,6 +14,9 @@ Rules:
 - Every non-ok issue MUST cite at least one evidence_index from the provided event list.
 - Only cite evidence_index values that appear in the provided list.
 - Do NOT invent resource counts; resources_used will be recomputed deterministically.
+- For interactions, summarize what was communicated and the intent/outcome of each resource/channel
+  used, one entry per resource_type. Provide the same level of content detail you would in a
+  dedicated content pass; do not leave interactions empty when there is anything to summarize.
 - Be concise and factual. Narrate what happened and where any problems occurred.`
 
 const stage1Prompt = `You are a VoIP communication-flow analyst. Stage 1 of 3: INVENTORY. ` +
@@ -23,7 +26,7 @@ const stage1Prompt = `You are a VoIP communication-flow analyst. Stage 1 of 3: I
 
 const stage2Prompt = `You are a VoIP communication-flow analyst. Stage 2 of 3: CONTENT. ` +
 	`Given the Stage 1 structured inventory/outline and any transcripts, summarize what was communicated and the ` +
-	`intent/outcome of each interaction, plus an overall narrative. Emit ONLY the schema JSON.`
+	`intent/outcome of each resource/channel used, one entry per resource_type, plus an overall narrative. Emit ONLY the schema JSON.`
 
 const stage3Prompt = `You are a VoIP communication-flow analyst. Stage 3 of 3: DIAGNOSIS. ` +
 	`Given the Stage 1 inventory/outline, the Stage 2 content summary, and the deterministic error signals, ` +

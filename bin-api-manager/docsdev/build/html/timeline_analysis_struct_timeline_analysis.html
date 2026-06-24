@@ -660,11 +660,14 @@
 <span id="timeline-analysis-struct-timeline-analysis-result"></span><h2>Result<a class="headerlink" href="#result" title="Link to this heading">¶</a></h2>
 <p>The structured verdict produced for a <code class="docutils literal notranslate"><span class="pre">completed</span></code> analysis.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
     <span class="s2">&quot;overall_status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;input_reduced&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
     <span class="s2">&quot;resources_used&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;interactions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">}</span>
     <span class="p">],</span>
     <span class="s2">&quot;narrative&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;issues&quot;</span><span class="p">:</span> <span class="p">[</span>
@@ -686,10 +689,16 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code> (integer): The verdict schema version.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code> (integer): The verdict schema version. <code class="docutils literal notranslate"><span class="pre">2</span></code> adds the <code class="docutils literal notranslate"><span class="pre">interactions</span></code> field; <code class="docutils literal notranslate"><span class="pre">1</span></code> records have no <code class="docutils literal notranslate"><span class="pre">interactions</span></code> key.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">overall_status</span></code> (enum string): The holistic verdict. One of <code class="docutils literal notranslate"><span class="pre">ok</span></code>, <code class="docutils literal notranslate"><span class="pre">warning</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">input_reduced</span></code> (boolean): True when the analyzed input was reduced (very large flow) before the verdict was produced.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">resources_used</span></code> (array): The resources involved in the flow, with per-type counts.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">interactions</span></code> (array): The per-resource content summary of what was communicated and the intent/outcome. Present on <code class="docutils literal notranslate"><span class="pre">version</span></code> <code class="docutils literal notranslate"><span class="pre">2</span></code> and later (always an array, <code class="docutils literal notranslate"><span class="pre">[]</span></code> when there is nothing to summarize).</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">resource_type</span></code> (string): The resource/channel the summary describes (e.g. <code class="docutils literal notranslate"><span class="pre">call</span></code>, <code class="docutils literal notranslate"><span class="pre">transcribe</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">summary</span></code> (string): What was communicated and the intent/outcome for that resource.</p></li>
+</ul>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">narrative</span></code> (string): A human-readable summary of what happened in the flow.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">issues</span></code> (array): Detected problems. Empty when <code class="docutils literal notranslate"><span class="pre">overall_status</span></code> is <code class="docutils literal notranslate"><span class="pre">ok</span></code>.</p>
 <ul>
@@ -709,12 +718,16 @@
     <span class="s2">&quot;activeflow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;</span><span class="p">,</span>
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span><span class="p">,</span>
     <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
         <span class="s2">&quot;overall_status&quot;</span><span class="p">:</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span>
         <span class="s2">&quot;input_reduced&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
         <span class="s2">&quot;resources_used&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
             <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;interactions&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span><span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span> <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="s2">&quot;Two inbound calls were answered; the caller asked about a billing charge and was transferred to an agent.&quot;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;resource_type&quot;</span><span class="p">:</span> <span class="s2">&quot;transcribe&quot;</span><span class="p">,</span> <span class="s2">&quot;summary&quot;</span><span class="p">:</span> <span class="s2">&quot;The conversation was transcribed; the caller confirmed their account number and the agent explained the charge.&quot;</span><span class="p">}</span>
         <span class="p">],</span>
         <span class="s2">&quot;narrative&quot;</span><span class="p">:</span> <span class="s2">&quot;Two inbound calls were answered and transcribed; one call&#39;s media quality degraded mid-conversation.&quot;</span><span class="p">,</span>
         <span class="s2">&quot;issues&quot;</span><span class="p">:</span> <span class="p">[</span>
