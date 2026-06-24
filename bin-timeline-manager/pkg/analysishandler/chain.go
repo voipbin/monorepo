@@ -25,10 +25,12 @@ func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID
 	// (5) adaptive staging decision.
 	var rawVerdict json.RawMessage
 	var modelUsed string
-	if h.useSingleCall(input) {
-		rawVerdict, modelUsed, err = h.runCombined(ctx, input)
+	var interactions []verdict.Interaction
+	staged := !h.useSingleCall(input)
+	if staged {
+		rawVerdict, modelUsed, interactions, err = h.runStaged(ctx, input)
 	} else {
-		rawVerdict, modelUsed, err = h.runStaged(ctx, input)
+		rawVerdict, modelUsed, err = h.runCombined(ctx, input)
 	}
 	if err != nil {
 		return nil, "", err
@@ -41,7 +43,13 @@ func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID
 	}
 
 	// (7) resolution + (c) deterministic overwrite of resources_used.
-	final := h.buildFinalVerdict(raw, input)
+	// Interactions source is selected by PATH (structural), not by len()/nil:
+	// the staged path carries the Stage 2 content forward; the single-call path
+	// reads them from the combined emission (raw.Interactions).
+	if !staged {
+		interactions = raw.Interactions
+	}
+	final := h.buildFinalVerdict(raw, interactions, input)
 
 	out, err := json.Marshal(final)
 	if err != nil {
@@ -76,30 +84,49 @@ func (h *analysisHandler) runCombined(ctx context.Context, input *collectedInput
 }
 
 // runStaged runs the full 3-stage chain. Each stage consumes the prior stage's
-// STRUCTURED output (not raw events again).
-func (h *analysisHandler) runStaged(ctx context.Context, input *collectedInput) (json.RawMessage, string, error) {
+// STRUCTURED output (not raw events again). It also returns the Stage 2 content
+// interactions, carried forward into the final verdict (VOIP-1200): Stage 3 runs
+// on stage3VerdictSchema (no interactions) so it cannot paraphrase/lose them.
+func (h *analysisHandler) runStaged(ctx context.Context, input *collectedInput) (json.RawMessage, string, []verdict.Interaction, error) {
 	// Stage 1 — Inventory.
 	stage1Data := h.buildStage1Data(input)
 	resp1, err := h.callGateway(ctx, stage1Prompt, stage1Data, stage1Schema, "timeline_stage1", h.models.Stage1)
 	if err != nil {
-		return nil, "", fmt.Errorf("runStaged: stage1: %v", err)
+		return nil, "", nil, fmt.Errorf("runStaged: stage1: %v", err)
 	}
 
 	// Stage 2 — Content.
 	stage2Data := h.buildStage2Data(resp1.Result, input)
 	resp2, err := h.callGateway(ctx, stage2Prompt, stage2Data, stage2Schema, "timeline_stage2", h.models.Stage2)
 	if err != nil {
-		return nil, "", fmt.Errorf("runStaged: stage2: %v", err)
+		return nil, "", nil, fmt.Errorf("runStaged: stage2: %v", err)
 	}
 
-	// Stage 3 — Diagnosis (produces the final verdict).
+	// Parse the Stage 2 content. Its schema is the OBJECT
+	// {interactions:[{resource_type,summary}], overall_narrative}; unmarshaling
+	// into a bare slice would fail. We keep the interactions; overall_narrative
+	// is consumed by the Stage 3 prompt, not persisted here.
+	var s2 stage2Result
+	if err := json.Unmarshal(resp2.Result, &s2); err != nil {
+		return nil, "", nil, fmt.Errorf("runStaged: could not parse stage2 content. err: %v", err)
+	}
+
+	// Stage 3 — Diagnosis (produces the final verdict, WITHOUT interactions).
 	stage3Data := h.buildStage3Data(resp1.Result, resp2.Result, input)
-	resp3, err := h.callGateway(ctx, stage3Prompt, stage3Data, verdictSchema, "timeline_verdict", h.models.Stage3)
+	resp3, err := h.callGateway(ctx, stage3Prompt, stage3Data, stage3VerdictSchema, "timeline_verdict", h.models.Stage3)
 	if err != nil {
-		return nil, "", fmt.Errorf("runStaged: stage3: %v", err)
+		return nil, "", nil, fmt.Errorf("runStaged: stage3: %v", err)
 	}
 
-	return resp3.Result, resp3.Model, nil
+	return resp3.Result, resp3.Model, s2.Interactions, nil
+}
+
+// stage2Result is the parse target for the Stage 2 content pass. Its schema is
+// an object; only the interactions are carried forward (overall_narrative feeds
+// the Stage 3 prompt and is not persisted).
+type stage2Result struct {
+	Interactions     []verdict.Interaction `json:"interactions"`
+	OverallNarrative string                `json:"overall_narrative"`
 }
 
 // callGateway invokes the ai-manager generic analysis gateway and guards against
@@ -130,8 +157,12 @@ func (h *analysisHandler) callGateway(ctx context.Context, prompt string, data, 
 }
 
 // buildFinalVerdict resolves evidence indices to concrete tuples and overwrites
-// resources_used with the Go-computed inventory (authoritative — review M1).
-func (h *analysisHandler) buildFinalVerdict(raw *verdict.RawVerdict, input *collectedInput) *verdict.Verdict {
+// resources_used with the Go-computed inventory (authoritative — review M1). The
+// interactions argument is the content summary selected by the caller per path
+// (Stage 2 carry on the staged path, combined emission on the single-call path);
+// it is normalized to a non-nil slice so every v2 record serializes
+// "interactions":[] rather than null (VOIP-1200, uniform wire shape).
+func (h *analysisHandler) buildFinalVerdict(raw *verdict.RawVerdict, interactions []verdict.Interaction, input *collectedInput) *verdict.Verdict {
 	issues := make([]verdict.Issue, 0, len(raw.Issues))
 	for _, ri := range raw.Issues {
 		evidence := make([]verdict.Evidence, 0, len(ri.EvidenceIndex))
@@ -158,11 +189,16 @@ func (h *analysisHandler) buildFinalVerdict(raw *verdict.RawVerdict, input *coll
 		resources = append(resources, verdict.ResourceUsed{Type: rc.Type, Count: rc.Count})
 	}
 
+	if interactions == nil {
+		interactions = []verdict.Interaction{}
+	}
+
 	return &verdict.Verdict{
 		Version:       verdict.CurrentVersion,
 		OverallStatus: raw.OverallStatus,
 		InputReduced:  input.inputReduced,
 		ResourcesUsed: resources,
+		Interactions:  interactions,
 		Narrative:     raw.Narrative,
 		Issues:        issues,
 	}

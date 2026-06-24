@@ -14,6 +14,9 @@ Rules:
 - Every non-ok issue MUST cite at least one evidence_index from the provided event list.
 - Only cite evidence_index values that appear in the provided list.
 - Do NOT invent resource counts; resources_used will be recomputed deterministically.
+- For interactions, summarize what was communicated and the intent/outcome of each resource/channel
+  used, one entry per resource_type. Provide the same level of content detail you would in a
+  dedicated content pass; do not leave interactions empty when there is anything to summarize.
 - Be concise and factual. Narrate what happened and where any problems occurred.`
 
 const stage1Prompt = `You are a VoIP communication-flow analyst. Stage 1 of 3: INVENTORY. ` +

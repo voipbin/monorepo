@@ -55,11 +55,14 @@ The structured verdict produced for a ``completed`` analysis.
 .. code::
 
     {
-        "version": 1,
+        "version": 2,
         "overall_status": "<string>",
         "input_reduced": false,
         "resources_used": [
             {"type": "<string>", "count": 0}
+        ],
+        "interactions": [
+            {"resource_type": "<string>", "summary": "<string>"}
         ],
         "narrative": "<string>",
         "issues": [
@@ -79,10 +82,15 @@ The structured verdict produced for a ``completed`` analysis.
         ]
     }
 
-* ``version`` (integer): The verdict schema version.
+* ``version`` (integer): The verdict schema version. ``2`` adds the ``interactions`` field; ``1`` records have no ``interactions`` key.
 * ``overall_status`` (enum string): The holistic verdict. One of ``ok``, ``warning``, ``error``.
 * ``input_reduced`` (boolean): True when the analyzed input was reduced (very large flow) before the verdict was produced.
 * ``resources_used`` (array): The resources involved in the flow, with per-type counts.
+* ``interactions`` (array): The per-resource content summary of what was communicated and the intent/outcome. Present on ``version`` ``2`` and later (always an array, ``[]`` when there is nothing to summarize).
+
+  * ``resource_type`` (string): The resource/channel the summary describes (e.g. ``call``, ``transcribe``).
+  * ``summary`` (string): What was communicated and the intent/outcome for that resource.
+
 * ``narrative`` (string): A human-readable summary of what happened in the flow.
 * ``issues`` (array): Detected problems. Empty when ``overall_status`` is ``ok``.
 
@@ -102,12 +110,16 @@ Example
         "activeflow_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
         "status": "completed",
         "result": {
-            "version": 1,
+            "version": 2,
             "overall_status": "warning",
             "input_reduced": false,
             "resources_used": [
                 {"type": "call", "count": 2},
                 {"type": "transcribe", "count": 1}
+            ],
+            "interactions": [
+                {"resource_type": "call", "summary": "Two inbound calls were answered; the caller asked about a billing charge and was transferred to an agent."},
+                {"resource_type": "transcribe", "summary": "The conversation was transcribed; the caller confirmed their account number and the agent explained the charge."}
             ],
             "narrative": "Two inbound calls were answered and transcribed; one call's media quality degraded mid-conversation.",
             "issues": [
