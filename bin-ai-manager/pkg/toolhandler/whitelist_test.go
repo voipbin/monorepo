@@ -62,6 +62,7 @@ func Test_FilterToolsForConversation(t *testing.T) {
 				tool.ToolNameStopService,
 				tool.ToolNameGetAIcallMessages,
 				tool.ToolNameSearchKnowledge,
+				tool.ToolNameDescribeAction,
 			},
 		},
 		{
@@ -80,6 +81,7 @@ func Test_FilterToolsForConversation(t *testing.T) {
 				tool.ToolNameStopService,
 				tool.ToolNameGetAIcallMessages,
 				tool.ToolNameSearchKnowledge,
+				tool.ToolNameDescribeAction,
 			},
 		},
 		{
