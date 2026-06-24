@@ -625,7 +625,7 @@ run_llm: Set true (default) to confirm verbally ("I've placed the call").`,
 							},
 							"option": map[string]any{
 								"type":        "object",
-								"description": "Action-type-specific options. Shape depends on type. Call describe_action with this type to get the exact option fields. Omit for actions with no options (e.g. hangup).",
+								"description": "Action-type-specific options. Shape depends on type. Call describe_action with this type to get the exact option fields. Omit for actions with no options (e.g. answer).",
 							},
 						},
 						"required": []string{"type"},
