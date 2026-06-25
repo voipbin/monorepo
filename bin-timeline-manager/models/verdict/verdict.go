@@ -11,7 +11,13 @@ import (
 // v2 (VOIP-1200): added Interactions (the Stage 2 content summary, previously
 // computed then discarded). v1 records have no interactions key; consumers use
 // Version to disambiguate.
-const CurrentVersion = 2
+//
+// v3 (VOIP-1203): added SessionContext (channel-neutral 5W1H header), Outcome
+// (who/how the session ended), and Metrics (voice/AI turn+latency). All three
+// are Go-authoritative (never LLM-authored) and OPTIONAL pointers: a reference
+// that does not resolve serializes them as an omitted key (not null/zero). v2
+// records have no session_context/outcome/metrics keys.
+const CurrentVersion = 3
 
 // OverallStatus is the holistic verdict status.
 type OverallStatus string
@@ -67,15 +73,80 @@ type Issue struct {
 	Evidence []Evidence `json:"evidence"`
 }
 
+// Participant unifies the per-channel participant fields (call Source/
+// Destination, conversation Self/Peer) into one channel-neutral shape (v3).
+type Participant struct {
+	Role    string `json:"role"`    // "source" | "destination" | "self" | "peer"
+	Address string `json:"address"` // the address target (phone/email/handle)
+}
+
+// SessionContext is the channel-neutral 5W1H header for a card-bearing
+// activeflow reference (v3). It is Go-authoritative and OPTIONAL: nil only when
+// nothing resolves (e.g. a deleted reference). The pointer + omitempty means an
+// unresolved reference omits the key entirely (never null/zero-value).
+//
+// For a transcribe/recording activeflow the body is BORROWED from the chased
+// origin call/conversation, while ReferenceType stays the real activeflow value
+// and OriginKind/OriginType mark "this is a transcription/recording OF that
+// origin".
+type SessionContext struct {
+	ReferenceType string        `json:"reference_type"`          // raw activeflow enum: call|conversation|ai|api|transcribe|recording|campaign|""
+	Channel       string        `json:"channel"`                 // normalized: voice|chat|ai|api (derived; NO sms/email — not reference_types)
+	Direction     string        `json:"direction,omitempty"`     // normalized "inbound"|"outbound"|"" (derived)
+	DirectionRaw  string        `json:"direction_raw,omitempty"` // the source enum verbatim (call incoming/outgoing)
+	Participants  []Participant `json:"participants,omitempty"`  // omitted (not []) when none resolvable
+	FlowName      string        `json:"flow_name,omitempty"`     // best-effort, customer-scoped
+	StartedAt     string        `json:"started_at,omitempty"`    // RFC3339, channel-appropriate start
+	OriginKind    string        `json:"origin_kind,omitempty"`   // ""|"transcription"|"recording" (this activeflow IS a X of the origin)
+	OriginType    string        `json:"origin_type,omitempty"`   // the chased origin's reference_type (call|conversation|confbridge)
+	MultiLeg      bool          `json:"multi_leg"`               // reference expands to >1 leg (groupcall/campaign)
+	AIHandled     bool          `json:"ai_handled"`              // a pipecat/ai session was present
+	HumanInvolved bool          `json:"human_involved"`          // an agent-manager leg connected
+}
+
+// SessionOutcome is the channel-neutral result (v3). Its meaning is
+// per-reference_type:
+//   - call: ended_by (hangup originator) + reason (hangup_reason) + duration.
+//   - conversation: last_activity_by + unanswered + turns + thread span (NO ended_by).
+//   - ai: aicall end status.
+//   - transcribe/recording: inherits the chased origin's outcome.
+//
+// EndedBy is populated ONLY for reference_types where "who ended it" is a real
+// concept (call). For conversation the dialogue-flow fields live in Detail. The
+// UI derives the human label from (reference_type, direction, ended_by); the
+// data never bakes in "Customer"/"System".
+type SessionOutcome struct {
+	Result  string            `json:"result"`             // normalized: completed|failed|no_answer|busy|in_progress|unknown
+	EndedBy string            `json:"ended_by,omitempty"` // call only: raw hangup_by (remote|local|""); other types omit
+	Reason  string            `json:"reason,omitempty"`   // raw channel reason (call hangup_reason; conversation last-msg status)
+	Detail  map[string]string `json:"detail,omitempty"`   // channel-raw extras (call: duration_sec; conversation: last_activity_by, turns_self, turns_peer, unanswered, ...)
+}
+
+// SessionMetrics is the deterministic voice/AI interaction-quality aggregate
+// (v3). Nil for non-voice references (conversation/api/none) and chased cards in
+// P1 — never a misleading zero-value block. Aggregated from the FULL
+// pre-reduction event stream (collectedInput.allEvents), not the reduced list.
+type SessionMetrics struct {
+	TurnsUser       int  `json:"turns_user"`                  // message_user_transcription events
+	TurnsBot        int  `json:"turns_bot"`                   // message_bot_transcription events (NOT *_llm_intermediate)
+	FirstResponseMS *int `json:"first_response_ms,omitempty"` // pipecatcall_initialized -> first bot event (same clock)
+	AvgResponseMS   *int `json:"avg_response_ms,omitempty"`
+	MaxResponseMS   *int `json:"max_response_ms,omitempty"`
+	MaxGapMS        *int `json:"max_gap_ms,omitempty"` // max gap between adjacent interaction events (NOT silence)
+}
+
 // Verdict is the persisted structured analysis result.
 type Verdict struct {
-	Version       int            `json:"version"`
-	OverallStatus OverallStatus  `json:"overall_status"`
-	InputReduced  bool           `json:"input_reduced"`
-	ResourcesUsed []ResourceUsed `json:"resources_used"`
-	Interactions  []Interaction  `json:"interactions"`
-	Narrative     string         `json:"narrative"`
-	Issues        []Issue        `json:"issues"`
+	Version        int             `json:"version"`
+	OverallStatus  OverallStatus   `json:"overall_status"`
+	InputReduced   bool            `json:"input_reduced"`
+	SessionContext *SessionContext `json:"session_context,omitempty"` // NEW (v3)
+	Outcome        *SessionOutcome `json:"outcome,omitempty"`         // NEW (v3)
+	Metrics        *SessionMetrics `json:"metrics,omitempty"`         // NEW (v3)
+	ResourcesUsed  []ResourceUsed  `json:"resources_used"`
+	Interactions   []Interaction   `json:"interactions"`
+	Narrative      string          `json:"narrative"`
+	Issues         []Issue         `json:"issues"`
 }
 
 // RawVerdict mirrors what the LLM returns: evidence is a bare list of integer

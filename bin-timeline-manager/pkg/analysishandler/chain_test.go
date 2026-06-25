@@ -26,7 +26,7 @@ func Test_buildFinalVerdict_interactions_carried(t *testing.T) {
 		{ResourceType: "call", Summary: "inbound call answered, customer asked for billing"},
 	}
 
-	got := h.buildFinalVerdict(raw, carried, minimalInput())
+	got := h.buildFinalVerdict(raw, carried, minimalInput(), nil)
 
 	if len(got.Interactions) != 1 {
 		t.Fatalf("expected 1 interaction carried, got %d", len(got.Interactions))
@@ -34,8 +34,8 @@ func Test_buildFinalVerdict_interactions_carried(t *testing.T) {
 	if got.Interactions[0].ResourceType != "call" || got.Interactions[0].Summary == "" {
 		t.Fatalf("interaction not carried verbatim: %+v", got.Interactions[0])
 	}
-	if verdict.CurrentVersion != 2 {
-		t.Fatalf("expected CurrentVersion to be 2, got %d", verdict.CurrentVersion)
+	if verdict.CurrentVersion != 3 {
+		t.Fatalf("expected CurrentVersion to be 3, got %d", verdict.CurrentVersion)
 	}
 	if got.Version != verdict.CurrentVersion {
 		t.Fatalf("expected version %d, got %d", verdict.CurrentVersion, got.Version)
@@ -51,7 +51,7 @@ func Test_buildFinalVerdict_empty_interactions_marshal_is_array(t *testing.T) {
 	raw := &verdict.RawVerdict{OverallStatus: verdict.OverallStatusOK}
 
 	// nil interactions argument == the staged quiet-call case.
-	got := h.buildFinalVerdict(raw, nil, minimalInput())
+	got := h.buildFinalVerdict(raw, nil, minimalInput(), nil)
 
 	// Go-level: must be non-nil empty, not nil.
 	if got.Interactions == nil {
@@ -82,7 +82,7 @@ func Test_buildFinalVerdict_empty_interactions_arg_marshal_is_array(t *testing.T
 	h := &analysisHandler{}
 	raw := &verdict.RawVerdict{OverallStatus: verdict.OverallStatusOK}
 
-	got := h.buildFinalVerdict(raw, []verdict.Interaction{}, minimalInput())
+	got := h.buildFinalVerdict(raw, []verdict.Interaction{}, minimalInput(), nil)
 
 	b, err := json.Marshal(got)
 	if err != nil {

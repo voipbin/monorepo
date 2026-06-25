@@ -52,7 +52,7 @@ func (h *analysisHandler) Start(ctx context.Context, customerID, activeflowID uu
 			return res, nil
 		}
 		// policy decided to (re)start; res is the row to run the chain on.
-		h.kickoff(res.ID, customerID, activeflowID)
+		h.kickoff(res.ID, customerID, activeflowID, af)
 		return res, nil
 
 	case errors.Is(err, analysisdbhandler.ErrNotFound):
@@ -74,7 +74,7 @@ func (h *analysisHandler) Start(ctx context.Context, customerID, activeflowID uu
 		// only kick the chain when WE created the row (not when we returned a
 		// concurrent in-flight one).
 		if created.justCreated {
-			h.kickoff(created.row.ID, customerID, activeflowID)
+			h.kickoff(created.row.ID, customerID, activeflowID, af)
 		}
 		return created.row, nil
 

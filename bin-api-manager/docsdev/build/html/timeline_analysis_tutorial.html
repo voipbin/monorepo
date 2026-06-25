@@ -633,7 +633,7 @@
     &quot;customer_id&quot;: &quot;12345678-1234-1234-1234-123456789012&quot;,
     &quot;activeflow_id&quot;: &quot;b2c3d4e5-f6a7-8901-bcde-f12345678901&quot;,
     &quot;status&quot;: &quot;progressing&quot;,
-    &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
+    &quot;tm_create&quot;: &quot;2026-01-20T12:00:00.000000Z&quot;,
     &quot;tm_update&quot;: null
 }
 </pre></div>
@@ -675,8 +675,8 @@
             }
         ]
     },
-    &quot;tm_create&quot;: &quot;2026-01-20 12:00:00.000000&quot;,
-    &quot;tm_update&quot;: &quot;2026-01-20 12:00:20.000000&quot;
+    &quot;tm_create&quot;: &quot;2026-01-20T12:00:00.000000Z&quot;,
+    &quot;tm_update&quot;: &quot;2026-01-20T12:00:20.000000Z&quot;
 }
 </pre></div>
 </div>
@@ -690,7 +690,7 @@
 </section>
 <section id="re-analyze">
 <h3>Re-analyze<a class="headerlink" href="#re-analyze" title="Link to this heading">¶</a></h3>
-<p>Re-run the analysis for an activeflow. The previous verdict is archived internally and replaced in place.</p>
+<p>Re-run the analysis for an activeflow. The previous verdict is discarded and replaced in place by the new run.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;https://api.voipbin.net/v1.0/timeline-analyses?token=&lt;YOUR_AUTH_TOKEN&gt;&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
@@ -706,7 +706,7 @@
 </section>
 <section id="delete-an-analysis">
 <h3>Delete an Analysis<a class="headerlink" href="#delete-an-analysis" title="Link to this heading">¶</a></h3>
-<p>Delete an analysis you no longer need.</p>
+<p>Permanently delete an analysis you no longer need. This is a hard delete: the record is removed and cannot be recovered. The analyzed activeflow and its timeline events are not affected, and the activeflow can be analyzed again afterward.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request DELETE &#39;https://api.voipbin.net/v1.0/timeline-analyses/a1b2c3d4-e5f6-7890-abcd-ef1234567890?token=&lt;YOUR_AUTH_TOKEN&gt;&#39;
 </pre></div>
 </div>

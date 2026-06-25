@@ -691,7 +691,7 @@
 <li><p>A short per-activeflow cooldown between re-analyses (a too-frequent re-analyze returns HTTP <code class="docutils literal notranslate"><span class="pre">429</span></code>).</p></li>
 <li><p>A per-customer cap on the number of analyses running at once (triggering past the cap returns HTTP <code class="docutils literal notranslate"><span class="pre">429</span></code>).</p></li>
 </ul>
-<p>When you re-analyze, the previous verdict is archived internally and the live analysis is replaced in place.</p>
+<p>When you re-analyze, the previous verdict is discarded and the analysis is replaced in place by the new run.</p>
 </section>
 </section>
 

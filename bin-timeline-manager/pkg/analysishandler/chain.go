@@ -10,17 +10,25 @@ import (
 
 	amanalysis "monorepo/bin-ai-manager/models/analysis"
 
+	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
+
 	"monorepo/bin-timeline-manager/models/verdict"
 )
 
 // runChain executes the full analysis pipeline and returns the persisted verdict
 // JSON plus the model used for the diagnostic stage. Any error fails the chain.
-func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID uuid.UUID) ([]byte, string, error) {
+// The activeflow is threaded in from Start for the deterministic enrichment.
+func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID uuid.UUID, af *fmactiveflow.Activeflow) ([]byte, string, error) {
 	// (1)-(4) input collection, reduction, freeze+index, pre-extraction.
 	input, err := h.collectInput(ctx, customerID, activeflowID)
 	if err != nil {
 		return nil, "", fmt.Errorf("runChain: could not collect input. err: %v", err)
 	}
+
+	// (4b) Phase A enrichment: compute the Go-authoritative context/outcome/
+	// metrics ONCE, before the LLM calls, so the prompt is context-aware. These
+	// blocks are NEVER LLM-authored; the LLM only narrates around them.
+	enrichment := h.enrich(ctx, input, customerID, af)
 
 	// (5) adaptive staging decision.
 	var rawVerdict json.RawMessage
@@ -28,9 +36,9 @@ func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID
 	var interactions []verdict.Interaction
 	staged := !h.useSingleCall(input)
 	if staged {
-		rawVerdict, modelUsed, interactions, err = h.runStaged(ctx, input)
+		rawVerdict, modelUsed, interactions, err = h.runStaged(ctx, input, enrichment)
 	} else {
-		rawVerdict, modelUsed, err = h.runCombined(ctx, input)
+		rawVerdict, modelUsed, err = h.runCombined(ctx, input, enrichment)
 	}
 	if err != nil {
 		return nil, "", err
@@ -49,7 +57,9 @@ func (h *analysisHandler) runChain(ctx context.Context, customerID, activeflowID
 	if !staged {
 		interactions = raw.Interactions
 	}
-	final := h.buildFinalVerdict(raw, interactions, input)
+	// Phase B: attach the SAME enrichment blocks computed in Phase A (never
+	// recomputed, never LLM-sourced).
+	final := h.buildFinalVerdict(raw, interactions, input, enrichment)
 
 	out, err := json.Marshal(final)
 	if err != nil {
@@ -72,9 +82,9 @@ func (h *analysisHandler) useSingleCall(input *collectedInput) bool {
 
 // runCombined runs a single gateway call producing the full verdict directly.
 // Uses the stage3 (best/diagnostic) model so it is covered by the allow-set.
-func (h *analysisHandler) runCombined(ctx context.Context, input *collectedInput) (json.RawMessage, string, error) {
+func (h *analysisHandler) runCombined(ctx context.Context, input *collectedInput, enrichment *sessionEnrichment) (json.RawMessage, string, error) {
 	prompt := combinedPrompt
-	data := h.buildCombinedData(input)
+	data := h.buildCombinedData(input, enrichment)
 
 	resp, err := h.callGateway(ctx, prompt, data, verdictSchema, "timeline_verdict", h.models.Stage3)
 	if err != nil {
@@ -87,9 +97,9 @@ func (h *analysisHandler) runCombined(ctx context.Context, input *collectedInput
 // STRUCTURED output (not raw events again). It also returns the Stage 2 content
 // interactions, carried forward into the final verdict (VOIP-1200): Stage 3 runs
 // on stage3VerdictSchema (no interactions) so it cannot paraphrase/lose them.
-func (h *analysisHandler) runStaged(ctx context.Context, input *collectedInput) (json.RawMessage, string, []verdict.Interaction, error) {
+func (h *analysisHandler) runStaged(ctx context.Context, input *collectedInput, enrichment *sessionEnrichment) (json.RawMessage, string, []verdict.Interaction, error) {
 	// Stage 1 — Inventory.
-	stage1Data := h.buildStage1Data(input)
+	stage1Data := h.buildStage1Data(input, enrichment)
 	resp1, err := h.callGateway(ctx, stage1Prompt, stage1Data, stage1Schema, "timeline_stage1", h.models.Stage1)
 	if err != nil {
 		return nil, "", nil, fmt.Errorf("runStaged: stage1: %v", err)
@@ -112,7 +122,7 @@ func (h *analysisHandler) runStaged(ctx context.Context, input *collectedInput) 
 	}
 
 	// Stage 3 — Diagnosis (produces the final verdict, WITHOUT interactions).
-	stage3Data := h.buildStage3Data(resp1.Result, resp2.Result, input)
+	stage3Data := h.buildStage3Data(resp1.Result, resp2.Result, input, enrichment)
 	resp3, err := h.callGateway(ctx, stage3Prompt, stage3Data, stage3VerdictSchema, "timeline_verdict", h.models.Stage3)
 	if err != nil {
 		return nil, "", nil, fmt.Errorf("runStaged: stage3: %v", err)
@@ -162,7 +172,7 @@ func (h *analysisHandler) callGateway(ctx context.Context, prompt string, data, 
 // (Stage 2 carry on the staged path, combined emission on the single-call path);
 // it is normalized to a non-nil slice so every v2 record serializes
 // "interactions":[] rather than null (VOIP-1200, uniform wire shape).
-func (h *analysisHandler) buildFinalVerdict(raw *verdict.RawVerdict, interactions []verdict.Interaction, input *collectedInput) *verdict.Verdict {
+func (h *analysisHandler) buildFinalVerdict(raw *verdict.RawVerdict, interactions []verdict.Interaction, input *collectedInput, enrichment *sessionEnrichment) *verdict.Verdict {
 	issues := make([]verdict.Issue, 0, len(raw.Issues))
 	for _, ri := range raw.Issues {
 		evidence := make([]verdict.Evidence, 0, len(ri.EvidenceIndex))
@@ -193,7 +203,7 @@ func (h *analysisHandler) buildFinalVerdict(raw *verdict.RawVerdict, interaction
 		interactions = []verdict.Interaction{}
 	}
 
-	return &verdict.Verdict{
+	v := &verdict.Verdict{
 		Version:       verdict.CurrentVersion,
 		OverallStatus: raw.OverallStatus,
 		InputReduced:  input.inputReduced,
@@ -202,6 +212,14 @@ func (h *analysisHandler) buildFinalVerdict(raw *verdict.RawVerdict, interaction
 		Narrative:     raw.Narrative,
 		Issues:        issues,
 	}
+	// Phase B: attach the Go-authoritative v3 blocks. Each is nil when its
+	// reference did not resolve, serializing as an omitted key (not null).
+	if enrichment != nil {
+		v.SessionContext = enrichment.ctx
+		v.Outcome = enrichment.outcome
+		v.Metrics = enrichment.metrics
+	}
+	return v
 }
 
 // --- prompt data builders ---
@@ -231,7 +249,7 @@ func inventoryLines(inv []resourceCount) string {
 	return b.String()
 }
 
-func (h *analysisHandler) buildCombinedData(input *collectedInput) json.RawMessage {
+func (h *analysisHandler) buildCombinedData(input *collectedInput, enrichment *sessionEnrichment) json.RawMessage {
 	payload := map[string]any{
 		"inventory":     inventoryLines(input.inventory),
 		"events":        indexedEventLines(input.events),
@@ -239,16 +257,18 @@ func (h *analysisHandler) buildCombinedData(input *collectedInput) json.RawMessa
 		"transcripts":   input.transcripts,
 		"event_count":   len(input.events),
 	}
+	addContextBlock(payload, enrichment)
 	b, _ := json.Marshal(payload)
 	return b
 }
 
-func (h *analysisHandler) buildStage1Data(input *collectedInput) json.RawMessage {
+func (h *analysisHandler) buildStage1Data(input *collectedInput, enrichment *sessionEnrichment) json.RawMessage {
 	payload := map[string]any{
 		"inventory":   inventoryLines(input.inventory),
 		"events":      indexedEventLines(input.events),
 		"event_count": len(input.events),
 	}
+	addContextBlock(payload, enrichment)
 	b, _ := json.Marshal(payload)
 	return b
 }
@@ -262,13 +282,38 @@ func (h *analysisHandler) buildStage2Data(stage1 json.RawMessage, input *collect
 	return b
 }
 
-func (h *analysisHandler) buildStage3Data(stage1, stage2 json.RawMessage, input *collectedInput) json.RawMessage {
+func (h *analysisHandler) buildStage3Data(stage1, stage2 json.RawMessage, input *collectedInput, enrichment *sessionEnrichment) json.RawMessage {
 	payload := map[string]any{
 		"stage1":        stage1,
 		"stage2":        stage2,
 		"error_signals": errorSignalLines(input.errorSignals),
 		"event_count":   len(input.events),
 	}
+	addContextBlock(payload, enrichment)
 	b, _ := json.Marshal(payload)
 	return b
+}
+
+// addContextBlock injects the Go-authoritative session context/outcome/metrics
+// into the LLM data payload as a READ-ONLY `context` block, so the narrative is
+// context-aware. The prompt instructs the model these are authoritative facts it
+// must NOT restate or contradict; the output schema is unchanged, so the model
+// cannot author the blocks (design §6e). Omitted entirely when nothing resolved.
+func addContextBlock(payload map[string]any, enrichment *sessionEnrichment) {
+	if enrichment == nil {
+		return
+	}
+	block := map[string]any{}
+	if enrichment.ctx != nil {
+		block["session_context"] = enrichment.ctx
+	}
+	if enrichment.outcome != nil {
+		block["outcome"] = enrichment.outcome
+	}
+	if enrichment.metrics != nil {
+		block["metrics"] = enrichment.metrics
+	}
+	if len(block) > 0 {
+		payload["context"] = block
+	}
 }
