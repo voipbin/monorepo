@@ -2271,17 +2271,17 @@ func (e MessageManagerTargetStatus) Valid() bool {
 	}
 }
 
-// Defines values for NumberManagerAvailableNumber.
+// Defines values for NumberManagerAvailableNumberFeature.
 const (
-	NumberManagerAvailableNumberFeatureEmergency NumberManagerAvailableNumber = "emergency"
-	NumberManagerAvailableNumberFeatureFax       NumberManagerAvailableNumber = "fax"
-	NumberManagerAvailableNumberFeatureMMS       NumberManagerAvailableNumber = "mms"
-	NumberManagerAvailableNumberFeatureSMS       NumberManagerAvailableNumber = "sms"
-	NumberManagerAvailableNumberFeatureVoice     NumberManagerAvailableNumber = "voice"
+	NumberManagerAvailableNumberFeatureEmergency NumberManagerAvailableNumberFeature = "emergency"
+	NumberManagerAvailableNumberFeatureFax       NumberManagerAvailableNumberFeature = "fax"
+	NumberManagerAvailableNumberFeatureMMS       NumberManagerAvailableNumberFeature = "mms"
+	NumberManagerAvailableNumberFeatureSMS       NumberManagerAvailableNumberFeature = "sms"
+	NumberManagerAvailableNumberFeatureVoice     NumberManagerAvailableNumberFeature = "voice"
 )
 
-// Valid indicates whether the value is a known member of the NumberManagerAvailableNumber enum.
-func (e NumberManagerAvailableNumber) Valid() bool {
+// Valid indicates whether the value is a known member of the NumberManagerAvailableNumberFeature enum.
+func (e NumberManagerAvailableNumberFeature) Valid() bool {
 	switch e {
 	case NumberManagerAvailableNumberFeatureEmergency:
 		return true
@@ -5943,11 +5943,8 @@ type MessageManagerTarget struct {
 // MessageManagerTargetStatus The status of the message for the target.
 type MessageManagerTargetStatus string
 
-// NumberManagerAvailableNumber A feature supported by the phone number.
-type NumberManagerAvailableNumber string
-
-// NumberManagerAvailableNumberFeature defines model for NumberManagerAvailableNumberFeature.
-type NumberManagerAvailableNumberFeature struct {
+// NumberManagerAvailableNumber defines model for NumberManagerAvailableNumber.
+type NumberManagerAvailableNumber struct {
 	// Country The country where the number is available.
 	Country *string `json:"country,omitempty"`
 
@@ -5963,6 +5960,9 @@ type NumberManagerAvailableNumberFeature struct {
 	// Region The region within the country.
 	Region *string `json:"region,omitempty"`
 }
+
+// NumberManagerAvailableNumberFeature A feature supported by the phone number.
+type NumberManagerAvailableNumberFeature string
 
 // NumberManagerMetadata Configuration flags for a number. Controls platform behavior
 // such as RTP packet capture for debugging audio issues on this specific number.

@@ -26496,25 +26496,6 @@
         }
       },
       "NumberManagerAvailableNumber": {
-        "type": "string",
-        "description": "A feature supported by the phone number.",
-        "example": "voice",
-        "enum": [
-          "emergency",
-          "fax",
-          "mms",
-          "sms",
-          "voice"
-        ],
-        "x-enum-varnames": [
-          "NumberManagerAvailableNumberFeatureEmergency",
-          "NumberManagerAvailableNumberFeatureFax",
-          "NumberManagerAvailableNumberFeatureMMS",
-          "NumberManagerAvailableNumberFeatureSMS",
-          "NumberManagerAvailableNumberFeatureVoice"
-        ]
-      },
-      "NumberManagerAvailableNumberFeature": {
         "type": "object",
         "properties": {
           "number": {
@@ -26545,6 +26526,25 @@
             "description": "The list of features supported by the number."
           }
         }
+      },
+      "NumberManagerAvailableNumberFeature": {
+        "type": "string",
+        "description": "A feature supported by the phone number.",
+        "example": "voice",
+        "enum": [
+          "emergency",
+          "fax",
+          "mms",
+          "sms",
+          "voice"
+        ],
+        "x-enum-varnames": [
+          "NumberManagerAvailableNumberFeatureEmergency",
+          "NumberManagerAvailableNumberFeatureFax",
+          "NumberManagerAvailableNumberFeatureMMS",
+          "NumberManagerAvailableNumberFeatureSMS",
+          "NumberManagerAvailableNumberFeatureVoice"
+        ]
       },
       "NumberManagerNumberType": {
         "type": "string",

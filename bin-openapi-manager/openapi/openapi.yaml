@@ -5309,22 +5309,6 @@ components:
 # Number Manager
 #########################################
     NumberManagerAvailableNumber:
-      type: string
-      description: A feature supported by the phone number.
-      example: "voice"
-      enum:
-        - emergency
-        - fax
-        - mms
-        - sms
-        - voice
-      x-enum-varnames:
-        - NumberManagerAvailableNumberFeatureEmergency
-        - NumberManagerAvailableNumberFeatureFax
-        - NumberManagerAvailableNumberFeatureMMS
-        - NumberManagerAvailableNumberFeatureSMS
-        - NumberManagerAvailableNumberFeatureVoice
-    NumberManagerAvailableNumberFeature:
       type: object
       properties:
         number:
@@ -5348,6 +5332,22 @@ components:
           items:
             $ref: '#/components/schemas/NumberManagerAvailableNumberFeature'
           description: The list of features supported by the number.
+    NumberManagerAvailableNumberFeature:
+      type: string
+      description: A feature supported by the phone number.
+      example: "voice"
+      enum:
+        - emergency
+        - fax
+        - mms
+        - sms
+        - voice
+      x-enum-varnames:
+        - NumberManagerAvailableNumberFeatureEmergency
+        - NumberManagerAvailableNumberFeatureFax
+        - NumberManagerAvailableNumberFeatureMMS
+        - NumberManagerAvailableNumberFeatureSMS
+        - NumberManagerAvailableNumberFeatureVoice
 
     NumberManagerNumberType:
       type: string
