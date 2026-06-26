@@ -130,6 +130,7 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 			m.ID,
 			"",
 			m.Text,
+			"",
 			[]media.Media{},
 		)
 		if err != nil {
@@ -196,6 +197,7 @@ func (h *conversationHandler) MessageEventSent(ctx context.Context, m *mmmessage
 				m.ID,
 				"",
 				m.Text,
+				"",
 				[]media.Media{},
 			)
 			if err != nil {

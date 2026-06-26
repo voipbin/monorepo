@@ -126,6 +126,7 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 				tt.expectedMessageReferenceID,
 				"",
 				tt.expectedMessageText,
+				"",
 				[]media.Media{},
 			).Return(&message.Message{}, nil)
 			mockReq.EXPECT().NumberV1NumberList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseNumbers, nil)

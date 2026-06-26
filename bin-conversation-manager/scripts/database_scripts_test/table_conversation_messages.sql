@@ -13,6 +13,7 @@ create table conversation_messages(
   transaction_id  varchar(255),
 
   text    text,
+  subject varchar(255),
   medias  json,
 
   -- timestamps

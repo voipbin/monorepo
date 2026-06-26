@@ -12,6 +12,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	emmemail "monorepo/bin-email-manager/models/email"
+
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
@@ -43,6 +45,7 @@ type ConversationHandler interface {
 	Hook(ctx context.Context, uri string, method string, signature string, data []byte) error
 	HookVerify(ctx context.Context, uri string, mode string, verifyToken string, challenge string) (string, error)
 	Event(ctx context.Context, conversationType conversation.Type, data []byte) error
+	EmailEventSent(ctx context.Context, e *emmemail.Email) error
 
 	MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []media.Media) (*message.Message, error)
 }

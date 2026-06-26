@@ -432,6 +432,7 @@ func Test_MessageEventReceived(t *testing.T) {
 				tt.incoming.ID,
 				"",
 				tt.incoming.Text,
+				"",
 				[]media.Media{},
 			).Return(tt.responseConvMessage, nil)
 

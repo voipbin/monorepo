@@ -12,6 +12,8 @@ import (
 
 	mmmessage "monorepo/bin-message-manager/models/message"
 
+	emmemail "monorepo/bin-email-manager/models/email"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
@@ -23,6 +25,7 @@ import (
 const (
 	publisherCustomerManager = "customer-manager"
 	publisherMessageManager  = "message-manager"
+	publisherEmailManager    = "email-manager"
 )
 
 // SubscribeHandler interface
@@ -137,6 +140,10 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	// message-manager
 	case m.Publisher == publisherMessageManager && (m.Type == string(mmmessage.EventTypeMessageCreated)):
 		err = h.processEventMessageMessageCreated(ctx, m)
+
+	// email-manager
+	case m.Publisher == publisherEmailManager && (m.Type == emmemail.EventTypeCreated):
+		err = h.processEventEmailEmailCreated(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

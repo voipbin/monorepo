@@ -15,6 +15,7 @@ import (
 	conversation "monorepo/bin-conversation-manager/models/conversation"
 	media "monorepo/bin-conversation-manager/models/media"
 	message "monorepo/bin-conversation-manager/models/message"
+	email "monorepo/bin-email-manager/models/email"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -58,6 +59,20 @@ func (m *MockConversationHandler) Create(ctx context.Context, customerID uuid.UU
 func (mr *MockConversationHandlerMockRecorder) Create(ctx, customerID, name, detail, conversationType, dialogID, self, peer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockConversationHandler)(nil).Create), ctx, customerID, name, detail, conversationType, dialogID, self, peer)
+}
+
+// EmailEventSent mocks base method.
+func (m *MockConversationHandler) EmailEventSent(ctx context.Context, e *email.Email) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EmailEventSent", ctx, e)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EmailEventSent indicates an expected call of EmailEventSent.
+func (mr *MockConversationHandlerMockRecorder) EmailEventSent(ctx, e any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailEventSent", reflect.TypeOf((*MockConversationHandler)(nil).EmailEventSent), ctx, e)
 }
 
 // Event mocks base method.

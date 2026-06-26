@@ -33,6 +33,7 @@ type MessageHandler interface {
 		referenceID uuid.UUID,
 		transactionID string,
 		text string,
+		subject string,
 		medias []media.Media,
 	) (*message.Message, error)
 	Delete(ctx context.Context, id uuid.UUID) (*message.Message, error)

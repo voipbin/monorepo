@@ -61,6 +61,7 @@ func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversat
 		messageID,
 		"",
 		text,
+		"",
 		medias,
 	)
 	if err != nil {
@@ -100,6 +101,7 @@ func (h *messageHandler) sendWhatsApp(ctx context.Context, cv *conversation.Conv
 		uuid.Nil,
 		"",
 		text,
+		"",
 		[]media.Media{},
 	)
 	if err != nil {
@@ -158,6 +160,7 @@ func (h *messageHandler) sendLine(ctx context.Context, cv *conversation.Conversa
 		uuid.Nil,
 		"",
 		text,
+		"",
 		medias,
 	)
 	if err != nil {

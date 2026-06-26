@@ -328,6 +328,7 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 				tt.expectedReferenceID,
 				tt.expectedTransactionID,
 				tt.expectedText,
+				"",
 				tt.expectedMedias,
 			).Return(tt.responseMessage, tt.responseErr)
 			res, err := h.processRequest(tt.request)
