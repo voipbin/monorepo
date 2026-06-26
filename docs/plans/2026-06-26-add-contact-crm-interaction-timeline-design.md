@@ -59,10 +59,13 @@ contact_id    binary(16)   nullable (NULL = unresolved)
 type          varchar      tel / email / sip / line / whatsapp ...
 target        varchar      normalized identifier (join key)
 target_name   varchar      display name (optional)
-is_primary    bool         one per type
+is_primary    bool         one per contact
 tm_create, tm_update
 
 unique(customer_id, type, target)   -- identifier dedup (matches agent_addresses)
+unique(customer_id, primary_contact_uk)  -- one primary per contact (generated col)
+index(contact_id)                   -- read-time address-set expansion (§5.1)
+check(is_primary = 0 OR contact_id IS NOT NULL)  -- unresolved cannot be primary
 ```
 
 - Holds **only re-identifiable permanent identifiers**. `web_session` is NOT an
@@ -80,13 +83,22 @@ unique(customer_id, type, target)   -- identifier dedup (matches agent_addresses
   contact_interactions, which IS an immutable fact and is append-only. Hard-delete
   also avoids the MySQL "NULL is distinct in UNIQUE" trap that a
   `tm_delete`-in-unique scheme creates (active rows would not actually be deduped).
-- **is_primary uniqueness.** Because there is no soft-delete, "one primary per
-  type" is enforced over active rows directly (all rows are active), via a
-  generated-column UNIQUE on `(customer_id, type)` restricted to `is_primary=true`.
-  No `tm_delete` interaction to reason about. Note: this is a NEW pattern for
-  VoIPBin (no existing table uses an `is_primary` generated-column UNIQUE;
-  `agent_addresses` has no `is_primary`), so MySQL generated-column UNIQUE
-  compatibility must be confirmed at implementation (tracked in §9).
+- **is_primary uniqueness.** "One primary **per contact**" (not per type: a
+  contact has a single primary contact point, whichever channel it is), enforced
+  over active rows directly (all rows are active, since there is no soft-delete),
+  via a STORED generated column `primary_contact_uk = IF(is_primary=1,
+  contact_id, NULL)` with a UNIQUE index on `(customer_id, primary_contact_uk)`.
+  Non-primary rows store NULL, which is distinct under MySQL UNIQUE, so only one
+  `is_primary=true` row is allowed per `(customer_id, contact_id)`. No `tm_delete`
+  interaction to reason about. Note: this is a NEW pattern for VoIPBin (no existing
+  table uses an `is_primary` generated-column UNIQUE; `agent_addresses` has no
+  `is_primary`). Compatibility was verified at implementation (VOIP-1206) across
+  the full build pipeline: the column and UNIQUE are created on MariaDB (build
+  engine), survive `mysqldump`, and re-import cleanly on MySQL 8.0 (runtime
+  engine). A second-primary insert is rejected (`Duplicate entry`), multiple
+  non-primary rows are allowed (NULL distinct), and re-pointing the primary is a
+  two-statement clear→set within one transaction (MySQL UNIQUE is immediate, not
+  deferrable, so a single CASE UPDATE is order-dependent and unsafe).
 - Late-binding note: hard-deleting an address breaks automatic re-matching of past
   interactions to that address. This is not a loss, because `peer_target` is stored
   raw on each interaction; re-registering the address re-establishes the match at
@@ -104,11 +116,15 @@ direction       varchar      inbound / outbound
 peer_type       varchar      raw remote endpoint type  (match key)
 peer_target     varchar      raw remote endpoint, normalized  (match key)
 reference_type  varchar      origin channel (= channel discriminator)
-reference_id    binary(16)   origin record id (state/body fetched at read time)
+reference_id    binary(16)   NOT NULL: origin record id (state/body fetched at read time)
 tm_interaction  datetime     origin event time (display sort / sessionize basis)
 tm_create       datetime     projection insert time (pagination cursor)
 
-unique(reference_type, reference_id, peer_target)
+unique(reference_type, reference_id, peer_target)   -- idempotency (reference_id
+                                                    -- NOT NULL so NULL never
+                                                    -- defeats dedup)
+index(customer_id, peer_type, peer_target)          -- read-time peer IN-match (§5.1)
+index(customer_id, tm_create)                       -- pagination cursor (§5.3)
 ```
 
 Two tables carry no `tm_delete`, for different reasons: contact_addresses because
@@ -496,11 +512,14 @@ interpretation never damages the event.
    can drop peers under the current single-peer-per-row + unique model. Specify
    whether multi-party produces one row per peer and how duplicate peers are
    de-duplicated, before those flows are projected.
-7. is_primary generated-column UNIQUE (§3.1) is a new pattern for VoIPBin (no
-   existing table uses it). Confirm the exact MySQL generated-column UNIQUE form
-   (e.g. a stored generated column that is `(customer_id, type)` when
-   `is_primary=true` else NULL, with a UNIQUE index on it) compiles and behaves on
-   the production MySQL version before relying on it.
+7. ~~is_primary generated-column UNIQUE (§3.1) is a new pattern for VoIPBin.~~
+   **RESOLVED (VOIP-1206).** Implemented as a STORED generated column
+   `primary_contact_uk = IF(is_primary=1, contact_id, NULL)` with
+   `UNIQUE(customer_id, primary_contact_uk)` ("one primary per contact"). Verified
+   end-to-end across the build pipeline: created on MariaDB (build engine),
+   survives `mysqldump`, re-imports cleanly on MySQL 8.0 (runtime engine);
+   second-primary insert rejected, multiple non-primary rows allowed (NULL
+   distinct), primary re-point is a two-statement clear→set in one transaction.
 
 ## 10. Scope out (v1)
 
