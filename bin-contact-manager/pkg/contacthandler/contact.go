@@ -133,6 +133,17 @@ func (h *contactHandler) Get(ctx context.Context, id uuid.UUID) (*contact.Contac
 		return nil, err
 	}
 
+	// The by-id dbhandler primitive is intentionally unfiltered (the delete
+	// event payload re-reads the tombstone). Public reads must not expose a
+	// soft-deleted contact, so treat a set tm_delete as not-found.
+	if res.TMDelete != nil {
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
+	}
+
 	return res, nil
 }
 
@@ -215,6 +226,17 @@ func (h *contactHandler) LookupByPhone(ctx context.Context, customerID uuid.UUID
 		}
 		return nil, err
 	}
+
+	// A soft-deleted contact must not enrich an inbound call. The phone/email
+	// child tables are not soft-deleted, so the lookup can resolve to a
+	// tombstoned contact; treat that as not-found.
+	if res.TMDelete != nil {
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
+	}
 	return res, nil
 }
 
@@ -232,6 +254,17 @@ func (h *contactHandler) LookupByEmail(ctx context.Context, customerID uuid.UUID
 			).Wrap(err)
 		}
 		return nil, err
+	}
+
+	// A soft-deleted contact must not enrich an inbound message. The
+	// phone/email child tables are not soft-deleted, so the lookup can resolve
+	// to a tombstoned contact; treat that as not-found.
+	if res.TMDelete != nil {
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
 	}
 	return res, nil
 }

@@ -280,17 +280,18 @@ func Test_ContactDelete(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			// Delete the contact
+			// Delete the contact (evicts the cache; does not re-cache the tombstone)
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any())
+			mockCache.EXPECT().ContactDelete(gomock.Any(), tt.contact.ID).Return(nil)
 			err := h.ContactDelete(ctx, tt.contact.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			// Verify deletion (tm_delete should be set)
+			// Verify deletion (tm_delete should be set). The by-id primitive is
+			// unfiltered so it still returns the tombstone, but it must NOT be
+			// re-cached, so no ContactSet is expected here.
 			mockCache.EXPECT().ContactGet(gomock.Any(), tt.contact.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any())
 			res, err := h.ContactGet(ctx, tt.contact.ID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -833,16 +834,21 @@ func Test_ContactDeleteByCustomerID(t *testing.T) {
 				}
 			}
 
-			// Delete all contacts for customer
+			// Delete all contacts for customer. The cascade now evicts each
+			// affected contact from the cache so no tombstone is served.
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
+			for _, c := range tt.contacts {
+				mockCache.EXPECT().ContactDelete(ctx, c.ID).Return(nil)
+			}
 			if err := h.ContactDeleteByCustomerID(ctx, tt.customerID); err != nil {
 				t.Errorf("ContactDeleteByCustomerID() error = %v", err)
 			}
 
-			// Verify both contacts are soft-deleted
+			// Verify both contacts are soft-deleted. The by-id primitive is
+			// unfiltered so it returns the tombstone, but tombstones are not
+			// re-cached, so no ContactSet is expected here.
 			for _, c := range tt.contacts {
 				mockCache.EXPECT().ContactGet(ctx, c.ID).Return(nil, fmt.Errorf(""))
-				mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 				res, err := h.ContactGet(ctx, c.ID)
 				if err != nil {
 					t.Errorf("Wrong match. expect: ok, got: %v", err)
@@ -1629,6 +1635,191 @@ func Test_ContactLookupByEmail_NotFound(t *testing.T) {
 
 // Skip Test_ContactList_Empty - Same issue as above
 // This functionality is tested via contacthandler tests using proper mocks
+
+// Test_ContactList_ExcludesSoftDeleted verifies the base ContactList query
+// excludes soft-deleted rows by default while still returning active rows
+// (VOIP-1205). The contacts have no child rows, so the nested-load path does
+// not run.
+func Test_ContactList_ExcludesSoftDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	curTime := timePtr(time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC))
+	customerID := uuid.FromStringOrNil("d0000000-0000-0000-0000-0000000005d1")
+	active := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d2222222-2222-2222-2222-0000000005d1"),
+			CustomerID: customerID,
+		},
+		FirstName: "Still",
+		LastName:  "Active",
+		Source:    "manual",
+	}
+	deleted := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("d1111111-1111-1111-1111-0000000005d1"),
+			CustomerID: customerID,
+		},
+		FirstName: "Soft",
+		LastName:  "Deleted",
+		Source:    "manual",
+	}
+
+	// Create both contacts.
+	for _, c := range []*contact.Contact{active, deleted} {
+		mockUtil.EXPECT().TimeNow().Return(curTime)
+		mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any())
+		if err := h.ContactCreate(ctx, c); err != nil {
+			t.Fatalf("ContactCreate() error = %v", err)
+		}
+	}
+
+	// Soft-delete one of them.
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactDelete(gomock.Any(), deleted.ID).Return(nil)
+	if err := h.ContactDelete(ctx, deleted.ID); err != nil {
+		t.Fatalf("ContactDelete() error = %v", err)
+	}
+
+	// List with only a customer filter (no deleted filter). Exactly the active
+	// contact must be returned; the soft-deleted one excluded.
+	filters := map[contact.Field]any{
+		contact.FieldCustomerID: customerID,
+	}
+	res, err := h.ContactList(ctx, 10, utilhandler.TimeGetCurTime(), filters)
+	if err != nil {
+		t.Fatalf("ContactList() error = %v", err)
+	}
+	if len(res) != 1 {
+		t.Fatalf("ContactList() returned %d contacts, want 1 (active only)", len(res))
+	}
+	if res[0].ID != active.ID {
+		t.Errorf("ContactList() returned %s, want active %s", res[0].ID, active.ID)
+	}
+}
+
+// Test_ContactList_DeletedFilterReturnsDeleted verifies the explicit
+// deleted=true filter retrieves soft-deleted rows and does NOT collide with the
+// default tm_delete IS NULL clause (VOIP-1205). Regression guard for the
+// unsatisfiable-AND bug.
+func Test_ContactList_DeletedFilterReturnsDeleted(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	curTime := timePtr(time.Date(2021, 2, 2, 0, 0, 0, 0, time.UTC))
+	customerID := uuid.FromStringOrNil("e0000000-0000-0000-0000-0000000005e1")
+	c := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("e1111111-1111-1111-1111-0000000005e1"),
+			CustomerID: customerID,
+		},
+		FirstName: "Audit",
+		LastName:  "Deleted",
+		Source:    "manual",
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any())
+	if err := h.ContactCreate(ctx, c); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactDelete(gomock.Any(), c.ID).Return(nil)
+	if err := h.ContactDelete(ctx, c.ID); err != nil {
+		t.Fatalf("ContactDelete() error = %v", err)
+	}
+
+	// Explicit deleted=true must surface the soft-deleted contact.
+	filters := map[contact.Field]any{
+		contact.FieldCustomerID: customerID,
+		contact.FieldDeleted:    true,
+	}
+	res, err := h.ContactList(ctx, 10, utilhandler.TimeGetCurTime(), filters)
+	if err != nil {
+		t.Fatalf("ContactList() error = %v", err)
+	}
+	if len(res) != 1 {
+		t.Fatalf("ContactList(deleted=true) returned %d contacts, want 1", len(res))
+	}
+	if res[0].ID != c.ID || res[0].TMDelete == nil {
+		t.Errorf("ContactList(deleted=true) returned wrong/active contact: %v", res[0])
+	}
+}
+
+
+// Test_ContactUpdateToCache_TombstoneEvicts verifies that a mutation reaching
+// contactUpdateToCache for an already soft-deleted contact evicts the cache
+// instead of re-caching the tombstone (VOIP-1205, single choke-point
+// invariant). Driven via PhoneNumberCreate on a deleted contact.
+func Test_ContactUpdateToCache_TombstoneEvicts(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	curTime := timePtr(time.Date(2021, 3, 3, 0, 0, 0, 0, time.UTC))
+	c := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("f1111111-1111-1111-1111-0000000005f1"),
+			CustomerID: uuid.FromStringOrNil("f0000000-0000-0000-0000-0000000005f1"),
+		},
+		FirstName: "Tombstone",
+		Source:    "manual",
+	}
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(gomock.Any(), gomock.Any())
+	if err := h.ContactCreate(ctx, c); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	// Soft-delete it (evicts cache).
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactDelete(gomock.Any(), c.ID).Return(nil)
+	if err := h.ContactDelete(ctx, c.ID); err != nil {
+		t.Fatalf("ContactDelete() error = %v", err)
+	}
+
+	// A late phone write routes through contactUpdateToCache. Because the
+	// contact is a tombstone, the cache MUST be evicted, not repopulated.
+	p := &contact.PhoneNumber{
+		ID:         uuid.FromStringOrNil("f2222222-2222-2222-2222-0000000005f1"),
+		CustomerID: c.CustomerID,
+		ContactID:  c.ID,
+		NumberE164: "+15551230000",
+	}
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactDelete(gomock.Any(), c.ID).Return(nil)
+	if err := h.PhoneNumberCreate(ctx, p); err != nil {
+		t.Fatalf("PhoneNumberCreate() error = %v", err)
+	}
+}
 
 // Test_ContactDeleteByCustomerID_NoMatches tests deleting when no contacts exist
 func Test_ContactDeleteByCustomerID_NoMatches(t *testing.T) {

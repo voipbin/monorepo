@@ -38,13 +38,13 @@ redis-cli -n 1 keys "contact:*" | head -20
 **Database queries:**
 ```sql
 -- Active contacts for a customer
-SELECT id, display_name, tm_create FROM contact_manager_contact
-WHERE customer_id = '<uuid>' AND tm_delete = '9999-01-01 00:00:00.000000'
+SELECT id, display_name, tm_create FROM contact_contacts
+WHERE customer_id = '<uuid>' AND tm_delete IS NULL
 LIMIT 20;
 
 -- Phone numbers for a contact
-SELECT id, phone_number FROM contact_manager_phone_number
-WHERE contact_id = '<uuid>' AND tm_delete = '9999-01-01 00:00:00.000000';
+SELECT id, phone_number FROM contact_phone_numbers
+WHERE contact_id = '<uuid>' AND tm_delete IS NULL;
 ```
 
 ## Configuration
