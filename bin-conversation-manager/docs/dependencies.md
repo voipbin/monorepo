@@ -44,6 +44,7 @@ All resolved via `replace` directives in `go.mod`.
 | Redis | Cache for account/conversation lookups |
 | RabbitMQ | RPC transport and event pub/sub |
 | LINE Bot SDK v7 (`github.com/line/line-bot-sdk-go/v7`) | LINE platform webhook verification and message delivery |
+| Meta Graph API (`graph.facebook.com`, v19.0) | WhatsApp Cloud API message delivery; inbound webhook HMAC validation and hub challenge verification (called over plain `net/http`, no SDK) |
 
 ## RabbitMQ Queue Names
 
