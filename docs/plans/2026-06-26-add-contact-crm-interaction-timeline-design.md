@@ -59,23 +59,34 @@ contact_id    binary(16)   nullable (NULL = unresolved)
 type          varchar      tel / email / sip / line / whatsapp ...
 target        varchar      normalized identifier (join key)
 target_name   varchar      display name (optional)
-is_primary    bool         one per type, active rows only (see note)
-tm_create, tm_update, tm_delete
+is_primary    bool         one per type
+tm_create, tm_update
 
-unique(customer_id, type, target, tm_delete)   -- identifier dedup
+unique(customer_id, type, target)   -- identifier dedup (matches agent_addresses)
 ```
 
 - Holds **only re-identifiable permanent identifiers**. `web_session` is NOT an
   address (see §6) and is excluded.
-- `tm_delete` is newly introduced here (the old child tables had only `tm_create`),
-  unifying soft-delete and supporting the dedup unique.
-- **is_primary uniqueness must include `tm_delete`.** The "one primary per type"
-  rule applies only to active rows. If the generated-column UNIQUE ignored
-  `tm_delete`, soft-deleting a primary (tm_delete set, is_primary still true) and
-  creating a new primary of the same type would collide. The constraint is
-  therefore over `(customer_id, type, is_primary, tm_delete)` (or an equivalent
-  partial/generated-column form scoped to active rows), consistent with the dedup
-  unique above.
+- **No `tm_delete`; addresses are hard-deleted.** This follows the existing
+  `agent_addresses` convention (bin-dbscheme-manager, 2026-06-21), which solved the
+  identical problem (JSON→child table, normalized address, by-address hot-path
+  lookup): `agent_addresses` has columns `tm_create/tm_update` only, a
+  `unique(customer_id, type, target)`, and removes rows on delete so the unique
+  slot is freed immediately. contact_addresses mirrors this. Rationale: an address
+  mapping ("this number belongs to this contact") is a correctable assertion, not
+  an immutable fact, so a wrong/removed mapping is deleted rather than tombstoned.
+  This is the opposite of contact_interactions, which IS an immutable fact and is
+  append-only. Hard-delete also avoids the MySQL "NULL is distinct in UNIQUE" trap
+  that a `tm_delete`-in-unique scheme creates (active rows would not actually be
+  deduped).
+- **is_primary uniqueness.** Because there is no soft-delete, "one primary per
+  type" is enforced over active rows directly (all rows are active), via a
+  generated-column UNIQUE on `(customer_id, type)` restricted to `is_primary=true`.
+  No `tm_delete` interaction to reason about.
+- Late-binding note: hard-deleting an address breaks automatic re-matching of past
+  interactions to that address. This is not a loss, because `peer_target` is stored
+  raw on each interaction; re-registering the address re-establishes the match at
+  read time (§5.1).
 - REST backward compatibility: `phone_numbers[]` / `emails[]` responses are kept as
   a reverse-projection from `contact_addresses`; `addresses[]` is also exposed so
   sip/line/whatsapp are not hidden.
@@ -159,8 +170,11 @@ index(customer_id, interaction_id, tm_delete)
   a negative row for that owner removes it from the owner's timeline). Without the
   negative direction, resolution could only add, never correct an over-match, so
   the borrowed-phone case would stay permanently mis-attributed to the owner.
-- Single-interaction grain. Because every channel's interaction is one row per
-  origin event (§4), "attribute/suppress this session" reduces to one row.
+- Single-interaction grain. Each resolution row attributes/suppresses exactly one
+  interaction. Session-grained channels (call, aicall) are one interaction per
+  session, so one row covers the session; message-grained channels (SMS, LINE) are
+  one interaction per message (§4), so attributing a whole thread is N rows. The
+  grain is always one interaction, not "one session".
 - Correction = `tm_delete` (retract) + new row (re-attribute). The interaction
   itself is never touched.
 
@@ -242,9 +256,8 @@ GET /v1/interactions/unresolved?since=7d        # unresolved queue (web_session 
 `?contact_id=` resolution at read time:
 
 ```
-1. expand the contact's active address set:
-   SELECT type, target FROM contact_addresses
-   WHERE contact_id = ? AND tm_delete IS NULL
+1. expand the contact's address set:
+   SELECT type, target FROM contact_addresses WHERE contact_id = ?
 2. automatic match:
    SELECT * FROM contact_interactions
    WHERE (peer_type, peer_target) IN (address set)
@@ -255,6 +268,18 @@ GET /v1/interactions/unresolved?since=7d        # unresolved queue (web_session 
    ( automatic (2) ∪ positive manual (3) )  MINUS  negative manual (3)
    de-dup by interaction id
 ```
+
+contact_addresses has no soft-delete (§3.1), so step 1 needs no `tm_delete` filter.
+contact_resolutions IS append-only with soft-delete retraction, so step 3 keeps
+`AND tm_delete IS NULL`.
+
+**Precedence is a fixed decision, not LWW.** When an active positive and an active
+negative exist for the same `(contact_id, interaction_id)`, **negative always
+wins** (the set-MINUS in step 4 is the authoritative semantics). Implementations
+MUST NOT resolve this by "latest `tm_create` polarity wins" (LWW), which would
+diverge from the set-MINUS and make the same input produce different reads. Negative
+is a hard suppression of a wrong attribution; it is not time-ordered against
+positive.
 
 The negative set (step 3 `resolution_type='negative'`) suppresses interactions
 that automatic matching wrongly attached to this contact (e.g. a borrowed-phone
@@ -287,15 +312,40 @@ over-match; positive-only attribution could never remove a wrong automatic row.
   resolution acts only as a visibility filter, never participates in sort, so the
   same interaction lands in the same position regardless of attribution path
   (deterministic).
-- **Late-binding visibility caveat.** The cursor is gap-free for the *projection
-  insert* path (new rows always carry a fresh `tm_create` at the head). It is NOT
-  gap-free for the *late-binding* path: when an address is newly registered (or a
-  resolution added), a past interaction with an old `tm_create` becomes newly
-  visible in a `?contact_id=` result. If that `tm_create` falls into an
-  already-served page of an in-progress infinite scroll, the row is missed until a
-  full refetch. This is a transient per-session visibility gap, not data loss (a
-  fresh query always returns it). Accepted for v1; if it bites in dogfood, the
-  client refetches the head on a "contact identity changed" signal.
+- **Late-binding visibility caveat (both directions).** The cursor is gap-free for
+  the *projection insert* path (new rows always carry a fresh `tm_create` at the
+  head). It is NOT gap-free for late-binding edits, which move rows in BOTH
+  directions within an already-served page:
+  - appearance: registering an address or adding a positive resolution makes a
+    past interaction (old `tm_create`) newly visible in a `?contact_id=` result.
+  - disappearance: adding a negative resolution, or retracting (`tm_delete`) a
+    positive one, removes a previously visible row.
+  Either way the change can land in a page already served during an in-progress
+  infinite scroll, so a single scroll session may miss or retain a row until a full
+  refetch. This is a transient per-session inconsistency, not data loss (a fresh
+  query always returns the correct set). Accepted for v1; if it bites in dogfood,
+  the client refetches the head on a "contact identity changed" signal.
+
+### 5.4 Unresolved queue and negative-suppressed orphans
+
+`GET /v1/interactions/unresolved` must surface two distinct populations, or a
+negative resolution would create an invisible orphan:
+
+1. **Never matched.** No `contact_addresses` row matches `(peer_type, peer_target)`
+   and no positive resolution exists. (web_session is excluded, per §6.)
+2. **Negatively suppressed without a positive home.** An interaction whose
+   automatic peer-match was removed by a negative resolution for that contact, and
+   which has no active positive resolution to any other contact. Without this
+   branch, the borrowed-phone case becomes invisible: the call is suppressed from
+   the owner's timeline (negative) but, until the borrower is identified with a
+   positive resolution, it belongs to no one. The unresolved queue is exactly where
+   such an interaction should wait for a human to assign its real owner.
+
+So the queue predicate is: an interaction is unresolved if, after applying all
+active resolutions, it resolves to **zero contacts** (no surviving automatic match
+and no active positive). A negative resolution that strips the only (automatic)
+attribution returns the interaction to this queue. This closes the orphan path that
+polarity would otherwise open.
 
 ## 6. web_session handling
 
@@ -332,16 +382,16 @@ Mapping:
 ```
 phone_numbers → contact_addresses:
   type='tel',   target=number_e164,    target_name=NULL, is_primary, contact_id,
-  customer_id,  tm_create,             tm_delete=NULL
+  customer_id,  tm_create
 emails        → contact_addresses:
   type='email', target=lower(address), is_primary, contact_id, customer_id,
-  tm_create,    tm_delete=NULL
+  tm_create
 ```
 
 Decisions:
 
-1. **tm_delete introduced** on contact_addresses (soft-delete unification + dedup
-   unique).
+1. **No tm_delete on contact_addresses; hard-delete** (matches agent_addresses,
+   §3.1). Addresses are a correctable mapping, not an immutable fact.
 2. **2 unnormalizable rows deleted** before migration. Both had non-numeric raw
    `number` (`+15550009c24`, `+155****4567`, alphabet/asterisk, no recoverable
    E.164, dummy/test data) and empty `number_e164`. Production DELETE was done
@@ -386,8 +436,10 @@ interpretation never damages the event.
 
 1. Sessionize gap thresholds per channel (tuned during dogfood on real data;
    cross-channel uses the previous interaction's channel as the gap basis).
-2. M1 active-row criterion must stay consistent with the VOIP-1205 soft-delete
-   decision (active = `tm_delete IS NULL`).
+2. contact_addresses is hard-deleted (no tm_delete, §3.1), so the M1 active-row
+   question applies to the parent `contact_contacts` rows, not addresses: the
+   migration must only carry addresses whose owning contact is active, consistent
+   with the VOIP-1205 soft-delete decision (active contact = `tm_delete IS NULL`).
 3. Normalization authority for non-tel/email types (sip/line/whatsapp): existing
    `ValidateTarget` validates but does not normalize for these; whatsapp currently
    errors in ValidateTarget. "Who normalizes" must be specified before those types
