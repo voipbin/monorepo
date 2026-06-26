@@ -24533,13 +24533,15 @@
           "",
           "message",
           "line",
-          "whatsapp"
+          "whatsapp",
+          "email"
         ],
         "x-enum-varnames": [
           "ConversationManagerConversationTypeNone",
           "ConversationManagerConversationTypeMessage",
           "ConversationManagerConversationTypeLine",
-          "ConversationManagerConversationTypeWhatsApp"
+          "ConversationManagerConversationTypeWhatsApp",
+          "ConversationManagerConversationTypeEmail"
         ]
       },
       "ConversationManagerConversation": {
@@ -24721,34 +24723,36 @@
       },
       "ConversationManagerMessageReferenceType": {
         "type": "string",
-        "description": "Type of reference associated with the message (e.g., call, campaign).",
-        "example": "call",
+        "description": "Source channel that produced the message.",
+        "example": "message",
         "enum": [
-          "none",
-          "call",
-          "campaign"
+          "",
+          "message",
+          "line",
+          "whatsapp",
+          "email"
         ],
         "x-enum-varnames": [
           "ConversationManagerMessageReferenceTypeNone",
-          "ConversationManagerMessageReferenceTypeCall",
-          "ConversationManagerMessageReferenceTypeCampaign"
+          "ConversationManagerMessageReferenceTypeMessage",
+          "ConversationManagerMessageReferenceTypeLine",
+          "ConversationManagerMessageReferenceTypeWhatsApp",
+          "ConversationManagerMessageReferenceTypeEmail"
         ]
       },
       "ConversationManagerMessageStatus": {
         "type": "string",
-        "description": "Status of the message.",
-        "example": "sent",
+        "description": "Delivery status of the message.",
+        "example": "done",
         "enum": [
-          "sending",
-          "sent",
-          "failed",
-          "received"
+          "progressing",
+          "done",
+          "failed"
         ],
         "x-enum-varnames": [
-          "ConversationManagerMessageStatusSending",
-          "ConversationManagerMessageStatusSent",
-          "ConversationManagerMessageStatusFailed",
-          "ConversationManagerMessageStatusReceived"
+          "ConversationManagerMessageStatusProgressing",
+          "ConversationManagerMessageStatusDone",
+          "ConversationManagerMessageStatusFailed"
         ]
       },
       "ConversationManagerMessage": {
@@ -24783,12 +24787,12 @@
           "status": {
             "$ref": "#/components/schemas/ConversationManagerMessageStatus",
             "description": "Current delivery status of the message.",
-            "example": "sent"
+            "example": "done"
           },
           "reference_type": {
             "$ref": "#/components/schemas/ConversationManagerMessageReferenceType",
-            "description": "Type of reference associated with the message.",
-            "example": "call"
+            "description": "Source channel that produced the message.",
+            "example": "message"
           },
           "reference_id": {
             "type": "string",

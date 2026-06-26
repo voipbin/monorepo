@@ -1532,6 +1532,7 @@ func (e ConversationManagerAccountType) Valid() bool {
 
 // Defines values for ConversationManagerConversationType.
 const (
+	ConversationManagerConversationTypeEmail    ConversationManagerConversationType = "email"
 	ConversationManagerConversationTypeLine     ConversationManagerConversationType = "line"
 	ConversationManagerConversationTypeMessage  ConversationManagerConversationType = "message"
 	ConversationManagerConversationTypeNone     ConversationManagerConversationType = ""
@@ -1541,6 +1542,8 @@ const (
 // Valid indicates whether the value is a known member of the ConversationManagerConversationType enum.
 func (e ConversationManagerConversationType) Valid() bool {
 	switch e {
+	case ConversationManagerConversationTypeEmail:
+		return true
 	case ConversationManagerConversationTypeLine:
 		return true
 	case ConversationManagerConversationTypeMessage:
@@ -1613,19 +1616,25 @@ func (e ConversationManagerMessageDirection) Valid() bool {
 
 // Defines values for ConversationManagerMessageReferenceType.
 const (
-	ConversationManagerMessageReferenceTypeCall     ConversationManagerMessageReferenceType = "call"
-	ConversationManagerMessageReferenceTypeCampaign ConversationManagerMessageReferenceType = "campaign"
-	ConversationManagerMessageReferenceTypeNone     ConversationManagerMessageReferenceType = "none"
+	ConversationManagerMessageReferenceTypeEmail    ConversationManagerMessageReferenceType = "email"
+	ConversationManagerMessageReferenceTypeLine     ConversationManagerMessageReferenceType = "line"
+	ConversationManagerMessageReferenceTypeMessage  ConversationManagerMessageReferenceType = "message"
+	ConversationManagerMessageReferenceTypeNone     ConversationManagerMessageReferenceType = ""
+	ConversationManagerMessageReferenceTypeWhatsApp ConversationManagerMessageReferenceType = "whatsapp"
 )
 
 // Valid indicates whether the value is a known member of the ConversationManagerMessageReferenceType enum.
 func (e ConversationManagerMessageReferenceType) Valid() bool {
 	switch e {
-	case ConversationManagerMessageReferenceTypeCall:
+	case ConversationManagerMessageReferenceTypeEmail:
 		return true
-	case ConversationManagerMessageReferenceTypeCampaign:
+	case ConversationManagerMessageReferenceTypeLine:
+		return true
+	case ConversationManagerMessageReferenceTypeMessage:
 		return true
 	case ConversationManagerMessageReferenceTypeNone:
+		return true
+	case ConversationManagerMessageReferenceTypeWhatsApp:
 		return true
 	default:
 		return false
@@ -1634,22 +1643,19 @@ func (e ConversationManagerMessageReferenceType) Valid() bool {
 
 // Defines values for ConversationManagerMessageStatus.
 const (
-	ConversationManagerMessageStatusFailed   ConversationManagerMessageStatus = "failed"
-	ConversationManagerMessageStatusReceived ConversationManagerMessageStatus = "received"
-	ConversationManagerMessageStatusSending  ConversationManagerMessageStatus = "sending"
-	ConversationManagerMessageStatusSent     ConversationManagerMessageStatus = "sent"
+	ConversationManagerMessageStatusDone        ConversationManagerMessageStatus = "done"
+	ConversationManagerMessageStatusFailed      ConversationManagerMessageStatus = "failed"
+	ConversationManagerMessageStatusProgressing ConversationManagerMessageStatus = "progressing"
 )
 
 // Valid indicates whether the value is a known member of the ConversationManagerMessageStatus enum.
 func (e ConversationManagerMessageStatus) Valid() bool {
 	switch e {
+	case ConversationManagerMessageStatusDone:
+		return true
 	case ConversationManagerMessageStatusFailed:
 		return true
-	case ConversationManagerMessageStatusReceived:
-		return true
-	case ConversationManagerMessageStatusSending:
-		return true
-	case ConversationManagerMessageStatusSent:
+	case ConversationManagerMessageStatusProgressing:
 		return true
 	default:
 		return false
@@ -5055,10 +5061,10 @@ type ConversationManagerMessage struct {
 	// ReferenceId The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.
 	ReferenceId *string `json:"reference_id,omitempty"`
 
-	// ReferenceType Type of reference associated with the message (e.g., call, campaign).
+	// ReferenceType Source channel that produced the message.
 	ReferenceType *ConversationManagerMessageReferenceType `json:"reference_type,omitempty"`
 
-	// Status Status of the message.
+	// Status Delivery status of the message.
 	Status *ConversationManagerMessageStatus `json:"status,omitempty"`
 
 	// Text The message content.
@@ -5077,10 +5083,10 @@ type ConversationManagerMessage struct {
 // ConversationManagerMessageDirection Direction of the message (incoming or outgoing).
 type ConversationManagerMessageDirection string
 
-// ConversationManagerMessageReferenceType Type of reference associated with the message (e.g., call, campaign).
+// ConversationManagerMessageReferenceType Source channel that produced the message.
 type ConversationManagerMessageReferenceType string
 
-// ConversationManagerMessageStatus Status of the message.
+// ConversationManagerMessageStatus Delivery status of the message.
 type ConversationManagerMessageStatus string
 
 // CustomerManagerAccesskey defines model for CustomerManagerAccesskey.
