@@ -382,6 +382,15 @@ not a permanent identifier. Therefore:
   so a web AIcall session is exactly one interaction with `peer_target=web_session`.
   Attributing that session reduces to a single-row `contact_resolutions` row. No
   endpoint-grained attribution machinery is required.
+- Discovery surface for un-attributed sessions: because web_session is excluded
+  from the unresolved queue and never auto-matches an address, an anonymous session
+  is attributed from its **origin channel** (the live web chat / AIcall UI that
+  holds the session context), not from the CRM unresolved queue. The operator
+  assigns the contact there, which writes the single positive `contact_resolutions`
+  row. The natural-key endpoint
+  (`?peer_type=web_session&peer_target=<id>`) remains available to fetch a known
+  session directly. The CRM does not maintain a browseable backlog of anonymous
+  sessions by design (a one-time handle has no standing identity to queue).
 - Note: an AIcall whose `reference_type` routes its messages through
   conversation-manager could in principle also surface as conversation interactions.
   Pinning the canonical reference for an interaction (so the same logical event is
