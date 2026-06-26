@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/notifyhandler"
@@ -2332,5 +2333,109 @@ func Test_List_MultipleContacts(t *testing.T) {
 	}
 	if len(res) != 3 {
 		t.Errorf("List() count = %v, want 3", len(res))
+	}
+}
+
+// Test_Get_SoftDeletedNotFound verifies that a soft-deleted contact (tm_delete
+// set) returned by the unfiltered by-id dbhandler primitive is hidden from the
+// public Get path. VOIP-1205.
+func Test_Get_SoftDeletedNotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := contactHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	id := uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111")
+	deleted := time.Date(2020, 4, 18, 3, 22, 17, 0, time.UTC)
+	tombstone := &contact.Contact{
+		Identity: commonidentity.Identity{ID: id},
+		TMDelete: &deleted,
+	}
+
+	mockDB.EXPECT().ContactGet(ctx, id).Return(tombstone, nil)
+
+	res, err := h.Get(ctx, id)
+	if err == nil {
+		t.Errorf("expected not-found error for soft-deleted contact, got nil")
+	}
+	if res != nil {
+		t.Errorf("expected nil result for soft-deleted contact, got %v", res)
+	}
+}
+
+// Test_LookupByPhone_SoftDeletedNotFound verifies a tombstoned contact does not
+// enrich an inbound call (child phone table is not soft-deleted). VOIP-1205.
+func Test_LookupByPhone_SoftDeletedNotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := contactHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("b1111111-1111-1111-1111-111111111111")
+	deleted := time.Date(2020, 4, 18, 3, 22, 17, 0, time.UTC)
+	tombstone := &contact.Contact{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("b2222222-2222-2222-2222-222222222222")},
+		TMDelete: &deleted,
+	}
+
+	// LookupByPhone normalizes the input before calling the dbhandler.
+	mockDB.EXPECT().ContactLookupByPhone(ctx, customerID, gomock.Any()).Return(tombstone, nil)
+
+	res, err := h.LookupByPhone(ctx, customerID, "+15551234567")
+	if err == nil {
+		t.Errorf("expected not-found error for soft-deleted contact, got nil")
+	}
+	if res != nil {
+		t.Errorf("expected nil result for soft-deleted contact, got %v", res)
+	}
+}
+
+// Test_LookupByEmail_SoftDeletedNotFound verifies a tombstoned contact does not
+// enrich an inbound message (child email table is not soft-deleted). VOIP-1205.
+func Test_LookupByEmail_SoftDeletedNotFound(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockDB := dbhandler.NewMockDBHandler(mc)
+	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
+	h := contactHandler{
+		utilHandler:   mockUtil,
+		db:            mockDB,
+		notifyHandler: mockNotify,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("c1111111-1111-1111-1111-111111111111")
+	deleted := time.Date(2020, 4, 18, 3, 22, 17, 0, time.UTC)
+	tombstone := &contact.Contact{
+		Identity: commonidentity.Identity{ID: uuid.FromStringOrNil("c2222222-2222-2222-2222-222222222222")},
+		TMDelete: &deleted,
+	}
+
+	mockDB.EXPECT().ContactLookupByEmail(ctx, customerID, gomock.Any()).Return(tombstone, nil)
+
+	res, err := h.LookupByEmail(ctx, customerID, "deleted@example.com")
+	if err == nil {
+		t.Errorf("expected not-found error for soft-deleted contact, got nil")
+	}
+	if res != nil {
+		t.Errorf("expected nil result for soft-deleted contact, got %v", res)
 	}
 }

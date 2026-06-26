@@ -46,7 +46,7 @@ go generate ./pkg/cachehandler/...
 - **Queue (listen):** `bin-manager.contact-manager.request`
 - **Queue (subscribe):** `bin-manager.customer-manager.event` → cascade delete on `customer_deleted`
 - **Events published:** `contact_created`, `contact_updated`, `contact_deleted`
-- **Databases:** MySQL (`contact_manager_contact`, `_phone_number`, `_email`, `_tag_assignment`) + Redis (lookup cache, DB index 1)
-- **Soft deletes:** `tm_delete = '9999-01-01 00:00:00.000000'` for active records
+- **Databases:** MySQL (`contact_contacts`, `contact_phone_numbers`, `contact_emails`, `contact_tag_assignments`) + Redis (lookup cache, DB index 1)
+- **Soft deletes:** active records have `tm_delete IS NULL`; deletion records the actual timestamp in `tm_delete` (no `9999-01-01` sentinel). `ContactList` and the public get/lookup paths exclude soft-deleted records by default; the by-id dbhandler primitive stays unfiltered so the delete event payload can re-read the tombstone
 - **Lookup cache:** Redis keyed by `(customer_id, phone_e164)` and `(customer_id, email)` — invalidated on update/delete
 - **Metrics port:** `:2112/metrics`

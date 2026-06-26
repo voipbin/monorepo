@@ -20,9 +20,9 @@ The primary entity. Belongs to a `customer_id` and represents a person or organi
 | `notes` | string | Free-text |
 | `tm_create` | timestamp | Creation time |
 | `tm_update` | timestamp | Last update time |
-| `tm_delete` | timestamp | Soft-delete sentinel; active = `9999-01-01` |
+| `tm_delete` | timestamp | Soft-delete marker; active = `NULL`, deletion records the actual timestamp |
 
-Table: `contact_manager_contact`
+Table: `contact_contacts`
 
 ### PhoneNumber
 
@@ -34,9 +34,9 @@ Child record linking a phone number in E.164 format to a contact. A contact may 
 | `contact_id` | UUID | Parent contact |
 | `phone_number` | string | E.164 format (e.g., `+15551234567`) |
 | `tm_create` | timestamp | |
-| `tm_delete` | timestamp | Soft-delete sentinel |
+| `tm_delete` | timestamp | Soft-delete marker (active = `NULL`) |
 
-Table: `contact_manager_phone_number`
+Table: `contact_phone_numbers`
 
 ### Email
 
@@ -48,9 +48,9 @@ Child record linking an email address to a contact.
 | `contact_id` | UUID | Parent contact |
 | `email` | string | |
 | `tm_create` | timestamp | |
-| `tm_delete` | timestamp | Soft-delete sentinel |
+| `tm_delete` | timestamp | Soft-delete marker (active = `NULL`) |
 
-Table: `contact_manager_email`
+Table: `contact_emails`
 
 ### TagAssignment
 
@@ -62,15 +62,15 @@ Many-to-many link between contacts and tags managed by `bin-tag-manager`.
 | `contact_id` | UUID | |
 | `tag_id` | UUID | References tag in bin-tag-manager |
 | `tm_create` | timestamp | |
-| `tm_delete` | timestamp | Soft-delete sentinel |
+| `tm_delete` | timestamp | Soft-delete marker (active = `NULL`) |
 
-Table: `contact_manager_tag_assignment`
+Table: `contact_tag_assignments`
 
 ## Key Business Rules
 
 1. **Tenant isolation**: All queries filter by `customer_id`. A contact is never visible to another customer.
 
-2. **Soft deletes**: Delete operations set `tm_delete` to the current timestamp. Queries always add `tm_delete = '9999-01-01 00:00:00.000000'` to active-record filters.
+2. **Soft deletes**: Delete operations set `tm_delete` to the current timestamp. Active records have `tm_delete IS NULL`; queries add `tm_delete IS NULL` to active-record filters.
 
 3. **Phone lookup**: The `GET /v1/contacts/lookup?customer_id=<uuid>&phone_e164=<e164>` endpoint uses a Redis cache index for O(1) lookup. Cache is populated on contact creation and invalidated on update/delete.
 

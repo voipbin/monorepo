@@ -62,6 +62,14 @@ func (h *handler) contactUpdateToCache(ctx context.Context, id uuid.UUID) error 
 		return err
 	}
 
+	// Never cache a tombstone. The by-id primitive is unfiltered, so a mutation
+	// on an already soft-deleted contact (e.g. a late phone/email write) would
+	// otherwise resurrect it in the cache. Evict instead so the "cache never
+	// holds a tombstone" invariant holds at this single choke point.
+	if res.TMDelete != nil {
+		return h.cache.ContactDelete(ctx, id)
+	}
+
 	// load related data
 	res.PhoneNumbers, _ = h.PhoneNumberListByContactID(ctx, id)
 	res.Emails, _ = h.EmailListByContactID(ctx, id)
@@ -145,8 +153,13 @@ func (h *handler) ContactGet(ctx context.Context, id uuid.UUID) (*contact.Contac
 	res.Emails, _ = h.EmailListByContactID(ctx, id)
 	res.TagIDs, _ = h.TagAssignmentListByContactID(ctx, id)
 
-	// set to cache
-	_ = h.contactSetToCache(ctx, res)
+	// Set to cache only for active contacts. A soft-deleted contact is still
+	// returned here (the delete event payload depends on the by-id read), but
+	// it must never be re-populated into the cache; otherwise an evicted
+	// tombstone would resurrect on the next read.
+	if res.TMDelete == nil {
+		_ = h.contactSetToCache(ctx, res)
+	}
 
 	return res, nil
 }
@@ -161,6 +174,22 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 		Where("tm_create < ?", token).
 		OrderBy("tm_create desc").
 		Limit(size)
+
+	// Default to excluding soft-deleted contacts. ApplyFields is the single
+	// authority for the tm_delete clause: when no explicit "deleted" filter is
+	// supplied, inject deleted=false (-> tm_delete IS NULL). A caller that wants
+	// the deleted set passes deleted=true (-> tm_delete IS NOT NULL). We must
+	// not also hardcode tm_delete IS NULL here, or deleted=true would AND into
+	// an unsatisfiable predicate and always return zero rows.
+	if _, ok := filters[contact.FieldDeleted]; !ok {
+		// copy so we never mutate the caller's map
+		merged := make(map[contact.Field]any, len(filters)+1)
+		for k, v := range filters {
+			merged[k] = v
+		}
+		merged[contact.FieldDeleted] = false
+		filters = merged
+	}
 
 	// apply filters
 	builder, err := commondatabasehandler.ApplyFields(builder, filters)
@@ -177,23 +206,34 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 	if err != nil {
 		return nil, fmt.Errorf("could not query. ContactList. err: %v", err)
 	}
-	defer func() {
-		_ = rows.Close()
-	}()
 
+	// Fully drain and close the result set BEFORE loading child data. Issuing
+	// the nested phone/email/tag queries while this rows cursor is still open
+	// reuses the same connection and can deadlock under a bounded connection
+	// pool (and reliably deadlocks single-connection SQLite). Collect first,
+	// then enrich.
 	res := []*contact.Contact{}
 	for rows.Next() {
-		c, err := h.contactGetFromRow(rows)
-		if err != nil {
-			return nil, fmt.Errorf("could not scan the row. ContactList. err: %v", err)
+		c, scanErr := h.contactGetFromRow(rows)
+		if scanErr != nil {
+			_ = rows.Close()
+			return nil, fmt.Errorf("could not scan the row. ContactList. err: %v", scanErr)
 		}
+		res = append(res, c)
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close()
+		return nil, fmt.Errorf("row iteration error. ContactList. err: %v", err)
+	}
+	if closeErr := rows.Close(); closeErr != nil {
+		return nil, fmt.Errorf("could not close rows. ContactList. err: %v", closeErr)
+	}
 
-		// load related data for each contact
+	// load related data for each contact
+	for _, c := range res {
 		c.PhoneNumbers, _ = h.PhoneNumberListByContactID(ctx, c.ID)
 		c.Emails, _ = h.EmailListByContactID(ctx, c.ID)
 		c.TagIDs, _ = h.TagAssignmentListByContactID(ctx, c.ID)
-
-		res = append(res, c)
 	}
 
 	return res, nil
@@ -256,8 +296,10 @@ func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("could not execute. ContactDelete. err: %v", err)
 	}
 
-	// update the cache
-	_ = h.contactUpdateToCache(ctx, id)
+	// Evict the cache instead of repopulating it. The contact is now
+	// soft-deleted; calling contactUpdateToCache here would re-cache the
+	// tombstone (TMDelete set) and keep serving it on subsequent reads.
+	_ = h.cache.ContactDelete(ctx, id)
 
 	return nil
 }
@@ -348,6 +390,44 @@ func (h *handler) ContactLookupByEmail(ctx context.Context, customerID uuid.UUID
 func (h *handler) ContactDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error {
 	ts := h.utilHandler.TimeNow()
 
+	// Collect the affected (still-active) contact IDs first so we can evict
+	// each from the cache after the bulk soft-delete. Without this, cached
+	// entries keep serving the deleted contacts as active until the TTL
+	// expires, which both leaks soft-deleted records and violates tenant
+	// isolation for caller-ID enrichment.
+	selectQuery, selectArgs, err := sq.Select("id").
+		From(contactTable).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"tm_delete": nil}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build select query. ContactDeleteByCustomerID. err: %v", err)
+	}
+
+	rows, err := h.db.Query(selectQuery, selectArgs...)
+	if err != nil {
+		return fmt.Errorf("could not query contact ids. ContactDeleteByCustomerID. err: %v", err)
+	}
+	var ids []uuid.UUID
+	for rows.Next() {
+		var idBytes []byte
+		if scanErr := rows.Scan(&idBytes); scanErr != nil {
+			_ = rows.Close()
+			return fmt.Errorf("could not scan contact id. ContactDeleteByCustomerID. err: %v", scanErr)
+		}
+		id, parseErr := uuid.FromBytes(idBytes)
+		if parseErr != nil {
+			_ = rows.Close()
+			return fmt.Errorf("could not parse contact id. ContactDeleteByCustomerID. err: %v", parseErr)
+		}
+		ids = append(ids, id)
+	}
+	if err := rows.Err(); err != nil {
+		_ = rows.Close()
+		return fmt.Errorf("row iteration error. ContactDeleteByCustomerID. err: %v", err)
+	}
+	_ = rows.Close()
+
 	query, args, err := sq.Update(contactTable).
 		Set("tm_update", ts).
 		Set("tm_delete", ts).
@@ -360,6 +440,11 @@ func (h *handler) ContactDeleteByCustomerID(ctx context.Context, customerID uuid
 	_, err = h.db.Exec(query, args...)
 	if err != nil {
 		return fmt.Errorf("could not execute. ContactDeleteByCustomerID. err: %v", err)
+	}
+
+	// Evict each affected contact from the cache so no tombstone is served.
+	for _, id := range ids {
+		_ = h.cache.ContactDelete(ctx, id)
 	}
 
 	return nil
