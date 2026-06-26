@@ -70,19 +70,23 @@ unique(customer_id, type, target)   -- identifier dedup (matches agent_addresses
 - **No `tm_delete`; addresses are hard-deleted.** This follows the existing
   `agent_addresses` convention (bin-dbscheme-manager, 2026-06-21), which solved the
   identical problem (JSON→child table, normalized address, by-address hot-path
-  lookup): `agent_addresses` has columns `tm_create/tm_update` only, a
-  `unique(customer_id, type, target)`, and removes rows on delete so the unique
-  slot is freed immediately. contact_addresses mirrors this. Rationale: an address
-  mapping ("this number belongs to this contact") is a correctable assertion, not
-  an immutable fact, so a wrong/removed mapping is deleted rather than tombstoned.
-  This is the opposite of contact_interactions, which IS an immutable fact and is
-  append-only. Hard-delete also avoids the MySQL "NULL is distinct in UNIQUE" trap
-  that a `tm_delete`-in-unique scheme creates (active rows would not actually be
-  deduped).
+  lookup): `agent_addresses` has only `tm_create/tm_update` timestamp columns (no
+  `tm_delete`), a `unique(customer_id, type, target)`, and removes rows on delete
+  (verified: `agentAddressDeleteByAgentID` is a physical `DELETE`, called from both
+  `AgentDelete` and `AgentSetAddresses`) so the unique slot is freed immediately.
+  contact_addresses mirrors this. Rationale: an address mapping ("this number
+  belongs to this contact") is a correctable assertion, not an immutable fact, so a
+  wrong/removed mapping is deleted rather than tombstoned. This is the opposite of
+  contact_interactions, which IS an immutable fact and is append-only. Hard-delete
+  also avoids the MySQL "NULL is distinct in UNIQUE" trap that a
+  `tm_delete`-in-unique scheme creates (active rows would not actually be deduped).
 - **is_primary uniqueness.** Because there is no soft-delete, "one primary per
   type" is enforced over active rows directly (all rows are active), via a
   generated-column UNIQUE on `(customer_id, type)` restricted to `is_primary=true`.
-  No `tm_delete` interaction to reason about.
+  No `tm_delete` interaction to reason about. Note: this is a NEW pattern for
+  VoIPBin (no existing table uses an `is_primary` generated-column UNIQUE;
+  `agent_addresses` has no `is_primary`), so MySQL generated-column UNIQUE
+  compatibility must be confirmed at implementation (tracked in §9).
 - Late-binding note: hard-deleting an address breaks automatic re-matching of past
   interactions to that address. This is not a loss, because `peer_target` is stored
   raw on each interaction; re-registering the address re-establishes the match at
@@ -107,9 +111,12 @@ tm_create       datetime     projection insert time (pagination cursor)
 unique(reference_type, reference_id, peer_target)
 ```
 
-This is the only table with no `tm_delete`: create-only projection means no
-soft-delete in the normal lifecycle, so the dedup discriminator `tm_delete` that
-other tables carry is not applicable here. The unique key is the bare
+Two tables carry no `tm_delete`, for different reasons: contact_addresses because
+it is hard-deleted (§3.1, a correctable mapping), and contact_interactions because
+it is append-only (a status transition after creation never rewrites the row, so
+there is nothing to soft-delete in the normal lifecycle). The only table that
+carries `tm_delete` is contact_resolutions (retraction of a judgment). The
+interactions unique key is therefore the bare
 `(reference_type, reference_id, peer_target)`.
 
 **Forward-compatibility for deletion.** Deletion will eventually be required
@@ -316,10 +323,13 @@ over-match; positive-only attribution could never remove a wrong automatic row.
   the *projection insert* path (new rows always carry a fresh `tm_create` at the
   head). It is NOT gap-free for late-binding edits, which move rows in BOTH
   directions within an already-served page:
-  - appearance: registering an address or adding a positive resolution makes a
-    past interaction (old `tm_create`) newly visible in a `?contact_id=` result.
-  - disappearance: adding a negative resolution, or retracting (`tm_delete`) a
-    positive one, removes a previously visible row.
+  - appearance: registering an address, re-pointing an address to this contact,
+    adding a positive resolution, or retracting (`tm_delete`) a negative resolution
+    (which revives the automatic match) makes a past interaction (old `tm_create`)
+    newly visible in a `?contact_id=` result.
+  - disappearance: hard-deleting an address, re-pointing an address away from this
+    contact, adding a negative resolution, or retracting (`tm_delete`) a positive
+    one removes a previously visible row.
   Either way the change can land in a page already served during an in-progress
   infinite scroll, so a single scroll session may miss or retain a row until a full
   refetch. This is a transient per-session inconsistency, not data loss (a fresh
@@ -328,24 +338,37 @@ over-match; positive-only attribution could never remove a wrong automatic row.
 
 ### 5.4 Unresolved queue and negative-suppressed orphans
 
-`GET /v1/interactions/unresolved` must surface two distinct populations, or a
-negative resolution would create an invisible orphan:
+**Authoritative predicate.** An interaction is unresolved if, after applying all
+active resolutions at read time, it resolves to **zero contacts** AND its
+`peer_type` is not `web_session`. "Zero contacts" means: no surviving automatic
+peer-match to any active address, and no active positive resolution to any contact.
+This single predicate is the spec; the cases below are illustrations of how an
+interaction lands in it, not separate rules.
 
-1. **Never matched.** No `contact_addresses` row matches `(peer_type, peer_target)`
-   and no positive resolution exists. (web_session is excluded, per §6.)
-2. **Negatively suppressed without a positive home.** An interaction whose
-   automatic peer-match was removed by a negative resolution for that contact, and
-   which has no active positive resolution to any other contact. Without this
-   branch, the borrowed-phone case becomes invisible: the call is suppressed from
-   the owner's timeline (negative) but, until the borrower is identified with a
-   positive resolution, it belongs to no one. The unresolved queue is exactly where
-   such an interaction should wait for a human to assign its real owner.
+Because `unique(customer_id, type, target)` maps a target to at most one contact
+per customer, automatic matching never produces a multi-contact result; the queue
+logic never has to reconcile competing automatic owners (the schema prevents it).
 
-So the queue predicate is: an interaction is unresolved if, after applying all
-active resolutions, it resolves to **zero contacts** (no surviving automatic match
-and no active positive). A negative resolution that strips the only (automatic)
-attribution returns the interaction to this queue. This closes the orphan path that
-polarity would otherwise open.
+How an interaction enters the queue:
+
+1. **Never matched.** No address ever matched `(peer_type, peer_target)` and no
+   positive resolution exists. (web_session is excluded by the predicate, per §6.)
+2. **Negatively suppressed with no positive home.** Automatic peer-match to a
+   contact was removed by a negative resolution, and no active positive resolution
+   attaches it elsewhere. Borrowed-phone example: the call is suppressed from the
+   phone owner (negative) but, until the borrower is identified with a positive
+   resolution, it belongs to no one, so it waits here. (Note: a positive resolution
+   to a different contact takes it OUT of the queue, since it then resolves to that
+   contact; the predicate handles this without a special case.)
+3. **Address hard-deleted.** When an address is hard-deleted (§3.1) or re-pointed
+   away, a previously auto-matched past interaction loses its only attribution and
+   returns to the queue. This is the explicit resolved→unresolved transition that
+   hard-delete causes: the interaction is NOT silently lost, because `peer_target`
+   is stored raw and the read-time predicate re-evaluates it to zero contacts.
+   Re-registering the address re-matches it (§3.1 late-binding note).
+
+This closes both the orphan path that polarity would otherwise open (case 2) and
+the silent-loss concern that hard-delete might otherwise raise (case 3).
 
 ## 6. web_session handling
 
@@ -464,6 +487,11 @@ interpretation never damages the event.
    can drop peers under the current single-peer-per-row + unique model. Specify
    whether multi-party produces one row per peer and how duplicate peers are
    de-duplicated, before those flows are projected.
+7. is_primary generated-column UNIQUE (§3.1) is a new pattern for VoIPBin (no
+   existing table uses it). Confirm the exact MySQL generated-column UNIQUE form
+   (e.g. a stored generated column that is `(customer_id, type)` when
+   `is_primary=true` else NULL, with a UNIQUE index on it) compiles and behaves on
+   the production MySQL version before relying on it.
 
 ## 10. Scope out (v1)
 
