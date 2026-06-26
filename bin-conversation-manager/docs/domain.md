@@ -13,8 +13,8 @@ Platform-specific credentials for sending messages. Stored in `conversation_acco
 ### Conversation
 A communication thread between two parties. Persisted in `conversation_conversations` table.
 
-- `type`: `message` (SMS/MMS) | `line` (LINE)
-- `dialog_id` — external platform conversation identifier (LINE chatroom ID, SMS thread ID)
+- `type`: `message` (SMS/MMS) | `line` (LINE) | `whatsapp` (WhatsApp)
+- `dialog_id` — external platform conversation identifier (LINE chatroom ID, WhatsApp recipient phone, SMS thread ID)
 - `self` — platform address of the VoIPbin-side participant (e.g., phone number, LINE user ID)
 - `peer` — platform address of the customer/end user
 
@@ -23,9 +23,9 @@ A conversation is uniquely identified by `(account_id, dialog_id)`.
 ### Message
 Individual message within a conversation. Persisted in `conversation_messages` table.
 
-- `direction`: `inbound` | `outbound`
+- `direction`: `incoming` | `outgoing`
 - `status`: `progressing` | `done` | `failed`
-- `reference_type` — source resource type
+- `reference_type` — source resource type: `message` (SMS/MMS) | `line` | `whatsapp`
 - `transaction_id` — external platform message ID for dedup
 - `medias` — JSON array of media attachments
 
@@ -34,22 +34,25 @@ Media attachment metadata for messages. Stored in `conversation_medias` table.
 
 ## Message Flows
 
-### Incoming Message (LINE webhook)
+### Incoming Message (LINE / WhatsApp webhook)
 ```
-LINE platform → POST /v1/hooks
-    → conversationhandler.Hook() (parse account_id from URI)
-    → linehandler.Hook() (verify signature, parse payload)
+LINE / WhatsApp platform → POST /v1/hooks
+    → conversationhandler.Hook() (parse account_id from URI, select handler by account type)
+    → linehandler.Hook() / whatsapphandler.Hook() (verify signature, parse payload)
     → find or create Conversation by (account_id, dialog_id)
-    → create Message record (direction=inbound)
+    → create Message record (direction=incoming)
     → publish conversation_created + message_created events
+    → execute-mode dispatch (agent: no-op; flow: start activeflow via account.MessageFlowID)
 ```
+
+WhatsApp note: inbound signature is validated as HMAC-SHA256 (`X-Hub-Signature-256`, `sha256=` prefix) keyed on `provider_data.app_secret`. The handler is fail-closed: an empty `app_secret` rejects the request.
 
 ### Outgoing Message (API)
 ```
 Caller → POST /v1/messages/create
     → messagehandler.CreateSend()
-    → create Message record (direction=outbound, status=progressing)
-    → linehandler.Send() or smshandler.Send()
+    → create Message record (direction=outgoing, status=progressing)
+    → linehandler.Send() / whatsapphandler.Send() / smshandler.Send()
     → update Message status to done or failed
     → publish message_created event
 ```
@@ -60,8 +63,9 @@ message-manager publishes message_created event
     → subscribehandler processes event
     → conversationhandler.Event()
     → find or create Conversation by phone numbers
-    → create Message record (direction=inbound)
+    → create Message record (direction=incoming)
     → publish conversation_created + message_created events
+    → execute-mode dispatch (agent: no-op; flow: start activeflow via number.MessageFlowID)
 ```
 
 ## Flow Integration Variables

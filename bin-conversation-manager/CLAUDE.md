@@ -1,6 +1,6 @@
 # bin-conversation-manager
 
-Multi-channel conversation management service. Handles SMS/MMS and LINE messaging threads, inbound/outbound message delivery, and platform account credentials.
+Multi-channel conversation management service. Handles SMS/MMS, LINE, and WhatsApp messaging threads, incoming/outgoing message delivery, and platform account credentials.
 
 > Cross-cutting rules (verification workflow, branch/commit format, worktree usage, Alembic, RST sync) live in the root [CLAUDE.md](../CLAUDE.md).
 
@@ -13,11 +13,11 @@ Multi-channel conversation management service. Handles SMS/MMS and LINE messagin
 
 ## Key concepts
 
-- **Account** — platform credentials (LINE channel secret/token, SMS provider); type: `sms` | `line`
-- **Conversation** — thread between two parties identified by `(account_id, dialog_id)`; type: `message` | `line`
-- **Message** — individual message; direction `inbound`/`outbound`, status `progressing`/`done`/`failed`
-- **DialogID** — external platform conversation identifier (LINE chatroom ID, SMS thread)
-- Inbound LINE messages arrive via `POST /v1/hooks`; inbound SMS/MMS arrive via `message-manager` event subscription
+- **Account** — platform credentials (LINE channel secret/token, SMS provider, WhatsApp Meta credentials); type: `sms` | `line` | `whatsapp`
+- **Conversation** — thread between two parties identified by `(account_id, dialog_id)`; type: `message` | `line` | `whatsapp`
+- **Message** — individual message; direction `incoming`/`outgoing`, status `progressing`/`done`/`failed`
+- **DialogID** — external platform conversation identifier (LINE chatroom ID, WhatsApp recipient phone, SMS thread)
+- Incoming LINE/WhatsApp messages arrive via `POST /v1/hooks`; incoming SMS/MMS arrive via `message-manager` event subscription
 
 ## Common commands
 
