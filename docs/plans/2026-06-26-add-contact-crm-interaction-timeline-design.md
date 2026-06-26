@@ -59,7 +59,7 @@ contact_id    binary(16)   nullable (NULL = unresolved)
 type          varchar      tel / email / sip / line / whatsapp ...
 target        varchar      normalized identifier (join key)
 target_name   varchar      display name (optional)
-is_primary    bool         one per type (generated-col UNIQUE)
+is_primary    bool         one per type, active rows only (see note)
 tm_create, tm_update, tm_delete
 
 unique(customer_id, type, target, tm_delete)   -- identifier dedup
@@ -69,6 +69,13 @@ unique(customer_id, type, target, tm_delete)   -- identifier dedup
   address (see §6) and is excluded.
 - `tm_delete` is newly introduced here (the old child tables had only `tm_create`),
   unifying soft-delete and supporting the dedup unique.
+- **is_primary uniqueness must include `tm_delete`.** The "one primary per type"
+  rule applies only to active rows. If the generated-column UNIQUE ignored
+  `tm_delete`, soft-deleting a primary (tm_delete set, is_primary still true) and
+  creating a new primary of the same type would collide. The constraint is
+  therefore over `(customer_id, type, is_primary, tm_delete)` (or an equivalent
+  partial/generated-column form scoped to active rows), consistent with the dedup
+  unique above.
 - REST backward compatibility: `phone_numbers[]` / `emails[]` responses are kept as
   a reverse-projection from `contact_addresses`; `addresses[]` is also exposed so
   sip/line/whatsapp are not hidden.
@@ -116,22 +123,24 @@ Design decisions baked in:
 - **No `status` / `preview` snapshot.** create-only projection (see §4) would
   freeze a stale value ("ended call shown as progressing"). Current state/body is
   fetched at read time via `(reference_type, reference_id)`.
-- **No `tm_update` / `tm_delete` in v1.** create-only subscription means no
-  in-place mutation and no soft-delete in the normal lifecycle. (`tm_delete` is
-  added later only if/when deletion is required; see the forward-compatibility
-  note above).
+- **No `tm_update` / `tm_delete` in v1.** Subscribing only to the creation signal
+  (§4) means no in-place mutation and no soft-delete in the normal lifecycle.
+  (`tm_delete` is added later only if/when deletion is required; see the
+  forward-compatibility note above).
 
 ### 3.3 contact_resolutions (manual attribution, append-only)
 
-Automatic attribution (peer→address match) cannot cover two real cases: a borrowed
-phone, and an anonymous session later identified. Those need an explicit human (or
-rule) judgment, which is itself a new immutable fact.
+Automatic attribution (peer→address match) cannot cover three real cases: a
+borrowed phone, an anonymous session later identified, and a wrong automatic match
+that must be suppressed. Those need an explicit human (or rule) judgment, which is
+itself a new immutable fact.
 
 ```
 id                binary(16)   PK
 customer_id       binary(16)
 contact_id        binary(16)   the contact this interaction is attributed to
 interaction_id    binary(16)   the interaction being attributed (single-row grain)
+resolution_type   varchar      positive (attach) / negative (suppress)
 resolved_by_type  varchar      agent / system / rule
 resolved_by_id    binary(16)   the deciding actor (nil for system)
 tm_create         datetime     attribution time (immutable fact)
@@ -142,9 +151,16 @@ index(customer_id, contact_id, tm_delete)
 index(customer_id, interaction_id, tm_delete)
 ```
 
-- Single-interaction grain. Because conversation/AIcall interactions are
-  session-grained (one row per session, §4), "attribute this whole session" reduces
-  to "attribute this one interaction", so no endpoint-grained variant is needed.
+- **`resolution_type` gives the layer both polarity directions.** A positive row
+  attaches an interaction to a contact that automatic matching missed (borrowed
+  phone attributed to the borrower, anonymous session attributed once identified).
+  A negative row suppresses an interaction that automatic matching wrongly attached
+  (the borrowed-phone call automatically matches the phone *owner* via peer-IN;
+  a negative row for that owner removes it from the owner's timeline). Without the
+  negative direction, resolution could only add, never correct an over-match, so
+  the borrowed-phone case would stay permanently mis-attributed to the owner.
+- Single-interaction grain. Because every channel's interaction is one row per
+  origin event (§4), "attribute/suppress this session" reduces to one row.
 - Correction = `tm_delete` (retract) + new row (re-attribute). The interaction
   itself is never touched.
 
@@ -157,7 +173,8 @@ contacts (existing)
    1 : N  contact_resolutions      (manual attributions)
 
 contact_interactions
-   N : 1  contact_resolutions      (an interaction may be manually attributed)
+   1 : N  contact_resolutions      (an interaction accumulates attribution rows:
+                                     retract via tm_delete + re-attribute appends)
 ```
 
 threads (episodes) are NOT a table. They are computed at read time by sessionizing
@@ -165,16 +182,35 @@ the interaction stream (§5).
 
 ## 4. Projection handler (channel events → interactions)
 
-- **create-only subscription.** Subscribe only to each manager's `*_created`
-  event. `updated` / `ended` / `terminated` are NOT subscribed. This realizes pure
-  append-only and dissolves LWW/sweeper/tombstone debt. A status transition after
-  creation never rewrites the interaction; current state is read-time fetched.
-- **Grain (channel-dependent, by design):**
-  - call, AIcall → session grain (one `*_created` per session). AIcall lifecycle
-    (`initiating → progressing → terminating → terminated`, idle timeout default
-    24h) provides the natural session boundary.
-  - SMS/LINE (conversation-manager) → message grain
-    (`conversation_message_created` fires per message).
+- **Subscribe to each channel's creation signal only (no state/lifecycle
+  follow-ups).** The interaction is appended once, when the origin record is born;
+  later state transitions (call ended, AIcall terminated) never rewrite it. This
+  realizes pure append-only and dissolves LWW/sweeper/tombstone debt. The exact
+  subscribed event differs per manager (not every manager emits a literal
+  `*_created`):
+
+  | reference_type | subscribed event              | grain          | reference_id            | peer source            |
+  |----------------|-------------------------------|----------------|-------------------------|------------------------|
+  | call           | call create event             | session (1)    | call_id                 | call peer              |
+  | message (SMS)  | `message_created`             | message / recipient | message_id (fan-out) | each `Targets[]` dest  |
+  | conversation (LINE) | `conversation_message_created` | message    | conversation_message_id | message peer           |
+  | aicall (web)   | `aicall_status_initializing`  | session (1)    | aicall_id               | web_session            |
+
+- **AIcall has no `aicall_created` event.** It emits per-message
+  (`aimessage_created`) and lifecycle state (`aicall_status_initializing → ... →
+  terminated`) events. To keep the session grain agreed in §6 (one web AIcall
+  session = one interaction), the projection subscribes to the **first state event
+  (`aicall_status_initializing`)** as the session-creation signal and does NOT
+  subscribe to `aimessage_created`. Individual AIcall messages are fetched at read
+  time via the reference (e.g. `get_aicall_messages`), consistent with the
+  "body fetched at read time" rule. This also keeps `reference_id = aicall_id`
+  unique per session, so the idempotency unique never collides across the session's
+  messages.
+- **Grain is defined by the subscribed event, not by the channel abstractly.**
+  call and aicall subscribe to a once-per-session event, so they are session-grained
+  (one interaction per session). SMS and LINE subscribe to a per-message event, so
+  they are message-grained. A long SMS/LINE thread renders as many interactions;
+  visual grouping is read-time sessionize (§5).
 - **SMS fan-out:** message-manager stores one `message` with `Targets[]` (N
   recipients) and publishes `message_created` once with the full `Targets` payload.
   The handler expands `Targets` into N interactions (same `reference_id`, distinct
@@ -182,7 +218,8 @@ the interaction stream (§5).
   distinguishes the fan-out rows.
 - **direction → peer extraction:** outbound takes peer from the destination;
   inbound takes peer from the source. Per-channel detail specified at
-  implementation.
+  implementation. Multi-party cases (conference, duplicate recipients in
+  `Targets[]`) are noted as an open item (§9).
 - **Idempotency (at-least-once):** `unique(reference_type, reference_id,
   peer_target)` (see §3.2). `(reference_type, reference_id)` alone collides on
   fan-out.
@@ -205,15 +242,24 @@ GET /v1/interactions/unresolved?since=7d        # unresolved queue (web_session 
 `?contact_id=` resolution at read time:
 
 ```
-1. expand the contact's address set:
-   SELECT type, target FROM contact_addresses WHERE contact_id = ?
+1. expand the contact's active address set:
+   SELECT type, target FROM contact_addresses
+   WHERE contact_id = ? AND tm_delete IS NULL
 2. automatic match:
    SELECT * FROM contact_interactions
    WHERE (peer_type, peer_target) IN (address set)
-3. manual match:
-   interaction_ids FROM contact_resolutions WHERE contact_id = ? AND tm_delete IS NULL
-4. union (2) ∪ (3), de-dup
+3. manual attribution (active rows only):
+   SELECT interaction_id, resolution_type FROM contact_resolutions
+   WHERE contact_id = ? AND tm_delete IS NULL
+4. combine:
+   ( automatic (2) ∪ positive manual (3) )  MINUS  negative manual (3)
+   de-dup by interaction id
 ```
+
+The negative set (step 3 `resolution_type='negative'`) suppresses interactions
+that automatic matching wrongly attached to this contact (e.g. a borrowed-phone
+call that peer-matches the phone owner). This is what lets a human override an
+over-match; positive-only attribution could never remove a wrong automatic row.
 
 ### 5.2 Response shape: pure flat
 
@@ -241,18 +287,33 @@ GET /v1/interactions/unresolved?since=7d        # unresolved queue (web_session 
   resolution acts only as a visibility filter, never participates in sort, so the
   same interaction lands in the same position regardless of attribution path
   (deterministic).
+- **Late-binding visibility caveat.** The cursor is gap-free for the *projection
+  insert* path (new rows always carry a fresh `tm_create` at the head). It is NOT
+  gap-free for the *late-binding* path: when an address is newly registered (or a
+  resolution added), a past interaction with an old `tm_create` becomes newly
+  visible in a `?contact_id=` result. If that `tm_create` falls into an
+  already-served page of an in-progress infinite scroll, the row is missed until a
+  full refetch. This is a transient per-session visibility gap, not data loss (a
+  fresh query always returns it). Accepted for v1; if it bites in dogfood, the
+  client refetches the head on a "contact identity changed" signal.
 
 ## 6. web_session handling
 
 `web_session` is the session id of a web-direct AIcall messaging conversation
-(reference_type=conversation, web-originated). AIcall idle timeout fragments
-sessions, so the same person gets a new `web_session` id on each visit. It is a
-one-time handle, not a permanent identifier. Therefore:
+(reference_type=aicall, web-originated). AIcall idle timeout fragments sessions, so
+the same person gets a new `web_session` id on each visit. It is a one-time handle,
+not a permanent identifier. Therefore:
 
 - web_session is excluded from `contact_addresses`.
-- Because a conversation/AIcall session is one interaction (§4 session grain),
-  attributing a web_session reduces to a single-row `contact_resolutions`
-  attribution. No endpoint-grained attribution machinery is required.
+- The projection subscribes to `aicall_status_initializing` (one per session, §4),
+  so a web AIcall session is exactly one interaction with `peer_target=web_session`.
+  Attributing that session reduces to a single-row `contact_resolutions` row. No
+  endpoint-grained attribution machinery is required.
+- Note: an AIcall whose `reference_type` routes its messages through
+  conversation-manager could in principle also surface as conversation interactions.
+  Pinning the canonical reference for an interaction (so the same logical event is
+  not double-counted across aicall and conversation) is the same concern as SMS
+  double-counting and is tracked as an open item (§9).
 
 ## 7. Migration
 
@@ -330,12 +391,27 @@ interpretation never damages the event.
 3. Normalization authority for non-tel/email types (sip/line/whatsapp): existing
    `ValidateTarget` validates but does not normalize for these; whatsapp currently
    errors in ValidateTarget. "Who normalizes" must be specified before those types
-   flow into contact_addresses.
+   flow into contact_addresses. This is also a **matching-key invariant**:
+   late-binding works only if the projection normalizes `peer_target` with the same
+   function that address registration normalizes `target`. If the two diverge by
+   even one byte, the IN-match silently fails and the interaction stays unresolved
+   forever (a missed match, not a wrong one). The single shared normalization
+   authority must be pinned before those types ship.
 4. Interaction deletion (cascade on `customer_deleted`, GDPR/data-removal): not in
    v1. When required, add `tm_delete` to contact_interactions, extend the unique to
    `(reference_type, reference_id, peer_target, tm_delete)`, and implement deletion
    as a soft-delete tombstone (customer-scoped bulk tombstone for cascade), per the
    forward-compatibility note in §3.2.
+5. Canonical reference pinning (double-count avoidance): a single logical event
+   that surfaces in two managers (SMS via message + conversation; web AIcall via
+   aicall + conversation) must be pinned to one canonical `reference_type` so it
+   produces one interaction, not two. Resolve which manager is authoritative per
+   overlap before projection ships.
+6. Multi-party / duplicate-peer grain: conference or multi-leg calls (one session,
+   many peers) and duplicate recipients in `Targets[]` (same peer, one unique slot)
+   can drop peers under the current single-peer-per-row + unique model. Specify
+   whether multi-party produces one row per peer and how duplicate peers are
+   de-duplicated, before those flows are projected.
 
 ## 10. Scope out (v1)
 
