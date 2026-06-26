@@ -29,6 +29,7 @@ func (h *messageHandler) Create(
 	referenceID uuid.UUID,
 	transactionID string,
 	text string,
+	subject string,
 	medias []media.Media,
 ) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -61,8 +62,9 @@ func (h *messageHandler) Create(
 		ReferenceID:   referenceID,
 		TransactionID: transactionID,
 
-		Text:   text,
-		Medias: medias,
+		Text:    text,
+		Subject: subject,
+		Medias:  medias,
 	}
 
 	if errCreate := h.db.MessageCreate(ctx, m); errCreate != nil {

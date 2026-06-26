@@ -7,6 +7,7 @@ import (
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	commonsock "monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
+	emmemail "monorepo/bin-email-manager/models/email"
 	mmmessage "monorepo/bin-message-manager/models/message"
 
 	"github.com/gofrs/uuid"
@@ -75,6 +76,42 @@ func Test_processEvent_MessageManagerMessageCreated(t *testing.T) {
 	}
 
 	mockConversation.EXPECT().Event(gomock.Any(), conversation.TypeMessage, gomock.Any()).Return(nil)
+
+	h.processEvent(event)
+}
+
+func Test_processEvent_EmailManagerEmailCreated(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockAccount := accounthandler.NewMockAccountHandler(mc)
+	mockConversation := conversationhandler.NewMockConversationHandler(mc)
+
+	h := &subscribeHandler{
+		sockHandler:         mockSock,
+		accountHandler:      mockAccount,
+		conversationHandler: mockConversation,
+	}
+
+	e := &emmemail.Email{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440011"),
+			CustomerID: uuid.FromStringOrNil("550e8400-e29b-41d4-a716-446655440012"),
+		},
+		Subject: "test subject",
+		Content: "test body",
+	}
+
+	data, _ := json.Marshal(e)
+
+	event := &commonsock.Event{
+		Publisher: publisherEmailManager,
+		Type:      emmemail.EventTypeCreated,
+		Data:      json.RawMessage(data),
+	}
+
+	mockConversation.EXPECT().EmailEventSent(gomock.Any(), gomock.Any()).Return(nil)
 
 	h.processEvent(event)
 }

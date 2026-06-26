@@ -23,8 +23,9 @@ type Message struct {
 
 	TransactionID string `json:"transaction_id,omitempty" db:"transaction_id"` // uniq id for message's transaction
 
-	Text   string        `json:"text,omitempty" db:"text"`
-	Medias []media.Media `json:"medias,omitempty" db:"medias,json"`
+	Text    string        `json:"text,omitempty" db:"text"`
+	Subject string        `json:"subject,omitempty" db:"subject"` // email subject; empty for non-email messages
+	Medias  []media.Media `json:"medias,omitempty" db:"medias,json"`
 
 	TMCreate *time.Time `json:"tm_create" db:"tm_create"`
 	TMUpdate *time.Time `json:"tm_update" db:"tm_update"`
@@ -48,8 +49,9 @@ const (
 
 	FieldTransactionID Field = "transaction_id"
 
-	FieldText   Field = "text"
-	FieldMedias Field = "medias" // Stored as JSON
+	FieldText    Field = "text"
+	FieldSubject Field = "subject"
+	FieldMedias  Field = "medias" // Stored as JSON
 
 	FieldTMCreate Field = "tm_create"
 	FieldTMUpdate Field = "tm_update"
@@ -86,4 +88,5 @@ const (
 	ReferenceTypeMessage   ReferenceType = "message" // sms, mms
 	ReferenceTypeLine      ReferenceType = "line"
 	ReferenceTypeWhatsApp  ReferenceType = "whatsapp"
+	ReferenceTypeEmail     ReferenceType = "email"
 )

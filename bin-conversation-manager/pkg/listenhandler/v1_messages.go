@@ -125,6 +125,7 @@ func (h *listenHandler) processV1MessagesCreatePost(ctx context.Context, m *sock
 		req.ReferenceID,
 		req.TransactionID,
 		req.Text,
+		"",
 		req.Medias,
 	)
 	if err != nil {

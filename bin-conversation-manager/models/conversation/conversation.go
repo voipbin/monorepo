@@ -71,4 +71,5 @@ const (
 	TypeMessage  Type = "message" // sms, mms
 	TypeLine     Type = "line"
 	TypeWhatsApp Type = "whatsapp"
+	TypeEmail    Type = "email" // outbound email
 )

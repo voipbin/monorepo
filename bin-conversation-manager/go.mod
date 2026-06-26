@@ -79,6 +79,7 @@ require (
 	go.uber.org/mock v0.6.0
 	monorepo/bin-agent-manager v0.0.0-20240328054741-55144017eccd
 	monorepo/bin-common-handler v0.0.0-20240408033155-50f0cd082334
+	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000
 	monorepo/bin-flow-manager v0.0.0-20240403034140-ce82222fe7f4
 	monorepo/bin-hook-manager v0.0.0-20240313052650-d3e4c79af4c0
 	monorepo/bin-message-manager v0.0.0-20240328053936-9008e28c2268
@@ -125,7 +126,6 @@ require (
 	monorepo/bin-contact-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-customer-manager v0.0.0-20240408042746-c45b2b5aa984 // indirect
 	monorepo/bin-direct-manager v0.0.0-00010101000000-000000000000 // indirect
-	monorepo/bin-email-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-outdial-manager v0.0.0-20240313064601-888fe8578646 // indirect
 	monorepo/bin-pipecat-manager v0.0.0-00010101000000-000000000000 // indirect
 	monorepo/bin-queue-manager v0.0.0-20240402021210-adac880b81da // indirect
