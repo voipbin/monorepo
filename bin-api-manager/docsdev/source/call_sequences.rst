@@ -129,79 +129,79 @@ When you create a call via the API:
 
     Outbound API Call - Complete Flow:
 
-    Your App      api-manager     call-manager    flow-manager     Asterisk       Destination
-        |              |               |               |               |               |
-        | POST /calls  |               |               |               |               |
-        +------------->|               |               |               |               |
-        |              |               |               |               |               |
-        |              | Validate JWT  |               |               |               |
-        |              |               |               |               |               |
-        |              | RPC: Create   |               |               |               |
-        |              | Call          |               |               |               |
-        |              +-------------->|               |               |               |
-        |              |               |               |               |               |
-        |              |               | Create Call   |               |               |
-        |              |               | Record        |               |               |
-        |              |               |               |               |               |
-        |              |               | Create temp   |               |               |
-        |              |               | Flow (if      |               |               |
-        |              |               | actions given)|               |               |
-        |              |               |               |               |               |
-        |              |               | RPC: Start    |               |               |
-        |              |               | ActiveFlow    |               |               |
-        |              |               +-------------->|               |               |
-        |              |               |               |               |               |
-        |              |               |               | Create        |               |
-        |              |               |               | ActiveFlow    |               |
-        |              |               |               |               |               |
-        |              |               |               | RPC: Originate|               |
-        |              |               |<--------------+               |               |
-        |              |               |               |               |               |
-        |              |               | ARI: Originate|               |               |
-        |              |               +------------------------------>|               |
-        |              |               |               |               |               |
-        |              |               |               |               | SIP INVITE    |
-        |              |               |               |               +-------------->|
-        |              |               |               |               |               |
-        |<-------------+<--------------+               |               |               |
-        | Call object  |               |               |               |               |
-        | status:dialing               |               |               |               |
-        |              |               |               |               |               |
-        |              |               |               |               | 180 Ringing   |
-        |              |               |               |               |<--------------+
-        |              |               |               |               |               |
-        |              |               | ChannelState  |               |               |
-        |              |               | (ringing)     |               |               |
-        |              |               |<------------------------------+               |
-        |              |               |               |               |               |
-        | Webhook:     |               |               |               |               |
-        | call_ringing |               |               |               |               |
-        |<-------------+<--------------+               |               |               |
-        |              |               |               |               |               |
-        |              |               |               |               | 200 OK        |
-        |              |               |               |               |<--------------+
-        |              |               |               |               |               |
-        |              |               | StasisStart   |               |               |
-        |              |               | (answered)    |               |               |
-        |              |               |<------------------------------+               |
-        |              |               |               |               |               |
-        |              |               | Update status |               |               |
-        |              |               | = progressing |               |               |
-        |              |               |               |               |               |
-        |              |               | Event:        |               |               |
-        |              |               | call_answered |               |               |
-        |              |               +-------------->|               |               |
-        |              |               |               |               |               |
-        |              |               |               | Execute       |               |
-        |              |               |               | Actions       |               |
-        | Webhook:     |               |               |               |               |
-        | call_answered|               |               |               |               |
-        |<-------------+<--------------+               |               |               |
-        |              |               |               |               |               |
+    Your App         api-manager     call-manager       flow-manager     Asterisk       Destination
+        |                 |               |                  |               |               |
+        |    POST /calls  |               |                  |               |               |
+        +---------------->|               |                  |               |               |
+        |                 |               |                  |               |               |
+        |                 | Validate JWT  |                  |               |               |
+        |                 |               |                  |               |               |
+        |                 | RPC: Create   |                  |               |               |
+        |                 | Call          |                  |               |               |
+        |                 +-------------->|                  |               |               |
+        |                 |               |                  |               |               |
+        |                 |               |    Create Call   |               |               |
+        |                 |               |    Record        |               |               |
+        |                 |               |                  |               |               |
+        |                 |               |    Create temp   |               |               |
+        |                 |               |    Flow (if      |               |               |
+        |                 |               |    actions given)|               |               |
+        |                 |               |                  |               |               |
+        |                 |               |    RPC: Start    |               |               |
+        |                 |               |    ActiveFlow    |               |               |
+        |                 |               +----------------->|               |               |
+        |                 |               |                  |               |               |
+        |                 |               |                  | Create        |               |
+        |                 |               |                  | ActiveFlow    |               |
+        |                 |               |                  |               |               |
+        |                 |               |                  | RPC: Originate|               |
+        |                 |               |<-----------------+               |               |
+        |                 |               |                  |               |               |
+        |                 |               |    ARI: Originate|               |               |
+        |                 |               +--------------------------------->|               |
+        |                 |               |                  |               |               |
+        |                 |               |                  |               | SIP INVITE    |
+        |                 |               |                  |               +-------------->|
+        |                 |               |                  |               |               |
+        |<----------------+<--------------+                  |               |               |
+        |    Call object  |               |                  |               |               |
+        |    status:dialing               |                  |               |               |
+        |                 |               |                  |               |               |
+        |                 |               |                  |               | 180 Ringing   |
+        |                 |               |                  |               |<--------------+
+        |                 |               |                  |               |               |
+        |                 |               |    ChannelState  |               |               |
+        |                 |               |    (ringing)     |               |               |
+        |                 |               |<---------------------------------+               |
+        |                 |               |                  |               |               |
+        |    Webhook:     |               |                  |               |               |
+        |    call_ringing |               |                  |               |               |
+        |<----------------+<--------------+                  |               |               |
+        |                 |               |                  |               |               |
+        |                 |               |                  |               | 200 OK        |
+        |                 |               |                  |               |<--------------+
+        |                 |               |                  |               |               |
+        |                 |               |    StasisStart   |               |               |
+        |                 |               |    (answered)    |               |               |
+        |                 |               |<---------------------------------+               |
+        |                 |               |                  |               |               |
+        |                 |               |    Update status |               |               |
+        |                 |               |    = progressing |               |               |
+        |                 |               |                  |               |               |
+        |                 |               |    Event:        |               |               |
+        |                 |               | call_progressing |               |               |
+        |                 |               +----------------->|               |               |
+        |                 |               |                  |               |               |
+        |                 |               |                  | Execute       |               |
+        |                 |               |                  | Actions       |               |
+        |    Webhook:     |               |                  |               |               |
+        | call_progressing|               |                  |               |               |
+        |<----------------+<--------------+                  |               |               |
+        |                 |               |                  |               |               |
 
 .. note:: **AI Implementation Hint**
 
-   The ``POST /calls`` response returns immediately with status ``dialing``. The call has not connected yet at this point. To know when the call is answered, either poll ``GET /calls/{call-id}`` for status ``progressing``, or subscribe to the ``call_answered`` webhook event. If you provide ``actions`` in the ``POST /calls`` request, a temporary flow is created automatically -- you do not need to create a flow separately via ``POST /flows``.
+   The ``POST /calls`` response returns immediately with status ``dialing``. The call has not connected yet at this point. To know when the call is answered, either poll ``GET /calls/{call-id}`` for status ``progressing``, or subscribe to the ``call_progressing`` webhook event. If you provide ``actions`` in the ``POST /calls`` request, a temporary flow is created automatically -- you do not need to create a flow separately via ``POST /flows``.
 
 WebRTC Call Flow
 ----------------
@@ -657,7 +657,7 @@ How call events propagate through the system:
         |               | status=hangup    |               |               |
         |               |                  |               |               |
         |               | Publish Event:   |               |               |
-        |               | call_hungup      |               |               |
+        |               | call_hangup      |               |               |
         |               +----------------->|               |               |
         |               |                  |               |               |
         |               |                  | Fanout to     |               |
@@ -694,8 +694,8 @@ How call events propagate through the system:
     ─────────────────────────────────────────────────────────
     call_created        webhook-manager, campaign-manager
     call_ringing        webhook-manager
-    call_answered       webhook-manager, billing-manager
-    call_hungup         webhook-manager, billing-manager,
+    call_progressing    webhook-manager, billing-manager
+    call_hangup         webhook-manager, billing-manager,
                         campaign-manager, queue-manager,
                         transfer-manager, ai-manager
     call_recording      webhook-manager, storage-manager

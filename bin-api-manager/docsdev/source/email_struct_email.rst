@@ -103,4 +103,20 @@ Email's status.
 | delivered  | The email has been successfully delivered to the recipient's     |
 |            | mail server (may end up in inbox or spam folder).                |
 +------------+------------------------------------------------------------------+
+| open       | The recipient opened the email.                                  |
++------------+------------------------------------------------------------------+
+| click      | The recipient clicked a link in the email.                       |
++------------+------------------------------------------------------------------+
+| bounce     | The email bounced and could not be delivered.                    |
++------------+------------------------------------------------------------------+
+| dropped    | The email was dropped before delivery (e.g. invalid address,     |
+|            | unsubscribed, or previous bounce).                               |
++------------+------------------------------------------------------------------+
+| deferred   | Delivery was temporarily deferred by the recipient's server and  |
+|            | will be retried.                                                 |
++------------+------------------------------------------------------------------+
+| unsubscribe| The recipient unsubscribed.                                      |
++------------+------------------------------------------------------------------+
+| spamreport | The recipient marked the email as spam.                          |
++------------+------------------------------------------------------------------+
 

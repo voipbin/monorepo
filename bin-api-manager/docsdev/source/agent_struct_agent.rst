@@ -60,6 +60,7 @@ The method used to ring the agent's contact addresses when a call is routed.
 Type       Description
 ========== ============
 ringall    Dial all of the agent's addresses simultaneously. The first address to answer is connected; the rest are cancelled.
+linear     Reserved. Dial the agent's addresses one at a time, in order. Defined in the API but not yet supported at runtime (currently only ``ringall`` is honored).
 ========== ============
 
 .. _agent-struct-agent-status:

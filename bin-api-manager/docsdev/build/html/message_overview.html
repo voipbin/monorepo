@@ -744,7 +744,7 @@
      <span class="o">|</span>                     <span class="o">|</span> <span class="n">Forward</span> <span class="n">message</span>      <span class="o">|</span>                    <span class="o">|</span>
      <span class="o">|</span>                     <span class="o">+--------------------&gt;|</span>                    <span class="o">|</span>
      <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span>                    <span class="o">|</span>
-     <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span> <span class="n">message_received</span>   <span class="o">|</span>
+     <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span> <span class="n">message_created</span>    <span class="o">|</span>
      <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span> <span class="n">webhook</span>            <span class="o">|</span>
      <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">+-------------------&gt;|</span>
      <span class="o">|</span>                     <span class="o">|</span>                      <span class="o">|</span>                    <span class="o">|</span>
@@ -849,7 +849,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">VoIPBIN</span>                           <span class="n">Your</span> <span class="n">App</span>
     <span class="o">|</span>                                 <span class="o">|</span>
     <span class="o">|</span> <span class="n">POST</span> <span class="o">/</span><span class="n">your</span><span class="o">-</span><span class="n">webhook</span><span class="o">-</span><span class="n">endpoint</span>     <span class="o">|</span>
-    <span class="o">|</span> <span class="p">{</span><span class="n">message_received</span> <span class="n">event</span><span class="p">}</span>        <span class="o">|</span>
+    <span class="o">|</span> <span class="p">{</span><span class="n">message_created</span> <span class="n">event</span><span class="p">}</span>         <span class="o">|</span>
     <span class="o">+--------------------------------&gt;|</span>
     <span class="o">|</span>                                 <span class="o">|</span>
     <span class="o">|</span>            <span class="mi">200</span> <span class="n">OK</span>               <span class="o">|</span>
@@ -859,17 +859,25 @@
 </div>
 <p><strong>Inbound Message Webhook Payload:</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_received&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;message_created&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg-abc-123&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sms&quot;</span><span class="p">,</span>
         <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
             <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
         <span class="p">},</span>
-        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
-        <span class="p">},</span>
+        <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15551234567&quot;</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;received&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;parts&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
         <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello, I need help with my order&quot;</span><span class="p">,</span>
         <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;inbound&quot;</span><span class="p">,</span>
         <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
@@ -999,7 +1007,7 @@
     <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">|</span>                      <span class="o">|</span>    <span class="s2">&quot;When arrives?&quot;</span>     <span class="o">|</span>
     <span class="o">|&lt;---------------------+&lt;-----------------------+</span>
-    <span class="o">|</span>  <span class="n">message_received</span>    <span class="o">|</span>                        <span class="o">|</span>
+    <span class="o">|</span>  <span class="n">message_created</span>     <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">|</span>                      <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">|</span> <span class="s2">&quot;Expected Friday&quot;</span>    <span class="o">|</span>                        <span class="o">|</span>
     <span class="o">+---------------------&gt;+-----------------------&gt;|</span>

@@ -135,7 +135,7 @@ Every message moves through a predictable set of states from sending to delivery
          |                     | Forward message      |                    |
          |                     +-------------------->|                    |
          |                     |                      |                    |
-         |                     |                      | message_received   |
+         |                     |                      | message_created    |
          |                     |                      | webhook            |
          |                     |                      +------------------->|
          |                     |                      |                    |
@@ -248,7 +248,7 @@ VoIPBIN delivers inbound messages to your application via webhooks.
     VoIPBIN                           Your App
         |                                 |
         | POST /your-webhook-endpoint     |
-        | {message_received event}        |
+        | {message_created event}         |
         +-------------------------------->|
         |                                 |
         |            200 OK               |
@@ -260,17 +260,25 @@ VoIPBIN delivers inbound messages to your application via webhooks.
 .. code::
 
     {
-        "type": "message_received",
+        "type": "message_created",
         "data": {
             "id": "msg-abc-123",
+            "type": "sms",
             "source": {
                 "type": "tel",
                 "target": "+15559876543"
             },
-            "destination": {
-                "type": "tel",
-                "target": "+15551234567"
-            },
+            "targets": [
+                {
+                    "destination": {
+                        "type": "tel",
+                        "target": "+15551234567"
+                    },
+                    "status": "received",
+                    "parts": 1,
+                    "tm_update": "2024-01-15T10:30:00Z"
+                }
+            ],
             "text": "Hello, I need help with my order",
             "direction": "inbound",
             "tm_create": "2024-01-15T10:30:00Z"
@@ -403,7 +411,7 @@ Enable customers to reply to messages.
         |                      |                        |
         |                      |    "When arrives?"     |
         |<---------------------+<-----------------------+
-        |  message_received    |                        |
+        |  message_created     |                        |
         |                      |                        |
         | "Expected Friday"    |                        |
         +--------------------->+----------------------->|

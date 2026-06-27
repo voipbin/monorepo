@@ -911,11 +911,11 @@
 </div>
 </section>
 </section>
-<section id="call-answered">
-<span id="webhook-struct-webhook-call-answered"></span><h2>call_answered<a class="headerlink" href="#call-answered" title="Link to this heading">¶</a></h2>
-<p>The notification message for the call answer.</p>
+<section id="call-progressing">
+<span id="webhook-struct-webhook-call-progressing"></span><h2>call_progressing<a class="headerlink" href="#call-progressing" title="Link to this heading">¶</a></h2>
+<p>The notification message sent when the call is answered and enters the progressing state.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_progressing&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">}</span>
@@ -923,13 +923,13 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_answered&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_progressing&quot;</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id5">
 <h3>Example<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_answered&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_progressing&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;5371e9db-d035-4db6-a8d6-0994d33e744e&quot;</span><span class="p">,</span>
         <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d157ce07-0360-4cad-9007-c8ab89fccf9c&quot;</span><span class="p">,</span>
@@ -1040,11 +1040,11 @@
 </div>
 </section>
 </section>
-<section id="call-hungup">
-<span id="webhook-struct-webhook-call-hungup"></span><h2>call_hungup<a class="headerlink" href="#call-hungup" title="Link to this heading">¶</a></h2>
+<section id="call-hangup">
+<span id="webhook-struct-webhook-call-hangup"></span><h2>call_hangup<a class="headerlink" href="#call-hangup" title="Link to this heading">¶</a></h2>
 <p>The notification message for the call hangup.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hangup&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">}</span>
@@ -1052,13 +1052,13 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_hungup&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;call_hangup&quot;</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of call. See detail <a class="reference internal" href="call_struct_call.html#call-struct-call"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id7">
 <h3>Example<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hangup&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;593555d2-787e-4b06-862f-407bb2e43be1&quot;</span><span class="p">,</span>
         <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d157ce07-0360-4cad-9007-c8ab89fccf9c&quot;</span><span class="p">,</span>
@@ -1189,11 +1189,11 @@
 </div>
 </section>
 </section>
-<section id="queuecall-entering">
-<span id="webhook-struct-webhook-queuecall-entering"></span><h2>queuecall_entering<a class="headerlink" href="#queuecall-entering" title="Link to this heading">¶</a></h2>
-<p>Notification message for queuecall is entering to the agent’s conference room.</p>
+<section id="queuecall-connecting">
+<span id="webhook-struct-webhook-queuecall-connecting"></span><h2>queuecall_connecting<a class="headerlink" href="#queuecall-connecting" title="Link to this heading">¶</a></h2>
+<p>Notification message for queuecall is connecting to the agent’s conference room.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_entering&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_connecting&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">}</span>
@@ -1201,18 +1201,18 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_entering&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_connecting&quot;</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id9">
 <h3>Example<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_entering&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_connecting&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c7c1e226-8c86-4b43-9606-2d5bb2059a09&quot;</span><span class="p">,</span>
         <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
         <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;1fe1356f-3f7f-4ff9-9d33-08136b38f506&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;entering&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;connecting&quot;</span><span class="p">,</span>
         <span class="s2">&quot;service_agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
         <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:07:46.111715&quot;</span><span class="p">,</span>
         <span class="s2">&quot;tm_service&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:08:02.233858&quot;</span><span class="p">,</span>
@@ -1224,11 +1224,11 @@
 </div>
 </section>
 </section>
-<section id="queuecall-kicking">
-<span id="webhook-struct-webhook-queuecall-kicking"></span><h2>queuecall_kicking<a class="headerlink" href="#queuecall-kicking" title="Link to this heading">¶</a></h2>
-<p>The notification message for the queuecall is being kicked.</p>
+<section id="queuecall-waiting">
+<span id="webhook-struct-webhook-queuecall-waiting"></span><h2>queuecall_waiting<a class="headerlink" href="#queuecall-waiting" title="Link to this heading">¶</a></h2>
+<p>The notification message for the queuecall is waiting for an agent.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_kicking&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_waiting&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">...</span>
     <span class="p">}</span>
@@ -1236,22 +1236,22 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_kicking&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (enum string): The webhook type. Value: <code class="docutils literal notranslate"><span class="pre">&quot;queuecall_waiting&quot;</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (Object): The detail of queuecall. See detail <a class="reference internal" href="queue_struct_queuecall.html#queue-struct-queuecall"><span class="std std-ref">here</span></a>.</p></li>
 </ul>
 <section id="id10">
 <h3>Example<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_kicking&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;queuecall_waiting&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;c7c1e226-8c86-4b43-9606-2d5bb2059a09&quot;</span><span class="p">,</span>
         <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;call&quot;</span><span class="p">,</span>
         <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;1fe1356f-3f7f-4ff9-9d33-08136b38f506&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;entering&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;service_agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;waiting&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;service_agent_id&quot;</span><span class="p">:</span> <span class="s2">&quot;00000000-0000-0000-0000-000000000000&quot;</span><span class="p">,</span>
         <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:07:46.111715&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_service&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:08:02.233858&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:08:02.233858&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_service&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tm_update&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-03-29 15:07:46.111715&quot;</span><span class="p">,</span>
         <span class="s2">&quot;tm_delete&quot;</span><span class="p">:</span> <span class="s2">&quot;9999-01-01 00:00:00.000000&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
@@ -1522,7 +1522,7 @@
 <li><a class="reference internal" href="#id4">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#call-answered">call_answered</a><ul>
+<li><a class="reference internal" href="#call-progressing">call_progressing</a><ul>
 <li><a class="reference internal" href="#id5">Example</a></li>
 </ul>
 </li>
@@ -1530,7 +1530,7 @@
 <li><a class="reference internal" href="#id6">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#call-hungup">call_hungup</a><ul>
+<li><a class="reference internal" href="#call-hangup">call_hangup</a><ul>
 <li><a class="reference internal" href="#id7">Example</a></li>
 </ul>
 </li>
@@ -1541,11 +1541,11 @@
 <li><a class="reference internal" href="#id8">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#queuecall-entering">queuecall_entering</a><ul>
+<li><a class="reference internal" href="#queuecall-connecting">queuecall_connecting</a><ul>
 <li><a class="reference internal" href="#id9">Example</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#queuecall-kicking">queuecall_kicking</a><ul>
+<li><a class="reference internal" href="#queuecall-waiting">queuecall_waiting</a><ul>
 <li><a class="reference internal" href="#id10">Example</a></li>
 </ul>
 </li>

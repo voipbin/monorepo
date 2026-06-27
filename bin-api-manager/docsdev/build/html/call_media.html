@@ -611,7 +611,7 @@
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><strong>AI Implementation Hint</strong></p>
-<p>Media operations (recording, transcription, TTS) require an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain the <code class="docutils literal notranslate"><span class="pre">call-id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event (e.g., <code class="docutils literal notranslate"><span class="pre">call_answered</span></code>) before issuing media-related API calls. Starting media operations on a call that has not yet been answered will fail.</p>
+<p>Media operations (recording, transcription, TTS) require an active call in <code class="docutils literal notranslate"><span class="pre">progressing</span></code> status. Obtain the <code class="docutils literal notranslate"><span class="pre">call-id</span></code> from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/calls</span></code> or from a webhook event (e.g., <code class="docutils literal notranslate"><span class="pre">call_progressing</span></code>) before issuing media-related API calls. Starting media operations on a call that has not yet been answered will fail.</p>
 </div>
 <section id="audio-codec-support">
 <h2>Audio Codec Support<a class="headerlink" href="#audio-codec-support" title="Link to this heading">¶</a></h2>

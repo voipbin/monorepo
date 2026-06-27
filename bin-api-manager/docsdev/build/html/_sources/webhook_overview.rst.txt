@@ -54,13 +54,13 @@ Payload Structure
 -----------------
 Every webhook delivered to your endpoint is a JSON object with a common two-field envelope:
 
-* ``type`` (string): The event type, for example ``"call_hungup"`` or ``"activeflow_updated"``. Use this field to decide how to parse ``data``.
+* ``type`` (string): The event type, for example ``"call_hangup"`` or ``"activeflow_updated"``. Use this field to decide how to parse ``data``.
 * ``data`` (object): The full resource payload. Its shape matches the resource that the event belongs to (call, message, activeflow, and so on).
 
 .. code::
 
     {
-        "type": "call_hungup",
+        "type": "call_hangup",
         "data": {
             "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
             "flow_id": "d157ce07-0360-4cad-9007-c8ab89fccf9c",

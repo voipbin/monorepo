@@ -1046,9 +1046,9 @@ VoIPBIN             Destination              Voicemail
 <p>The <code class="docutils literal notranslate"><span class="pre">source.target</span></code> in <code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/v1/calls</span></code> must be a phone number you own, verified via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/numbers</span></code>. The <code class="docutils literal notranslate"><span class="pre">early_execution:</span> <span class="pre">false</span></code> setting (default) ensures actions execute only after the destination answers. The <code class="docutils literal notranslate"><span class="pre">record_start</span></code> action must be placed before <code class="docutils literal notranslate"><span class="pre">connect</span></code> in the action list to capture the full conversation. After the call ends, retrieve the recording via <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/recordings/{recording-id}</span></code> using the ID from the call’s <code class="docutils literal notranslate"><span class="pre">recording_ids</span></code> array.</p>
 </div>
 <p><strong>Webhook Integration:</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Webhook</span><span class="p">:</span> <span class="n">call_hungup</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Webhook</span><span class="p">:</span> <span class="n">call_hangup</span>
 <span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hangup&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;call-uuid&quot;</span><span class="p">,</span>
         <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="mi">245</span><span class="p">,</span>

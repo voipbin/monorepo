@@ -321,22 +321,22 @@ Example
         }
     }
 
-.. _webhook-struct-webhook-call_answered:
+.. _webhook-struct-webhook-call_progressing:
 
-call_answered
--------------
-The notification message for the call answer.
+call_progressing
+----------------
+The notification message sent when the call is answered and enters the progressing state.
 
 .. code::
 
     {
-        "type": "call_answered",
+        "type": "call_progressing",
         "data": {
             ...
         }
     }
 
-* ``type`` (enum string): The webhook type. Value: ``"call_answered"``.
+* ``type`` (enum string): The webhook type. Value: ``"call_progressing"``.
 * ``data`` (Object): The detail of call. See detail :ref:`here <call-struct-call>`.
 
 Example
@@ -345,7 +345,7 @@ Example
 .. code::
 
     {
-        "type": "call_answered",
+        "type": "call_progressing",
         "data": {
             "id": "5371e9db-d035-4db6-a8d6-0994d33e744e",
             "flow_id": "d157ce07-0360-4cad-9007-c8ab89fccf9c",
@@ -456,22 +456,22 @@ Example
         }
     }
 
-.. _webhook-struct-webhook-call_hungup:
+.. _webhook-struct-webhook-call_hangup:
 
-call_hungup
+call_hangup
 -----------
 The notification message for the call hangup.
 
 .. code::
 
     {
-        "type": "call_hungup",
+        "type": "call_hangup",
         "data": {
             ...
         }
     }
 
-* ``type`` (enum string): The webhook type. Value: ``"call_hungup"``.
+* ``type`` (enum string): The webhook type. Value: ``"call_hangup"``.
 * ``data`` (Object): The detail of call. See detail :ref:`here <call-struct-call>`.
 
 Example
@@ -480,7 +480,7 @@ Example
 .. code::
 
     {
-        "type": "call_hungup",
+        "type": "call_hangup",
         "data": {
             "id": "593555d2-787e-4b06-862f-407bb2e43be1",
             "flow_id": "d157ce07-0360-4cad-9007-c8ab89fccf9c",
@@ -617,22 +617,22 @@ Example
         }
     }
 
-.. _webhook-struct-webhook-queuecall_entering:
+.. _webhook-struct-webhook-queuecall_connecting:
 
-queuecall_entering
-------------------
-Notification message for queuecall is entering to the agent's conference room.
+queuecall_connecting
+--------------------
+Notification message for queuecall is connecting to the agent's conference room.
 
 .. code::
 
     {
-        "type": "queuecall_entering",
+        "type": "queuecall_connecting",
         "data": {
             ...
         }
     }
 
-* ``type`` (enum string): The webhook type. Value: ``"queuecall_entering"``.
+* ``type`` (enum string): The webhook type. Value: ``"queuecall_connecting"``.
 * ``data`` (Object): The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
@@ -641,12 +641,12 @@ Example
 .. code::
 
     {
-        "type": "queuecall_entering",
+        "type": "queuecall_connecting",
         "data": {
             "id": "c7c1e226-8c86-4b43-9606-2d5bb2059a09",
             "reference_type": "call",
             "reference_id": "1fe1356f-3f7f-4ff9-9d33-08136b38f506",
-            "status": "entering",
+            "status": "connecting",
             "service_agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
             "tm_create": "2022-03-29 15:07:46.111715",
             "tm_service": "2022-03-29 15:08:02.233858",
@@ -655,22 +655,22 @@ Example
         }
     }
 
-.. _webhook-struct-webhook-queuecall_kicking:
+.. _webhook-struct-webhook-queuecall_waiting:
 
-queuecall_kicking
+queuecall_waiting
 -----------------
-The notification message for the queuecall is being kicked.
+The notification message for the queuecall is waiting for an agent.
 
 .. code::
 
     {
-        "type": "queuecall_kicking",
+        "type": "queuecall_waiting",
         "data": {
             ...
         }
     }
 
-* ``type`` (enum string): The webhook type. Value: ``"queuecall_kicking"``.
+* ``type`` (enum string): The webhook type. Value: ``"queuecall_waiting"``.
 * ``data`` (Object): The detail of queuecall. See detail :ref:`here <queue-struct-queuecall>`.
 
 Example
@@ -679,16 +679,16 @@ Example
 .. code::
 
     {
-        "type": "queuecall_kicking",
+        "type": "queuecall_waiting",
         "data": {
             "id": "c7c1e226-8c86-4b43-9606-2d5bb2059a09",
             "reference_type": "call",
             "reference_id": "1fe1356f-3f7f-4ff9-9d33-08136b38f506",
-            "status": "entering",
-            "service_agent_id": "eb1ac5c0-ff63-47e2-bcdb-5da9c336eb4b",
+            "status": "waiting",
+            "service_agent_id": "00000000-0000-0000-0000-000000000000",
             "tm_create": "2022-03-29 15:07:46.111715",
-            "tm_service": "2022-03-29 15:08:02.233858",
-            "tm_update": "2022-03-29 15:08:02.233858",
+            "tm_service": "9999-01-01 00:00:00.000000",
+            "tm_update": "2022-03-29 15:07:46.111715",
             "tm_delete": "9999-01-01 00:00:00.000000"
         }
     }

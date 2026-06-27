@@ -159,7 +159,7 @@ When resources change, events propagate through the system:
     Message:
     {
       "event_id": "uuid",
-      "event_type": "call_hungup",
+      "event_type": "call_hangup",
       "timestamp": "2026-01-20T12:00:00.000Z",
       "customer_id": "uuid",
       "resource": {
@@ -185,7 +185,7 @@ When resources change, events propagate through the system:
 
     billing-manager:
     +------------------------------------------+
-    | On: call_hungup                          |
+    | On: call_hangup                          |
     | Action:                                  |
     |   1. Calculate call cost                 |
     |   2. Deduct from customer balance        |
@@ -194,7 +194,7 @@ When resources change, events propagate through the system:
 
     webhook-manager:
     +------------------------------------------+
-    | On: call_hungup                          |
+    | On: call_hangup                          |
     | Action:                                  |
     |   1. Lookup customer webhook config      |
     |   2. Format webhook payload              |
@@ -204,7 +204,7 @@ When resources change, events propagate through the system:
 
     queue-manager:
     +------------------------------------------+
-    | On: call_hungup                          |
+    | On: call_hangup                          |
     | Action:                                  |
     |   1. Check if call was from queue        |
     |   2. Update queue statistics             |
@@ -472,12 +472,12 @@ Outbound campaigns involve complex data orchestration:
         |              | +-------------------------------------------+ |
         |              |               |               |               |
         |              | 6. Subscribe  |               |               |
-        |              |    call_hungup|               |               |
+        |              |    call_hangup|               |               |
         |              |               |               |               |
         |              |                               |               |
         |              | (Later)       |               |               |
         |              | 7. Event:     |               |               |
-        |              |    call_hungup|               |               |
+        |              |    call_hangup|               |               |
         |              |<---------------------------------------------|
         |              |               |               |               |
         |              | 8. Update     |               |               |
@@ -597,7 +597,7 @@ Webhooks deliver events to external systems:
     Event Source    webhook-mgr        MySQL         HTTP Client      External
          |              |                |               |               |
          | Event:       |                |               |               |
-         | call_hungup  |                |               |               |
+         | call_hangup  |                |               |               |
          +------------->|                |               |               |
          |              |                |               |               |
          |              | 1. Lookup      |               |               |
@@ -650,11 +650,11 @@ Webhooks deliver events to external systems:
     Content-Type: application/json
     X-VoIPBIN-Signature: sha256=abc123...
     X-VoIPBIN-Timestamp: 2026-01-20T12:00:00.000Z
-    X-VoIPBIN-Event: call_hungup
+    X-VoIPBIN-Event: call_hangup
 
     {
       "id": "event-uuid",
-      "type": "call_hungup",
+      "type": "call_hangup",
       "created": "2026-01-20T12:00:00.000Z",
       "data": {
         "id": "call-uuid",

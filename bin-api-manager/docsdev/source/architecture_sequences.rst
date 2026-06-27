@@ -159,7 +159,7 @@ Outbound campaigns automate calling lists of targets:
          |             |               |               |               |  ai_talk)
          |             |               |               |               |
          |             | Event:        |               |               |
-         |             | call_hungup   |               |               |
+         |             | call_hangup   |               |               |
          |             |<------------------------------+               |
          |             |               |               |               |
          |             | Update        |               |               |
@@ -185,9 +185,9 @@ Outbound campaigns automate calling lists of targets:
 
     campaign-manager subscribes to:
     +--------------------------------+
-    | o call_hungup                  | - Track call completion
+    | o call_hangup                  | - Track call completion
     | o activeflow_deleted           | - Track flow completion
-    | o call_answered                | - Track answer rates
+    | o call_progressing             | - Track answer rates
     +--------------------------------+
 
     Event triggers campaign state updates:
@@ -540,7 +540,7 @@ Events trigger webhook notifications to customer endpoints:
     call-manager    RabbitMQ     webhook-manager    Customer Endpoint
          |              |               |                   |
          | Event:       |               |                   |
-         | call_hungup  |               |                   |
+         | call_hangup  |               |                   |
          +------------->|               |                   |
          |              |               |                   |
          |              | Fanout to     |                   |
@@ -589,7 +589,7 @@ Events trigger webhook notifications to customer endpoints:
     X-VoIPBIN-Signature: sha256=...
 
     {
-      "type": "call_hungup",
+      "type": "call_hangup",
       "timestamp": "2026-01-20T12:00:00.000Z",
       "data": {
         "id": "call-123",
