@@ -1,6 +1,7 @@
 package request
 
 import (
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
 
@@ -30,4 +31,9 @@ type V1DataMessagesCreatePost struct {
 	TransactionID  string                `json:"transaction_id,omitempty"` // uniq id for message's transaction
 	Text           string                `json:"text,omitempty"`
 	Medias         []media.Media         `json:"medias,omitempty"`
+
+	// Absolute endpoints, caller-derived (DeriveEndpoints). The RPC caller (which
+	// holds the conversation) fills these; the handler stores them as-is.
+	Source      commonaddress.Address `json:"source,omitempty"`
+	Destination commonaddress.Address `json:"destination,omitempty"`
 }

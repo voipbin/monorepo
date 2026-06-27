@@ -18,6 +18,8 @@ Message
         "status": "<string>",
         "reference_type": "<string>",
         "reference_id": "<string>",
+        "source": {},
+        "destination": {},
         "text": "<string>",
         "medias": [],
         "tm_create": "<string>",
@@ -32,6 +34,8 @@ Message
 * ``status`` (enum string): The message's delivery status (e.g., ``sent``, ``received``, ``failed``).
 * ``reference_type`` (enum string): The channel used for this message. See the parent conversation's ``reference_type``.
 * ``reference_id`` (UUID): An identifier associated with the channel reference.
+* ``source`` (Object): The sending party of the message as an absolute address ``{type, target}``. Direction-independent: ``source`` is always the origin.
+* ``destination`` (Object): The receiving party of the message as an absolute address ``{type, target}``. Direction-independent: ``destination`` is always the target.
 * ``text`` (String): The message body text content.
 * ``medias`` (Array of Object): List of media attachments (images, videos, etc.) included with the message.
 * ``tm_create`` (string, ISO 8601): Timestamp when the message was created.
@@ -55,6 +59,14 @@ Example
         "status": "received",
         "reference_type": "line",
         "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+        "source": {
+            "type": "line",
+            "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+        },
+        "destination": {
+            "type": "line",
+            "target": ""
+        },
         "text": "안녕",
         "medias": [],
         "tm_create": "2022-06-24 04:28:51.558082",

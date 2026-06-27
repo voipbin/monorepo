@@ -45,18 +45,18 @@ func (m *MockMessageHandler) EXPECT() *MockMessageHandlerMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockMessageHandler) Create(ctx context.Context, id, customerID, conversationID uuid.UUID, direction message.Direction, status message.Status, referenceType message.ReferenceType, referenceID uuid.UUID, transactionID, text, subject string, medias []media.Media) (*message.Message, error) {
+func (m *MockMessageHandler) Create(ctx context.Context, args MessageCreateArgs) (*message.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, subject, medias)
+	ret := m.ctrl.Call(m, "Create", ctx, args)
 	ret0, _ := ret[0].(*message.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockMessageHandlerMockRecorder) Create(ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, subject, medias any) *gomock.Call {
+func (mr *MockMessageHandlerMockRecorder) Create(ctx, args any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, subject, medias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockMessageHandler)(nil).Create), ctx, args)
 }
 
 // Delete mocks base method.

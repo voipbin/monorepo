@@ -80,6 +80,11 @@ func Test_Send_sendLine(t *testing.T) {
 				TransactionID:  "",
 				Text:           "hello, this is test message.",
 				Medias:         []media.Media{},
+				// outbound: source = Self, destination = Peer (Peer is zero here).
+				Source: commonaddress.Address{
+					Target: "75a20d08-f1de-11ec-8eb1-97f517197fe2",
+				},
+				Destination: commonaddress.Address{},
 			},
 		},
 	}
@@ -144,7 +149,7 @@ func Test_Send_sendSMS(t *testing.T) {
 		expectMessage *message.Message
 	}{
 		{
-			name: "line text type",
+			name: "sms text type",
 
 			conversation: &conversation.Conversation{
 				Identity: commonidentity.Identity{
@@ -154,11 +159,11 @@ func Test_Send_sendSMS(t *testing.T) {
 				Type: conversation.TypeMessage,
 				Self: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
-					Target: "+123456789",
+					Target: "+123****6789",
 				},
 				Peer: commonaddress.Address{
 					Type:   commonaddress.TypeTel,
-					Target: "+987654321",
+					Target: "+987****4321",
 				},
 			},
 			text:   "hello, this is test message.",
@@ -179,6 +184,15 @@ func Test_Send_sendSMS(t *testing.T) {
 				TransactionID:  "",
 				Text:           "hello, this is test message.",
 				Medias:         []media.Media{},
+				// outbound: source = Self, destination = Peer.
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+123****6789",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+987****4321",
+				},
 			},
 		},
 	}
@@ -232,9 +246,9 @@ func Test_Send_sendWhatsApp(t *testing.T) {
 		text         string
 		medias       []media.Media
 
-		responseAccount         *account.Account
-		responseUUID            uuid.UUID
-		responseWamid           string
+		responseAccount *account.Account
+		responseUUID    uuid.UUID
+		responseWamid   string
 
 		expectCreateMessage     *message.Message
 		expectUpdateFields      map[message.Field]any
@@ -253,7 +267,7 @@ func Test_Send_sendWhatsApp(t *testing.T) {
 				Type:      conversation.TypeWhatsApp,
 				DialogID:  "12345678901234",
 				Self: commonaddress.Address{
-					Target: "+15551234567",
+					Target: "+155****4567",
 				},
 			},
 			text:   "hello from whatsapp",
@@ -279,7 +293,13 @@ func Test_Send_sendWhatsApp(t *testing.T) {
 				ReferenceID:    uuid.Nil,
 				TransactionID:  "",
 				Text:           "hello from whatsapp",
-				Medias:         []media.Media{},
+				// sendWhatsApp does not pass medias, so Medias is nil (not []).
+				Medias: nil,
+				// outbound: source = Self, destination = Peer (Peer is zero here).
+				Source: commonaddress.Address{
+					Target: "+155****4567",
+				},
+				Destination: commonaddress.Address{},
 			},
 			expectUpdateFields: map[message.Field]any{
 				message.FieldStatus: message.StatusDone,
@@ -299,7 +319,11 @@ func Test_Send_sendWhatsApp(t *testing.T) {
 				ReferenceID:    uuid.Nil,
 				TransactionID:  "",
 				Text:           "hello from whatsapp",
-				Medias:         []media.Media{},
+				Medias:         nil,
+				Source: commonaddress.Address{
+					Target: "+155****4567",
+				},
+				Destination: commonaddress.Address{},
 			},
 		},
 	}

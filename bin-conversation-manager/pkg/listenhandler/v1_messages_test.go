@@ -6,6 +6,7 @@ import (
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/pkg/requesthandler"
 	"monorepo/bin-common-handler/pkg/sockhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
@@ -55,7 +56,7 @@ func Test_processV1MessagesPost(t *testing.T) {
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"f702762c-1bd3-11f0-8f2b-9f2159c784a9","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"f702762c-1bd3-11f0-8f2b-9f2159c784a9","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 		{
@@ -143,7 +144,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			expectedResponse: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"ca8db014-1a1f-407e-9443-54282b975e40","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"ca8db014-1a1f-407e-9443-54282b975e40","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 		{
@@ -178,7 +179,7 @@ func Test_processV1MessagesGet(t *testing.T) {
 			expectedResponse: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`[{"id":"8956ba14-7ac4-45f6-b0fb-97af3a1d2520","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null},{"id":"a72d1b51-aa78-4e86-928d-a18c40da4cac","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}]`),
+				Data:       []byte(`[{"id":"8956ba14-7ac4-45f6-b0fb-97af3a1d2520","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"tm_create":null,"tm_update":null,"tm_delete":null},{"id":"a72d1b51-aa78-4e86-928d-a18c40da4cac","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"tm_create":null,"tm_update":null,"tm_delete":null}]`),
 			},
 		},
 	}
@@ -233,6 +234,8 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 		expectedTransactionID  string
 		expectedText           string
 		expectedMedias         []media.Media
+		expectedSource         commonaddress.Address
+		expectedDestination    commonaddress.Address
 
 		expectedRes *sock.Response
 	}{
@@ -243,7 +246,7 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 				URI:      "/v1/messages/create",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"id":"34e82c6e-1bcc-11f0-9c76-0fef42a4c318","customer_id":"456609ea-fecc-11ed-a717-5f6984c51794","conversation_id":"586f3930-1adb-11f0-b87e-67f6dad44afa","direction":"incoming","status":"done","reference_type":"line","reference_id":"58a1726a-1adb-11f0-b618-979f6c3070ea","transaction_id":"58caa388-1adb-11f0-a5f0-7f93f53de671","text":"hello world","medias":[]}`),
+				Data:     []byte(`{"id":"34e82c6e-1bcc-11f0-9c76-0fef42a4c318","customer_id":"456609ea-fecc-11ed-a717-5f6984c51794","conversation_id":"586f3930-1adb-11f0-b87e-67f6dad44afa","direction":"incoming","status":"done","reference_type":"line","reference_id":"58a1726a-1adb-11f0-b618-979f6c3070ea","transaction_id":"58caa388-1adb-11f0-a5f0-7f93f53de671","text":"hello world","medias":[],"source":{"type":"tel","target":"+886111"},"destination":{"type":"tel","target":"+886222"}}`),
 			},
 
 			responseMessage: &message.Message{
@@ -263,11 +266,13 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 			expectedTransactionID:  "58caa388-1adb-11f0-a5f0-7f93f53de671",
 			expectedText:           "hello world",
 			expectedMedias:         []media.Media{},
+			expectedSource:         commonaddress.Address{Type: commonaddress.TypeTel, Target: "+886111"},
+			expectedDestination:    commonaddress.Address{Type: commonaddress.TypeTel, Target: "+886222"},
 
 			expectedRes: &sock.Response{
 				StatusCode: 200,
 				DataType:   "application/json",
-				Data:       []byte(`{"id":"34e82c6e-1bcc-11f0-9c76-0fef42a4c318","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","tm_create":null,"tm_update":null,"tm_delete":null}`),
+				Data:       []byte(`{"id":"34e82c6e-1bcc-11f0-9c76-0fef42a4c318","customer_id":"00000000-0000-0000-0000-000000000000","conversation_id":"00000000-0000-0000-0000-000000000000","reference_id":"00000000-0000-0000-0000-000000000000","source":{},"destination":{},"tm_create":null,"tm_update":null,"tm_delete":null}`),
 			},
 		},
 		{
@@ -319,17 +324,20 @@ func Test_processV1MessagesCreatePost(t *testing.T) {
 
 			mockMessage.EXPECT().Create(
 				gomock.Any(),
-				tt.expectedID,
-				tt.expectedCustomerID,
-				tt.expectedConversationID,
-				tt.expectedDirection,
-				tt.expectedStatus,
-				tt.expectedReferenceType,
-				tt.expectedReferenceID,
-				tt.expectedTransactionID,
-				tt.expectedText,
-				"",
-				tt.expectedMedias,
+				messagehandler.MessageCreateArgs{
+					ID:             tt.expectedID,
+					CustomerID:     tt.expectedCustomerID,
+					ConversationID: tt.expectedConversationID,
+					Direction:      tt.expectedDirection,
+					Status:         tt.expectedStatus,
+					ReferenceType:  tt.expectedReferenceType,
+					ReferenceID:    tt.expectedReferenceID,
+					TransactionID:  tt.expectedTransactionID,
+					Text:           tt.expectedText,
+					Medias:         tt.expectedMedias,
+					Source:         tt.expectedSource,
+					Destination:    tt.expectedDestination,
+				},
 			).Return(tt.responseMessage, tt.responseErr)
 			res, err := h.processRequest(tt.request)
 			if err != nil {

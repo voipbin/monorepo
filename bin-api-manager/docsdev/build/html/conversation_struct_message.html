@@ -617,6 +617,8 @@
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{},</span>
     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -633,6 +635,8 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">status</span></code> (enum string): The message’s delivery status (e.g., <code class="docutils literal notranslate"><span class="pre">sent</span></code>, <code class="docutils literal notranslate"><span class="pre">received</span></code>, <code class="docutils literal notranslate"><span class="pre">failed</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_type</span></code> (enum string): The channel used for this message. See the parent conversation’s <code class="docutils literal notranslate"><span class="pre">reference_type</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">reference_id</span></code> (UUID): An identifier associated with the channel reference.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (Object): The sending party of the message as an absolute address <code class="docutils literal notranslate"><span class="pre">{type,</span> <span class="pre">target}</span></code>. Direction-independent: <code class="docutils literal notranslate"><span class="pre">source</span></code> is always the origin.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">destination</span></code> (Object): The receiving party of the message as an absolute address <code class="docutils literal notranslate"><span class="pre">{type,</span> <span class="pre">target}</span></code>. Direction-independent: <code class="docutils literal notranslate"><span class="pre">destination</span></code> is always the target.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">text</span></code> (String): The message body text content.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">medias</span></code> (Array of Object): List of media attachments (images, videos, etc.) included with the message.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the message was created.</p></li>
@@ -654,6 +658,14 @@
     <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;received&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;line&quot;</span><span class="p">,</span>
     <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;line&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;Ud871bcaf7c3ad13d2a0b0d78a42a287f&quot;</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;line&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+    <span class="p">},</span>
     <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;안녕&quot;</span><span class="p">,</span>
     <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2022-06-24 04:28:51.558082&quot;</span><span class="p">,</span>

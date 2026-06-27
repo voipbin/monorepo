@@ -152,6 +152,9 @@ func (h *whatsappHandler) hookTextMessage(
 	}
 
 	// --- Create message ---
+	// Inbound: source = remote (cv.Peer), destination = us (cv.Self).
+	// (Derived inline here to avoid importing messagehandler, which would create
+	// an import cycle; this mirrors messagehandler.DeriveEndpoints for inbound.)
 	m, err := h.reqHandler.ConversationV1MessageCreate(
 		ctx,
 		uuid.Nil,
@@ -164,6 +167,8 @@ func (h *whatsappHandler) hookTextMessage(
 		wamid,
 		text,
 		[]media.Media{},
+		cv.Peer,
+		cv.Self,
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "hookTextMessage: create message")

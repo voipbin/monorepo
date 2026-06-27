@@ -272,22 +272,34 @@ VoIPBIN delivers inbound messages to your application via webhooks.
 .. code::
 
     {
-        "type": "conversation_message_received",
+        "type": "conversation_message_created",
         "data": {
+            "id": "msg-xyz-789",
+            "customer_id": "cust-1111-3333",
             "conversation_id": "conv-abc-123",
-            "message": {
-                "id": "msg-xyz-789",
-                "participant": {
-                    "type": "tel",
-                    "target": "+15559876543"
-                },
-                "channel": "sms",
-                "text": "Thanks for the update!",
-                "direction": "inbound",
-                "tm_create": "2024-01-15T10:30:00Z"
-            }
+            "direction": "incoming",
+            "status": "done",
+            "reference_type": "message",
+            "reference_id": "ref-7777-9999",
+            "source": {
+                "type": "tel",
+                "target": "+155****6543"
+            },
+            "destination": {
+                "type": "tel",
+                "target": "+155****0000"
+            },
+            "text": "Thanks for the update!",
+            "medias": [],
+            "tm_create": "2024-01-15T10:30:00.000000"
         }
     }
+
+The ``source`` and ``destination`` fields are absolute: ``source`` is always the
+sending party and ``destination`` is always the receiving party, regardless of
+direction. To recover the remote (counterpart) party from a single message: for
+an ``incoming`` message the remote party is the ``source``; for an ``outgoing``
+message the remote party is the ``destination``.
 
 
 .. _conversation-overview-assigning-conversation-to-agent:

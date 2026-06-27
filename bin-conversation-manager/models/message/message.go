@@ -3,6 +3,7 @@ package message
 import (
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -20,6 +21,14 @@ type Message struct {
 
 	ReferenceType ReferenceType `json:"reference_type,omitempty" db:"reference_type"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty" db:"reference_id,uuid"`
+
+	// Absolute endpoints the message carried: source = sending party,
+	// destination = receiving party (direction-independent in meaning). Set once
+	// at creation from the conversation's Self/Peer + direction (see
+	// messagehandler.deriveEndpoints). Stored as JSON, mirroring
+	// conversation.Self/Peer.
+	Source      commonaddress.Address `json:"source,omitempty" db:"source,json"`
+	Destination commonaddress.Address `json:"destination,omitempty" db:"destination,json"`
 
 	TransactionID string `json:"transaction_id,omitempty" db:"transaction_id"` // uniq id for message's transaction
 
@@ -46,6 +55,9 @@ const (
 
 	FieldReferenceType Field = "reference_type"
 	FieldReferenceID   Field = "reference_id"
+
+	FieldSource      Field = "source"
+	FieldDestination Field = "destination"
 
 	FieldTransactionID Field = "transaction_id"
 

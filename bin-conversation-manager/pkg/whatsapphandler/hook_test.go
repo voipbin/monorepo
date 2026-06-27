@@ -189,6 +189,8 @@ func TestHook_ValidTextMessage_ExistingConversation(t *testing.T) {
 			wamid,
 			"hello world",
 			gomock.Any(),
+			existingCV.Peer,
+			existingCV.Self,
 		).
 		Return(createdMsg, nil)
 
@@ -328,6 +330,8 @@ func TestHook_CreateOnFirstMessage(t *testing.T) {
 			wamid,
 			"first message",
 			gomock.Any(),
+			updatedCV.Peer,
+			updatedCV.Self,
 		).
 		Return(createdMsg, nil)
 

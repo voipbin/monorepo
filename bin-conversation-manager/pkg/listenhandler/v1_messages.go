@@ -9,6 +9,7 @@ import (
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-conversation-manager/pkg/listenhandler/models/request"
+	"monorepo/bin-conversation-manager/pkg/messagehandler"
 
 	"github.com/sirupsen/logrus"
 )
@@ -114,20 +115,20 @@ func (h *listenHandler) processV1MessagesCreatePost(ctx context.Context, m *sock
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.messageHandler.Create(
-		ctx,
-		req.ID,
-		req.CustomerID,
-		req.ConversationID,
-		req.Direction,
-		req.Status,
-		req.ReferenceType,
-		req.ReferenceID,
-		req.TransactionID,
-		req.Text,
-		"",
-		req.Medias,
-	)
+	tmp, err := h.messageHandler.Create(ctx, messagehandler.MessageCreateArgs{
+		ID:             req.ID,
+		CustomerID:     req.CustomerID,
+		ConversationID: req.ConversationID,
+		Direction:      req.Direction,
+		Status:         req.Status,
+		ReferenceType:  req.ReferenceType,
+		ReferenceID:    req.ReferenceID,
+		TransactionID:  req.TransactionID,
+		Text:           req.Text,
+		Medias:         req.Medias,
+		Source:         req.Source,
+		Destination:    req.Destination,
+	})
 	if err != nil {
 		log.Errorf("Could not create the message. err: %v", err)
 		return errorResponse(err), nil
