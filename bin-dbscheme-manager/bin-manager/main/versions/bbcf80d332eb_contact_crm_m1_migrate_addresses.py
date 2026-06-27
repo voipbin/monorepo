@@ -1,7 +1,7 @@
 """contact_crm_m1_migrate_addresses
 
 Revision ID: bbcf80d332eb
-Revises: ac5d4e18060c
+Revises: 04e92612d9c7
 Create Date: 2026-06-27 22:27:18.763159
 
 VOIP-1207 (CRM M1). Migrates the legacy normalized child tables
@@ -49,7 +49,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'bbcf80d332eb'
-down_revision = 'ac5d4e18060c'
+down_revision = '04e92612d9c7'
 branch_labels = None
 depends_on = None
 
