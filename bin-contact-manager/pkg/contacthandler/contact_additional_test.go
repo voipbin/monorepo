@@ -314,7 +314,7 @@ func Test_UpdateEmail_Error(t *testing.T) {
 	}
 }
 
-// Test_UpdatePhoneNumber_WithNumber tests number_e164 derivation
+// Test_UpdatePhoneNumber_WithNumber tests Number normalization/masking on update
 func Test_UpdatePhoneNumber_WithNumber(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -342,10 +342,10 @@ func Test_UpdatePhoneNumber_WithNumber(t *testing.T) {
 		},
 	}
 
-	// Expect the update to include derived number_e164
+	// Expect the update to include the normalized/masked number
 	mockDB.EXPECT().PhoneNumberUpdate(ctx, phoneID, gomock.Any()).DoAndReturn(func(_ context.Context, _ uuid.UUID, fields map[string]any) error {
-		if fields["number_e164"] != "+15551234567" {
-			return fmt.Errorf("expected derived number_e164 to be +15551234567, got %v", fields["number_e164"])
+		if fields["number"] != "+15551234567" {
+			return fmt.Errorf("expected normalized number to be +15551234567, got %v", fields["number"])
 		}
 		return nil
 	})
@@ -419,8 +419,7 @@ func Test_AddPhoneNumber_ResetPrimaryError(t *testing.T) {
 
 	contactID := uuid.FromStringOrNil("a0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0")
 	phone := &contact.PhoneNumber{
-		Number:     "+1-555-123-4567",
-		NumberE164: "+15551234567",
+		Number:     "+15551234567",
 		Type:       "mobile",
 		IsPrimary:  true,
 	}

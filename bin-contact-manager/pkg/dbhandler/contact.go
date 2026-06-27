@@ -306,12 +306,13 @@ func (h *handler) ContactDelete(ctx context.Context, id uuid.UUID) error {
 
 // ContactLookupByPhone finds a contact by phone number (E.164 format).
 func (h *handler) ContactLookupByPhone(ctx context.Context, customerID uuid.UUID, phoneE164 string) (*contact.Contact, error) {
-	// First, find the contact_id from phone numbers table
+	// First, find the contact_id from the unified contact_addresses table
 	query, args, err := sq.Select("contact_id").
-		From(phoneNumberTable).
+		From(addressTable).
 		Where(sq.Eq{
-			"customer_id":  customerID.Bytes(),
-			"number_e164":  phoneE164,
+			"customer_id": customerID.Bytes(),
+			"type":        addressTypeTel,
+			"target":      phoneE164,
 		}).
 		Limit(1).
 		ToSql()
@@ -347,12 +348,13 @@ func (h *handler) ContactLookupByPhone(ctx context.Context, customerID uuid.UUID
 
 // ContactLookupByEmail finds a contact by email address.
 func (h *handler) ContactLookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error) {
-	// First, find the contact_id from emails table
+	// First, find the contact_id from the unified contact_addresses table
 	query, args, err := sq.Select("contact_id").
-		From(emailTable).
+		From(addressTable).
 		Where(sq.Eq{
 			"customer_id": customerID.Bytes(),
-			"address":     email,
+			"type":        addressTypeEmail,
+			"target":      email,
 		}).
 		Limit(1).
 		ToSql()

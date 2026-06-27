@@ -108,10 +108,9 @@ func (h *listenHandler) processV1ContactsPost(ctx context.Context, m *sock.Reque
 	// Convert phone numbers
 	for _, p := range reqData.PhoneNumbers {
 		c.PhoneNumbers = append(c.PhoneNumbers, contact.PhoneNumber{
-			Number:     p.Number,
-			NumberE164: p.NumberE164,
-			Type:       p.Type,
-			IsPrimary:  p.IsPrimary,
+			Number:    p.Number,
+			Type:      p.Type,
+			IsPrimary: p.IsPrimary,
 		})
 	}
 
@@ -364,10 +363,9 @@ func (h *listenHandler) processV1ContactsPhoneNumbersPost(ctx context.Context, m
 	log.WithField("request", reqData).Debug("Adding phone number.")
 
 	phoneNumber := &contact.PhoneNumber{
-		Number:     reqData.Number,
-		NumberE164: reqData.NumberE164,
-		Type:       reqData.Type,
-		IsPrimary:  reqData.IsPrimary,
+		Number:    reqData.Number,
+		Type:      reqData.Type,
+		IsPrimary: reqData.IsPrimary,
 	}
 
 	tmp, err := h.contactHandler.AddPhoneNumber(ctx, contactID, phoneNumber)

@@ -68,7 +68,7 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		p.ID = h.utilHandler.UUIDCreate()
 		p.CustomerID = c.CustomerID
 		p.ContactID = c.ID
-		p.NumberE164 = normalizeE164(p.NumberE164, p.Number)
+		p.Number = normalizeE164("", p.Number)
 
 		if p.IsPrimary {
 			if err := h.db.PhoneNumberResetPrimary(ctx, c.ID); err != nil {
@@ -286,7 +286,7 @@ func (h *contactHandler) AddPhoneNumber(ctx context.Context, contactID uuid.UUID
 	p.ID = h.utilHandler.UUIDCreate()
 	p.CustomerID = c.CustomerID
 	p.ContactID = contactID
-	p.NumberE164 = normalizeE164(p.NumberE164, p.Number)
+	p.Number = normalizeE164("", p.Number)
 
 	// Enforce single primary: reset existing primaries before setting new one
 	if p.IsPrimary {
@@ -331,10 +331,10 @@ func (h *contactHandler) UpdatePhoneNumber(ctx context.Context, contactID, phone
 		}
 	}
 
-	// Normalize number_e164 if number is being updated
+	// Normalize the number to E.164 in place if it is being updated
 	if number, ok := fields["number"]; ok {
 		if numStr, isStr := number.(string); isStr {
-			fields["number_e164"] = normalizeE164("", numStr)
+			fields["number"] = normalizeE164("", numStr)
 		}
 	}
 

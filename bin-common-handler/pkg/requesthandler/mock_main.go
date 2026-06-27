@@ -3546,18 +3546,18 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1EmailUpdate(ctx, contactID, e
 }
 
 // ContactV1PhoneNumberCreate mocks base method.
-func (m *MockRequestHandler) ContactV1PhoneNumberCreate(ctx context.Context, contactID uuid.UUID, number, numberE164, phoneType string, isPrimary bool) (*contact.Contact, error) {
+func (m *MockRequestHandler) ContactV1PhoneNumberCreate(ctx context.Context, contactID uuid.UUID, number, phoneType string, isPrimary bool) (*contact.Contact, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1PhoneNumberCreate", ctx, contactID, number, numberE164, phoneType, isPrimary)
+	ret := m.ctrl.Call(m, "ContactV1PhoneNumberCreate", ctx, contactID, number, phoneType, isPrimary)
 	ret0, _ := ret[0].(*contact.Contact)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactV1PhoneNumberCreate indicates an expected call of ContactV1PhoneNumberCreate.
-func (mr *MockRequestHandlerMockRecorder) ContactV1PhoneNumberCreate(ctx, contactID, number, numberE164, phoneType, isPrimary any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1PhoneNumberCreate(ctx, contactID, number, phoneType, isPrimary any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1PhoneNumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1PhoneNumberCreate), ctx, contactID, number, numberE164, phoneType, isPrimary)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1PhoneNumberCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1PhoneNumberCreate), ctx, contactID, number, phoneType, isPrimary)
 }
 
 // ContactV1PhoneNumberDelete mocks base method.

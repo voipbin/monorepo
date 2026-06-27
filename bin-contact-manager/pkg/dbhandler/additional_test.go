@@ -40,13 +40,12 @@ func Test_PhoneNumberUpdate(t *testing.T) {
 				ID:         uuid.FromStringOrNil("a3a3a3a3-a3a3-a3a3-a3a3-a3a3a3a3a3a3"),
 				CustomerID: uuid.FromStringOrNil("a2a2a2a2-a2a2-a2a2-a2a2-a2a2a2a2a2a2"),
 				ContactID:  uuid.FromStringOrNil("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1"),
-				Number:     "+1-555-111-1111",
-				NumberE164: "+15551111111",
+				Number:     "+15551111111",
 				Type:       "mobile",
 				IsPrimary:  false,
 			},
 			update: map[string]any{
-				"type": "work",
+				"is_primary": true,
 			},
 
 			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
@@ -82,6 +81,7 @@ func Test_PhoneNumberUpdate(t *testing.T) {
 			}
 
 			// Update phone number
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.PhoneNumberUpdate(ctx, tt.phone.ID, tt.update); err != nil {
 				t.Errorf("PhoneNumberUpdate() error = %v", err)
@@ -93,8 +93,8 @@ func Test_PhoneNumberUpdate(t *testing.T) {
 				t.Errorf("PhoneNumberGet() error = %v", err)
 			}
 
-			if res.Type != tt.update["type"].(string) {
-				t.Errorf("PhoneNumber Type = %v, want %v", res.Type, tt.update["type"])
+			if res.IsPrimary != tt.update["is_primary"].(bool) {
+				t.Errorf("PhoneNumber IsPrimary = %v, want %v", res.IsPrimary, tt.update["is_primary"])
 			}
 		})
 	}
@@ -137,8 +137,7 @@ func Test_PhoneNumberResetPrimary(t *testing.T) {
 		ID:         uuid.FromStringOrNil("a6a6a6a6-a6a6-a6a6-a6a6-a6a6a6a6a6a6"),
 		CustomerID: c.CustomerID,
 		ContactID:  contactID,
-		Number:     "+1-555-111-1111",
-		NumberE164: "+15551111111",
+		Number:     "+15551111111",
 		Type:       "mobile",
 		IsPrimary:  true,
 	}
@@ -195,7 +194,7 @@ func Test_EmailUpdate(t *testing.T) {
 				IsPrimary:  false,
 			},
 			update: map[string]any{
-				"type": "personal",
+				"is_primary": true,
 			},
 
 			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
@@ -231,6 +230,7 @@ func Test_EmailUpdate(t *testing.T) {
 			}
 
 			// Update email
+			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 			if err := h.EmailUpdate(ctx, tt.email.ID, tt.update); err != nil {
 				t.Errorf("EmailUpdate() error = %v", err)
@@ -242,8 +242,8 @@ func Test_EmailUpdate(t *testing.T) {
 				t.Errorf("EmailGet() error = %v", err)
 			}
 
-			if res.Type != tt.update["type"].(string) {
-				t.Errorf("Email Type = %v, want %v", res.Type, tt.update["type"])
+			if res.IsPrimary != tt.update["is_primary"].(bool) {
+				t.Errorf("Email IsPrimary = %v, want %v", res.IsPrimary, tt.update["is_primary"])
 			}
 		})
 	}
@@ -394,8 +394,7 @@ func Test_PhoneNumberUpdate_MultipleFields(t *testing.T) {
 		ID:         uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-ddddddddddd3"),
 		CustomerID: c.CustomerID,
 		ContactID:  contactID,
-		Number:     "+1-555-111-1111",
-		NumberE164: "+15551111111",
+		Number:     "+15551111111",
 		Type:       "mobile",
 		IsPrimary:  false,
 	}
@@ -412,6 +411,7 @@ func Test_PhoneNumberUpdate_MultipleFields(t *testing.T) {
 		"is_primary": true,
 	}
 
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.PhoneNumberUpdate(ctx, phone.ID, updates); err != nil {
 		t.Errorf("PhoneNumberUpdate() error = %v", err)
@@ -423,9 +423,6 @@ func Test_PhoneNumberUpdate_MultipleFields(t *testing.T) {
 		t.Errorf("PhoneNumberGet() error = %v", err)
 	}
 
-	if res.Type != "work" {
-		t.Errorf("PhoneNumber Type = %v, want work", res.Type)
-	}
 	if !res.IsPrimary {
 		t.Error("PhoneNumber IsPrimary should be true")
 	}
@@ -486,6 +483,7 @@ func Test_EmailUpdate_MultipleFields(t *testing.T) {
 		"is_primary": true,
 	}
 
+	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
 	if err := h.EmailUpdate(ctx, email.ID, updates); err != nil {
 		t.Errorf("EmailUpdate() error = %v", err)
@@ -499,9 +497,6 @@ func Test_EmailUpdate_MultipleFields(t *testing.T) {
 
 	if res.Address != "new@example.com" {
 		t.Errorf("Email Address = %v, want new@example.com", res.Address)
-	}
-	if res.Type != "personal" {
-		t.Errorf("Email Type = %v, want personal", res.Type)
 	}
 	if !res.IsPrimary {
 		t.Error("Email IsPrimary should be true")

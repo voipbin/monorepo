@@ -314,7 +314,6 @@ func (h *serviceHandler) ContactPhoneNumberCreate(
 	a *auth.AuthIdentity,
 	contactID uuid.UUID,
 	number string,
-	numberE164 string,
 	phoneType string,
 	isPrimary bool,
 ) (*cmcontact.WebhookMessage, error) {
@@ -338,8 +337,7 @@ func (h *serviceHandler) ContactPhoneNumberCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	// send request
-	tmp, err := h.reqHandler.ContactV1PhoneNumberCreate(ctx, contactID, number, numberE164, phoneType, isPrimary)
+	tmp, err := h.reqHandler.ContactV1PhoneNumberCreate(ctx, contactID, number, phoneType, isPrimary)
 	if err != nil {
 		log.Infof("Could not add phone number to contact. err: %v", err)
 		return nil, err

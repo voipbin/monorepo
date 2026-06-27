@@ -2032,18 +2032,18 @@ func (mr *MockServiceHandlerMockRecorder) ContactLookup(ctx, a, phoneE164, email
 }
 
 // ContactPhoneNumberCreate mocks base method.
-func (m *MockServiceHandler) ContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number, numberE164, phoneType string, isPrimary bool) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number, phoneType string, isPrimary bool) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactPhoneNumberCreate", ctx, a, contactID, number, numberE164, phoneType, isPrimary)
+	ret := m.ctrl.Call(m, "ContactPhoneNumberCreate", ctx, a, contactID, number, phoneType, isPrimary)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactPhoneNumberCreate indicates an expected call of ContactPhoneNumberCreate.
-func (mr *MockServiceHandlerMockRecorder) ContactPhoneNumberCreate(ctx, a, contactID, number, numberE164, phoneType, isPrimary any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ContactPhoneNumberCreate(ctx, a, contactID, number, phoneType, isPrimary any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactPhoneNumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).ContactPhoneNumberCreate), ctx, a, contactID, number, numberE164, phoneType, isPrimary)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactPhoneNumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).ContactPhoneNumberCreate), ctx, a, contactID, number, phoneType, isPrimary)
 }
 
 // ContactPhoneNumberDelete mocks base method.
@@ -4207,18 +4207,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactLookup(ctx, a, phon
 }
 
 // ServiceAgentContactPhoneNumberCreate mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number, numberE164, phoneType string, isPrimary bool) (*contact.WebhookMessage, error) {
+func (m *MockServiceHandler) ServiceAgentContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number, phoneType string, isPrimary bool) (*contact.WebhookMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentContactPhoneNumberCreate", ctx, a, contactID, number, numberE164, phoneType, isPrimary)
+	ret := m.ctrl.Call(m, "ServiceAgentContactPhoneNumberCreate", ctx, a, contactID, number, phoneType, isPrimary)
 	ret0, _ := ret[0].(*contact.WebhookMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentContactPhoneNumberCreate indicates an expected call of ServiceAgentContactPhoneNumberCreate.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactPhoneNumberCreate(ctx, a, contactID, number, numberE164, phoneType, isPrimary any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactPhoneNumberCreate(ctx, a, contactID, number, phoneType, isPrimary any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactPhoneNumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactPhoneNumberCreate), ctx, a, contactID, number, numberE164, phoneType, isPrimary)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactPhoneNumberCreate", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactPhoneNumberCreate), ctx, a, contactID, number, phoneType, isPrimary)
 }
 
 // ServiceAgentContactPhoneNumberDelete mocks base method.

@@ -615,7 +615,6 @@ func Test_PostServiceAgentsContactsIdPhoneNumbers(t *testing.T) {
 
 		expectContactID  uuid.UUID
 		expectNumber     string
-		expectNumberE164 string
 		expectPhoneType  string
 		expectIsPrimary  bool
 		expectRes        string
@@ -652,10 +651,9 @@ func Test_PostServiceAgentsContactsIdPhoneNumbers(t *testing.T) {
 
 			expectContactID:  uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			expectNumber:     "+15551234567",
-			expectNumberE164: "",
 			expectPhoneType:  "mobile",
 			expectIsPrimary:  true,
-			expectRes:        `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","phone_numbers":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","number":"+15551234567","number_e164":"","type":"mobile","is_primary":true,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+			expectRes:        `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","phone_numbers":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","number":"+15551234567","type":"mobile","is_primary":true,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -680,7 +678,7 @@ func Test_PostServiceAgentsContactsIdPhoneNumbers(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentContactPhoneNumberCreate(req.Context(), tt.agent, tt.expectContactID, tt.expectNumber, tt.expectNumberE164, tt.expectPhoneType, tt.expectIsPrimary).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactPhoneNumberCreate(req.Context(), tt.agent, tt.expectContactID, tt.expectNumber, tt.expectPhoneType, tt.expectIsPrimary).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusCreated {
@@ -743,7 +741,7 @@ func Test_PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(t *testing.T) {
 			expectFields: map[string]any{
 				"number": "+15559999999",
 			},
-			expectRes: `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","phone_numbers":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","number":"+15559999999","number_e164":"","type":"","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","phone_numbers":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","number":"+15559999999","type":"","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 

@@ -72,15 +72,13 @@ PhoneNumber
     {
         "id": "<string>",
         "number": "<string>",
-        "number_e164": "<string>",
         "type": "<string>",
         "is_primary": <boolean>,
         "tm_create": "<string>"
     }
 
 * ``id`` (UUID): The phone number entry's unique identifier. Returned when adding via ``POST /contacts/{id}/phone-numbers``.
-* ``number`` (String): Phone number as originally entered by the user.
-* ``number_e164`` (String): Phone number normalized to E.164 format (e.g., ``+15551234567``). Used for lookup matching.
+* ``number`` (String): Phone number normalized to E.164 format (e.g., ``+155****4567``). Used for lookup matching.
 * ``type`` (enum string): Phone number type. See :ref:`PhoneNumberType <contact-struct-contact-phonenumbertype>`.
 * ``is_primary`` (Boolean): Whether this is the primary phone number for the contact. Only one number should be marked primary.
 * ``tm_create`` (string, ISO 8601): Timestamp when the phone number was added.

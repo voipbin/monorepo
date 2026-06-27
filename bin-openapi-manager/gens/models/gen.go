@@ -4899,11 +4899,8 @@ type ContactManagerPhoneNumber struct {
 	// IsPrimary Indicates if this is the primary phone number.
 	IsPrimary *bool `json:"is_primary,omitempty"`
 
-	// Number Phone number as entered.
+	// Number Phone number in E.164 format.
 	Number *string `json:"number,omitempty"`
-
-	// NumberE164 Phone number in E.164 format.
-	NumberE164 *string `json:"number_e164,omitempty"`
 
 	// TmCreate Timestamp when the phone number was created.
 	TmCreate *time.Time `json:"tm_create,omitempty"`

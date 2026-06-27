@@ -26,31 +26,31 @@ Table: `contact_contacts`
 
 ### PhoneNumber
 
-Child record linking a phone number in E.164 format to a contact. A contact may have up to N phone numbers.
+Reverse-projection of a `contact_addresses` row with `type='tel'`. A contact may have up to N phone numbers. The address store is the source of truth (VOIP-1207); the `PhoneNumber` model is a read-time view (`Number` = the normalized `target`).
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `id` | UUID | Primary key |
+| `id` | UUID | `contact_addresses.id` |
 | `contact_id` | UUID | Parent contact |
-| `phone_number` | string | E.164 format (e.g., `+15551234567`) |
+| `number` | string | E.164 format (e.g., `+155****4567`); from `target` |
+| `is_primary` | bool | One primary per contact across ALL address types |
 | `tm_create` | timestamp | |
-| `tm_delete` | timestamp | Soft-delete marker (active = `NULL`) |
 
-Table: `contact_phone_numbers`
+Table: `contact_addresses` (`type='tel'`). Hard-delete (no `tm_delete`).
 
 ### Email
 
-Child record linking an email address to a contact.
+Reverse-projection of a `contact_addresses` row with `type='email'`.
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `id` | UUID | Primary key |
+| `id` | UUID | `contact_addresses.id` |
 | `contact_id` | UUID | Parent contact |
-| `email` | string | |
+| `address` | string | Lowercased; from `target` |
+| `is_primary` | bool | One primary per contact across ALL address types |
 | `tm_create` | timestamp | |
-| `tm_delete` | timestamp | Soft-delete marker (active = `NULL`) |
 
-Table: `contact_emails`
+Table: `contact_addresses` (`type='email'`). Hard-delete (no `tm_delete`).
 
 ### TagAssignment
 
