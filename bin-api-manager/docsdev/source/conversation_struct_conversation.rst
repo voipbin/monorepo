@@ -97,3 +97,7 @@ Conversation's type.
 +------------------+------------------------------------------------------------------+
 | line             | Conversation initiated via Line messaging platform.              |
 +------------------+------------------------------------------------------------------+
+| whatsapp         | Conversation initiated via WhatsApp messaging platform.          |
++------------------+------------------------------------------------------------------+
+| email            | Conversation initiated via email channel.                        |
++------------------+------------------------------------------------------------------+

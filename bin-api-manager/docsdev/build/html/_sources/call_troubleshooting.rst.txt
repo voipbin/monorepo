@@ -50,8 +50,8 @@ Before troubleshooting, understand the tools available:
     Events you'll receive:
     - call_created
     - call_ringing
-    - call_answered (progressing)
-    - call_hungup
+    - call_progressing
+    - call_hangup
     - call_recording_started
     - call_transcribing
 

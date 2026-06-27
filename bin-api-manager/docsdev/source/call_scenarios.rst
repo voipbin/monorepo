@@ -458,9 +458,9 @@ Website visitor clicks to call, conversation is recorded:
 
 .. code::
 
-    Webhook: call_hungup
+    Webhook: call_hangup
     {
-        "type": "call_hungup",
+        "type": "call_hangup",
         "data": {
             "id": "call-uuid",
             "duration": 245,

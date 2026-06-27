@@ -685,7 +685,7 @@
 </section>
 <section id="status">
 <span id="queue-struct-queuecall-type"></span><h2>Status<a class="headerlink" href="#status" title="Link to this heading">¶</a></h2>
-<p>The queuecall’s current lifecycle status. Transitions follow: <code class="docutils literal notranslate"><span class="pre">wait</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">entering</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">service</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">done</span></code> (success path) or <code class="docutils literal notranslate"><span class="pre">wait</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">abandoned</span></code> (failure path).</p>
+<p>The queuecall’s current lifecycle status. Transitions follow: <code class="docutils literal notranslate"><span class="pre">initiating</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">waiting</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">connecting</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">service</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">done</span></code> (success path) or <code class="docutils literal notranslate"><span class="pre">waiting</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">abandoned</span></code> (failure path).</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
 <thead>
@@ -694,22 +694,25 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>wait</p></td>
+<tr class="row-even"><td><p>initiating</p></td>
+<td><p>The queuecall is being initialized and has not yet entered the wait actions.</p></td>
+</tr>
+<tr class="row-odd"><td><p>waiting</p></td>
 <td><p>The system is searching for an available agent. The caller hears the queue’s wait actions (hold music, announcements) in a loop.</p></td>
 </tr>
-<tr class="row-odd"><td><p>entering</p></td>
-<td><p>The queuecall is connecting to an available agent’s conference room. This is a brief transitional state between <code class="docutils literal notranslate"><span class="pre">wait</span></code> and <code class="docutils literal notranslate"><span class="pre">service</span></code>.</p></td>
+<tr class="row-even"><td><p>connecting</p></td>
+<td><p>The queuecall is connecting to an available agent’s conference room. This is a brief transitional state between <code class="docutils literal notranslate"><span class="pre">waiting</span></code> and <code class="docutils literal notranslate"><span class="pre">service</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p>kicking</p></td>
+<tr class="row-odd"><td><p>kicking</p></td>
 <td><p>The queuecall is being removed from the queue (e.g., due to wait timeout). This is a brief transitional state.</p></td>
 </tr>
-<tr class="row-odd"><td><p>service</p></td>
+<tr class="row-even"><td><p>service</p></td>
 <td><p>An agent has been connected. The caller and agent are in conversation.</p></td>
 </tr>
-<tr class="row-even"><td><p>done</p></td>
+<tr class="row-odd"><td><p>done</p></td>
 <td><p>The queuecall completed successfully. The agent finished helping the caller.</p></td>
 </tr>
-<tr class="row-odd"><td><p>abandoned</p></td>
+<tr class="row-even"><td><p>abandoned</p></td>
 <td><p>The queuecall ended without service. The caller hung up, the wait timeout was exceeded, or the call was otherwise terminated before an agent connected.</p></td>
 </tr>
 </tbody>

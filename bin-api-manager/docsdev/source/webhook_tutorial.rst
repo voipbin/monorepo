@@ -68,9 +68,9 @@ VoIPBIN sends different event types to your webhook endpoint. For the complete l
 
 - ``call_created`` - Call initiated
 - ``call_ringing`` - Call is ringing
-- ``call_answered`` - Call was answered
+- ``call_progressing`` - Call was answered (progressing)
 - ``call_updated`` - Call status changed
-- ``call_hungup`` - Call ended
+- ``call_hangup`` - Call ended
 
 **Message Events:**
 
@@ -98,7 +98,7 @@ VoIPBIN sends different event types to your webhook endpoint. For the complete l
 - ``queue_created`` - Queue created
 - ``queue_updated`` - Queue updated
 - ``queuecall_created`` - Call joined queue
-- ``queuecall_kicking`` - Agent assigned to queue call
+- ``queuecall_connecting`` - Queue call connecting to an agent
 - ``queuecall_serviced`` - Queue call being handled
 
 **Conference Events:**
@@ -135,7 +135,7 @@ Your webhook endpoint should accept POST requests and process the JSON payload. 
         # Process different event types
         event_type = payload.get('type')
 
-        if event_type == 'call_hungup':
+        if event_type == 'call_hangup':
             call_id = payload['data']['id']
             status = payload['data']['hangup_reason']
 
@@ -191,7 +191,7 @@ Your webhook endpoint should accept POST requests and process the JSON payload. 
         console.log(`Received event: ${eventType}`);
 
         switch(eventType) {
-            case 'call_hungup':
+            case 'call_hangup':
                 handleCallHungup(payload.data);
                 break;
             case 'message_created':
@@ -258,7 +258,7 @@ Simulate a webhook event to test your endpoint:
     $ curl --location --request POST 'http://localhost:5000/voipbin/webhook' \
         --header 'Content-Type: application/json' \
         --data-raw '{
-            "type": "call_hungup",
+            "type": "call_hangup",
             "data": {
                 "id": "test-call-id",
                 "hangup_reason": "normal",
@@ -281,7 +281,7 @@ All webhook events follow this structure:
 .. code::
 
     {
-        "type": "call_hungup",
+        "type": "call_hangup",
         "data": {
             // Event-specific data
             // Structure varies by event type
@@ -290,7 +290,7 @@ All webhook events follow this structure:
 
 **Fields:**
 
-- ``type``: Type of event that occurred (e.g., ``call_hungup``, ``message_created``)
+- ``type``: Type of event that occurred (e.g., ``call_hangup``, ``message_created``)
 - ``data``: Event-specific data (varies by event type). See :ref:`Webhook Structure <webhook-struct-webhook>` for details.
 
 Best Practices
@@ -333,7 +333,7 @@ Automatically update your CRM when calls end:
 
 .. code::
 
-    if event_type == 'call_hungup':
+    if event_type == 'call_hangup':
         call_data = payload['data']
 
         # Update CRM contact record

@@ -690,11 +690,11 @@
 <h2>Payload Structure<a class="headerlink" href="#payload-structure" title="Link to this heading">¶</a></h2>
 <p>Every webhook delivered to your endpoint is a JSON object with a common two-field envelope:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (string): The event type, for example <code class="docutils literal notranslate"><span class="pre">&quot;call_hungup&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_updated&quot;</span></code>. Use this field to decide how to parse <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> (string): The event type, for example <code class="docutils literal notranslate"><span class="pre">&quot;call_hangup&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;activeflow_updated&quot;</span></code>. Use this field to decide how to parse <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code> (object): The full resource payload. Its shape matches the resource that the event belongs to (call, message, activeflow, and so on).</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hangup&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;5371e9db-d035-4db6-a8d6-0994d33e744e&quot;</span><span class="p">,</span>
         <span class="s2">&quot;flow_id&quot;</span><span class="p">:</span> <span class="s2">&quot;d157ce07-0360-4cad-9007-c8ab89fccf9c&quot;</span><span class="p">,</span>

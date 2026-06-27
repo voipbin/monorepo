@@ -664,9 +664,9 @@
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">call_created</span></code> - Call initiated</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">call_ringing</span></code> - Call is ringing</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">call_answered</span></code> - Call was answered</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_progressing</span></code> - Call was answered (progressing)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">call_updated</span></code> - Call status changed</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">call_hungup</span></code> - Call ended</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">call_hangup</span></code> - Call ended</p></li>
 </ul>
 <p><strong>Message Events:</strong></p>
 <ul class="simple">
@@ -694,7 +694,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">queue_created</span></code> - Queue created</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">queue_updated</span></code> - Queue updated</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">queuecall_created</span></code> - Call joined queue</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">queuecall_kicking</span></code> - Agent assigned to queue call</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">queuecall_connecting</span></code> - Queue call connecting to an agent</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">queuecall_serviced</span></code> - Queue call being handled</p></li>
 </ul>
 <p><strong>Conference Events:</strong></p>
@@ -727,7 +727,7 @@
     <span class="c1"># Process different event types</span>
     <span class="n">event_type</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hungup&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
         <span class="n">call_id</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
         <span class="n">status</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="s1">&#39;hangup_reason&#39;</span><span class="p">]</span>
 
@@ -781,7 +781,7 @@ app.post(&#39;/voipbin/webhook&#39;, (req, res) =&gt; {
     console.log(`Received event: ${eventType}`);
 
     switch(eventType) {
-        case &#39;call_hungup&#39;:
+        case &#39;call_hangup&#39;:
             handleCallHungup(payload.data);
             break;
         case &#39;message_created&#39;:
@@ -842,7 +842,7 @@ $ ngrok http 5000
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ curl --location --request POST &#39;http://localhost:5000/voipbin/webhook&#39; \
     --header &#39;Content-Type: application/json&#39; \
     --data-raw &#39;{
-        &quot;type&quot;: &quot;call_hungup&quot;,
+        &quot;type&quot;: &quot;call_hangup&quot;,
         &quot;data&quot;: {
             &quot;id&quot;: &quot;test-call-id&quot;,
             &quot;hangup_reason&quot;: &quot;normal&quot;,
@@ -863,7 +863,7 @@ $ ngrok http 5000
 <h3>Webhook Payload Structure<a class="headerlink" href="#webhook-payload-structure" title="Link to this heading">¶</a></h3>
 <p>All webhook events follow this structure:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hungup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;call_hangup&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="o">//</span> <span class="n">Event</span><span class="o">-</span><span class="n">specific</span> <span class="n">data</span>
         <span class="o">//</span> <span class="n">Structure</span> <span class="n">varies</span> <span class="n">by</span> <span class="n">event</span> <span class="nb">type</span>
@@ -873,7 +873,7 @@ $ ngrok http 5000
 </div>
 <p><strong>Fields:</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: Type of event that occurred (e.g., <code class="docutils literal notranslate"><span class="pre">call_hungup</span></code>, <code class="docutils literal notranslate"><span class="pre">message_created</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>: Type of event that occurred (e.g., <code class="docutils literal notranslate"><span class="pre">call_hangup</span></code>, <code class="docutils literal notranslate"><span class="pre">message_created</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code>: Event-specific data (varies by event type). See <a class="reference internal" href="webhook_struct_webhook.html#webhook-struct-webhook"><span class="std std-ref">Webhook Structure</span></a> for details.</p></li>
 </ul>
 </section>
@@ -907,7 +907,7 @@ $ ngrok http 5000
 <h3>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading">¶</a></h3>
 <p><strong>CRM Integration:</strong>
 Automatically update your CRM when calls end:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hungup&#39;</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="s1">&#39;call_hangup&#39;</span><span class="p">:</span>
     <span class="n">call_data</span> <span class="o">=</span> <span class="n">payload</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
 
     <span class="c1"># Update CRM contact record</span>

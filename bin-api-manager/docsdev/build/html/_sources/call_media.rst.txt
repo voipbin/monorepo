@@ -7,7 +7,7 @@ This section covers audio media handling in VoIPBIN, including codec support, qu
 
 .. note:: **AI Implementation Hint**
 
-   Media operations (recording, transcription, TTS) require an active call in ``progressing`` status. Obtain the ``call-id`` from ``GET /calls`` or from a webhook event (e.g., ``call_answered``) before issuing media-related API calls. Starting media operations on a call that has not yet been answered will fail.
+   Media operations (recording, transcription, TTS) require an active call in ``progressing`` status. Obtain the ``call-id`` from ``GET /calls`` or from a webhook event (e.g., ``call_progressing``) before issuing media-related API calls. Starting media operations on a call that has not yet been answered will fail.
 
 Audio Codec Support
 -------------------

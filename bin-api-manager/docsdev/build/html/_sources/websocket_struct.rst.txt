@@ -262,7 +262,7 @@ Complete list of event types and their data structures.
         "data": {
             "id": "xyz789",
             "customer_id": "abc123",
-            "direction": "inbound",
+            "direction": "incoming",
             "source": {
                 "type": "tel",
                 "target": "+15551234567"
@@ -283,7 +283,7 @@ Complete list of event types and their data structures.
         "topic": "customer_id:abc123:call:xyz789",
         "data": {
             "id": "xyz789",
-            "status": "answered",
+            "status": "progressing",
             "previous_status": "ringing",
             "tm_update": "2024-01-15T10:30:05.000000Z"
         }

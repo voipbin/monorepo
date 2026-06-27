@@ -79,13 +79,14 @@ call     The queuecall references a call resource. Use the ``reference_id`` with
 
 Status
 ------
-The queuecall's current lifecycle status. Transitions follow: ``wait`` -> ``entering`` -> ``service`` -> ``done`` (success path) or ``wait`` -> ``abandoned`` (failure path).
+The queuecall's current lifecycle status. Transitions follow: ``initiating`` -> ``waiting`` -> ``connecting`` -> ``service`` -> ``done`` (success path) or ``waiting`` -> ``abandoned`` (failure path).
 
 =========== ================
 Type        Description
 =========== ================
-wait        The system is searching for an available agent. The caller hears the queue's wait actions (hold music, announcements) in a loop.
-entering    The queuecall is connecting to an available agent's conference room. This is a brief transitional state between ``wait`` and ``service``.
+initiating  The queuecall is being initialized and has not yet entered the wait actions.
+waiting     The system is searching for an available agent. The caller hears the queue's wait actions (hold music, announcements) in a loop.
+connecting  The queuecall is connecting to an available agent's conference room. This is a brief transitional state between ``waiting`` and ``service``.
 kicking     The queuecall is being removed from the queue (e.g., due to wait timeout). This is a brief transitional state.
 service     An agent has been connected. The caller and agent are in conversation.
 done        The queuecall completed successfully. The agent finished helping the caller.
