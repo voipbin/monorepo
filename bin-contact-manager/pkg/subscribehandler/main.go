@@ -150,7 +150,7 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// conversation message created - project into CRM interaction timeline
-	case m.Publisher == publisherConversationManager && m.Type == string(convmsg.EventTypeMessageCreated):
+	case m.Publisher == publisherConversationManager && m.Type == convmsg.EventTypeMessageCreated:
 		err = h.processEventConversationManagerMessageCreated(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////

@@ -14,6 +14,10 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	callmodel "monorepo/bin-call-manager/models/call"
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
+	convmsg "monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 )
 
@@ -331,7 +335,71 @@ func Test_processEvent_UnknownPublisher(t *testing.T) {
 	h.processEvent(event)
 }
 
-func Test_processEvent_UnknownEventType(t *testing.T) {
+func Test_processEventCallManagerCallCreated(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockContact := contacthandler.NewMockContactHandler(mc)
+	h := &subscribeHandler{sockHandler: mockSock, contactHandler: mockContact}
+	ctx := context.Background()
+
+	payload := callmodel.WebhookMessage{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("e1b2c3d4-0001-0001-0001-000000000001"),
+			CustomerID: uuid.FromStringOrNil("e1b2c3d4-0001-0001-0001-000000000002"),
+		},
+		Source:      commonaddress.Address{Type: commonaddress.TypeTel, Target: "srcTel"},
+		Destination: commonaddress.Address{Type: commonaddress.TypeTel, Target: "dstTel"},
+		Direction:   callmodel.DirectionIncoming,
+	}
+	data, _ := json.Marshal(payload)
+	event := &sock.Event{
+		Publisher: publisherCallManager,
+		Type:      callmodel.EventTypeCallCreated,
+		Data:      data,
+	}
+
+	mockContact.EXPECT().EventCallCreated(ctx, gomock.Any()).Return(nil)
+
+	if err := h.processEventCallManagerCallCreated(ctx, event); err != nil {
+		t.Errorf("processEventCallManagerCallCreated() error = %v", err)
+	}
+}
+
+func Test_processEventConversationManagerMessageCreated(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockSock := sockhandler.NewMockSockHandler(mc)
+	mockContact := contacthandler.NewMockContactHandler(mc)
+	h := &subscribeHandler{sockHandler: mockSock, contactHandler: mockContact}
+	ctx := context.Background()
+
+	payload := convmsg.WebhookMessage{
+		Identity: commonidentity.Identity{
+			ID:         uuid.FromStringOrNil("f1b2c3d4-0002-0002-0002-000000000001"),
+			CustomerID: uuid.FromStringOrNil("f1b2c3d4-0002-0002-0002-000000000002"),
+		},
+		Source:      commonaddress.Address{Type: commonaddress.TypeLine, Target: "lineUser"},
+		Destination: commonaddress.Address{Type: commonaddress.TypeLine, Target: ""},
+		Direction:   convmsg.DirectionIncoming,
+	}
+	data, _ := json.Marshal(payload)
+	event := &sock.Event{
+		Publisher: publisherConversationManager,
+		Type:      string(convmsg.EventTypeMessageCreated),
+		Data:      data,
+	}
+
+	mockContact.EXPECT().EventConversationMessageCreated(ctx, gomock.Any()).Return(nil)
+
+	if err := h.processEventConversationManagerMessageCreated(ctx, event); err != nil {
+		t.Errorf("processEventConversationManagerMessageCreated() error = %v", err)
+	}
+}
+
+func Test_processEvent_UnknownEventType2(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -346,7 +414,7 @@ func Test_processEvent_UnknownEventType(t *testing.T) {
 	// Known publisher but unknown event type - should be ignored silently
 	event := &sock.Event{
 		Publisher: publisherCustomerManager,
-		Type:      "unknown_event_type",
+		Type:      "unknown_event_type_2",
 		Data:      json.RawMessage(`{}`),
 	}
 

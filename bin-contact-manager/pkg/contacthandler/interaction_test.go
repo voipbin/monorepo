@@ -101,6 +101,41 @@ func Test_EventCallCreated(t *testing.T) {
 				TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 11, 0, 0, 0, time.UTC); return &t }(),
 			},
 		},
+		{
+			name: "unknown direction - zero peer/local, row still created",
+
+			message: &callmodel.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("aa000003-0000-0000-0000-000000000001"),
+					CustomerID: uuid.FromStringOrNil("aa000003-0000-0000-0000-000000000002"),
+				},
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "someSrc",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "someDst",
+				},
+				Direction: "", // unknown direction (DirectionNond)
+			},
+
+			responseUUID:    uuid.FromStringOrNil("bb000003-0000-0000-0000-000000000001"),
+			responseCurTime: func() *time.Time { t := time.Date(2026, 6, 28, 13, 0, 0, 0, time.UTC); return &t }(),
+
+			expectInteraction: &interaction.Interaction{
+				ID:            uuid.FromStringOrNil("bb000003-0000-0000-0000-000000000001"),
+				CustomerID:    uuid.FromStringOrNil("aa000003-0000-0000-0000-000000000002"),
+				Direction:     "",
+				PeerType:      "",
+				PeerTarget:    "",
+				LocalType:     "",
+				LocalTarget:   "",
+				ReferenceType: "call",
+				ReferenceID:   uuid.FromStringOrNil("aa000003-0000-0000-0000-000000000001"),
+				TMCreate:      func() *time.Time { t := time.Date(2026, 6, 28, 13, 0, 0, 0, time.UTC); return &t }(),
+			},
+		},
 	}
 
 	for _, tt := range tests {
