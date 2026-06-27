@@ -12,6 +12,7 @@ package dbhandler
 import (
 	context "context"
 	contact "monorepo/bin-contact-manager/models/contact"
+	interaction "monorepo/bin-contact-manager/models/interaction"
 	reflect "reflect"
 
 	uuid "github.com/gofrs/uuid"
@@ -242,6 +243,20 @@ func (m *MockDBHandler) EmailUpdate(ctx context.Context, id uuid.UUID, fields ma
 func (mr *MockDBHandlerMockRecorder) EmailUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailUpdate", reflect.TypeOf((*MockDBHandler)(nil).EmailUpdate), ctx, id, fields)
+}
+
+// InteractionCreate mocks base method.
+func (m *MockDBHandler) InteractionCreate(ctx context.Context, i *interaction.Interaction) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InteractionCreate", ctx, i)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InteractionCreate indicates an expected call of InteractionCreate.
+func (mr *MockDBHandlerMockRecorder) InteractionCreate(ctx, i any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionCreate", reflect.TypeOf((*MockDBHandler)(nil).InteractionCreate), ctx, i)
 }
 
 // PhoneNumberCreate mocks base method.

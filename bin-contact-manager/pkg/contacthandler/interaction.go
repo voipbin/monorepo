@@ -1,0 +1,119 @@
+package contacthandler
+
+import (
+	"context"
+
+	"github.com/sirupsen/logrus"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+
+	call "monorepo/bin-call-manager/models/call"
+	message "monorepo/bin-conversation-manager/models/message"
+
+	"monorepo/bin-contact-manager/models/interaction"
+)
+
+// deriveEndpoints resolves which address is the remote peer and which is our
+// local endpoint based on the call/message direction.
+//
+//   - incoming: the remote party is the source (they called/wrote us)
+//   - outgoing: the remote party is the destination (we called/wrote them)
+//   - unknown:  both are zero values; the caller should still persist the row
+//     (the direction column itself carries the raw value for diagnostics).
+func deriveEndpoints(direction string, source, dest commonaddress.Address) (peer commonaddress.Address, local commonaddress.Address) {
+	switch direction {
+	case "incoming":
+		return source, dest
+	case "outgoing":
+		return dest, source
+	default:
+		return commonaddress.Address{}, commonaddress.Address{}
+	}
+}
+
+// EventCallCreated projects a call-created webhook event into the CRM
+// interaction timeline.
+func (h *contactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMessage) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":      "EventCallCreated",
+		"call_id":   m.ID,
+		"direction": m.Direction,
+	})
+
+	peer, local := deriveEndpoints(string(m.Direction), m.Source, m.Destination)
+
+	peerTarget, err := commonaddress.NormalizeTarget(peer.Type, peer.Target)
+	if err != nil {
+		log.WithError(err).Warnf("could not normalize peer target; storing raw value. peer_type: %s peer_target: %s", peer.Type, peer.Target)
+		peerTarget = peer.Target
+	}
+
+	localTarget, err := commonaddress.NormalizeTarget(local.Type, local.Target)
+	if err != nil {
+		log.WithError(err).Warnf("could not normalize local target; storing raw value. local_type: %s local_target: %s", local.Type, local.Target)
+		localTarget = local.Target
+	}
+
+	id := h.utilHandler.UUIDCreate()
+	now := h.utilHandler.TimeNow()
+
+	i := interaction.Interaction{
+		ID:            id,
+		CustomerID:    m.CustomerID,
+		Direction:     string(m.Direction),
+		PeerType:      string(peer.Type),
+		PeerTarget:    peerTarget,
+		LocalType:     string(local.Type),
+		LocalTarget:   localTarget,
+		ReferenceType: "call",
+		ReferenceID:   m.ID,
+		TMInteraction: m.TMCreate,
+		TMCreate:      now,
+	}
+
+	return h.db.InteractionCreate(ctx, &i)
+}
+
+// EventConversationMessageCreated projects a conversation-message-created
+// webhook event into the CRM interaction timeline.
+func (h *contactHandler) EventConversationMessageCreated(ctx context.Context, m *message.WebhookMessage) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "EventConversationMessageCreated",
+		"message_id": m.ID,
+		"direction":  m.Direction,
+	})
+
+	peer, local := deriveEndpoints(string(m.Direction), m.Source, m.Destination)
+
+	peerTarget, err := commonaddress.NormalizeTarget(peer.Type, peer.Target)
+	if err != nil {
+		log.WithError(err).Warnf("could not normalize peer target; storing raw value. peer_type: %s peer_target: %s", peer.Type, peer.Target)
+		peerTarget = peer.Target
+	}
+
+	localTarget, err := commonaddress.NormalizeTarget(local.Type, local.Target)
+	if err != nil {
+		log.WithError(err).Warnf("could not normalize local target; storing raw value. local_type: %s local_target: %s", local.Type, local.Target)
+		localTarget = local.Target
+	}
+
+	id := h.utilHandler.UUIDCreate()
+	now := h.utilHandler.TimeNow()
+
+	// m.ID comes from the embedded commonidentity.Identity; use it directly.
+	i := interaction.Interaction{
+		ID:            id,
+		CustomerID:    m.CustomerID,
+		Direction:     string(m.Direction),
+		PeerType:      string(peer.Type),
+		PeerTarget:    peerTarget,
+		LocalType:     string(local.Type),
+		LocalTarget:   localTarget,
+		ReferenceType: "conversation_message",
+		ReferenceID:   m.ID,
+		TMInteraction: m.TMCreate,
+		TMCreate:      now,
+	}
+
+	return h.db.InteractionCreate(ctx, &i)
+}
