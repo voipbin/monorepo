@@ -94,3 +94,21 @@ create table contact_tag_assignments(
 
   primary key(contact_id, tag_id)
 );
+
+create table contact_interactions(
+  id             binary(16)    not null,
+  customer_id    binary(16)    not null,
+  direction      varchar(255)  not null default '',
+  peer_type      varchar(255)  not null default '',
+  peer_target    varchar(255)  not null default '',
+  local_type     varchar(255)  not null default '',
+  local_target   varchar(255)  not null default '',
+  reference_type varchar(255)  not null default '',
+  reference_id   binary(16)    not null,
+  tm_interaction datetime(6),
+  tm_create      datetime(6),
+  primary key(id)
+);
+create unique index idx_contact_interactions_idem on contact_interactions(reference_type, reference_id, peer_target);
+create index idx_contact_interactions_peer on contact_interactions(customer_id, peer_type, peer_target);
+create index idx_contact_interactions_cursor on contact_interactions(customer_id, tm_create);

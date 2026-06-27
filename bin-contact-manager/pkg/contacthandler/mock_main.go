@@ -11,7 +11,9 @@ package contacthandler
 
 import (
 	context "context"
+	call "monorepo/bin-call-manager/models/call"
 	contact "monorepo/bin-contact-manager/models/contact"
+	message "monorepo/bin-conversation-manager/models/message"
 	customer "monorepo/bin-customer-manager/models/customer"
 	reflect "reflect"
 
@@ -116,6 +118,34 @@ func (m *MockContactHandler) Delete(ctx context.Context, id uuid.UUID) (*contact
 func (mr *MockContactHandlerMockRecorder) Delete(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockContactHandler)(nil).Delete), ctx, id)
+}
+
+// EventCallCreated mocks base method.
+func (m_2 *MockContactHandler) EventCallCreated(ctx context.Context, m *call.WebhookMessage) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "EventCallCreated", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventCallCreated indicates an expected call of EventCallCreated.
+func (mr *MockContactHandlerMockRecorder) EventCallCreated(ctx, m any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventCallCreated", reflect.TypeOf((*MockContactHandler)(nil).EventCallCreated), ctx, m)
+}
+
+// EventConversationMessageCreated mocks base method.
+func (m_2 *MockContactHandler) EventConversationMessageCreated(ctx context.Context, m *message.WebhookMessage) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "EventConversationMessageCreated", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EventConversationMessageCreated indicates an expected call of EventConversationMessageCreated.
+func (mr *MockContactHandlerMockRecorder) EventConversationMessageCreated(ctx, m any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventConversationMessageCreated", reflect.TypeOf((*MockContactHandler)(nil).EventConversationMessageCreated), ctx, m)
 }
 
 // EventCustomerDeleted mocks base method.

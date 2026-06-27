@@ -13,6 +13,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
+	callmodel "monorepo/bin-call-manager/models/call"
+	convmsg "monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
@@ -44,6 +46,10 @@ type ContactHandler interface {
 
 	// Event handlers
 	EventCustomerDeleted(ctx context.Context, c *cmcustomer.Customer) error
+
+	// Projection event handlers (CRM interaction timeline)
+	EventCallCreated(ctx context.Context, m *callmodel.WebhookMessage) error
+	EventConversationMessageCreated(ctx context.Context, m *convmsg.WebhookMessage) error
 }
 
 type contactHandler struct {

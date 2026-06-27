@@ -16,12 +16,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	call "monorepo/bin-call-manager/models/call"
+	convmsg "monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 )
 
 // list of publishers
 const (
-	publisherCustomerManager = string(commonoutline.ServiceNameCustomerManager)
+	publisherCustomerManager     = string(commonoutline.ServiceNameCustomerManager)
+	publisherCallManager         = string(commonoutline.ServiceNameCallManager)
+	publisherConversationManager = string(commonoutline.ServiceNameConversationManager)
 )
 
 // SubscribeHandler interface
@@ -132,6 +136,22 @@ func (h *subscribeHandler) processEvent(m *sock.Event) {
 	// customer deleted - cleanup all contacts for this customer
 	case m.Publisher == publisherCustomerManager && (m.Type == string(cmcustomer.EventTypeCustomerDeleted)):
 		err = h.processEventCMCustomerDeleted(ctx, m)
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// call-manager events
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// call created - project into CRM interaction timeline
+	case m.Publisher == publisherCallManager && m.Type == call.EventTypeCallCreated:
+		err = h.processEventCallManagerCallCreated(ctx, m)
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// conversation-manager events
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// conversation message created - project into CRM interaction timeline
+	case m.Publisher == publisherConversationManager && m.Type == string(convmsg.EventTypeMessageCreated):
+		err = h.processEventConversationManagerMessageCreated(ctx, m)
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found

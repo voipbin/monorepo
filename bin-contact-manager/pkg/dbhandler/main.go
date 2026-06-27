@@ -12,6 +12,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"monorepo/bin-contact-manager/models/contact"
+	"monorepo/bin-contact-manager/models/interaction"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
 
@@ -47,6 +48,9 @@ type DBHandler interface {
 	TagAssignmentCreate(ctx context.Context, contactID, tagID uuid.UUID) error
 	TagAssignmentDelete(ctx context.Context, contactID, tagID uuid.UUID) error
 	TagAssignmentListByContactID(ctx context.Context, contactID uuid.UUID) ([]uuid.UUID, error)
+
+	// Interaction operations
+	InteractionCreate(ctx context.Context, i *interaction.Interaction) error
 }
 
 // handler database handler
