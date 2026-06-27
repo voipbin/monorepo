@@ -123,6 +123,14 @@ Example
         "status": "progressing",
         "reference_type": "line",
         "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+        "source": {
+            "type": "line",
+            "target": ""
+        },
+        "destination": {
+            "type": "line",
+            "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+        },
         "text": "Hello, this is a test message. Thank you for your time.",
         "medias": [],
         "tm_create": "2022-06-20 03:07:11.372307",
@@ -150,6 +158,14 @@ Example
                 "status": "done",
                 "reference_type": "line",
                 "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+                "source": {
+                    "type": "line",
+                    "target": ""
+                },
+                "destination": {
+                    "type": "line",
+                    "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+                },
                 "text": "Hello, this is a test message. Thank you for your time.",
                 "medias": [],
                 "tm_create": "2022-06-20 03:07:11.372307",
@@ -287,6 +303,14 @@ The agent reply uses the standard message-send API (no special endpoint required
         "status": "progressing",
         "reference_type": "line",
         "reference_id": "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+        "source": {
+            "type": "line",
+            "target": ""
+        },
+        "destination": {
+            "type": "line",
+            "target": "Ud871bcaf7c3ad13d2a0b0d78a42a287f"
+        },
         "text": "Hi, this is the support agent. How can I help you today?",
         "medias": [],
         "tm_create": "2026-04-30 09:05:00.000000",
