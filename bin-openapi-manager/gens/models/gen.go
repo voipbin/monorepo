@@ -5049,6 +5049,9 @@ type ConversationManagerMessage struct {
 	// CustomerId The unique identifier of the customer. Returned from the `GET /customers` response.
 	CustomerId *string `json:"customer_id,omitempty"`
 
+	// Destination Contains source or destination detail info.
+	Destination *CommonAddress `json:"destination,omitempty"`
+
 	// Direction Direction of the message (incoming or outgoing).
 	Direction *ConversationManagerMessageDirection `json:"direction,omitempty"`
 
@@ -5063,6 +5066,9 @@ type ConversationManagerMessage struct {
 
 	// ReferenceType Source channel that produced the message.
 	ReferenceType *ConversationManagerMessageReferenceType `json:"reference_type,omitempty"`
+
+	// Source Contains source or destination detail info.
+	Source *CommonAddress `json:"source,omitempty"`
 
 	// Status Delivery status of the message.
 	Status *ConversationManagerMessageStatus `json:"status,omitempty"`

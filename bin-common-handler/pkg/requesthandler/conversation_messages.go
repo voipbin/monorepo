@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/sock"
 	cvmedia "monorepo/bin-conversation-manager/models/media"
 	cvmessage "monorepo/bin-conversation-manager/models/message"
@@ -102,6 +103,8 @@ func (r *requestHandler) ConversationV1MessageCreate(
 	transactionID string,
 	text string,
 	medias []cvmedia.Media,
+	source commonaddress.Address,
+	destination commonaddress.Address,
 ) (*cvmessage.Message, error) {
 	uri := "/v1/messages/create"
 
@@ -116,6 +119,8 @@ func (r *requestHandler) ConversationV1MessageCreate(
 		TransactionID:  transactionID,
 		Text:           text,
 		Medias:         medias,
+		Source:         source,
+		Destination:    destination,
 	}
 
 	m, err := json.Marshal(data)

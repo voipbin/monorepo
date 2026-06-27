@@ -961,6 +961,8 @@ type RequestHandler interface {
 		transactionID string,
 		text string,
 		medias []cvmedia.Media,
+		source commonaddress.Address,
+		destination commonaddress.Address,
 	) (*cvmessage.Message, error)
 	ConversationV1MessageSend(ctx context.Context, conversationID uuid.UUID, text string, medias []cvmedia.Media) (*cvmessage.Message, error)
 

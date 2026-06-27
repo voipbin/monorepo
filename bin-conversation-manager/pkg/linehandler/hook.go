@@ -181,6 +181,9 @@ func (h *lineHandler) hookEventTypeMessage(ctx context.Context, ac *account.Acco
 		"",
 		text,
 		medias,
+		// Inbound: source = remote (cv.Peer), destination = us (cv.Self).
+		cv.Peer,
+		cv.Self,
 	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Could not create a message")

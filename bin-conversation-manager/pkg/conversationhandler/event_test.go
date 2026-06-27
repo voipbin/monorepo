@@ -117,17 +117,19 @@ func Test_Event_eventSMS_single_target(t *testing.T) {
 
 			mockMessage.EXPECT().Create(
 				ctx,
-				tt.expectedMessageID,
-				tt.expectedConversation.CustomerID,
-				tt.expectedConversation.ID,
-				tt.expectedMessageDirection,
-				message.StatusDone,
-				message.ReferenceTypeMessage,
-				tt.expectedMessageReferenceID,
-				"",
-				tt.expectedMessageText,
-				"",
-				[]media.Media{},
+				messagehandler.MessageCreateArgs{
+					ID:             tt.expectedMessageID,
+					CustomerID:     tt.expectedConversation.CustomerID,
+					ConversationID: tt.expectedConversation.ID,
+					Direction:      tt.expectedMessageDirection,
+					Status:         message.StatusDone,
+					ReferenceType:  message.ReferenceTypeMessage,
+					ReferenceID:    tt.expectedMessageReferenceID,
+					Text:           tt.expectedMessageText,
+					Medias:         []media.Media{},
+					Source:         tt.expectedPeer,
+					Destination:    tt.expectedSelf,
+				},
 			).Return(&message.Message{}, nil)
 			mockReq.EXPECT().NumberV1NumberList(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.responseNumbers, nil)
 

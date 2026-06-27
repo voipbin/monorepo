@@ -12,37 +12,24 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-conversation-manager/pkg/dbhandler"
 )
 
 // Create creates a message and returns a created message.
-func (h *messageHandler) Create(
-	ctx context.Context,
-	id uuid.UUID,
-	customerID uuid.UUID,
-	conversationID uuid.UUID,
-	direction message.Direction,
-	status message.Status,
-	referenceType message.ReferenceType,
-	referenceID uuid.UUID,
-	transactionID string,
-	text string,
-	subject string,
-	medias []media.Media,
-) (*message.Message, error) {
+func (h *messageHandler) Create(ctx context.Context, args MessageCreateArgs) (*message.Message, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":            "Create",
-		"id":              id,
-		"conversation_id": conversationID,
-		"reference_type":  referenceType,
-		"reference_id":    referenceID,
-		"transaction_id":  transactionID,
+		"id":              args.ID,
+		"conversation_id": args.ConversationID,
+		"reference_type":  args.ReferenceType,
+		"reference_id":    args.ReferenceID,
+		"transaction_id":  args.TransactionID,
 	})
-	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s", referenceType, referenceID)
+	log.Debugf("Creating a new message. reference_type: %s, reference_id: %s", args.ReferenceType, args.ReferenceID)
 
 	// create a message
+	id := args.ID
 	if id == uuid.Nil {
 		id = h.utilHandler.UUIDCreate()
 		log = log.WithField("id", id)
@@ -52,19 +39,23 @@ func (h *messageHandler) Create(
 	m := &message.Message{
 		Identity: commonidentity.Identity{
 			ID:         id,
-			CustomerID: customerID,
+			CustomerID: args.CustomerID,
 		},
-		ConversationID: conversationID,
-		Direction:      direction,
-		Status:         status,
+		ConversationID: args.ConversationID,
+		Direction:      args.Direction,
+		Status:         args.Status,
 
-		ReferenceType: referenceType,
-		ReferenceID:   referenceID,
-		TransactionID: transactionID,
+		ReferenceType: args.ReferenceType,
+		ReferenceID:   args.ReferenceID,
 
-		Text:    text,
-		Subject: subject,
-		Medias:  medias,
+		Source:      args.Source,
+		Destination: args.Destination,
+
+		TransactionID: args.TransactionID,
+
+		Text:    args.Text,
+		Subject: args.Subject,
+		Medias:  args.Medias,
 	}
 
 	if errCreate := h.db.MessageCreate(ctx, m); errCreate != nil {

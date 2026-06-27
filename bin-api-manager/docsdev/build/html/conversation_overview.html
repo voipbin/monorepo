@@ -863,24 +863,35 @@ immediate                   interactive     global reach,
 </div>
 <p><strong>Inbound Message Webhook</strong></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation_message_received&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;conversation_message_created&quot;</span><span class="p">,</span>
     <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg-xyz-789&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;customer_id&quot;</span><span class="p">:</span> <span class="s2">&quot;cust-1111-3333&quot;</span><span class="p">,</span>
         <span class="s2">&quot;conversation_id&quot;</span><span class="p">:</span> <span class="s2">&quot;conv-abc-123&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;msg-xyz-789&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;participant&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+15559876543&quot;</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="s2">&quot;sms&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thanks for the update!&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;inbound&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00Z&quot;</span>
-        <span class="p">}</span>
+        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="s2">&quot;incoming&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;done&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reference_type&quot;</span><span class="p">:</span> <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reference_id&quot;</span><span class="p">:</span> <span class="s2">&quot;ref-7777-9999&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+155****6543&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;destination&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;tel&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;+155****0000&quot;</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Thanks for the update!&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;medias&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;2024-01-15T10:30:00.000000&quot;</span>
     <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">source</span></code> and <code class="docutils literal notranslate"><span class="pre">destination</span></code> fields are absolute: <code class="docutils literal notranslate"><span class="pre">source</span></code> is always the
+sending party and <code class="docutils literal notranslate"><span class="pre">destination</span></code> is always the receiving party, regardless of
+direction. To recover the remote (counterpart) party from a single message: for
+an <code class="docutils literal notranslate"><span class="pre">incoming</span></code> message the remote party is the <code class="docutils literal notranslate"><span class="pre">source</span></code>; for an <code class="docutils literal notranslate"><span class="pre">outgoing</span></code>
+message the remote party is the <code class="docutils literal notranslate"><span class="pre">destination</span></code>.</p>
 </section>
 <section id="assigning-a-conversation-to-an-agent">
 <span id="conversation-overview-assigning-conversation-to-agent"></span><h2>Assigning a Conversation to an Agent<a class="headerlink" href="#assigning-a-conversation-to-an-agent" title="Link to this heading">¶</a></h2>

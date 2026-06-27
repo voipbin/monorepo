@@ -11,6 +11,7 @@ import (
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
+	"monorepo/bin-conversation-manager/pkg/messagehandler"
 	fmactiveflow "monorepo/bin-flow-manager/models/activeflow"
 	mmmessage "monorepo/bin-message-manager/models/message"
 )
@@ -119,20 +120,20 @@ func (h *conversationHandler) MessageEventReceived(ctx context.Context, m *mmmes
 		log.WithField("conversation", cv).Debugf("Found conversation. conversation_id: %s", cv.ID)
 
 		// create a new conversation message
-		convMsg, err := h.messageHandler.Create(
-			ctx,
-			m.ID,
-			cv.CustomerID,
-			cv.ID,
-			message.DirectionIncoming,
-			message.StatusDone,
-			message.ReferenceTypeMessage,
-			m.ID,
-			"",
-			m.Text,
-			"",
-			[]media.Media{},
-		)
+		source, destination := messagehandler.DeriveEndpoints(cv, message.DirectionIncoming)
+		convMsg, err := h.messageHandler.Create(ctx, messagehandler.MessageCreateArgs{
+			ID:             m.ID,
+			CustomerID:     cv.CustomerID,
+			ConversationID: cv.ID,
+			Direction:      message.DirectionIncoming,
+			Status:         message.StatusDone,
+			ReferenceType:  message.ReferenceTypeMessage,
+			ReferenceID:    m.ID,
+			Text:           m.Text,
+			Medias:         []media.Media{},
+			Source:         source,
+			Destination:    destination,
+		})
 		if err != nil {
 			return errors.Wrapf(err, "Could not create a message")
 		}
@@ -186,20 +187,20 @@ func (h *conversationHandler) MessageEventSent(ctx context.Context, m *mmmessage
 		// create a new conversation message
 		tmp, err := h.messageHandler.Get(ctx, m.ID)
 		if err != nil {
-			m, err := h.messageHandler.Create(
-				ctx,
-				m.ID,
-				cv.CustomerID,
-				cv.ID,
-				message.DirectionOutgoing,
-				message.StatusDone,
-				message.ReferenceTypeMessage,
-				m.ID,
-				"",
-				m.Text,
-				"",
-				[]media.Media{},
-			)
+			source, destination := messagehandler.DeriveEndpoints(cv, message.DirectionOutgoing)
+			m, err := h.messageHandler.Create(ctx, messagehandler.MessageCreateArgs{
+				ID:             m.ID,
+				CustomerID:     cv.CustomerID,
+				ConversationID: cv.ID,
+				Direction:      message.DirectionOutgoing,
+				Status:         message.StatusDone,
+				ReferenceType:  message.ReferenceTypeMessage,
+				ReferenceID:    m.ID,
+				Text:           m.Text,
+				Medias:         []media.Media{},
+				Source:         source,
+				Destination:    destination,
+			})
 			if err != nil {
 				return errors.Wrapf(err, "Could not create a message")
 			}

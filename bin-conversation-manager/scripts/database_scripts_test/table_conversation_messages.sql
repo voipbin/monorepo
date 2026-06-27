@@ -10,6 +10,9 @@ create table conversation_messages(
   reference_type  varchar(255),
   reference_id    binary(16),
 
+  source      json,
+  destination json,
+
   transaction_id  varchar(255),
 
   text    text,

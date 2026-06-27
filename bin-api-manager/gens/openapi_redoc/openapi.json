@@ -24801,6 +24801,14 @@
             "description": "The unique identifier of the referenced resource. The actual resource type is determined by reference_type. Returned from the corresponding resource endpoint.",
             "example": "f6a7b8c9-d0e1-2345-6789-0abcdef01234"
           },
+          "source": {
+            "$ref": "#/components/schemas/CommonAddress",
+            "description": "The sending party of the message (absolute origin, direction-independent). To recover the remote party: for incoming messages the remote party is the source; for outgoing messages the remote party is the destination."
+          },
+          "destination": {
+            "$ref": "#/components/schemas/CommonAddress",
+            "description": "The receiving party of the message (absolute target, direction-independent). To recover the remote party: for outgoing messages the remote party is the destination; for incoming messages the remote party is the source."
+          },
           "text": {
             "type": "string",
             "description": "The message content.",

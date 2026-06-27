@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -44,6 +45,14 @@ func Test_MessageCreate(t *testing.T) {
 				TransactionID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				Text:           "Hello world",
 				Medias:         []media.Media{},
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeLine,
+					Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+820100000000",
+				},
 			},
 
 			responseCurTime: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
@@ -60,9 +69,17 @@ func Test_MessageCreate(t *testing.T) {
 				TransactionID:  "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
 				Text:           "Hello world",
 				Medias:         []media.Media{},
-				TMCreate:       func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
-				TMUpdate:       nil,
-				TMDelete:       nil,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeLine,
+					Target: "Ud871bcaf7c3ad13d2a0b0d78a42a287f",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+820100000000",
+				},
+				TMCreate: func() *time.Time { t := time.Date(2022, 4, 18, 3, 22, 17, 995000000, time.UTC); return &t }(),
+				TMUpdate: nil,
+				TMDelete: nil,
 			},
 		},
 	}

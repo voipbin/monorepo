@@ -423,17 +423,19 @@ func Test_MessageEventReceived(t *testing.T) {
 
 			mockMessage.EXPECT().Create(
 				ctx,
-				tt.incoming.ID,
-				tt.responseConversation.CustomerID,
-				tt.responseConversation.ID,
-				message.DirectionIncoming,
-				message.StatusDone,
-				message.ReferenceTypeMessage,
-				tt.incoming.ID,
-				"",
-				tt.incoming.Text,
-				"",
-				[]media.Media{},
+				messagehandler.MessageCreateArgs{
+					ID:             tt.incoming.ID,
+					CustomerID:     tt.responseConversation.CustomerID,
+					ConversationID: tt.responseConversation.ID,
+					Direction:      message.DirectionIncoming,
+					Status:         message.StatusDone,
+					ReferenceType:  message.ReferenceTypeMessage,
+					ReferenceID:    tt.incoming.ID,
+					Text:           tt.incoming.Text,
+					Medias:         []media.Media{},
+					Source:         peerAddr,
+					Destination:    selfAddr,
+				},
 			).Return(tt.responseConvMessage, nil)
 
 			// Agent-owned conversations skip the flow path entirely. No flow RPCs are

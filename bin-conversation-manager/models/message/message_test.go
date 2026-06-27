@@ -1,10 +1,112 @@
 package message
 
 import (
+	"reflect"
 	"testing"
+
+	commonaddress "monorepo/bin-common-handler/models/address"
+	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
 )
+
+func Test_ConvertWebhookMessage(t *testing.T) {
+	tests := []struct {
+		name string
+
+		message *Message
+
+		expectSource      commonaddress.Address
+		expectDestination commonaddress.Address
+	}{
+		{
+			name: "incoming sms carries source/destination",
+
+			message: &Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000001"),
+				},
+				Direction: DirectionIncoming,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+155****6543",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+155****0000",
+				},
+			},
+
+			expectSource: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+155****6543",
+			},
+			expectDestination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+155****0000",
+			},
+		},
+		{
+			name: "outgoing message carries source/destination",
+
+			message: &Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000002"),
+				},
+				Direction: DirectionOutgoing,
+				Source: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+155****0000",
+				},
+				Destination: commonaddress.Address{
+					Type:   commonaddress.TypeTel,
+					Target: "+155****6543",
+				},
+			},
+
+			expectSource: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+155****0000",
+			},
+			expectDestination: commonaddress.Address{
+				Type:   commonaddress.TypeTel,
+				Target: "+155****6543",
+			},
+		},
+		{
+			name: "zero endpoints survive as zero address",
+
+			message: &Message{
+				Identity: commonidentity.Identity{
+					ID: uuid.FromStringOrNil("a1b2c3d4-0000-0000-0000-000000000003"),
+				},
+				Direction: DirectionNond,
+			},
+
+			expectSource:      commonaddress.Address{},
+			expectDestination: commonaddress.Address{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			res := tt.message.ConvertWebhookMessage()
+
+			if !reflect.DeepEqual(res.Source, tt.expectSource) {
+				t.Errorf("Wrong Source.\nexpect: %v\ngot: %v", tt.expectSource, res.Source)
+			}
+			if !reflect.DeepEqual(res.Destination, tt.expectDestination) {
+				t.Errorf("Wrong Destination.\nexpect: %v\ngot: %v", tt.expectDestination, res.Destination)
+			}
+			if res.ID != tt.message.ID {
+				t.Errorf("Wrong ID. expect: %s, got: %s", tt.message.ID, res.ID)
+			}
+			if res.Direction != tt.message.Direction {
+				t.Errorf("Wrong Direction. expect: %s, got: %s", tt.message.Direction, res.Direction)
+			}
+		})
+	}
+}
 
 func TestMessage(t *testing.T) {
 	tests := []struct {

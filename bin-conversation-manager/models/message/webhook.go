@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	commonidentity "monorepo/bin-common-handler/models/identity"
 
 	"github.com/gofrs/uuid"
@@ -21,6 +22,12 @@ type WebhookMessage struct {
 
 	ReferenceType ReferenceType `json:"reference_type,omitempty"`
 	ReferenceID   uuid.UUID     `json:"reference_id,omitempty"`
+
+	// Absolute endpoints: source = sending party, destination = receiving party.
+	// A consumer recovers the remote party by direction: inbound (incoming) =>
+	// remote = source; outbound (outgoing) => remote = destination.
+	Source      commonaddress.Address `json:"source,omitempty"`
+	Destination commonaddress.Address `json:"destination,omitempty"`
 
 	Text   string        `json:"text,omitempty"`
 	Medias []media.Media `json:"medias,omitempty"`
@@ -41,6 +48,9 @@ func (h *Message) ConvertWebhookMessage() *WebhookMessage {
 
 		ReferenceType: h.ReferenceType,
 		ReferenceID:   h.ReferenceID,
+
+		Source:      h.Source,
+		Destination: h.Destination,
 
 		Text:   h.Text,
 		Medias: h.Medias,

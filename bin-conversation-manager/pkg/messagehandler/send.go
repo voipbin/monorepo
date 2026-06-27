@@ -50,20 +50,20 @@ func (h *messageHandler) sendSMS(ctx context.Context, cv *conversation.Conversat
 
 	// create a sent message
 	messageID := h.utilHandler.UUIDCreate()
-	res, err := h.Create(
-		ctx,
-		messageID,
-		cv.CustomerID,
-		cv.ID,
-		message.DirectionOutgoing,
-		message.StatusProgressing,
-		message.ReferenceTypeMessage,
-		messageID,
-		"",
-		text,
-		"",
-		medias,
-	)
+	source, destination := DeriveEndpoints(cv, message.DirectionOutgoing)
+	res, err := h.Create(ctx, MessageCreateArgs{
+		ID:             messageID,
+		CustomerID:     cv.CustomerID,
+		ConversationID: cv.ID,
+		Direction:      message.DirectionOutgoing,
+		Status:         message.StatusProgressing,
+		ReferenceType:  message.ReferenceTypeMessage,
+		ReferenceID:    messageID,
+		Text:           text,
+		Medias:         medias,
+		Source:         source,
+		Destination:    destination,
+	})
 	if err != nil {
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err
@@ -90,20 +90,19 @@ func (h *messageHandler) sendWhatsApp(ctx context.Context, cv *conversation.Conv
 		return nil, errors.Wrap(err, "could not get account")
 	}
 
-	tmp, err := h.Create(
-		ctx,
-		uuid.Nil,
-		cv.CustomerID,
-		cv.ID,
-		message.DirectionOutgoing,
-		message.StatusProgressing,
-		message.ReferenceTypeWhatsApp,
-		uuid.Nil,
-		"",
-		text,
-		"",
-		[]media.Media{},
-	)
+	source, destination := DeriveEndpoints(cv, message.DirectionOutgoing)
+	tmp, err := h.Create(ctx, MessageCreateArgs{
+		ID:             uuid.Nil,
+		CustomerID:     cv.CustomerID,
+		ConversationID: cv.ID,
+		Direction:      message.DirectionOutgoing,
+		Status:         message.StatusProgressing,
+		ReferenceType:  message.ReferenceTypeWhatsApp,
+		ReferenceID:    uuid.Nil,
+		Text:           text,
+		Source:         source,
+		Destination:    destination,
+	})
 	if err != nil {
 		log.Errorf("Could not create message. err: %v", err)
 		return nil, err
@@ -149,20 +148,20 @@ func (h *messageHandler) sendLine(ctx context.Context, cv *conversation.Conversa
 		return nil, errors.Wrap(err, "could not get account")
 	}
 
-	tmp, err := h.Create(
-		ctx,
-		uuid.Nil,
-		cv.CustomerID,
-		cv.ID,
-		message.DirectionOutgoing,
-		message.StatusProgressing,
-		message.ReferenceTypeLine,
-		uuid.Nil,
-		"",
-		text,
-		"",
-		medias,
-	)
+	source, destination := DeriveEndpoints(cv, message.DirectionOutgoing)
+	tmp, err := h.Create(ctx, MessageCreateArgs{
+		ID:             uuid.Nil,
+		CustomerID:     cv.CustomerID,
+		ConversationID: cv.ID,
+		Direction:      message.DirectionOutgoing,
+		Status:         message.StatusProgressing,
+		ReferenceType:  message.ReferenceTypeLine,
+		ReferenceID:    uuid.Nil,
+		Text:           text,
+		Medias:         medias,
+		Source:         source,
+		Destination:    destination,
+	})
 	if err != nil {
 		log.Errorf("Could not create a message. err: %v", err)
 		return nil, err

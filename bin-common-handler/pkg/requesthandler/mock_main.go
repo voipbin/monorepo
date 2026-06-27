@@ -3785,18 +3785,18 @@ func (mr *MockRequestHandlerMockRecorder) ConversationV1HookGet(ctx, hm any) *go
 }
 
 // ConversationV1MessageCreate mocks base method.
-func (m *MockRequestHandler) ConversationV1MessageCreate(ctx context.Context, id, customerID, conversationID uuid.UUID, direction message0.Direction, status message0.Status, referenceType message0.ReferenceType, referenceID uuid.UUID, transactionID, text string, medias []media.Media) (*message0.Message, error) {
+func (m *MockRequestHandler) ConversationV1MessageCreate(ctx context.Context, id, customerID, conversationID uuid.UUID, direction message0.Direction, status message0.Status, referenceType message0.ReferenceType, referenceID uuid.UUID, transactionID, text string, medias []media.Media, source, destination address.Address) (*message0.Message, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConversationV1MessageCreate", ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias)
+	ret := m.ctrl.Call(m, "ConversationV1MessageCreate", ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias, source, destination)
 	ret0, _ := ret[0].(*message0.Message)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ConversationV1MessageCreate indicates an expected call of ConversationV1MessageCreate.
-func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageCreate(ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ConversationV1MessageCreate(ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias, source, destination any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageCreate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageCreate), ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConversationV1MessageCreate", reflect.TypeOf((*MockRequestHandler)(nil).ConversationV1MessageCreate), ctx, id, customerID, conversationID, direction, status, referenceType, referenceID, transactionID, text, medias, source, destination)
 }
 
 // ConversationV1MessageGet mocks base method.

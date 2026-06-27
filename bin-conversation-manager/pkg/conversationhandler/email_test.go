@@ -158,17 +158,19 @@ func Test_EmailEventSent(t *testing.T) {
 				mockMessage.EXPECT().
 					Create(
 						ctx,
-						uuid.Nil,
-						tt.email.CustomerID,
-						cv.ID,
-						message.DirectionOutgoing,
-						message.StatusProgressing,
-						message.ReferenceTypeEmail,
-						tt.email.ID,
-						txID,
-						tt.email.Content,
-						tt.email.Subject,
-						[]media.Media{},
+						messagehandler.MessageCreateArgs{
+							ID:             uuid.Nil,
+							CustomerID:     tt.email.CustomerID,
+							ConversationID: cv.ID,
+							Direction:      message.DirectionOutgoing,
+							Status:         message.StatusProgressing,
+							ReferenceType:  message.ReferenceTypeEmail,
+							ReferenceID:    tt.email.ID,
+							TransactionID:  txID,
+							Text:           tt.email.Content,
+							Subject:        tt.email.Subject,
+							Medias:         []media.Media{},
+						},
 					).
 					Return(&message.Message{Identity: commonidentity.Identity{ID: uuid.Must(uuid.NewV4())}}, nil)
 			}
@@ -228,12 +230,40 @@ func Test_EmailEventSent_partialFailureContinues(t *testing.T) {
 
 	// First destination's message Create fails; the loop must continue to the
 	// second destination rather than aborting the whole email. Second succeeds.
+	normA, _ := commonaddress.NormalizeTarget(e.Destinations[0].Type, e.Destinations[0].Target)
+	txA := e.ID.String() + ":" + normA
+	normOK, _ := commonaddress.NormalizeTarget(e.Destinations[1].Type, e.Destinations[1].Target)
+	txOK := e.ID.String() + ":" + normOK
 	gomock.InOrder(
 		mockMessage.EXPECT().
-			Create(ctx, uuid.Nil, e.CustomerID, cvA.ID, message.DirectionOutgoing, message.StatusProgressing, message.ReferenceTypeEmail, e.ID, gomock.Any(), e.Content, e.Subject, []media.Media{}).
+			Create(ctx, messagehandler.MessageCreateArgs{
+				ID:             uuid.Nil,
+				CustomerID:     e.CustomerID,
+				ConversationID: cvA.ID,
+				Direction:      message.DirectionOutgoing,
+				Status:         message.StatusProgressing,
+				ReferenceType:  message.ReferenceTypeEmail,
+				ReferenceID:    e.ID,
+				TransactionID:  txA,
+				Text:           e.Content,
+				Subject:        e.Subject,
+				Medias:         []media.Media{},
+			}).
 			Return(nil, fmt.Errorf("boom")),
 		mockMessage.EXPECT().
-			Create(ctx, uuid.Nil, e.CustomerID, cvOK.ID, message.DirectionOutgoing, message.StatusProgressing, message.ReferenceTypeEmail, e.ID, gomock.Any(), e.Content, e.Subject, []media.Media{}).
+			Create(ctx, messagehandler.MessageCreateArgs{
+				ID:             uuid.Nil,
+				CustomerID:     e.CustomerID,
+				ConversationID: cvOK.ID,
+				Direction:      message.DirectionOutgoing,
+				Status:         message.StatusProgressing,
+				ReferenceType:  message.ReferenceTypeEmail,
+				ReferenceID:    e.ID,
+				TransactionID:  txOK,
+				Text:           e.Content,
+				Subject:        e.Subject,
+				Medias:         []media.Media{},
+			}).
 			Return(&message.Message{Identity: commonidentity.Identity{ID: uuid.Must(uuid.NewV4())}}, nil),
 	)
 

@@ -98,7 +98,18 @@ func Test_Create(t *testing.T) {
 			mockDB.EXPECT().MessageCreate(ctx, tt.expectMessage).Return(nil)
 			mockDB.EXPECT().MessageGet(ctx, tt.responseUUID).Return(tt.responseMessage, nil)
 			mockNotify.EXPECT().PublishWebhookEvent(ctx, tt.responseMessage.CustomerID, message.EventTypeMessageCreated, tt.responseMessage)
-			res, err := h.Create(ctx, uuid.Nil, tt.customerID, tt.conversationID, tt.direction, tt.status, tt.referenceType, tt.referenceID, tt.transactionID, tt.text, "", tt.medias)
+			res, err := h.Create(ctx, MessageCreateArgs{
+				ID:             uuid.Nil,
+				CustomerID:     tt.customerID,
+				ConversationID: tt.conversationID,
+				Direction:      tt.direction,
+				Status:         tt.status,
+				ReferenceType:  tt.referenceType,
+				ReferenceID:    tt.referenceID,
+				TransactionID:  tt.transactionID,
+				Text:           tt.text,
+				Medias:         tt.medias,
+			})
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

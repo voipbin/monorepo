@@ -13,6 +13,7 @@ import (
 	"monorepo/bin-conversation-manager/models/conversation"
 	"monorepo/bin-conversation-manager/models/media"
 	"monorepo/bin-conversation-manager/models/message"
+	"monorepo/bin-conversation-manager/pkg/messagehandler"
 )
 
 // EmailEventSent records a sent email as an outgoing conversation message.
@@ -89,20 +90,22 @@ func (h *conversationHandler) EmailEventSent(ctx context.Context, e *emmemail.Em
 		// Create the outgoing conversation message. PK is auto-generated
 		// (id=uuid.Nil); reference_id points at the source email; status is
 		// progressing because the email has not yet been sent at email_created.
-		convMsg, errMsg := h.messageHandler.Create(
-			ctx,
-			uuid.Nil,
-			e.CustomerID,
-			cv.ID,
-			message.DirectionOutgoing,
-			message.StatusProgressing,
-			message.ReferenceTypeEmail,
-			e.ID,
-			txID,
-			e.Content,
-			e.Subject,
-			[]media.Media{},
-		)
+		source, dst := messagehandler.DeriveEndpoints(cv, message.DirectionOutgoing)
+		convMsg, errMsg := h.messageHandler.Create(ctx, messagehandler.MessageCreateArgs{
+			ID:             uuid.Nil,
+			CustomerID:     e.CustomerID,
+			ConversationID: cv.ID,
+			Direction:      message.DirectionOutgoing,
+			Status:         message.StatusProgressing,
+			ReferenceType:  message.ReferenceTypeEmail,
+			ReferenceID:    e.ID,
+			TransactionID:  txID,
+			Text:           e.Content,
+			Subject:        e.Subject,
+			Medias:         []media.Media{},
+			Source:         source,
+			Destination:    dst,
+		})
 		if errMsg != nil {
 			log.Errorf("Could not create a message. email_id: %s, err: %v", e.ID, errMsg)
 			if firstErr == nil {

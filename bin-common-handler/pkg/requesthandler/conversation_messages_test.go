@@ -11,6 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 	"go.uber.org/mock/gomock"
 
+	commonaddress "monorepo/bin-common-handler/models/address"
 	"monorepo/bin-common-handler/models/identity"
 	"monorepo/bin-common-handler/models/sock"
 	"monorepo/bin-common-handler/pkg/sockhandler"
@@ -248,6 +249,8 @@ func Test_ConversationV1MessageCreate(t *testing.T) {
 		transactionID  string
 		text           string
 		medias         []cvmedia.Media
+		source         commonaddress.Address
+		destination    commonaddress.Address
 
 		response *sock.Response
 
@@ -280,7 +283,7 @@ func Test_ConversationV1MessageCreate(t *testing.T) {
 				URI:      "/v1/messages/create",
 				Method:   sock.RequestMethodPost,
 				DataType: ContentTypeJSON,
-				Data:     []byte(`{"id":"3edc5b3c-1bd6-11f0-8371-6725df99009d","customer_id":"8c9e3e90-1acc-11f0-8112-a7bddc5a51fd","conversation_id":"55653a04-1ae1-11f0-82c9-473cc412083c","direction":"incoming","status":"done","reference_type":"message","reference_id":"559292e2-1ae1-11f0-85f9-1fe5ad4a6e8b","transaction_id":"55ee8b88-1ae1-11f0-9d84-33e1b1016fc7","text":"hello world"}`),
+				Data:     []byte(`{"id":"3edc5b3c-1bd6-11f0-8371-6725df99009d","customer_id":"8c9e3e90-1acc-11f0-8112-a7bddc5a51fd","conversation_id":"55653a04-1ae1-11f0-82c9-473cc412083c","direction":"incoming","status":"done","reference_type":"message","reference_id":"559292e2-1ae1-11f0-85f9-1fe5ad4a6e8b","transaction_id":"55ee8b88-1ae1-11f0-9d84-33e1b1016fc7","text":"hello world","source":{},"destination":{}}`),
 			},
 			expectRes: &cvmessage.Message{
 				Identity: identity.Identity{
@@ -315,6 +318,8 @@ func Test_ConversationV1MessageCreate(t *testing.T) {
 				tt.transactionID,
 				tt.text,
 				tt.medias,
+				tt.source,
+				tt.destination,
 			)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
