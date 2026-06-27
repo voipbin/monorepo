@@ -46,7 +46,7 @@ go generate ./pkg/cachehandler/...
 - **Queue (listen):** `bin-manager.contact-manager.request`
 - **Queue (subscribe):** `bin-manager.customer-manager.event` → cascade delete on `customer_deleted`
 - **Events published:** `contact_created`, `contact_updated`, `contact_deleted`
-- **Databases:** MySQL (`contact_contacts`, `contact_phone_numbers`, `contact_emails`, `contact_tag_assignments`) + Redis (lookup cache, DB index 1)
-- **Soft deletes:** active records have `tm_delete IS NULL`; deletion records the actual timestamp in `tm_delete` (no `9999-01-01` sentinel). `ContactList` and the public get/lookup paths exclude soft-deleted records by default; the by-id dbhandler primitive stays unfiltered so the delete event payload can re-read the tombstone
-- **Lookup cache:** Redis keyed by `(customer_id, phone_e164)` and `(customer_id, email)` — invalidated on update/delete
+- **Databases:** MySQL (`contact_contacts`, `contact_addresses`, `contact_tag_assignments`) + Redis (contact-body cache, DB index 1). `contact_addresses` is the unified identifier store (phone + email) that replaced the legacy `contact_phone_numbers` / `contact_emails` tables (VOIP-1207); rows carry `type` ('tel'|'email') and a normalized `target`.
+- **Soft deletes:** active records have `tm_delete IS NULL`; deletion records the actual timestamp in `tm_delete` (no `9999-01-01` sentinel). `ContactList` and the public get/lookup paths exclude soft-deleted records by default; the by-id dbhandler primitive stays unfiltered so the delete event payload can re-read the tombstone. `contact_addresses` is hard-delete (no `tm_delete`), mirroring `agent_addresses`.
+- **Caller-ID lookup:** `ContactLookupByPhone` / `ByEmail` query `contact_addresses` directly (`WHERE customer_id=? AND type=? AND target=?`) then load the contact; there is no per-identifier Redis cache (only the contact-body cache keyed by contact id).
 - **Metrics port:** `:2112/metrics`

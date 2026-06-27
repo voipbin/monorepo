@@ -596,7 +596,6 @@ func Test_ContactPhoneNumberCreate(t *testing.T) {
 		agent      *auth.AuthIdentity
 		contactID  uuid.UUID
 		number     string
-		numberE164 string
 		phoneType  string
 		isPrimary  bool
 
@@ -618,7 +617,6 @@ func Test_ContactPhoneNumberCreate(t *testing.T) {
 			}),
 			contactID:  uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			number:     "+15551234567",
-			numberE164: "",
 			phoneType:  "mobile",
 			isPrimary:  true,
 
@@ -676,9 +674,9 @@ func Test_ContactPhoneNumberCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContactGet, nil)
-			mockReq.EXPECT().ContactV1PhoneNumberCreate(ctx, tt.contactID, tt.number, tt.numberE164, tt.phoneType, tt.isPrimary).Return(tt.responseContact, nil)
+			mockReq.EXPECT().ContactV1PhoneNumberCreate(ctx, tt.contactID, tt.number, tt.phoneType, tt.isPrimary).Return(tt.responseContact, nil)
 
-			res, err := h.ContactPhoneNumberCreate(ctx, tt.agent, tt.contactID, tt.number, tt.numberE164, tt.phoneType, tt.isPrimary)
+			res, err := h.ContactPhoneNumberCreate(ctx, tt.agent, tt.contactID, tt.number, tt.phoneType, tt.isPrimary)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}

@@ -322,8 +322,7 @@ func Test_AddPhoneNumber(t *testing.T) {
 
 			contactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 			phone: &contact.PhoneNumber{
-				Number:     "+1-555-123-4567",
-				NumberE164: "+15551234567",
+				Number:     "+15551234567",
 				Type:       "mobile",
 				IsPrimary:  true,
 			},
@@ -871,7 +870,7 @@ func Test_Create_WithPhoneEmailTags(t *testing.T) {
 		},
 		FirstName: "Test",
 		PhoneNumbers: []contact.PhoneNumber{
-			{Number: "+1-555-123-4567", NumberE164: "+15551234567"},
+			{Number: "+15551234567"},
 		},
 		Emails: []contact.Email{
 			{Address: "test@example.com"},
@@ -1767,7 +1766,7 @@ func Test_Create_WithPhoneEmailTagErrors(t *testing.T) {
 		},
 		FirstName: "Test",
 		PhoneNumbers: []contact.PhoneNumber{
-			{Number: "+1-555-123-4567", NumberE164: "+15551234567"},
+			{Number: "+15551234567"},
 		},
 		Emails: []contact.Email{
 			{Address: "test@example.com"},
@@ -1831,9 +1830,9 @@ func Test_Create_WithMultiplePhones(t *testing.T) {
 		FirstName: "Multiple",
 		LastName:  "Phones",
 		PhoneNumbers: []contact.PhoneNumber{
-			{Number: "+1-555-111-1111", NumberE164: "+15551111111", Type: "mobile", IsPrimary: true},
-			{Number: "+1-555-222-2222", NumberE164: "+15552222222", Type: "work", IsPrimary: false},
-			{Number: "+1-555-333-3333", NumberE164: "+15553333333", Type: "home", IsPrimary: false},
+			{Number: "+15551111111", Type: "mobile", IsPrimary: true},
+			{Number: "+15552222222", Type: "work", IsPrimary: false},
+			{Number: "+15553333333", Type: "home", IsPrimary: false},
 		},
 	}
 
@@ -2118,8 +2117,8 @@ func Test_normalizeE164(t *testing.T) {
 	}
 }
 
-// Test_AddPhoneNumber_DeriveE164 tests that NumberE164 is derived from Number when not provided
-func Test_AddPhoneNumber_DeriveE164(t *testing.T) {
+// Test_AddPhoneNumber_NormalizesNumber tests that the Number field is normalized/masked on add
+func Test_AddPhoneNumber_NormalizesNumber(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -2138,7 +2137,6 @@ func Test_AddPhoneNumber_DeriveE164(t *testing.T) {
 		Number:    "+123456786",
 		Type:      "mobile",
 		IsPrimary: false,
-		// NumberE164 intentionally left empty - should be derived from Number
 	}
 
 	responseContact := &contact.Contact{
@@ -2151,8 +2149,8 @@ func Test_AddPhoneNumber_DeriveE164(t *testing.T) {
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("f3333333-3333-3333-3333-333333333333"))
 	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, p *contact.PhoneNumber) error {
-		if p.NumberE164 != "+123456786" {
-			return fmt.Errorf("expected NumberE164 '+123456786', got '%s'", p.NumberE164)
+		if p.Number != "+123456786" {
+			return fmt.Errorf("expected Number '+123456786', got '%s'", p.Number)
 		}
 		return nil
 	})
@@ -2182,8 +2180,7 @@ func Test_AddPhoneNumber_TrimsSpaces(t *testing.T) {
 
 	contactID := uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111")
 	phone := &contact.PhoneNumber{
-		Number:     "+1-555-123-4567",
-		NumberE164: "  +15551234567  ", // with spaces
+		Number:     "  +15551234567  ", // with spaces
 		Type:       "mobile",
 		IsPrimary:  true,
 	}
@@ -2200,8 +2197,8 @@ func Test_AddPhoneNumber_TrimsSpaces(t *testing.T) {
 	mockDB.EXPECT().PhoneNumberResetPrimary(ctx, contactID).Return(nil)
 	// Verify that the phone number is trimmed
 	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, p *contact.PhoneNumber) error {
-		if p.NumberE164 != "+15551234567" {
-			return fmt.Errorf("expected trimmed phone '+15551234567', got '%s'", p.NumberE164)
+		if p.Number != "+15551234567" {
+			return fmt.Errorf("expected trimmed phone '+15551234567', got '%s'", p.Number)
 		}
 		return nil
 	})

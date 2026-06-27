@@ -34,10 +34,9 @@ type ContactUpdate struct {
 
 // PhoneNumberCreate is the request body for POST /v1/contacts/{id}/phone-numbers
 type PhoneNumberCreate struct {
-	Number     string `json:"number"`
-	NumberE164 string `json:"number_e164"`
-	Type       string `json:"type"`
-	IsPrimary  bool   `json:"is_primary"`
+	Number    string `json:"number"`
+	Type      string `json:"type"`
+	IsPrimary bool   `json:"is_primary"`
 }
 
 // EmailCreate is the request body for POST /v1/contacts/{id}/emails

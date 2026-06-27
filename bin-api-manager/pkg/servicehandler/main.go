@@ -448,7 +448,6 @@ type ServiceHandler interface {
 		a *auth.AuthIdentity,
 		contactID uuid.UUID,
 		number string,
-		numberE164 string,
 		phoneType string,
 		isPrimary bool,
 	) (*cmcontact.WebhookMessage, error)
@@ -889,7 +888,7 @@ type ServiceHandler interface {
 	) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error)
-	ServiceAgentContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number string, numberE164 string, phoneType string, isPrimary bool) (*cmcontact.WebhookMessage, error)
+	ServiceAgentContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number string, phoneType string, isPrimary bool) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactPhoneNumberUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactEmailCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, address string, emailType string, isPrimary bool) (*cmcontact.WebhookMessage, error)

@@ -394,7 +394,7 @@ func (h *server) PostServiceAgentsContactsIdPhoneNumbers(c *gin.Context, id stri
 		isPrimary = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberCreate(c.Request.Context(), a, target, req.Number, "", phoneType, isPrimary)
+	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberCreate(c.Request.Context(), a, target, req.Number, phoneType, isPrimary)
 	if err != nil {
 		log.Errorf("Could not add phone number to contact. err: %v", err)
 		abortWithServiceError(c, err)

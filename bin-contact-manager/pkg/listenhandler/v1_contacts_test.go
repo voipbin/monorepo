@@ -441,7 +441,7 @@ func TestProcessV1ContactsPhoneNumbersPost(t *testing.T) {
 				URI:      "/v1/contacts/c31676f0-4e69-11ec-afe3-77ba49fae527/phone-numbers",
 				Method:   sock.RequestMethodPost,
 				DataType: "application/json",
-				Data:     []byte(`{"number":"+1-555-123-4567","number_e164":"+15551234567","type":"mobile","is_primary":true}`),
+				Data:     []byte(`{"number":"+1-555-123-4567","type":"mobile","is_primary":true}`),
 			},
 
 			contactID: uuid.FromStringOrNil("c31676f0-4e69-11ec-afe3-77ba49fae527"),
@@ -1317,7 +1317,7 @@ func TestProcessV1ContactsPhoneNumbersPost_AddError(t *testing.T) {
 		URI:      "/v1/contacts/c31676f0-4e69-11ec-afe3-77ba49fae527/phone-numbers",
 		Method:   sock.RequestMethodPost,
 		DataType: "application/json",
-		Data:     []byte(`{"number":"+1-555-123-4567","number_e164":"+15551234567"}`),
+		Data:     []byte(`{"number":"+1-555-123-4567"}`),
 	}
 
 	mockContact.EXPECT().AddPhoneNumber(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("database error"))
@@ -1595,7 +1595,7 @@ func TestProcessV1ContactsPost_WithPhoneAndEmail(t *testing.T) {
 		URI:      "/v1/contacts",
 		Method:   sock.RequestMethodPost,
 		DataType: "application/json",
-		Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"Jane","phone_numbers":[{"number":"+1-555-123-4567","number_e164":"+15551234567","type":"mobile","is_primary":true}],"emails":[{"address":"jane@example.com","type":"work","is_primary":true}],"tag_ids":["aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"]}`),
+		Data:     []byte(`{"customer_id":"92883d56-7fe3-11ec-8931-37d08180a2b9","first_name":"Jane","phone_numbers":[{"number":"+1-555-123-4567","type":"mobile","is_primary":true}],"emails":[{"address":"jane@example.com","type":"work","is_primary":true}],"tag_ids":["aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"]}`),
 	}
 
 	responseContact := &contact.Contact{

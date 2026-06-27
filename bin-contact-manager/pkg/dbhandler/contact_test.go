@@ -327,8 +327,7 @@ func Test_PhoneNumberCreate(t *testing.T) {
 				ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
 				CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				ContactID:  uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-				Number:     "+1-555-123-4567",
-				NumberE164: "+15551234567",
+				Number:     "+15551234567",
 				Type:       "mobile",
 				IsPrimary:  true,
 			},
@@ -377,8 +376,8 @@ func Test_PhoneNumberCreate(t *testing.T) {
 				t.Errorf("Expected 1 phone number, got: %d", len(res.PhoneNumbers))
 			}
 
-			if res.PhoneNumbers[0].NumberE164 != tt.phone.NumberE164 {
-				t.Errorf("Phone number mismatch. expect: %s, got: %s", tt.phone.NumberE164, res.PhoneNumbers[0].NumberE164)
+			if res.PhoneNumbers[0].Number != tt.phone.Number {
+				t.Errorf("Phone number mismatch. expect: %s, got: %s", tt.phone.Number, res.PhoneNumbers[0].Number)
 			}
 		})
 	}
@@ -635,8 +634,7 @@ func Test_PhoneNumberDelete(t *testing.T) {
 				ID:         uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
 				CustomerID: uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
 				ContactID:  uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd"),
-				Number:     "+1-555-999-8888",
-				NumberE164: "+15559998888",
+				Number:     "+15559998888",
 				Type:       "mobile",
 				IsPrimary:  true,
 			},
@@ -959,8 +957,7 @@ func Test_PhoneNumberListByContactID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e3333333-3333-3333-3333-333333333333"),
 					CustomerID: uuid.FromStringOrNil("e2222222-2222-2222-2222-222222222222"),
 					ContactID:  uuid.FromStringOrNil("e1111111-1111-1111-1111-111111111111"),
-					Number:     "+1-555-111-1111",
-					NumberE164: "+15551111111",
+					Number:     "+15551111111",
 					Type:       "mobile",
 					IsPrimary:  true,
 				},
@@ -968,8 +965,7 @@ func Test_PhoneNumberListByContactID(t *testing.T) {
 					ID:         uuid.FromStringOrNil("e4444444-4444-4444-4444-444444444444"),
 					CustomerID: uuid.FromStringOrNil("e2222222-2222-2222-2222-222222222222"),
 					ContactID:  uuid.FromStringOrNil("e1111111-1111-1111-1111-111111111111"),
-					Number:     "+1-555-222-2222",
-					NumberE164: "+15552222222",
+					Number:     "+15552222222",
 					Type:       "work",
 					IsPrimary:  false,
 				},
@@ -1456,8 +1452,7 @@ func Test_ContactLookupByPhone(t *testing.T) {
 				ID:         uuid.FromStringOrNil("03030303-0303-0303-0303-030303030303"),
 				CustomerID: uuid.FromStringOrNil("02020202-0202-0202-0202-020202020202"),
 				ContactID:  uuid.FromStringOrNil("01010101-0101-0101-0101-010101010101"),
-				Number:     "+1-555-777-8888",
-				NumberE164: "+15557778888",
+				Number:     "+15557778888",
 				Type:       "mobile",
 				IsPrimary:  true,
 			},
@@ -1496,7 +1491,7 @@ func Test_ContactLookupByPhone(t *testing.T) {
 
 			// Lookup by phone - should return the contact from cache (we're testing cache hit path)
 			mockCache.EXPECT().ContactGet(ctx, tt.contact.ID).Return(tt.contact, nil)
-			res, err := h.ContactLookupByPhone(ctx, tt.contact.CustomerID, tt.phone.NumberE164)
+			res, err := h.ContactLookupByPhone(ctx, tt.contact.CustomerID, tt.phone.Number)
 			if err != nil {
 				t.Errorf("ContactLookupByPhone() error = %v", err)
 			}
@@ -1812,7 +1807,7 @@ func Test_ContactUpdateToCache_TombstoneEvicts(t *testing.T) {
 		ID:         uuid.FromStringOrNil("f2222222-2222-2222-2222-0000000005f1"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		NumberE164: "+15551230000",
+		Number:     "+15551230000",
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	mockCache.EXPECT().ContactDelete(gomock.Any(), c.ID).Return(nil)
@@ -1983,8 +1978,7 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 		ID:         uuid.FromStringOrNil("21212121-2121-2121-2121-212121212121"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		Number:     "+1-555-111-1111",
-		NumberE164: "+15551111111",
+		Number:     "+15551111111",
 		Type:       "mobile",
 		IsPrimary:  true,
 	}
@@ -1999,8 +1993,7 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 		ID:         uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		Number:     "+1-555-222-2222",
-		NumberE164: "+15552222222",
+		Number:     "+15552222222",
 		Type:       "work",
 		IsPrimary:  false,
 	}

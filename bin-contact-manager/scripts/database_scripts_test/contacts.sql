@@ -60,6 +60,32 @@ create table contact_emails(
 create index idx_contact_emails_contact_id on contact_emails(contact_id);
 create index idx_contact_emails_address on contact_emails(address);
 
+create table contact_addresses(
+  id            binary(16),
+  customer_id   binary(16),
+  contact_id    binary(16),
+
+  type          varchar(255),
+  target        varchar(255),
+  target_name   varchar(255),
+  is_primary    boolean,
+
+  -- STORED generated column mirroring production: one-primary-per-contact.
+  -- SQLite supports generated columns (3.31+), enabling the same
+  -- UNIQUE(customer_id, primary_contact_uk) one-primary invariant in tests.
+  primary_contact_uk binary(16) generated always as (case when is_primary=1 then contact_id else null end) stored,
+
+  tm_create datetime(6),
+  tm_update datetime(6),
+
+  primary key(id)
+);
+
+create unique index idx_contact_addresses_cust_type_target on contact_addresses(customer_id, type, target);
+create unique index idx_contact_addresses_cust_primary on contact_addresses(customer_id, primary_contact_uk);
+create index idx_contact_addresses_contact_id on contact_addresses(contact_id);
+create index idx_contact_addresses_lookup on contact_addresses(customer_id, type, target);
+
 create table contact_tag_assignments(
   contact_id    binary(16),
   tag_id        binary(16),

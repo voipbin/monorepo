@@ -14,7 +14,7 @@ Before working with contacts, you need:
 
 .. note:: **AI Implementation Hint**
 
-   Phone numbers are automatically normalized to E.164 format in the ``number_e164`` field. When using the phone lookup endpoint (``GET /contacts/lookup?phone=...``), the ``+`` character must be URL-encoded as ``%2B``. Contact operations are free and synchronous.
+   Phone numbers are automatically normalized to E.164 format and stored in the ``number`` field. When using the phone lookup endpoint (``GET /contacts/lookup?phone=...``), the ``+`` character must be URL-encoded as ``%2B``. Contact operations are free and synchronous.
 
 Create a contact
 ----------------
@@ -71,7 +71,6 @@ Create a new contact with phone numbers, emails, and tags.
             {
                 "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
                 "number": "+15551234567",
-                "number_e164": "+15551234567",
                 "type": "mobile",
                 "is_primary": true,
                 "tm_create": "2026-02-07T14:45:59.038962Z"
@@ -79,7 +78,6 @@ Create a new contact with phone numbers, emails, and tags.
             {
                 "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
                 "number": "+15559876543",
-                "number_e164": "+15559876543",
                 "type": "work",
                 "is_primary": false,
                 "tm_create": "2026-02-07T14:45:59.038962Z"
@@ -127,7 +125,6 @@ Retrieve all contacts. Supports pagination with ``page_size`` and ``page_token``
                     {
                         "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
                         "number": "+15551234567",
-                        "number_e164": "+15551234567",
                         "type": "mobile",
                         "is_primary": true,
                         "tm_create": "2026-02-07T14:45:59.038962Z"

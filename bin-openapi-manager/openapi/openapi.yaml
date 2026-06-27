@@ -3442,10 +3442,6 @@ components:
           example: "550e8400-e29b-41d4-a716-446655440000"
         number:
           type: string
-          description: Phone number as entered.
-          example: "+14155551234"
-        number_e164:
-          type: string
           description: Phone number in E.164 format.
           example: "+14155551234"
         type:

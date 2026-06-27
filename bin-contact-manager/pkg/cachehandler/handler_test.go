@@ -148,8 +148,7 @@ func TestHandler_ContactWithRelatedData(t *testing.T) {
 				ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
 				CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				ContactID:  uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-				Number:     "+1-555-123-4567",
-				NumberE164: "+15551234567",
+				Number:     "+15551234567",
 				Type:       "mobile",
 				IsPrimary:  true,
 			},
@@ -190,8 +189,8 @@ func TestHandler_ContactWithRelatedData(t *testing.T) {
 		t.Errorf("ContactGet() TagIDs count = %v, want 1", len(result.TagIDs))
 	}
 
-	if result.PhoneNumbers[0].NumberE164 != "+15551234567" {
-		t.Errorf("ContactGet() PhoneNumber = %v, want +15551234567", result.PhoneNumbers[0].NumberE164)
+	if result.PhoneNumbers[0].Number != "+15551234567" {
+		t.Errorf("ContactGet() PhoneNumber = %v, want +15551234567", result.PhoneNumbers[0].Number)
 	}
 	if result.Emails[0].Address != "john@example.com" {
 		t.Errorf("ContactGet() Email = %v, want john@example.com", result.Emails[0].Address)
@@ -592,8 +591,7 @@ func TestHandler_ContactSetUpdateExisting(t *testing.T) {
 	testContact.PhoneNumbers = []contact.PhoneNumber{
 		{
 			ID:         uuid.FromStringOrNil("dddddddd-eeee-ffff-0000-222222222222"),
-			Number:     "+1-555-999-0000",
-			NumberE164: "+15559990000",
+			Number:     "+15559990000",
 		},
 	}
 
@@ -679,9 +677,9 @@ func TestHandler_ContactWithLargeData(t *testing.T) {
 		ExternalID:  "large-ext-001",
 		Notes:       "This is a contact with lots of related data for testing serialization",
 		PhoneNumbers: []contact.PhoneNumber{
-			{ID: uuid.FromStringOrNil("a0001111-1111-1111-1111-111111111111"), Number: "+1-555-111-1111", NumberE164: "+15551111111", Type: "mobile", IsPrimary: true},
-			{ID: uuid.FromStringOrNil("a0002222-2222-2222-2222-222222222222"), Number: "+1-555-222-2222", NumberE164: "+15552222222", Type: "work", IsPrimary: false},
-			{ID: uuid.FromStringOrNil("a0003333-3333-3333-3333-333333333333"), Number: "+1-555-333-3333", NumberE164: "+15553333333", Type: "home", IsPrimary: false},
+			{ID: uuid.FromStringOrNil("a0001111-1111-1111-1111-111111111111"), Number: "+15551111111", Type: "mobile", IsPrimary: true},
+			{ID: uuid.FromStringOrNil("a0002222-2222-2222-2222-222222222222"), Number: "+15552222222", Type: "work", IsPrimary: false},
+			{ID: uuid.FromStringOrNil("a0003333-3333-3333-3333-333333333333"), Number: "+15553333333", Type: "home", IsPrimary: false},
 		},
 		Emails: []contact.Email{
 			{ID: uuid.FromStringOrNil("b0001111-1111-1111-1111-111111111111"), Address: "primary@example.com", Type: "work", IsPrimary: true},

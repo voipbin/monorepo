@@ -39,7 +39,6 @@ const (
 	PhoneNumberFieldCustomerID PhoneNumberField = "customer_id"
 	PhoneNumberFieldContactID  PhoneNumberField = "contact_id"
 	PhoneNumberFieldNumber     PhoneNumberField = "number"
-	PhoneNumberFieldNumberE164 PhoneNumberField = "number_e164"
 	PhoneNumberFieldType       PhoneNumberField = "type"
 	PhoneNumberFieldIsPrimary  PhoneNumberField = "is_primary"
 	PhoneNumberFieldTMCreate   PhoneNumberField = "tm_create"

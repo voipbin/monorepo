@@ -890,7 +890,6 @@ type RequestHandler interface {
 		ctx context.Context,
 		contactID uuid.UUID,
 		number string,
-		numberE164 string,
 		phoneType string,
 		isPrimary bool,
 	) (*cmcontact.Contact, error)

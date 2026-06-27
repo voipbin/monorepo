@@ -42,9 +42,9 @@ SELECT id, display_name, tm_create FROM contact_contacts
 WHERE customer_id = '<uuid>' AND tm_delete IS NULL
 LIMIT 20;
 
--- Phone numbers for a contact
-SELECT id, phone_number FROM contact_phone_numbers
-WHERE contact_id = '<uuid>' AND tm_delete IS NULL;
+-- Addresses (phone + email) for a contact
+SELECT id, type, target, is_primary FROM contact_addresses
+WHERE contact_id = '<uuid>';
 ```
 
 ## Configuration

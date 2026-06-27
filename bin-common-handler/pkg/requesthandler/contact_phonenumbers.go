@@ -18,17 +18,15 @@ func (r *requestHandler) ContactV1PhoneNumberCreate(
 	ctx context.Context,
 	contactID uuid.UUID,
 	number string,
-	numberE164 string,
 	phoneType string,
 	isPrimary bool,
 ) (*cmcontact.Contact, error) {
 	uri := fmt.Sprintf("/v1/contacts/%s/phone-numbers", contactID)
 
 	data := &cmrequest.PhoneNumberCreate{
-		Number:     number,
-		NumberE164: numberE164,
-		Type:       phoneType,
-		IsPrimary:  isPrimary,
+		Number:    number,
+		Type:      phoneType,
+		IsPrimary: isPrimary,
 	}
 
 	m, err := json.Marshal(data)

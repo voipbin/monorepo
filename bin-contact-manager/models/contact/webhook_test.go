@@ -26,8 +26,7 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 		PhoneNumbers: []PhoneNumber{
 			{
 				ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-				Number:     "+1-555-123-4567",
-				NumberE164: "+15551234567",
+				Number:     "+15551234567",
 				Type:       "mobile",
 				IsPrimary:  true,
 			},
@@ -128,8 +127,7 @@ func TestContact_CreateWebhookEvent(t *testing.T) {
 				PhoneNumbers: []PhoneNumber{
 					{
 						ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-						Number:     "+1-555-999-8888",
-						NumberE164: "+15559998888",
+						Number:     "+15559998888",
 					},
 				},
 				Emails: []Email{

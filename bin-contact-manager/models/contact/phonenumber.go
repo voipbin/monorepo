@@ -9,13 +9,10 @@ import (
 // PhoneNumber represents a phone number associated with a contact.
 // Contacts can have multiple phone numbers (mobile, work, home, etc.).
 //
-// Phone numbers are stored in two formats:
-//   - Number: Original format as entered by the user
-//   - NumberE164: Normalized E.164 format for reliable matching
-//
-// The E.164 format enables consistent lookup across different input formats.
-// For example, "(555) 123-4567" and "+1-555-123-4567" both normalize to
-// "+15551234567" for matching purposes.
+// Phone numbers are persisted in the unified contact_addresses table as
+// (type='tel', target=<E.164>) rows. The Number field carries the normalized
+// E.164 string (no separate raw/normalized split). For example, both
+// "(555) 123-4567" and "+1-555-123-4567" are stored as "+155****4567".
 type PhoneNumber struct {
 	// ID is the unique identifier for this phone number record.
 	ID uuid.UUID `json:"id" db:"id,uuid"`
@@ -28,22 +25,16 @@ type PhoneNumber struct {
 	// When the contact is deleted, associated phone numbers are cascade deleted.
 	ContactID uuid.UUID `json:"contact_id" db:"contact_id,uuid"`
 
-	// Number stores the phone number in its original input format.
-	// Preserved for display purposes and user familiarity.
-	// Examples: "(555) 123-4567", "+1-555-123-4567", "555.123.4567"
-	Number string `json:"number" db:"number"`
-
-	// NumberE164 stores the phone number in E.164 normalized format.
-	// E.164 is the international standard: + followed by country code
-	// and subscriber number, with no spaces, dashes, or parentheses.
-	//
-	// This format is used for:
+	// Number stores the phone number in normalized E.164 format. E.164 is the
+	// international standard: + followed by country code and subscriber number,
+	// with no spaces, dashes, or parentheses. The value maps to the
+	// contact_addresses.target column for tel-type rows and is used for:
 	//   - Lookup operations (e.g., finding contact by caller ID)
 	//   - Deduplication (prevent adding the same number twice)
 	//   - Integration with telephony systems
 	//
-	// Examples: "+15551234567" (US), "+442071234567" (UK), "+81312345678" (Japan)
-	NumberE164 string `json:"number_e164" db:"number_e164"`
+	// Examples: "+155****4567" (US), "+442****4567" (UK), "+813****5678" (Japan)
+	Number string `json:"number" db:"number"`
 
 	// Type categorizes the phone number for organizational purposes.
 	// Valid values:
