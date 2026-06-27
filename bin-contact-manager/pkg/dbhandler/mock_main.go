@@ -13,7 +13,9 @@ import (
 	context "context"
 	contact "monorepo/bin-contact-manager/models/contact"
 	interaction "monorepo/bin-contact-manager/models/interaction"
+	resolution "monorepo/bin-contact-manager/models/resolution"
 	reflect "reflect"
+	time "time"
 
 	uuid "github.com/gofrs/uuid"
 	gomock "go.uber.org/mock/gomock"
@@ -41,6 +43,36 @@ func NewMockDBHandler(ctrl *gomock.Controller) *MockDBHandler {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
+}
+
+// AddressGetByID mocks base method.
+func (m *MockDBHandler) AddressGetByID(ctx context.Context, customerID, id uuid.UUID) (AddressPair, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressGetByID", ctx, customerID, id)
+	ret0, _ := ret[0].(AddressPair)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddressGetByID indicates an expected call of AddressGetByID.
+func (mr *MockDBHandlerMockRecorder) AddressGetByID(ctx, customerID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressGetByID", reflect.TypeOf((*MockDBHandler)(nil).AddressGetByID), ctx, customerID, id)
+}
+
+// AddressListByContact mocks base method.
+func (m *MockDBHandler) AddressListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]AddressPair, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressListByContact", ctx, customerID, contactID)
+	ret0, _ := ret[0].([]AddressPair)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddressListByContact indicates an expected call of AddressListByContact.
+func (mr *MockDBHandlerMockRecorder) AddressListByContact(ctx, customerID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressListByContact", reflect.TypeOf((*MockDBHandler)(nil).AddressListByContact), ctx, customerID, contactID)
 }
 
 // ContactCreate mocks base method.
@@ -259,6 +291,66 @@ func (mr *MockDBHandlerMockRecorder) InteractionCreate(ctx, i any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionCreate", reflect.TypeOf((*MockDBHandler)(nil).InteractionCreate), ctx, i)
 }
 
+// InteractionGet mocks base method.
+func (m *MockDBHandler) InteractionGet(ctx context.Context, id uuid.UUID) (*interaction.Interaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InteractionGet", ctx, id)
+	ret0, _ := ret[0].(*interaction.Interaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InteractionGet indicates an expected call of InteractionGet.
+func (mr *MockDBHandlerMockRecorder) InteractionGet(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionGet", reflect.TypeOf((*MockDBHandler)(nil).InteractionGet), ctx, id)
+}
+
+// InteractionList mocks base method.
+func (m *MockDBHandler) InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, addressSet []AddressPair) ([]*interaction.Interaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InteractionList", ctx, customerID, size, token, peerType, peerTarget, addressSet)
+	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InteractionList indicates an expected call of InteractionList.
+func (mr *MockDBHandlerMockRecorder) InteractionList(ctx, customerID, size, token, peerType, peerTarget, addressSet any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionList", reflect.TypeOf((*MockDBHandler)(nil).InteractionList), ctx, customerID, size, token, peerType, peerTarget, addressSet)
+}
+
+// InteractionListByIDs mocks base method.
+func (m *MockDBHandler) InteractionListByIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) ([]*interaction.Interaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InteractionListByIDs", ctx, customerID, ids)
+	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InteractionListByIDs indicates an expected call of InteractionListByIDs.
+func (mr *MockDBHandlerMockRecorder) InteractionListByIDs(ctx, customerID, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListByIDs", reflect.TypeOf((*MockDBHandler)(nil).InteractionListByIDs), ctx, customerID, ids)
+}
+
+// InteractionListUnresolved mocks base method.
+func (m *MockDBHandler) InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InteractionListUnresolved", ctx, customerID, size, token, since)
+	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InteractionListUnresolved indicates an expected call of InteractionListUnresolved.
+func (mr *MockDBHandlerMockRecorder) InteractionListUnresolved(ctx, customerID, size, token, since any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListUnresolved", reflect.TypeOf((*MockDBHandler)(nil).InteractionListUnresolved), ctx, customerID, size, token, since)
+}
+
 // PhoneNumberCreate mocks base method.
 func (m *MockDBHandler) PhoneNumberCreate(ctx context.Context, p *contact.PhoneNumber) error {
 	m.ctrl.T.Helper()
@@ -343,6 +435,64 @@ func (m *MockDBHandler) PhoneNumberUpdate(ctx context.Context, id uuid.UUID, fie
 func (mr *MockDBHandlerMockRecorder) PhoneNumberUpdate(ctx, id, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberUpdate", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberUpdate), ctx, id, fields)
+}
+
+// ResolutionCreate mocks base method.
+func (m *MockDBHandler) ResolutionCreate(ctx context.Context, r *resolution.Resolution) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionCreate", ctx, r)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResolutionCreate indicates an expected call of ResolutionCreate.
+func (mr *MockDBHandlerMockRecorder) ResolutionCreate(ctx, r any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionCreate", reflect.TypeOf((*MockDBHandler)(nil).ResolutionCreate), ctx, r)
+}
+
+// ResolutionDelete mocks base method.
+func (m *MockDBHandler) ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionDelete", ctx, customerID, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ResolutionDelete indicates an expected call of ResolutionDelete.
+func (mr *MockDBHandlerMockRecorder) ResolutionDelete(ctx, customerID, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDelete", reflect.TypeOf((*MockDBHandler)(nil).ResolutionDelete), ctx, customerID, id)
+}
+
+// ResolutionListByContact mocks base method.
+func (m *MockDBHandler) ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionListByContact", ctx, customerID, contactID)
+	ret0, _ := ret[0].([]*resolution.Resolution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResolutionListByContact indicates an expected call of ResolutionListByContact.
+func (mr *MockDBHandlerMockRecorder) ResolutionListByContact(ctx, customerID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionListByContact", reflect.TypeOf((*MockDBHandler)(nil).ResolutionListByContact), ctx, customerID, contactID)
+}
+
+// ResolutionListByInteraction mocks base method.
+func (m *MockDBHandler) ResolutionListByInteraction(ctx context.Context, customerID, interactionID uuid.UUID) ([]*resolution.Resolution, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolutionListByInteraction", ctx, customerID, interactionID)
+	ret0, _ := ret[0].([]*resolution.Resolution)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResolutionListByInteraction indicates an expected call of ResolutionListByInteraction.
+func (mr *MockDBHandlerMockRecorder) ResolutionListByInteraction(ctx, customerID, interactionID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionListByInteraction", reflect.TypeOf((*MockDBHandler)(nil).ResolutionListByInteraction), ctx, customerID, interactionID)
 }
 
 // TagAssignmentCreate mocks base method.

@@ -48,6 +48,8 @@ import (
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
 	cmcontact "monorepo/bin-contact-manager/models/contact"
+	cminteraction "monorepo/bin-contact-manager/models/interaction"
+	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
 	cvaccount "monorepo/bin-conversation-manager/models/account"
@@ -910,6 +912,13 @@ type RequestHandler interface {
 	// contact-manager tags
 	ContactV1TagAdd(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
 	ContactV1TagRemove(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)
+
+	// contact-manager interactions (CRM v1 read API, VOIP-1209)
+	ContactV1InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*cminteraction.Interaction, error)
+	ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, contactID, addressID uuid.UUID) (*cminteraction.InteractionListResponse, error)
+	ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, sinceDays int) (*cminteraction.InteractionListResponse, error)
+	ContactV1ResolutionCreate(ctx context.Context, interactionID, customerID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*cmresolution.Resolution, error)
+	ContactV1ResolutionDelete(ctx context.Context, customerID uuid.UUID, interactionID, resolutionID uuid.UUID) error
 
 	// direct-manager directs
 	DirectV1DirectCreate(ctx context.Context, customerID uuid.UUID, resourceType string, resourceID uuid.UUID) (*dmdirect.Direct, error)

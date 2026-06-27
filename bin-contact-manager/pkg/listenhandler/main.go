@@ -60,6 +60,13 @@ var (
 	// v1 contacts/{id}/tags
 	regV1ContactsTags   = regexp.MustCompile("/v1/contacts/" + regUUID + "/tags$")
 	regV1ContactsTagsID = regexp.MustCompile("/v1/contacts/" + regUUID + "/tags/" + regUUID + "$")
+
+	// v1 interactions
+	regV1InteractionsUnresolved    = regexp.MustCompile(`/v1/interactions/unresolved(\?.*)?$`)
+	regV1InteractionsGet           = regexp.MustCompile(`/v1/interactions\?(.*)$`)
+	regV1InteractionsID            = regexp.MustCompile("/v1/interactions/" + regUUID + "$")
+	regV1InteractionsResolutions   = regexp.MustCompile("/v1/interactions/" + regUUID + "/resolutions$")
+	regV1InteractionsResolutionsID = regexp.MustCompile("/v1/interactions/" + regUUID + "/resolutions/" + regUUID + "$")
 )
 
 var (
@@ -251,6 +258,35 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ContactsTagsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ContactsTagsIDDelete(ctx, m)
 		requestType = "/v1/contacts/{id}/tags/{tag_id}"
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// v1 Interactions
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// GET /interactions/unresolved (must be before regV1InteractionsID)
+	case regV1InteractionsUnresolved.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1InteractionsUnresolvedGet(ctx, m)
+		requestType = "/v1/interactions/unresolved"
+
+	// GET /interactions?...
+	case regV1InteractionsGet.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1InteractionsGet(ctx, m)
+		requestType = "/v1/interactions"
+
+	// GET /interactions/{id}
+	case regV1InteractionsID.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1InteractionsIDGet(ctx, m)
+		requestType = "/v1/interactions/{id}"
+
+	// POST /interactions/{id}/resolutions
+	case regV1InteractionsResolutions.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1InteractionsResolutionsPost(ctx, m)
+		requestType = "/v1/interactions/{id}/resolutions"
+
+	// DELETE /interactions/{id}/resolutions/{rid}
+	case regV1InteractionsResolutionsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1InteractionsResolutionsIDDelete(ctx, m)
+		requestType = "/v1/interactions/{id}/resolutions/{rid}"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// No handler found
