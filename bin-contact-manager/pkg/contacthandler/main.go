@@ -4,6 +4,7 @@ package contacthandler
 
 import (
 	"context"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/requesthandler"
@@ -16,6 +17,8 @@ import (
 	callmodel "monorepo/bin-call-manager/models/call"
 	convmsg "monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-contact-manager/models/contact"
+	"monorepo/bin-contact-manager/models/interaction"
+	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
 
@@ -50,6 +53,17 @@ type ContactHandler interface {
 	// Projection event handlers (CRM interaction timeline)
 	EventCallCreated(ctx context.Context, m *callmodel.WebhookMessage) error
 	EventConversationMessageCreated(ctx context.Context, m *convmsg.WebhookMessage) error
+
+	// Interaction read operations (CRM v1 read API, VOIP-1209)
+	InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*interaction.Interaction, error)
+	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string,
+		peerType, peerTarget string, contactID uuid.UUID, addressID uuid.UUID) (*interaction.InteractionListResponse, error)
+	InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) (*interaction.InteractionListResponse, error)
+
+	// Resolution operations (CRM v1 attribution, VOIP-1209)
+	ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID,
+		resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error)
+	ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error
 }
 
 type contactHandler struct {

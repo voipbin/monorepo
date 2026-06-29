@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
@@ -13,6 +14,7 @@ import (
 
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/models/interaction"
+	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
 
@@ -51,6 +53,20 @@ type DBHandler interface {
 
 	// Interaction operations
 	InteractionCreate(ctx context.Context, i *interaction.Interaction) error
+	InteractionGet(ctx context.Context, id uuid.UUID) (*interaction.Interaction, error)
+	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, addressSet []AddressPair) ([]*interaction.Interaction, error)
+	InteractionListByIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) ([]*interaction.Interaction, error)
+	InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, error)
+
+	// Address operations
+	AddressListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]AddressPair, error)
+	AddressGetByID(ctx context.Context, customerID, id uuid.UUID) (AddressPair, error)
+
+	// Resolution operations
+	ResolutionCreate(ctx context.Context, r *resolution.Resolution) error
+	ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error
+	ResolutionListByInteraction(ctx context.Context, customerID, interactionID uuid.UUID) ([]*resolution.Resolution, error)
+	ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error)
 }
 
 // handler database handler

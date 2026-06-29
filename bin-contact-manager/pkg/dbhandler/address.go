@@ -112,3 +112,70 @@ func (h *handler) addressResetPrimaryForContact(_ context.Context, contactID uui
 
 	return nil
 }
+
+// AddressListByContact returns all (type, target) pairs for a contact.
+// contact_addresses has no soft-delete.
+func (h *handler) AddressListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]AddressPair, error) {
+	query, args, err := sq.Select("type", "target").
+		From(addressTable).
+		Where(sq.Eq{
+			"customer_id": customerID.Bytes(),
+			"contact_id":  contactID.Bytes(),
+		}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. AddressListByContact. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AddressListByContact. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	var res []AddressPair
+	for rows.Next() {
+		var ap AddressPair
+		if scanErr := rows.Scan(&ap.Type, &ap.Target); scanErr != nil {
+			return nil, fmt.Errorf("could not scan the row. AddressListByContact. err: %v", scanErr)
+		}
+		res = append(res, ap)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error. AddressListByContact. err: %v", err)
+	}
+
+	return res, nil
+}
+
+// AddressGetByID returns the (type, target) for a single address row,
+// scoped to customerID to prevent cross-tenant PII disclosure.
+// Returns ErrNotFound if absent or belongs to a different customer.
+func (h *handler) AddressGetByID(ctx context.Context, customerID, id uuid.UUID) (AddressPair, error) {
+	query, args, err := sq.Select("type", "target").
+		From(addressTable).
+		Where(sq.Eq{"id": id.Bytes()}).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return AddressPair{}, fmt.Errorf("could not build query. AddressGetByID. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return AddressPair{}, fmt.Errorf("could not query. AddressGetByID. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	if !rows.Next() {
+		return AddressPair{}, ErrNotFound
+	}
+
+	var ap AddressPair
+	if err := rows.Scan(&ap.Type, &ap.Target); err != nil {
+		return AddressPair{}, fmt.Errorf("could not scan the row. AddressGetByID. err: %v", err)
+	}
+
+	return ap, nil
+}

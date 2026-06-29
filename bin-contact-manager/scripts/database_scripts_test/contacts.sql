@@ -112,3 +112,22 @@ create table contact_interactions(
 create unique index idx_contact_interactions_idem on contact_interactions(reference_type, reference_id, peer_target);
 create index idx_contact_interactions_peer on contact_interactions(customer_id, peer_type, peer_target);
 create index idx_contact_interactions_cursor on contact_interactions(customer_id, tm_create);
+
+create table contact_resolutions (
+  id                binary(16)    not null,
+  customer_id       binary(16)    not null,
+  contact_id        binary(16)    not null,
+  interaction_id    binary(16)    not null,
+  resolution_type   varchar(255)  not null default '',
+  resolved_by_type  varchar(255)  not null default '',
+  resolved_by_id    binary(16)    not null,
+  tm_create         datetime(6),
+  tm_update         datetime(6),
+  tm_delete         datetime(6),
+  primary key(id)
+);
+
+create index idx_contact_resolutions_contact_interaction
+  on contact_resolutions(customer_id, contact_id, tm_delete);
+create index idx_contact_resolutions_interaction
+  on contact_resolutions(customer_id, interaction_id, tm_delete);
