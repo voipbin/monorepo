@@ -119,7 +119,8 @@ func (h *server) GetInteractionsUnresolved(c *gin.Context, params openapi_server
 	}
 
 	// Validate and pass since param directly in "Nd" format.
-	// Empty → "" (backend applies default 30d). Max 180d enforced here and in listenhandler.
+	// Empty → "" (backend applies default 30d). Format and positive-int validated here;
+	// upper-bound (180d) is enforced by the contact-manager listenhandler.
 	since := ""
 	if params.Since != nil && *params.Since != "" {
 		s := *params.Since

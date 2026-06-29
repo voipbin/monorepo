@@ -156,6 +156,17 @@ func Test_GetInteractionsUnresolved(t *testing.T) {
 			expectStatus: http.StatusBadRequest,
 		},
 		{
+			name: "bad request - zero days",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:     "/interactions/unresolved?since=0d",
+			expectStatus: http.StatusBadRequest,
+		},
+		{
 			name:         "unauthenticated",
 			agent:        nil,
 			reqQuery:     "/interactions/unresolved",

@@ -163,6 +163,27 @@ func Test_ResolutionDelete(t *testing.T) {
 	if err := h.ResolutionDelete(ctx, wrongCustomerID, r2.InteractionID, r2.ID); err != ErrNotFound {
 		t.Errorf("ResolutionDelete() cross-tenant expected ErrNotFound, got: %v", err)
 	}
+
+	// cross-interaction: correct customerID + correct resolutionID + wrong interactionID → ErrNotFound
+	r3 := &resolution.Resolution{
+		ID:             uuid.FromStringOrNil("f1b2c3d4-2002-0000-0000-000000004004"),
+		CustomerID:     r.CustomerID,
+		ContactID:      r.ContactID,
+		InteractionID:  r.InteractionID,
+		ResolutionType: resolution.ResolutionTypePositive,
+		ResolvedByType: resolution.ResolvedByTypeSystem,
+		ResolvedByID:   resolution.ResolvedByIDSystem,
+		TMCreate:       deleteTime,
+		TMUpdate:       deleteTime,
+	}
+	if err := h.ResolutionCreate(ctx, r3); err != nil {
+		t.Fatalf("ResolutionCreate(r3) error = %v", err)
+	}
+	wrongInteractionID := uuid.FromStringOrNil("f1b2c3d4-2002-aaaa-aaaa-000000000000")
+	mockUtil.EXPECT().TimeNow().Return(deleteTime)
+	if err := h.ResolutionDelete(ctx, r3.CustomerID, wrongInteractionID, r3.ID); err != ErrNotFound {
+		t.Errorf("ResolutionDelete() cross-interaction expected ErrNotFound, got: %v", err)
+	}
 }
 
 func Test_ResolutionListByInteraction(t *testing.T) {

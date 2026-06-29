@@ -184,13 +184,9 @@ func (h *serviceHandler) ResolutionCreate(
 }
 
 // ResolutionDelete sends a request to contact-manager
-// to soft-delete a resolution.
-// Note: the listenhandler does NOT forward interactionID to the DB layer.
-// Actual enforcement is WHERE customer_id=? AND id=? only — not WHERE interaction_id=?.
-// A caller with valid customerID can delete any resolution belonging to their customer
-// regardless of which interaction URI path was used.
-// Fixing this gap (passing interactionID through the contactHandler) is tracked in a
-// follow-up ticket (see design doc §6).
+// ResolutionDelete soft-deletes a resolution.
+// interactionID is passed through the full chain so the DB enforces
+// WHERE customer_id=? AND interaction_id=? AND id=? — preventing cross-interaction deletion.
 func (h *serviceHandler) ResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ResolutionDelete",
