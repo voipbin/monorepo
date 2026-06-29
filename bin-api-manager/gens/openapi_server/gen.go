@@ -28675,11 +28675,11 @@ type PostInteractionsIdResolutionsResponseObject interface {
 	VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error
 }
 
-type PostInteractionsIdResolutions200JSONResponse ContactManagerResolution
+type PostInteractionsIdResolutions201JSONResponse ContactManagerResolution
 
-func (response PostInteractionsIdResolutions200JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+func (response PostInteractionsIdResolutions201JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }

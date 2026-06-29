@@ -53,6 +53,7 @@ func (h *contactHandler) InteractionGet(ctx context.Context, customerID, id uuid
 
 // InteractionList is the main timeline read path.
 // Exactly one of (peerType+peerTarget), contactID, or addressID must be non-zero.
+// Returns the interaction slice and a next-page token (empty when no further pages).
 func (h *contactHandler) InteractionList(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -61,7 +62,7 @@ func (h *contactHandler) InteractionList(
 	peerType, peerTarget string,
 	contactID uuid.UUID,
 	addressID uuid.UUID,
-) (*interaction.InteractionListResponse, error) {
+) ([]*interaction.Interaction, string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "InteractionList",
 		"customerID": customerID,
@@ -76,9 +77,9 @@ func (h *contactHandler) InteractionList(
 		// Direct peer path
 		items, err := h.db.InteractionList(ctx, customerID, size+1, token, peerType, peerTarget, nil)
 		if err != nil {
-			return nil, fmt.Errorf("could not list interactions by peer. InteractionList. err: %v", err)
+			return nil, "", fmt.Errorf("could not list interactions by peer. InteractionList. err: %v", err)
 		}
-		return buildListResponse(items, size), nil
+		return buildPagedResult(items, size)
 
 	case contactID != uuid.Nil:
 		return h.interactionListByContact(ctx, log, customerID, contactID, size, token)
@@ -87,7 +88,7 @@ func (h *contactHandler) InteractionList(
 		return h.interactionListByAddress(ctx, customerID, addressID, size, token)
 
 	default:
-		return nil, cerrors.InvalidArgument(
+		return nil, "", cerrors.InvalidArgument(
 			commonoutline.ServiceNameContactManager,
 			"INVALID_FILTER",
 			"At least one filter (peer_type+peer_target, contact_id, or address_id) is required.",
@@ -102,11 +103,11 @@ func (h *contactHandler) interactionListByContact(
 	customerID, contactID uuid.UUID,
 	size uint64,
 	token string,
-) (*interaction.InteractionListResponse, error) {
+) ([]*interaction.Interaction, string, error) {
 	// STEP 0: Existence + tenant check.
 	c, err := h.db.ContactGet(ctx, contactID)
 	if err != nil || c == nil || c.TMDelete != nil || c.CustomerID != customerID {
-		return nil, cerrors.NotFound(
+		return nil, "", cerrors.NotFound(
 			commonoutline.ServiceNameContactManager,
 			"CONTACT_NOT_FOUND",
 			"The contact was not found.",
@@ -116,7 +117,7 @@ func (h *contactHandler) interactionListByContact(
 	// STEP 1: Expand address set.
 	addressPairs, err := h.db.AddressListByContact(ctx, customerID, contactID)
 	if err != nil {
-		return nil, fmt.Errorf("could not list addresses. interactionListByContact. err: %v", err)
+		return nil, "", fmt.Errorf("could not list addresses. interactionListByContact. err: %v", err)
 	}
 
 	// STEP 2: Fetch ALL automatic peer matches (internal cap, not caller page size).
@@ -124,7 +125,7 @@ func (h *contactHandler) interactionListByContact(
 	if len(addressPairs) > 0 {
 		automatic, err = h.db.InteractionList(ctx, customerID, interactionInternalCap, "", "", "", addressPairs)
 		if err != nil {
-			return nil, fmt.Errorf("could not list interactions by address set. interactionListByContact. err: %v", err)
+			return nil, "", fmt.Errorf("could not list interactions by address set. interactionListByContact. err: %v", err)
 		}
 	}
 	// If addressPairs is empty → automatic stays nil (short-circuit, no IN() query).
@@ -132,7 +133,7 @@ func (h *contactHandler) interactionListByContact(
 	// STEP 3: Fetch active resolutions.
 	resolutions, err := h.db.ResolutionListByContact(ctx, customerID, contactID)
 	if err != nil {
-		return nil, fmt.Errorf("could not list resolutions. interactionListByContact. err: %v", err)
+		return nil, "", fmt.Errorf("could not list resolutions. interactionListByContact. err: %v", err)
 	}
 
 	// STEP 4: Set-MINUS combination.
@@ -169,7 +170,7 @@ func (h *contactHandler) interactionListByContact(
 	if len(missingIDs) > 0 {
 		extra, extraErr := h.db.InteractionListByIDs(ctx, customerID, missingIDs)
 		if extraErr != nil {
-			return nil, fmt.Errorf("could not list interactions by IDs. interactionListByContact. err: %v", extraErr)
+			return nil, "", fmt.Errorf("could not list interactions by IDs. interactionListByContact. err: %v", extraErr)
 		}
 		for _, i := range extra {
 			if !negativeIDs[i.ID] {
@@ -232,7 +233,7 @@ func (h *contactHandler) interactionListByContact(
 		}
 	}
 
-	return buildListResponse(all, size), nil
+	return buildPagedResult(all, size)
 }
 
 // interactionListByAddress implements the ?address_id= filter path.
@@ -241,28 +242,31 @@ func (h *contactHandler) interactionListByAddress(
 	customerID, addressID uuid.UUID,
 	size uint64,
 	token string,
-) (*interaction.InteractionListResponse, error) {
+) ([]*interaction.Interaction, string, error) {
 	ap, err := h.db.AddressGetByID(ctx, customerID, addressID)
 	if err != nil {
 		if stderrors.Is(err, dbhandler.ErrNotFound) {
-			return nil, cerrors.NotFound(
+			return nil, "", cerrors.NotFound(
 				commonoutline.ServiceNameContactManager,
 				"ADDRESS_NOT_FOUND",
 				"The address was not found.",
 			)
 		}
-		return nil, fmt.Errorf("could not get address. interactionListByAddress. err: %v", err)
+		return nil, "", fmt.Errorf("could not get address. interactionListByAddress. err: %v", err)
 	}
 
 	items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", []dbhandler.AddressPair{ap})
 	if err != nil {
-		return nil, fmt.Errorf("could not list interactions by address. interactionListByAddress. err: %v", err)
+		return nil, "", fmt.Errorf("could not list interactions by address. interactionListByAddress. err: %v", err)
 	}
-	return buildListResponse(items, size), nil
+	return buildPagedResult(items, size)
 }
 
-// buildListResponse slices items to size and builds the next page token.
-func buildListResponse(items []*interaction.Interaction, size uint64) *interaction.InteractionListResponse {
+// buildPagedResult slices items to size and computes the next-page token.
+// Returns (items, nextToken, nil). nextToken is "" when no further pages exist.
+// This follows the calls/agents pattern: raw slice + token string returned as a
+// tuple, with no wrapper struct.
+func buildPagedResult(items []*interaction.Interaction, size uint64) ([]*interaction.Interaction, string, error) {
 	hasMore := uint64(len(items)) > size
 	if hasMore {
 		items = items[:size]
@@ -279,27 +283,25 @@ func buildListResponse(items []*interaction.Interaction, size uint64) *interacti
 		// Future: enforce TMCreate NOT NULL at the DB schema level.
 	}
 
-	return &interaction.InteractionListResponse{
-		Items:         items,
-		NextPageToken: nextToken,
-	}
+	return items, nextToken, nil
 }
 
 // InteractionListUnresolved returns interactions with zero-contact attribution.
 // Predicate: NOT auto-matched to any address AND NOT positive-resolved AND peer_type != web_session.
 // Supports pagination (size + token).
+// Returns the interaction slice and a next-page token (empty when no further pages).
 func (h *contactHandler) InteractionListUnresolved(
 	ctx context.Context,
 	customerID uuid.UUID,
 	size uint64,
 	token string,
 	since time.Time,
-) (*interaction.InteractionListResponse, error) {
+) ([]*interaction.Interaction, string, error) {
 	if size == 0 {
 		size = 100
 	}
 	if size > 500 {
-		return nil, cerrors.InvalidArgument(
+		return nil, "", cerrors.InvalidArgument(
 			commonoutline.ServiceNameContactManager,
 			"INVALID_PAGE_SIZE",
 			"page_size must be at most 500 for the unresolved endpoint.",
@@ -308,7 +310,7 @@ func (h *contactHandler) InteractionListUnresolved(
 
 	items, err := h.db.InteractionListUnresolved(ctx, customerID, size+1, token, since)
 	if err != nil {
-		return nil, fmt.Errorf("could not list unresolved interactions. InteractionListUnresolved. err: %v", err)
+		return nil, "", fmt.Errorf("could not list unresolved interactions. InteractionListUnresolved. err: %v", err)
 	}
-	return buildListResponse(items, size), nil
+	return buildPagedResult(items, size)
 }

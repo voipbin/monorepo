@@ -34,9 +34,9 @@ func Test_InteractionList(t *testing.T) {
 		contactID  uuid.UUID
 		addressID  uuid.UUID
 
-		responseList *cminteraction.InteractionListResponse
-		expectRes    *cminteraction.InteractionListResponse
-		expectErr    bool
+		responseItems []*cminteraction.Interaction
+		responseToken string
+		expectErr     bool
 	}{
 		{
 			name: "normal",
@@ -50,19 +50,13 @@ func Test_InteractionList(t *testing.T) {
 			size:       20,
 			token:      "",
 			peerType:   "tel",
-			peerTarget: "+15550001111",
+			peerTarget: "+155****1111",
 			contactID:  uuid.Nil,
 			addressID:  uuid.Nil,
 
-			responseList: &cminteraction.InteractionListResponse{
-				Items:         []*cminteraction.Interaction{},
-				NextPageToken: "",
-			},
-			expectRes: &cminteraction.InteractionListResponse{
-				Items:         []*cminteraction.Interaction{},
-				NextPageToken: "",
-			},
-			expectErr: false,
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectErr:     false,
 		},
 		{
 			name: "permission denied",
@@ -76,7 +70,7 @@ func Test_InteractionList(t *testing.T) {
 			size:       20,
 			token:      "",
 			peerType:   "tel",
-			peerTarget: "+15550001111",
+			peerTarget: "+155****1111",
 
 			expectErr: true,
 		},
@@ -100,10 +94,10 @@ func Test_InteractionList(t *testing.T) {
 			if !tt.expectErr {
 				mockReq.EXPECT().
 					ContactV1InteractionList(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID).
-					Return(tt.responseList, nil)
+					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
-			res, err := h.InteractionList(ctx, tt.agent, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID)
+			items, _, err := h.InteractionList(ctx, tt.agent, tt.size, tt.token, tt.peerType, tt.peerTarget, tt.contactID, tt.addressID)
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("Expected error but got none")
@@ -114,7 +108,7 @@ func Test_InteractionList(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 				return
 			}
-			if res == nil {
+			if items == nil {
 				t.Errorf("Expected result but got nil")
 			}
 		})
@@ -152,14 +146,14 @@ func Test_InteractionGet(t *testing.T) {
 				CustomerID: customerID,
 				Direction:  "incoming",
 				PeerType:   "tel",
-				PeerTarget: "+15550001111",
+				PeerTarget: "+155****1111",
 			},
 			expectRes: &cminteraction.Interaction{
 				ID:         interactionID,
 				CustomerID: customerID,
 				Direction:  "incoming",
 				PeerType:   "tel",
-				PeerTarget: "+15550001111",
+				PeerTarget: "+155****1111",
 			},
 			expectErr: false,
 		},
@@ -429,13 +423,14 @@ func Test_InteractionListUnresolved(t *testing.T) {
 	tests := []struct {
 		name string
 
-		agent     *auth.AuthIdentity
-		size      uint64
-		token     string
-		since     string
+		agent *auth.AuthIdentity
+		size  uint64
+		token string
+		since string
 
-		responseList *cminteraction.InteractionListResponse
-		expectErr    bool
+		responseItems []*cminteraction.Interaction
+		responseToken string
+		expectErr     bool
 	}{
 		{
 			name: "normal - default since",
@@ -446,14 +441,12 @@ func Test_InteractionListUnresolved(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
-			size:  20,
-			token: "",
-			since: "",
-			responseList: &cminteraction.InteractionListResponse{
-				Items:         []*cminteraction.Interaction{},
-				NextPageToken: "",
-			},
-			expectErr: false,
+			size:          20,
+			token:         "",
+			since:         "",
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectErr:     false,
 		},
 		{
 			name: "normal - explicit since",
@@ -464,14 +457,12 @@ func Test_InteractionListUnresolved(t *testing.T) {
 				},
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
-			size:  20,
-			token: "",
-			since: "7d",
-			responseList: &cminteraction.InteractionListResponse{
-				Items:         []*cminteraction.Interaction{},
-				NextPageToken: "",
-			},
-			expectErr: false,
+			size:          20,
+			token:         "",
+			since:         "7d",
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectErr:     false,
 		},
 		{
 			name: "permission denied",
@@ -507,10 +498,10 @@ func Test_InteractionListUnresolved(t *testing.T) {
 			if !tt.expectErr {
 				mockReq.EXPECT().
 					ContactV1InteractionListUnresolved(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.since).
-					Return(tt.responseList, nil)
+					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
-			res, err := h.InteractionListUnresolved(ctx, tt.agent, tt.size, tt.token, tt.since)
+			items, _, err := h.InteractionListUnresolved(ctx, tt.agent, tt.size, tt.token, tt.since)
 			if tt.expectErr {
 				if err == nil {
 					t.Errorf("Expected error but got none")
@@ -521,7 +512,7 @@ func Test_InteractionListUnresolved(t *testing.T) {
 				t.Errorf("Unexpected error: %v", err)
 				return
 			}
-			if res == nil {
+			if items == nil {
 				t.Errorf("Expected result but got nil")
 			}
 		})

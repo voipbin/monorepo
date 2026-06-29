@@ -3563,12 +3563,13 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1InteractionGet(ctx, customerI
 }
 
 // ContactV1InteractionList mocks base method.
-func (m *MockRequestHandler) ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) (*interaction.InteractionListResponse, error) {
+func (m *MockRequestHandler) ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*interaction.Interaction, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactV1InteractionList", ctx, customerID, size, token, peerType, peerTarget, contactID, addressID)
-	ret0, _ := ret[0].(*interaction.InteractionListResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // ContactV1InteractionList indicates an expected call of ContactV1InteractionList.
@@ -3578,12 +3579,13 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1InteractionList(ctx, customer
 }
 
 // ContactV1InteractionListUnresolved mocks base method.
-func (m *MockRequestHandler) ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token, since string) (*interaction.InteractionListResponse, error) {
+func (m *MockRequestHandler) ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token, since string) ([]*interaction.Interaction, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactV1InteractionListUnresolved", ctx, customerID, size, token, since)
-	ret0, _ := ret[0].(*interaction.InteractionListResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // ContactV1InteractionListUnresolved indicates an expected call of ContactV1InteractionListUnresolved.

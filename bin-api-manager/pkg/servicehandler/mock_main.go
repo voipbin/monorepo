@@ -2889,12 +2889,13 @@ func (mr *MockServiceHandlerMockRecorder) InteractionGet(ctx, a, id any) *gomock
 }
 
 // InteractionList mocks base method.
-func (m *MockServiceHandler) InteractionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) (*interaction.InteractionListResponse, error) {
+func (m *MockServiceHandler) InteractionList(ctx context.Context, a *auth.AuthIdentity, size uint64, token, peerType, peerTarget string, contactID, addressID uuid.UUID) ([]*interaction.Interaction, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InteractionList", ctx, a, size, token, peerType, peerTarget, contactID, addressID)
-	ret0, _ := ret[0].(*interaction.InteractionListResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // InteractionList indicates an expected call of InteractionList.
@@ -2904,12 +2905,13 @@ func (mr *MockServiceHandlerMockRecorder) InteractionList(ctx, a, size, token, p
 }
 
 // InteractionListUnresolved mocks base method.
-func (m *MockServiceHandler) InteractionListUnresolved(ctx context.Context, a *auth.AuthIdentity, size uint64, token, since string) (*interaction.InteractionListResponse, error) {
+func (m *MockServiceHandler) InteractionListUnresolved(ctx context.Context, a *auth.AuthIdentity, size uint64, token, since string) ([]*interaction.Interaction, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InteractionListUnresolved", ctx, a, size, token, since)
-	ret0, _ := ret[0].(*interaction.InteractionListResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].([]*interaction.Interaction)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // InteractionListUnresolved indicates an expected call of InteractionListUnresolved.

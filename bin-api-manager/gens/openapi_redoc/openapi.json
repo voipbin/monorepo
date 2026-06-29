@@ -8454,7 +8454,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Resolution created successfully.",
             "content": {
               "application/json": {
