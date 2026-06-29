@@ -49,7 +49,27 @@ func (h *contactHandler) ResolutionCreate(
 		)
 	}
 
-	// 2. Check for existing active resolution of the same type.
+	// 2. Verify the contact exists and belongs to this customer.
+	ct, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			).Wrap(err)
+		}
+		return nil, fmt.Errorf("could not get contact. ResolutionCreate. err: %v", err)
+	}
+	if ct.CustomerID != customerID {
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
+	}
+
+	// 3. Check for existing active resolution of the same type.
 	existing, err := h.db.ResolutionListByInteraction(ctx, customerID, interactionID)
 	if err != nil {
 		return nil, fmt.Errorf("could not list resolutions. ResolutionCreate. err: %v", err)
@@ -64,7 +84,7 @@ func (h *contactHandler) ResolutionCreate(
 		}
 	}
 
-	// 3. Create.
+	// 4. Create.
 	id := h.utilHandler.UUIDCreate()
 	now := h.utilHandler.TimeNow()
 
