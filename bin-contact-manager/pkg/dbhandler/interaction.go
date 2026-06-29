@@ -179,7 +179,7 @@ func (h *handler) InteractionList(
 		return nil, fmt.Errorf("row iteration error. InteractionList. err: %v", err)
 	}
 
-	// Return up to size+1 rows. The extra row signals hasMore to the caller.
+	// Return up to size rows. Caller passes size+1 to probe for hasMore.
 	// The caller (buildPagedResult in contacthandler) owns the trim+token logic.
 	return res, nil
 }
