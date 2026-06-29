@@ -1482,6 +1482,24 @@ func (e ContactManagerEmailType) Valid() bool {
 	}
 }
 
+// Defines values for ContactManagerInteractionDirection.
+const (
+	Incoming ContactManagerInteractionDirection = "incoming"
+	Outgoing ContactManagerInteractionDirection = "outgoing"
+)
+
+// Valid indicates whether the value is a known member of the ContactManagerInteractionDirection enum.
+func (e ContactManagerInteractionDirection) Valid() bool {
+	switch e {
+	case Incoming:
+		return true
+	case Outgoing:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContactManagerPhoneNumberType.
 const (
 	ContactManagerPhoneNumberTypeFax    ContactManagerPhoneNumberType = "fax"
@@ -1503,6 +1521,45 @@ func (e ContactManagerPhoneNumberType) Valid() bool {
 	case ContactManagerPhoneNumberTypeOther:
 		return true
 	case ContactManagerPhoneNumberTypeWork:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContactManagerResolutionResolutionType.
+const (
+	ContactManagerResolutionResolutionTypeNegative ContactManagerResolutionResolutionType = "negative"
+	ContactManagerResolutionResolutionTypePositive ContactManagerResolutionResolutionType = "positive"
+)
+
+// Valid indicates whether the value is a known member of the ContactManagerResolutionResolutionType enum.
+func (e ContactManagerResolutionResolutionType) Valid() bool {
+	switch e {
+	case ContactManagerResolutionResolutionTypeNegative:
+		return true
+	case ContactManagerResolutionResolutionTypePositive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ContactManagerResolutionResolvedByType.
+const (
+	ContactManagerResolutionResolvedByTypeAgent  ContactManagerResolutionResolvedByType = "agent"
+	ContactManagerResolutionResolvedByTypeRule   ContactManagerResolutionResolvedByType = "rule"
+	ContactManagerResolutionResolvedByTypeSystem ContactManagerResolutionResolvedByType = "system"
+)
+
+// Valid indicates whether the value is a known member of the ContactManagerResolutionResolvedByType enum.
+func (e ContactManagerResolutionResolvedByType) Valid() bool {
+	switch e {
+	case ContactManagerResolutionResolvedByTypeAgent:
+		return true
+	case ContactManagerResolutionResolvedByTypeRule:
+		return true
+	case ContactManagerResolutionResolvedByTypeSystem:
 		return true
 	default:
 		return false
@@ -3105,6 +3162,45 @@ func (e GetConversationsJSONBodyType) Valid() bool {
 	case Line:
 		return true
 	case Message:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostInteractionsIdResolutionsJSONBodyResolutionType.
+const (
+	PostInteractionsIdResolutionsJSONBodyResolutionTypeNegative PostInteractionsIdResolutionsJSONBodyResolutionType = "negative"
+	PostInteractionsIdResolutionsJSONBodyResolutionTypePositive PostInteractionsIdResolutionsJSONBodyResolutionType = "positive"
+)
+
+// Valid indicates whether the value is a known member of the PostInteractionsIdResolutionsJSONBodyResolutionType enum.
+func (e PostInteractionsIdResolutionsJSONBodyResolutionType) Valid() bool {
+	switch e {
+	case PostInteractionsIdResolutionsJSONBodyResolutionTypeNegative:
+		return true
+	case PostInteractionsIdResolutionsJSONBodyResolutionTypePositive:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostInteractionsIdResolutionsJSONBodyResolvedByType.
+const (
+	PostInteractionsIdResolutionsJSONBodyResolvedByTypeAgent  PostInteractionsIdResolutionsJSONBodyResolvedByType = "agent"
+	PostInteractionsIdResolutionsJSONBodyResolvedByTypeRule   PostInteractionsIdResolutionsJSONBodyResolvedByType = "rule"
+	PostInteractionsIdResolutionsJSONBodyResolvedByTypeSystem PostInteractionsIdResolutionsJSONBodyResolvedByType = "system"
+)
+
+// Valid indicates whether the value is a known member of the PostInteractionsIdResolutionsJSONBodyResolvedByType enum.
+func (e PostInteractionsIdResolutionsJSONBodyResolvedByType) Valid() bool {
+	switch e {
+	case PostInteractionsIdResolutionsJSONBodyResolvedByTypeAgent:
+		return true
+	case PostInteractionsIdResolutionsJSONBodyResolvedByTypeRule:
+		return true
+	case PostInteractionsIdResolutionsJSONBodyResolvedByTypeSystem:
 		return true
 	default:
 		return false
@@ -4891,6 +4987,54 @@ type ContactManagerEmail struct {
 // ContactManagerEmailType Type of the email address.
 type ContactManagerEmailType string
 
+// ContactManagerInteraction defines model for ContactManagerInteraction.
+type ContactManagerInteraction struct {
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Direction Direction of the interaction from the platform perspective.
+	Direction *ContactManagerInteractionDirection `json:"direction,omitempty"`
+
+	// Id Unique identifier for the interaction.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// LocalTarget Local endpoint address (e.g. the DID that received the call).
+	LocalTarget *string `json:"local_target,omitempty"`
+
+	// LocalType Local endpoint type (e.g. "tel").
+	LocalType *string `json:"local_type,omitempty"`
+
+	// PeerTarget Remote endpoint address (normalized, e.g. "+155****4567").
+	PeerTarget *string `json:"peer_target,omitempty"`
+
+	// PeerType Remote endpoint type (e.g. "tel", "email").
+	PeerType *string `json:"peer_type,omitempty"`
+
+	// ReferenceId ID of the origin channel record (call_id or conversation_id).
+	ReferenceId *openapi_types.UUID `json:"reference_id,omitempty"`
+
+	// ReferenceType Origin channel type (e.g. "call", "conversation").
+	ReferenceType *string `json:"reference_type,omitempty"`
+
+	// TmCreate Timestamp when this interaction was recorded (projection insert time, used as pagination cursor).
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmInteraction Origin event time (from the channel record). Nullable.
+	TmInteraction *time.Time `json:"tm_interaction,omitempty"`
+}
+
+// ContactManagerInteractionDirection Direction of the interaction from the platform perspective.
+type ContactManagerInteractionDirection string
+
+// ContactManagerInteractionListResponse defines model for ContactManagerInteractionListResponse.
+type ContactManagerInteractionListResponse struct {
+	// Items List of interactions.
+	Items *[]ContactManagerInteraction `json:"items,omitempty"`
+
+	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
+	NextPageToken *string `json:"next_page_token,omitempty"`
+}
+
 // ContactManagerPhoneNumber defines model for ContactManagerPhoneNumber.
 type ContactManagerPhoneNumber struct {
 	// Id Unique identifier for the phone number.
@@ -4911,6 +5055,45 @@ type ContactManagerPhoneNumber struct {
 
 // ContactManagerPhoneNumberType Type of the phone number.
 type ContactManagerPhoneNumberType string
+
+// ContactManagerResolution defines model for ContactManagerResolution.
+type ContactManagerResolution struct {
+	// ContactId The contact this resolution is attributed to.
+	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
+
+	// CustomerId Unique identifier of the associated customer.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Id Unique identifier for the resolution.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// InteractionId The interaction this resolution belongs to.
+	InteractionId *openapi_types.UUID `json:"interaction_id,omitempty"`
+
+	// ResolutionType Attribution type.
+	ResolutionType *ContactManagerResolutionResolutionType `json:"resolution_type,omitempty"`
+
+	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
+	ResolvedById *openapi_types.UUID `json:"resolved_by_id,omitempty"`
+
+	// ResolvedByType Who resolved this interaction.
+	ResolvedByType *ContactManagerResolutionResolvedByType `json:"resolved_by_type,omitempty"`
+
+	// TmCreate Timestamp when the resolution was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// TmDelete Timestamp when the resolution was soft-deleted. Null if active.
+	TmDelete *time.Time `json:"tm_delete,omitempty"`
+
+	// TmUpdate Timestamp when the resolution was last updated.
+	TmUpdate *time.Time `json:"tm_update,omitempty"`
+}
+
+// ContactManagerResolutionResolutionType Attribution type.
+type ContactManagerResolutionResolutionType string
+
+// ContactManagerResolutionResolvedByType Who resolved this interaction.
+type ContactManagerResolutionResolvedByType string
 
 // ConversationManagerAccount defines model for ConversationManagerAccount.
 type ConversationManagerAccount struct {
@@ -8217,6 +8400,60 @@ type PostGroupcallsJSONBody struct {
 	Source CommonAddress `json:"source"`
 }
 
+// GetInteractionsParams defines parameters for GetInteractions.
+type GetInteractionsParams struct {
+	// PeerType Remote endpoint type (e.g. "tel", "email"). Required with peer_target.
+	PeerType *string `form:"peer_type,omitempty" json:"peer_type,omitempty"`
+
+	// PeerTarget Remote endpoint target (e.g. "+15551234567"). Required with peer_type.
+	PeerTarget *string `form:"peer_target,omitempty" json:"peer_target,omitempty"`
+
+	// ContactId Filter by resolved contact ID.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// AddressId Filter by contact address ID.
+	AddressId *openapi_types.UUID `form:"address_id,omitempty" json:"address_id,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// GetInteractionsUnresolvedParams defines parameters for GetInteractionsUnresolved.
+type GetInteractionsUnresolvedParams struct {
+	// Since Lookback window in days (e.g. "7d", "30d"). Default "30d", max "180d".
+	Since *string `form:"since,omitempty" json:"since,omitempty"`
+
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+}
+
+// PostInteractionsIdResolutionsJSONBody defines parameters for PostInteractionsIdResolutions.
+type PostInteractionsIdResolutionsJSONBody struct {
+	// ContactId The contact to attach or suppress this interaction for.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// ResolutionType Type of resolution.
+	ResolutionType PostInteractionsIdResolutionsJSONBodyResolutionType `json:"resolution_type"`
+
+	// ResolvedById ID of the agent, system, or rule that resolved the interaction.
+	ResolvedById openapi_types.UUID `json:"resolved_by_id"`
+
+	// ResolvedByType Who resolved this interaction.
+	ResolvedByType PostInteractionsIdResolutionsJSONBodyResolvedByType `json:"resolved_by_type"`
+}
+
+// PostInteractionsIdResolutionsJSONBodyResolutionType defines parameters for PostInteractionsIdResolutions.
+type PostInteractionsIdResolutionsJSONBodyResolutionType string
+
+// PostInteractionsIdResolutionsJSONBodyResolvedByType defines parameters for PostInteractionsIdResolutions.
+type PostInteractionsIdResolutionsJSONBodyResolvedByType string
+
 // GetMessagesParams defines parameters for GetMessages.
 type GetMessagesParams struct {
 	// PageSize Number of results to return per page.
@@ -9452,6 +9689,9 @@ type PutFlowsIdJSONRequestBody PutFlowsIdJSONBody
 
 // PostGroupcallsJSONRequestBody defines body for PostGroupcalls for application/json ContentType.
 type PostGroupcallsJSONRequestBody PostGroupcallsJSONBody
+
+// PostInteractionsIdResolutionsJSONRequestBody defines body for PostInteractionsIdResolutions for application/json ContentType.
+type PostInteractionsIdResolutionsJSONRequestBody PostInteractionsIdResolutionsJSONBody
 
 // PostMessagesJSONRequestBody defines body for PostMessages for application/json ContentType.
 type PostMessagesJSONRequestBody PostMessagesJSONBody
