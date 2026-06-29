@@ -201,8 +201,8 @@ func (h *handler) InteractionList(
 	}
 
 	// 5. ORDER BY tm_create DESC, id DESC
-	// LIMIT is `size` (no internal +1). Callers pass `size+1` to probe for hasMore.
-	// buildListResponse owns the trim+token logic.
+	// Return up to size+1 rows. The extra row signals hasMore to the caller.
+	// The caller (buildPagedResult in contacthandler) owns the trim+token logic.
 	builder = builder.
 		OrderBy("tm_create DESC, id DESC").
 		Limit(size)
@@ -230,8 +230,8 @@ func (h *handler) InteractionList(
 		return nil, fmt.Errorf("row iteration error. InteractionList. err: %v", err)
 	}
 
-	// Return up to size+1 rows. The extra row signals hasMore to buildListResponse.
-	// Do NOT trim here — the caller owns the trim+token logic.
+	// Return up to size+1 rows. The extra row signals hasMore to the caller.
+	// The caller (buildPagedResult in contacthandler) owns the trim+token logic.
 	return res, nil
 }
 

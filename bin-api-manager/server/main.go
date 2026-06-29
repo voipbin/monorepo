@@ -97,6 +97,12 @@ func GenerateListResponse[T any](tmps []*T, nextTokenValue string) struct {
 		nextToken = nextTokenValue
 	}
 
+	// Coerce nil to empty slice so the response always serializes as
+	// "result":[] rather than "result":null when there are no items.
+	if tmps == nil {
+		tmps = []*T{}
+	}
+
 	return struct {
 		Result []*T `json:"result"`
 		openapi_server.CommonPagination

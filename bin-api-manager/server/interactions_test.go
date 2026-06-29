@@ -109,11 +109,26 @@ func Test_GetInteractionsUnresolved(t *testing.T) {
 		name  string
 		agent *auth.AuthIdentity
 
-		reqQuery      string
-		responseItems []*cminteraction.Interaction
-		responseToken string
-		expectStatus  int
+		reqQuery         string
+		responseItems    []*cminteraction.Interaction
+		responseToken    string
+		expectStatus     int
+		expectMockCalled bool
 	}{
+		{
+			name: "normal - nil result from backend serializes as []",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:        "/interactions/unresolved",
+			responseItems:   nil,
+			responseToken:   "",
+			expectStatus:    http.StatusOK,
+			expectMockCalled: true,
+		},
 		{
 			name: "normal - default since",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
@@ -190,7 +205,7 @@ func Test_GetInteractionsUnresolved(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			if tt.responseItems != nil && tt.agent != nil {
+			if (tt.responseItems != nil || tt.expectMockCalled) && tt.agent != nil {
 				mockSvc.EXPECT().
 					InteractionListUnresolved(req.Context(), tt.agent, uint64(100), "", gomock.Any()).
 					Return(tt.responseItems, tt.responseToken, nil)
