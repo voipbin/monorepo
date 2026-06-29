@@ -63,6 +63,23 @@ func (h *server) GetInteractions(c *gin.Context, params openapi_server.GetIntera
 		addressID = uuid.UUID(*params.AddressId)
 	}
 
+	// Validate: exactly one filter mode must be provided.
+	filterCount := 0
+	if peerType != "" || peerTarget != "" {
+		filterCount++
+	}
+	if contactID != uuid.Nil {
+		filterCount++
+	}
+	if addressID != uuid.Nil {
+		filterCount++
+	}
+	if filterCount != 1 {
+		log.Errorf("Expected exactly one filter mode, got %d.", filterCount)
+		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_FILTER", "Exactly one filter is required: peer_type+peer_target, contact_id, or address_id."))
+		return
+	}
+
 	res, err := h.serviceHandler.InteractionList(c.Request.Context(), a, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
 	if err != nil {
 		log.Errorf("Could not list interactions. err: %v", err)
@@ -102,12 +119,17 @@ func (h *server) GetInteractionsUnresolved(c *gin.Context, params openapi_server
 	}
 
 	// Parse since param: "Nd" → N days. Default 0 (contact-manager applies its own default of 30d).
+	// Reject invalid formats with 400 to give callers clear feedback.
 	sinceDays := 0
 	if params.Since != nil && *params.Since != "" {
 		s := strings.TrimSuffix(*params.Since, "d")
-		if n, parseErr := strconv.Atoi(s); parseErr == nil && n > 0 {
-			sinceDays = n
+		n, parseErr := strconv.Atoi(s)
+		if parseErr != nil || n <= 0 || !strings.HasSuffix(*params.Since, "d") {
+			log.Errorf("Invalid since param: %q", *params.Since)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must be in the format '<N>d' (e.g. '7d', '30d')."))
+			return
 		}
+		sinceDays = n
 	}
 
 	res, err := h.serviceHandler.InteractionListUnresolved(c.Request.Context(), a, pageSize, pageToken, sinceDays)
@@ -134,6 +156,7 @@ func (h *server) GetInteractionsId(c *gin.Context, id openapi_types.UUID) {
 		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
+	log = log.WithField("customer_id", a.CustomerID)
 
 	interactionID := uuid.UUID(id)
 
@@ -161,6 +184,7 @@ func (h *server) PostInteractionsIdResolutions(c *gin.Context, id openapi_types.
 		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
+	log = log.WithField("customer_id", a.CustomerID)
 
 	var req openapi_server.PostInteractionsIdResolutionsJSONRequestBody
 	if err := c.BindJSON(&req); err != nil {
@@ -188,7 +212,7 @@ func (h *server) PostInteractionsIdResolutions(c *gin.Context, id openapi_types.
 		return
 	}
 
-	c.JSON(200, res)
+	c.JSON(201, res)
 }
 
 // DeleteInteractionsIdResolutionsRid handles DELETE /interactions/{id}/resolutions/{rid}
@@ -206,6 +230,7 @@ func (h *server) DeleteInteractionsIdResolutionsRid(c *gin.Context, id openapi_t
 		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
 		return
 	}
+	log = log.WithField("customer_id", a.CustomerID)
 
 	interactionID := uuid.UUID(id)
 	resolutionID := uuid.UUID(rid)

@@ -14,6 +14,34 @@ import (
 	cmresolution "monorepo/bin-contact-manager/models/resolution"
 )
 
+// Note on ConvertWebhookMessage:
+// cminteraction.Interaction and cmresolution.Resolution are returned directly as
+// internal structs rather than through a WebhookMessage conversion. This is
+// intentional: these types are append-only immutable projection records with no
+// internal-only fields (no PodID, Username, PermissionIDs, etc.) that need
+// stripping before external exposure. The OpenAPI schema in bin-openapi-manager
+// exactly mirrors the struct fields and acts as the publication boundary.
+// If internal-only fields are added to these models in the future, a
+// WebhookMessage type + ConvertWebhookMessage() must be introduced at that point.
+
+// interactionGet fetches an interaction and validates it belongs to customerID.
+// Used as a pre-check before mutation operations.
+func (h *serviceHandler) interactionGet(ctx context.Context, customerID, id uuid.UUID) (*cminteraction.Interaction, error) {
+	log := logrus.WithFields(logrus.Fields{
+		"func":           "interactionGet",
+		"customer_id":    customerID,
+		"interaction_id": id,
+	})
+
+	res, err := h.reqHandler.ContactV1InteractionGet(ctx, customerID, id)
+	if err != nil {
+		log.Errorf("Could not get the interaction info. err: %v", err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
 // InteractionList sends a request to contact-manager
 // to list interactions matching the given filter.
 // Exactly one of (peerType+peerTarget), contactID, or addressID must be non-zero.
@@ -96,18 +124,14 @@ func (h *serviceHandler) InteractionGet(ctx context.Context, a *auth.AuthIdentit
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, serviceerrors.ErrPermissionDenied
-	}
-
-	res, err := h.reqHandler.ContactV1InteractionGet(ctx, a.CustomerID, id)
+	// Fetch first to validate ownership (interaction.CustomerID must match a.CustomerID).
+	res, err := h.interactionGet(ctx, a.CustomerID, id)
 	if err != nil {
 		log.Errorf("Could not get the interaction. err: %v", err)
 		return nil, err
 	}
 
-	// Ownership check: interaction must belong to this customer.
-	if res.CustomerID != a.CustomerID {
+	if !h.hasPermission(ctx, a, res.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
@@ -137,7 +161,15 @@ func (h *serviceHandler) ResolutionCreate(
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	// Fetch interaction first to validate ownership before attaching a resolution.
+	// This mirrors the ContactPhoneNumberCreate pattern that calls contactGet() first.
+	ia, err := h.interactionGet(ctx, a.CustomerID, interactionID)
+	if err != nil {
+		log.Errorf("Could not get the interaction info. err: %v", err)
+		return nil, err
+	}
+
+	if !h.hasPermission(ctx, a, ia.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
@@ -152,6 +184,12 @@ func (h *serviceHandler) ResolutionCreate(
 
 // ResolutionDelete sends a request to contact-manager
 // to soft-delete a resolution.
+// Note: the listenhandler does NOT forward interactionID to the DB layer.
+// Actual enforcement is WHERE customer_id=? AND id=? only — not WHERE interaction_id=?.
+// A caller with valid customerID can delete any resolution belonging to their customer
+// regardless of which interaction URI path was used.
+// Fixing this gap (passing interactionID through the contactHandler) is tracked in a
+// follow-up ticket (see design doc §6).
 func (h *serviceHandler) ResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error {
 	log := logrus.WithFields(logrus.Fields{
 		"func":           "ResolutionDelete",
