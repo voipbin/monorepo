@@ -14,7 +14,6 @@ import (
 
 	"monorepo/bin-common-handler/models/sock"
 
-	contactinteraction "monorepo/bin-contact-manager/models/interaction"
 	"monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 )
 
@@ -101,16 +100,13 @@ func (h *listenHandler) processV1InteractionsGet(ctx context.Context, req *sock.
 		return simpleResponse(400), nil
 	}
 
-	res, nextToken, err := h.contactHandler.InteractionList(ctx, customerID, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
+	res, _, err := h.contactHandler.InteractionList(ctx, customerID, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
 	if err != nil {
 		log.Errorf("Could not list interactions. err: %v", err)
 		return errorResponse(err), nil
 	}
 
-	data, err := json.Marshal(struct {
-		Result        []*contactinteraction.Interaction `json:"result"`
-		NextPageToken string                            `json:"next_page_token"`
-	}{Result: res, NextPageToken: nextToken})
+	data, err := json.Marshal(res)
 	if err != nil {
 		return simpleResponse(500), nil
 	}
@@ -162,16 +158,13 @@ func (h *listenHandler) processV1InteractionsUnresolvedGet(ctx context.Context, 
 		return simpleResponse(400), nil
 	}
 
-	res, nextToken, err := h.contactHandler.InteractionListUnresolved(ctx, customerID, pageSize, pageToken, since)
+	res, _, err := h.contactHandler.InteractionListUnresolved(ctx, customerID, pageSize, pageToken, since)
 	if err != nil {
 		log.Errorf("Could not list unresolved interactions. err: %v", err)
 		return errorResponse(err), nil
 	}
 
-	data, err := json.Marshal(struct {
-		Result        []*contactinteraction.Interaction `json:"result"`
-		NextPageToken string                            `json:"next_page_token"`
-	}{Result: res, NextPageToken: nextToken})
+	data, err := json.Marshal(res)
 	if err != nil {
 		return simpleResponse(500), nil
 	}

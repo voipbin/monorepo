@@ -204,9 +204,13 @@ func (h *contactHandler) interactionListByContact(
 
 	// Apply cursor if provided.
 	if token != "" {
-		cursorTime, cursorID, decErr := dbhandler.DecodePageToken(token)
-		if decErr != nil {
-			log.WithError(decErr).Warn("invalid page token; starting from head")
+		cursorTime, err := time.Parse("2006-01-02T15:04:05.000000Z", token)
+		if err != nil {
+			// Try RFC3339Nano as fallback for forward compatibility.
+			cursorTime, err = time.Parse(time.RFC3339Nano, token)
+		}
+		if err != nil {
+			log.WithError(err).Warn("invalid page token; starting from head")
 		} else {
 			found := false
 			for i, item := range all {
@@ -219,7 +223,7 @@ func (h *contactHandler) interactionListByContact(
 					found = true
 					break
 				}
-				if item.TMCreate.Before(cursorTime) || (item.TMCreate.Equal(cursorTime) && item.ID.String() < cursorID.String()) {
+				if item.TMCreate.Before(cursorTime) {
 					all = all[i:]
 					found = true
 					break
@@ -264,8 +268,8 @@ func (h *contactHandler) interactionListByAddress(
 
 // buildPagedResult slices items to size and computes the next-page token.
 // Returns (items, nextToken, nil). nextToken is "" when no further pages exist.
-// This follows the calls/agents pattern: raw slice + token string returned as a
-// tuple, with no wrapper struct.
+// cursor token = last.TMCreate formatted as ISO8601 microsecond UTC string.
+// This follows the platform-wide convention (calls, messages, emails, etc.).
 func buildPagedResult(items []*interaction.Interaction, size uint64) ([]*interaction.Interaction, string, error) {
 	hasMore := uint64(len(items)) > size
 	if hasMore {
@@ -275,12 +279,11 @@ func buildPagedResult(items []*interaction.Interaction, size uint64) ([]*interac
 	var nextToken string
 	if hasMore && len(items) > 0 {
 		last := items[len(items)-1]
-		if tok := dbhandler.EncodePageToken(last.TMCreate, last.ID); tok != "" {
-			nextToken = tok
+		if last.TMCreate != nil {
+			nextToken = last.TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
 		}
-		// If tok == "" (nil TMCreate), cursor cannot be encoded — pagination stops here.
+		// If TMCreate is nil, cursor cannot be encoded — pagination stops here.
 		// In production this should not occur (InteractionCreate always sets TMCreate).
-		// Future: enforce TMCreate NOT NULL at the DB schema level.
 	}
 
 	return items, nextToken, nil

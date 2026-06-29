@@ -79,15 +79,17 @@ func (r *requestHandler) ContactV1InteractionList(
 		return nil, "", err
 	}
 
-	var res struct {
-		Result        []*cminteraction.Interaction `json:"result"`
-		NextPageToken string                       `json:"next_page_token"`
-	}
+	var res []*cminteraction.Interaction
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, "", errParse
 	}
 
-	return res.Result, res.NextPageToken, nil
+	nextToken := ""
+	if len(res) > 0 && res[len(res)-1].TMCreate != nil {
+		nextToken = res[len(res)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
+	return res, nextToken, nil
 }
 
 // ContactV1InteractionListUnresolved lists unresolved interactions from contact-manager.
@@ -126,15 +128,17 @@ func (r *requestHandler) ContactV1InteractionListUnresolved(
 		return nil, "", err
 	}
 
-	var res struct {
-		Result        []*cminteraction.Interaction `json:"result"`
-		NextPageToken string                       `json:"next_page_token"`
-	}
+	var res []*cminteraction.Interaction
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, "", errParse
 	}
 
-	return res.Result, res.NextPageToken, nil
+	nextToken := ""
+	if len(res) > 0 && res[len(res)-1].TMCreate != nil {
+		nextToken = res[len(res)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
+	return res, nextToken, nil
 }
 
 // ContactV1ResolutionCreate creates a resolution in contact-manager.
