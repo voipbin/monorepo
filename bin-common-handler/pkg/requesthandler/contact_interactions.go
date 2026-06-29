@@ -88,17 +88,18 @@ func (r *requestHandler) ContactV1InteractionList(
 }
 
 // ContactV1InteractionListUnresolved lists unresolved interactions from contact-manager.
-// sinceDays specifies the lookback window in days (e.g. 7 → ?since=7d). 0 uses default (30d).
+// since specifies the lookback window in "Nd" format (e.g. "7d", "30d"). Empty string uses default (30d).
+// Maximum is "180d" — enforced by the listenhandler.
 func (r *requestHandler) ContactV1InteractionListUnresolved(
 	ctx context.Context,
 	customerID uuid.UUID,
 	size uint64,
 	token string,
-	sinceDays int,
+	since string,
 ) (*cminteraction.InteractionListResponse, error) {
 	u := url.Values{}
-	if sinceDays > 0 {
-		u.Set("since", fmt.Sprintf("%dd", sinceDays))
+	if since != "" {
+		u.Set("since", since)
 	}
 	if size > 0 {
 		u.Set("page_size", fmt.Sprintf("%d", size))
@@ -133,7 +134,7 @@ func (r *requestHandler) ContactV1InteractionListUnresolved(
 // ContactV1ResolutionCreate creates a resolution in contact-manager.
 func (r *requestHandler) ContactV1ResolutionCreate(
 	ctx context.Context,
-	interactionID, customerID, contactID uuid.UUID,
+	customerID, contactID, interactionID uuid.UUID,
 	resolutionType, resolvedByType string,
 	resolvedByID uuid.UUID,
 ) (*cmresolution.Resolution, error) {

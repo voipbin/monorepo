@@ -8206,6 +8206,335 @@
         }
       }
     },
+    "/interactions": {
+      "get": {
+        "summary": "List interactions",
+        "description": "List CRM interactions for the customer. Exactly one filter is required:\npeer_type + peer_target (remote endpoint), contact_id, or address_id.\n",
+        "tags": [
+          "Interaction"
+        ],
+        "parameters": [
+          {
+            "name": "peer_type",
+            "in": "query",
+            "description": "Remote endpoint type (e.g. \"tel\", \"email\"). Required with peer_target.",
+            "schema": {
+              "type": "string",
+              "example": "tel"
+            }
+          },
+          {
+            "name": "peer_target",
+            "in": "query",
+            "description": "Remote endpoint target (e.g. \"+15551234567\"). Required with peer_type.",
+            "schema": {
+              "type": "string",
+              "example": "+15551234567"
+            }
+          },
+          {
+            "name": "contact_id",
+            "in": "query",
+            "description": "Filter by resolved contact ID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          {
+            "name": "address_id",
+            "in": "query",
+            "description": "Filter by contact address ID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerInteractionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/interactions/unresolved": {
+      "get": {
+        "summary": "List unresolved interactions",
+        "description": "List interactions that have no active resolution within the given time window.\nThe \"since\" parameter defines the lookback window (e.g. \"7d\" = last 7 days).\nDefault is \"30d\"; maximum is \"180d\".\n",
+        "tags": [
+          "Interaction"
+        ],
+        "parameters": [
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Lookback window in days (e.g. \"7d\", \"30d\"). Default \"30d\", max \"180d\".\n",
+            "schema": {
+              "type": "string",
+              "example": "30d"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PageSize"
+          },
+          {
+            "$ref": "#/components/parameters/PageToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerInteractionListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/interactions/{id}": {
+      "get": {
+        "summary": "Get an interaction",
+        "description": "Get the interaction of the given ID.",
+        "tags": [
+          "Interaction"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the interaction. The ID is returned from GET /interactions response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerInteraction"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/interactions/{id}/resolutions": {
+      "post": {
+        "summary": "Create a resolution for an interaction",
+        "description": "Manually attribute (positive) or suppress (negative) an interaction for a contact.\nA positive resolution attaches the interaction to the contact.\nA negative resolution suppresses an incorrect automatic match.\n",
+        "tags": [
+          "Interaction"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the interaction. The ID is returned from GET /interactions response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "contact_id",
+                  "resolution_type",
+                  "resolved_by_type",
+                  "resolved_by_id"
+                ],
+                "properties": {
+                  "contact_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The contact to attach or suppress this interaction for.",
+                    "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+                  },
+                  "resolution_type": {
+                    "type": "string",
+                    "description": "Type of resolution.",
+                    "enum": [
+                      "positive",
+                      "negative"
+                    ],
+                    "example": "positive"
+                  },
+                  "resolved_by_type": {
+                    "type": "string",
+                    "description": "Who resolved this interaction.",
+                    "enum": [
+                      "agent",
+                      "system",
+                      "rule"
+                    ],
+                    "example": "agent"
+                  },
+                  "resolved_by_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "ID of the agent, system, or rule that resolved the interaction.",
+                    "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resolution created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerResolution"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/interactions/{id}/resolutions/{rid}": {
+      "delete": {
+        "summary": "Delete a resolution",
+        "description": "Soft-delete a resolution. Use this to retract a wrong positive or negative resolution.\nRe-attribute by creating a new resolution after deletion.\n",
+        "tags": [
+          "Interaction"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the interaction. The ID is returned from GET /interactions response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "550e8400-e29b-41d4-a716-446655440000"
+            }
+          },
+          {
+            "name": "rid",
+            "in": "path",
+            "description": "The ID of the resolution. The ID is returned from POST /interactions/{id}/resolutions response.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resolution deleted successfully."
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/conversation_accounts/{id}": {
       "get": {
         "summary": "Get details of a conversation account",
@@ -24197,6 +24526,164 @@
             "x-go-type": "string",
             "description": "Timestamp when the conference call was deleted.",
             "example": "2026-01-15T09:30:00.000000Z"
+          }
+        }
+      },
+      "ContactManagerInteraction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the interaction.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier of the associated customer.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "direction": {
+            "type": "string",
+            "description": "Direction of the interaction from the platform perspective.",
+            "enum": [
+              "incoming",
+              "outgoing"
+            ],
+            "example": "incoming"
+          },
+          "peer_type": {
+            "type": "string",
+            "description": "Remote endpoint type (e.g. \"tel\", \"email\").",
+            "example": "tel"
+          },
+          "peer_target": {
+            "type": "string",
+            "description": "Remote endpoint address (normalized, e.g. \"+155****4567\").",
+            "example": "+155****4567"
+          },
+          "local_type": {
+            "type": "string",
+            "description": "Local endpoint type (e.g. \"tel\").",
+            "example": "tel"
+          },
+          "local_target": {
+            "type": "string",
+            "description": "Local endpoint address (e.g. the DID that received the call).",
+            "example": "+12025550100"
+          },
+          "reference_type": {
+            "type": "string",
+            "description": "Origin channel type (e.g. \"call\", \"conversation\").",
+            "example": "call"
+          },
+          "reference_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the origin channel record (call_id or conversation_id).",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "tm_interaction": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Origin event time (from the channel record). Nullable.",
+            "example": "2026-06-01T09:30:00.000000Z"
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when this interaction was recorded (projection insert time, used as pagination cursor).",
+            "example": "2026-06-01T09:30:01.000000Z"
+          }
+        }
+      },
+      "ContactManagerInteractionListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of interactions.",
+            "items": {
+              "$ref": "#/components/schemas/ContactManagerInteraction"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "description": "Pagination token for the next page. Empty when no further pages exist.",
+            "example": "2026-06-01T09:30:01.000000Z"
+          }
+        }
+      },
+      "ContactManagerResolution": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the resolution.",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "customer_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier of the associated customer.",
+            "example": "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+          },
+          "contact_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The contact this resolution is attributed to.",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          },
+          "interaction_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The interaction this resolution belongs to.",
+            "example": "c3d4e5f6-a7b8-9012-cdef-345678901234"
+          },
+          "resolution_type": {
+            "type": "string",
+            "description": "Attribution type.",
+            "enum": [
+              "positive",
+              "negative"
+            ],
+            "example": "positive"
+          },
+          "resolved_by_type": {
+            "type": "string",
+            "description": "Who resolved this interaction.",
+            "enum": [
+              "agent",
+              "system",
+              "rule"
+            ],
+            "example": "agent"
+          },
+          "resolved_by_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the agent, system, or rule that resolved the interaction.",
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+          },
+          "tm_create": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the resolution was created.",
+            "example": "2026-06-01T10:00:00.000000Z"
+          },
+          "tm_update": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the resolution was last updated.",
+            "example": "2026-06-01T10:00:00.000000Z"
+          },
+          "tm_delete": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the resolution was soft-deleted. Null if active.",
+            "example": "2026-06-02T08:00:00.000000Z"
           }
         }
       },

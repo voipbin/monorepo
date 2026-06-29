@@ -452,17 +452,17 @@ func (mr *MockDBHandlerMockRecorder) ResolutionCreate(ctx, r any) *gomock.Call {
 }
 
 // ResolutionDelete mocks base method.
-func (m *MockDBHandler) ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error {
+func (m *MockDBHandler) ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResolutionDelete", ctx, customerID, id)
+	ret := m.ctrl.Call(m, "ResolutionDelete", ctx, customerID, interactionID, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ResolutionDelete indicates an expected call of ResolutionDelete.
-func (mr *MockDBHandlerMockRecorder) ResolutionDelete(ctx, customerID, id any) *gomock.Call {
+func (mr *MockDBHandlerMockRecorder) ResolutionDelete(ctx, customerID, interactionID, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDelete", reflect.TypeOf((*MockDBHandler)(nil).ResolutionDelete), ctx, customerID, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolutionDelete", reflect.TypeOf((*MockDBHandler)(nil).ResolutionDelete), ctx, customerID, interactionID, id)
 }
 
 // ResolutionListByContact mocks base method.

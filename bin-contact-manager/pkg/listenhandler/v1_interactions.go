@@ -273,6 +273,10 @@ func (h *listenHandler) processV1InteractionsResolutionsIDDelete(ctx context.Con
 	if len(parts) < 6 {
 		return simpleResponse(400), nil
 	}
+	interactionID := uuid.FromStringOrNil(parts[3])
+	if interactionID == uuid.Nil {
+		return simpleResponse(400), nil
+	}
 	resolutionID := uuid.FromStringOrNil(parts[5])
 	if resolutionID == uuid.Nil {
 		return simpleResponse(400), nil
@@ -288,7 +292,7 @@ func (h *listenHandler) processV1InteractionsResolutionsIDDelete(ctx context.Con
 		return simpleResponse(400), nil
 	}
 
-	if err := h.contactHandler.ResolutionDelete(ctx, body.CustomerID, resolutionID); err != nil {
+	if err := h.contactHandler.ResolutionDelete(ctx, body.CustomerID, interactionID, resolutionID); err != nil {
 		log.Errorf("Could not delete resolution. err: %v", err)
 		return errorResponse(err), nil
 	}

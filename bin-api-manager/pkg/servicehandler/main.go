@@ -43,6 +43,8 @@ import (
 	cfconferencecall "monorepo/bin-conference-manager/models/conferencecall"
 
 	cmcontact "monorepo/bin-contact-manager/models/contact"
+	cminteraction "monorepo/bin-contact-manager/models/interaction"
+	cmresolution "monorepo/bin-contact-manager/models/resolution"
 	cmrequest "monorepo/bin-contact-manager/pkg/listenhandler/models/request"
 
 	cvaccount "monorepo/bin-conversation-manager/models/account"
@@ -465,6 +467,34 @@ type ServiceHandler interface {
 	ContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
+
+	// interaction handlers
+	InteractionList(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		size uint64,
+		token string,
+		peerType, peerTarget string,
+		contactID, addressID uuid.UUID,
+	) (*cminteraction.InteractionListResponse, error)
+	InteractionListUnresolved(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		size uint64,
+		token string,
+		since string,
+	) (*cminteraction.InteractionListResponse, error)
+	InteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cminteraction.Interaction, error)
+	ResolutionCreate(
+		ctx context.Context,
+		a *auth.AuthIdentity,
+		interactionID uuid.UUID,
+		contactID uuid.UUID,
+		resolutionType string,
+		resolvedByType string,
+		resolvedByID uuid.UUID,
+	) (*cmresolution.Resolution, error)
+	ResolutionDelete(ctx context.Context, a *auth.AuthIdentity, interactionID, resolutionID uuid.UUID) error
 
 	// conversation handlers
 	ConversationGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cvconversation.WebhookMessage, error)

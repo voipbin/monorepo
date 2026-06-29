@@ -18,8 +18,10 @@ import (
 // ResolutionCreate creates a new resolution for an interaction.
 //
 // Validates:
+//  0. resolutionType must be "positive" or "negative".
 //  1. The interaction must exist and belong to customerID (tenant guard).
-//  2. No existing active resolution of the SAME type for (contact_id, interaction_id).
+//  2. The contact must exist and belong to customerID (tenant guard).
+//  3. No existing active resolution of the SAME type for (contact_id, interaction_id).
 //     A positive + negative coexisting is allowed. Two positives or two negatives are rejected.
 //     This is application-level dedup (no DB UNIQUE due to MySQL NULL semantics + soft-delete).
 //     Concurrent creates may slip through; v1 accepts this as a UX nuisance, not data corruption.
@@ -29,6 +31,19 @@ func (h *contactHandler) ResolutionCreate(
 	resolutionType, resolvedByType string,
 	resolvedByID uuid.UUID,
 ) (*resolution.Resolution, error) {
+	// 0. Validate resolutionType.
+	switch resolutionType {
+	case resolution.ResolutionTypePositive, resolution.ResolutionTypeNegative:
+		// valid
+	default:
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameContactManager,
+			"INVALID_RESOLUTION_TYPE",
+			fmt.Sprintf("resolution_type must be %q or %q, got %q",
+				resolution.ResolutionTypePositive, resolution.ResolutionTypeNegative, resolutionType),
+		)
+	}
+
 	// 1. Verify the interaction exists and belongs to this customer.
 	iact, err := h.db.InteractionGet(ctx, interactionID)
 	if err != nil {
@@ -49,7 +64,27 @@ func (h *contactHandler) ResolutionCreate(
 		)
 	}
 
-	// 2. Check for existing active resolution of the same type.
+	// 2. Verify the contact exists and belongs to this customer.
+	ct, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		if stderrors.Is(err, dbhandler.ErrNotFound) {
+			return nil, cerrors.NotFound(
+				commonoutline.ServiceNameContactManager,
+				"CONTACT_NOT_FOUND",
+				"The contact was not found.",
+			).Wrap(err)
+		}
+		return nil, fmt.Errorf("could not get contact. ResolutionCreate. err: %v", err)
+	}
+	if ct.CustomerID != customerID {
+		return nil, cerrors.NotFound(
+			commonoutline.ServiceNameContactManager,
+			"CONTACT_NOT_FOUND",
+			"The contact was not found.",
+		)
+	}
+
+	// 3. Check for existing active resolution of the same type.
 	existing, err := h.db.ResolutionListByInteraction(ctx, customerID, interactionID)
 	if err != nil {
 		return nil, fmt.Errorf("could not list resolutions. ResolutionCreate. err: %v", err)
@@ -64,7 +99,7 @@ func (h *contactHandler) ResolutionCreate(
 		}
 	}
 
-	// 3. Create.
+	// 4. Create.
 	id := h.utilHandler.UUIDCreate()
 	now := h.utilHandler.TimeNow()
 
@@ -88,10 +123,11 @@ func (h *contactHandler) ResolutionCreate(
 }
 
 // ResolutionDelete soft-deletes a resolution.
-// Validates that the resolution exists and belongs to customerID.
-// Cross-tenant guard is enforced in dbhandler (WHERE customer_id = ?).
-func (h *contactHandler) ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error {
-	if err := h.db.ResolutionDelete(ctx, customerID, id); err != nil {
+// Validates that the resolution exists and belongs to customerID and interactionID.
+// Cross-tenant and cross-interaction guard is enforced in dbhandler
+// (WHERE customer_id=? AND interaction_id=? AND id=?).
+func (h *contactHandler) ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error {
+	if err := h.db.ResolutionDelete(ctx, customerID, interactionID, id); err != nil {
 		if stderrors.Is(err, dbhandler.ErrNotFound) {
 			return cerrors.NotFound(
 				commonoutline.ServiceNameContactManager,

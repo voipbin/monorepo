@@ -3578,18 +3578,18 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1InteractionList(ctx, customer
 }
 
 // ContactV1InteractionListUnresolved mocks base method.
-func (m *MockRequestHandler) ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, sinceDays int) (*interaction.InteractionListResponse, error) {
+func (m *MockRequestHandler) ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token, since string) (*interaction.InteractionListResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1InteractionListUnresolved", ctx, customerID, size, token, sinceDays)
+	ret := m.ctrl.Call(m, "ContactV1InteractionListUnresolved", ctx, customerID, size, token, since)
 	ret0, _ := ret[0].(*interaction.InteractionListResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactV1InteractionListUnresolved indicates an expected call of ContactV1InteractionListUnresolved.
-func (mr *MockRequestHandlerMockRecorder) ContactV1InteractionListUnresolved(ctx, customerID, size, token, sinceDays any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1InteractionListUnresolved(ctx, customerID, size, token, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1InteractionListUnresolved", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1InteractionListUnresolved), ctx, customerID, size, token, sinceDays)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1InteractionListUnresolved", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1InteractionListUnresolved), ctx, customerID, size, token, since)
 }
 
 // ContactV1PhoneNumberCreate mocks base method.
@@ -3638,18 +3638,18 @@ func (mr *MockRequestHandlerMockRecorder) ContactV1PhoneNumberUpdate(ctx, contac
 }
 
 // ContactV1ResolutionCreate mocks base method.
-func (m *MockRequestHandler) ContactV1ResolutionCreate(ctx context.Context, interactionID, customerID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
+func (m *MockRequestHandler) ContactV1ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactV1ResolutionCreate", ctx, interactionID, customerID, contactID, resolutionType, resolvedByType, resolvedByID)
+	ret := m.ctrl.Call(m, "ContactV1ResolutionCreate", ctx, customerID, contactID, interactionID, resolutionType, resolvedByType, resolvedByID)
 	ret0, _ := ret[0].(*resolution.Resolution)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactV1ResolutionCreate indicates an expected call of ContactV1ResolutionCreate.
-func (mr *MockRequestHandlerMockRecorder) ContactV1ResolutionCreate(ctx, interactionID, customerID, contactID, resolutionType, resolvedByType, resolvedByID any) *gomock.Call {
+func (mr *MockRequestHandlerMockRecorder) ContactV1ResolutionCreate(ctx, customerID, contactID, interactionID, resolutionType, resolvedByType, resolvedByID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ResolutionCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ResolutionCreate), ctx, interactionID, customerID, contactID, resolutionType, resolvedByType, resolvedByID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ResolutionCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ResolutionCreate), ctx, customerID, contactID, interactionID, resolutionType, resolvedByType, resolvedByID)
 }
 
 // ContactV1ResolutionDelete mocks base method.

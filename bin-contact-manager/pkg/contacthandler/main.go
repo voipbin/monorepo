@@ -63,7 +63,7 @@ type ContactHandler interface {
 	// Resolution operations (CRM v1 attribution, VOIP-1209)
 	ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID,
 		resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*resolution.Resolution, error)
-	ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error
+	ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error
 }
 
 type contactHandler struct {
