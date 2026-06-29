@@ -134,11 +134,6 @@ func (h *server) GetInteractionsUnresolved(c *gin.Context, params openapi_server
 			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must be a positive number of days (e.g. '7d')."))
 			return
 		}
-		if n > 180 {
-			log.Errorf("since param exceeds maximum: %q", s)
-			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must not exceed 180d."))
-			return
-		}
 		since = s
 	}
 
