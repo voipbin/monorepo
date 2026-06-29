@@ -18,6 +18,7 @@ import (
 // ResolutionCreate creates a new resolution for an interaction.
 //
 // Validates:
+//  0. resolutionType must be "positive" or "negative".
 //  1. The interaction must exist and belong to customerID (tenant guard).
 //  2. The contact must exist and belong to customerID (tenant guard).
 //  3. No existing active resolution of the SAME type for (contact_id, interaction_id).
@@ -30,6 +31,19 @@ func (h *contactHandler) ResolutionCreate(
 	resolutionType, resolvedByType string,
 	resolvedByID uuid.UUID,
 ) (*resolution.Resolution, error) {
+	// 0. Validate resolutionType.
+	switch resolutionType {
+	case resolution.ResolutionTypePositive, resolution.ResolutionTypeNegative:
+		// valid
+	default:
+		return nil, cerrors.InvalidArgument(
+			commonoutline.ServiceNameContactManager,
+			"INVALID_RESOLUTION_TYPE",
+			fmt.Sprintf("resolution_type must be %q or %q, got %q",
+				resolution.ResolutionTypePositive, resolution.ResolutionTypeNegative, resolutionType),
+		)
+	}
+
 	// 1. Verify the interaction exists and belongs to this customer.
 	iact, err := h.db.InteractionGet(ctx, interactionID)
 	if err != nil {

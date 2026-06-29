@@ -56,6 +56,18 @@ func Test_ResolutionCreate(t *testing.T) {
 		expectErr          bool
 	}{
 		{
+			name:           "invalid resolution type",
+			customerID:     customerID,
+			contactID:      contactID,
+			interactionID:  interactionID,
+			resolutionType: "banana",
+			resolvedByType: resolution.ResolvedByTypeAgent,
+			resolvedByID:   agentID,
+
+			// No DB calls expected; validation fails before any I/O.
+			expectErr: true,
+		},
+		{
 			name:           "normal",
 			customerID:     customerID,
 			contactID:      contactID,
@@ -165,12 +177,14 @@ func Test_ResolutionCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			// Always expect InteractionGet.
-			mockDB.EXPECT().InteractionGet(ctx, tt.interactionID).Return(tt.mockInteraction, tt.mockInteractionErr)
+			// InteractionGet only called if resolutionType is valid.
+			if tt.resolutionType == resolution.ResolutionTypePositive || tt.resolutionType == resolution.ResolutionTypeNegative {
+				mockDB.EXPECT().InteractionGet(ctx, tt.interactionID).Return(tt.mockInteraction, tt.mockInteractionErr)
 
-			// ContactGet only called if interaction ownership passes.
-			if tt.mockInteractionErr == nil && tt.mockInteraction != nil && tt.mockInteraction.CustomerID == tt.customerID {
-				mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.mockContact, tt.mockContactErr)
+				// ContactGet only called if interaction ownership passes.
+				if tt.mockInteractionErr == nil && tt.mockInteraction != nil && tt.mockInteraction.CustomerID == tt.customerID {
+					mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.mockContact, tt.mockContactErr)
+				}
 			}
 
 			// ResolutionListByInteraction + create only on full success path.
