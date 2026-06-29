@@ -2904,18 +2904,18 @@ func (mr *MockServiceHandlerMockRecorder) InteractionList(ctx, a, size, token, p
 }
 
 // InteractionListUnresolved mocks base method.
-func (m *MockServiceHandler) InteractionListUnresolved(ctx context.Context, a *auth.AuthIdentity, size uint64, token string, sinceDays int) (*interaction.InteractionListResponse, error) {
+func (m *MockServiceHandler) InteractionListUnresolved(ctx context.Context, a *auth.AuthIdentity, size uint64, token, since string) (*interaction.InteractionListResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InteractionListUnresolved", ctx, a, size, token, sinceDays)
+	ret := m.ctrl.Call(m, "InteractionListUnresolved", ctx, a, size, token, since)
 	ret0, _ := ret[0].(*interaction.InteractionListResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // InteractionListUnresolved indicates an expected call of InteractionListUnresolved.
-func (mr *MockServiceHandlerMockRecorder) InteractionListUnresolved(ctx, a, size, token, sinceDays any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) InteractionListUnresolved(ctx, a, size, token, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListUnresolved", reflect.TypeOf((*MockServiceHandler)(nil).InteractionListUnresolved), ctx, a, size, token, sinceDays)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListUnresolved", reflect.TypeOf((*MockServiceHandler)(nil).InteractionListUnresolved), ctx, a, size, token, since)
 }
 
 // MessageDelete mocks base method.

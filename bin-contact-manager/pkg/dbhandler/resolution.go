@@ -45,15 +45,16 @@ func (h *handler) ResolutionCreate(ctx context.Context, r *resolution.Resolution
 }
 
 // ResolutionDelete soft-deletes a resolution by setting tm_delete = NOW().
-// Scoped to customerID to prevent cross-tenant deletion.
+// Scoped to customerID and interactionID to prevent cross-tenant and cross-interaction deletion.
 // Returns ErrNotFound if no active row matches.
-func (h *handler) ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error {
+func (h *handler) ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error {
 	now := h.utilHandler.TimeNow()
 
 	query, args, err := sq.Update(resolutionTable).
 		Set("tm_delete", now).
 		Where(sq.Eq{"id": id.Bytes()}).
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		Where(sq.Eq{"interaction_id": interactionID.Bytes()}).
 		Where(sq.Eq{"tm_delete": nil}).
 		ToSql()
 	if err != nil {

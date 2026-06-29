@@ -64,7 +64,7 @@ type DBHandler interface {
 
 	// Resolution operations
 	ResolutionCreate(ctx context.Context, r *resolution.Resolution) error
-	ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error
+	ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error
 	ResolutionListByInteraction(ctx context.Context, customerID, interactionID uuid.UUID) ([]*resolution.Resolution, error)
 	ResolutionListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]*resolution.Resolution, error)
 }

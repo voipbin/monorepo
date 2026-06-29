@@ -118,21 +118,31 @@ func (h *server) GetInteractionsUnresolved(c *gin.Context, params openapi_server
 		pageToken = string(*params.PageToken)
 	}
 
-	// Parse since param: "Nd" → N days. Default 0 (contact-manager applies its own default of 30d).
-	// Reject invalid formats with 400 to give callers clear feedback.
-	sinceDays := 0
+	// Validate and pass since param directly in "Nd" format.
+	// Empty → "" (backend applies default 30d). Max 180d enforced here and in listenhandler.
+	since := ""
 	if params.Since != nil && *params.Since != "" {
-		s := strings.TrimSuffix(*params.Since, "d")
-		n, parseErr := strconv.Atoi(s)
-		if parseErr != nil || n <= 0 || !strings.HasSuffix(*params.Since, "d") {
-			log.Errorf("Invalid since param: %q", *params.Since)
+		s := *params.Since
+		if !strings.HasSuffix(s, "d") {
+			log.Errorf("Invalid since param format: %q", s)
 			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must be in the format '<N>d' (e.g. '7d', '30d')."))
 			return
 		}
-		sinceDays = n
+		n, parseErr := strconv.Atoi(strings.TrimSuffix(s, "d"))
+		if parseErr != nil || n <= 0 {
+			log.Errorf("Invalid since param value: %q", s)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must be a positive number of days (e.g. '7d')."))
+			return
+		}
+		if n > 180 {
+			log.Errorf("since param exceeds maximum: %q", s)
+			abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_SINCE", "The 'since' parameter must not exceed 180d."))
+			return
+		}
+		since = s
 	}
 
-	res, err := h.serviceHandler.InteractionListUnresolved(c.Request.Context(), a, pageSize, pageToken, sinceDays)
+	res, err := h.serviceHandler.InteractionListUnresolved(c.Request.Context(), a, pageSize, pageToken, since)
 	if err != nil {
 		log.Errorf("Could not list unresolved interactions. err: %v", err)
 		abortWithServiceError(c, err)

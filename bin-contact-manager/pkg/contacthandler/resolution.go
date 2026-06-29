@@ -88,10 +88,11 @@ func (h *contactHandler) ResolutionCreate(
 }
 
 // ResolutionDelete soft-deletes a resolution.
-// Validates that the resolution exists and belongs to customerID.
-// Cross-tenant guard is enforced in dbhandler (WHERE customer_id = ?).
-func (h *contactHandler) ResolutionDelete(ctx context.Context, customerID, id uuid.UUID) error {
-	if err := h.db.ResolutionDelete(ctx, customerID, id); err != nil {
+// Validates that the resolution exists and belongs to customerID and interactionID.
+// Cross-tenant and cross-interaction guard is enforced in dbhandler
+// (WHERE customer_id=? AND interaction_id=? AND id=?).
+func (h *contactHandler) ResolutionDelete(ctx context.Context, customerID, interactionID, id uuid.UUID) error {
+	if err := h.db.ResolutionDelete(ctx, customerID, interactionID, id); err != nil {
 		if stderrors.Is(err, dbhandler.ErrNotFound) {
 			return cerrors.NotFound(
 				commonoutline.ServiceNameContactManager,

@@ -916,8 +916,8 @@ type RequestHandler interface {
 	// contact-manager interactions (CRM v1 read API, VOIP-1209)
 	ContactV1InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*cminteraction.Interaction, error)
 	ContactV1InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, contactID, addressID uuid.UUID) (*cminteraction.InteractionListResponse, error)
-	ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, sinceDays int) (*cminteraction.InteractionListResponse, error)
-	ContactV1ResolutionCreate(ctx context.Context, interactionID, customerID, contactID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*cmresolution.Resolution, error)
+	ContactV1InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since string) (*cminteraction.InteractionListResponse, error)
+	ContactV1ResolutionCreate(ctx context.Context, customerID, contactID, interactionID uuid.UUID, resolutionType, resolvedByType string, resolvedByID uuid.UUID) (*cmresolution.Resolution, error)
 	ContactV1ResolutionDelete(ctx context.Context, customerID uuid.UUID, interactionID, resolutionID uuid.UUID) error
 
 	// direct-manager directs

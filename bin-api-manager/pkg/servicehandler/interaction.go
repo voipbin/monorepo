@@ -81,17 +81,18 @@ func (h *serviceHandler) InteractionList(
 
 // InteractionListUnresolved sends a request to contact-manager
 // to list interactions with no active resolution within the given lookback window.
+// since is passed directly in "Nd" format (e.g. "7d", "30d"). Empty string uses backend default (30d).
 func (h *serviceHandler) InteractionListUnresolved(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	size uint64,
 	token string,
-	sinceDays int,
+	since string,
 ) (*cminteraction.InteractionListResponse, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "InteractionListUnresolved",
 		"customer_id": a.CustomerID,
-		"since_days":  sinceDays,
+		"since":       since,
 	})
 
 	if a.IsDirect() {
@@ -102,7 +103,7 @@ func (h *serviceHandler) InteractionListUnresolved(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1InteractionListUnresolved(ctx, a.CustomerID, size, token, sinceDays)
+	res, err := h.reqHandler.ContactV1InteractionListUnresolved(ctx, a.CustomerID, size, token, since)
 	if err != nil {
 		log.Errorf("Could not list unresolved interactions. err: %v", err)
 		return nil, err
@@ -173,7 +174,7 @@ func (h *serviceHandler) ResolutionCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ResolutionCreate(ctx, interactionID, a.CustomerID, contactID, resolutionType, resolvedByType, resolvedByID)
+	res, err := h.reqHandler.ContactV1ResolutionCreate(ctx, a.CustomerID, contactID, interactionID, resolutionType, resolvedByType, resolvedByID)
 	if err != nil {
 		log.Errorf("Could not create resolution. err: %v", err)
 		return nil, err

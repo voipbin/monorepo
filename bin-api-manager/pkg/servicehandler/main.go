@@ -482,7 +482,7 @@ type ServiceHandler interface {
 		a *auth.AuthIdentity,
 		size uint64,
 		token string,
-		sinceDays int,
+		since string,
 	) (*cminteraction.InteractionListResponse, error)
 	InteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cminteraction.Interaction, error)
 	ResolutionCreate(

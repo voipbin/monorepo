@@ -320,7 +320,7 @@ func Test_ResolutionCreate(t *testing.T) {
 
 			if !tt.expectErr && tt.responseResolution != nil {
 				mockReq.EXPECT().
-					ContactV1ResolutionCreate(ctx, tt.interactionID, tt.agent.CustomerID, tt.contactID, tt.resolutionType, tt.resolvedByType, tt.resolvedByID).
+					ContactV1ResolutionCreate(ctx, tt.agent.CustomerID, tt.contactID, tt.interactionID, tt.resolutionType, tt.resolvedByType, tt.resolvedByID).
 					Return(tt.responseResolution, nil)
 			}
 
@@ -417,6 +417,112 @@ func Test_ResolutionDelete(t *testing.T) {
 			}
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func Test_InteractionListUnresolved(t *testing.T) {
+	customerID := uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c")
+	agentID := uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c")
+
+	tests := []struct {
+		name string
+
+		agent     *auth.AuthIdentity
+		size      uint64
+		token     string
+		since     string
+
+		responseList *cminteraction.InteractionListResponse
+		expectErr    bool
+	}{
+		{
+			name: "normal - default since",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			size:  20,
+			token: "",
+			since: "",
+			responseList: &cminteraction.InteractionListResponse{
+				Items:         []*cminteraction.Interaction{},
+				NextPageToken: "",
+			},
+			expectErr: false,
+		},
+		{
+			name: "normal - explicit since",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+			size:  20,
+			token: "",
+			since: "7d",
+			responseList: &cminteraction.InteractionListResponse{
+				Items:         []*cminteraction.Interaction{},
+				NextPageToken: "",
+			},
+			expectErr: false,
+		},
+		{
+			name: "permission denied",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+				Permission: amagent.PermissionNone,
+			}),
+			size:      20,
+			token:     "",
+			since:     "",
+			expectErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockReq := requesthandler.NewMockRequestHandler(mc)
+			mockDB := dbhandler.NewMockDBHandler(mc)
+
+			h := &serviceHandler{
+				reqHandler: mockReq,
+				dbHandler:  mockDB,
+			}
+
+			ctx := context.Background()
+
+			if !tt.expectErr {
+				mockReq.EXPECT().
+					ContactV1InteractionListUnresolved(ctx, tt.agent.CustomerID, tt.size, tt.token, tt.since).
+					Return(tt.responseList, nil)
+			}
+
+			res, err := h.InteractionListUnresolved(ctx, tt.agent, tt.size, tt.token, tt.since)
+			if tt.expectErr {
+				if err == nil {
+					t.Errorf("Expected error but got none")
+				}
+				return
+			}
+			if err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+			if res == nil {
+				t.Errorf("Expected result but got nil")
 			}
 		})
 	}
