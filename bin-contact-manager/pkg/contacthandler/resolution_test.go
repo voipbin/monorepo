@@ -9,7 +9,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	commonidentity "monorepo/bin-common-handler/models/identity"
-	"monorepo/bin-common-handler/pkg/notifyhandler"
 	"monorepo/bin-common-handler/pkg/utilhandler"
 
 	"monorepo/bin-contact-manager/models/contact"
@@ -71,6 +70,19 @@ func Test_ResolutionCreate(t *testing.T) {
 			expectErr:       false,
 		},
 		{
+			name:           "interaction not found",
+			customerID:     customerID,
+			contactID:      contactID,
+			interactionID:  interactionID,
+			resolutionType: resolution.ResolutionTypePositive,
+			resolvedByType: resolution.ResolvedByTypeAgent,
+			resolvedByID:   agentID,
+
+			mockInteraction:    nil,
+			mockInteractionErr: dbhandler.ErrNotFound,
+			expectErr:          true,
+		},
+		{
 			name:           "wrong interaction customer",
 			customerID:     customerID,
 			contactID:      contactID,
@@ -84,6 +96,20 @@ func Test_ResolutionCreate(t *testing.T) {
 				CustomerID: uuid.FromStringOrNil("bbbbbbbb-0000-0000-0000-000000000001"), // different customer
 			},
 			expectErr: true,
+		},
+		{
+			name:           "contact not found",
+			customerID:     customerID,
+			contactID:      contactID,
+			interactionID:  interactionID,
+			resolutionType: resolution.ResolutionTypePositive,
+			resolvedByType: resolution.ResolvedByTypeAgent,
+			resolvedByID:   agentID,
+
+			mockInteraction: validInteraction,
+			mockContact:     nil,
+			mockContactErr:  dbhandler.ErrNotFound,
+			expectErr:       true,
 		},
 		{
 			name:           "cross-tenant contactID",
@@ -103,6 +129,26 @@ func Test_ResolutionCreate(t *testing.T) {
 			},
 			expectErr: true,
 		},
+		{
+			name:           "duplicate resolution same type",
+			customerID:     customerID,
+			contactID:      contactID,
+			interactionID:  interactionID,
+			resolutionType: resolution.ResolutionTypePositive,
+			resolvedByType: resolution.ResolvedByTypeAgent,
+			resolvedByID:   agentID,
+
+			mockInteraction: validInteraction,
+			mockContact:     validContact,
+			mockExisting: []*resolution.Resolution{
+				{
+					ContactID:      contactID,
+					InteractionID:  interactionID,
+					ResolutionType: resolution.ResolutionTypePositive,
+				},
+			},
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -112,8 +158,6 @@ func Test_ResolutionCreate(t *testing.T) {
 
 			mockUtil := utilhandler.NewMockUtilHandler(mc)
 			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			_ = mockNotify
 
 			h := &contactHandler{
 				utilHandler: mockUtil,
@@ -121,20 +165,25 @@ func Test_ResolutionCreate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			// Always expect InteractionGet
+			// Always expect InteractionGet.
 			mockDB.EXPECT().InteractionGet(ctx, tt.interactionID).Return(tt.mockInteraction, tt.mockInteractionErr)
 
-			// ContactGet only called if interaction ownership passes
-			if tt.mockInteraction != nil && tt.mockInteraction.CustomerID == tt.customerID {
+			// ContactGet only called if interaction ownership passes.
+			if tt.mockInteractionErr == nil && tt.mockInteraction != nil && tt.mockInteraction.CustomerID == tt.customerID {
 				mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.mockContact, tt.mockContactErr)
 			}
 
-			// ResolutionListByInteraction + create only on full success path
+			// ResolutionListByInteraction + create only on full success path.
 			if !tt.expectErr && tt.mockExisting != nil {
 				mockDB.EXPECT().ResolutionListByInteraction(ctx, tt.customerID, tt.interactionID).Return(tt.mockExisting, nil)
 				mockUtil.EXPECT().UUIDCreate().Return(resID)
 				mockUtil.EXPECT().TimeNow().Return(now)
 				mockDB.EXPECT().ResolutionCreate(ctx, gomock.Any()).Return(nil)
+			}
+
+			// Also set up ResolutionListByInteraction for duplicate check on duplicate case.
+			if tt.expectErr && tt.mockExisting != nil && tt.mockContactErr == nil && tt.mockContact != nil && tt.mockContact.CustomerID == tt.customerID {
+				mockDB.EXPECT().ResolutionListByInteraction(ctx, tt.customerID, tt.interactionID).Return(tt.mockExisting, nil)
 			}
 
 			_, err := h.ResolutionCreate(ctx, tt.customerID, tt.contactID, tt.interactionID, tt.resolutionType, tt.resolvedByType, tt.resolvedByID)

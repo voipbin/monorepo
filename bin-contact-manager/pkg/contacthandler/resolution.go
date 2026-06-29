@@ -19,7 +19,8 @@ import (
 //
 // Validates:
 //  1. The interaction must exist and belong to customerID (tenant guard).
-//  2. No existing active resolution of the SAME type for (contact_id, interaction_id).
+//  2. The contact must exist and belong to customerID (tenant guard).
+//  3. No existing active resolution of the SAME type for (contact_id, interaction_id).
 //     A positive + negative coexisting is allowed. Two positives or two negatives are rejected.
 //     This is application-level dedup (no DB UNIQUE due to MySQL NULL semantics + soft-delete).
 //     Concurrent creates may slip through; v1 accepts this as a UX nuisance, not data corruption.
