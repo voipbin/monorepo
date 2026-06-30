@@ -46,7 +46,7 @@ func (h *server) GetContactAddresses(c *gin.Context, params openapi_server.GetCo
 	}
 
 	res, err := h.serviceHandler.ContactAddressList(c.Request.Context(), a, filters, pageToken, pageSize)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not list contact addresses. err: %v", err)
 		abortWithServiceError(c, err)
 		return
@@ -88,7 +88,7 @@ func (h *server) PostContactAddresses(c *gin.Context) {
 	}
 
 	res, err := h.serviceHandler.ContactAddressCreateIndependent(c.Request.Context(), a, contactID, string(req.Type), req.Target, isPrimary)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not create contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return
@@ -118,7 +118,7 @@ func (h *server) GetContactAddressesId(c *gin.Context, id openapi_types.UUID) {
 	}
 
 	res, err := h.serviceHandler.ContactAddressGet(c.Request.Context(), a, addressID)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not get contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return
@@ -154,8 +154,6 @@ func (h *server) PutContactAddressesId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	// contact_id is required to resolve tenant isolation in the servicehandler
-	// client must pass it as a query param or in the body; here we read from query
 	contactIDStr := c.Query("contact_id")
 	contactID := uuid.FromStringOrNil(contactIDStr)
 
@@ -168,7 +166,7 @@ func (h *server) PutContactAddressesId(c *gin.Context, id openapi_types.UUID) {
 	}
 
 	res, err := h.serviceHandler.ContactAddressUpdateIndependent(c.Request.Context(), a, contactID, addressID, fields)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not update contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return
@@ -201,7 +199,7 @@ func (h *server) DeleteContactAddressesId(c *gin.Context, id openapi_types.UUID)
 	contactID := uuid.FromStringOrNil(contactIDStr)
 
 	res, err := h.serviceHandler.ContactAddressDeleteIndependent(c.Request.Context(), a, contactID, addressID)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not delete contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return

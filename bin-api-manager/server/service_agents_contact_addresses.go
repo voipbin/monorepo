@@ -46,7 +46,7 @@ func (h *server) GetServiceAgentsContactAddresses(c *gin.Context, params openapi
 	}
 
 	res, err := h.serviceHandler.ServiceAgentContactAddressList(c.Request.Context(), a, filters, pageToken, pageSize)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not list contact addresses. err: %v", err)
 		abortWithServiceError(c, err)
 		return
@@ -88,7 +88,7 @@ func (h *server) PostServiceAgentsContactAddresses(c *gin.Context) {
 	}
 
 	res, err := h.serviceHandler.ServiceAgentContactAddressCreateIndependent(c.Request.Context(), a, contactID, string(req.Type), req.Target, isPrimary)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not create contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return
@@ -118,7 +118,7 @@ func (h *server) GetServiceAgentsContactAddressesId(c *gin.Context, id openapi_t
 	}
 
 	res, err := h.serviceHandler.ServiceAgentContactAddressGet(c.Request.Context(), a, addressID)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not get contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return
@@ -166,7 +166,7 @@ func (h *server) PutServiceAgentsContactAddressesId(c *gin.Context, id openapi_t
 	}
 
 	res, err := h.serviceHandler.ServiceAgentContactAddressUpdateIndependent(c.Request.Context(), a, contactID, addressID, fields)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not update contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return
@@ -199,7 +199,7 @@ func (h *server) DeleteServiceAgentsContactAddressesId(c *gin.Context, id openap
 	contactID := uuid.FromStringOrNil(contactIDStr)
 
 	res, err := h.serviceHandler.ServiceAgentContactAddressDeleteIndependent(c.Request.Context(), a, contactID, addressID)
-	if !ok {
+	if err != nil {
 		log.Errorf("Could not delete contact address. err: %v", err)
 		abortWithServiceError(c, err)
 		return
