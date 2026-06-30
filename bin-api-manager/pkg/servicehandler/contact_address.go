@@ -2,7 +2,6 @@ package servicehandler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
@@ -367,6 +366,3 @@ func (h *serviceHandler) ServiceAgentContactAddressDeleteIndependent(
 
 	return res, nil
 }
-
-// ensure unused import guard removed
-var _ = fmt.Sprintf
