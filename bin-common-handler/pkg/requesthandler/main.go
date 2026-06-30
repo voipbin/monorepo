@@ -867,8 +867,7 @@ type RequestHandler interface {
 		source string,
 		externalID string,
 		notes string,
-		phoneNumbers []cmrequest.PhoneNumberCreate,
-		emails []cmrequest.EmailCreate,
+		addresses []cmrequest.AddressCreate,
 		tagIDs []uuid.UUID,
 	) (*cmcontact.Contact, error)
 	ContactV1ContactGet(ctx context.Context, contactID uuid.UUID) (*cmcontact.Contact, error)
@@ -887,27 +886,17 @@ type RequestHandler interface {
 	ContactV1ContactDelete(ctx context.Context, contactID uuid.UUID) (*cmcontact.Contact, error)
 	ContactV1ContactLookup(ctx context.Context, customerID uuid.UUID, phoneE164 string, email string) (*cmcontact.Contact, error)
 
-	// contact-manager phone-numbers
-	ContactV1PhoneNumberCreate(
+	// contact-manager addresses
+	ContactV1AddressCreate(
 		ctx context.Context,
 		contactID uuid.UUID,
-		number string,
-		phoneType string,
+		addrType string,
+		target string,
 		isPrimary bool,
 	) (*cmcontact.Contact, error)
-	ContactV1PhoneNumberUpdate(ctx context.Context, contactID uuid.UUID, phoneNumberID uuid.UUID, fields map[string]any) (*cmcontact.Contact, error)
-	ContactV1PhoneNumberDelete(ctx context.Context, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.Contact, error)
-
-	// contact-manager emails
-	ContactV1EmailCreate(
-		ctx context.Context,
-		contactID uuid.UUID,
-		address string,
-		emailType string,
-		isPrimary bool,
-	) (*cmcontact.Contact, error)
-	ContactV1EmailUpdate(ctx context.Context, contactID uuid.UUID, emailID uuid.UUID, fields map[string]any) (*cmcontact.Contact, error)
-	ContactV1EmailDelete(ctx context.Context, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.Contact, error)
+	ContactV1AddressGet(ctx context.Context, contactID uuid.UUID) ([]cmcontact.Address, error)
+	ContactV1AddressUpdate(ctx context.Context, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.Contact, error)
+	ContactV1AddressDelete(ctx context.Context, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.Contact, error)
 
 	// contact-manager tags
 	ContactV1TagAdd(ctx context.Context, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.Contact, error)

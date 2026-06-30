@@ -425,8 +425,7 @@ type ServiceHandler interface {
 		source string,
 		externalID string,
 		notes string,
-		phoneNumbers []cmrequest.PhoneNumberCreate,
-		emails []cmrequest.EmailCreate,
+		addresses []cmrequest.AddressCreate,
 		tagIDs []uuid.UUID,
 	) (*cmcontact.WebhookMessage, error)
 	ContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
@@ -445,26 +444,16 @@ type ServiceHandler interface {
 	) (*cmcontact.WebhookMessage, error)
 	ContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error)
-	ContactPhoneNumberCreate(
+	ContactAddressCreate(
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		contactID uuid.UUID,
-		number string,
-		phoneType string,
+		addrType string,
+		target string,
 		isPrimary bool,
 	) (*cmcontact.WebhookMessage, error)
-	ContactPhoneNumberUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
-	ContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error)
-	ContactEmailCreate(
-		ctx context.Context,
-		a *auth.AuthIdentity,
-		contactID uuid.UUID,
-		address string,
-		emailType string,
-		isPrimary bool,
-	) (*cmcontact.WebhookMessage, error)
-	ContactEmailUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
-	ContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error)
+	ContactAddressUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
+	ContactAddressDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 
@@ -898,8 +887,7 @@ type ServiceHandler interface {
 		source string,
 		externalID string,
 		notes string,
-		phoneNumbers []cmrequest.PhoneNumberCreate,
-		emails []cmrequest.EmailCreate,
+		addresses []cmrequest.AddressCreate,
 		tagIDs []uuid.UUID,
 	) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactGet(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
@@ -918,12 +906,9 @@ type ServiceHandler interface {
 	) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error)
-	ServiceAgentContactPhoneNumberCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, number string, phoneType string, isPrimary bool) (*cmcontact.WebhookMessage, error)
-	ServiceAgentContactPhoneNumberUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
-	ServiceAgentContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error)
-	ServiceAgentContactEmailCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, address string, emailType string, isPrimary bool) (*cmcontact.WebhookMessage, error)
-	ServiceAgentContactEmailUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
-	ServiceAgentContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error)
+	ServiceAgentContactAddressCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool) (*cmcontact.WebhookMessage, error)
+	ServiceAgentContactAddressUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
+	ServiceAgentContactAddressDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactTagAdd(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactTagRemove(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, tagID uuid.UUID) (*cmcontact.WebhookMessage, error)
 

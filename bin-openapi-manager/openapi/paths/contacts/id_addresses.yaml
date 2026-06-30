@@ -1,0 +1,54 @@
+post:
+  summary: Add address to contact
+  description: Add a new address (tel or email) to the contact.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 5e4a0680-eba3-4001-a000-000000000001
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - type
+            - target
+          properties:
+            type:
+              type: string
+              enum: [tel, email]
+              description: Address type. 'tel' for phone numbers, 'email' for email addresses.
+              example: tel
+            target:
+              type: string
+              description: The address value. E.164 format for tel, email address for email.
+              example: "+15551234567"
+            is_primary:
+              type: boolean
+              description: Whether this is the primary address for the given type.
+              example: true
+  responses:
+    '200':
+      description: Address added successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'

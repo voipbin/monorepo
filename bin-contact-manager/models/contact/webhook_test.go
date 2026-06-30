@@ -23,19 +23,17 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 		JobTitle:    "Engineer",
 		Source:      "manual",
 		ExternalID:  "ext-123",
-		PhoneNumbers: []PhoneNumber{
+		Addresses: []Address{
 			{
-				ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-				Number:     "+15551234567",
-				Type:       "mobile",
-				IsPrimary:  true,
+				ID:        uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+				Type:      AddressTypeTel,
+				Target:    "+15551234567",
+				IsPrimary: true,
 			},
-		},
-		Emails: []Email{
 			{
 				ID:        uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-				Address:   "john@example.com",
-				Type:      "work",
+				Type:      AddressTypeEmail,
+				Target:    "john@example.com",
 				IsPrimary: true,
 			},
 		},
@@ -76,11 +74,8 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 	if webhook.ExternalID != contact.ExternalID {
 		t.Errorf("ExternalID mismatch: got %v, want %v", webhook.ExternalID, contact.ExternalID)
 	}
-	if len(webhook.PhoneNumbers) != len(contact.PhoneNumbers) {
-		t.Errorf("PhoneNumbers length mismatch: got %v, want %v", len(webhook.PhoneNumbers), len(contact.PhoneNumbers))
-	}
-	if len(webhook.Emails) != len(contact.Emails) {
-		t.Errorf("Emails length mismatch: got %v, want %v", len(webhook.Emails), len(contact.Emails))
+	if len(webhook.Addresses) != len(contact.Addresses) {
+		t.Errorf("Addresses length mismatch: got %v, want %v", len(webhook.Addresses), len(contact.Addresses))
 	}
 	if len(webhook.TagIDs) != len(contact.TagIDs) {
 		t.Errorf("TagIDs length mismatch: got %v, want %v", len(webhook.TagIDs), len(contact.TagIDs))
@@ -117,23 +112,23 @@ func TestContact_CreateWebhookEvent(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "contact with phone numbers and emails",
+			name: "contact with addresses",
 			contact: &Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 					CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				},
 				FirstName: "Jane",
-				PhoneNumbers: []PhoneNumber{
+				Addresses: []Address{
 					{
-						ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-						Number:     "+15559998888",
+						ID:     uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+						Type:   AddressTypeTel,
+						Target: "+15558888888",
 					},
-				},
-				Emails: []Email{
 					{
-						ID:      uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-						Address: "jane@example.com",
+						ID:     uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+						Type:   AddressTypeEmail,
+						Target: "jane@example.com",
 					},
 				},
 			},

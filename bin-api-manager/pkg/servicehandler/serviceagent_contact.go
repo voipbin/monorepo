@@ -26,8 +26,7 @@ func (h *serviceHandler) ServiceAgentContactCreate(
 	source string,
 	externalID string,
 	notes string,
-	phoneNumbers []cmrequest.PhoneNumberCreate,
-	emails []cmrequest.EmailCreate,
+	addresses []cmrequest.AddressCreate,
 	tagIDs []uuid.UUID,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
@@ -55,8 +54,7 @@ func (h *serviceHandler) ServiceAgentContactCreate(
 		source,
 		externalID,
 		notes,
-		phoneNumbers,
-		emails,
+		addresses,
 		tagIDs,
 	)
 	if err != nil {
@@ -260,14 +258,14 @@ func (h *serviceHandler) ServiceAgentContactLookup(ctx context.Context, a *auth.
 	return res, nil
 }
 
-// ServiceAgentContactPhoneNumberCreate sends a request to contact-manager
-// to add a phone number to a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactPhoneNumberCreate(
+// ServiceAgentContactAddressCreate sends a request to contact-manager
+// to add an address to a contact for the service agent.
+func (h *serviceHandler) ServiceAgentContactAddressCreate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	contactID uuid.UUID,
-	number string,
-	phoneType string,
+	addrType string,
+	target string,
 	isPrimary bool,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
@@ -275,7 +273,7 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberCreate(
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ServiceAgentContactPhoneNumberCreate",
+		"func":        "ServiceAgentContactAddressCreate",
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
 	})
@@ -291,9 +289,9 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.ContactV1PhoneNumberCreate(ctx, contactID, number, phoneType, isPrimary)
+	tmp, err := h.reqHandler.ContactV1AddressCreate(ctx, contactID, addrType, target, isPrimary)
 	if err != nil {
-		log.Infof("Could not add phone number to contact. err: %v", err)
+		log.Infof("Could not add address to contact. err: %v", err)
 		return nil, err
 	}
 
@@ -301,13 +299,13 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberCreate(
 	return res, nil
 }
 
-// ServiceAgentContactPhoneNumberUpdate sends a request to contact-manager
-// to update a phone number on a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactPhoneNumberUpdate(
+// ServiceAgentContactAddressUpdate sends a request to contact-manager
+// to update an address on a contact for the service agent.
+func (h *serviceHandler) ServiceAgentContactAddressUpdate(
 	ctx context.Context,
 	a *auth.AuthIdentity,
 	contactID uuid.UUID,
-	phoneNumberID uuid.UUID,
+	addressID uuid.UUID,
 	fields map[string]any,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
@@ -315,86 +313,10 @@ func (h *serviceHandler) ServiceAgentContactPhoneNumberUpdate(
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "ServiceAgentContactPhoneNumberUpdate",
-		"customer_id":     a.CustomerID,
-		"contact_id":      contactID,
-		"phone_number_id": phoneNumberID,
-	})
-
-	ct, err := h.contactGet(ctx, contactID)
-	if err != nil {
-		log.Errorf("Could not get the contact info. err: %v", err)
-		return nil, err
-	}
-
-	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
-		log.Info("The agent has no permission.")
-		return nil, serviceerrors.ErrPermissionDenied
-	}
-
-	tmp, err := h.reqHandler.ContactV1PhoneNumberUpdate(ctx, contactID, phoneNumberID, fields)
-	if err != nil {
-		log.Infof("Could not update phone number on contact. err: %v", err)
-		return nil, err
-	}
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
-// ServiceAgentContactPhoneNumberDelete sends a request to contact-manager
-// to remove a phone number from a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactPhoneNumberDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, phoneNumberID uuid.UUID) (*cmcontact.WebhookMessage, error) {
-	if !a.IsAgent() {
-		return nil, serviceerrors.ErrAuthenticationRequired
-	}
-
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "ServiceAgentContactPhoneNumberDelete",
-		"customer_id":     a.CustomerID,
-		"contact_id":      contactID,
-		"phone_number_id": phoneNumberID,
-	})
-
-	ct, err := h.contactGet(ctx, contactID)
-	if err != nil {
-		log.Errorf("Could not get the contact info. err: %v", err)
-		return nil, err
-	}
-
-	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
-		log.Info("The agent has no permission.")
-		return nil, serviceerrors.ErrPermissionDenied
-	}
-
-	tmp, err := h.reqHandler.ContactV1PhoneNumberDelete(ctx, contactID, phoneNumberID)
-	if err != nil {
-		log.Infof("Could not delete phone number from contact. err: %v", err)
-		return nil, err
-	}
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
-// ServiceAgentContactEmailCreate sends a request to contact-manager
-// to add an email to a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactEmailCreate(
-	ctx context.Context,
-	a *auth.AuthIdentity,
-	contactID uuid.UUID,
-	address string,
-	emailType string,
-	isPrimary bool,
-) (*cmcontact.WebhookMessage, error) {
-	if !a.IsAgent() {
-		return nil, serviceerrors.ErrAuthenticationRequired
-	}
-
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "ServiceAgentContactEmailCreate",
+		"func":        "ServiceAgentContactAddressUpdate",
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
+		"address_id":  addressID,
 	})
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -408,9 +330,9 @@ func (h *serviceHandler) ServiceAgentContactEmailCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.ContactV1EmailCreate(ctx, contactID, address, emailType, isPrimary)
+	tmp, err := h.reqHandler.ContactV1AddressUpdate(ctx, contactID, addressID, fields)
 	if err != nil {
-		log.Infof("Could not add email to contact. err: %v", err)
+		log.Infof("Could not update address on contact. err: %v", err)
 		return nil, err
 	}
 
@@ -418,24 +340,18 @@ func (h *serviceHandler) ServiceAgentContactEmailCreate(
 	return res, nil
 }
 
-// ServiceAgentContactEmailUpdate sends a request to contact-manager
-// to update an email on a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactEmailUpdate(
-	ctx context.Context,
-	a *auth.AuthIdentity,
-	contactID uuid.UUID,
-	emailID uuid.UUID,
-	fields map[string]any,
-) (*cmcontact.WebhookMessage, error) {
+// ServiceAgentContactAddressDelete sends a request to contact-manager
+// to remove an address from a contact for the service agent.
+func (h *serviceHandler) ServiceAgentContactAddressDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
 		return nil, serviceerrors.ErrAuthenticationRequired
 	}
 
 	log := logrus.WithFields(logrus.Fields{
-		"func":        "ServiceAgentContactEmailUpdate",
+		"func":        "ServiceAgentContactAddressDelete",
 		"customer_id": a.CustomerID,
 		"contact_id":  contactID,
-		"email_id":    emailID,
+		"address_id":  addressID,
 	})
 
 	ct, err := h.contactGet(ctx, contactID)
@@ -449,44 +365,9 @@ func (h *serviceHandler) ServiceAgentContactEmailUpdate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.ContactV1EmailUpdate(ctx, contactID, emailID, fields)
+	tmp, err := h.reqHandler.ContactV1AddressDelete(ctx, contactID, addressID)
 	if err != nil {
-		log.Infof("Could not update email on contact. err: %v", err)
-		return nil, err
-	}
-
-	res := tmp.ConvertWebhookMessage()
-	return res, nil
-}
-
-// ServiceAgentContactEmailDelete sends a request to contact-manager
-// to remove an email from a contact for the service agent.
-func (h *serviceHandler) ServiceAgentContactEmailDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, emailID uuid.UUID) (*cmcontact.WebhookMessage, error) {
-	if !a.IsAgent() {
-		return nil, serviceerrors.ErrAuthenticationRequired
-	}
-
-	log := logrus.WithFields(logrus.Fields{
-		"func":        "ServiceAgentContactEmailDelete",
-		"customer_id": a.CustomerID,
-		"contact_id":  contactID,
-		"email_id":    emailID,
-	})
-
-	ct, err := h.contactGet(ctx, contactID)
-	if err != nil {
-		log.Errorf("Could not get the contact info. err: %v", err)
-		return nil, err
-	}
-
-	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionAll) {
-		log.Info("The agent has no permission.")
-		return nil, serviceerrors.ErrPermissionDenied
-	}
-
-	tmp, err := h.reqHandler.ContactV1EmailDelete(ctx, contactID, emailID)
-	if err != nil {
-		log.Infof("Could not delete email from contact. err: %v", err)
+		log.Infof("Could not delete address from contact. err: %v", err)
 		return nil, err
 	}
 

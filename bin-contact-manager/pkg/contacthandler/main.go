@@ -33,15 +33,10 @@ type ContactHandler interface {
 	LookupByPhone(ctx context.Context, customerID uuid.UUID, phoneE164 string) (*contact.Contact, error)
 	LookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error)
 
-	// PhoneNumber operations
-	AddPhoneNumber(ctx context.Context, contactID uuid.UUID, p *contact.PhoneNumber) (*contact.Contact, error)
-	UpdatePhoneNumber(ctx context.Context, contactID, phoneID uuid.UUID, fields map[string]any) (*contact.Contact, error)
-	RemovePhoneNumber(ctx context.Context, contactID, phoneID uuid.UUID) (*contact.Contact, error)
-
-	// Email operations
-	AddEmail(ctx context.Context, contactID uuid.UUID, e *contact.Email) (*contact.Contact, error)
-	UpdateEmail(ctx context.Context, contactID, emailID uuid.UUID, fields map[string]any) (*contact.Contact, error)
-	RemoveEmail(ctx context.Context, contactID, emailID uuid.UUID) (*contact.Contact, error)
+	// Address operations
+	AddAddress(ctx context.Context, contactID uuid.UUID, a *contact.Address) (*contact.Contact, error)
+	UpdateAddress(ctx context.Context, contactID, addressID uuid.UUID, fields map[string]any) (*contact.Contact, error)
+	RemoveAddress(ctx context.Context, contactID, addressID uuid.UUID) (*contact.Contact, error)
 
 	// Tag operations
 	AddTag(ctx context.Context, contactID, tagID uuid.UUID) (*contact.Contact, error)

@@ -7654,10 +7654,10 @@
         }
       }
     },
-    "/contacts/{id}/phone-numbers": {
+    "/contacts/{id}/addresses": {
       "post": {
-        "summary": "Add phone number to contact",
-        "description": "Add a new phone number to the contact.",
+        "summary": "Add address to contact",
+        "description": "Add a new address (tel or email) to the contact.",
         "tags": [
           "Contact"
         ],
@@ -7668,7 +7668,9 @@
             "description": "The ID of the contact.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000001"
             }
           }
         ],
@@ -7679,24 +7681,28 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "number"
+                  "type",
+                  "target"
                 ],
                 "properties": {
-                  "number": {
-                    "type": "string"
-                  },
                   "type": {
                     "type": "string",
                     "enum": [
-                      "mobile",
-                      "work",
-                      "home",
-                      "fax",
-                      "other"
-                    ]
+                      "tel",
+                      "email"
+                    ],
+                    "description": "Address type. 'tel' for phone numbers, 'email' for email addresses.",
+                    "example": "tel"
+                  },
+                  "target": {
+                    "type": "string",
+                    "description": "The address value. E.164 format for tel, email address for email.",
+                    "example": "+15551234567"
                   },
                   "is_primary": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Whether this is the primary address for the given type.",
+                    "example": true
                   }
                 }
               }
@@ -7705,7 +7711,7 @@
         },
         "responses": {
           "200": {
-            "description": "Phone number added successfully.",
+            "description": "Address added successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7732,10 +7738,10 @@
         }
       }
     },
-    "/contacts/{id}/phone-numbers/{phone_number_id}": {
+    "/contacts/{id}/addresses/{address_id}": {
       "put": {
-        "summary": "Update phone number on contact",
-        "description": "Update a phone number on the contact.",
+        "summary": "Update address on contact",
+        "description": "Update an existing address on the contact.",
         "tags": [
           "Contact"
         ],
@@ -7746,16 +7752,20 @@
             "description": "The ID of the contact.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000001"
             }
           },
           {
-            "name": "phone_number_id",
+            "name": "address_id",
             "in": "path",
-            "description": "The ID of the phone number.",
+            "description": "The ID of the address returned from POST /contacts/{id}/addresses.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000002"
             }
           }
         ],
@@ -7766,21 +7776,15 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "number": {
-                    "type": "string"
-                  },
-                  "type": {
+                  "target": {
                     "type": "string",
-                    "enum": [
-                      "mobile",
-                      "work",
-                      "home",
-                      "fax",
-                      "other"
-                    ]
+                    "description": "The updated address value. E.164 format for tel, email address for email.",
+                    "example": "+155****9999"
                   },
                   "is_primary": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Whether this is the primary address for the given type.",
+                    "example": true
                   }
                 }
               }
@@ -7789,7 +7793,7 @@
         },
         "responses": {
           "200": {
-            "description": "Phone number updated successfully.",
+            "description": "Address updated successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -7816,8 +7820,8 @@
         }
       },
       "delete": {
-        "summary": "Remove phone number from contact",
-        "description": "Remove a phone number from the contact.",
+        "summary": "Remove address from contact",
+        "description": "Remove an address from the contact.",
         "tags": [
           "Contact"
         ],
@@ -7828,236 +7832,26 @@
             "description": "The ID of the contact.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000001"
             }
           },
           {
-            "name": "phone_number_id",
+            "name": "address_id",
             "in": "path",
-            "description": "The ID of the phone number.",
+            "description": "The ID of the address returned from POST /contacts/{id}/addresses.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000002"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Phone number removed successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactManagerContact"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      }
-    },
-    "/contacts/{id}/emails": {
-      "post": {
-        "summary": "Add email to contact",
-        "description": "Add a new email address to the contact.",
-        "tags": [
-          "Contact"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the contact.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "address"
-                ],
-                "properties": {
-                  "address": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "work",
-                      "personal",
-                      "other"
-                    ]
-                  },
-                  "is_primary": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email added successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactManagerContact"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      }
-    },
-    "/contacts/{id}/emails/{email_id}": {
-      "put": {
-        "summary": "Update email on contact",
-        "description": "Update an email address on the contact.",
-        "tags": [
-          "Contact"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the contact.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "email_id",
-            "in": "path",
-            "description": "The ID of the email.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "address": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "work",
-                      "personal",
-                      "other"
-                    ]
-                  },
-                  "is_primary": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email updated successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactManagerContact"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Remove email from contact",
-        "description": "Remove an email address from the contact.",
-        "tags": [
-          "Contact"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the contact.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "email_id",
-            "in": "path",
-            "description": "The ID of the email.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Email removed successfully.",
+            "description": "Address removed successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -17441,12 +17235,12 @@
         }
       }
     },
-    "/service_agents/contacts/{id}/phone_numbers/{phone_number_id}": {
-      "put": {
-        "summary": "Update phone number on contact",
-        "description": "Update a phone number on the contact.",
+    "/service_agents/contacts/{id}/addresses": {
+      "post": {
+        "summary": "Add address to contact (service agent)",
+        "description": "Add a new address (tel or email) to the contact as a service agent.",
         "tags": [
-          "Service Agent"
+          "ServiceAgent"
         ],
         "parameters": [
           {
@@ -17455,16 +17249,104 @@
             "description": "The ID of the contact.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000001"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "target"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "tel",
+                      "email"
+                    ],
+                    "description": "Address type.",
+                    "example": "tel"
+                  },
+                  "target": {
+                    "type": "string",
+                    "description": "The address value. E.164 format for tel, email address for email.",
+                    "example": "+155****4567"
+                  },
+                  "is_primary": {
+                    "type": "boolean",
+                    "description": "Whether this is the primary address for the given type.",
+                    "example": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address added successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerContact"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/service_agents/contacts/{id}/addresses/{address_id}": {
+      "put": {
+        "summary": "Update address on contact (service agent)",
+        "description": "Update an existing address on the contact as a service agent.",
+        "tags": [
+          "ServiceAgent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the contact.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000001"
             }
           },
           {
-            "name": "phone_number_id",
+            "name": "address_id",
             "in": "path",
-            "description": "The ID of the phone number.",
+            "description": "The ID of the address returned from POST /service_agents/contacts/{id}/addresses.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000002"
             }
           }
         ],
@@ -17475,21 +17357,15 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "number": {
-                    "type": "string"
-                  },
-                  "type": {
+                  "target": {
                     "type": "string",
-                    "enum": [
-                      "mobile",
-                      "work",
-                      "home",
-                      "fax",
-                      "other"
-                    ]
+                    "description": "The updated address value.",
+                    "example": "+155****9999"
                   },
                   "is_primary": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Whether this is the primary address for the given type.",
+                    "example": true
                   }
                 }
               }
@@ -17498,7 +17374,7 @@
         },
         "responses": {
           "200": {
-            "description": "Phone number updated successfully.",
+            "description": "Address updated successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -17525,10 +17401,10 @@
         }
       },
       "delete": {
-        "summary": "Remove phone number from contact",
-        "description": "Remove a phone number from the contact.",
+        "summary": "Remove address from contact (service agent)",
+        "description": "Remove an address from the contact as a service agent.",
         "tags": [
-          "Service Agent"
+          "ServiceAgent"
         ],
         "parameters": [
           {
@@ -17537,314 +17413,26 @@
             "description": "The ID of the contact.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000001"
             }
           },
           {
-            "name": "phone_number_id",
+            "name": "address_id",
             "in": "path",
-            "description": "The ID of the phone number.",
+            "description": "The ID of the address returned from POST /service_agents/contacts/{id}/addresses.",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid",
+              "example": "5e4a0680-eba3-4001-a000-000000000002"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Phone number removed successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactManagerContact"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      }
-    },
-    "/service_agents/contacts/{id}/phone_numbers": {
-      "post": {
-        "summary": "Add phone number to contact",
-        "description": "Add a new phone number to the contact.",
-        "tags": [
-          "Service Agent"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the contact.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "number"
-                ],
-                "properties": {
-                  "number": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "mobile",
-                      "work",
-                      "home",
-                      "fax",
-                      "other"
-                    ]
-                  },
-                  "is_primary": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Phone number added successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactManagerContact"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      }
-    },
-    "/service_agents/contacts/{id}/emails/{email_id}": {
-      "put": {
-        "summary": "Update email on contact",
-        "description": "Update an email address on the contact.",
-        "tags": [
-          "Service Agent"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the contact.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "email_id",
-            "in": "path",
-            "description": "The ID of the email.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "address": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "work",
-                      "personal",
-                      "other"
-                    ]
-                  },
-                  "is_primary": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email updated successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactManagerContact"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Remove email from contact",
-        "description": "Remove an email address from the contact.",
-        "tags": [
-          "Service Agent"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the contact.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "email_id",
-            "in": "path",
-            "description": "The ID of the email.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Email removed successfully.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContactManagerContact"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthenticated"
-          },
-          "403": {
-            "$ref": "#/components/responses/PermissionDenied"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        }
-      }
-    },
-    "/service_agents/contacts/{id}/emails": {
-      "post": {
-        "summary": "Add email to contact",
-        "description": "Add a new email address to the contact.",
-        "tags": [
-          "Service Agent"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "The ID of the contact.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "address"
-                ],
-                "properties": {
-                  "address": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": [
-                      "work",
-                      "personal",
-                      "other"
-                    ]
-                  },
-                  "is_primary": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Email added successfully.",
+            "description": "Address removed successfully.",
             "content": {
               "application/json": {
                 "schema": {
@@ -24737,18 +24325,11 @@
             "description": "External identifier for the contact.",
             "example": "CRM-12345"
           },
-          "phone_numbers": {
+          "addresses": {
             "type": "array",
-            "description": "List of phone numbers associated with the contact.",
+            "description": "List of addresses (tel or email) associated with the contact.",
             "items": {
-              "$ref": "#/components/schemas/ContactManagerPhoneNumber"
-            }
-          },
-          "emails": {
-            "type": "array",
-            "description": "List of email addresses associated with the contact.",
-            "items": {
-              "$ref": "#/components/schemas/ContactManagerEmail"
+              "$ref": "#/components/schemas/ContactManagerAddress"
             }
           },
           "tag_ids": {
@@ -24799,103 +24380,49 @@
           "ContactManagerContactSourceSync"
         ]
       },
-      "ContactManagerEmail": {
+      "ContactManagerAddress": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
             "format": "uuid",
-            "description": "Unique identifier for the email address.",
+            "description": "Unique identifier for the address.",
             "example": "550e8400-e29b-41d4-a716-446655440000"
           },
-          "address": {
-            "type": "string",
-            "format": "email",
-            "description": "Email address.",
-            "example": "john.smith@acme.com"
-          },
           "type": {
-            "$ref": "#/components/schemas/ContactManagerEmailType",
-            "description": "Type of the email address.",
-            "example": "work"
+            "$ref": "#/components/schemas/ContactManagerAddressType",
+            "description": "Address type.",
+            "example": "tel"
+          },
+          "target": {
+            "type": "string",
+            "description": "The address value. E.164 format for tel, email address for email.",
+            "example": "+141****1234"
           },
           "is_primary": {
             "type": "boolean",
-            "description": "Indicates if this is the primary email address.",
+            "description": "Indicates if this is the primary address for the given type.",
             "example": true
           },
           "tm_create": {
             "type": "string",
             "format": "date-time",
-            "description": "Timestamp when the email was created.",
+            "description": "Timestamp when the address was created.",
             "example": "2026-01-15T09:30:00.000000Z"
           }
         }
       },
-      "ContactManagerEmailType": {
+      "ContactManagerAddressType": {
         "type": "string",
-        "description": "Type of the email address.",
-        "example": "work",
+        "description": "Type of the address.",
+        "example": "tel",
         "enum": [
-          "work",
-          "personal",
-          "other"
+          "tel",
+          "email"
         ],
         "x-enum-varnames": [
-          "ContactManagerEmailTypeWork",
-          "ContactManagerEmailTypePersonal",
-          "ContactManagerEmailTypeOther"
-        ]
-      },
-      "ContactManagerPhoneNumber": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Unique identifier for the phone number.",
-            "example": "550e8400-e29b-41d4-a716-446655440000"
-          },
-          "number": {
-            "type": "string",
-            "description": "Phone number in E.164 format.",
-            "example": "+14155551234"
-          },
-          "type": {
-            "$ref": "#/components/schemas/ContactManagerPhoneNumberType",
-            "description": "Type of the phone number.",
-            "example": "mobile"
-          },
-          "is_primary": {
-            "type": "boolean",
-            "description": "Indicates if this is the primary phone number.",
-            "example": true
-          },
-          "tm_create": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp when the phone number was created.",
-            "example": "2026-01-15T09:30:00.000000Z"
-          }
-        }
-      },
-      "ContactManagerPhoneNumberType": {
-        "type": "string",
-        "description": "Type of the phone number.",
-        "example": "mobile",
-        "enum": [
-          "mobile",
-          "work",
-          "home",
-          "fax",
-          "other"
-        ],
-        "x-enum-varnames": [
-          "ContactManagerPhoneNumberTypeMobile",
-          "ContactManagerPhoneNumberTypeWork",
-          "ContactManagerPhoneNumberTypeHome",
-          "ContactManagerPhoneNumberTypeFax",
-          "ContactManagerPhoneNumberTypeOther"
+          "ContactManagerAddressTypeTel",
+          "ContactManagerAddressTypeEmail"
         ]
       },
       "ConversationManagerAccountType": {

@@ -16,9 +16,8 @@ type ContactCreate struct {
 	ExternalID string `json:"external_id"`
 	Notes      string `json:"notes"`
 
-	PhoneNumbers []PhoneNumberCreate `json:"phone_numbers,omitempty"`
-	Emails       []EmailCreate       `json:"emails,omitempty"`
-	TagIDs       []uuid.UUID         `json:"tag_ids,omitempty"`
+	Addresses []AddressCreate `json:"addresses,omitempty"`
+	TagIDs    []uuid.UUID     `json:"tag_ids,omitempty"`
 }
 
 // ContactUpdate is the request body for PUT /v1/contacts/{id}
@@ -32,31 +31,16 @@ type ContactUpdate struct {
 	Notes       *string `json:"notes,omitempty"`
 }
 
-// PhoneNumberCreate is the request body for POST /v1/contacts/{id}/phone-numbers
-type PhoneNumberCreate struct {
-	Number    string `json:"number"`
-	Type      string `json:"type"`
+// AddressCreate is the body for POST /v1/contacts/{id}/addresses
+type AddressCreate struct {
+	Type      string `json:"type"`       // "tel" | "email" — required
+	Target    string `json:"target"`     // E.164 or email   — required
 	IsPrimary bool   `json:"is_primary"`
 }
 
-// EmailCreate is the request body for POST /v1/contacts/{id}/emails
-type EmailCreate struct {
-	Address   string `json:"address"`
-	Type      string `json:"type"`
-	IsPrimary bool   `json:"is_primary"`
-}
-
-// PhoneNumberUpdate is the request body for PUT /v1/contacts/{id}/phone-numbers/{phone_number_id}
-type PhoneNumberUpdate struct {
-	Number    *string `json:"number,omitempty"`
-	Type      *string `json:"type,omitempty"`
-	IsPrimary *bool   `json:"is_primary,omitempty"`
-}
-
-// EmailUpdate is the request body for PUT /v1/contacts/{id}/emails/{email_id}
-type EmailUpdate struct {
-	Address   *string `json:"address,omitempty"`
-	Type      *string `json:"type,omitempty"`
+// AddressUpdate is the body for PUT /v1/contacts/{id}/addresses/{address_id}
+type AddressUpdate struct {
+	Target    *string `json:"target,omitempty"`
 	IsPrimary *bool   `json:"is_primary,omitempty"`
 }
 

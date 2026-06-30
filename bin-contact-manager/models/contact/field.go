@@ -29,31 +29,3 @@ const (
 	// Virtual field for soft delete filtering
 	FieldDeleted Field = "deleted"
 )
-
-// PhoneNumberField represents a database field name for PhoneNumber model
-type PhoneNumberField string
-
-// List of PhoneNumber fields for database operations
-const (
-	PhoneNumberFieldID         PhoneNumberField = "id"
-	PhoneNumberFieldCustomerID PhoneNumberField = "customer_id"
-	PhoneNumberFieldContactID  PhoneNumberField = "contact_id"
-	PhoneNumberFieldNumber     PhoneNumberField = "number"
-	PhoneNumberFieldType       PhoneNumberField = "type"
-	PhoneNumberFieldIsPrimary  PhoneNumberField = "is_primary"
-	PhoneNumberFieldTMCreate   PhoneNumberField = "tm_create"
-)
-
-// EmailField represents a database field name for Email model
-type EmailField string
-
-// List of Email fields for database operations
-const (
-	EmailFieldID         EmailField = "id"
-	EmailFieldCustomerID EmailField = "customer_id"
-	EmailFieldContactID  EmailField = "contact_id"
-	EmailFieldAddress    EmailField = "address"
-	EmailFieldType       EmailField = "type"
-	EmailFieldIsPrimary  EmailField = "is_primary"
-	EmailFieldTMCreate   EmailField = "tm_create"
-)

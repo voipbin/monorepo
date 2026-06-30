@@ -1,0 +1,94 @@
+put:
+  summary: Update address on contact (service agent)
+  description: Update an existing address on the contact as a service agent.
+  tags:
+    - ServiceAgent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 5e4a0680-eba3-4001-a000-000000000001
+    - name: address_id
+      in: path
+      description: The ID of the address returned from POST /service_agents/contacts/{id}/addresses.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 5e4a0680-eba3-4001-a000-000000000002
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            target:
+              type: string
+              description: The updated address value.
+              example: "+155****9999"
+            is_primary:
+              type: boolean
+              description: Whether this is the primary address for the given type.
+              example: true
+  responses:
+    '200':
+      description: Address updated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Remove address from contact (service agent)
+  description: Remove an address from the contact as a service agent.
+  tags:
+    - ServiceAgent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 5e4a0680-eba3-4001-a000-000000000001
+    - name: address_id
+      in: path
+      description: The ID of the address returned from POST /service_agents/contacts/{id}/addresses.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 5e4a0680-eba3-4001-a000-000000000002
+  responses:
+    '200':
+      description: Address removed successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerContact'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
