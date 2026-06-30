@@ -3413,10 +3413,10 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ServiceTypeConferencecallS
 }
 
 // ContactV1AddressCreate mocks base method.
-func (m *MockRequestHandler) ContactV1AddressCreate(ctx context.Context, contactID uuid.UUID, addrType, target string, isPrimary bool) (*contact.Contact, error) {
+func (m *MockRequestHandler) ContactV1AddressCreate(ctx context.Context, contactID uuid.UUID, addrType, target string, isPrimary bool) (*contact.Address, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactV1AddressCreate", ctx, contactID, addrType, target, isPrimary)
-	ret0, _ := ret[0].(*contact.Contact)
+	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -3470,6 +3470,81 @@ func (m *MockRequestHandler) ContactV1AddressUpdate(ctx context.Context, contact
 func (mr *MockRequestHandlerMockRecorder) ContactV1AddressUpdate(ctx, contactID, addressID, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1AddressUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1AddressUpdate), ctx, contactID, addressID, fields)
+}
+
+// ContactV1ContactAddressCreate mocks base method.
+func (m *MockRequestHandler) ContactV1ContactAddressCreate(ctx context.Context, contactID uuid.UUID, addrType, target string, isPrimary bool) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactAddressCreate", ctx, contactID, addrType, target, isPrimary)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1ContactAddressCreate indicates an expected call of ContactV1ContactAddressCreate.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressCreate(ctx, contactID, addrType, target, isPrimary any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressCreate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressCreate), ctx, contactID, addrType, target, isPrimary)
+}
+
+// ContactV1ContactAddressDelete mocks base method.
+func (m *MockRequestHandler) ContactV1ContactAddressDelete(ctx context.Context, customerID, contactID, addressID uuid.UUID) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactAddressDelete", ctx, customerID, contactID, addressID)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1ContactAddressDelete indicates an expected call of ContactV1ContactAddressDelete.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressDelete(ctx, customerID, contactID, addressID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressDelete", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressDelete), ctx, customerID, contactID, addressID)
+}
+
+// ContactV1ContactAddressGet mocks base method.
+func (m *MockRequestHandler) ContactV1ContactAddressGet(ctx context.Context, customerID, addressID uuid.UUID) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactAddressGet", ctx, customerID, addressID)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1ContactAddressGet indicates an expected call of ContactV1ContactAddressGet.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressGet(ctx, customerID, addressID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressGet", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressGet), ctx, customerID, addressID)
+}
+
+// ContactV1ContactAddressList mocks base method.
+func (m *MockRequestHandler) ContactV1ContactAddressList(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactAddressList", ctx, customerID, filters, pageToken, pageSize)
+	ret0, _ := ret[0].([]contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1ContactAddressList indicates an expected call of ContactV1ContactAddressList.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressList(ctx, customerID, filters, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressList", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressList), ctx, customerID, filters, pageToken, pageSize)
+}
+
+// ContactV1ContactAddressUpdate mocks base method.
+func (m *MockRequestHandler) ContactV1ContactAddressUpdate(ctx context.Context, customerID, contactID, addressID uuid.UUID, fields map[string]any) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ContactV1ContactAddressUpdate", ctx, customerID, contactID, addressID, fields)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ContactV1ContactAddressUpdate indicates an expected call of ContactV1ContactAddressUpdate.
+func (mr *MockRequestHandlerMockRecorder) ContactV1ContactAddressUpdate(ctx, customerID, contactID, addressID, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactV1ContactAddressUpdate", reflect.TypeOf((*MockRequestHandler)(nil).ContactV1ContactAddressUpdate), ctx, customerID, contactID, addressID, fields)
 }
 
 // ContactV1ContactCreate mocks base method.

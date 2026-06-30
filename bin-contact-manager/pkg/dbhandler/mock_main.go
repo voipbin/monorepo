@@ -88,6 +88,21 @@ func (mr *MockDBHandlerMockRecorder) AddressGet(ctx, customerID, id any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressGet", reflect.TypeOf((*MockDBHandler)(nil).AddressGet), ctx, customerID, id)
 }
 
+// AddressList mocks base method.
+func (m *MockDBHandler) AddressList(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressList", ctx, customerID, filters, pageToken, pageSize)
+	ret0, _ := ret[0].([]contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddressList indicates an expected call of AddressList.
+func (mr *MockDBHandlerMockRecorder) AddressList(ctx, customerID, filters, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressList", reflect.TypeOf((*MockDBHandler)(nil).AddressList), ctx, customerID, filters, pageToken, pageSize)
+}
+
 // AddressListByContactID mocks base method.
 func (m *MockDBHandler) AddressListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error) {
 	m.ctrl.T.Helper()

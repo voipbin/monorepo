@@ -33,6 +33,7 @@ type DBHandler interface {
 	// Address operations
 	AddressCreate(ctx context.Context, a *contact.Address) error
 	AddressGet(ctx context.Context, customerID, id uuid.UUID) (*contact.Address, error)
+	AddressList(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error)
 	AddressListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error)
 	AddressUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error
 	AddressDelete(ctx context.Context, id uuid.UUID) error

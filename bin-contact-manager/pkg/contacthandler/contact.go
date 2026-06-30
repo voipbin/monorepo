@@ -255,8 +255,8 @@ func (h *contactHandler) LookupByEmail(ctx context.Context, customerID uuid.UUID
 	return res, nil
 }
 
-// AddAddress adds an address to a contact
-func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a *contact.Address) (*contact.Contact, error) {
+// AddAddress adds an address to a contact and returns the created address.
+func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a *contact.Address) (*contact.Address, error) {
 	// Get the contact to verify it exists and get customer_id
 	c, err := h.db.ContactGet(ctx, contactID)
 	if err != nil {
@@ -286,14 +286,14 @@ func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a 
 		return nil, fmt.Errorf("could not create address: %w", err)
 	}
 
-	// Get the updated contact
+	// Publish updated contact event
 	res, err := h.db.ContactGet(ctx, contactID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get updated contact: %w", err)
 	}
-
 	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
-	return res, nil
+
+	return a, nil
 }
 
 // UpdateAddress updates an address on a contact
@@ -418,4 +418,14 @@ func (h *contactHandler) RemoveTag(ctx context.Context, contactID, tagID uuid.UU
 	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
 
 	return res, nil
+}
+
+// GetAddress returns a single address scoped to customerID.
+func (h *contactHandler) GetAddress(ctx context.Context, customerID, addressID uuid.UUID) (*contact.Address, error) {
+	return h.db.AddressGet(ctx, customerID, addressID)
+}
+
+// ListAddresses returns addresses for the customer with optional filters.
+func (h *contactHandler) ListAddresses(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
+	return h.db.AddressList(ctx, customerID, filters, pageToken, pageSize)
 }

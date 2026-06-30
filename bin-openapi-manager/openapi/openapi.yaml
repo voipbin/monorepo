@@ -7910,6 +7910,11 @@ paths:
   /conferences:
     $ref: './paths/conferences/main.yaml'
 
+  /contact_addresses:
+    $ref: './paths/contact_addresses/main.yaml'
+  /contact_addresses/{id}:
+    $ref: './paths/contact_addresses/id.yaml'
+
   /contacts:
     $ref: './paths/contacts/main.yaml'
   /contacts/lookup:
@@ -8162,6 +8167,11 @@ paths:
     $ref: './paths/service_agents/talk_messages_id.yaml'
   /service_agents/talk_messages:
     $ref: './paths/service_agents/talk_messages.yaml'
+
+  /service_agents/contact_addresses:
+    $ref: './paths/service_agents/contact_addresses.yaml'
+  /service_agents/contact_addresses/{id}:
+    $ref: './paths/service_agents/contact_addresses_id.yaml'
 
   /service_agents/contacts/{id}/addresses:
     $ref: './paths/service_agents/contacts_id_addresses.yaml'

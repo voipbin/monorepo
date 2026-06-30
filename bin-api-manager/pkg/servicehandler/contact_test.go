@@ -666,7 +666,8 @@ func Test_ContactAddressCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContactGet, nil)
-			mockReq.EXPECT().ContactV1AddressCreate(ctx, tt.contactID, tt.addrType, tt.target, tt.isPrimary).Return(tt.responseContact, nil)
+			mockReq.EXPECT().ContactV1AddressCreate(ctx, tt.contactID, tt.addrType, tt.target, tt.isPrimary).Return(&cmcontact.Address{}, nil)
+			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 
 			res, err := h.ContactAddressCreate(ctx, tt.agent, tt.contactID, tt.addrType, tt.target, tt.isPrimary)
 			if err != nil {

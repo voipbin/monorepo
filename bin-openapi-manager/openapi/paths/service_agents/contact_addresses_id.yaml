@@ -1,0 +1,110 @@
+get:
+  summary: Get a contact address (service agent)
+  description: Get a single contact address by ID as a service agent.
+  tags:
+    - ServiceAgent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact address.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 5e4a0680-eba3-4001-a000-000000000002
+  responses:
+    '200':
+      description: Successful response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerAddress'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+put:
+  summary: Update a contact address (service agent)
+  description: Update an existing contact address as a service agent.
+  tags:
+    - ServiceAgent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact address.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 5e4a0680-eba3-4001-a000-000000000002
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            target:
+              type: string
+              description: The updated address value. E.164 format for tel, email address for email.
+              example: "+155****9999"
+            is_primary:
+              type: boolean
+              description: Whether this is the primary address for the contact.
+              example: true
+  responses:
+    '200':
+      description: Address updated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerAddress'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
+
+delete:
+  summary: Delete a contact address (service agent)
+  description: Delete a contact address by ID as a service agent.
+  tags:
+    - ServiceAgent
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact address.
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 5e4a0680-eba3-4001-a000-000000000002
+  responses:
+    '200':
+      description: Address deleted successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerAddress'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '500':
+      $ref: '#/components/responses/InternalError'
