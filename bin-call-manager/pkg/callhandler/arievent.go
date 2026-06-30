@@ -119,10 +119,10 @@ func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Cha
 		// all other channels in the same bridge that are not yet Up.
 		// This ensures the master incoming leg (call-in) is answered when
 		// the outgoing leg answers, regardless of early_media setting.
+		// answerCallBridgePeers is best-effort: the call status has already
+		// been committed as Progressing, so failure here is non-fatal.
 		if cn.State == ari.ChannelStateUp && cn.BridgeID != "" {
-			if errAnswer := h.answerCallBridgePeers(ctx, cn); errAnswer != nil {
-				log.Errorf("Could not auto-answer call bridge peers. err: %v", errAnswer)
-			}
+			h.answerCallBridgePeers(ctx, cn)
 		}
 		return nil
 	}
@@ -131,8 +131,9 @@ func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Cha
 }
 
 // answerCallBridgePeers answers all non-Up channels in the same call bridge
-// when one channel transitions to Up state.
-func (h *callHandler) answerCallBridgePeers(ctx context.Context, cn *channel.Channel) error {
+// when one channel transitions to Up state. It is best-effort: all errors are
+// logged internally and never propagated to the caller.
+func (h *callHandler) answerCallBridgePeers(ctx context.Context, cn *channel.Channel) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "answerCallBridgePeers",
 		"channel_id": cn.ID,
@@ -142,12 +143,12 @@ func (h *callHandler) answerCallBridgePeers(ctx context.Context, cn *channel.Cha
 	br, err := h.bridgeHandler.Get(ctx, cn.BridgeID)
 	if err != nil {
 		log.Errorf("Could not get bridge info. bridge_id: %s, err: %v", cn.BridgeID, err)
-		return nil
+		return
 	}
 
 	// only apply to call bridges (reference_type=call)
 	if br.ReferenceType != bridge.ReferenceTypeCall {
-		return nil
+		return
 	}
 
 	for _, peerChannelID := range br.ChannelIDs {
@@ -166,13 +167,13 @@ func (h *callHandler) answerCallBridgePeers(ctx context.Context, cn *channel.Cha
 			continue
 		}
 
-		log.Debugf("Auto-answering peer channel in call bridge. peer_channel_id: %s, peer_state: %s", peer.ID, peer.State)
+		log.Infof("Auto-answering peer channel in call bridge. peer_channel_id: %s, peer_state: %s", peer.ID, peer.State)
 		if errAnswer := h.channelHandler.Answer(ctx, peer.ID); errAnswer != nil {
-			log.Errorf("Could not answer peer channel. channel_id: %s, err: %v", peer.ID, errAnswer)
+			// Answer failure is expected during groupcall race teardown (loser channels
+			// being hung up concurrently). Log at Warnf to avoid alert noise.
+			log.Warnf("Could not answer peer channel. channel_id: %s, err: %v", peer.ID, errAnswer)
 		}
 	}
-
-	return nil
 }
 
 func (h *callHandler) ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error {
