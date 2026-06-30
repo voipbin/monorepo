@@ -89,6 +89,18 @@ func (mr *MockConfbridgeHandlerMockRecorder) ARIChannelLeftBridge(ctx, cn, br an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelLeftBridge", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIChannelLeftBridge), ctx, cn, br)
 }
 
+// ARIChannelStateChange mocks base method.
+func (m *MockConfbridgeHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Channel) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "ARIChannelStateChange", ctx, cn)
+}
+
+// ARIChannelStateChange indicates an expected call of ARIChannelStateChange.
+func (mr *MockConfbridgeHandlerMockRecorder) ARIChannelStateChange(ctx, cn any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ARIChannelStateChange", reflect.TypeOf((*MockConfbridgeHandler)(nil).ARIChannelStateChange), ctx, cn)
+}
+
 // ARIStasisStart mocks base method.
 func (m *MockConfbridgeHandler) ARIStasisStart(ctx context.Context, cn *channel.Channel) error {
 	m.ctrl.T.Helper()

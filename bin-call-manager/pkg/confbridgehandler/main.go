@@ -35,6 +35,7 @@ import (
 type ConfbridgeHandler interface {
 	ARIChannelEnteredBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
 	ARIChannelLeftBridge(ctx context.Context, cn *channel.Channel, br *bridge.Bridge) error
+	ARIChannelStateChange(ctx context.Context, cn *channel.Channel)
 	ARIStasisStart(ctx context.Context, cn *channel.Channel) error
 	ARIBridgeDestroyed(ctx context.Context, br *bridge.Bridge) error
 

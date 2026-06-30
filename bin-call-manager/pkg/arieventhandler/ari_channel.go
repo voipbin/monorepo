@@ -187,6 +187,13 @@ func (h *eventHandler) EventHandlerChannelStateChange(ctx context.Context, evt i
 		return err
 	}
 
+	// TypeJoin channel state change is handled by confbridgeHandler.
+	// When a join channel becomes Up, it answers non-Up peers in the same call bridge
+	// (e.g., the master incoming call-in channel).
+	if cn.Type == channel.TypeJoin {
+		h.confbridgeHandler.ARIChannelStateChange(ctx, cn)
+	}
+
 	return nil
 }
 
