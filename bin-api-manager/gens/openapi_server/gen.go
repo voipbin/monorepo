@@ -2743,11 +2743,11 @@ type ContactManagerInteractionDirection string
 
 // ContactManagerInteractionListResponse defines model for ContactManagerInteractionListResponse.
 type ContactManagerInteractionListResponse struct {
-	// Items List of interactions.
-	Items *[]ContactManagerInteraction `json:"items,omitempty"`
-
 	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
 	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Result List of interactions.
+	Result *[]ContactManagerInteraction `json:"result,omitempty"`
 }
 
 // ContactManagerPhoneNumber defines model for ContactManagerPhoneNumber.
@@ -28675,11 +28675,11 @@ type PostInteractionsIdResolutionsResponseObject interface {
 	VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error
 }
 
-type PostInteractionsIdResolutions200JSONResponse ContactManagerResolution
+type PostInteractionsIdResolutions201JSONResponse ContactManagerResolution
 
-func (response PostInteractionsIdResolutions200JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
+func (response PostInteractionsIdResolutions201JSONResponse) VisitPostInteractionsIdResolutionsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }

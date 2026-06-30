@@ -8454,7 +8454,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Resolution created successfully.",
             "content": {
               "application/json": {
@@ -24601,7 +24601,7 @@
       "ContactManagerInteractionListResponse": {
         "type": "object",
         "properties": {
-          "items": {
+          "result": {
             "type": "array",
             "description": "List of interactions.",
             "items": {

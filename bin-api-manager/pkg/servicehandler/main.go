@@ -476,14 +476,14 @@ type ServiceHandler interface {
 		token string,
 		peerType, peerTarget string,
 		contactID, addressID uuid.UUID,
-	) (*cminteraction.InteractionListResponse, error)
+	) ([]*cminteraction.Interaction, string, error)
 	InteractionListUnresolved(
 		ctx context.Context,
 		a *auth.AuthIdentity,
 		size uint64,
 		token string,
 		since string,
-	) (*cminteraction.InteractionListResponse, error)
+	) ([]*cminteraction.Interaction, string, error)
 	InteractionGet(ctx context.Context, a *auth.AuthIdentity, id uuid.UUID) (*cminteraction.Interaction, error)
 	ResolutionCreate(
 		ctx context.Context,

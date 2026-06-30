@@ -100,7 +100,7 @@ func (h *listenHandler) processV1InteractionsGet(ctx context.Context, req *sock.
 		return simpleResponse(400), nil
 	}
 
-	res, err := h.contactHandler.InteractionList(ctx, customerID, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
+	res, _, err := h.contactHandler.InteractionList(ctx, customerID, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
 	if err != nil {
 		log.Errorf("Could not list interactions. err: %v", err)
 		return errorResponse(err), nil
@@ -158,7 +158,7 @@ func (h *listenHandler) processV1InteractionsUnresolvedGet(ctx context.Context, 
 		return simpleResponse(400), nil
 	}
 
-	res, err := h.contactHandler.InteractionListUnresolved(ctx, customerID, pageSize, pageToken, since)
+	res, _, err := h.contactHandler.InteractionListUnresolved(ctx, customerID, pageSize, pageToken, since)
 	if err != nil {
 		log.Errorf("Could not list unresolved interactions. err: %v", err)
 		return errorResponse(err), nil

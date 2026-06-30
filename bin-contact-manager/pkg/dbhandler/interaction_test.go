@@ -478,9 +478,9 @@ func Test_InteractionList_pagination(t *testing.T) {
 	if lastOfPage1.TMCreate == nil {
 		t.Fatal("last item TMCreate is nil; cannot build page token")
 	}
-	nextToken := EncodePageToken(lastOfPage1.TMCreate, lastOfPage1.ID)
+	nextToken := lastOfPage1.TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
 	if nextToken == "" {
-		t.Fatal("EncodePageToken returned empty string for non-nil TMCreate")
+		t.Fatal("nextToken is empty for non-nil TMCreate")
 	}
 
 	// Second page: pass token, expect 1 row (the remaining one).

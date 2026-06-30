@@ -31,8 +31,9 @@ func Test_GetInteractions(t *testing.T) {
 
 		reqQuery string
 
-		responseList *cminteraction.InteractionListResponse
-		expectStatus int
+		responseItems []*cminteraction.Interaction
+		responseToken string
+		expectStatus  int
 	}{
 		{
 			name: "normal - filter by contact_id",
@@ -42,12 +43,10 @@ func Test_GetInteractions(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery: "/interactions?contact_id=11111111-0000-0000-0000-000000000001",
-			responseList: &cminteraction.InteractionListResponse{
-				Items:         []*cminteraction.Interaction{},
-				NextPageToken: "",
-			},
-			expectStatus: http.StatusOK,
+			reqQuery:      "/interactions?contact_id=11111111-0000-0000-0000-000000000001",
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectStatus:  http.StatusOK,
 		},
 		{
 			name: "bad request - no filter",
@@ -88,10 +87,10 @@ func Test_GetInteractions(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			if tt.responseList != nil && tt.agent != nil {
+			if tt.responseItems != nil && tt.agent != nil {
 				mockSvc.EXPECT().
 					InteractionList(req.Context(), tt.agent, uint64(100), "", gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-					Return(tt.responseList, nil)
+					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
 			r.ServeHTTP(w, req)
@@ -110,10 +109,26 @@ func Test_GetInteractionsUnresolved(t *testing.T) {
 		name  string
 		agent *auth.AuthIdentity
 
-		reqQuery     string
-		responseList *cminteraction.InteractionListResponse
-		expectStatus int
+		reqQuery         string
+		responseItems    []*cminteraction.Interaction
+		responseToken    string
+		expectStatus     int
+		expectMockCalled bool
 	}{
+		{
+			name: "normal - nil result from backend serializes as []",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         agentID,
+					CustomerID: customerID,
+				},
+			}),
+			reqQuery:        "/interactions/unresolved",
+			responseItems:   nil,
+			responseToken:   "",
+			expectStatus:    http.StatusOK,
+			expectMockCalled: true,
+		},
 		{
 			name: "normal - default since",
 			agent: auth.NewAgentIdentity(&amagent.Agent{
@@ -122,12 +137,10 @@ func Test_GetInteractionsUnresolved(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery: "/interactions/unresolved",
-			responseList: &cminteraction.InteractionListResponse{
-				Items:         []*cminteraction.Interaction{},
-				NextPageToken: "",
-			},
-			expectStatus: http.StatusOK,
+			reqQuery:      "/interactions/unresolved",
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectStatus:  http.StatusOK,
 		},
 		{
 			name: "normal - explicit since",
@@ -137,12 +150,10 @@ func Test_GetInteractionsUnresolved(t *testing.T) {
 					CustomerID: customerID,
 				},
 			}),
-			reqQuery: "/interactions/unresolved?since=7d",
-			responseList: &cminteraction.InteractionListResponse{
-				Items:         []*cminteraction.Interaction{},
-				NextPageToken: "",
-			},
-			expectStatus: http.StatusOK,
+			reqQuery:      "/interactions/unresolved?since=7d",
+			responseItems: []*cminteraction.Interaction{},
+			responseToken: "",
+			expectStatus:  http.StatusOK,
 		},
 		{
 			name: "bad request - invalid since format",
@@ -194,10 +205,10 @@ func Test_GetInteractionsUnresolved(t *testing.T) {
 
 			req, _ := http.NewRequest("GET", tt.reqQuery, nil)
 
-			if tt.responseList != nil && tt.agent != nil {
+			if (tt.responseItems != nil || tt.expectMockCalled) && tt.agent != nil {
 				mockSvc.EXPECT().
 					InteractionListUnresolved(req.Context(), tt.agent, uint64(100), "", gomock.Any()).
-					Return(tt.responseList, nil)
+					Return(tt.responseItems, tt.responseToken, nil)
 			}
 
 			r.ServeHTTP(w, req)
@@ -290,10 +301,10 @@ func Test_PostInteractionsIdResolutions(t *testing.T) {
 		name  string
 		agent *auth.AuthIdentity
 
-		reqQuery       string
-		reqBody        map[string]string
-		responseRes    *cmresolution.Resolution
-		expectStatus   int
+		reqQuery     string
+		reqBody      map[string]string
+		responseRes  *cmresolution.Resolution
+		expectStatus int
 	}{
 		{
 			name: "normal",

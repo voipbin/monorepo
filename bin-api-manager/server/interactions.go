@@ -80,14 +80,14 @@ func (h *server) GetInteractions(c *gin.Context, params openapi_server.GetIntera
 		return
 	}
 
-	res, err := h.serviceHandler.InteractionList(c.Request.Context(), a, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
+	items, nextToken, err := h.serviceHandler.InteractionList(c.Request.Context(), a, pageSize, pageToken, peerType, peerTarget, contactID, addressID)
 	if err != nil {
 		log.Errorf("Could not list interactions. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}
 
-	c.JSON(200, res)
+	c.JSON(200, GenerateListResponse(items, nextToken))
 }
 
 // GetInteractionsUnresolved handles GET /interactions/unresolved
@@ -138,14 +138,14 @@ func (h *server) GetInteractionsUnresolved(c *gin.Context, params openapi_server
 		since = s
 	}
 
-	res, err := h.serviceHandler.InteractionListUnresolved(c.Request.Context(), a, pageSize, pageToken, since)
+	items, nextToken, err := h.serviceHandler.InteractionListUnresolved(c.Request.Context(), a, pageSize, pageToken, since)
 	if err != nil {
 		log.Errorf("Could not list unresolved interactions. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}
 
-	c.JSON(200, res)
+	c.JSON(200, GenerateListResponse(items, nextToken))
 }
 
 // GetInteractionsId handles GET /interactions/{id}

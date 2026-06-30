@@ -46,7 +46,7 @@ func (r *requestHandler) ContactV1InteractionList(
 	token string,
 	peerType, peerTarget string,
 	contactID, addressID uuid.UUID,
-) (*cminteraction.InteractionListResponse, error) {
+) ([]*cminteraction.Interaction, string, error) {
 	u := url.Values{}
 	if peerType != "" {
 		u.Set("peer_type", peerType)
@@ -71,20 +71,25 @@ func (r *requestHandler) ContactV1InteractionList(
 
 	m, err := json.Marshal(map[string]string{"customer_id": customerID.String()})
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodGet, "contact/interactions", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	var res cminteraction.InteractionListResponse
+	var res []*cminteraction.Interaction
 	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
+		return nil, "", errParse
 	}
 
-	return &res, nil
+	nextToken := ""
+	if len(res) > 0 && res[len(res)-1].TMCreate != nil {
+		nextToken = res[len(res)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
+	return res, nextToken, nil
 }
 
 // ContactV1InteractionListUnresolved lists unresolved interactions from contact-manager.
@@ -96,7 +101,7 @@ func (r *requestHandler) ContactV1InteractionListUnresolved(
 	size uint64,
 	token string,
 	since string,
-) (*cminteraction.InteractionListResponse, error) {
+) ([]*cminteraction.Interaction, string, error) {
 	u := url.Values{}
 	if since != "" {
 		u.Set("since", since)
@@ -115,20 +120,25 @@ func (r *requestHandler) ContactV1InteractionListUnresolved(
 
 	m, err := json.Marshal(map[string]string{"customer_id": customerID.String()})
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	tmp, err := r.sendRequestContact(ctx, uri, sock.RequestMethodGet, "contact/interactions/unresolved", requestTimeoutDefault, 0, ContentTypeJSON, m)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	var res cminteraction.InteractionListResponse
+	var res []*cminteraction.Interaction
 	if errParse := parseResponse(tmp, &res); errParse != nil {
-		return nil, errParse
+		return nil, "", errParse
 	}
 
-	return &res, nil
+	nextToken := ""
+	if len(res) > 0 && res[len(res)-1].TMCreate != nil {
+		nextToken = res[len(res)-1].TMCreate.UTC().Format("2006-01-02T15:04:05.000000Z")
+	}
+
+	return res, nextToken, nil
 }
 
 // ContactV1ResolutionCreate creates a resolution in contact-manager.

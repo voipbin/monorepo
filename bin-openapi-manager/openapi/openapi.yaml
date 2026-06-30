@@ -3362,7 +3362,7 @@ components:
     ContactManagerInteractionListResponse:
       type: object
       properties:
-        items:
+        result:
           type: array
           description: List of interactions.
           items:

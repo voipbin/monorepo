@@ -52,7 +52,7 @@ func (h *serviceHandler) InteractionList(
 	token string,
 	peerType, peerTarget string,
 	contactID, addressID uuid.UUID,
-) (*cminteraction.InteractionListResponse, error) {
+) ([]*cminteraction.Interaction, string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "InteractionList",
 		"customer_id": a.CustomerID,
@@ -63,20 +63,20 @@ func (h *serviceHandler) InteractionList(
 	})
 
 	if a.IsDirect() {
-		return nil, serviceerrors.ErrDirectAccessNotSupported
+		return nil, "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, serviceerrors.ErrPermissionDenied
+		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1InteractionList(ctx, a.CustomerID, size, token, peerType, peerTarget, contactID, addressID)
+	items, nextToken, err := h.reqHandler.ContactV1InteractionList(ctx, a.CustomerID, size, token, peerType, peerTarget, contactID, addressID)
 	if err != nil {
 		log.Errorf("Could not list interactions. err: %v", err)
-		return nil, err
+		return nil, "", err
 	}
 
-	return res, nil
+	return items, nextToken, nil
 }
 
 // InteractionListUnresolved sends a request to contact-manager
@@ -88,7 +88,7 @@ func (h *serviceHandler) InteractionListUnresolved(
 	size uint64,
 	token string,
 	since string,
-) (*cminteraction.InteractionListResponse, error) {
+) ([]*cminteraction.Interaction, string, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "InteractionListUnresolved",
 		"customer_id": a.CustomerID,
@@ -96,20 +96,20 @@ func (h *serviceHandler) InteractionListUnresolved(
 	})
 
 	if a.IsDirect() {
-		return nil, serviceerrors.ErrDirectAccessNotSupported
+		return nil, "", serviceerrors.ErrDirectAccessNotSupported
 	}
 
 	if !h.hasPermission(ctx, a, a.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
-		return nil, serviceerrors.ErrPermissionDenied
+		return nil, "", serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1InteractionListUnresolved(ctx, a.CustomerID, size, token, since)
+	items, nextToken, err := h.reqHandler.ContactV1InteractionListUnresolved(ctx, a.CustomerID, size, token, since)
 	if err != nil {
 		log.Errorf("Could not list unresolved interactions. err: %v", err)
-		return nil, err
+		return nil, "", err
 	}
 
-	return res, nil
+	return items, nextToken, nil
 }
 
 // InteractionGet sends a request to contact-manager

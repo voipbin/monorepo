@@ -5028,11 +5028,11 @@ type ContactManagerInteractionDirection string
 
 // ContactManagerInteractionListResponse defines model for ContactManagerInteractionListResponse.
 type ContactManagerInteractionListResponse struct {
-	// Items List of interactions.
-	Items *[]ContactManagerInteraction `json:"items,omitempty"`
-
 	// NextPageToken Pagination token for the next page. Empty when no further pages exist.
 	NextPageToken *string `json:"next_page_token,omitempty"`
+
+	// Result List of interactions.
+	Result *[]ContactManagerInteraction `json:"result,omitempty"`
 }
 
 // ContactManagerPhoneNumber defines model for ContactManagerPhoneNumber.

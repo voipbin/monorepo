@@ -3,8 +3,6 @@ package dbhandler
 import (
 	"context"
 	"database/sql"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -100,61 +98,13 @@ func (h *handler) InteractionGet(ctx context.Context, id uuid.UUID) (*interactio
 	return res, nil
 }
 
-// pageTokenJSON is the wire format for the cursor token.
-type pageTokenJSON struct {
-	TMCreate string `json:"tm_create"`
-	ID       string `json:"id"`
-}
 
-// encodePageToken encodes a (tm_create, id) cursor as base64(json(...)).
-// Returns "" if tm is nil (rows without tm_create cannot be used as a cursor).
-func encodePageToken(tm *time.Time, id uuid.UUID) string {
-	if tm == nil {
-		return ""
-	}
-	p := pageTokenJSON{
-		TMCreate: tm.UTC().Format(time.RFC3339Nano),
-		ID:       id.String(),
-	}
-	b, _ := json.Marshal(p)
-	return base64.StdEncoding.EncodeToString(b)
-}
-
-// EncodePageToken is the exported wrapper for contacthandler and tests.
-func EncodePageToken(tm *time.Time, id uuid.UUID) string {
-	return encodePageToken(tm, id)
-}
-
-// decodePageToken decodes a base64(json(...)) cursor back to (time.Time, uuid.UUID, error).
-func decodePageToken(token string) (time.Time, uuid.UUID, error) {
-	b, err := base64.StdEncoding.DecodeString(token)
-	if err != nil {
-		return time.Time{}, uuid.Nil, fmt.Errorf("base64 decode: %w", err)
-	}
-	var p pageTokenJSON
-	if err := json.Unmarshal(b, &p); err != nil {
-		return time.Time{}, uuid.Nil, fmt.Errorf("json unmarshal: %w", err)
-	}
-	tm, err := time.Parse(time.RFC3339Nano, p.TMCreate)
-	if err != nil {
-		return time.Time{}, uuid.Nil, fmt.Errorf("time parse: %w", err)
-	}
-	id, err := uuid.FromString(p.ID)
-	if err != nil {
-		return time.Time{}, uuid.Nil, fmt.Errorf("uuid parse: %w", err)
-	}
-	return tm, id, nil
-}
-
-// DecodePageToken is the exported wrapper for contacthandler and tests.
-func DecodePageToken(token string) (time.Time, uuid.UUID, error) {
-	return decodePageToken(token)
-}
 
 // InteractionList returns a page of interactions.
 // Filter mode: either (peerType+peerTarget) OR addressSet (multi-column IN).
 // If both peerType/peerTarget are empty AND addressSet is empty → returns nil, nil immediately.
-// Pagination: cursor is base64(json({"tm_create":"RFC3339Nano","id":"uuid"})), DESC order.
+// Pagination: cursor is a tm_create timestamp string (WHERE tm_create < token ORDER BY tm_create DESC).
+// This matches the platform-wide convention used by calls, messages, emails, etc.
 func (h *handler) InteractionList(
 	ctx context.Context,
 	customerID uuid.UUID,
@@ -187,24 +137,23 @@ func (h *handler) InteractionList(
 		builder = builder.Where(or)
 	}
 
-	// 4. Apply cursor if token != ""
+	// 4. Apply cursor if token != "" (simple timestamp cursor, platform standard)
 	if token != "" {
-		cursorTime, cursorID, err := decodePageToken(token)
+		cursorTime, err := time.Parse("2006-01-02T15:04:05.000000Z", token)
 		if err != nil {
-			return nil, fmt.Errorf("could not decode page token. InteractionList. err: %v", err)
+			// Fallback to RFC3339Nano for forward compatibility.
+			cursorTime, err = time.Parse(time.RFC3339Nano, token)
 		}
-		builder = builder.Where(
-			sq.Expr("(tm_create < ? OR (tm_create = ? AND id < ?))",
-				cursorTime, cursorTime, cursorID.Bytes(),
-			),
-		)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse page token. InteractionList. err: %v", err)
+		}
+		builder = builder.Where(sq.Lt{"tm_create": cursorTime.UTC()})
 	}
 
-	// 5. ORDER BY tm_create DESC, id DESC
-	// LIMIT is `size` (no internal +1). Callers pass `size+1` to probe for hasMore.
-	// buildListResponse owns the trim+token logic.
+	// 5. ORDER BY tm_create DESC
+	// Return up to size rows. Caller passes size+1 to probe for hasMore.
 	builder = builder.
-		OrderBy("tm_create DESC, id DESC").
+		OrderBy("tm_create DESC").
 		Limit(size)
 
 	query, args, err := builder.ToSql()
@@ -230,8 +179,8 @@ func (h *handler) InteractionList(
 		return nil, fmt.Errorf("row iteration error. InteractionList. err: %v", err)
 	}
 
-	// Return up to size+1 rows. The extra row signals hasMore to buildListResponse.
-	// Do NOT trim here — the caller owns the trim+token logic.
+	// Return up to size rows. Caller passes size+1 to probe for hasMore.
+	// The caller (buildPagedResult in contacthandler) owns the trim+token logic.
 	return res, nil
 }
 
@@ -321,15 +270,18 @@ WHERE i.customer_id = ?
 
 	// Cursor pagination.
 	if token != "" {
-		cursorTime, cursorID, err := decodePageToken(token)
+		cursorTime, err := time.Parse("2006-01-02T15:04:05.000000Z", token)
 		if err != nil {
-			return nil, fmt.Errorf("could not decode page token. InteractionListUnresolved. err: %v", err)
+			cursorTime, err = time.Parse(time.RFC3339Nano, token)
 		}
-		baseSQL += " AND (i.tm_create < ? OR (i.tm_create = ? AND i.id < ?))"
-		args = append(args, cursorTime, cursorTime, cursorID.Bytes())
+		if err != nil {
+			return nil, fmt.Errorf("could not parse page token. InteractionListUnresolved. err: %v", err)
+		}
+		baseSQL += " AND i.tm_create < ?"
+		args = append(args, cursorTime.UTC())
 	}
 
-	baseSQL += " ORDER BY i.tm_create DESC, i.id DESC LIMIT ?"
+	baseSQL += " ORDER BY i.tm_create DESC LIMIT ?"
 	args = append(args, size)
 
 	rows, err := h.db.Query(baseSQL, args...)
