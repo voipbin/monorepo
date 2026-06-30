@@ -59,18 +59,13 @@ post:
               type: array
               description: List of addresses (tel or email) to associate with the contact.
               items:
-                type: object
-                properties:
-                  type:
-                    type: string
-                    enum: [tel, email]
-                    description: Address type. 'tel' for phone numbers, 'email' for email addresses.
-                  target:
-                    type: string
-                    description: The address value. E.164 format for tel (e.g. +155****4567), email address for email.
-                  is_primary:
-                    type: boolean
-                    description: Whether this is the primary address of its type.
+                allOf:
+                  - $ref: '#/components/schemas/CommonAddress'
+                  - type: object
+                    properties:
+                      is_primary:
+                        type: boolean
+                        description: Whether this is the primary address of its type.
             tag_ids:
               type: array
               items:

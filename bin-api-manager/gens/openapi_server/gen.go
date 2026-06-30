@@ -455,14 +455,14 @@ const (
 
 // Defines values for CommonAddressType.
 const (
-	CommonAddressTypeAgent      CommonAddressType = "agent"
-	CommonAddressTypeConference CommonAddressType = "conference"
-	CommonAddressTypeEmail      CommonAddressType = "email"
-	CommonAddressTypeExtension  CommonAddressType = "extension"
-	CommonAddressTypeLine       CommonAddressType = "line"
-	CommonAddressTypeNone       CommonAddressType = ""
-	CommonAddressTypeSIP        CommonAddressType = "sip"
-	CommonAddressTypeTel        CommonAddressType = "tel"
+	CommonAddressTypeCommonAddressTypeAgent      CommonAddressType = "agent"
+	CommonAddressTypeCommonAddressTypeConference CommonAddressType = "conference"
+	CommonAddressTypeCommonAddressTypeEmail      CommonAddressType = "email"
+	CommonAddressTypeCommonAddressTypeExtension  CommonAddressType = "extension"
+	CommonAddressTypeCommonAddressTypeLine       CommonAddressType = "line"
+	CommonAddressTypeCommonAddressTypeNone       CommonAddressType = ""
+	CommonAddressTypeCommonAddressTypeSIP        CommonAddressType = "sip"
+	CommonAddressTypeCommonAddressTypeTel        CommonAddressType = "tel"
 )
 
 // Defines values for ConferenceManagerConferenceStatus.
@@ -496,8 +496,14 @@ const (
 
 // Defines values for ContactManagerAddressType.
 const (
-	ContactManagerAddressTypeEmail ContactManagerAddressType = "email"
-	ContactManagerAddressTypeTel   ContactManagerAddressType = "tel"
+	ContactManagerAddressTypeCommonAddressTypeAgent      ContactManagerAddressType = "agent"
+	ContactManagerAddressTypeCommonAddressTypeConference ContactManagerAddressType = "conference"
+	ContactManagerAddressTypeCommonAddressTypeEmail      ContactManagerAddressType = "email"
+	ContactManagerAddressTypeCommonAddressTypeExtension  ContactManagerAddressType = "extension"
+	ContactManagerAddressTypeCommonAddressTypeLine       ContactManagerAddressType = "line"
+	ContactManagerAddressTypeCommonAddressTypeNone       ContactManagerAddressType = ""
+	ContactManagerAddressTypeCommonAddressTypeSIP        ContactManagerAddressType = "sip"
+	ContactManagerAddressTypeCommonAddressTypeTel        ContactManagerAddressType = "tel"
 )
 
 // Defines values for ContactManagerContactSource.
@@ -1013,8 +1019,14 @@ const (
 
 // Defines values for PostContactsJSONBodyAddressesType.
 const (
-	PostContactsJSONBodyAddressesTypeEmail PostContactsJSONBodyAddressesType = "email"
-	PostContactsJSONBodyAddressesTypeTel   PostContactsJSONBodyAddressesType = "tel"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeAgent      PostContactsJSONBodyAddressesType = "agent"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeConference PostContactsJSONBodyAddressesType = "conference"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeEmail      PostContactsJSONBodyAddressesType = "email"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeExtension  PostContactsJSONBodyAddressesType = "extension"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeLine       PostContactsJSONBodyAddressesType = "line"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeNone       PostContactsJSONBodyAddressesType = ""
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeSIP        PostContactsJSONBodyAddressesType = "sip"
+	PostContactsJSONBodyAddressesTypeCommonAddressTypeTel        PostContactsJSONBodyAddressesType = "tel"
 )
 
 // Defines values for PostContactsJSONBodySource.
@@ -1071,8 +1083,14 @@ const (
 
 // Defines values for PostServiceAgentsContactsJSONBodyAddressesType.
 const (
-	PostServiceAgentsContactsJSONBodyAddressesTypeEmail PostServiceAgentsContactsJSONBodyAddressesType = "email"
-	PostServiceAgentsContactsJSONBodyAddressesTypeTel   PostServiceAgentsContactsJSONBodyAddressesType = "tel"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeAgent      PostServiceAgentsContactsJSONBodyAddressesType = "agent"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeConference PostServiceAgentsContactsJSONBodyAddressesType = "conference"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeEmail      PostServiceAgentsContactsJSONBodyAddressesType = "email"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeExtension  PostServiceAgentsContactsJSONBodyAddressesType = "extension"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeLine       PostServiceAgentsContactsJSONBodyAddressesType = "line"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeNone       PostServiceAgentsContactsJSONBodyAddressesType = ""
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeSIP        PostServiceAgentsContactsJSONBodyAddressesType = "sip"
+	PostServiceAgentsContactsJSONBodyAddressesTypeCommonAddressTypeTel        PostServiceAgentsContactsJSONBodyAddressesType = "tel"
 )
 
 // Defines values for PostServiceAgentsContactsJSONBodySource.
@@ -2574,23 +2592,38 @@ type ConferenceManagerConferencecallStatus string
 
 // ContactManagerAddress defines model for ContactManagerAddress.
 type ContactManagerAddress struct {
+	// ContactId Unique identifier of the contact this address belongs to.
+	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
+
+	// CustomerId Unique identifier of the customer this address belongs to.
+	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
+
+	// Detail Additional notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// Id Unique identifier for the address.
 	Id *openapi_types.UUID `json:"id,omitempty"`
 
 	// IsPrimary Indicates if this is the primary address for the given type.
 	IsPrimary *bool `json:"is_primary,omitempty"`
 
-	// Target The address value. E.164 format for tel, email address for email.
+	// Name Optional label for this address.
+	Name *string `json:"name,omitempty"`
+
+	// Target The address endpoint. Format depends on type: phone number for tel (e.g. +14155551234), UUID for agent/conference/extension, email for email, SIP URI for sip.
 	Target *string `json:"target,omitempty"`
+
+	// TargetName Address's name.
+	TargetName *string `json:"target_name,omitempty"`
 
 	// TmCreate Timestamp when the address was created.
 	TmCreate *time.Time `json:"tm_create,omitempty"`
 
-	// Type Type of the address.
+	// Type Type of address.
 	Type *ContactManagerAddressType `json:"type,omitempty"`
 }
 
-// ContactManagerAddressType Type of the address.
+// ContactManagerAddressType Type of address.
 type ContactManagerAddressType string
 
 // ContactManagerContact defines model for ContactManagerContact.
@@ -5692,13 +5725,22 @@ type GetContactsParams struct {
 type PostContactsJSONBody struct {
 	// Addresses List of addresses (tel or email) to associate with the contact.
 	Addresses *[]struct {
+		// Detail Additional notes about this address.
+		Detail *string `json:"detail,omitempty"`
+
 		// IsPrimary Whether this is the primary address of its type.
 		IsPrimary *bool `json:"is_primary,omitempty"`
 
-		// Target The address value. E.164 format for tel (e.g. +155****4567), email address for email.
+		// Name Optional label for this address.
+		Name *string `json:"name,omitempty"`
+
+		// Target The address endpoint. Format depends on type: phone number for tel (e.g. +14155551234), UUID for agent/conference/extension, email for email, SIP URI for sip.
 		Target *string `json:"target,omitempty"`
 
-		// Type Address type. 'tel' for phone numbers, 'email' for email addresses.
+		// TargetName Address's name.
+		TargetName *string `json:"target_name,omitempty"`
+
+		// Type Type of address.
 		Type *PostContactsJSONBodyAddressesType `json:"type,omitempty"`
 	} `json:"addresses,omitempty"`
 	Company     *string                     `json:"company,omitempty"`
@@ -6656,13 +6698,22 @@ type GetServiceAgentsContactsParams struct {
 type PostServiceAgentsContactsJSONBody struct {
 	// Addresses List of addresses (tel or email) to associate with the contact.
 	Addresses *[]struct {
+		// Detail Additional notes about this address.
+		Detail *string `json:"detail,omitempty"`
+
 		// IsPrimary Whether this is the primary address of its type.
 		IsPrimary *bool `json:"is_primary,omitempty"`
 
-		// Target The address value. E.164 format for tel (e.g. +155****4567), email address for email.
+		// Name Optional label for this address.
+		Name *string `json:"name,omitempty"`
+
+		// Target The address endpoint. Format depends on type: phone number for tel (e.g. +14155551234), UUID for agent/conference/extension, email for email, SIP URI for sip.
 		Target *string `json:"target,omitempty"`
 
-		// Type Address type. 'tel' for phone numbers, 'email' for email addresses.
+		// TargetName Address's name.
+		TargetName *string `json:"target_name,omitempty"`
+
+		// Type Type of address.
 		Type *PostServiceAgentsContactsJSONBodyAddressesType `json:"type,omitempty"`
 	} `json:"addresses,omitempty"`
 	Company     *string                                  `json:"company,omitempty"`
