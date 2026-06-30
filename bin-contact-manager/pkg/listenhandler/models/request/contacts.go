@@ -38,6 +38,14 @@ type AddressCreate struct {
 	IsPrimary bool   `json:"is_primary"`
 }
 
+// ContactAddressCreate is the body for POST /v1/contact_addresses
+type ContactAddressCreate struct {
+	ContactID uuid.UUID `json:"contact_id"` // required
+	Type      string    `json:"type"`        // "tel" | "email" — required
+	Target    string    `json:"target"`      // E.164 or email   — required
+	IsPrimary bool      `json:"is_primary"`
+}
+
 // AddressUpdate is the body for PUT /v1/contacts/{id}/addresses/{address_id}
 type AddressUpdate struct {
 	Target    *string `json:"target,omitempty"`

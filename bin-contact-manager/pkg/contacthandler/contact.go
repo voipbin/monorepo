@@ -419,3 +419,13 @@ func (h *contactHandler) RemoveTag(ctx context.Context, contactID, tagID uuid.UU
 
 	return res, nil
 }
+
+// GetAddress returns a single address scoped to customerID.
+func (h *contactHandler) GetAddress(ctx context.Context, customerID, addressID uuid.UUID) (*contact.Address, error) {
+	return h.db.AddressGet(ctx, customerID, addressID)
+}
+
+// ListAddresses returns addresses for the customer with optional filters.
+func (h *contactHandler) ListAddresses(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
+	return h.db.AddressList(ctx, customerID, filters, pageToken, pageSize)
+}

@@ -2952,6 +2952,42 @@ func (e PostConferencesIdRecordingStartJSONBodyFormat) Valid() bool {
 	}
 }
 
+// Defines values for GetContactAddressesParamsType.
+const (
+	GetContactAddressesParamsTypeEmail GetContactAddressesParamsType = "email"
+	GetContactAddressesParamsTypeTel   GetContactAddressesParamsType = "tel"
+)
+
+// Valid indicates whether the value is a known member of the GetContactAddressesParamsType enum.
+func (e GetContactAddressesParamsType) Valid() bool {
+	switch e {
+	case GetContactAddressesParamsTypeEmail:
+		return true
+	case GetContactAddressesParamsTypeTel:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostContactAddressesJSONBodyType.
+const (
+	PostContactAddressesJSONBodyTypeEmail PostContactAddressesJSONBodyType = "email"
+	PostContactAddressesJSONBodyTypeTel   PostContactAddressesJSONBodyType = "tel"
+)
+
+// Valid indicates whether the value is a known member of the PostContactAddressesJSONBodyType enum.
+func (e PostContactAddressesJSONBodyType) Valid() bool {
+	switch e {
+	case PostContactAddressesJSONBodyTypeEmail:
+		return true
+	case PostContactAddressesJSONBodyTypeTel:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for PostContactsJSONBodyEmailsType.
 const (
 	PostContactsJSONBodyEmailsTypeOther    PostContactsJSONBodyEmailsType = "other"
@@ -3114,6 +3150,42 @@ func (e PostProvidercallsJSONBodyAnonymous) Valid() bool {
 	case PostProvidercallsJSONBodyAnonymousNo:
 		return true
 	case PostProvidercallsJSONBodyAnonymousYes:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetServiceAgentsContactAddressesParamsType.
+const (
+	GetServiceAgentsContactAddressesParamsTypeEmail GetServiceAgentsContactAddressesParamsType = "email"
+	GetServiceAgentsContactAddressesParamsTypeTel   GetServiceAgentsContactAddressesParamsType = "tel"
+)
+
+// Valid indicates whether the value is a known member of the GetServiceAgentsContactAddressesParamsType enum.
+func (e GetServiceAgentsContactAddressesParamsType) Valid() bool {
+	switch e {
+	case GetServiceAgentsContactAddressesParamsTypeEmail:
+		return true
+	case GetServiceAgentsContactAddressesParamsTypeTel:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PostServiceAgentsContactAddressesJSONBodyType.
+const (
+	PostServiceAgentsContactAddressesJSONBodyTypeEmail PostServiceAgentsContactAddressesJSONBodyType = "email"
+	PostServiceAgentsContactAddressesJSONBodyTypeTel   PostServiceAgentsContactAddressesJSONBodyType = "tel"
+)
+
+// Valid indicates whether the value is a known member of the PostServiceAgentsContactAddressesJSONBodyType enum.
+func (e PostServiceAgentsContactAddressesJSONBodyType) Valid() bool {
+	switch e {
+	case PostServiceAgentsContactAddressesJSONBodyTypeEmail:
+		return true
+	case PostServiceAgentsContactAddressesJSONBodyTypeTel:
 		return true
 	default:
 		return false
@@ -7791,6 +7863,51 @@ type PostConferencesIdTranscribeStartJSONBody struct {
 	Language string `json:"language"`
 }
 
+// GetContactAddressesParams defines parameters for GetContactAddresses.
+type GetContactAddressesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ContactId Filter by contact ID.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// Type Filter by address type.
+	Type *GetContactAddressesParamsType `form:"type,omitempty" json:"type,omitempty"`
+}
+
+// GetContactAddressesParamsType defines parameters for GetContactAddresses.
+type GetContactAddressesParamsType string
+
+// PostContactAddressesJSONBody defines parameters for PostContactAddresses.
+type PostContactAddressesJSONBody struct {
+	// ContactId The ID of the contact to add the address to.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// IsPrimary Whether this is the primary address for the contact.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The address value. E.164 format for tel, email address for email.
+	Target string `json:"target"`
+
+	// Type Address type. 'tel' for phone numbers, 'email' for email addresses.
+	Type PostContactAddressesJSONBodyType `json:"type"`
+}
+
+// PostContactAddressesJSONBodyType defines parameters for PostContactAddresses.
+type PostContactAddressesJSONBodyType string
+
+// PutContactAddressesIdJSONBody defines parameters for PutContactAddressesId.
+type PutContactAddressesIdJSONBody struct {
+	// IsPrimary Whether this is the primary address for the contact.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The updated address value. E.164 format for tel, email address for email.
+	Target *string `json:"target,omitempty"`
+}
+
 // GetContactsParams defines parameters for GetContacts.
 type GetContactsParams struct {
 	// PageSize Number of results to return per page.
@@ -8712,6 +8829,51 @@ type GetServiceAgentsCallsParams struct {
 	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
 }
 
+// GetServiceAgentsContactAddressesParams defines parameters for GetServiceAgentsContactAddresses.
+type GetServiceAgentsContactAddressesParams struct {
+	// PageSize Number of results to return per page.
+	PageSize *PageSize `form:"page_size,omitempty" json:"page_size,omitempty"`
+
+	// PageToken Cursor token for pagination. Use the `next_page_token` value from the previous response.
+	PageToken *PageToken `form:"page_token,omitempty" json:"page_token,omitempty"`
+
+	// ContactId Filter by contact ID.
+	ContactId *openapi_types.UUID `form:"contact_id,omitempty" json:"contact_id,omitempty"`
+
+	// Type Filter by address type.
+	Type *GetServiceAgentsContactAddressesParamsType `form:"type,omitempty" json:"type,omitempty"`
+}
+
+// GetServiceAgentsContactAddressesParamsType defines parameters for GetServiceAgentsContactAddresses.
+type GetServiceAgentsContactAddressesParamsType string
+
+// PostServiceAgentsContactAddressesJSONBody defines parameters for PostServiceAgentsContactAddresses.
+type PostServiceAgentsContactAddressesJSONBody struct {
+	// ContactId The ID of the contact to add the address to.
+	ContactId openapi_types.UUID `json:"contact_id"`
+
+	// IsPrimary Whether this is the primary address for the contact.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The address value. E.164 format for tel, email address for email.
+	Target string `json:"target"`
+
+	// Type Address type. 'tel' for phone numbers, 'email' for email addresses.
+	Type PostServiceAgentsContactAddressesJSONBodyType `json:"type"`
+}
+
+// PostServiceAgentsContactAddressesJSONBodyType defines parameters for PostServiceAgentsContactAddresses.
+type PostServiceAgentsContactAddressesJSONBodyType string
+
+// PutServiceAgentsContactAddressesIdJSONBody defines parameters for PutServiceAgentsContactAddressesId.
+type PutServiceAgentsContactAddressesIdJSONBody struct {
+	// IsPrimary Whether this is the primary address for the contact.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The updated address value. E.164 format for tel, email address for email.
+	Target *string `json:"target,omitempty"`
+}
+
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
 type GetServiceAgentsContactsParams struct {
 	// PageSize Number of results to return per page.
@@ -9373,6 +9535,12 @@ type PostConferencesIdRecordingStartJSONRequestBody PostConferencesIdRecordingSt
 // PostConferencesIdTranscribeStartJSONRequestBody defines body for PostConferencesIdTranscribeStart for application/json ContentType.
 type PostConferencesIdTranscribeStartJSONRequestBody PostConferencesIdTranscribeStartJSONBody
 
+// PostContactAddressesJSONRequestBody defines body for PostContactAddresses for application/json ContentType.
+type PostContactAddressesJSONRequestBody PostContactAddressesJSONBody
+
+// PutContactAddressesIdJSONRequestBody defines body for PutContactAddressesId for application/json ContentType.
+type PutContactAddressesIdJSONRequestBody PutContactAddressesIdJSONBody
+
 // PostContactsJSONRequestBody defines body for PostContacts for application/json ContentType.
 type PostContactsJSONRequestBody PostContactsJSONBody
 
@@ -9534,6 +9702,12 @@ type PostRoutesJSONRequestBody PostRoutesJSONBody
 
 // PutRoutesIdJSONRequestBody defines body for PutRoutesId for application/json ContentType.
 type PutRoutesIdJSONRequestBody PutRoutesIdJSONBody
+
+// PostServiceAgentsContactAddressesJSONRequestBody defines body for PostServiceAgentsContactAddresses for application/json ContentType.
+type PostServiceAgentsContactAddressesJSONRequestBody PostServiceAgentsContactAddressesJSONBody
+
+// PutServiceAgentsContactAddressesIdJSONRequestBody defines body for PutServiceAgentsContactAddressesId for application/json ContentType.
+type PutServiceAgentsContactAddressesIdJSONRequestBody PutServiceAgentsContactAddressesIdJSONBody
 
 // PostServiceAgentsContactsJSONRequestBody defines body for PostServiceAgentsContacts for application/json ContentType.
 type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody

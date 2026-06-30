@@ -165,6 +165,21 @@ func (mr *MockContactHandlerMockRecorder) Get(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockContactHandler)(nil).Get), ctx, id)
 }
 
+// GetAddress mocks base method.
+func (m *MockContactHandler) GetAddress(ctx context.Context, customerID, addressID uuid.UUID) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAddress", ctx, customerID, addressID)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAddress indicates an expected call of GetAddress.
+func (mr *MockContactHandlerMockRecorder) GetAddress(ctx, customerID, addressID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAddress", reflect.TypeOf((*MockContactHandler)(nil).GetAddress), ctx, customerID, addressID)
+}
+
 // InteractionGet mocks base method.
 func (m *MockContactHandler) InteractionGet(ctx context.Context, customerID, id uuid.UUID) (*interaction.Interaction, error) {
 	m.ctrl.T.Helper()
@@ -225,6 +240,21 @@ func (m *MockContactHandler) List(ctx context.Context, size uint64, token string
 func (mr *MockContactHandlerMockRecorder) List(ctx, size, token, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockContactHandler)(nil).List), ctx, size, token, filters)
+}
+
+// ListAddresses mocks base method.
+func (m *MockContactHandler) ListAddresses(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAddresses", ctx, customerID, filters, pageToken, pageSize)
+	ret0, _ := ret[0].([]contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAddresses indicates an expected call of ListAddresses.
+func (mr *MockContactHandlerMockRecorder) ListAddresses(ctx, customerID, filters, pageToken, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAddresses", reflect.TypeOf((*MockContactHandler)(nil).ListAddresses), ctx, customerID, filters, pageToken, pageSize)
 }
 
 // LookupByEmail mocks base method.

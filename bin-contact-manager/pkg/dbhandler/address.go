@@ -160,6 +160,57 @@ func (h *handler) AddressGet(ctx context.Context, customerID, id uuid.UUID) (*co
 	return a, nil
 }
 
+// AddressList returns addresses for the customer with optional filters.
+// filters keys: "contact_id" (uuid.UUID), "type" (string).
+func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
+	q := sq.Select(addressRowColumns()...).
+		From(addressTable).
+		Where(sq.Eq{"customer_id": customerID.Bytes()}).
+		OrderBy("tm_create desc")
+
+	if v, ok := filters["contact_id"]; ok {
+		if cid, ok2 := v.(uuid.UUID); ok2 && cid != uuid.Nil {
+			q = q.Where(sq.Eq{"contact_id": cid.Bytes()})
+		}
+	}
+	if v, ok := filters["type"]; ok {
+		if t, ok2 := v.(string); ok2 && t != "" {
+			q = q.Where(sq.Eq{"type": t})
+		}
+	}
+	if pageSize > 0 {
+		q = q.Limit(pageSize)
+	}
+	if pageToken != "" {
+		q = q.Where(sq.Lt{"tm_create": pageToken})
+	}
+
+	query, args, err := q.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("could not build query. AddressList. err: %v", err)
+	}
+
+	rows, err := h.db.Query(query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("could not query. AddressList. err: %v", err)
+	}
+	defer func() { _ = rows.Close() }()
+
+	res := []contact.Address{}
+	for rows.Next() {
+		a, err := scanFullAddressRow(rows)
+		if err != nil {
+			return nil, fmt.Errorf("could not scan the row. AddressList. err: %v", err)
+		}
+		res = append(res, *a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error. AddressList. err: %v", err)
+	}
+
+	return res, nil
+}
+
 // AddressListByContactID returns all addresses for a contact.
 // contact_addresses has no soft-delete.
 func (h *handler) AddressListByContactID(_ context.Context, contactID uuid.UUID) ([]contact.Address, error) {
