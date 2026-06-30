@@ -268,6 +268,28 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 				ID: "1587842233.10218",
 			},
 		},
+		{
+			// TypeJoin channel becoming Up → confbridgeHandler.ARIChannelStateChange must be called
+			"TypeJoin Up - confbridgeHandler dispatched",
+			&ari.ChannelStateChange{
+				Event: ari.Event{
+					Type:        ari.EventTypeChannelStateChange,
+					Application: "voipbin",
+					Timestamp:   "2020-04-25T19:17:13.786Z",
+					AsteriskID:  "42:01:0a:a4:00:05",
+				},
+				Channel: ari.Channel{
+					ID:    "conf-join-channel-test",
+					Name:  "PJSIP/conf-join-000000ea",
+					State: ari.ChannelStateUp,
+				},
+			},
+
+			&channel.Channel{
+				ID:   "conf-join-channel-test",
+				Type: channel.TypeJoin,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -280,18 +302,25 @@ func Test_EventHandlerChannelStateChange(t *testing.T) {
 			mockRequest := requesthandler.NewMockRequestHandler(mc)
 			mockCall := callhandler.NewMockCallHandler(mc)
 			mockChannel := channelhandler.NewMockChannelHandler(mc)
+			mockConfbridge := confbridgehandler.NewMockConfbridgeHandler(mc)
 			h := eventHandler{
-				db:             mockDB,
-				sockHandler:    mockSock,
-				reqHandler:     mockRequest,
-				callHandler:    mockCall,
-				channelHandler: mockChannel,
+				db:                mockDB,
+				sockHandler:       mockSock,
+				reqHandler:        mockRequest,
+				callHandler:       mockCall,
+				channelHandler:    mockChannel,
+				confbridgeHandler: mockConfbridge,
 			}
 
 			ctx := context.Background()
 
 			mockChannel.EXPECT().ARIChannelStateChange(ctx, tt.event).Return(tt.responseChannel, nil)
 			mockCall.EXPECT().ARIChannelStateChange(ctx, tt.responseChannel).Return(nil)
+
+			// TypeJoin channels dispatch to confbridgeHandler
+			if tt.responseChannel.Type == channel.TypeJoin {
+				mockConfbridge.EXPECT().ARIChannelStateChange(ctx, tt.responseChannel)
+			}
 
 			if err := h.EventHandlerChannelStateChange(ctx, tt.event); err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)

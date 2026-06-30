@@ -2,6 +2,7 @@ package confbridgehandler
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -143,6 +144,201 @@ func Test_ARIStasisStartTypeConferenceError(t *testing.T) {
 			if err := h.ARIStasisStart(ctx, tt.channel); err == nil {
 				t.Errorf("Wrong match. expect: error, got: ok")
 			}
+		})
+	}
+}
+
+func Test_ARIChannelStateChangeTypeJoin(t *testing.T) {
+	tests := []struct {
+		name         string
+		channel      *channel.Channel
+		bridgeGetErr error
+		responseBridge *bridge.Bridge
+		responsePeer   *channel.Channel
+		peerGetErr     error
+		answerErr      error
+		expectGetBridge bool
+		expectGetPeer   bool
+		expectAnswer    bool
+	}{
+		{
+			// non-TypeJoin → early return
+			name: "non-TypeJoin - no-op",
+			channel: &channel.Channel{
+				ID:    "call-in-channel-id",
+				Type:  channel.TypeCall,
+				State: ari.ChannelStateUp,
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeBridgeID: "bridge-aaa",
+				},
+			},
+			expectGetBridge: false,
+		},
+		{
+			// TypeJoin but not Up → early return
+			name: "TypeJoin not Up - no-op",
+			channel: &channel.Channel{
+				ID:    "conf-join-channel-id",
+				Type:  channel.TypeJoin,
+				State: ari.ChannelStateRing,
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeBridgeID: "bridge-bbb",
+				},
+			},
+			expectGetBridge: false,
+		},
+		{
+			// TypeJoin + Up but empty BridgeID and StasisData → early return
+			name: "TypeJoin Up no bridgeID - no-op",
+			channel: &channel.Channel{
+				ID:         "conf-join-channel-id-2",
+				Type:       channel.TypeJoin,
+				State:      ari.ChannelStateUp,
+				StasisData: map[channel.StasisDataType]string{},
+			},
+			expectGetBridge: false,
+		},
+		{
+			// TypeJoin + Up + confbridge bridge → ReferenceTypeCall guard blocks
+			name: "TypeJoin Up confbridge bridge - no-op",
+			channel: &channel.Channel{
+				ID:    "conf-join-channel-id-3",
+				Type:  channel.TypeJoin,
+				State: ari.ChannelStateUp,
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeBridgeID: "bridge-ccc",
+				},
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-ccc",
+				ReferenceType: bridge.ReferenceTypeConfbridge,
+				ChannelIDs:    []string{"conf-join-channel-id-3", "conf-in-id"},
+			},
+			expectGetBridge: true,
+			expectGetPeer:   false,
+		},
+		{
+			// happy path: TypeJoin + Up + call bridge + non-Up peer → Answer called
+			name: "TypeJoin Up call bridge peer not up - answer called",
+			channel: &channel.Channel{
+				ID:    "conf-join-channel-id-4",
+				Type:  channel.TypeJoin,
+				State: ari.ChannelStateUp,
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeBridgeID: "bridge-ddd",
+				},
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-ddd",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"conf-join-channel-id-4", "call-in-id"},
+			},
+			responsePeer: &channel.Channel{
+				ID:    "call-in-id",
+				State: ari.ChannelStateRing,
+			},
+			expectGetBridge: true,
+			expectGetPeer:   true,
+			expectAnswer:    true,
+		},
+		{
+			// peer already Up → skip
+			name: "TypeJoin Up call bridge peer already up - skip",
+			channel: &channel.Channel{
+				ID:    "conf-join-channel-id-5",
+				Type:  channel.TypeJoin,
+				State: ari.ChannelStateUp,
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeBridgeID: "bridge-eee",
+				},
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-eee",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"conf-join-channel-id-5", "already-up-id"},
+			},
+			responsePeer: &channel.Channel{
+				ID:    "already-up-id",
+				State: ari.ChannelStateUp,
+			},
+			expectGetBridge: true,
+			expectGetPeer:   true,
+			expectAnswer:    false,
+		},
+		{
+			// bridge Get fails → early return
+			name: "bridge get error - no-op",
+			channel: &channel.Channel{
+				ID:    "conf-join-channel-id-6",
+				Type:  channel.TypeJoin,
+				State: ari.ChannelStateUp,
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeBridgeID: "bridge-fff",
+				},
+			},
+			bridgeGetErr:    fmt.Errorf("bridge not found"),
+			expectGetBridge: true,
+			expectGetPeer:   false,
+		},
+		{
+			// peer Get fails → loop continues, no Answer
+			name: "peer get error - continue",
+			channel: &channel.Channel{
+				ID:    "conf-join-channel-id-7",
+				Type:  channel.TypeJoin,
+				State: ari.ChannelStateUp,
+				StasisData: map[channel.StasisDataType]string{
+					channel.StasisDataTypeBridgeID: "bridge-ggg",
+				},
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-ggg",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"conf-join-channel-id-7", "peer-error-id"},
+			},
+			peerGetErr:      fmt.Errorf("channel not found"),
+			expectGetBridge: true,
+			expectGetPeer:   true,
+			expectAnswer:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &confbridgeHandler{
+				bridgeHandler:  mockBridge,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			if tt.expectGetBridge {
+				if tt.bridgeGetErr != nil {
+					mockBridge.EXPECT().Get(ctx, gomock.Any()).Return(nil, tt.bridgeGetErr)
+				} else {
+					mockBridge.EXPECT().Get(ctx, gomock.Any()).Return(tt.responseBridge, nil)
+				}
+			}
+
+			if tt.expectGetPeer {
+				if tt.peerGetErr != nil {
+					mockChannel.EXPECT().Get(ctx, gomock.Any()).Return(nil, tt.peerGetErr)
+				} else {
+					mockChannel.EXPECT().Get(ctx, tt.responsePeer.ID).Return(tt.responsePeer, nil)
+				}
+			}
+
+			if tt.expectAnswer {
+				mockChannel.EXPECT().Answer(ctx, tt.responsePeer.ID).Return(tt.answerErr)
+			}
+
+			h.ARIChannelStateChange(ctx, tt.channel)
 		})
 	}
 }
