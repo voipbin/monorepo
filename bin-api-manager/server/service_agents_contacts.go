@@ -131,12 +131,25 @@ func (h *server) PostServiceAgentsContacts(c *gin.Context) {
 	addresses := []cmrequest.AddressCreate{}
 	if req.Addresses != nil {
 		for _, v := range *req.Addresses {
-			addr := cmrequest.AddressCreate{}
-			if v.Type != nil {
-				addr.Type = string(*v.Type)
+			if v.Type == nil || *v.Type == "" {
+				log.Error("Missing required field: type in addresses")
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ADDRESS_TYPE", "Each address must have a type."))
+				return
 			}
-			if v.Target != nil {
-				addr.Target = *v.Target
+			addrType := string(*v.Type)
+			if addrType != "tel" && addrType != "email" {
+				log.Errorf("Invalid address type: %s", addrType)
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ADDRESS_TYPE", "Address type must be 'tel' or 'email'."))
+				return
+			}
+			if v.Target == nil || *v.Target == "" {
+				log.Error("Missing required field: target in addresses")
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ADDRESS_TARGET", "Each address must have a target."))
+				return
+			}
+			addr := cmrequest.AddressCreate{
+				Type:   addrType,
+				Target: *v.Target,
 			}
 			if v.IsPrimary != nil {
 				addr.IsPrimary = *v.IsPrimary
