@@ -130,27 +130,27 @@ func (h *server) PostContacts(c *gin.Context) {
 	}
 
 	addresses := []cmrequest.AddressCreate{}
-	if req.PhoneNumbers != nil {
-		for _, v := range *req.PhoneNumbers {
+	if req.Addresses != nil {
+		for _, v := range *req.Addresses {
+			if v.Type == nil || *v.Type == "" {
+				log.Error("Missing required field: type in addresses")
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ADDRESS_TYPE", "Each address must have a type."))
+				return
+			}
+			addrType := string(*v.Type)
+			if addrType != "tel" && addrType != "email" {
+				log.Errorf("Invalid address type: %s", addrType)
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ADDRESS_TYPE", "Address type must be 'tel' or 'email'."))
+				return
+			}
+			if v.Target == nil || *v.Target == "" {
+				log.Error("Missing required field: target in addresses")
+				abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ADDRESS_TARGET", "Each address must have a target."))
+				return
+			}
 			addr := cmrequest.AddressCreate{
-				Type: "tel",
-			}
-			if v.Number != nil {
-				addr.Target = *v.Number
-			}
-			if v.IsPrimary != nil {
-				addr.IsPrimary = *v.IsPrimary
-			}
-			addresses = append(addresses, addr)
-		}
-	}
-	if req.Emails != nil {
-		for _, v := range *req.Emails {
-			addr := cmrequest.AddressCreate{
-				Type: "email",
-			}
-			if v.Address != nil {
-				addr.Target = string(*v.Address)
+				Type:   addrType,
+				Target: *v.Target,
 			}
 			if v.IsPrimary != nil {
 				addr.IsPrimary = *v.IsPrimary

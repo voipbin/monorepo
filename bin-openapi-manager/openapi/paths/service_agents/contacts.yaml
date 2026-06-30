@@ -55,31 +55,17 @@ post:
               type: string
             notes:
               type: string
-            phone_numbers:
+            addresses:
               type: array
+              description: List of addresses (tel or email) to associate with the contact.
               items:
-                type: object
-                properties:
-                  number:
-                    type: string
-                  type:
-                    type: string
-                    enum: [mobile, work, home, fax, other]
-                  is_primary:
-                    type: boolean
-            emails:
-              type: array
-              items:
-                type: object
-                properties:
-                  address:
-                    type: string
-                    format: email
-                  type:
-                    type: string
-                    enum: [work, personal, other]
-                  is_primary:
-                    type: boolean
+                allOf:
+                  - $ref: '#/components/schemas/CommonAddress'
+                  - type: object
+                    properties:
+                      is_primary:
+                        type: boolean
+                        description: Whether this is the primary address of its type.
             tag_ids:
               type: array
               items:

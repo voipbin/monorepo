@@ -3516,41 +3516,34 @@ components:
         - ContactManagerContactSourceSync
 
     ContactManagerAddress:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique identifier for the address.
-          example: "550e8400-e29b-41d4-a716-446655440000"
-        type:
-          $ref: '#/components/schemas/ContactManagerAddressType'
-          description: Address type.
-          example: "tel"
-        target:
-          type: string
-          description: The address value. E.164 format for tel, email address for email.
-          example: "+141****1234"
-        is_primary:
-          type: boolean
-          description: Indicates if this is the primary address for the given type.
-          example: true
-        tm_create:
-          type: string
-          format: date-time
-          description: Timestamp when the address was created.
-          example: "2026-01-15T09:30:00.000000Z"
-
-    ContactManagerAddressType:
-      type: string
-      description: Type of the address.
-      example: "tel"
-      enum:
-        - tel
-        - email
-      x-enum-varnames:
-        - ContactManagerAddressTypeTel
-        - ContactManagerAddressTypeEmail
+      allOf:
+        - $ref: '#/components/schemas/CommonAddress'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Unique identifier for the address.
+              example: "550e8400-e29b-41d4-a716-446655440000"
+            contact_id:
+              type: string
+              format: uuid
+              description: Unique identifier of the contact this address belongs to.
+              example: "7c4d2f3a-1b8e-4f5c-9a6d-3e2f1a0b4c5d"
+            customer_id:
+              type: string
+              format: uuid
+              description: Unique identifier of the customer this address belongs to.
+              example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            is_primary:
+              type: boolean
+              description: Indicates if this is the primary address for the given type.
+              example: true
+            tm_create:
+              type: string
+              format: date-time
+              description: Timestamp when the address was created.
+              example: "2026-01-15T09:30:00.000000Z"
 
 
 
