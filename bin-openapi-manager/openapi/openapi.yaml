@@ -3472,16 +3472,11 @@ components:
           type: string
           description: External identifier for the contact.
           example: "CRM-12345"
-        phone_numbers:
+        addresses:
           type: array
-          description: List of phone numbers associated with the contact.
+          description: List of addresses (tel or email) associated with the contact.
           items:
-            $ref: '#/components/schemas/ContactManagerPhoneNumber'
-        emails:
-          type: array
-          description: List of email addresses associated with the contact.
-          items:
-            $ref: '#/components/schemas/ContactManagerEmail'
+            $ref: '#/components/schemas/ContactManagerAddress'
         tag_ids:
           type: array
           description: List of tag IDs associated with the contact.
@@ -3520,88 +3515,43 @@ components:
         - ContactManagerContactSourceAPI
         - ContactManagerContactSourceSync
 
-    ContactManagerEmail:
+    ContactManagerAddress:
       type: object
       properties:
         id:
           type: string
           format: uuid
-          description: Unique identifier for the email address.
+          description: Unique identifier for the address.
           example: "550e8400-e29b-41d4-a716-446655440000"
-        address:
-          type: string
-          format: email
-          description: Email address.
-          example: "john.smith@acme.com"
         type:
-          $ref: '#/components/schemas/ContactManagerEmailType'
-          description: Type of the email address.
-          example: "work"
+          $ref: '#/components/schemas/ContactManagerAddressType'
+          description: Address type.
+          example: "tel"
+        target:
+          type: string
+          description: The address value. E.164 format for tel, email address for email.
+          example: "+141****1234"
         is_primary:
           type: boolean
-          description: Indicates if this is the primary email address.
+          description: Indicates if this is the primary address for the given type.
           example: true
         tm_create:
           type: string
           format: date-time
-          description: Timestamp when the email was created.
+          description: Timestamp when the address was created.
           example: "2026-01-15T09:30:00.000000Z"
 
-    ContactManagerEmailType:
+    ContactManagerAddressType:
       type: string
-      description: Type of the email address.
-      example: "work"
+      description: Type of the address.
+      example: "tel"
       enum:
-        - work
-        - personal
-        - other
+        - tel
+        - email
       x-enum-varnames:
-        - ContactManagerEmailTypeWork
-        - ContactManagerEmailTypePersonal
-        - ContactManagerEmailTypeOther
+        - ContactManagerAddressTypeTel
+        - ContactManagerAddressTypeEmail
 
-    ContactManagerPhoneNumber:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique identifier for the phone number.
-          example: "550e8400-e29b-41d4-a716-446655440000"
-        number:
-          type: string
-          description: Phone number in E.164 format.
-          example: "+14155551234"
-        type:
-          $ref: '#/components/schemas/ContactManagerPhoneNumberType'
-          description: Type of the phone number.
-          example: "mobile"
-        is_primary:
-          type: boolean
-          description: Indicates if this is the primary phone number.
-          example: true
-        tm_create:
-          type: string
-          format: date-time
-          description: Timestamp when the phone number was created.
-          example: "2026-01-15T09:30:00.000000Z"
-
-    ContactManagerPhoneNumberType:
-      type: string
-      description: Type of the phone number.
-      example: "mobile"
-      enum:
-        - mobile
-        - work
-        - home
-        - fax
-        - other
-      x-enum-varnames:
-        - ContactManagerPhoneNumberTypeMobile
-        - ContactManagerPhoneNumberTypeWork
-        - ContactManagerPhoneNumberTypeHome
-        - ContactManagerPhoneNumberTypeFax
-        - ContactManagerPhoneNumberTypeOther
 
 
 #########################################
@@ -7966,14 +7916,10 @@ paths:
     $ref: './paths/contacts/lookup.yaml'
   /contacts/{id}:
     $ref: './paths/contacts/id.yaml'
-  /contacts/{id}/phone-numbers:
-    $ref: './paths/contacts/id_phonenumbers.yaml'
-  /contacts/{id}/phone-numbers/{phone_number_id}:
-    $ref: './paths/contacts/id_phonenumbers_id.yaml'
-  /contacts/{id}/emails:
-    $ref: './paths/contacts/id_emails.yaml'
-  /contacts/{id}/emails/{email_id}:
-    $ref: './paths/contacts/id_emails_id.yaml'
+  /contacts/{id}/addresses:
+    $ref: './paths/contacts/id_addresses.yaml'
+  /contacts/{id}/addresses/{address_id}:
+    $ref: './paths/contacts/id_addresses_id.yaml'
   /contacts/{id}/tags:
     $ref: './paths/contacts/id_tags.yaml'
   /contacts/{id}/tags/{tag_id}:
@@ -8217,14 +8163,11 @@ paths:
   /service_agents/talk_messages:
     $ref: './paths/service_agents/talk_messages.yaml'
 
-  /service_agents/contacts/{id}/phone_numbers/{phone_number_id}:
-    $ref: './paths/service_agents/contacts_id_phonenumbers_id.yaml'
-  /service_agents/contacts/{id}/phone_numbers:
-    $ref: './paths/service_agents/contacts_id_phonenumbers.yaml'
-  /service_agents/contacts/{id}/emails/{email_id}:
-    $ref: './paths/service_agents/contacts_id_emails_id.yaml'
-  /service_agents/contacts/{id}/emails:
-    $ref: './paths/service_agents/contacts_id_emails.yaml'
+  /service_agents/contacts/{id}/addresses:
+    $ref: './paths/service_agents/contacts_id_addresses.yaml'
+  /service_agents/contacts/{id}/addresses/{address_id}:
+    $ref: './paths/service_agents/contacts_id_addresses_id.yaml'
+
   /service_agents/contacts/{id}/tags/{tag_id}:
     $ref: './paths/service_agents/contacts_id_tags_id.yaml'
   /service_agents/contacts/{id}/tags:

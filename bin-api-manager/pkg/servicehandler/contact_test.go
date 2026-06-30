@@ -32,8 +32,7 @@ func Test_ContactCreate(t *testing.T) {
 		source       string
 		externalID   string
 		notes        string
-		phoneNumbers []cmrequest.PhoneNumberCreate
-		emails       []cmrequest.EmailCreate
+		addresses    []cmrequest.AddressCreate
 		tagIDs       []uuid.UUID
 
 		responseContact *cmcontact.Contact
@@ -59,8 +58,7 @@ func Test_ContactCreate(t *testing.T) {
 			source:       "api",
 			externalID:   "ext-123",
 			notes:        "test note",
-			phoneNumbers: []cmrequest.PhoneNumberCreate{},
-			emails:       []cmrequest.EmailCreate{},
+			addresses: []cmrequest.AddressCreate{},
 			tagIDs:       []uuid.UUID{},
 
 			responseContact: &cmcontact.Contact{
@@ -120,8 +118,7 @@ func Test_ContactCreate(t *testing.T) {
 				tt.source,
 				tt.externalID,
 				tt.notes,
-				tt.phoneNumbers,
-				tt.emails,
+				tt.addresses,
 				tt.tagIDs,
 			).Return(tt.responseContact, nil)
 
@@ -136,8 +133,7 @@ func Test_ContactCreate(t *testing.T) {
 				tt.source,
 				tt.externalID,
 				tt.notes,
-				tt.phoneNumbers,
-				tt.emails,
+				tt.addresses,
 				tt.tagIDs,
 			)
 			if err != nil {
@@ -588,291 +584,15 @@ func Test_ContactLookup(t *testing.T) {
 	}
 }
 
-func Test_ContactPhoneNumberCreate(t *testing.T) {
-
-	type test struct {
-		name string
-
-		agent      *auth.AuthIdentity
-		contactID  uuid.UUID
-		number     string
-		phoneType  string
-		isPrimary  bool
-
-		responseContactGet *cmcontact.Contact
-		responseContact    *cmcontact.Contact
-		expectRes          *cmcontact.WebhookMessage
-	}
-
-	tests := []test{
-		{
-			name: "normal",
-
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				Permission: amagent.PermissionCustomerAdmin,
-			}),
-			contactID:  uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			number:     "+15551234567",
-			phoneType:  "mobile",
-			isPrimary:  true,
-
-			responseContactGet: &cmcontact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-			},
-			responseContact: &cmcontact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				PhoneNumbers: []cmcontact.PhoneNumber{
-					{
-						ID:        uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
-						Number:    "+15551234567",
-						Type:      "mobile",
-						IsPrimary: true,
-					},
-				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
-			},
-			expectRes: &cmcontact.WebhookMessage{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				PhoneNumbers: []cmcontact.PhoneNumber{
-					{
-						ID:        uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
-						Number:    "+15551234567",
-						Type:      "mobile",
-						IsPrimary: true,
-					},
-				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContactGet, nil)
-			mockReq.EXPECT().ContactV1PhoneNumberCreate(ctx, tt.contactID, tt.number, tt.phoneType, tt.isPrimary).Return(tt.responseContact, nil)
-
-			res, err := h.ContactPhoneNumberCreate(ctx, tt.agent, tt.contactID, tt.number, tt.phoneType, tt.isPrimary)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_ContactPhoneNumberUpdate(t *testing.T) {
-
-	type test struct {
-		name string
-
-		agent         *auth.AuthIdentity
-		contactID     uuid.UUID
-		phoneNumberID uuid.UUID
-		fields        map[string]any
-
-		responseContactGet *cmcontact.Contact
-		responseContact    *cmcontact.Contact
-		expectRes          *cmcontact.WebhookMessage
-	}
-
-	tests := []test{
-		{
-			name: "normal",
-
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				Permission: amagent.PermissionCustomerAdmin,
-			}),
-			contactID:     uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			phoneNumberID: uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
-			fields: map[string]any{
-				"number": "+15559999999",
-			},
-
-			responseContactGet: &cmcontact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-			},
-			responseContact: &cmcontact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				PhoneNumbers: []cmcontact.PhoneNumber{
-					{
-						ID:     uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
-						Number: "+15559999999",
-					},
-				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
-			},
-			expectRes: &cmcontact.WebhookMessage{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				PhoneNumbers: []cmcontact.PhoneNumber{
-					{
-						ID:     uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
-						Number: "+15559999999",
-					},
-				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContactGet, nil)
-			mockReq.EXPECT().ContactV1PhoneNumberUpdate(ctx, tt.contactID, tt.phoneNumberID, tt.fields).Return(tt.responseContact, nil)
-
-			res, err := h.ContactPhoneNumberUpdate(ctx, tt.agent, tt.contactID, tt.phoneNumberID, tt.fields)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_ContactPhoneNumberDelete(t *testing.T) {
-
-	type test struct {
-		name string
-
-		agent         *auth.AuthIdentity
-		contactID     uuid.UUID
-		phoneNumberID uuid.UUID
-
-		responseContactGet *cmcontact.Contact
-		responseContact    *cmcontact.Contact
-		expectRes          *cmcontact.WebhookMessage
-	}
-
-	tests := []test{
-		{
-			name: "normal",
-
-			agent: auth.NewAgentIdentity(&amagent.Agent{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("d152e69e-105b-11ee-b395-eb18426de979"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				Permission: amagent.PermissionCustomerAdmin,
-			}),
-			contactID:     uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			phoneNumberID: uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
-
-			responseContactGet: &cmcontact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-			},
-			responseContact: &cmcontact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
-			},
-			expectRes: &cmcontact.WebhookMessage{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockReq := requesthandler.NewMockRequestHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-
-			h := &serviceHandler{
-				reqHandler: mockReq,
-				dbHandler:  mockDB,
-			}
-			ctx := context.Background()
-
-			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContactGet, nil)
-			mockReq.EXPECT().ContactV1PhoneNumberDelete(ctx, tt.contactID, tt.phoneNumberID).Return(tt.responseContact, nil)
-
-			res, err := h.ContactPhoneNumberDelete(ctx, tt.agent, tt.contactID, tt.phoneNumberID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if !reflect.DeepEqual(tt.expectRes, res) {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
-			}
-		})
-	}
-}
-
-func Test_ContactEmailCreate(t *testing.T) {
+func Test_ContactAddressCreate(t *testing.T) {
 
 	type test struct {
 		name string
 
 		agent     *auth.AuthIdentity
 		contactID uuid.UUID
-		address   string
-		emailType string
+		addrType  string
+		target    string
 		isPrimary bool
 
 		responseContactGet *cmcontact.Contact
@@ -882,7 +602,7 @@ func Test_ContactEmailCreate(t *testing.T) {
 
 	tests := []test{
 		{
-			name: "normal",
+			name: "normal tel",
 
 			agent: auth.NewAgentIdentity(&amagent.Agent{
 				Identity: commonidentity.Identity{
@@ -892,9 +612,9 @@ func Test_ContactEmailCreate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 			contactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			address:   "john@example.com",
-			emailType: "work",
-			isPrimary: true,
+			addrType:  "tel",
+			target:    "+121****1234",
+			isPrimary: false,
 
 			responseContactGet: &cmcontact.Contact{
 				Identity: commonidentity.Identity{
@@ -907,30 +627,26 @@ func Test_ContactEmailCreate(t *testing.T) {
 					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				Emails: []cmcontact.Email{
+				Addresses: []cmcontact.Address{
 					{
-						ID:        uuid.FromStringOrNil("b2c3d4e5-0002-11ec-0002-000000000002"),
-						Address:   "john@example.com",
-						Type:      "work",
-						IsPrimary: true,
+						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Type:   "tel",
+						Target: "+121****1234",
 					},
 				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 			expectRes: &cmcontact.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				Emails: []cmcontact.Email{
+				Addresses: []cmcontact.Address{
 					{
-						ID:        uuid.FromStringOrNil("b2c3d4e5-0002-11ec-0002-000000000002"),
-						Address:   "john@example.com",
-						Type:      "work",
-						IsPrimary: true,
+						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Type:   "tel",
+						Target: "+121****1234",
 					},
 				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 		},
 	}
@@ -950,33 +666,32 @@ func Test_ContactEmailCreate(t *testing.T) {
 			ctx := context.Background()
 
 			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContactGet, nil)
-			mockReq.EXPECT().ContactV1EmailCreate(ctx, tt.contactID, tt.address, tt.emailType, tt.isPrimary).Return(tt.responseContact, nil)
+			mockReq.EXPECT().ContactV1AddressCreate(ctx, tt.contactID, tt.addrType, tt.target, tt.isPrimary).Return(tt.responseContact, nil)
 
-			res, err := h.ContactEmailCreate(ctx, tt.agent, tt.contactID, tt.address, tt.emailType, tt.isPrimary)
+			res, err := h.ContactAddressCreate(ctx, tt.agent, tt.contactID, tt.addrType, tt.target, tt.isPrimary)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
+			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func Test_ContactEmailUpdate(t *testing.T) {
+func Test_ContactAddressUpdate(t *testing.T) {
 
 	type test struct {
 		name string
 
 		agent     *auth.AuthIdentity
 		contactID uuid.UUID
-		emailID   uuid.UUID
+		addressID uuid.UUID
 		fields    map[string]any
 
-		responseContactGet *cmcontact.Contact
-		responseContact    *cmcontact.Contact
-		expectRes          *cmcontact.WebhookMessage
+		responseContact *cmcontact.Contact
+		expectRes       *cmcontact.WebhookMessage
 	}
 
 	tests := []test{
@@ -991,42 +706,34 @@ func Test_ContactEmailUpdate(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 			contactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			emailID:   uuid.FromStringOrNil("b2c3d4e5-0002-11ec-0002-000000000002"),
-			fields: map[string]any{
-				"address": "updated@example.com",
-			},
+			addressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+			fields:    map[string]any{"target": "+121****9999"},
 
-			responseContactGet: &cmcontact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-			},
 			responseContact: &cmcontact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				Emails: []cmcontact.Email{
+				Addresses: []cmcontact.Address{
 					{
-						ID:      uuid.FromStringOrNil("b2c3d4e5-0002-11ec-0002-000000000002"),
-						Address: "updated@example.com",
+						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Type:   "tel",
+						Target: "+121****9999",
 					},
 				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 			expectRes: &cmcontact.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				Emails: []cmcontact.Email{
+				Addresses: []cmcontact.Address{
 					{
-						ID:      uuid.FromStringOrNil("b2c3d4e5-0002-11ec-0002-000000000002"),
-						Address: "updated@example.com",
+						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Type:   "tel",
+						Target: "+121****9999",
 					},
 				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 		},
 	}
@@ -1045,33 +752,32 @@ func Test_ContactEmailUpdate(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContactGet, nil)
-			mockReq.EXPECT().ContactV1EmailUpdate(ctx, tt.contactID, tt.emailID, tt.fields).Return(tt.responseContact, nil)
+			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
+			mockReq.EXPECT().ContactV1AddressUpdate(ctx, tt.contactID, tt.addressID, tt.fields).Return(tt.responseContact, nil)
 
-			res, err := h.ContactEmailUpdate(ctx, tt.agent, tt.contactID, tt.emailID, tt.fields)
+			res, err := h.ContactAddressUpdate(ctx, tt.agent, tt.contactID, tt.addressID, tt.fields)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
+			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
 
-func Test_ContactEmailDelete(t *testing.T) {
+func Test_ContactAddressDelete(t *testing.T) {
 
 	type test struct {
 		name string
 
 		agent     *auth.AuthIdentity
 		contactID uuid.UUID
-		emailID   uuid.UUID
+		addressID uuid.UUID
 
-		responseContactGet *cmcontact.Contact
-		responseContact    *cmcontact.Contact
-		expectRes          *cmcontact.WebhookMessage
+		responseContact *cmcontact.Contact
+		expectRes       *cmcontact.WebhookMessage
 	}
 
 	tests := []test{
@@ -1086,27 +792,19 @@ func Test_ContactEmailDelete(t *testing.T) {
 				Permission: amagent.PermissionCustomerAdmin,
 			}),
 			contactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			emailID:   uuid.FromStringOrNil("b2c3d4e5-0002-11ec-0002-000000000002"),
+			addressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
 
-			responseContactGet: &cmcontact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
-				},
-			},
 			responseContact: &cmcontact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 			expectRes: &cmcontact.WebhookMessage{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
 				},
-				TMCreate: timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 		},
 	}
@@ -1125,20 +823,26 @@ func Test_ContactEmailDelete(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContactGet, nil)
-			mockReq.EXPECT().ContactV1EmailDelete(ctx, tt.contactID, tt.emailID).Return(tt.responseContact, nil)
+			mockReq.EXPECT().ContactV1ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
+			mockReq.EXPECT().ContactV1AddressDelete(ctx, tt.contactID, tt.addressID).Return(tt.responseContact, nil)
 
-			res, err := h.ContactEmailDelete(ctx, tt.agent, tt.contactID, tt.emailID)
+			res, err := h.ContactAddressDelete(ctx, tt.agent, tt.contactID, tt.addressID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if !reflect.DeepEqual(tt.expectRes, res) {
+			if !reflect.DeepEqual(res, tt.expectRes) {
 				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.expectRes, res)
 			}
 		})
 	}
 }
+
+
+
+
+
+
 
 func Test_ContactTagAdd(t *testing.T) {
 

@@ -15,33 +15,33 @@ import (
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 )
 
-// Test_PhoneNumberUpdate tests updating a phone number
-func Test_PhoneNumberUpdate(t *testing.T) {
+// Test_AddressUpdate_IsPrimary tests updating the is_primary field of an address
+func Test_AddressUpdate_IsPrimary(t *testing.T) {
 	tests := []struct {
 		name    string
 		contact *contact.Contact
-		phone   *contact.PhoneNumber
+		address *contact.Address
 		update  map[string]any
 
 		responseCurTime *time.Time
 	}{
 		{
-			name: "update phone number type",
+			name: "update address is_primary",
 			contact: &contact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1"),
 					CustomerID: uuid.FromStringOrNil("a2a2a2a2-a2a2-a2a2-a2a2-a2a2a2a2a2a2"),
 				},
-				FirstName: "Phone",
+				FirstName: "Address",
 				LastName:  "Update",
 				Source:    "manual",
 			},
-			phone: &contact.PhoneNumber{
+			address: &contact.Address{
 				ID:         uuid.FromStringOrNil("a3a3a3a3-a3a3-a3a3-a3a3-a3a3a3a3a3a3"),
 				CustomerID: uuid.FromStringOrNil("a2a2a2a2-a2a2-a2a2-a2a2-a2a2a2a2a2a2"),
 				ContactID:  uuid.FromStringOrNil("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1"),
-				Number:     "+15551111111",
-				Type:       "mobile",
+				Type:       contact.AddressTypeTel,
+				Target:     "+155****1111",
 				IsPrimary:  false,
 			},
 			update: map[string]any{
@@ -73,35 +73,35 @@ func Test_PhoneNumberUpdate(t *testing.T) {
 				t.Errorf("ContactCreate() error = %v", err)
 			}
 
-			// Create phone number
+			// Create address
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.PhoneNumberCreate(ctx, tt.phone); err != nil {
-				t.Errorf("PhoneNumberCreate() error = %v", err)
+			if err := h.AddressCreate(ctx, tt.address); err != nil {
+				t.Errorf("AddressCreate() error = %v", err)
 			}
 
-			// Update phone number
+			// Update address
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.PhoneNumberUpdate(ctx, tt.phone.ID, tt.update); err != nil {
-				t.Errorf("PhoneNumberUpdate() error = %v", err)
+			if err := h.AddressUpdate(ctx, tt.address.ID, tt.update); err != nil {
+				t.Errorf("AddressUpdate() error = %v", err)
 			}
 
 			// Verify the update
-			res, err := h.PhoneNumberGet(ctx, tt.phone.ID)
+			res, err := h.AddressGet(ctx, tt.address.CustomerID, tt.address.ID)
 			if err != nil {
-				t.Errorf("PhoneNumberGet() error = %v", err)
+				t.Errorf("AddressGet() error = %v", err)
 			}
 
 			if res.IsPrimary != tt.update["is_primary"].(bool) {
-				t.Errorf("PhoneNumber IsPrimary = %v, want %v", res.IsPrimary, tt.update["is_primary"])
+				t.Errorf("Address IsPrimary = %v, want %v", res.IsPrimary, tt.update["is_primary"])
 			}
 		})
 	}
 }
 
-// Test_PhoneNumberResetPrimary tests resetting primary phone numbers
-func Test_PhoneNumberResetPrimary(t *testing.T) {
+// Test_AddressResetPrimary tests resetting primary addresses
+func Test_AddressResetPrimary(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -115,10 +115,11 @@ func Test_PhoneNumberResetPrimary(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("a4a4a4a4-a4a4-a4a4-a4a4-a4a4a4a4a4a4")
+	customerID := uuid.FromStringOrNil("a5a5a5a5-a5a5-a5a5-a5a5-a5a5a5a5a5a5")
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
 			ID:         contactID,
-			CustomerID: uuid.FromStringOrNil("a5a5a5a5-a5a5-a5a5-a5a5-a5a5a5a5a5a5"),
+			CustomerID: customerID,
 		},
 		FirstName: "Primary",
 		LastName:  "Reset",
@@ -132,50 +133,51 @@ func Test_PhoneNumberResetPrimary(t *testing.T) {
 		t.Errorf("ContactCreate() error = %v", err)
 	}
 
-	// Create two phone numbers, both primary
-	phone1 := &contact.PhoneNumber{
+	// Create primary address
+	addr1 := &contact.Address{
 		ID:         uuid.FromStringOrNil("a6a6a6a6-a6a6-a6a6-a6a6-a6a6a6a6a6a6"),
-		CustomerID: c.CustomerID,
+		CustomerID: customerID,
 		ContactID:  contactID,
-		Number:     "+15551111111",
-		Type:       "mobile",
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****1111",
 		IsPrimary:  true,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.PhoneNumberCreate(ctx, phone1); err != nil {
-		t.Errorf("PhoneNumberCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, addr1); err != nil {
+		t.Errorf("AddressCreate() error = %v", err)
 	}
 
 	// Reset primary
-	if err := h.PhoneNumberResetPrimary(ctx, contactID); err != nil {
-		t.Errorf("PhoneNumberResetPrimary() error = %v", err)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	if err := h.AddressResetPrimary(ctx, contactID); err != nil {
+		t.Errorf("AddressResetPrimary() error = %v", err)
 	}
 
 	// Verify primary is reset
-	res, err := h.PhoneNumberGet(ctx, phone1.ID)
+	res, err := h.AddressGet(ctx, customerID, addr1.ID)
 	if err != nil {
-		t.Errorf("PhoneNumberGet() error = %v", err)
+		t.Errorf("AddressGet() error = %v", err)
 	}
 
 	if res.IsPrimary {
-		t.Error("PhoneNumber should not be primary after reset")
+		t.Error("Address should not be primary after reset")
 	}
 }
 
-// Test_EmailUpdate tests updating an email
-func Test_EmailUpdate(t *testing.T) {
+// Test_AddressUpdate_Target tests updating the target field of an address
+func Test_AddressUpdate_Target(t *testing.T) {
 	tests := []struct {
 		name    string
 		contact *contact.Contact
-		email   *contact.Email
+		address *contact.Address
 		update  map[string]any
 
 		responseCurTime *time.Time
 	}{
 		{
-			name: "update email type",
+			name: "update address target and is_primary",
 			contact: &contact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("a7a7a7a7-a7a7-a7a7-a7a7-a7a7a7a7a7a7"),
@@ -185,12 +187,12 @@ func Test_EmailUpdate(t *testing.T) {
 				LastName:  "Update",
 				Source:    "manual",
 			},
-			email: &contact.Email{
+			address: &contact.Address{
 				ID:         uuid.FromStringOrNil("a9a9a9a9-a9a9-a9a9-a9a9-a9a9a9a9a9a9"),
 				CustomerID: uuid.FromStringOrNil("a8a8a8a8-a8a8-a8a8-a8a8-a8a8a8a8a8a8"),
 				ContactID:  uuid.FromStringOrNil("a7a7a7a7-a7a7-a7a7-a7a7-a7a7a7a7a7a7"),
-				Address:    "test@example.com",
-				Type:       "work",
+				Type:       contact.AddressTypeEmail,
+				Target:     "old@example.com",
 				IsPrimary:  false,
 			},
 			update: map[string]any{
@@ -222,35 +224,35 @@ func Test_EmailUpdate(t *testing.T) {
 				t.Errorf("ContactCreate() error = %v", err)
 			}
 
-			// Create email
+			// Create address
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.EmailCreate(ctx, tt.email); err != nil {
-				t.Errorf("EmailCreate() error = %v", err)
+			if err := h.AddressCreate(ctx, tt.address); err != nil {
+				t.Errorf("AddressCreate() error = %v", err)
 			}
 
-			// Update email
+			// Update address
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.EmailUpdate(ctx, tt.email.ID, tt.update); err != nil {
-				t.Errorf("EmailUpdate() error = %v", err)
+			if err := h.AddressUpdate(ctx, tt.address.ID, tt.update); err != nil {
+				t.Errorf("AddressUpdate() error = %v", err)
 			}
 
 			// Verify the update
-			res, err := h.EmailGet(ctx, tt.email.ID)
+			res, err := h.AddressGet(ctx, tt.address.CustomerID, tt.address.ID)
 			if err != nil {
-				t.Errorf("EmailGet() error = %v", err)
+				t.Errorf("AddressGet() error = %v", err)
 			}
 
 			if res.IsPrimary != tt.update["is_primary"].(bool) {
-				t.Errorf("Email IsPrimary = %v, want %v", res.IsPrimary, tt.update["is_primary"])
+				t.Errorf("Address IsPrimary = %v, want %v", res.IsPrimary, tt.update["is_primary"])
 			}
 		})
 	}
 }
 
-// Test_EmailResetPrimary tests resetting primary emails
-func Test_EmailResetPrimary(t *testing.T) {
+// Test_AddressResetPrimary_Email tests resetting primary email-type addresses
+func Test_AddressResetPrimary_Email(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -264,10 +266,11 @@ func Test_EmailResetPrimary(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa1")
+	customerID := uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2")
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
 			ID:         contactID,
-			CustomerID: uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa2"),
+			CustomerID: customerID,
 		},
 		FirstName: "Email",
 		LastName:  "Reset",
@@ -281,40 +284,41 @@ func Test_EmailResetPrimary(t *testing.T) {
 		t.Errorf("ContactCreate() error = %v", err)
 	}
 
-	// Create email with primary
-	email1 := &contact.Email{
+	// Create email address with primary
+	addr1 := &contact.Address{
 		ID:         uuid.FromStringOrNil("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaa3"),
-		CustomerID: c.CustomerID,
+		CustomerID: customerID,
 		ContactID:  contactID,
-		Address:    "primary@example.com",
-		Type:       "work",
+		Type:       contact.AddressTypeEmail,
+		Target:     "primary@example.com",
 		IsPrimary:  true,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.EmailCreate(ctx, email1); err != nil {
-		t.Errorf("EmailCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, addr1); err != nil {
+		t.Errorf("AddressCreate() error = %v", err)
 	}
 
 	// Reset primary
-	if err := h.EmailResetPrimary(ctx, contactID); err != nil {
-		t.Errorf("EmailResetPrimary() error = %v", err)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	if err := h.AddressResetPrimary(ctx, contactID); err != nil {
+		t.Errorf("AddressResetPrimary() error = %v", err)
 	}
 
 	// Verify primary is reset
-	res, err := h.EmailGet(ctx, email1.ID)
+	res, err := h.AddressGet(ctx, customerID, addr1.ID)
 	if err != nil {
-		t.Errorf("EmailGet() error = %v", err)
+		t.Errorf("AddressGet() error = %v", err)
 	}
 
 	if res.IsPrimary {
-		t.Error("Email should not be primary after reset")
+		t.Error("Email address should not be primary after reset")
 	}
 }
 
-// Test_PhoneNumberGet_NotFound tests getting a non-existent phone number
-func Test_PhoneNumberGet_NotFound(t *testing.T) {
+// Test_AddressGet_NotFound tests getting a non-existent address (tel type)
+func Test_AddressGet_NotFound_Tel(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -327,16 +331,17 @@ func Test_PhoneNumberGet_NotFound(t *testing.T) {
 	}
 	ctx := context.Background()
 
+	customerID := uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb0")
 	nonExistentID := uuid.FromStringOrNil("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb1")
 
-	_, err := h.PhoneNumberGet(ctx, nonExistentID)
+	_, err := h.AddressGet(ctx, customerID, nonExistentID)
 	if err != ErrNotFound {
-		t.Errorf("PhoneNumberGet() expected ErrNotFound, got: %v", err)
+		t.Errorf("AddressGet() expected ErrNotFound, got: %v", err)
 	}
 }
 
-// Test_EmailGet_NotFound tests getting a non-existent email
-func Test_EmailGet_NotFound(t *testing.T) {
+// Test_AddressGet_NotFound_Email tests getting a non-existent address (email type)
+func Test_AddressGet_NotFound_Email(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -349,16 +354,17 @@ func Test_EmailGet_NotFound(t *testing.T) {
 	}
 	ctx := context.Background()
 
+	customerID := uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-ccccccccccc0")
 	nonExistentID := uuid.FromStringOrNil("cccccccc-cccc-cccc-cccc-ccccccccccc1")
 
-	_, err := h.EmailGet(ctx, nonExistentID)
+	_, err := h.AddressGet(ctx, customerID, nonExistentID)
 	if err != ErrNotFound {
-		t.Errorf("EmailGet() expected ErrNotFound, got: %v", err)
+		t.Errorf("AddressGet() expected ErrNotFound, got: %v", err)
 	}
 }
 
-// Test_PhoneNumberUpdate_MultipleFields tests updating multiple phone number fields at once
-func Test_PhoneNumberUpdate_MultipleFields(t *testing.T) {
+// Test_AddressUpdate_MultipleFields tests updating multiple address fields at once
+func Test_AddressUpdate_MultipleFields(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -372,10 +378,11 @@ func Test_PhoneNumberUpdate_MultipleFields(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-ddddddddddd1")
+	customerID := uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-ddddddddddd2")
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
 			ID:         contactID,
-			CustomerID: uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-ddddddddddd2"),
+			CustomerID: customerID,
 		},
 		FirstName: "Multi",
 		LastName:  "Update",
@@ -389,47 +396,50 @@ func Test_PhoneNumberUpdate_MultipleFields(t *testing.T) {
 		t.Errorf("ContactCreate() error = %v", err)
 	}
 
-	// Create phone
-	phone := &contact.PhoneNumber{
+	// Create address
+	addr := &contact.Address{
 		ID:         uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-ddddddddddd3"),
-		CustomerID: c.CustomerID,
+		CustomerID: customerID,
 		ContactID:  contactID,
-		Number:     "+15551111111",
-		Type:       "mobile",
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****1111",
 		IsPrimary:  false,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.PhoneNumberCreate(ctx, phone); err != nil {
-		t.Errorf("PhoneNumberCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, addr); err != nil {
+		t.Errorf("AddressCreate() error = %v", err)
 	}
 
-	// Update multiple fields
+	// Update multiple fields (target + is_primary)
 	updates := map[string]any{
-		"type":       "work",
+		"target":     "+155****9999",
 		"is_primary": true,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.PhoneNumberUpdate(ctx, phone.ID, updates); err != nil {
-		t.Errorf("PhoneNumberUpdate() error = %v", err)
+	if err := h.AddressUpdate(ctx, addr.ID, updates); err != nil {
+		t.Errorf("AddressUpdate() error = %v", err)
 	}
 
 	// Verify updates
-	res, err := h.PhoneNumberGet(ctx, phone.ID)
+	res, err := h.AddressGet(ctx, customerID, addr.ID)
 	if err != nil {
-		t.Errorf("PhoneNumberGet() error = %v", err)
+		t.Errorf("AddressGet() error = %v", err)
 	}
 
 	if !res.IsPrimary {
-		t.Error("PhoneNumber IsPrimary should be true")
+		t.Error("Address IsPrimary should be true")
+	}
+	if res.Target != "+155****9999" {
+		t.Errorf("Address Target = %v, want +155****9999", res.Target)
 	}
 }
 
-// Test_EmailUpdate_MultipleFields tests updating multiple email fields at once
-func Test_EmailUpdate_MultipleFields(t *testing.T) {
+// Test_AddressUpdate_EmailTarget tests updating an email address's target field
+func Test_AddressUpdate_EmailTarget(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -443,10 +453,11 @@ func Test_EmailUpdate_MultipleFields(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee1")
+	customerID := uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee2")
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
 			ID:         contactID,
-			CustomerID: uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee2"),
+			CustomerID: customerID,
 		},
 		FirstName: "Multi",
 		LastName:  "Email",
@@ -460,45 +471,45 @@ func Test_EmailUpdate_MultipleFields(t *testing.T) {
 		t.Errorf("ContactCreate() error = %v", err)
 	}
 
-	// Create email
-	email := &contact.Email{
+	// Create email address
+	addr := &contact.Address{
 		ID:         uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeee3"),
-		CustomerID: c.CustomerID,
+		CustomerID: customerID,
 		ContactID:  contactID,
-		Address:    "old@example.com",
-		Type:       "work",
+		Type:       contact.AddressTypeEmail,
+		Target:     "old@example.com",
 		IsPrimary:  false,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.EmailCreate(ctx, email); err != nil {
-		t.Errorf("EmailCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, addr); err != nil {
+		t.Errorf("AddressCreate() error = %v", err)
 	}
 
 	// Update multiple fields
 	updates := map[string]any{
-		"address":    "new@example.com",
-		"type":       "personal",
+		"target":     "new@example.com",
 		"is_primary": true,
 	}
 
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.EmailUpdate(ctx, email.ID, updates); err != nil {
-		t.Errorf("EmailUpdate() error = %v", err)
+	if err := h.AddressUpdate(ctx, addr.ID, updates); err != nil {
+		t.Errorf("AddressUpdate() error = %v", err)
 	}
 
 	// Verify updates
-	res, err := h.EmailGet(ctx, email.ID)
+	res, err := h.AddressGet(ctx, customerID, addr.ID)
 	if err != nil {
-		t.Errorf("EmailGet() error = %v", err)
+		t.Errorf("AddressGet() error = %v", err)
 	}
 
-	if res.Address != "new@example.com" {
-		t.Errorf("Email Address = %v, want new@example.com", res.Address)
+	if res.Target != "new@example.com" {
+		t.Errorf("Address Target = %v, want new@example.com", res.Target)
 	}
+
 	if !res.IsPrimary {
-		t.Error("Email IsPrimary should be true")
+		t.Error("Address IsPrimary should be true")
 	}
 }

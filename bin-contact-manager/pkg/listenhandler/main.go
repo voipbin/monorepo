@@ -49,13 +49,9 @@ var (
 	regV1ContactsID     = regexp.MustCompile("/v1/contacts/" + regUUID + "$")
 	regV1ContactsLookup = regexp.MustCompile(`/v1/contacts/lookup\?(.*)$`)
 
-	// v1 contacts/{id}/phone-numbers
-	regV1ContactsPhoneNumbers   = regexp.MustCompile("/v1/contacts/" + regUUID + "/phone-numbers$")
-	regV1ContactsPhoneNumbersID = regexp.MustCompile("/v1/contacts/" + regUUID + "/phone-numbers/" + regUUID + "$")
-
-	// v1 contacts/{id}/emails
-	regV1ContactsEmails   = regexp.MustCompile("/v1/contacts/" + regUUID + "/emails$")
-	regV1ContactsEmailsID = regexp.MustCompile("/v1/contacts/" + regUUID + "/emails/" + regUUID + "$")
+	// v1 contacts/{id}/addresses
+	regV1ContactsAddresses   = regexp.MustCompile("/v1/contacts/" + regUUID + "/addresses$")
+	regV1ContactsAddressesID = regexp.MustCompile("/v1/contacts/" + regUUID + "/addresses/" + regUUID + "$")
 
 	// v1 contacts/{id}/tags
 	regV1ContactsTags   = regexp.MustCompile("/v1/contacts/" + regUUID + "/tags$")
@@ -208,42 +204,28 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 		requestType = "/v1/contacts/{id}"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
-	// v1 Contacts Phone Numbers
+	// v1 Contacts Addresses
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// POST /contacts/{id}/phone-numbers
-	case regV1ContactsPhoneNumbers.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1ContactsPhoneNumbersPost(ctx, m)
-		requestType = "/v1/contacts/{id}/phone-numbers"
+	// GET /contacts/{id}/addresses
+	case regV1ContactsAddresses.MatchString(m.URI) && m.Method == sock.RequestMethodGet:
+		response, err = h.processV1ContactsAddressesGet(ctx, m)
+		requestType = "/v1/contacts/{id}/addresses"
 
-	// PUT /contacts/{id}/phone-numbers/{phone_id}
-	case regV1ContactsPhoneNumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
-		response, err = h.processV1ContactsPhoneNumbersIDPut(ctx, m)
-		requestType = "/v1/contacts/{id}/phone-numbers/{phone_id}"
+	// POST /contacts/{id}/addresses
+	case regV1ContactsAddresses.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ContactsAddressesPost(ctx, m)
+		requestType = "/v1/contacts/{id}/addresses"
 
-	// DELETE /contacts/{id}/phone-numbers/{phone_id}
-	case regV1ContactsPhoneNumbersID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-		response, err = h.processV1ContactsPhoneNumbersIDDelete(ctx, m)
-		requestType = "/v1/contacts/{id}/phone-numbers/{phone_id}"
+	// PUT /contacts/{id}/addresses/{address_id}
+	case regV1ContactsAddressesID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
+		response, err = h.processV1ContactsAddressesIDPut(ctx, m)
+		requestType = "/v1/contacts/{id}/addresses/{address_id}"
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-	// v1 Contacts Emails
-	/////////////////////////////////////////////////////////////////////////////////////////////////
-
-	// POST /contacts/{id}/emails
-	case regV1ContactsEmails.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
-		response, err = h.processV1ContactsEmailsPost(ctx, m)
-		requestType = "/v1/contacts/{id}/emails"
-
-	// PUT /contacts/{id}/emails/{email_id}
-	case regV1ContactsEmailsID.MatchString(m.URI) && m.Method == sock.RequestMethodPut:
-		response, err = h.processV1ContactsEmailsIDPut(ctx, m)
-		requestType = "/v1/contacts/{id}/emails/{email_id}"
-
-	// DELETE /contacts/{id}/emails/{email_id}
-	case regV1ContactsEmailsID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
-		response, err = h.processV1ContactsEmailsIDDelete(ctx, m)
-		requestType = "/v1/contacts/{id}/emails/{email_id}"
+	// DELETE /contacts/{id}/addresses/{address_id}
+	case regV1ContactsAddressesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
+		response, err = h.processV1ContactsAddressesIDDelete(ctx, m)
+		requestType = "/v1/contacts/{id}/addresses/{address_id}"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1 Contacts Tags

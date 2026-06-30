@@ -30,21 +30,13 @@ type DBHandler interface {
 	ContactLookupByEmail(ctx context.Context, customerID uuid.UUID, email string) (*contact.Contact, error)
 	ContactDeleteByCustomerID(ctx context.Context, customerID uuid.UUID) error
 
-	// PhoneNumber operations
-	PhoneNumberCreate(ctx context.Context, p *contact.PhoneNumber) error
-	PhoneNumberUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error
-	PhoneNumberDelete(ctx context.Context, id uuid.UUID) error
-	PhoneNumberListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.PhoneNumber, error)
-	PhoneNumberResetPrimary(ctx context.Context, contactID uuid.UUID) error
-	PhoneNumberGet(ctx context.Context, id uuid.UUID) (*contact.PhoneNumber, error)
-
-	// Email operations
-	EmailCreate(ctx context.Context, e *contact.Email) error
-	EmailUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error
-	EmailDelete(ctx context.Context, id uuid.UUID) error
-	EmailListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Email, error)
-	EmailResetPrimary(ctx context.Context, contactID uuid.UUID) error
-	EmailGet(ctx context.Context, id uuid.UUID) (*contact.Email, error)
+	// Address operations
+	AddressCreate(ctx context.Context, a *contact.Address) error
+	AddressGet(ctx context.Context, customerID, id uuid.UUID) (*contact.Address, error)
+	AddressListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error)
+	AddressUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error
+	AddressDelete(ctx context.Context, id uuid.UUID) error
+	AddressResetPrimary(ctx context.Context, contactID uuid.UUID) error
 
 	// TagAssignment operations
 	TagAssignmentCreate(ctx context.Context, contactID, tagID uuid.UUID) error
@@ -57,10 +49,6 @@ type DBHandler interface {
 	InteractionList(ctx context.Context, customerID uuid.UUID, size uint64, token string, peerType, peerTarget string, addressSet []AddressPair) ([]*interaction.Interaction, error)
 	InteractionListByIDs(ctx context.Context, customerID uuid.UUID, ids []uuid.UUID) ([]*interaction.Interaction, error)
 	InteractionListUnresolved(ctx context.Context, customerID uuid.UUID, size uint64, token string, since time.Time) ([]*interaction.Interaction, error)
-
-	// Address operations
-	AddressListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]AddressPair, error)
-	AddressGetByID(ctx context.Context, customerID, id uuid.UUID) (AddressPair, error)
 
 	// Resolution operations
 	ResolutionCreate(ctx context.Context, r *resolution.Resolution) error
@@ -80,7 +68,6 @@ type handler struct {
 var (
 	ErrNotFound = fmt.Errorf("record not found")
 )
-
 
 // NewHandler creates DBHandler
 func NewHandler(db *sql.DB, cache cachehandler.CacheHandler) DBHandler {

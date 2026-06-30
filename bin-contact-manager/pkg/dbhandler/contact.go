@@ -71,8 +71,7 @@ func (h *handler) contactUpdateToCache(ctx context.Context, id uuid.UUID) error 
 	}
 
 	// load related data
-	res.PhoneNumbers, _ = h.PhoneNumberListByContactID(ctx, id)
-	res.Emails, _ = h.EmailListByContactID(ctx, id)
+	res.Addresses, _ = h.AddressListByContactID(ctx, id)
 	res.TagIDs, _ = h.TagAssignmentListByContactID(ctx, id)
 
 	if err := h.contactSetToCache(ctx, res); err != nil {
@@ -149,8 +148,7 @@ func (h *handler) ContactGet(ctx context.Context, id uuid.UUID) (*contact.Contac
 	}
 
 	// load related data
-	res.PhoneNumbers, _ = h.PhoneNumberListByContactID(ctx, id)
-	res.Emails, _ = h.EmailListByContactID(ctx, id)
+	res.Addresses, _ = h.AddressListByContactID(ctx, id)
 	res.TagIDs, _ = h.TagAssignmentListByContactID(ctx, id)
 
 	// Set to cache only for active contacts. A soft-deleted contact is still
@@ -231,8 +229,7 @@ func (h *handler) ContactList(ctx context.Context, size uint64, token string, fi
 
 	// load related data for each contact
 	for _, c := range res {
-		c.PhoneNumbers, _ = h.PhoneNumberListByContactID(ctx, c.ID)
-		c.Emails, _ = h.EmailListByContactID(ctx, c.ID)
+		c.Addresses, _ = h.AddressListByContactID(ctx, c.ID)
 		c.TagIDs, _ = h.TagAssignmentListByContactID(ctx, c.ID)
 	}
 

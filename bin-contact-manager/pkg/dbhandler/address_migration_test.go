@@ -19,12 +19,11 @@ import (
 //
 // The unified contact_addresses table enforces one-primary-per-contact across
 // BOTH tel and email types via UNIQUE(customer_id, primary_contact_uk). The
-// handler path (AddPhoneNumber/AddEmail) calls PhoneNumberResetPrimary /
-// EmailResetPrimary before inserting a new primary, and both delegate to
-// addressResetPrimaryForContact, which demotes every existing primary of either
-// type. This test exercises that path end-to-end against the sqlite test DB:
-// after adding a primary phone and then a primary email, the phone must be
-// demoted so the email is the sole primary.
+// handler path (AddressCreate with is_primary=true) should call AddressResetPrimary
+// before inserting a new primary (this is done in contacthandler, not dbhandler).
+// This test verifies the cross-type single-primary invariant end-to-end:
+// after adding a primary tel address and resetting, then adding an email address,
+// only the email should be primary.
 func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
@@ -58,64 +57,71 @@ func Test_AddressMigration_CrossTypeSinglePrimary(t *testing.T) {
 		t.Fatalf("ContactCreate() error = %v", err)
 	}
 
-	// Handler path for AddPhoneNumber(primary): reset existing primaries, then create.
-	if err := h.PhoneNumberResetPrimary(ctx, contactID); err != nil {
-		t.Fatalf("PhoneNumberResetPrimary() error = %v", err)
+	// Handler path for adding a primary tel address:
+	// reset existing primaries (no-op here, no existing addresses), then create.
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	if err := h.AddressResetPrimary(ctx, contactID); err != nil {
+		t.Fatalf("AddressResetPrimary() error = %v", err)
 	}
-	phone := &contact.PhoneNumber{
+
+	telAddr := &contact.Address{
 		ID:         uuid.FromStringOrNil("c1c1c1c1-0003-0003-0003-000000000003"),
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Number:     "+155****1111",
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****1111",
 		IsPrimary:  true,
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.PhoneNumberCreate(ctx, phone); err != nil {
-		t.Fatalf("PhoneNumberCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, telAddr); err != nil {
+		t.Fatalf("AddressCreate(tel) error = %v", err)
 	}
 
-	// Phone should be primary at this point.
-	gotPhone, err := h.PhoneNumberGet(ctx, phone.ID)
+	// Tel address should be primary at this point.
+	gotTel, err := h.AddressGet(ctx, customerID, telAddr.ID)
 	if err != nil {
-		t.Fatalf("PhoneNumberGet() error = %v", err)
+		t.Fatalf("AddressGet(tel) error = %v", err)
 	}
-	if !gotPhone.IsPrimary {
-		t.Fatalf("expected the phone to be primary after creation")
+	if !gotTel.IsPrimary {
+		t.Fatalf("expected the tel address to be primary after creation")
 	}
 
-	// Handler path for AddEmail(primary): reset existing primaries (cross-type),
-	// which must demote the phone, then create the primary email.
-	if err := h.EmailResetPrimary(ctx, contactID); err != nil {
-		t.Fatalf("EmailResetPrimary() error = %v", err)
+	// Handler path for adding a primary email address:
+	// reset existing primaries (cross-type, must demote the tel), then create.
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	if err := h.AddressResetPrimary(ctx, contactID); err != nil {
+		t.Fatalf("AddressResetPrimary() error = %v", err)
 	}
-	email := &contact.Email{
+
+	emailAddr := &contact.Address{
 		ID:         uuid.FromStringOrNil("c1c1c1c1-0004-0004-0004-000000000004"),
 		CustomerID: customerID,
 		ContactID:  contactID,
-		Address:    "primary@example.com",
+		Type:       contact.AddressTypeEmail,
+		Target:     "primary@example.com",
 		IsPrimary:  true,
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.EmailCreate(ctx, email); err != nil {
-		t.Fatalf("EmailCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, emailAddr); err != nil {
+		t.Fatalf("AddressCreate(email) error = %v", err)
 	}
 
-	// Assert cross-type single primary: the phone must be demoted, the email primary.
-	gotPhone, err = h.PhoneNumberGet(ctx, phone.ID)
+	// Assert cross-type single primary: the tel must be demoted, the email primary.
+	gotTel, err = h.AddressGet(ctx, customerID, telAddr.ID)
 	if err != nil {
-		t.Fatalf("PhoneNumberGet() error = %v", err)
+		t.Fatalf("AddressGet(tel) error = %v", err)
 	}
-	if gotPhone.IsPrimary {
-		t.Errorf("expected the phone to be demoted after adding a primary email, but it is still primary")
+	if gotTel.IsPrimary {
+		t.Errorf("expected the tel address to be demoted after adding a primary email, but it is still primary")
 	}
 
-	gotEmail, err := h.EmailGet(ctx, email.ID)
+	gotEmail, err := h.AddressGet(ctx, customerID, emailAddr.ID)
 	if err != nil {
-		t.Fatalf("EmailGet() error = %v", err)
+		t.Fatalf("AddressGet(email) error = %v", err)
 	}
 	if !gotEmail.IsPrimary {
-		t.Errorf("expected the email to be primary, but it is not")
+		t.Errorf("expected the email address to be primary, but it is not")
 	}
 }

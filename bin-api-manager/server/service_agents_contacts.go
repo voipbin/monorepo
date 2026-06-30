@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 	"github.com/sirupsen/logrus"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 func (h *server) GetServiceAgentsContacts(c *gin.Context, params openapi_server.GetServiceAgentsContactsParams) {
@@ -127,37 +128,33 @@ func (h *server) PostServiceAgentsContacts(c *gin.Context) {
 		notes = *req.Notes
 	}
 
-	phoneNumbers := []cmrequest.PhoneNumberCreate{}
+	addresses := []cmrequest.AddressCreate{}
 	if req.PhoneNumbers != nil {
 		for _, v := range *req.PhoneNumbers {
-			pn := cmrequest.PhoneNumberCreate{}
-			if v.Number != nil {
-				pn.Number = *v.Number
+			addr := cmrequest.AddressCreate{
+				Type: "tel",
 			}
-			if v.Type != nil {
-				pn.Type = string(*v.Type)
+			if v.Number != nil {
+				addr.Target = *v.Number
 			}
 			if v.IsPrimary != nil {
-				pn.IsPrimary = *v.IsPrimary
+				addr.IsPrimary = *v.IsPrimary
 			}
-			phoneNumbers = append(phoneNumbers, pn)
+			addresses = append(addresses, addr)
 		}
 	}
-
-	emails := []cmrequest.EmailCreate{}
 	if req.Emails != nil {
 		for _, v := range *req.Emails {
-			e := cmrequest.EmailCreate{}
-			if v.Address != nil {
-				e.Address = string(*v.Address)
+			addr := cmrequest.AddressCreate{
+				Type: "email",
 			}
-			if v.Type != nil {
-				e.Type = string(*v.Type)
+			if v.Address != nil {
+				addr.Target = string(*v.Address)
 			}
 			if v.IsPrimary != nil {
-				e.IsPrimary = *v.IsPrimary
+				addr.IsPrimary = *v.IsPrimary
 			}
-			emails = append(emails, e)
+			addresses = append(addresses, addr)
 		}
 	}
 
@@ -179,8 +176,7 @@ func (h *server) PostServiceAgentsContacts(c *gin.Context) {
 		source,
 		externalID,
 		notes,
-		phoneNumbers,
-		emails,
+		addresses,
 		tagIDs,
 	)
 	if err != nil {
@@ -354,9 +350,9 @@ func (h *server) GetServiceAgentsContactsLookup(c *gin.Context, params openapi_s
 	c.JSON(200, res)
 }
 
-func (h *server) PostServiceAgentsContactsIdPhoneNumbers(c *gin.Context, id string) {
+func (h *server) PostServiceAgentsContactsIdAddresses(c *gin.Context, id openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PostServiceAgentsContactsIdPhoneNumbers",
+		"func":            "PostServiceAgentsContactsIdAddresses",
 		"request_address": c.ClientIP,
 	})
 
@@ -370,23 +366,13 @@ func (h *server) PostServiceAgentsContactsIdPhoneNumbers(c *gin.Context, id stri
 		"agent": a,
 	})
 
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
-		return
-	}
+	contactID := uuid.UUID(id)
 
-	var req openapi_server.PostServiceAgentsContactsIdPhoneNumbersJSONBody
+	var req openapi_server.PostServiceAgentsContactsIdAddressesJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
 		return
-	}
-
-	phoneType := ""
-	if req.Type != nil {
-		phoneType = string(*req.Type)
 	}
 
 	isPrimary := false
@@ -394,19 +380,19 @@ func (h *server) PostServiceAgentsContactsIdPhoneNumbers(c *gin.Context, id stri
 		isPrimary = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberCreate(c.Request.Context(), a, target, req.Number, phoneType, isPrimary)
+	res, err := h.serviceHandler.ServiceAgentContactAddressCreate(c.Request.Context(), a, contactID, string(req.Type), req.Target, isPrimary)
 	if err != nil {
-		log.Errorf("Could not add phone number to contact. err: %v", err)
+		log.Errorf("Could not add address to contact. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}
 
-	c.JSON(201, res)
+	c.JSON(200, res)
 }
 
-func (h *server) PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id string, phoneNumberId string) {
+func (h *server) PutServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressId openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId",
+		"func":            "PutServiceAgentsContactsIdAddressesAddressId",
 		"request_address": c.ClientIP,
 	})
 
@@ -420,21 +406,10 @@ func (h *server) PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.Cont
 		"agent": a,
 	})
 
-	contactID := uuid.FromStringOrNil(id)
-	if contactID == uuid.Nil {
-		log.Error("Could not parse the contact id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
-		return
-	}
+	contactID := uuid.UUID(id)
+	addrID := uuid.UUID(addressId)
 
-	phoneNumID := uuid.FromStringOrNil(phoneNumberId)
-	if phoneNumID == uuid.Nil {
-		log.Error("Could not parse the phone number id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided phone_number_id is not a valid UUID."))
-		return
-	}
-
-	var req openapi_server.PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBody
+	var req openapi_server.PutServiceAgentsContactsIdAddressesAddressIdJSONBody
 	if err := c.BindJSON(&req); err != nil {
 		log.Errorf("Could not parse the request. err: %v", err)
 		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
@@ -442,19 +417,16 @@ func (h *server) PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.Cont
 	}
 
 	fields := make(map[string]any)
-	if req.Number != nil {
-		fields["number"] = *req.Number
-	}
-	if req.Type != nil {
-		fields["type"] = string(*req.Type)
+	if req.Target != nil {
+		fields["target"] = *req.Target
 	}
 	if req.IsPrimary != nil {
 		fields["is_primary"] = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberUpdate(c.Request.Context(), a, contactID, phoneNumID, fields)
+	res, err := h.serviceHandler.ServiceAgentContactAddressUpdate(c.Request.Context(), a, contactID, addrID, fields)
 	if err != nil {
-		log.Errorf("Could not update phone number on contact. err: %v", err)
+		log.Errorf("Could not update address on contact. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}
@@ -462,9 +434,9 @@ func (h *server) PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.Cont
 	c.JSON(200, res)
 }
 
-func (h *server) DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.Context, id string, phoneNumberId string) {
+func (h *server) DeleteServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id openapi_types.UUID, addressId openapi_types.UUID) {
 	log := logrus.WithFields(logrus.Fields{
-		"func":            "DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId",
+		"func":            "DeleteServiceAgentsContactsIdAddressesAddressId",
 		"request_address": c.ClientIP,
 	})
 
@@ -478,171 +450,12 @@ func (h *server) DeleteServiceAgentsContactsIdPhoneNumbersPhoneNumberId(c *gin.C
 		"agent": a,
 	})
 
-	contactID := uuid.FromStringOrNil(id)
-	if contactID == uuid.Nil {
-		log.Error("Could not parse the contact id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
-		return
-	}
+	contactID := uuid.UUID(id)
+	addrID := uuid.UUID(addressId)
 
-	phoneNumID := uuid.FromStringOrNil(phoneNumberId)
-	if phoneNumID == uuid.Nil {
-		log.Error("Could not parse the phone number id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided phone_number_id is not a valid UUID."))
-		return
-	}
-
-	res, err := h.serviceHandler.ServiceAgentContactPhoneNumberDelete(c.Request.Context(), a, contactID, phoneNumID)
+	res, err := h.serviceHandler.ServiceAgentContactAddressDelete(c.Request.Context(), a, contactID, addrID)
 	if err != nil {
-		log.Infof("Could not delete phone number from contact. err: %v", err)
-		abortWithServiceError(c, err)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) PostServiceAgentsContactsIdEmails(c *gin.Context, id string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PostServiceAgentsContactsIdEmails",
-		"request_address": c.ClientIP,
-	})
-
-	a, ok := getAuthIdentity(c)
-	if !ok {
-		log.Errorf("Could not find auth identity.")
-		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
-		return
-	}
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	target := uuid.FromStringOrNil(id)
-	if target == uuid.Nil {
-		log.Error("Could not parse the id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
-		return
-	}
-
-	var req openapi_server.PostServiceAgentsContactsIdEmailsJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
-		return
-	}
-
-	emailType := ""
-	if req.Type != nil {
-		emailType = string(*req.Type)
-	}
-
-	isPrimary := false
-	if req.IsPrimary != nil {
-		isPrimary = *req.IsPrimary
-	}
-
-	res, err := h.serviceHandler.ServiceAgentContactEmailCreate(c.Request.Context(), a, target, string(req.Address), emailType, isPrimary)
-	if err != nil {
-		log.Errorf("Could not add email to contact. err: %v", err)
-		abortWithServiceError(c, err)
-		return
-	}
-
-	c.JSON(201, res)
-}
-
-func (h *server) PutServiceAgentsContactsIdEmailsEmailId(c *gin.Context, id string, emailId string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "PutServiceAgentsContactsIdEmailsEmailId",
-		"request_address": c.ClientIP,
-	})
-
-	a, ok := getAuthIdentity(c)
-	if !ok {
-		log.Errorf("Could not find auth identity.")
-		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
-		return
-	}
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	contactID := uuid.FromStringOrNil(id)
-	if contactID == uuid.Nil {
-		log.Error("Could not parse the contact id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
-		return
-	}
-
-	emlID := uuid.FromStringOrNil(emailId)
-	if emlID == uuid.Nil {
-		log.Error("Could not parse the email id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided email_id is not a valid UUID."))
-		return
-	}
-
-	var req openapi_server.PutServiceAgentsContactsIdEmailsEmailIdJSONBody
-	if err := c.BindJSON(&req); err != nil {
-		log.Errorf("Could not parse the request. err: %v", err)
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_JSON_BODY", "The request body is not valid JSON.").Wrap(err))
-		return
-	}
-
-	fields := make(map[string]any)
-	if req.Address != nil {
-		fields["address"] = string(*req.Address)
-	}
-	if req.Type != nil {
-		fields["type"] = string(*req.Type)
-	}
-	if req.IsPrimary != nil {
-		fields["is_primary"] = *req.IsPrimary
-	}
-
-	res, err := h.serviceHandler.ServiceAgentContactEmailUpdate(c.Request.Context(), a, contactID, emlID, fields)
-	if err != nil {
-		log.Errorf("Could not update email on contact. err: %v", err)
-		abortWithServiceError(c, err)
-		return
-	}
-
-	c.JSON(200, res)
-}
-
-func (h *server) DeleteServiceAgentsContactsIdEmailsEmailId(c *gin.Context, id string, emailId string) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":            "DeleteServiceAgentsContactsIdEmailsEmailId",
-		"request_address": c.ClientIP,
-	})
-
-	a, ok := getAuthIdentity(c)
-	if !ok {
-		log.Errorf("Could not find auth identity.")
-		abortWithError(c, cerrors.Unauthenticated(commonoutline.ServiceNameAPIManager, "AUTHENTICATION_REQUIRED", "Authentication is required."))
-		return
-	}
-	log = log.WithFields(logrus.Fields{
-		"agent": a,
-	})
-
-	contactID := uuid.FromStringOrNil(id)
-	if contactID == uuid.Nil {
-		log.Error("Could not parse the contact id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided id is not a valid UUID."))
-		return
-	}
-
-	emlID := uuid.FromStringOrNil(emailId)
-	if emlID == uuid.Nil {
-		log.Error("Could not parse the email id.")
-		abortWithError(c, cerrors.InvalidArgument(commonoutline.ServiceNameAPIManager, "INVALID_ID", "The provided email_id is not a valid UUID."))
-		return
-	}
-
-	res, err := h.serviceHandler.ServiceAgentContactEmailDelete(c.Request.Context(), a, contactID, emlID)
-	if err != nil {
-		log.Infof("Could not delete email from contact. err: %v", err)
+		log.Infof("Could not delete address from contact. err: %v", err)
 		abortWithServiceError(c, err)
 		return
 	}

@@ -85,14 +85,10 @@ type Contact struct {
 	// on create. They are stored in separate database tables.
 	// -------------------------------------------------------------------------
 
-	// PhoneNumbers contains all phone numbers associated with this contact.
-	// A contact can have multiple phone numbers (mobile, work, home, etc.).
-	// Phone numbers support E.164 normalization for reliable lookup.
-	PhoneNumbers []PhoneNumber `json:"phone_numbers,omitempty" db:"-"`
-
-	// Emails contains all email addresses associated with this contact.
-	// A contact can have multiple email addresses (work, personal, etc.).
-	Emails []Email `json:"emails,omitempty" db:"-"`
+	// Addresses contains all addresses (phone numbers and emails) associated
+	// with this contact. Each address has a Type field ("tel" or "email") and
+	// a Target field (E.164 number or lowercase email address).
+	Addresses []Address `json:"addresses,omitempty" db:"-"`
 
 	// TagIDs contains the IDs of tags assigned to this contact.
 	// Tags are managed by bin-tag-manager and referenced here by ID.

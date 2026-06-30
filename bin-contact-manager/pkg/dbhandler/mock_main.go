@@ -45,34 +45,90 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
-// AddressGetByID mocks base method.
-func (m *MockDBHandler) AddressGetByID(ctx context.Context, customerID, id uuid.UUID) (AddressPair, error) {
+// AddressCreate mocks base method.
+func (m *MockDBHandler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddressGetByID", ctx, customerID, id)
-	ret0, _ := ret[0].(AddressPair)
+	ret := m.ctrl.Call(m, "AddressCreate", ctx, a)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressCreate indicates an expected call of AddressCreate.
+func (mr *MockDBHandlerMockRecorder) AddressCreate(ctx, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressCreate", reflect.TypeOf((*MockDBHandler)(nil).AddressCreate), ctx, a)
+}
+
+// AddressDelete mocks base method.
+func (m *MockDBHandler) AddressDelete(ctx context.Context, id uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressDelete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressDelete indicates an expected call of AddressDelete.
+func (mr *MockDBHandlerMockRecorder) AddressDelete(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressDelete", reflect.TypeOf((*MockDBHandler)(nil).AddressDelete), ctx, id)
+}
+
+// AddressGet mocks base method.
+func (m *MockDBHandler) AddressGet(ctx context.Context, customerID, id uuid.UUID) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressGet", ctx, customerID, id)
+	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AddressGetByID indicates an expected call of AddressGetByID.
-func (mr *MockDBHandlerMockRecorder) AddressGetByID(ctx, customerID, id any) *gomock.Call {
+// AddressGet indicates an expected call of AddressGet.
+func (mr *MockDBHandlerMockRecorder) AddressGet(ctx, customerID, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressGetByID", reflect.TypeOf((*MockDBHandler)(nil).AddressGetByID), ctx, customerID, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressGet", reflect.TypeOf((*MockDBHandler)(nil).AddressGet), ctx, customerID, id)
 }
 
-// AddressListByContact mocks base method.
-func (m *MockDBHandler) AddressListByContact(ctx context.Context, customerID, contactID uuid.UUID) ([]AddressPair, error) {
+// AddressListByContactID mocks base method.
+func (m *MockDBHandler) AddressListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddressListByContact", ctx, customerID, contactID)
-	ret0, _ := ret[0].([]AddressPair)
+	ret := m.ctrl.Call(m, "AddressListByContactID", ctx, contactID)
+	ret0, _ := ret[0].([]contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AddressListByContact indicates an expected call of AddressListByContact.
-func (mr *MockDBHandlerMockRecorder) AddressListByContact(ctx, customerID, contactID any) *gomock.Call {
+// AddressListByContactID indicates an expected call of AddressListByContactID.
+func (mr *MockDBHandlerMockRecorder) AddressListByContactID(ctx, contactID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressListByContact", reflect.TypeOf((*MockDBHandler)(nil).AddressListByContact), ctx, customerID, contactID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressListByContactID", reflect.TypeOf((*MockDBHandler)(nil).AddressListByContactID), ctx, contactID)
+}
+
+// AddressResetPrimary mocks base method.
+func (m *MockDBHandler) AddressResetPrimary(ctx context.Context, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressResetPrimary", ctx, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressResetPrimary indicates an expected call of AddressResetPrimary.
+func (mr *MockDBHandlerMockRecorder) AddressResetPrimary(ctx, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressResetPrimary", reflect.TypeOf((*MockDBHandler)(nil).AddressResetPrimary), ctx, contactID)
+}
+
+// AddressUpdate mocks base method.
+func (m *MockDBHandler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressUpdate", ctx, id, fields)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressUpdate indicates an expected call of AddressUpdate.
+func (mr *MockDBHandlerMockRecorder) AddressUpdate(ctx, id, fields any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressUpdate", reflect.TypeOf((*MockDBHandler)(nil).AddressUpdate), ctx, id, fields)
 }
 
 // ContactCreate mocks base method.
@@ -191,92 +247,6 @@ func (mr *MockDBHandlerMockRecorder) ContactUpdate(ctx, id, fields any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactUpdate", reflect.TypeOf((*MockDBHandler)(nil).ContactUpdate), ctx, id, fields)
 }
 
-// EmailCreate mocks base method.
-func (m *MockDBHandler) EmailCreate(ctx context.Context, e *contact.Email) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailCreate", ctx, e)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EmailCreate indicates an expected call of EmailCreate.
-func (mr *MockDBHandlerMockRecorder) EmailCreate(ctx, e any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailCreate", reflect.TypeOf((*MockDBHandler)(nil).EmailCreate), ctx, e)
-}
-
-// EmailDelete mocks base method.
-func (m *MockDBHandler) EmailDelete(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EmailDelete indicates an expected call of EmailDelete.
-func (mr *MockDBHandlerMockRecorder) EmailDelete(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailDelete", reflect.TypeOf((*MockDBHandler)(nil).EmailDelete), ctx, id)
-}
-
-// EmailGet mocks base method.
-func (m *MockDBHandler) EmailGet(ctx context.Context, id uuid.UUID) (*contact.Email, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailGet", ctx, id)
-	ret0, _ := ret[0].(*contact.Email)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// EmailGet indicates an expected call of EmailGet.
-func (mr *MockDBHandlerMockRecorder) EmailGet(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailGet", reflect.TypeOf((*MockDBHandler)(nil).EmailGet), ctx, id)
-}
-
-// EmailListByContactID mocks base method.
-func (m *MockDBHandler) EmailListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.Email, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailListByContactID", ctx, contactID)
-	ret0, _ := ret[0].([]contact.Email)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// EmailListByContactID indicates an expected call of EmailListByContactID.
-func (mr *MockDBHandlerMockRecorder) EmailListByContactID(ctx, contactID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailListByContactID", reflect.TypeOf((*MockDBHandler)(nil).EmailListByContactID), ctx, contactID)
-}
-
-// EmailResetPrimary mocks base method.
-func (m *MockDBHandler) EmailResetPrimary(ctx context.Context, contactID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailResetPrimary", ctx, contactID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EmailResetPrimary indicates an expected call of EmailResetPrimary.
-func (mr *MockDBHandlerMockRecorder) EmailResetPrimary(ctx, contactID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailResetPrimary", reflect.TypeOf((*MockDBHandler)(nil).EmailResetPrimary), ctx, contactID)
-}
-
-// EmailUpdate mocks base method.
-func (m *MockDBHandler) EmailUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EmailUpdate", ctx, id, fields)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// EmailUpdate indicates an expected call of EmailUpdate.
-func (mr *MockDBHandlerMockRecorder) EmailUpdate(ctx, id, fields any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailUpdate", reflect.TypeOf((*MockDBHandler)(nil).EmailUpdate), ctx, id, fields)
-}
-
 // InteractionCreate mocks base method.
 func (m *MockDBHandler) InteractionCreate(ctx context.Context, i *interaction.Interaction) error {
 	m.ctrl.T.Helper()
@@ -349,92 +319,6 @@ func (m *MockDBHandler) InteractionListUnresolved(ctx context.Context, customerI
 func (mr *MockDBHandlerMockRecorder) InteractionListUnresolved(ctx, customerID, size, token, since any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InteractionListUnresolved", reflect.TypeOf((*MockDBHandler)(nil).InteractionListUnresolved), ctx, customerID, size, token, since)
-}
-
-// PhoneNumberCreate mocks base method.
-func (m *MockDBHandler) PhoneNumberCreate(ctx context.Context, p *contact.PhoneNumber) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PhoneNumberCreate", ctx, p)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PhoneNumberCreate indicates an expected call of PhoneNumberCreate.
-func (mr *MockDBHandlerMockRecorder) PhoneNumberCreate(ctx, p any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberCreate", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberCreate), ctx, p)
-}
-
-// PhoneNumberDelete mocks base method.
-func (m *MockDBHandler) PhoneNumberDelete(ctx context.Context, id uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PhoneNumberDelete", ctx, id)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PhoneNumberDelete indicates an expected call of PhoneNumberDelete.
-func (mr *MockDBHandlerMockRecorder) PhoneNumberDelete(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberDelete", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberDelete), ctx, id)
-}
-
-// PhoneNumberGet mocks base method.
-func (m *MockDBHandler) PhoneNumberGet(ctx context.Context, id uuid.UUID) (*contact.PhoneNumber, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PhoneNumberGet", ctx, id)
-	ret0, _ := ret[0].(*contact.PhoneNumber)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PhoneNumberGet indicates an expected call of PhoneNumberGet.
-func (mr *MockDBHandlerMockRecorder) PhoneNumberGet(ctx, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberGet", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberGet), ctx, id)
-}
-
-// PhoneNumberListByContactID mocks base method.
-func (m *MockDBHandler) PhoneNumberListByContactID(ctx context.Context, contactID uuid.UUID) ([]contact.PhoneNumber, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PhoneNumberListByContactID", ctx, contactID)
-	ret0, _ := ret[0].([]contact.PhoneNumber)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PhoneNumberListByContactID indicates an expected call of PhoneNumberListByContactID.
-func (mr *MockDBHandlerMockRecorder) PhoneNumberListByContactID(ctx, contactID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberListByContactID", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberListByContactID), ctx, contactID)
-}
-
-// PhoneNumberResetPrimary mocks base method.
-func (m *MockDBHandler) PhoneNumberResetPrimary(ctx context.Context, contactID uuid.UUID) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PhoneNumberResetPrimary", ctx, contactID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PhoneNumberResetPrimary indicates an expected call of PhoneNumberResetPrimary.
-func (mr *MockDBHandlerMockRecorder) PhoneNumberResetPrimary(ctx, contactID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberResetPrimary", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberResetPrimary), ctx, contactID)
-}
-
-// PhoneNumberUpdate mocks base method.
-func (m *MockDBHandler) PhoneNumberUpdate(ctx context.Context, id uuid.UUID, fields map[string]any) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PhoneNumberUpdate", ctx, id, fields)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PhoneNumberUpdate indicates an expected call of PhoneNumberUpdate.
-func (mr *MockDBHandlerMockRecorder) PhoneNumberUpdate(ctx, id, fields any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PhoneNumberUpdate", reflect.TypeOf((*MockDBHandler)(nil).PhoneNumberUpdate), ctx, id, fields)
 }
 
 // ResolutionCreate mocks base method.

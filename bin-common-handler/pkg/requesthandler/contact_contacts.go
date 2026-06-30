@@ -26,25 +26,23 @@ func (r *requestHandler) ContactV1ContactCreate(
 	source string,
 	externalID string,
 	notes string,
-	phoneNumbers []cmrequest.PhoneNumberCreate,
-	emails []cmrequest.EmailCreate,
+	addresses []cmrequest.AddressCreate,
 	tagIDs []uuid.UUID,
 ) (*cmcontact.Contact, error) {
 	uri := "/v1/contacts"
 
 	data := &cmrequest.ContactCreate{
-		CustomerID:   customerID,
-		FirstName:    firstName,
-		LastName:     lastName,
-		DisplayName:  displayName,
-		Company:      company,
-		JobTitle:     jobTitle,
-		Source:       source,
-		ExternalID:   externalID,
-		Notes:        notes,
-		PhoneNumbers: phoneNumbers,
-		Emails:       emails,
-		TagIDs:       tagIDs,
+		CustomerID:  customerID,
+		FirstName:   firstName,
+		LastName:    lastName,
+		DisplayName: displayName,
+		Company:     company,
+		JobTitle:    jobTitle,
+		Source:      source,
+		ExternalID:  externalID,
+		Notes:       notes,
+		Addresses:   addresses,
+		TagIDs:      tagIDs,
 	}
 
 	m, err := json.Marshal(data)

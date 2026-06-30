@@ -1437,6 +1437,24 @@ func (e ConferenceManagerConferencecallStatus) Valid() bool {
 	}
 }
 
+// Defines values for ContactManagerAddressType.
+const (
+	ContactManagerAddressTypeEmail ContactManagerAddressType = "email"
+	ContactManagerAddressTypeTel   ContactManagerAddressType = "tel"
+)
+
+// Valid indicates whether the value is a known member of the ContactManagerAddressType enum.
+func (e ContactManagerAddressType) Valid() bool {
+	switch e {
+	case ContactManagerAddressTypeEmail:
+		return true
+	case ContactManagerAddressTypeTel:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ContactManagerContactSource.
 const (
 	ContactManagerContactSourceAPI    ContactManagerContactSource = "api"
@@ -1461,27 +1479,6 @@ func (e ContactManagerContactSource) Valid() bool {
 	}
 }
 
-// Defines values for ContactManagerEmailType.
-const (
-	ContactManagerEmailTypeOther    ContactManagerEmailType = "other"
-	ContactManagerEmailTypePersonal ContactManagerEmailType = "personal"
-	ContactManagerEmailTypeWork     ContactManagerEmailType = "work"
-)
-
-// Valid indicates whether the value is a known member of the ContactManagerEmailType enum.
-func (e ContactManagerEmailType) Valid() bool {
-	switch e {
-	case ContactManagerEmailTypeOther:
-		return true
-	case ContactManagerEmailTypePersonal:
-		return true
-	case ContactManagerEmailTypeWork:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ContactManagerInteractionDirection.
 const (
 	Incoming ContactManagerInteractionDirection = "incoming"
@@ -1494,33 +1491,6 @@ func (e ContactManagerInteractionDirection) Valid() bool {
 	case Incoming:
 		return true
 	case Outgoing:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ContactManagerPhoneNumberType.
-const (
-	ContactManagerPhoneNumberTypeFax    ContactManagerPhoneNumberType = "fax"
-	ContactManagerPhoneNumberTypeHome   ContactManagerPhoneNumberType = "home"
-	ContactManagerPhoneNumberTypeMobile ContactManagerPhoneNumberType = "mobile"
-	ContactManagerPhoneNumberTypeOther  ContactManagerPhoneNumberType = "other"
-	ContactManagerPhoneNumberTypeWork   ContactManagerPhoneNumberType = "work"
-)
-
-// Valid indicates whether the value is a known member of the ContactManagerPhoneNumberType enum.
-func (e ContactManagerPhoneNumberType) Valid() bool {
-	switch e {
-	case ContactManagerPhoneNumberTypeFax:
-		return true
-	case ContactManagerPhoneNumberTypeHome:
-		return true
-	case ContactManagerPhoneNumberTypeMobile:
-		return true
-	case ContactManagerPhoneNumberTypeOther:
-		return true
-	case ContactManagerPhoneNumberTypeWork:
 		return true
 	default:
 		return false
@@ -3054,96 +3024,18 @@ func (e PostContactsJSONBodySource) Valid() bool {
 	}
 }
 
-// Defines values for PostContactsIdEmailsJSONBodyType.
+// Defines values for PostContactsIdAddressesJSONBodyType.
 const (
-	PostContactsIdEmailsJSONBodyTypeOther    PostContactsIdEmailsJSONBodyType = "other"
-	PostContactsIdEmailsJSONBodyTypePersonal PostContactsIdEmailsJSONBodyType = "personal"
-	PostContactsIdEmailsJSONBodyTypeWork     PostContactsIdEmailsJSONBodyType = "work"
+	PostContactsIdAddressesJSONBodyTypeEmail PostContactsIdAddressesJSONBodyType = "email"
+	PostContactsIdAddressesJSONBodyTypeTel   PostContactsIdAddressesJSONBodyType = "tel"
 )
 
-// Valid indicates whether the value is a known member of the PostContactsIdEmailsJSONBodyType enum.
-func (e PostContactsIdEmailsJSONBodyType) Valid() bool {
+// Valid indicates whether the value is a known member of the PostContactsIdAddressesJSONBodyType enum.
+func (e PostContactsIdAddressesJSONBodyType) Valid() bool {
 	switch e {
-	case PostContactsIdEmailsJSONBodyTypeOther:
+	case PostContactsIdAddressesJSONBodyTypeEmail:
 		return true
-	case PostContactsIdEmailsJSONBodyTypePersonal:
-		return true
-	case PostContactsIdEmailsJSONBodyTypeWork:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PutContactsIdEmailsEmailIdJSONBodyType.
-const (
-	PutContactsIdEmailsEmailIdJSONBodyTypeOther    PutContactsIdEmailsEmailIdJSONBodyType = "other"
-	PutContactsIdEmailsEmailIdJSONBodyTypePersonal PutContactsIdEmailsEmailIdJSONBodyType = "personal"
-	PutContactsIdEmailsEmailIdJSONBodyTypeWork     PutContactsIdEmailsEmailIdJSONBodyType = "work"
-)
-
-// Valid indicates whether the value is a known member of the PutContactsIdEmailsEmailIdJSONBodyType enum.
-func (e PutContactsIdEmailsEmailIdJSONBodyType) Valid() bool {
-	switch e {
-	case PutContactsIdEmailsEmailIdJSONBodyTypeOther:
-		return true
-	case PutContactsIdEmailsEmailIdJSONBodyTypePersonal:
-		return true
-	case PutContactsIdEmailsEmailIdJSONBodyTypeWork:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostContactsIdPhoneNumbersJSONBodyType.
-const (
-	PostContactsIdPhoneNumbersJSONBodyTypeFax    PostContactsIdPhoneNumbersJSONBodyType = "fax"
-	PostContactsIdPhoneNumbersJSONBodyTypeHome   PostContactsIdPhoneNumbersJSONBodyType = "home"
-	PostContactsIdPhoneNumbersJSONBodyTypeMobile PostContactsIdPhoneNumbersJSONBodyType = "mobile"
-	PostContactsIdPhoneNumbersJSONBodyTypeOther  PostContactsIdPhoneNumbersJSONBodyType = "other"
-	PostContactsIdPhoneNumbersJSONBodyTypeWork   PostContactsIdPhoneNumbersJSONBodyType = "work"
-)
-
-// Valid indicates whether the value is a known member of the PostContactsIdPhoneNumbersJSONBodyType enum.
-func (e PostContactsIdPhoneNumbersJSONBodyType) Valid() bool {
-	switch e {
-	case PostContactsIdPhoneNumbersJSONBodyTypeFax:
-		return true
-	case PostContactsIdPhoneNumbersJSONBodyTypeHome:
-		return true
-	case PostContactsIdPhoneNumbersJSONBodyTypeMobile:
-		return true
-	case PostContactsIdPhoneNumbersJSONBodyTypeOther:
-		return true
-	case PostContactsIdPhoneNumbersJSONBodyTypeWork:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType.
-const (
-	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeFax    PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "fax"
-	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeHome   PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "home"
-	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeMobile PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "mobile"
-	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeOther  PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "other"
-	PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeWork   PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "work"
-)
-
-// Valid indicates whether the value is a known member of the PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType enum.
-func (e PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType) Valid() bool {
-	switch e {
-	case PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeFax:
-		return true
-	case PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeHome:
-		return true
-	case PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeMobile:
-		return true
-	case PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeOther:
-		return true
-	case PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeWork:
+	case PostContactsIdAddressesJSONBodyTypeTel:
 		return true
 	default:
 		return false
@@ -3300,96 +3192,18 @@ func (e PostServiceAgentsContactsJSONBodySource) Valid() bool {
 	}
 }
 
-// Defines values for PostServiceAgentsContactsIdEmailsJSONBodyType.
+// Defines values for PostServiceAgentsContactsIdAddressesJSONBodyType.
 const (
-	PostServiceAgentsContactsIdEmailsJSONBodyTypeOther    PostServiceAgentsContactsIdEmailsJSONBodyType = "other"
-	PostServiceAgentsContactsIdEmailsJSONBodyTypePersonal PostServiceAgentsContactsIdEmailsJSONBodyType = "personal"
-	PostServiceAgentsContactsIdEmailsJSONBodyTypeWork     PostServiceAgentsContactsIdEmailsJSONBodyType = "work"
+	PostServiceAgentsContactsIdAddressesJSONBodyTypeEmail PostServiceAgentsContactsIdAddressesJSONBodyType = "email"
+	PostServiceAgentsContactsIdAddressesJSONBodyTypeTel   PostServiceAgentsContactsIdAddressesJSONBodyType = "tel"
 )
 
-// Valid indicates whether the value is a known member of the PostServiceAgentsContactsIdEmailsJSONBodyType enum.
-func (e PostServiceAgentsContactsIdEmailsJSONBodyType) Valid() bool {
+// Valid indicates whether the value is a known member of the PostServiceAgentsContactsIdAddressesJSONBodyType enum.
+func (e PostServiceAgentsContactsIdAddressesJSONBodyType) Valid() bool {
 	switch e {
-	case PostServiceAgentsContactsIdEmailsJSONBodyTypeOther:
+	case PostServiceAgentsContactsIdAddressesJSONBodyTypeEmail:
 		return true
-	case PostServiceAgentsContactsIdEmailsJSONBodyTypePersonal:
-		return true
-	case PostServiceAgentsContactsIdEmailsJSONBodyTypeWork:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType.
-const (
-	PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypeOther    PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType = "other"
-	PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypePersonal PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType = "personal"
-	PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypeWork     PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType = "work"
-)
-
-// Valid indicates whether the value is a known member of the PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType enum.
-func (e PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType) Valid() bool {
-	switch e {
-	case PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypeOther:
-		return true
-	case PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypePersonal:
-		return true
-	case PutServiceAgentsContactsIdEmailsEmailIdJSONBodyTypeWork:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PostServiceAgentsContactsIdPhoneNumbersJSONBodyType.
-const (
-	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeFax    PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "fax"
-	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeHome   PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "home"
-	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeMobile PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "mobile"
-	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeOther  PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "other"
-	PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeWork   PostServiceAgentsContactsIdPhoneNumbersJSONBodyType = "work"
-)
-
-// Valid indicates whether the value is a known member of the PostServiceAgentsContactsIdPhoneNumbersJSONBodyType enum.
-func (e PostServiceAgentsContactsIdPhoneNumbersJSONBodyType) Valid() bool {
-	switch e {
-	case PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeFax:
-		return true
-	case PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeHome:
-		return true
-	case PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeMobile:
-		return true
-	case PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeOther:
-		return true
-	case PostServiceAgentsContactsIdPhoneNumbersJSONBodyTypeWork:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType.
-const (
-	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeFax    PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "fax"
-	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeHome   PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "home"
-	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeMobile PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "mobile"
-	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeOther  PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "other"
-	PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeWork   PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType = "work"
-)
-
-// Valid indicates whether the value is a known member of the PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType enum.
-func (e PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType) Valid() bool {
-	switch e {
-	case PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeFax:
-		return true
-	case PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeHome:
-		return true
-	case PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeMobile:
-		return true
-	case PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeOther:
-		return true
-	case PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyTypeWork:
+	case PostServiceAgentsContactsIdAddressesJSONBodyTypeTel:
 		return true
 	default:
 		return false
@@ -4915,8 +4729,32 @@ type ConferenceManagerConferencecallReferenceType string
 // ConferenceManagerConferencecallStatus Status of the conference call.
 type ConferenceManagerConferencecallStatus string
 
+// ContactManagerAddress defines model for ContactManagerAddress.
+type ContactManagerAddress struct {
+	// Id Unique identifier for the address.
+	Id *openapi_types.UUID `json:"id,omitempty"`
+
+	// IsPrimary Indicates if this is the primary address for the given type.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The address value. E.164 format for tel, email address for email.
+	Target *string `json:"target,omitempty"`
+
+	// TmCreate Timestamp when the address was created.
+	TmCreate *time.Time `json:"tm_create,omitempty"`
+
+	// Type Type of the address.
+	Type *ContactManagerAddressType `json:"type,omitempty"`
+}
+
+// ContactManagerAddressType Type of the address.
+type ContactManagerAddressType string
+
 // ContactManagerContact defines model for ContactManagerContact.
 type ContactManagerContact struct {
+	// Addresses List of addresses (tel or email) associated with the contact.
+	Addresses *[]ContactManagerAddress `json:"addresses,omitempty"`
+
 	// Company Company name associated with the contact.
 	Company *string `json:"company,omitempty"`
 
@@ -4925,9 +4763,6 @@ type ContactManagerContact struct {
 
 	// DisplayName Display name of the contact.
 	DisplayName *string `json:"display_name,omitempty"`
-
-	// Emails List of email addresses associated with the contact.
-	Emails *[]ContactManagerEmail `json:"emails,omitempty"`
 
 	// ExternalId External identifier for the contact.
 	ExternalId *string `json:"external_id,omitempty"`
@@ -4943,9 +4778,6 @@ type ContactManagerContact struct {
 
 	// LastName Last name of the contact.
 	LastName *string `json:"last_name,omitempty"`
-
-	// PhoneNumbers List of phone numbers associated with the contact.
-	PhoneNumbers *[]ContactManagerPhoneNumber `json:"phone_numbers,omitempty"`
 
 	// Source Source of the contact.
 	Source *ContactManagerContactSource `json:"source,omitempty"`
@@ -4965,27 +4797,6 @@ type ContactManagerContact struct {
 
 // ContactManagerContactSource Source of the contact.
 type ContactManagerContactSource string
-
-// ContactManagerEmail defines model for ContactManagerEmail.
-type ContactManagerEmail struct {
-	// Address Email address.
-	Address *openapi_types.Email `json:"address,omitempty"`
-
-	// Id Unique identifier for the email address.
-	Id *openapi_types.UUID `json:"id,omitempty"`
-
-	// IsPrimary Indicates if this is the primary email address.
-	IsPrimary *bool `json:"is_primary,omitempty"`
-
-	// TmCreate Timestamp when the email was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
-
-	// Type Type of the email address.
-	Type *ContactManagerEmailType `json:"type,omitempty"`
-}
-
-// ContactManagerEmailType Type of the email address.
-type ContactManagerEmailType string
 
 // ContactManagerInteraction defines model for ContactManagerInteraction.
 type ContactManagerInteraction struct {
@@ -5034,27 +4845,6 @@ type ContactManagerInteractionListResponse struct {
 	// Result List of interactions.
 	Result *[]ContactManagerInteraction `json:"result,omitempty"`
 }
-
-// ContactManagerPhoneNumber defines model for ContactManagerPhoneNumber.
-type ContactManagerPhoneNumber struct {
-	// Id Unique identifier for the phone number.
-	Id *openapi_types.UUID `json:"id,omitempty"`
-
-	// IsPrimary Indicates if this is the primary phone number.
-	IsPrimary *bool `json:"is_primary,omitempty"`
-
-	// Number Phone number in E.164 format.
-	Number *string `json:"number,omitempty"`
-
-	// TmCreate Timestamp when the phone number was created.
-	TmCreate *time.Time `json:"tm_create,omitempty"`
-
-	// Type Type of the phone number.
-	Type *ContactManagerPhoneNumberType `json:"type,omitempty"`
-}
-
-// ContactManagerPhoneNumberType Type of the phone number.
-type ContactManagerPhoneNumberType string
 
 // ContactManagerResolution defines model for ContactManagerResolution.
 type ContactManagerResolution struct {
@@ -8062,45 +7852,29 @@ type PutContactsIdJSONBody struct {
 	Notes       *string `json:"notes,omitempty"`
 }
 
-// PostContactsIdEmailsJSONBody defines parameters for PostContactsIdEmails.
-type PostContactsIdEmailsJSONBody struct {
-	Address   openapi_types.Email               `json:"address"`
-	IsPrimary *bool                             `json:"is_primary,omitempty"`
-	Type      *PostContactsIdEmailsJSONBodyType `json:"type,omitempty"`
+// PostContactsIdAddressesJSONBody defines parameters for PostContactsIdAddresses.
+type PostContactsIdAddressesJSONBody struct {
+	// IsPrimary Whether this is the primary address for the given type.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The address value. E.164 format for tel, email address for email.
+	Target string `json:"target"`
+
+	// Type Address type. 'tel' for phone numbers, 'email' for email addresses.
+	Type PostContactsIdAddressesJSONBodyType `json:"type"`
 }
 
-// PostContactsIdEmailsJSONBodyType defines parameters for PostContactsIdEmails.
-type PostContactsIdEmailsJSONBodyType string
+// PostContactsIdAddressesJSONBodyType defines parameters for PostContactsIdAddresses.
+type PostContactsIdAddressesJSONBodyType string
 
-// PutContactsIdEmailsEmailIdJSONBody defines parameters for PutContactsIdEmailsEmailId.
-type PutContactsIdEmailsEmailIdJSONBody struct {
-	Address   *openapi_types.Email                    `json:"address,omitempty"`
-	IsPrimary *bool                                   `json:"is_primary,omitempty"`
-	Type      *PutContactsIdEmailsEmailIdJSONBodyType `json:"type,omitempty"`
+// PutContactsIdAddressesAddressIdJSONBody defines parameters for PutContactsIdAddressesAddressId.
+type PutContactsIdAddressesAddressIdJSONBody struct {
+	// IsPrimary Whether this is the primary address for the given type.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The updated address value. E.164 format for tel, email address for email.
+	Target *string `json:"target,omitempty"`
 }
-
-// PutContactsIdEmailsEmailIdJSONBodyType defines parameters for PutContactsIdEmailsEmailId.
-type PutContactsIdEmailsEmailIdJSONBodyType string
-
-// PostContactsIdPhoneNumbersJSONBody defines parameters for PostContactsIdPhoneNumbers.
-type PostContactsIdPhoneNumbersJSONBody struct {
-	IsPrimary *bool                                   `json:"is_primary,omitempty"`
-	Number    string                                  `json:"number"`
-	Type      *PostContactsIdPhoneNumbersJSONBodyType `json:"type,omitempty"`
-}
-
-// PostContactsIdPhoneNumbersJSONBodyType defines parameters for PostContactsIdPhoneNumbers.
-type PostContactsIdPhoneNumbersJSONBodyType string
-
-// PutContactsIdPhoneNumbersPhoneNumberIdJSONBody defines parameters for PutContactsIdPhoneNumbersPhoneNumberId.
-type PutContactsIdPhoneNumbersPhoneNumberIdJSONBody struct {
-	IsPrimary *bool                                               `json:"is_primary,omitempty"`
-	Number    *string                                             `json:"number,omitempty"`
-	Type      *PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType `json:"type,omitempty"`
-}
-
-// PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType defines parameters for PutContactsIdPhoneNumbersPhoneNumberId.
-type PutContactsIdPhoneNumbersPhoneNumberIdJSONBodyType string
 
 // PostContactsIdTagsJSONBody defines parameters for PostContactsIdTags.
 type PostContactsIdTagsJSONBody struct {
@@ -8999,45 +8773,29 @@ type PutServiceAgentsContactsIdJSONBody struct {
 	Notes       *string `json:"notes,omitempty"`
 }
 
-// PostServiceAgentsContactsIdEmailsJSONBody defines parameters for PostServiceAgentsContactsIdEmails.
-type PostServiceAgentsContactsIdEmailsJSONBody struct {
-	Address   openapi_types.Email                            `json:"address"`
-	IsPrimary *bool                                          `json:"is_primary,omitempty"`
-	Type      *PostServiceAgentsContactsIdEmailsJSONBodyType `json:"type,omitempty"`
+// PostServiceAgentsContactsIdAddressesJSONBody defines parameters for PostServiceAgentsContactsIdAddresses.
+type PostServiceAgentsContactsIdAddressesJSONBody struct {
+	// IsPrimary Whether this is the primary address for the given type.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The address value. E.164 format for tel, email address for email.
+	Target string `json:"target"`
+
+	// Type Address type.
+	Type PostServiceAgentsContactsIdAddressesJSONBodyType `json:"type"`
 }
 
-// PostServiceAgentsContactsIdEmailsJSONBodyType defines parameters for PostServiceAgentsContactsIdEmails.
-type PostServiceAgentsContactsIdEmailsJSONBodyType string
+// PostServiceAgentsContactsIdAddressesJSONBodyType defines parameters for PostServiceAgentsContactsIdAddresses.
+type PostServiceAgentsContactsIdAddressesJSONBodyType string
 
-// PutServiceAgentsContactsIdEmailsEmailIdJSONBody defines parameters for PutServiceAgentsContactsIdEmailsEmailId.
-type PutServiceAgentsContactsIdEmailsEmailIdJSONBody struct {
-	Address   *openapi_types.Email                                 `json:"address,omitempty"`
-	IsPrimary *bool                                                `json:"is_primary,omitempty"`
-	Type      *PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType `json:"type,omitempty"`
+// PutServiceAgentsContactsIdAddressesAddressIdJSONBody defines parameters for PutServiceAgentsContactsIdAddressesAddressId.
+type PutServiceAgentsContactsIdAddressesAddressIdJSONBody struct {
+	// IsPrimary Whether this is the primary address for the given type.
+	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Target The updated address value.
+	Target *string `json:"target,omitempty"`
 }
-
-// PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType defines parameters for PutServiceAgentsContactsIdEmailsEmailId.
-type PutServiceAgentsContactsIdEmailsEmailIdJSONBodyType string
-
-// PostServiceAgentsContactsIdPhoneNumbersJSONBody defines parameters for PostServiceAgentsContactsIdPhoneNumbers.
-type PostServiceAgentsContactsIdPhoneNumbersJSONBody struct {
-	IsPrimary *bool                                                `json:"is_primary,omitempty"`
-	Number    string                                               `json:"number"`
-	Type      *PostServiceAgentsContactsIdPhoneNumbersJSONBodyType `json:"type,omitempty"`
-}
-
-// PostServiceAgentsContactsIdPhoneNumbersJSONBodyType defines parameters for PostServiceAgentsContactsIdPhoneNumbers.
-type PostServiceAgentsContactsIdPhoneNumbersJSONBodyType string
-
-// PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBody defines parameters for PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId.
-type PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBody struct {
-	IsPrimary *bool                                                            `json:"is_primary,omitempty"`
-	Number    *string                                                          `json:"number,omitempty"`
-	Type      *PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType `json:"type,omitempty"`
-}
-
-// PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType defines parameters for PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId.
-type PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBodyType string
 
 // PostServiceAgentsContactsIdTagsJSONBody defines parameters for PostServiceAgentsContactsIdTags.
 type PostServiceAgentsContactsIdTagsJSONBody struct {
@@ -9621,17 +9379,11 @@ type PostContactsJSONRequestBody PostContactsJSONBody
 // PutContactsIdJSONRequestBody defines body for PutContactsId for application/json ContentType.
 type PutContactsIdJSONRequestBody PutContactsIdJSONBody
 
-// PostContactsIdEmailsJSONRequestBody defines body for PostContactsIdEmails for application/json ContentType.
-type PostContactsIdEmailsJSONRequestBody PostContactsIdEmailsJSONBody
+// PostContactsIdAddressesJSONRequestBody defines body for PostContactsIdAddresses for application/json ContentType.
+type PostContactsIdAddressesJSONRequestBody PostContactsIdAddressesJSONBody
 
-// PutContactsIdEmailsEmailIdJSONRequestBody defines body for PutContactsIdEmailsEmailId for application/json ContentType.
-type PutContactsIdEmailsEmailIdJSONRequestBody PutContactsIdEmailsEmailIdJSONBody
-
-// PostContactsIdPhoneNumbersJSONRequestBody defines body for PostContactsIdPhoneNumbers for application/json ContentType.
-type PostContactsIdPhoneNumbersJSONRequestBody PostContactsIdPhoneNumbersJSONBody
-
-// PutContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody defines body for PutContactsIdPhoneNumbersPhoneNumberId for application/json ContentType.
-type PutContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody PutContactsIdPhoneNumbersPhoneNumberIdJSONBody
+// PutContactsIdAddressesAddressIdJSONRequestBody defines body for PutContactsIdAddressesAddressId for application/json ContentType.
+type PutContactsIdAddressesAddressIdJSONRequestBody PutContactsIdAddressesAddressIdJSONBody
 
 // PostContactsIdTagsJSONRequestBody defines body for PostContactsIdTags for application/json ContentType.
 type PostContactsIdTagsJSONRequestBody PostContactsIdTagsJSONBody
@@ -9789,17 +9541,11 @@ type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody
 // PutServiceAgentsContactsIdJSONRequestBody defines body for PutServiceAgentsContactsId for application/json ContentType.
 type PutServiceAgentsContactsIdJSONRequestBody PutServiceAgentsContactsIdJSONBody
 
-// PostServiceAgentsContactsIdEmailsJSONRequestBody defines body for PostServiceAgentsContactsIdEmails for application/json ContentType.
-type PostServiceAgentsContactsIdEmailsJSONRequestBody PostServiceAgentsContactsIdEmailsJSONBody
+// PostServiceAgentsContactsIdAddressesJSONRequestBody defines body for PostServiceAgentsContactsIdAddresses for application/json ContentType.
+type PostServiceAgentsContactsIdAddressesJSONRequestBody PostServiceAgentsContactsIdAddressesJSONBody
 
-// PutServiceAgentsContactsIdEmailsEmailIdJSONRequestBody defines body for PutServiceAgentsContactsIdEmailsEmailId for application/json ContentType.
-type PutServiceAgentsContactsIdEmailsEmailIdJSONRequestBody PutServiceAgentsContactsIdEmailsEmailIdJSONBody
-
-// PostServiceAgentsContactsIdPhoneNumbersJSONRequestBody defines body for PostServiceAgentsContactsIdPhoneNumbers for application/json ContentType.
-type PostServiceAgentsContactsIdPhoneNumbersJSONRequestBody PostServiceAgentsContactsIdPhoneNumbersJSONBody
-
-// PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody defines body for PutServiceAgentsContactsIdPhoneNumbersPhoneNumberId for application/json ContentType.
-type PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONRequestBody PutServiceAgentsContactsIdPhoneNumbersPhoneNumberIdJSONBody
+// PutServiceAgentsContactsIdAddressesAddressIdJSONRequestBody defines body for PutServiceAgentsContactsIdAddressesAddressId for application/json ContentType.
+type PutServiceAgentsContactsIdAddressesAddressIdJSONRequestBody PutServiceAgentsContactsIdAddressesAddressIdJSONBody
 
 // PostServiceAgentsContactsIdTagsJSONRequestBody defines body for PostServiceAgentsContactsIdTags for application/json ContentType.
 type PostServiceAgentsContactsIdTagsJSONRequestBody PostServiceAgentsContactsIdTagsJSONBody

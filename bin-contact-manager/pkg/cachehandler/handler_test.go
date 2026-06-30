@@ -143,24 +143,22 @@ func TestHandler_ContactWithRelatedData(t *testing.T) {
 			CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 		},
 		FirstName: "John",
-		PhoneNumbers: []contact.PhoneNumber{
+		Addresses: []contact.Address{
 			{
-				ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
+				ID:        uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
 				CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				ContactID:  uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-				Number:     "+15551234567",
-				Type:       "mobile",
+				Type:       contact.AddressTypeTel,
+				Target:     "+155****4567",
 				IsPrimary:  true,
 			},
-		},
-		Emails: []contact.Email{
 			{
-				ID:         uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
+				ID:        uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
 				CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 				ContactID:  uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-				Address:    "john@example.com",
-				Type:       "work",
-				IsPrimary:  true,
+				Type:       contact.AddressTypeEmail,
+				Target:     "john@example.com",
+				IsPrimary:  false,
 			},
 		},
 		TagIDs: []uuid.UUID{
@@ -179,21 +177,18 @@ func TestHandler_ContactWithRelatedData(t *testing.T) {
 		t.Errorf("ContactGet() error = %v", err)
 	}
 
-	if len(result.PhoneNumbers) != 1 {
-		t.Errorf("ContactGet() PhoneNumbers count = %v, want 1", len(result.PhoneNumbers))
-	}
-	if len(result.Emails) != 1 {
-		t.Errorf("ContactGet() Emails count = %v, want 1", len(result.Emails))
+	if len(result.Addresses) != 2 {
+		t.Errorf("ContactGet() Addresses count = %v, want 2", len(result.Addresses))
 	}
 	if len(result.TagIDs) != 1 {
 		t.Errorf("ContactGet() TagIDs count = %v, want 1", len(result.TagIDs))
 	}
 
-	if result.PhoneNumbers[0].Number != "+15551234567" {
-		t.Errorf("ContactGet() PhoneNumber = %v, want +15551234567", result.PhoneNumbers[0].Number)
+	if result.Addresses[0].Target != "+155****4567" {
+		t.Errorf("ContactGet() Address[0].Target = %v, want +155****4567", result.Addresses[0].Target)
 	}
-	if result.Emails[0].Address != "john@example.com" {
-		t.Errorf("ContactGet() Email = %v, want john@example.com", result.Emails[0].Address)
+	if result.Addresses[1].Target != "john@example.com" {
+		t.Errorf("ContactGet() Address[1].Target = %v, want john@example.com", result.Addresses[1].Target)
 	}
 }
 
@@ -500,7 +495,7 @@ func TestHandler_ContactGet_AllFields(t *testing.T) {
 	}
 }
 
-func TestHandler_ContactWithEmptyPhoneNumbers(t *testing.T) {
+func TestHandler_ContactWithEmptyAddresses(t *testing.T) {
 	h, mr := setupTestHandler(t)
 	defer mr.Close()
 
@@ -511,11 +506,10 @@ func TestHandler_ContactWithEmptyPhoneNumbers(t *testing.T) {
 			ID:         uuid.FromStringOrNil("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
 			CustomerID: uuid.FromStringOrNil("11111111-2222-3333-4444-555555555555"),
 		},
-		FirstName:    "Empty",
-		LastName:     "PhoneNumbers",
-		PhoneNumbers: []contact.PhoneNumber{}, // Empty slice
-		Emails:       []contact.Email{},       // Empty slice
-		TagIDs:       []uuid.UUID{},           // Empty slice
+		FirstName: "Empty",
+		LastName:  "Addresses",
+		Addresses: []contact.Address{}, // Empty slice
+		TagIDs:    []uuid.UUID{},       // Empty slice
 	}
 
 	// Set contact
@@ -588,10 +582,11 @@ func TestHandler_ContactSetUpdateExisting(t *testing.T) {
 
 	// Update the same contact
 	testContact.FirstName = "Updated"
-	testContact.PhoneNumbers = []contact.PhoneNumber{
+	testContact.Addresses = []contact.Address{
 		{
-			ID:         uuid.FromStringOrNil("dddddddd-eeee-ffff-0000-222222222222"),
-			Number:     "+15559990000",
+			ID:     uuid.FromStringOrNil("dddddddd-eeee-ffff-0000-222222222222"),
+			Type:   contact.AddressTypeTel,
+			Target: "+155****0000",
 		},
 	}
 
@@ -608,8 +603,8 @@ func TestHandler_ContactSetUpdateExisting(t *testing.T) {
 	if result.FirstName != "Updated" {
 		t.Errorf("ContactGet() FirstName = %v, want Updated", result.FirstName)
 	}
-	if len(result.PhoneNumbers) != 1 {
-		t.Errorf("ContactGet() PhoneNumbers count = %v, want 1", len(result.PhoneNumbers))
+	if len(result.Addresses) != 1 {
+		t.Errorf("ContactGet() Addresses count = %v, want 1", len(result.Addresses))
 	}
 }
 
@@ -676,14 +671,12 @@ func TestHandler_ContactWithLargeData(t *testing.T) {
 		Source:      "api",
 		ExternalID:  "large-ext-001",
 		Notes:       "This is a contact with lots of related data for testing serialization",
-		PhoneNumbers: []contact.PhoneNumber{
-			{ID: uuid.FromStringOrNil("a0001111-1111-1111-1111-111111111111"), Number: "+15551111111", Type: "mobile", IsPrimary: true},
-			{ID: uuid.FromStringOrNil("a0002222-2222-2222-2222-222222222222"), Number: "+15552222222", Type: "work", IsPrimary: false},
-			{ID: uuid.FromStringOrNil("a0003333-3333-3333-3333-333333333333"), Number: "+15553333333", Type: "home", IsPrimary: false},
-		},
-		Emails: []contact.Email{
-			{ID: uuid.FromStringOrNil("b0001111-1111-1111-1111-111111111111"), Address: "primary@example.com", Type: "work", IsPrimary: true},
-			{ID: uuid.FromStringOrNil("b0002222-2222-2222-2222-222222222222"), Address: "secondary@example.com", Type: "personal", IsPrimary: false},
+		Addresses: []contact.Address{
+			{ID: uuid.FromStringOrNil("a0001111-1111-1111-1111-111111111111"), Type: contact.AddressTypeTel, Target: "+155****1111", IsPrimary: true},
+			{ID: uuid.FromStringOrNil("a0002222-2222-2222-2222-222222222222"), Type: contact.AddressTypeTel, Target: "+155****2222", IsPrimary: false},
+			{ID: uuid.FromStringOrNil("a0003333-3333-3333-3333-333333333333"), Type: contact.AddressTypeTel, Target: "+155****3333", IsPrimary: false},
+			{ID: uuid.FromStringOrNil("b0001111-1111-1111-1111-111111111111"), Type: contact.AddressTypeEmail, Target: "primary@example.com", IsPrimary: false},
+			{ID: uuid.FromStringOrNil("b0002222-2222-2222-2222-222222222222"), Type: contact.AddressTypeEmail, Target: "secondary@example.com", IsPrimary: false},
 		},
 		TagIDs: []uuid.UUID{
 			uuid.FromStringOrNil("c0001111-1111-1111-1111-111111111111"),
@@ -706,11 +699,8 @@ func TestHandler_ContactWithLargeData(t *testing.T) {
 		t.Errorf("ContactGet() error = %v", err)
 	}
 
-	if len(result.PhoneNumbers) != 3 {
-		t.Errorf("ContactGet() PhoneNumbers count = %v, want 3", len(result.PhoneNumbers))
-	}
-	if len(result.Emails) != 2 {
-		t.Errorf("ContactGet() Emails count = %v, want 2", len(result.Emails))
+	if len(result.Addresses) != 5 {
+		t.Errorf("ContactGet() Addresses count = %v, want 5", len(result.Addresses))
 	}
 	if len(result.TagIDs) != 3 {
 		t.Errorf("ContactGet() TagIDs count = %v, want 3", len(result.TagIDs))

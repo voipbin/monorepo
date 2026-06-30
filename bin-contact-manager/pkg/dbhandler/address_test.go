@@ -33,7 +33,7 @@ func insertTestAddress(t *testing.T, db *sql.DB, id, customerID, contactID uuid.
 	}
 }
 
-func Test_AddressListByContact(t *testing.T) {
+func Test_AddressListByContactID(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -68,32 +68,32 @@ func Test_AddressListByContact(t *testing.T) {
 	// Insert two addresses directly (no AddressCreate yet)
 	addrID1 := uuid.FromStringOrNil("ab1b2c3d-0001-0001-0001-000000000003")
 	addrID2 := uuid.FromStringOrNil("ab1b2c3d-0001-0001-0001-000000000004")
-	insertTestAddress(t, dbTest, addrID1, customerID, contactID, "tel", "+15551001001")
+	insertTestAddress(t, dbTest, addrID1, customerID, contactID, "tel", "+155****1001")
 	insertTestAddress(t, dbTest, addrID2, customerID, contactID, "email", "test@example.com")
 
-	// AddressListByContact → both returned
-	res, err := h.AddressListByContact(ctx, customerID, contactID)
+	// AddressListByContactID → both returned
+	res, err := h.AddressListByContactID(ctx, contactID)
 	if err != nil {
-		t.Fatalf("AddressListByContact() error = %v", err)
+		t.Fatalf("AddressListByContactID() error = %v", err)
 	}
 	if len(res) < 2 {
-		t.Errorf("AddressListByContact() len = %d, want >= 2", len(res))
+		t.Errorf("AddressListByContactID() len = %d, want >= 2", len(res))
 	}
 
 	// Verify types present
 	types := make(map[string]string)
-	for _, ap := range res {
-		types[ap.Type] = ap.Target
+	for _, a := range res {
+		types[a.Type] = a.Target
 	}
-	if types["tel"] != "+15551001001" {
-		t.Errorf("AddressListByContact() tel target = %q, want +15551001001", types["tel"])
+	if types["tel"] != "+155****1001" {
+		t.Errorf("AddressListByContactID() tel target = %q, want +155****1001", types["tel"])
 	}
 	if types["email"] != "test@example.com" {
-		t.Errorf("AddressListByContact() email target = %q, want test@example.com", types["email"])
+		t.Errorf("AddressListByContactID() email target = %q, want test@example.com", types["email"])
 	}
 }
 
-func Test_AddressGetByID(t *testing.T) {
+func Test_AddressGet(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -119,37 +119,231 @@ func Test_AddressGetByID(t *testing.T) {
 			CustomerID: customerID,
 		},
 		FirstName: "Address",
-		LastName:  "GetByID",
+		LastName:  "Get",
 		Source:    "manual",
 	}
 	if err := h.ContactCreate(ctx, c); err != nil {
 		t.Fatalf("ContactCreate() error = %v", err)
 	}
 
-	insertTestAddress(t, dbTest, addrID, customerID, contactID, "tel", "+15551002002")
+	insertTestAddress(t, dbTest, addrID, customerID, contactID, "tel", "+155****2002")
 
 	// found case
-	ap, err := h.AddressGetByID(ctx, customerID, addrID)
+	a, err := h.AddressGet(ctx, customerID, addrID)
 	if err != nil {
-		t.Fatalf("AddressGetByID() error = %v", err)
+		t.Fatalf("AddressGet() error = %v", err)
 	}
-	if ap.Type != "tel" {
-		t.Errorf("AddressGetByID() Type = %q, want tel", ap.Type)
+	if a.Type != "tel" {
+		t.Errorf("AddressGet() Type = %q, want tel", a.Type)
 	}
-	if ap.Target != "+15551002002" {
-		t.Errorf("AddressGetByID() Target = %q, want +15551002002", ap.Target)
+	if a.Target != "+155****2002" {
+		t.Errorf("AddressGet() Target = %q, want +155****2002", a.Target)
 	}
 
 	// not found: wrong id
-	_, err = h.AddressGetByID(ctx, customerID, uuid.FromStringOrNil("ab1b2c3d-ffff-ffff-ffff-ffffffffffff"))
+	_, err = h.AddressGet(ctx, customerID, uuid.FromStringOrNil("ab1b2c3d-ffff-ffff-ffff-ffffffffffff"))
 	if err != ErrNotFound {
-		t.Errorf("AddressGetByID() expected ErrNotFound, got: %v", err)
+		t.Errorf("AddressGet() expected ErrNotFound, got: %v", err)
 	}
 
 	// not found: wrong customerID (cross-tenant guard)
 	wrongCustomer := uuid.FromStringOrNil("ab1b2c3d-eeee-eeee-eeee-eeeeeeeeeeee")
-	_, err = h.AddressGetByID(ctx, wrongCustomer, addrID)
+	_, err = h.AddressGet(ctx, wrongCustomer, addrID)
 	if err != ErrNotFound {
-		t.Errorf("AddressGetByID() cross-tenant: expected ErrNotFound, got: %v", err)
+		t.Errorf("AddressGet() cross-tenant: expected ErrNotFound, got: %v", err)
 	}
 }
+
+func Test_AddressCreate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("ab1b2c3d-0003-0003-0003-000000000001")
+	contactID := uuid.FromStringOrNil("ab1b2c3d-0003-0003-0003-000000000002")
+	addrID := uuid.FromStringOrNil("ab1b2c3d-0003-0003-0003-000000000003")
+	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
+
+	// Create the parent contact
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	c := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: customerID,
+		},
+		FirstName: "Address",
+		LastName:  "Create",
+		Source:    "manual",
+	}
+	if err := h.ContactCreate(ctx, c); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	// Create address
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	a := &contact.Address{
+		ID:         addrID,
+		CustomerID: customerID,
+		ContactID:  contactID,
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****3001",
+		IsPrimary:  true,
+	}
+	if err := h.AddressCreate(ctx, a); err != nil {
+		t.Fatalf("AddressCreate() error = %v", err)
+	}
+
+	// Verify it was created
+	got, err := h.AddressGet(ctx, customerID, addrID)
+	if err != nil {
+		t.Fatalf("AddressGet() error = %v", err)
+	}
+	if got.Type != contact.AddressTypeTel {
+		t.Errorf("AddressCreate() Type = %q, want %q", got.Type, contact.AddressTypeTel)
+	}
+	if got.Target != "+155****3001" {
+		t.Errorf("AddressCreate() Target = %q, want +155****3001", got.Target)
+	}
+	if !got.IsPrimary {
+		t.Errorf("AddressCreate() IsPrimary = false, want true")
+	}
+}
+
+func Test_AddressUpdate(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("ab1b2c3d-0004-0004-0004-000000000001")
+	contactID := uuid.FromStringOrNil("ab1b2c3d-0004-0004-0004-000000000002")
+	addrID := uuid.FromStringOrNil("ab1b2c3d-0004-0004-0004-000000000003")
+	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
+
+	// Create the parent contact
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	c := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: customerID,
+		},
+		FirstName: "Address",
+		LastName:  "Update",
+		Source:    "manual",
+	}
+	if err := h.ContactCreate(ctx, c); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	// Create address
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	a := &contact.Address{
+		ID:         addrID,
+		CustomerID: customerID,
+		ContactID:  contactID,
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****4001",
+		IsPrimary:  false,
+	}
+	if err := h.AddressCreate(ctx, a); err != nil {
+		t.Fatalf("AddressCreate() error = %v", err)
+	}
+
+	// Update is_primary
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	if err := h.AddressUpdate(ctx, addrID, map[string]any{"is_primary": true}); err != nil {
+		t.Fatalf("AddressUpdate() error = %v", err)
+	}
+
+	// Verify
+	got, err := h.AddressGet(ctx, customerID, addrID)
+	if err != nil {
+		t.Fatalf("AddressGet() error = %v", err)
+	}
+	if !got.IsPrimary {
+		t.Errorf("AddressUpdate() IsPrimary = false, want true")
+	}
+}
+
+func Test_AddressDelete(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("ab1b2c3d-0005-0005-0005-000000000001")
+	contactID := uuid.FromStringOrNil("ab1b2c3d-0005-0005-0005-000000000002")
+	addrID := uuid.FromStringOrNil("ab1b2c3d-0005-0005-0005-000000000003")
+	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
+
+	// Create the parent contact
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	c := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: customerID,
+		},
+		FirstName: "Address",
+		LastName:  "Delete",
+		Source:    "manual",
+	}
+	if err := h.ContactCreate(ctx, c); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	// Create address
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	a := &contact.Address{
+		ID:         addrID,
+		CustomerID: customerID,
+		ContactID:  contactID,
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****5001",
+		IsPrimary:  false,
+	}
+	if err := h.AddressCreate(ctx, a); err != nil {
+		t.Fatalf("AddressCreate() error = %v", err)
+	}
+
+	// Delete
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	if err := h.AddressDelete(ctx, addrID); err != nil {
+		t.Fatalf("AddressDelete() error = %v", err)
+	}
+
+	// Verify deleted
+	_, err := h.AddressGet(ctx, customerID, addrID)
+	if err != ErrNotFound {
+		t.Errorf("AddressGet() after delete: expected ErrNotFound, got: %v", err)
+	}
+}
+

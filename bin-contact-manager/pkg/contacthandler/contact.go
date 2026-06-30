@@ -30,7 +30,7 @@ func normalizeE164(e164, number string) string {
 	return out
 }
 
-// Create creates a new contact with optional phone numbers, emails, and tags
+// Create creates a new contact with optional addresses and tags
 func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*contact.Contact, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "Create",
@@ -47,14 +47,12 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		c.Source = contact.SourceManual
 	}
 
-	// Store phone numbers and emails for later
-	phoneNumbers := c.PhoneNumbers
-	emails := c.Emails
+	// Store addresses and tags for later
+	addresses := c.Addresses
 	tagIDs := c.TagIDs
 
 	// Clear related data before inserting the contact
-	c.PhoneNumbers = nil
-	c.Emails = nil
+	c.Addresses = nil
 	c.TagIDs = nil
 
 	// Create the contact
@@ -63,40 +61,28 @@ func (h *contactHandler) Create(ctx context.Context, c *contact.Contact) (*conta
 		return nil, fmt.Errorf("could not create contact: %w", err)
 	}
 
-	// Add phone numbers
-	for _, p := range phoneNumbers {
-		p.ID = h.utilHandler.UUIDCreate()
-		p.CustomerID = c.CustomerID
-		p.ContactID = c.ID
-		p.Number = normalizeE164("", p.Number)
+	// Add addresses
+	for _, a := range addresses {
+		a.ID = h.utilHandler.UUIDCreate()
+		a.CustomerID = c.CustomerID
+		a.ContactID = c.ID
 
-		if p.IsPrimary {
-			if err := h.db.PhoneNumberResetPrimary(ctx, c.ID); err != nil {
-				log.Warnf("Could not reset primary phone number. err: %v", err)
+		// normalize
+		switch a.Type {
+		case contact.AddressTypeTel:
+			a.Target = normalizeE164("", a.Target)
+		case contact.AddressTypeEmail:
+			a.Target, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, a.Target)
+		}
+
+		if a.IsPrimary {
+			if err := h.db.AddressResetPrimary(ctx, c.ID); err != nil {
+				log.Warnf("Could not reset primary address. err: %v", err)
 			}
 		}
 
-		if err := h.db.PhoneNumberCreate(ctx, &p); err != nil {
-			log.Warnf("Could not create phone number. err: %v", err)
-		}
-	}
-
-	// Add emails
-	for _, e := range emails {
-		e.ID = h.utilHandler.UUIDCreate()
-		e.CustomerID = c.CustomerID
-		e.ContactID = c.ID
-		// Normalize email via the shared canonicalization authority
-		e.Address, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, e.Address)
-
-		if e.IsPrimary {
-			if err := h.db.EmailResetPrimary(ctx, c.ID); err != nil {
-				log.Warnf("Could not reset primary email. err: %v", err)
-			}
-		}
-
-		if err := h.db.EmailCreate(ctx, &e); err != nil {
-			log.Warnf("Could not create email. err: %v", err)
+		if err := h.db.AddressCreate(ctx, &a); err != nil {
+			log.Warnf("Could not create address. err: %v", err)
 		}
 	}
 
@@ -227,8 +213,8 @@ func (h *contactHandler) LookupByPhone(ctx context.Context, customerID uuid.UUID
 		return nil, err
 	}
 
-	// A soft-deleted contact must not enrich an inbound call. The phone/email
-	// child tables are not soft-deleted, so the lookup can resolve to a
+	// A soft-deleted contact must not enrich an inbound call. The address
+	// child table is not soft-deleted, so the lookup can resolve to a
 	// tombstoned contact; treat that as not-found.
 	if res.TMDelete != nil {
 		return nil, cerrors.NotFound(
@@ -257,7 +243,7 @@ func (h *contactHandler) LookupByEmail(ctx context.Context, customerID uuid.UUID
 	}
 
 	// A soft-deleted contact must not enrich an inbound message. The
-	// phone/email child tables are not soft-deleted, so the lookup can resolve
+	// address child table is not soft-deleted, so the lookup can resolve
 	// to a tombstoned contact; treat that as not-found.
 	if res.TMDelete != nil {
 		return nil, cerrors.NotFound(
@@ -269,36 +255,35 @@ func (h *contactHandler) LookupByEmail(ctx context.Context, customerID uuid.UUID
 	return res, nil
 }
 
-// AddPhoneNumber adds a phone number to a contact
-func (h *contactHandler) AddPhoneNumber(ctx context.Context, contactID uuid.UUID, p *contact.PhoneNumber) (*contact.Contact, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "AddPhoneNumber",
-		"contact_id": contactID,
-	})
-
+// AddAddress adds an address to a contact
+func (h *contactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a *contact.Address) (*contact.Contact, error) {
 	// Get the contact to verify it exists and get customer_id
 	c, err := h.db.ContactGet(ctx, contactID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set the phone number fields
-	p.ID = h.utilHandler.UUIDCreate()
-	p.CustomerID = c.CustomerID
-	p.ContactID = contactID
-	p.Number = normalizeE164("", p.Number)
+	a.ID = h.utilHandler.UUIDCreate()
+	a.CustomerID = c.CustomerID
+	a.ContactID = contactID
+
+	// normalize
+	switch a.Type {
+	case contact.AddressTypeTel:
+		a.Target = normalizeE164("", a.Target)
+	case contact.AddressTypeEmail:
+		a.Target, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, a.Target)
+	}
 
 	// Enforce single primary: reset existing primaries before setting new one
-	if p.IsPrimary {
-		if err := h.db.PhoneNumberResetPrimary(ctx, contactID); err != nil {
-			log.Errorf("Could not reset primary phone number. err: %v", err)
-			return nil, fmt.Errorf("could not reset primary phone number: %w", err)
+	if a.IsPrimary {
+		if err := h.db.AddressResetPrimary(ctx, contactID); err != nil {
+			return nil, fmt.Errorf("could not reset primary address: %w", err)
 		}
 	}
 
-	if err := h.db.PhoneNumberCreate(ctx, p); err != nil {
-		log.Errorf("Could not create phone number. err: %v", err)
-		return nil, fmt.Errorf("could not create phone number: %w", err)
+	if err := h.db.AddressCreate(ctx, a); err != nil {
+		return nil, fmt.Errorf("could not create address: %w", err)
 	}
 
 	// Get the updated contact
@@ -307,173 +292,72 @@ func (h *contactHandler) AddPhoneNumber(ctx context.Context, contactID uuid.UUID
 		return nil, fmt.Errorf("could not get updated contact: %w", err)
 	}
 
-	// Publish event
 	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
-
 	return res, nil
 }
 
-// UpdatePhoneNumber updates a phone number on a contact
-func (h *contactHandler) UpdatePhoneNumber(ctx context.Context, contactID, phoneID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "UpdatePhoneNumber",
-		"contact_id": contactID,
-		"phone_id":   phoneID,
-	})
-
-	// Enforce single primary if setting is_primary to true
-	if isPrimary, ok := fields["is_primary"]; ok {
-		if primary, isBool := isPrimary.(bool); isBool && primary {
-			if err := h.db.PhoneNumberResetPrimary(ctx, contactID); err != nil {
-				log.Errorf("Could not reset primary phone number. err: %v", err)
-				return nil, fmt.Errorf("could not reset primary phone number: %w", err)
-			}
-		}
-	}
-
-	// Normalize the number to E.164 in place if it is being updated
-	if number, ok := fields["number"]; ok {
-		if numStr, isStr := number.(string); isStr {
-			fields["number"] = normalizeE164("", numStr)
-		}
-	}
-
-	if err := h.db.PhoneNumberUpdate(ctx, phoneID, fields); err != nil {
-		log.Errorf("Could not update phone number. err: %v", err)
-		return nil, fmt.Errorf("could not update phone number: %w", err)
-	}
-
-	res, err := h.db.ContactGet(ctx, contactID)
-	if err != nil {
-		return nil, fmt.Errorf("could not get updated contact: %w", err)
-	}
-
-	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
-
-	return res, nil
-}
-
-// RemovePhoneNumber removes a phone number from a contact
-func (h *contactHandler) RemovePhoneNumber(ctx context.Context, contactID, phoneID uuid.UUID) (*contact.Contact, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "RemovePhoneNumber",
-		"contact_id": contactID,
-		"phone_id":   phoneID,
-	})
-
-	if err := h.db.PhoneNumberDelete(ctx, phoneID); err != nil {
-		log.Errorf("Could not delete phone number. err: %v", err)
-		return nil, fmt.Errorf("could not delete phone number: %w", err)
-	}
-
-	// Get the updated contact
-	res, err := h.db.ContactGet(ctx, contactID)
-	if err != nil {
-		return nil, fmt.Errorf("could not get updated contact: %w", err)
-	}
-
-	// Publish event
-	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
-
-	return res, nil
-}
-
-// AddEmail adds an email to a contact
-func (h *contactHandler) AddEmail(ctx context.Context, contactID uuid.UUID, e *contact.Email) (*contact.Contact, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "AddEmail",
-		"contact_id": contactID,
-	})
-
-	// Get the contact to verify it exists and get customer_id
+// UpdateAddress updates an address on a contact
+func (h *contactHandler) UpdateAddress(ctx context.Context, contactID, addressID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
+	// Get contact to verify it exists (for tenant isolation)
 	c, err := h.db.ContactGet(ctx, contactID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set the email fields
-	e.ID = h.utilHandler.UUIDCreate()
-	e.CustomerID = c.CustomerID
-	e.ContactID = contactID
-	// Normalize email via the shared canonicalization authority
-	e.Address, _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, e.Address)
-
-	// Enforce single primary: reset existing primaries before setting new one
-	if e.IsPrimary {
-		if err := h.db.EmailResetPrimary(ctx, contactID); err != nil {
-			log.Errorf("Could not reset primary email. err: %v", err)
-			return nil, fmt.Errorf("could not reset primary email: %w", err)
-		}
-	}
-
-	if err := h.db.EmailCreate(ctx, e); err != nil {
-		log.Errorf("Could not create email. err: %v", err)
-		return nil, fmt.Errorf("could not create email: %w", err)
-	}
-
-	// Get the updated contact
-	res, err := h.db.ContactGet(ctx, contactID)
+	// Get address to verify existence + tenant isolation and to get its type for normalization
+	addr, err := h.db.AddressGet(ctx, c.CustomerID, addressID)
 	if err != nil {
-		return nil, fmt.Errorf("could not get updated contact: %w", err)
+		return nil, err // ErrNotFound → 404
 	}
 
-	// Publish event
-	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
-
-	return res, nil
-}
-
-// UpdateEmail updates an email on a contact
-func (h *contactHandler) UpdateEmail(ctx context.Context, contactID, emailID uuid.UUID, fields map[string]any) (*contact.Contact, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "UpdateEmail",
-		"contact_id": contactID,
-		"email_id":   emailID,
-	})
-
-	// Enforce single primary if setting is_primary to true
-	if isPrimary, ok := fields["is_primary"]; ok {
-		if primary, isBool := isPrimary.(bool); isBool && primary {
-			if err := h.db.EmailResetPrimary(ctx, contactID); err != nil {
-				log.Errorf("Could not reset primary email. err: %v", err)
-				return nil, fmt.Errorf("could not reset primary email: %w", err)
+	// Normalize target if being updated
+	if target, ok := fields["target"]; ok {
+		if targetStr, isStr := target.(string); isStr {
+			switch addr.Type {
+			case contact.AddressTypeTel:
+				fields["target"] = normalizeE164("", targetStr)
+			case contact.AddressTypeEmail:
+				fields["target"], _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, targetStr)
 			}
 		}
 	}
 
-	// Normalize email address if being updated
-	if address, ok := fields["address"]; ok {
-		if addrStr, isStr := address.(string); isStr {
-			fields["address"], _ = commonaddress.NormalizeTarget(commonaddress.TypeEmail, addrStr)
+	// Enforce single primary if setting is_primary to true
+	if isPrimary, ok := fields["is_primary"]; ok {
+		if primary, isBool := isPrimary.(bool); isBool && primary {
+			if err := h.db.AddressResetPrimary(ctx, contactID); err != nil {
+				return nil, fmt.Errorf("could not reset primary address: %w", err)
+			}
 		}
 	}
 
-	if err := h.db.EmailUpdate(ctx, emailID, fields); err != nil {
-		log.Errorf("Could not update email. err: %v", err)
-		return nil, fmt.Errorf("could not update email: %w", err)
+	if err := h.db.AddressUpdate(ctx, addressID, fields); err != nil {
+		return nil, fmt.Errorf("could not update address: %w", err)
 	}
 
 	res, err := h.db.ContactGet(ctx, contactID)
 	if err != nil {
 		return nil, fmt.Errorf("could not get updated contact: %w", err)
 	}
-
 	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
-
 	return res, nil
 }
 
-// RemoveEmail removes an email from a contact
-func (h *contactHandler) RemoveEmail(ctx context.Context, contactID, emailID uuid.UUID) (*contact.Contact, error) {
-	log := logrus.WithFields(logrus.Fields{
-		"func":       "RemoveEmail",
-		"contact_id": contactID,
-		"email_id":   emailID,
-	})
+// RemoveAddress removes an address from a contact
+func (h *contactHandler) RemoveAddress(ctx context.Context, contactID, addressID uuid.UUID) (*contact.Contact, error) {
+	// Verify contact exists
+	c, err := h.db.ContactGet(ctx, contactID)
+	if err != nil {
+		return nil, err
+	}
 
-	if err := h.db.EmailDelete(ctx, emailID); err != nil {
-		log.Errorf("Could not delete email. err: %v", err)
-		return nil, fmt.Errorf("could not delete email: %w", err)
+	// Verify address existence + tenant isolation
+	if _, err := h.db.AddressGet(ctx, c.CustomerID, addressID); err != nil {
+		return nil, err // ErrNotFound → 404
+	}
+
+	if err := h.db.AddressDelete(ctx, addressID); err != nil {
+		return nil, fmt.Errorf("could not delete address: %w", err)
 	}
 
 	// Get the updated contact
@@ -482,9 +366,7 @@ func (h *contactHandler) RemoveEmail(ctx context.Context, contactID, emailID uui
 		return nil, fmt.Errorf("could not get updated contact: %w", err)
 	}
 
-	// Publish event
 	h.publishEvent(ctx, contact.EventTypeContactUpdated, res)
-
 	return res, nil
 }
 

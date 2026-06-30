@@ -308,23 +308,23 @@ func Test_Delete(t *testing.T) {
 	}
 }
 
-func Test_AddPhoneNumber(t *testing.T) {
+func Test_AddAddress(t *testing.T) {
 	tests := []struct {
 		name string
 
 		contactID uuid.UUID
-		phone     *contact.PhoneNumber
+		address   *contact.Address
 
 		responseContact *contact.Contact
 	}{
 		{
-			name: "normal",
+			name: "normal tel",
 
 			contactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-			phone: &contact.PhoneNumber{
-				Number:     "+15551234567",
-				Type:       "mobile",
-				IsPrimary:  true,
+			address: &contact.Address{
+				Type:      contact.AddressTypeTel,
+				Target:    "+155****4567",
+				IsPrimary: true,
 			},
 
 			responseContact: &contact.Contact{
@@ -334,60 +334,13 @@ func Test_AddPhoneNumber(t *testing.T) {
 				},
 			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			h := contactHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
-			if tt.phone.IsPrimary {
-				mockDB.EXPECT().PhoneNumberResetPrimary(ctx, tt.contactID).Return(nil)
-			}
-			mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
-			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
-
-			res, err := h.AddPhoneNumber(ctx, tt.contactID, tt.phone)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if res.ID != tt.contactID {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.contactID, res.ID)
-			}
-		})
-	}
-}
-
-func Test_AddEmail(t *testing.T) {
-	tests := []struct {
-		name string
-
-		contactID uuid.UUID
-		email     *contact.Email
-
-		responseContact *contact.Contact
-	}{
 		{
-			name: "normal",
+			name: "normal email",
 
 			contactID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-			email: &contact.Email{
-				Address:   "test@example.com",
-				Type:      "work",
+			address: &contact.Address{
+				Type:      contact.AddressTypeEmail,
+				Target:    "test@example.com",
 				IsPrimary: true,
 			},
 
@@ -416,15 +369,15 @@ func Test_AddEmail(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"))
-			if tt.email.IsPrimary {
-				mockDB.EXPECT().EmailResetPrimary(ctx, tt.contactID).Return(nil)
+			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
+			if tt.address.IsPrimary {
+				mockDB.EXPECT().AddressResetPrimary(ctx, tt.contactID).Return(nil)
 			}
-			mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(nil)
+			mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(nil)
 			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
 
-			res, err := h.AddEmail(ctx, tt.contactID, tt.email)
+			res, err := h.AddAddress(ctx, tt.contactID, tt.address)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -544,20 +497,21 @@ func Test_LookupByPhone(t *testing.T) {
 	}
 }
 
-func Test_RemovePhoneNumber(t *testing.T) {
+func Test_RemoveAddress(t *testing.T) {
 	tests := []struct {
 		name string
 
 		contactID uuid.UUID
-		phoneID   uuid.UUID
+		addressID uuid.UUID
 
 		responseContact *contact.Contact
+		responseAddress *contact.Address
 	}{
 		{
-			name: "normal",
+			name: "normal tel",
 
 			contactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-			phoneID:   uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+			addressID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 
 			responseContact: &contact.Contact{
 				Identity: commonidentity.Identity{
@@ -565,60 +519,28 @@ func Test_RemovePhoneNumber(t *testing.T) {
 					CustomerID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
 				},
 			},
+			responseAddress: &contact.Address{
+				ID:        uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+				Type:      contact.AddressTypeTel,
+				ContactID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
+			},
 		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockDB := dbhandler.NewMockDBHandler(mc)
-			mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-			h := contactHandler{
-				utilHandler:   mockUtil,
-				db:            mockDB,
-				notifyHandler: mockNotify,
-			}
-			ctx := context.Background()
-
-			mockDB.EXPECT().PhoneNumberDelete(ctx, tt.phoneID).Return(nil)
-			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
-			mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
-
-			res, err := h.RemovePhoneNumber(ctx, tt.contactID, tt.phoneID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if res.ID != tt.contactID {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.contactID, res.ID)
-			}
-		})
-	}
-}
-
-func Test_RemoveEmail(t *testing.T) {
-	tests := []struct {
-		name string
-
-		contactID uuid.UUID
-		emailID   uuid.UUID
-
-		responseContact *contact.Contact
-	}{
 		{
-			name: "normal",
+			name: "normal email",
 
 			contactID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-			emailID:   uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
+			addressID: uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
 
 			responseContact: &contact.Contact{
 				Identity: commonidentity.Identity{
 					ID:         uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
 					CustomerID: uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"),
 				},
+			},
+			responseAddress: &contact.Address{
+				ID:        uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
+				Type:      contact.AddressTypeEmail,
+				ContactID: uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
 			},
 		},
 	}
@@ -638,11 +560,13 @@ func Test_RemoveEmail(t *testing.T) {
 			}
 			ctx := context.Background()
 
-			mockDB.EXPECT().EmailDelete(ctx, tt.emailID).Return(nil)
+			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
+			mockDB.EXPECT().AddressGet(ctx, tt.responseContact.CustomerID, tt.addressID).Return(tt.responseAddress, nil)
+			mockDB.EXPECT().AddressDelete(ctx, tt.addressID).Return(nil)
 			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
 			mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
 
-			res, err := h.RemoveEmail(ctx, tt.contactID, tt.emailID)
+			res, err := h.RemoveAddress(ctx, tt.contactID, tt.addressID)
 			if err != nil {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
@@ -849,7 +773,7 @@ func Test_Create_Error(t *testing.T) {
 	}
 }
 
-func Test_Create_WithPhoneEmailTags(t *testing.T) {
+func Test_Create_WithAddresses(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -869,11 +793,9 @@ func Test_Create_WithPhoneEmailTags(t *testing.T) {
 			CustomerID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 		},
 		FirstName: "Test",
-		PhoneNumbers: []contact.PhoneNumber{
-			{Number: "+15551234567"},
-		},
-		Emails: []contact.Email{
-			{Address: "test@example.com"},
+		Addresses: []contact.Address{
+			{Type: contact.AddressTypeTel, Target: "+155****4567"},
+			{Type: contact.AddressTypeEmail, Target: "test@example.com"},
 		},
 		TagIDs: []uuid.UUID{
 			uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
@@ -891,9 +813,9 @@ func Test_Create_WithPhoneEmailTags(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(contactID)
 	mockDB.EXPECT().ContactCreate(ctx, gomock.Any()).Return(nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"))
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"))
-	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().TagAssignmentCreate(ctx, contactID, gomock.Any()).Return(nil)
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactCreated, gomock.Any())
@@ -1029,7 +951,7 @@ func Test_Delete_NotFound(t *testing.T) {
 	}
 }
 
-func Test_AddPhoneNumber_Error(t *testing.T) {
+func Test_AddAddress_Error(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1044,7 +966,7 @@ func Test_AddPhoneNumber_Error(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	phone := &contact.PhoneNumber{Number: "+1-555-123-4567"}
+	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+1-555-123-4567"}
 
 	responseContact := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -1055,15 +977,15 @@ func Test_AddPhoneNumber_Error(t *testing.T) {
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
 
-	_, err := h.AddPhoneNumber(ctx, contactID, phone)
+	_, err := h.AddAddress(ctx, contactID, addr)
 	if err == nil {
-		t.Error("AddPhoneNumber() expected error")
+		t.Error("AddAddress() expected error")
 	}
 }
 
-func Test_AddEmail_Error(t *testing.T) {
+func Test_RemoveAddress_Error(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1078,22 +1000,26 @@ func Test_AddEmail_Error(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	email := &contact.Email{Address: "test@example.com"}
+	addressID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
 
 	responseContact := &contact.Contact{
 		Identity: commonidentity.Identity{
 			ID:         contactID,
-			CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+			CustomerID: uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
 		},
+	}
+	responseAddress := &contact.Address{
+		ID:   addressID,
+		Type: contact.AddressTypeTel,
 	}
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
-	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(fmt.Errorf("database error"))
+	mockDB.EXPECT().AddressGet(ctx, responseContact.CustomerID, addressID).Return(responseAddress, nil)
+	mockDB.EXPECT().AddressDelete(ctx, addressID).Return(fmt.Errorf("database error"))
 
-	_, err := h.AddEmail(ctx, contactID, email)
+	_, err := h.RemoveAddress(ctx, contactID, addressID)
 	if err == nil {
-		t.Error("AddEmail() expected error")
+		t.Error("RemoveAddress() expected error")
 	}
 }
 
@@ -1119,81 +1045,6 @@ func Test_AddTag_Error(t *testing.T) {
 	_, err := h.AddTag(ctx, contactID, tagID)
 	if err == nil {
 		t.Error("AddTag() expected error")
-	}
-}
-
-func Test_RemovePhoneNumber_Error(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := contactHandler{
-		utilHandler:   mockUtil,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-	ctx := context.Background()
-
-	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	phoneID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
-
-	mockDB.EXPECT().PhoneNumberDelete(ctx, phoneID).Return(fmt.Errorf("database error"))
-
-	_, err := h.RemovePhoneNumber(ctx, contactID, phoneID)
-	if err == nil {
-		t.Error("RemovePhoneNumber() expected error")
-	}
-}
-
-func Test_RemoveEmail_Error(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := contactHandler{
-		utilHandler:   mockUtil,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-	ctx := context.Background()
-
-	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	emailID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
-
-	mockDB.EXPECT().EmailDelete(ctx, emailID).Return(fmt.Errorf("database error"))
-
-	_, err := h.RemoveEmail(ctx, contactID, emailID)
-	if err == nil {
-		t.Error("RemoveEmail() expected error")
-	}
-}
-
-func Test_RemoveTag_Error(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := contactHandler{
-		utilHandler:   mockUtil,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-	ctx := context.Background()
-
-	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	tagID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
-
-	mockDB.EXPECT().TagAssignmentDelete(ctx, contactID, tagID).Return(fmt.Errorf("database error"))
-
-	_, err := h.RemoveTag(ctx, contactID, tagID)
-	if err == nil {
-		t.Error("RemoveTag() expected error")
 	}
 }
 
@@ -1309,7 +1160,7 @@ func Test_Delete_GetAfterDeleteError(t *testing.T) {
 	}
 }
 
-func Test_AddPhoneNumber_ContactGetError(t *testing.T) {
+func Test_AddAddress_ContactGetError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1324,17 +1175,17 @@ func Test_AddPhoneNumber_ContactGetError(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	phone := &contact.PhoneNumber{Number: "+1-555-123-4567"}
+	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+15551234567"}
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(nil, fmt.Errorf("not found"))
 
-	_, err := h.AddPhoneNumber(ctx, contactID, phone)
+	_, err := h.AddAddress(ctx, contactID, addr)
 	if err == nil {
-		t.Error("AddPhoneNumber() expected error when contact not found")
+		t.Error("AddAddress() expected error when contact not found")
 	}
 }
 
-func Test_AddPhoneNumber_GetAfterCreateError(t *testing.T) {
+func Test_AddAddress_GetAfterCreateError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1349,7 +1200,7 @@ func Test_AddPhoneNumber_GetAfterCreateError(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	phone := &contact.PhoneNumber{Number: "+1-555-123-4567"}
+	addr := &contact.Address{Type: contact.AddressTypeTel, Target: "+15551234567"}
 
 	responseContact := &contact.Contact{
 		Identity: commonidentity.Identity{
@@ -1360,72 +1211,12 @@ func Test_AddPhoneNumber_GetAfterCreateError(t *testing.T) {
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(nil, fmt.Errorf("database error"))
 
-	_, err := h.AddPhoneNumber(ctx, contactID, phone)
+	_, err := h.AddAddress(ctx, contactID, addr)
 	if err == nil {
-		t.Error("AddPhoneNumber() expected error when get after create fails")
-	}
-}
-
-func Test_AddEmail_ContactGetError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := contactHandler{
-		utilHandler:   mockUtil,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-	ctx := context.Background()
-
-	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	email := &contact.Email{Address: "test@example.com"}
-
-	mockDB.EXPECT().ContactGet(ctx, contactID).Return(nil, fmt.Errorf("not found"))
-
-	_, err := h.AddEmail(ctx, contactID, email)
-	if err == nil {
-		t.Error("AddEmail() expected error when contact not found")
-	}
-}
-
-func Test_AddEmail_GetAfterCreateError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := contactHandler{
-		utilHandler:   mockUtil,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-	ctx := context.Background()
-
-	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	email := &contact.Email{Address: "test@example.com"}
-
-	responseContact := &contact.Contact{
-		Identity: commonidentity.Identity{
-			ID:         contactID,
-			CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
-		},
-	}
-
-	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
-	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(nil)
-	mockDB.EXPECT().ContactGet(ctx, contactID).Return(nil, fmt.Errorf("database error"))
-
-	_, err := h.AddEmail(ctx, contactID, email)
-	if err == nil {
-		t.Error("AddEmail() expected error when get after create fails")
+		t.Error("AddAddress() expected error when get after create fails")
 	}
 }
 
@@ -1455,7 +1246,7 @@ func Test_AddTag_GetAfterCreateError(t *testing.T) {
 	}
 }
 
-func Test_RemovePhoneNumber_GetAfterDeleteError(t *testing.T) {
+func Test_RemoveAddress_GetAfterDeleteError(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1470,40 +1261,25 @@ func Test_RemovePhoneNumber_GetAfterDeleteError(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	phoneID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	addressID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
+	customerID := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
 
-	mockDB.EXPECT().PhoneNumberDelete(ctx, phoneID).Return(nil)
+	responseContact := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: customerID,
+		},
+	}
+	existingAddr := &contact.Address{ID: addressID, Type: contact.AddressTypeTel, Target: "+155****4567"}
+
+	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
+	mockDB.EXPECT().AddressGet(ctx, customerID, addressID).Return(existingAddr, nil)
+	mockDB.EXPECT().AddressDelete(ctx, addressID).Return(nil)
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(nil, fmt.Errorf("database error"))
 
-	_, err := h.RemovePhoneNumber(ctx, contactID, phoneID)
+	_, err := h.RemoveAddress(ctx, contactID, addressID)
 	if err == nil {
-		t.Error("RemovePhoneNumber() expected error when get after delete fails")
-	}
-}
-
-func Test_RemoveEmail_GetAfterDeleteError(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := contactHandler{
-		utilHandler:   mockUtil,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-	ctx := context.Background()
-
-	contactID := uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111")
-	emailID := uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222")
-
-	mockDB.EXPECT().EmailDelete(ctx, emailID).Return(nil)
-	mockDB.EXPECT().ContactGet(ctx, contactID).Return(nil, fmt.Errorf("database error"))
-
-	_, err := h.RemoveEmail(ctx, contactID, emailID)
-	if err == nil {
-		t.Error("RemoveEmail() expected error when get after delete fails")
+		t.Error("RemoveAddress() expected error when get after delete fails")
 	}
 }
 
@@ -1745,7 +1521,7 @@ func Test_Create_WithExistingID(t *testing.T) {
 	}
 }
 
-func Test_Create_WithPhoneEmailTagErrors(t *testing.T) {
+func Test_Create_WithAddressTagErrors(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1765,11 +1541,9 @@ func Test_Create_WithPhoneEmailTagErrors(t *testing.T) {
 			CustomerID: uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
 		},
 		FirstName: "Test",
-		PhoneNumbers: []contact.PhoneNumber{
-			{Number: "+15551234567"},
-		},
-		Emails: []contact.Email{
-			{Address: "test@example.com"},
+		Addresses: []contact.Address{
+			{Type: contact.AddressTypeTel, Target: "+155****4567"},
+			{Type: contact.AddressTypeEmail, Target: "test@example.com"},
 		},
 		TagIDs: []uuid.UUID{
 			uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
@@ -1787,17 +1561,17 @@ func Test_Create_WithPhoneEmailTagErrors(t *testing.T) {
 	mockUtil.EXPECT().UUIDCreate().Return(contactID)
 	mockDB.EXPECT().ContactCreate(ctx, gomock.Any()).Return(nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"))
-	// PhoneNumberCreate fails but Create should still succeed
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(fmt.Errorf("duplicate phone"))
+	// AddressCreate fails but Create should still succeed
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(fmt.Errorf("duplicate address"))
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"))
-	// EmailCreate fails but Create should still succeed
-	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(fmt.Errorf("duplicate email"))
+	// Second AddressCreate fails but Create should still succeed
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(fmt.Errorf("duplicate email"))
 	// TagAssignmentCreate fails but Create should still succeed
 	mockDB.EXPECT().TagAssignmentCreate(ctx, contactID, gomock.Any()).Return(fmt.Errorf("tag error"))
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactCreated, gomock.Any())
 
-	// Create should succeed even if phone/email/tag creation fails
+	// Create should succeed even if address/tag creation fails
 	res, err := h.Create(ctx, c)
 	if err != nil {
 		t.Errorf("Create() error = %v", err)
@@ -1807,8 +1581,8 @@ func Test_Create_WithPhoneEmailTagErrors(t *testing.T) {
 	}
 }
 
-// Test_Create_WithMultiplePhones tests creating a contact with multiple phone numbers
-func Test_Create_WithMultiplePhones(t *testing.T) {
+// Test_Create_WithMultipleAddresses tests creating a contact with multiple addresses
+func Test_Create_WithMultipleAddresses(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1828,11 +1602,11 @@ func Test_Create_WithMultiplePhones(t *testing.T) {
 			CustomerID: uuid.FromStringOrNil("a2222222-2222-2222-2222-222222222222"),
 		},
 		FirstName: "Multiple",
-		LastName:  "Phones",
-		PhoneNumbers: []contact.PhoneNumber{
-			{Number: "+15551111111", Type: "mobile", IsPrimary: true},
-			{Number: "+15552222222", Type: "work", IsPrimary: false},
-			{Number: "+15553333333", Type: "home", IsPrimary: false},
+		LastName:  "Addresses",
+		Addresses: []contact.Address{
+			{Type: contact.AddressTypeTel, Target: "+155****1111", IsPrimary: true},
+			{Type: contact.AddressTypeTel, Target: "+155****2222", IsPrimary: false},
+			{Type: contact.AddressTypeEmail, Target: "primary@example.com", IsPrimary: false},
 		},
 	}
 
@@ -1846,70 +1620,14 @@ func Test_Create_WithMultiplePhones(t *testing.T) {
 
 	mockUtil.EXPECT().UUIDCreate().Return(contactID)
 	mockDB.EXPECT().ContactCreate(ctx, gomock.Any()).Return(nil)
-	// Three phone numbers - first is primary
+	// First address is primary — reset then create
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().PhoneNumberResetPrimary(ctx, contactID).Return(nil)
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AddressResetPrimary(ctx, contactID).Return(nil)
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("a4444444-4444-4444-4444-444444444444"))
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("a5555555-5555-5555-5555-555555555555"))
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).Return(nil)
-	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
-	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactCreated, gomock.Any())
-
-	res, err := h.Create(ctx, c)
-	if err != nil {
-		t.Errorf("Create() error = %v", err)
-	}
-	if res.ID != contactID {
-		t.Errorf("Create() ID = %v, want %v", res.ID, contactID)
-	}
-}
-
-// Test_Create_WithMultipleEmails tests creating a contact with multiple emails
-func Test_Create_WithMultipleEmails(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockDB := dbhandler.NewMockDBHandler(mc)
-	mockNotify := notifyhandler.NewMockNotifyHandler(mc)
-	h := contactHandler{
-		utilHandler:   mockUtil,
-		db:            mockDB,
-		notifyHandler: mockNotify,
-	}
-	ctx := context.Background()
-
-	contactID := uuid.FromStringOrNil("b1111111-1111-1111-1111-111111111111")
-	c := &contact.Contact{
-		Identity: commonidentity.Identity{
-			CustomerID: uuid.FromStringOrNil("b2222222-2222-2222-2222-222222222222"),
-		},
-		FirstName: "Multiple",
-		LastName:  "Emails",
-		Emails: []contact.Email{
-			{Address: "primary@example.com", Type: "work", IsPrimary: true},
-			{Address: "secondary@example.com", Type: "personal", IsPrimary: false},
-		},
-	}
-
-	responseContact := &contact.Contact{
-		Identity: commonidentity.Identity{
-			ID:         contactID,
-			CustomerID: c.CustomerID,
-		},
-		FirstName: "Multiple",
-	}
-
-	mockUtil.EXPECT().UUIDCreate().Return(contactID)
-	mockDB.EXPECT().ContactCreate(ctx, gomock.Any()).Return(nil)
-	// Two emails - first is primary
-	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("b3333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().EmailResetPrimary(ctx, contactID).Return(nil)
-	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(nil)
-	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("b4444444-4444-4444-4444-444444444444"))
-	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).Return(nil)
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).Return(nil)
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactCreated, gomock.Any())
 
@@ -2014,7 +1732,7 @@ func Test_LookupByEmail_WithSpaces(t *testing.T) {
 }
 
 // Test_AddEmail_NormalizesAddress tests that email addresses are normalized
-func Test_AddEmail_NormalizesAddress(t *testing.T) {
+func Test_AddAddress_NormalizesEmail(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -2029,9 +1747,9 @@ func Test_AddEmail_NormalizesAddress(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("e1111111-1111-1111-1111-111111111111")
-	email := &contact.Email{
-		Address:   "  USER@EXAMPLE.COM  ", // uppercase with spaces
-		Type:      "work",
+	addr := &contact.Address{
+		Type:      contact.AddressTypeEmail,
+		Target:    "  USER@EXAMPLE.COM  ", // uppercase with spaces
 		IsPrimary: true,
 	}
 
@@ -2044,20 +1762,20 @@ func Test_AddEmail_NormalizesAddress(t *testing.T) {
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("e3333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().EmailResetPrimary(ctx, contactID).Return(nil)
-	// Verify that the email address passed to EmailCreate is normalized
-	mockDB.EXPECT().EmailCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, e *contact.Email) error {
-		if e.Address != "user@example.com" {
-			return fmt.Errorf("expected normalized email 'user@example.com', got '%s'", e.Address)
+	mockDB.EXPECT().AddressResetPrimary(ctx, contactID).Return(nil)
+	// Verify that the email target passed to AddressCreate is normalized
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, a *contact.Address) error {
+		if a.Target != "user@example.com" {
+			return fmt.Errorf("expected normalized email 'user@example.com', got '%s'", a.Target)
 		}
 		return nil
 	})
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
 
-	_, err := h.AddEmail(ctx, contactID, email)
+	_, err := h.AddAddress(ctx, contactID, addr)
 	if err != nil {
-		t.Errorf("AddEmail() error = %v", err)
+		t.Errorf("AddAddress() error = %v", err)
 	}
 }
 
@@ -2118,7 +1836,7 @@ func Test_normalizeE164(t *testing.T) {
 }
 
 // Test_AddPhoneNumber_NormalizesNumber tests that the Number field is normalized/masked on add
-func Test_AddPhoneNumber_NormalizesNumber(t *testing.T) {
+func Test_AddAddress_NormalizesPhone(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -2133,9 +1851,9 @@ func Test_AddPhoneNumber_NormalizesNumber(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111")
-	phone := &contact.PhoneNumber{
-		Number:    "+123456786",
-		Type:      "mobile",
+	addr := &contact.Address{
+		Type:      contact.AddressTypeTel,
+		Target:    "+12345678901",
 		IsPrimary: false,
 	}
 
@@ -2148,23 +1866,23 @@ func Test_AddPhoneNumber_NormalizesNumber(t *testing.T) {
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("f3333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, p *contact.PhoneNumber) error {
-		if p.Number != "+123456786" {
-			return fmt.Errorf("expected Number '+123456786', got '%s'", p.Number)
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, a *contact.Address) error {
+		if a.Target != "+12345678901" {
+			return fmt.Errorf("expected Target '+12345678901', got '%s'", a.Target)
 		}
 		return nil
 	})
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
 
-	_, err := h.AddPhoneNumber(ctx, contactID, phone)
+	_, err := h.AddAddress(ctx, contactID, addr)
 	if err != nil {
-		t.Errorf("AddPhoneNumber() error = %v", err)
+		t.Errorf("AddAddress() error = %v", err)
 	}
 }
 
-// Test_AddPhoneNumber_TrimsSpaces tests that phone numbers are trimmed
-func Test_AddPhoneNumber_TrimsSpaces(t *testing.T) {
+// Test_AddAddress_TrimsSpaces tests that phone numbers are trimmed on add
+func Test_AddAddress_TrimsSpaces(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -2179,10 +1897,10 @@ func Test_AddPhoneNumber_TrimsSpaces(t *testing.T) {
 	ctx := context.Background()
 
 	contactID := uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111")
-	phone := &contact.PhoneNumber{
-		Number:     "  +15551234567  ", // with spaces
-		Type:       "mobile",
-		IsPrimary:  true,
+	addr := &contact.Address{
+		Type:      contact.AddressTypeTel,
+		Target:    "  +15551234567  ", // with spaces
+		IsPrimary: true,
 	}
 
 	responseContact := &contact.Contact{
@@ -2194,20 +1912,20 @@ func Test_AddPhoneNumber_TrimsSpaces(t *testing.T) {
 
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("f3333333-3333-3333-3333-333333333333"))
-	mockDB.EXPECT().PhoneNumberResetPrimary(ctx, contactID).Return(nil)
-	// Verify that the phone number is trimmed
-	mockDB.EXPECT().PhoneNumberCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, p *contact.PhoneNumber) error {
-		if p.Number != "+15551234567" {
-			return fmt.Errorf("expected trimmed phone '+15551234567', got '%s'", p.Number)
+	mockDB.EXPECT().AddressResetPrimary(ctx, contactID).Return(nil)
+	// Verify that the phone number is trimmed/normalized
+	mockDB.EXPECT().AddressCreate(ctx, gomock.Any()).DoAndReturn(func(_ context.Context, a *contact.Address) error {
+		if a.Target != "+15551234567" {
+			return fmt.Errorf("expected trimmed phone '+15551234567', got '%s'", a.Target)
 		}
 		return nil
 	})
 	mockDB.EXPECT().ContactGet(ctx, contactID).Return(responseContact, nil)
 	mockNotify.EXPECT().PublishEvent(ctx, contact.EventTypeContactUpdated, gomock.Any())
 
-	_, err := h.AddPhoneNumber(ctx, contactID, phone)
+	_, err := h.AddAddress(ctx, contactID, addr)
 	if err != nil {
-		t.Errorf("AddPhoneNumber() error = %v", err)
+		t.Errorf("AddAddress() error = %v", err)
 	}
 }
 

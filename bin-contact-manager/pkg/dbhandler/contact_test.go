@@ -95,8 +95,7 @@ func Test_ContactCreate(t *testing.T) {
 			}
 
 			// Clear related data for comparison
-			res.PhoneNumbers = nil
-			res.Emails = nil
+			res.Addresses = nil
 			res.TagIDs = nil
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -224,8 +223,8 @@ func Test_ContactUpdate(t *testing.T) {
 			}
 
 			// Clear related data for comparison
-			res.PhoneNumbers = nil
-			res.Emails = nil
+			res.Addresses = nil
+			
 			res.TagIDs = nil
 
 			if reflect.DeepEqual(tt.expectRes, res) == false {
@@ -303,167 +302,6 @@ func Test_ContactDelete(t *testing.T) {
 		})
 	}
 }
-
-func Test_PhoneNumberCreate(t *testing.T) {
-	tests := []struct {
-		name    string
-		contact *contact.Contact
-		phone   *contact.PhoneNumber
-
-		responseCurTime *time.Time
-	}{
-		{
-			name: "normal",
-			contact: &contact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-					CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
-				},
-				FirstName: "Phone",
-				LastName:  "Test",
-				Source:    "manual",
-			},
-			phone: &contact.PhoneNumber{
-				ID:         uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
-				CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
-				ContactID:  uuid.FromStringOrNil("11111111-1111-1111-1111-111111111111"),
-				Number:     "+15551234567",
-				Type:       "mobile",
-				IsPrimary:  true,
-			},
-
-			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			// Create the contact first
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.ContactCreate(ctx, tt.contact); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			// Create phone number (this also updates the contact cache)
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.PhoneNumberCreate(ctx, tt.phone); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			// Get the contact and verify phone number is included
-			mockCache.EXPECT().ContactGet(ctx, tt.contact.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			res, err := h.ContactGet(ctx, tt.contact.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if len(res.PhoneNumbers) != 1 {
-				t.Errorf("Expected 1 phone number, got: %d", len(res.PhoneNumbers))
-			}
-
-			if res.PhoneNumbers[0].Number != tt.phone.Number {
-				t.Errorf("Phone number mismatch. expect: %s, got: %s", tt.phone.Number, res.PhoneNumbers[0].Number)
-			}
-		})
-	}
-}
-
-func Test_EmailCreate(t *testing.T) {
-	tests := []struct {
-		name    string
-		contact *contact.Contact
-		email   *contact.Email
-
-		responseCurTime *time.Time
-	}{
-		{
-			name: "normal",
-			contact: &contact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-					CustomerID: uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
-				},
-				FirstName: "Email",
-				LastName:  "Test",
-				Source:    "manual",
-			},
-			email: &contact.Email{
-				ID:         uuid.FromStringOrNil("66666666-6666-6666-6666-666666666666"),
-				CustomerID: uuid.FromStringOrNil("55555555-5555-5555-5555-555555555555"),
-				ContactID:  uuid.FromStringOrNil("44444444-4444-4444-4444-444444444444"),
-				Address:    "test@example.com",
-				Type:       "work",
-				IsPrimary:  true,
-			},
-
-			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			// Create the contact first
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.ContactCreate(ctx, tt.contact); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			// Create email (this also updates the contact cache)
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.EmailCreate(ctx, tt.email); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			// Get the contact and verify email is included
-			mockCache.EXPECT().ContactGet(ctx, tt.contact.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			res, err := h.ContactGet(ctx, tt.contact.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if len(res.Emails) != 1 {
-				t.Errorf("Expected 1 email, got: %d", len(res.Emails))
-			}
-
-			if res.Emails[0].Address != tt.email.Address {
-				t.Errorf("Email mismatch. expect: %s, got: %s", tt.email.Address, res.Emails[0].Address)
-			}
-		})
-	}
-}
-
-// Skip Test_ContactLookupByPhone due to SQLite nested query issues during iteration
-// This functionality is tested via contacthandler tests using proper mocks
 
 func Test_TagAssignmentCreate(t *testing.T) {
 	tests := []struct {
@@ -606,168 +444,6 @@ func Test_TagAssignmentDelete(t *testing.T) {
 
 			if len(res.TagIDs) != 0 {
 				t.Errorf("Expected 0 tags, got: %d", len(res.TagIDs))
-			}
-		})
-	}
-}
-
-func Test_PhoneNumberDelete(t *testing.T) {
-	tests := []struct {
-		name    string
-		contact *contact.Contact
-		phone   *contact.PhoneNumber
-
-		responseCurTime *time.Time
-	}{
-		{
-			name: "normal",
-			contact: &contact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd"),
-					CustomerID: uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
-				},
-				FirstName: "Phone",
-				LastName:  "Delete",
-				Source:    "manual",
-			},
-			phone: &contact.PhoneNumber{
-				ID:         uuid.FromStringOrNil("ffffffff-ffff-ffff-ffff-ffffffffffff"),
-				CustomerID: uuid.FromStringOrNil("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
-				ContactID:  uuid.FromStringOrNil("dddddddd-dddd-dddd-dddd-dddddddddddd"),
-				Number:     "+15559998888",
-				Type:       "mobile",
-				IsPrimary:  true,
-			},
-
-			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			// Create the contact first
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.ContactCreate(ctx, tt.contact); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			// Create phone number
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.PhoneNumberCreate(ctx, tt.phone); err != nil {
-				t.Errorf("PhoneNumberCreate() error = %v", err)
-			}
-
-			// Delete the phone number
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.PhoneNumberDelete(ctx, tt.phone.ID); err != nil {
-				t.Errorf("PhoneNumberDelete() error = %v", err)
-			}
-
-			// Get the contact and verify phone is removed
-			mockCache.EXPECT().ContactGet(ctx, tt.contact.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			res, err := h.ContactGet(ctx, tt.contact.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if len(res.PhoneNumbers) != 0 {
-				t.Errorf("Expected 0 phone numbers, got: %d", len(res.PhoneNumbers))
-			}
-		})
-	}
-}
-
-func Test_EmailDelete(t *testing.T) {
-	tests := []struct {
-		name    string
-		contact *contact.Contact
-		email   *contact.Email
-
-		responseCurTime *time.Time
-	}{
-		{
-			name: "normal",
-			contact: &contact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
-					CustomerID: uuid.FromStringOrNil("a2222222-2222-2222-2222-222222222222"),
-				},
-				FirstName: "Email",
-				LastName:  "Delete",
-				Source:    "manual",
-			},
-			email: &contact.Email{
-				ID:         uuid.FromStringOrNil("a3333333-3333-3333-3333-333333333333"),
-				CustomerID: uuid.FromStringOrNil("a2222222-2222-2222-2222-222222222222"),
-				ContactID:  uuid.FromStringOrNil("a1111111-1111-1111-1111-111111111111"),
-				Address:    "delete@example.com",
-				Type:       "work",
-				IsPrimary:  true,
-			},
-
-			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			// Create the contact first
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.ContactCreate(ctx, tt.contact); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			// Create email
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.EmailCreate(ctx, tt.email); err != nil {
-				t.Errorf("EmailCreate() error = %v", err)
-			}
-
-			// Delete the email
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.EmailDelete(ctx, tt.email.ID); err != nil {
-				t.Errorf("EmailDelete() error = %v", err)
-			}
-
-			// Get the contact and verify email is removed
-			mockCache.EXPECT().ContactGet(ctx, tt.contact.ID).Return(nil, fmt.Errorf(""))
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			res, err := h.ContactGet(ctx, tt.contact.ID)
-			if err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			if len(res.Emails) != 0 {
-				t.Errorf("Expected 0 emails, got: %d", len(res.Emails))
 			}
 		})
 	}
@@ -933,236 +609,6 @@ func TestNewHandler(t *testing.T) {
 }
 
 // Test_PhoneNumberListByContactID tests listing phone numbers for a contact
-func Test_PhoneNumberListByContactID(t *testing.T) {
-	tests := []struct {
-		name    string
-		contact *contact.Contact
-		phones  []*contact.PhoneNumber
-
-		responseCurTime *time.Time
-	}{
-		{
-			name: "list multiple phone numbers",
-			contact: &contact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("e1111111-1111-1111-1111-111111111111"),
-					CustomerID: uuid.FromStringOrNil("e2222222-2222-2222-2222-222222222222"),
-				},
-				FirstName: "Phone",
-				LastName:  "List",
-				Source:    "manual",
-			},
-			phones: []*contact.PhoneNumber{
-				{
-					ID:         uuid.FromStringOrNil("e3333333-3333-3333-3333-333333333333"),
-					CustomerID: uuid.FromStringOrNil("e2222222-2222-2222-2222-222222222222"),
-					ContactID:  uuid.FromStringOrNil("e1111111-1111-1111-1111-111111111111"),
-					Number:     "+15551111111",
-					Type:       "mobile",
-					IsPrimary:  true,
-				},
-				{
-					ID:         uuid.FromStringOrNil("e4444444-4444-4444-4444-444444444444"),
-					CustomerID: uuid.FromStringOrNil("e2222222-2222-2222-2222-222222222222"),
-					ContactID:  uuid.FromStringOrNil("e1111111-1111-1111-1111-111111111111"),
-					Number:     "+15552222222",
-					Type:       "work",
-					IsPrimary:  false,
-				},
-			},
-
-			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			// Create the contact first
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.ContactCreate(ctx, tt.contact); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			// Create phone numbers
-			for _, p := range tt.phones {
-				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-				mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-				if err := h.PhoneNumberCreate(ctx, p); err != nil {
-					t.Errorf("PhoneNumberCreate() error = %v", err)
-				}
-			}
-
-			// List phone numbers
-			res, err := h.PhoneNumberListByContactID(ctx, tt.contact.ID)
-			if err != nil {
-				t.Errorf("PhoneNumberListByContactID() error = %v", err)
-			}
-
-			if len(res) != len(tt.phones) {
-				t.Errorf("PhoneNumberListByContactID() count = %d, want %d", len(res), len(tt.phones))
-			}
-		})
-	}
-}
-
-// Test_PhoneNumberListByContactID_Empty tests listing when no phone numbers exist
-func Test_PhoneNumberListByContactID_Empty(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		utilHandler: mockUtil,
-		db:          dbTest,
-		cache:       mockCache,
-	}
-	ctx := context.Background()
-
-	// Use a non-existent contact ID
-	res, err := h.PhoneNumberListByContactID(ctx, uuid.FromStringOrNil("f1111111-1111-1111-1111-111111111111"))
-	if err != nil {
-		t.Errorf("PhoneNumberListByContactID() error = %v", err)
-	}
-
-	if res == nil {
-		t.Errorf("Expected non-nil empty slice, got nil")
-	}
-
-	if len(res) != 0 {
-		t.Errorf("PhoneNumberListByContactID() count = %d, want 0", len(res))
-	}
-}
-
-// Test_EmailListByContactID tests listing emails for a contact
-func Test_EmailListByContactID(t *testing.T) {
-	tests := []struct {
-		name    string
-		contact *contact.Contact
-		emails  []*contact.Email
-
-		responseCurTime *time.Time
-	}{
-		{
-			name: "list multiple emails",
-			contact: &contact.Contact{
-				Identity: commonidentity.Identity{
-					ID:         uuid.FromStringOrNil("f2222222-2222-2222-2222-222222222222"),
-					CustomerID: uuid.FromStringOrNil("f3333333-3333-3333-3333-333333333333"),
-				},
-				FirstName: "Email",
-				LastName:  "List",
-				Source:    "manual",
-			},
-			emails: []*contact.Email{
-				{
-					ID:         uuid.FromStringOrNil("f4444444-4444-4444-4444-444444444444"),
-					CustomerID: uuid.FromStringOrNil("f3333333-3333-3333-3333-333333333333"),
-					ContactID:  uuid.FromStringOrNil("f2222222-2222-2222-2222-222222222222"),
-					Address:    "primary@example.com",
-					Type:       "work",
-					IsPrimary:  true,
-				},
-				{
-					ID:         uuid.FromStringOrNil("f5555555-5555-5555-5555-555555555555"),
-					CustomerID: uuid.FromStringOrNil("f3333333-3333-3333-3333-333333333333"),
-					ContactID:  uuid.FromStringOrNil("f2222222-2222-2222-2222-222222222222"),
-					Address:    "secondary@example.com",
-					Type:       "personal",
-					IsPrimary:  false,
-				},
-			},
-
-			responseCurTime: timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)),
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mc := gomock.NewController(t)
-			defer mc.Finish()
-
-			mockUtil := utilhandler.NewMockUtilHandler(mc)
-			mockCache := cachehandler.NewMockCacheHandler(mc)
-			h := handler{
-				utilHandler: mockUtil,
-				db:          dbTest,
-				cache:       mockCache,
-			}
-			ctx := context.Background()
-
-			// Create the contact first
-			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.ContactCreate(ctx, tt.contact); err != nil {
-				t.Errorf("Wrong match. expect: ok, got: %v", err)
-			}
-
-			// Create emails
-			for _, e := range tt.emails {
-				mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
-				mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-				if err := h.EmailCreate(ctx, e); err != nil {
-					t.Errorf("EmailCreate() error = %v", err)
-				}
-			}
-
-			// List emails
-			res, err := h.EmailListByContactID(ctx, tt.contact.ID)
-			if err != nil {
-				t.Errorf("EmailListByContactID() error = %v", err)
-			}
-
-			if len(res) != len(tt.emails) {
-				t.Errorf("EmailListByContactID() count = %d, want %d", len(res), len(tt.emails))
-			}
-		})
-	}
-}
-
-// Test_EmailListByContactID_Empty tests listing when no emails exist
-func Test_EmailListByContactID_Empty(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		utilHandler: mockUtil,
-		db:          dbTest,
-		cache:       mockCache,
-	}
-	ctx := context.Background()
-
-	// Use a non-existent contact ID
-	res, err := h.EmailListByContactID(ctx, uuid.FromStringOrNil("f6666666-6666-6666-6666-666666666666"))
-	if err != nil {
-		t.Errorf("EmailListByContactID() error = %v", err)
-	}
-
-	if res == nil {
-		t.Errorf("Expected non-nil empty slice, got nil")
-	}
-
-	if len(res) != 0 {
-		t.Errorf("EmailListByContactID() count = %d, want 0", len(res))
-	}
-}
-
-// Test_TagAssignmentListByContactID tests listing tag assignments for a contact
 func Test_TagAssignmentListByContactID(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -1433,7 +879,7 @@ func Test_ContactLookupByPhone(t *testing.T) {
 	tests := []struct {
 		name    string
 		contact *contact.Contact
-		phone   *contact.PhoneNumber
+		phone   *contact.Address
 
 		responseCurTime *time.Time
 	}{
@@ -1448,12 +894,12 @@ func Test_ContactLookupByPhone(t *testing.T) {
 				LastName:  "Lookup",
 				Source:    "manual",
 			},
-			phone: &contact.PhoneNumber{
+			phone: &contact.Address{
 				ID:         uuid.FromStringOrNil("03030303-0303-0303-0303-030303030303"),
 				CustomerID: uuid.FromStringOrNil("02020202-0202-0202-0202-020202020202"),
 				ContactID:  uuid.FromStringOrNil("01010101-0101-0101-0101-010101010101"),
-				Number:     "+15557778888",
-				Type:       "mobile",
+				Type:       contact.AddressTypeTel,
+				Target:     "+155****8888",
 				IsPrimary:  true,
 			},
 
@@ -1482,16 +928,16 @@ func Test_ContactLookupByPhone(t *testing.T) {
 				t.Errorf("ContactCreate() error = %v", err)
 			}
 
-			// Create phone number
+			// Create address (tel type)
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.PhoneNumberCreate(ctx, tt.phone); err != nil {
-				t.Errorf("PhoneNumberCreate() error = %v", err)
+			if err := h.AddressCreate(ctx, tt.phone); err != nil {
+				t.Errorf("AddressCreate() error = %v", err)
 			}
 
 			// Lookup by phone - should return the contact from cache (we're testing cache hit path)
 			mockCache.EXPECT().ContactGet(ctx, tt.contact.ID).Return(tt.contact, nil)
-			res, err := h.ContactLookupByPhone(ctx, tt.contact.CustomerID, tt.phone.Number)
+			res, err := h.ContactLookupByPhone(ctx, tt.contact.CustomerID, tt.phone.Target)
 			if err != nil {
 				t.Errorf("ContactLookupByPhone() error = %v", err)
 			}
@@ -1531,7 +977,7 @@ func Test_ContactLookupByEmail(t *testing.T) {
 	tests := []struct {
 		name    string
 		contact *contact.Contact
-		email   *contact.Email
+		email   *contact.Address
 
 		responseCurTime *time.Time
 	}{
@@ -1546,12 +992,12 @@ func Test_ContactLookupByEmail(t *testing.T) {
 				LastName:  "Lookup",
 				Source:    "manual",
 			},
-			email: &contact.Email{
+			email: &contact.Address{
 				ID:         uuid.FromStringOrNil("07070707-0707-0707-0707-070707070707"),
 				CustomerID: uuid.FromStringOrNil("06060606-0606-0606-0606-060606060606"),
 				ContactID:  uuid.FromStringOrNil("05050505-0505-0505-0505-050505050505"),
-				Address:    "lookup@example.com",
-				Type:       "work",
+				Type:       contact.AddressTypeEmail,
+				Target:     "lookup@example.com",
 				IsPrimary:  true,
 			},
 
@@ -1580,16 +1026,16 @@ func Test_ContactLookupByEmail(t *testing.T) {
 				t.Errorf("ContactCreate() error = %v", err)
 			}
 
-			// Create email
+			// Create address (email type)
 			mockUtil.EXPECT().TimeNow().Return(tt.responseCurTime)
 			mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-			if err := h.EmailCreate(ctx, tt.email); err != nil {
-				t.Errorf("EmailCreate() error = %v", err)
+			if err := h.AddressCreate(ctx, tt.email); err != nil {
+				t.Errorf("AddressCreate() error = %v", err)
 			}
 
 			// Lookup by email - should return the contact from cache
 			mockCache.EXPECT().ContactGet(ctx, tt.contact.ID).Return(tt.contact, nil)
-			res, err := h.ContactLookupByEmail(ctx, tt.contact.CustomerID, tt.email.Address)
+			res, err := h.ContactLookupByEmail(ctx, tt.contact.CustomerID, tt.email.Target)
 			if err != nil {
 				t.Errorf("ContactLookupByEmail() error = %v", err)
 			}
@@ -1801,18 +1247,19 @@ func Test_ContactUpdateToCache_TombstoneEvicts(t *testing.T) {
 		t.Fatalf("ContactDelete() error = %v", err)
 	}
 
-	// A late phone write routes through contactUpdateToCache. Because the
+	// A late address write routes through contactUpdateToCache. Because the
 	// contact is a tombstone, the cache MUST be evicted, not repopulated.
-	p := &contact.PhoneNumber{
+	p := &contact.Address{
 		ID:         uuid.FromStringOrNil("f2222222-2222-2222-2222-0000000005f1"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		Number:     "+15551230000",
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****0000",
 	}
 	mockUtil.EXPECT().TimeNow().Return(curTime)
 	mockCache.EXPECT().ContactDelete(gomock.Any(), c.ID).Return(nil)
-	if err := h.PhoneNumberCreate(ctx, p); err != nil {
-		t.Fatalf("PhoneNumberCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, p); err != nil {
+		t.Fatalf("AddressCreate() error = %v", err)
 	}
 }
 
@@ -1841,8 +1288,8 @@ func Test_ContactDeleteByCustomerID_NoMatches(t *testing.T) {
 	}
 }
 
-// Test_PhoneNumberDelete_NonExistent tests deleting a non-existent phone number
-func Test_PhoneNumberDelete_NonExistent(t *testing.T) {
+// Test_AddressDelete_NonExistent tests deleting a non-existent address (phone or email) - should not error
+func Test_AddressDelete_NonExistent(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1855,31 +1302,10 @@ func Test_PhoneNumberDelete_NonExistent(t *testing.T) {
 	}
 	ctx := context.Background()
 
-	// Try to delete a non-existent phone number - should not error
-	err := h.PhoneNumberDelete(ctx, uuid.FromStringOrNil("13131313-1313-1313-1313-131313131313"))
+	// Try to delete a non-existent address - should not error
+	err := h.AddressDelete(ctx, uuid.FromStringOrNil("14141414-1414-1414-1414-141414141414"))
 	if err != nil {
-		t.Errorf("PhoneNumberDelete() error = %v", err)
-	}
-}
-
-// Test_EmailDelete_NonExistent tests deleting a non-existent email
-func Test_EmailDelete_NonExistent(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		utilHandler: mockUtil,
-		db:          dbTest,
-		cache:       mockCache,
-	}
-	ctx := context.Background()
-
-	// Try to delete a non-existent email - should not error
-	err := h.EmailDelete(ctx, uuid.FromStringOrNil("14141414-1414-1414-1414-141414141414"))
-	if err != nil {
-		t.Errorf("EmailDelete() error = %v", err)
+		t.Errorf("AddressDelete() error = %v", err)
 	}
 }
 
@@ -1942,8 +1368,8 @@ func Test_ContactGet_CacheHit(t *testing.T) {
 	}
 }
 
-// Test_Multiple_PhoneNumbers_ForSameContact tests creating multiple phone numbers
-func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
+// Test_Multiple_Addresses_ForSameContact tests creating multiple addresses (tel and email)
+func Test_Multiple_Addresses_ForSameContact(t *testing.T) {
 	mc := gomock.NewController(t)
 	defer mc.Finish()
 
@@ -1958,11 +1384,11 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 
 	c := &contact.Contact{
 		Identity: commonidentity.Identity{
-			ID:         uuid.FromStringOrNil("19191919-1919-1919-1919-191919191919"),
-			CustomerID: uuid.FromStringOrNil("20202020-2020-2020-2020-202020202020"),
+			ID:         uuid.FromStringOrNil("21212121-2121-2121-2121-212121212121"),
+			CustomerID: uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
 		},
 		FirstName: "Multi",
-		LastName:  "Phone",
+		LastName:  "Address",
 		Source:    "manual",
 	}
 
@@ -1973,116 +1399,44 @@ func Test_Multiple_PhoneNumbers_ForSameContact(t *testing.T) {
 		t.Errorf("ContactCreate() error = %v", err)
 	}
 
-	// Create first phone
-	phone1 := &contact.PhoneNumber{
-		ID:         uuid.FromStringOrNil("21212121-2121-2121-2121-212121212121"),
+	// Create first address (tel)
+	addr1 := &contact.Address{
+		ID:         uuid.FromStringOrNil("23232323-2323-2323-2323-232323232323"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		Number:     "+15551111111",
-		Type:       "mobile",
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****1111",
 		IsPrimary:  true,
 	}
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.PhoneNumberCreate(ctx, phone1); err != nil {
-		t.Errorf("PhoneNumberCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, addr1); err != nil {
+		t.Errorf("AddressCreate() tel error = %v", err)
 	}
 
-	// Create second phone
-	phone2 := &contact.PhoneNumber{
-		ID:         uuid.FromStringOrNil("22222222-2222-2222-2222-222222222222"),
+	// Create second address (email)
+	addr2 := &contact.Address{
+		ID:         uuid.FromStringOrNil("24242424-2424-2424-2424-242424242424"),
 		CustomerID: c.CustomerID,
 		ContactID:  c.ID,
-		Number:     "+15552222222",
-		Type:       "work",
+		Type:       contact.AddressTypeEmail,
+		Target:     "primary@example.com",
 		IsPrimary:  false,
 	}
 	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
 	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.PhoneNumberCreate(ctx, phone2); err != nil {
-		t.Errorf("PhoneNumberCreate() error = %v", err)
+	if err := h.AddressCreate(ctx, addr2); err != nil {
+		t.Errorf("AddressCreate() email error = %v", err)
 	}
 
-	// List phones
-	phones, err := h.PhoneNumberListByContactID(ctx, c.ID)
+	// List addresses by contact
+	addrs, err := h.AddressListByContactID(ctx, c.ID)
 	if err != nil {
-		t.Errorf("PhoneNumberListByContactID() error = %v", err)
+		t.Errorf("AddressListByContactID() error = %v", err)
 	}
 
-	if len(phones) != 2 {
-		t.Errorf("PhoneNumberListByContactID() count = %d, want 2", len(phones))
-	}
-}
-
-// Test_Multiple_Emails_ForSameContact tests creating multiple emails
-func Test_Multiple_Emails_ForSameContact(t *testing.T) {
-	mc := gomock.NewController(t)
-	defer mc.Finish()
-
-	mockUtil := utilhandler.NewMockUtilHandler(mc)
-	mockCache := cachehandler.NewMockCacheHandler(mc)
-	h := handler{
-		utilHandler: mockUtil,
-		db:          dbTest,
-		cache:       mockCache,
-	}
-	ctx := context.Background()
-
-	c := &contact.Contact{
-		Identity: commonidentity.Identity{
-			ID:         uuid.FromStringOrNil("23232323-2323-2323-2323-232323232323"),
-			CustomerID: uuid.FromStringOrNil("24242424-2424-2424-2424-242424242424"),
-		},
-		FirstName: "Multi",
-		LastName:  "Email",
-		Source:    "manual",
-	}
-
-	// Create contact
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
-	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.ContactCreate(ctx, c); err != nil {
-		t.Errorf("ContactCreate() error = %v", err)
-	}
-
-	// Create first email
-	email1 := &contact.Email{
-		ID:         uuid.FromStringOrNil("25252525-2525-2525-2525-252525252525"),
-		CustomerID: c.CustomerID,
-		ContactID:  c.ID,
-		Address:    "primary@example.com",
-		Type:       "work",
-		IsPrimary:  true,
-	}
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
-	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.EmailCreate(ctx, email1); err != nil {
-		t.Errorf("EmailCreate() error = %v", err)
-	}
-
-	// Create second email
-	email2 := &contact.Email{
-		ID:         uuid.FromStringOrNil("26262626-2626-2626-2626-262626262626"),
-		CustomerID: c.CustomerID,
-		ContactID:  c.ID,
-		Address:    "secondary@example.com",
-		Type:       "personal",
-		IsPrimary:  false,
-	}
-	mockUtil.EXPECT().TimeNow().Return(timePtr(time.Date(2020, 4, 18, 3, 22, 17, 995000000, time.UTC)))
-	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
-	if err := h.EmailCreate(ctx, email2); err != nil {
-		t.Errorf("EmailCreate() error = %v", err)
-	}
-
-	// List emails
-	emails, err := h.EmailListByContactID(ctx, c.ID)
-	if err != nil {
-		t.Errorf("EmailListByContactID() error = %v", err)
-	}
-
-	if len(emails) != 2 {
-		t.Errorf("EmailListByContactID() count = %d, want 2", len(emails))
+	if len(addrs) != 2 {
+		t.Errorf("AddressListByContactID() count = %d, want 2", len(addrs))
 	}
 }
 

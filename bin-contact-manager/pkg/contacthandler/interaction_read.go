@@ -115,9 +115,13 @@ func (h *contactHandler) interactionListByContact(
 	}
 
 	// STEP 1: Expand address set.
-	addressPairs, err := h.db.AddressListByContact(ctx, customerID, contactID)
+	addrs, err := h.db.AddressListByContactID(ctx, contactID)
 	if err != nil {
 		return nil, "", fmt.Errorf("could not list addresses. interactionListByContact. err: %v", err)
+	}
+	var addressPairs []dbhandler.AddressPair
+	for _, a := range addrs {
+		addressPairs = append(addressPairs, dbhandler.AddressPair{Type: a.Type, Target: a.Target})
 	}
 
 	// STEP 2: Fetch ALL automatic peer matches (internal cap, not caller page size).
@@ -247,7 +251,7 @@ func (h *contactHandler) interactionListByAddress(
 	size uint64,
 	token string,
 ) ([]*interaction.Interaction, string, error) {
-	ap, err := h.db.AddressGetByID(ctx, customerID, addressID)
+	ap, err := h.db.AddressGet(ctx, customerID, addressID)
 	if err != nil {
 		if stderrors.Is(err, dbhandler.ErrNotFound) {
 			return nil, "", cerrors.NotFound(
@@ -259,7 +263,7 @@ func (h *contactHandler) interactionListByAddress(
 		return nil, "", fmt.Errorf("could not get address. interactionListByAddress. err: %v", err)
 	}
 
-	items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", []dbhandler.AddressPair{ap})
+	items, err := h.db.InteractionList(ctx, customerID, size+1, token, "", "", []dbhandler.AddressPair{{Type: ap.Type, Target: ap.Target}})
 	if err != nil {
 		return nil, "", fmt.Errorf("could not list interactions by address. interactionListByAddress. err: %v", err)
 	}
