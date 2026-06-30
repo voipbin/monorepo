@@ -19,6 +19,7 @@ import (
 	gomock "go.uber.org/mock/gomock"
 
 	"monorepo/bin-call-manager/models/ari"
+	"monorepo/bin-call-manager/models/bridge"
 	"monorepo/bin-call-manager/models/call"
 	"monorepo/bin-call-manager/models/channel"
 	"monorepo/bin-call-manager/pkg/bridgehandler"
@@ -119,6 +120,102 @@ func Test_ARIChannelStateChangeStatusProgressing(t *testing.T) {
 			}
 
 			time.Sleep(time.Millisecond * 100)
+		})
+	}
+}
+
+func Test_answerCallBridgePeers(t *testing.T) {
+	tests := []struct {
+		name    string
+		channel *channel.Channel
+
+		responseBridge  *bridge.Bridge
+		responsePeer    *channel.Channel
+		expectAnswer    bool
+		skipBridgeSetup bool
+	}{
+		{
+			// normal case: peer channel in call bridge is not yet Up → Answer called
+			name: "peer not up - answer called",
+			channel: &channel.Channel{
+				ID:       "call-out-channel-id",
+				State:    ari.ChannelStateUp,
+				BridgeID: "bridge-aaa",
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-aaa",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"call-out-channel-id", "call-in-channel-id"},
+			},
+			responsePeer: &channel.Channel{
+				ID:    "call-in-channel-id",
+				State: ari.ChannelStateRing,
+			},
+			expectAnswer: true,
+		},
+		{
+			// guard check: confbridge bridge → no answer called
+			name: "confbridge bridge - no answer",
+			channel: &channel.Channel{
+				ID:       "conf-out-channel-id",
+				State:    ari.ChannelStateUp,
+				BridgeID: "bridge-bbb",
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-bbb",
+				ReferenceType: bridge.ReferenceTypeConfbridge,
+				ChannelIDs:    []string{"conf-out-channel-id", "conf-in-channel-id"},
+			},
+			expectAnswer: false,
+		},
+		{
+			// peer already Up → skip, no answer called
+			name: "peer already up - skip",
+			channel: &channel.Channel{
+				ID:       "call-out-channel-id-2",
+				State:    ari.ChannelStateUp,
+				BridgeID: "bridge-ccc",
+			},
+			responseBridge: &bridge.Bridge{
+				ID:            "bridge-ccc",
+				ReferenceType: bridge.ReferenceTypeCall,
+				ChannelIDs:    []string{"call-out-channel-id-2", "peer-already-up-id"},
+			},
+			responsePeer: &channel.Channel{
+				ID:    "peer-already-up-id",
+				State: ari.ChannelStateUp,
+			},
+			expectAnswer: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mc := gomock.NewController(t)
+			defer mc.Finish()
+
+			mockBridge := bridgehandler.NewMockBridgeHandler(mc)
+			mockChannel := channelhandler.NewMockChannelHandler(mc)
+
+			h := &callHandler{
+				bridgeHandler:  mockBridge,
+				channelHandler: mockChannel,
+			}
+
+			ctx := context.Background()
+
+			mockBridge.EXPECT().Get(ctx, tt.channel.BridgeID).Return(tt.responseBridge, nil)
+
+			if tt.responseBridge.ReferenceType == bridge.ReferenceTypeCall && tt.responsePeer != nil {
+				mockChannel.EXPECT().Get(ctx, tt.responsePeer.ID).Return(tt.responsePeer, nil)
+				if tt.expectAnswer {
+					mockChannel.EXPECT().Answer(ctx, tt.responsePeer.ID).Return(nil)
+				}
+			}
+
+			if err := h.answerCallBridgePeers(ctx, tt.channel); err != nil {
+				t.Errorf("Wrong match. expect: ok, got: %v", err)
+			}
 		})
 	}
 }

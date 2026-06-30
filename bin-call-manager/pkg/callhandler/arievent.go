@@ -112,7 +112,64 @@ func (h *callHandler) ARIChannelStateChange(ctx context.Context, cn *channel.Cha
 	case call.StatusRinging:
 		return h.updateStatusRinging(ctx, cn, c)
 	case call.StatusProgressing:
-		return h.updateStatusProgressing(ctx, cn, c)
+		if err := h.updateStatusProgressing(ctx, cn, c); err != nil {
+			return err
+		}
+		// When a channel in a call bridge becomes Up (answered), auto-answer
+		// all other channels in the same bridge that are not yet Up.
+		// This ensures the master incoming leg (call-in) is answered when
+		// the outgoing leg answers, regardless of early_media setting.
+		if cn.State == ari.ChannelStateUp && cn.BridgeID != "" {
+			if errAnswer := h.answerCallBridgePeers(ctx, cn); errAnswer != nil {
+				log.Errorf("Could not auto-answer call bridge peers. err: %v", errAnswer)
+			}
+		}
+		return nil
+	}
+
+	return nil
+}
+
+// answerCallBridgePeers answers all non-Up channels in the same call bridge
+// when one channel transitions to Up state.
+func (h *callHandler) answerCallBridgePeers(ctx context.Context, cn *channel.Channel) error {
+	log := logrus.WithFields(logrus.Fields{
+		"func":       "answerCallBridgePeers",
+		"channel_id": cn.ID,
+		"bridge_id":  cn.BridgeID,
+	})
+
+	br, err := h.bridgeHandler.Get(ctx, cn.BridgeID)
+	if err != nil {
+		log.Errorf("Could not get bridge info. bridge_id: %s, err: %v", cn.BridgeID, err)
+		return nil
+	}
+
+	// only apply to call bridges (reference_type=call)
+	if br.ReferenceType != bridge.ReferenceTypeCall {
+		return nil
+	}
+
+	for _, peerChannelID := range br.ChannelIDs {
+		if peerChannelID == cn.ID {
+			continue
+		}
+
+		peer, err := h.channelHandler.Get(ctx, peerChannelID)
+		if err != nil {
+			log.Debugf("Could not get peer channel. channel_id: %s, err: %v", peerChannelID, err)
+			continue
+		}
+
+		// skip channels already Up
+		if peer.State == ari.ChannelStateUp {
+			continue
+		}
+
+		log.Debugf("Auto-answering peer channel in call bridge. peer_channel_id: %s, peer_state: %s", peer.ID, peer.State)
+		if errAnswer := h.channelHandler.Answer(ctx, peer.ID); errAnswer != nil {
+			log.Errorf("Could not answer peer channel. channel_id: %s, err: %v", peer.ID, errAnswer)
+		}
 	}
 
 	return nil
