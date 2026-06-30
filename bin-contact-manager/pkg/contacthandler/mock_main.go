@@ -49,10 +49,10 @@ func (m *MockContactHandler) EXPECT() *MockContactHandlerMockRecorder {
 }
 
 // AddAddress mocks base method.
-func (m *MockContactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a *contact.Address) (*contact.Contact, error) {
+func (m *MockContactHandler) AddAddress(ctx context.Context, contactID uuid.UUID, a *contact.Address) (*contact.Address, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddAddress", ctx, contactID, a)
-	ret0, _ := ret[0].(*contact.Contact)
+	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

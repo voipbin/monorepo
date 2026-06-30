@@ -335,13 +335,19 @@ func (h *serviceHandler) ContactAddressCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	tmp, err := h.reqHandler.ContactV1AddressCreate(ctx, contactID, addrType, target, isPrimary)
-	if err != nil {
+	if _, err := h.reqHandler.ContactV1AddressCreate(ctx, contactID, addrType, target, isPrimary); err != nil {
 		log.Infof("Could not add address to contact. err: %v", err)
 		return nil, err
 	}
 
-	res := tmp.ConvertWebhookMessage()
+	// Re-fetch the contact to return updated state
+	updated, err := h.reqHandler.ContactV1ContactGet(ctx, contactID)
+	if err != nil {
+		log.Errorf("Could not get updated contact. err: %v", err)
+		return nil, err
+	}
+
+	res := updated.ConvertWebhookMessage()
 	return res, nil
 }
 

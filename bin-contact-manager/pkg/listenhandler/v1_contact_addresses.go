@@ -99,29 +99,7 @@ func (h *listenHandler) processV1ContactAddressesPost(ctx context.Context, m *so
 		return simpleResponse(500), nil
 	}
 
-	// Return the newly created address (last in list, sorted by tm_create desc... get by ID)
-	// Instead, return the full contact so the caller can find it; or return the address directly.
-	// We find the address in the updated contact's addresses slice.
-	// For a cleaner response, we return the address directly from db.
-	addrs := tmp.Addresses
-	if len(addrs) == 0 {
-		return simpleResponse(500), nil
-	}
-
-	// find the most recently created address matching type+target
-	var created *contact.Address
-	for i := range addrs {
-		if addrs[i].Type == reqData.Type && addrs[i].Target == reqData.Target {
-			if created == nil || (addrs[i].TMCreate != nil && created.TMCreate != nil && addrs[i].TMCreate.After(*created.TMCreate)) {
-				created = &addrs[i]
-			}
-		}
-	}
-	if created == nil {
-		created = &addrs[len(addrs)-1]
-	}
-
-	data, err := json.Marshal(created)
+	data, err := json.Marshal(tmp)
 	if err != nil {
 		log.Debugf("Could not marshal the response message. err: %v", err)
 		return simpleResponse(500), nil

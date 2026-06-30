@@ -122,7 +122,6 @@ func (h *serviceHandler) ContactAddressCreateIndependent(
 func (h *serviceHandler) ContactAddressUpdateIndependent(
 	ctx context.Context,
 	a *auth.AuthIdentity,
-	contactID uuid.UUID,
 	addressID uuid.UUID,
 	fields map[string]any,
 ) (*cmcontact.Address, error) {
@@ -136,17 +135,18 @@ func (h *serviceHandler) ContactAddressUpdateIndependent(
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	ct, err := h.contactGet(ctx, contactID)
+	// Tenant isolation: AddressGet scopes by customerID
+	addr, err := h.reqHandler.ContactV1ContactAddressGet(ctx, a.CustomerID, addressID)
 	if err != nil {
-		log.Errorf("Could not get contact. err: %v", err)
+		log.Infof("Could not get contact address. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, addr.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressUpdate(ctx, a.CustomerID, contactID, addressID, fields)
+	res, err := h.reqHandler.ContactV1ContactAddressUpdate(ctx, a.CustomerID, addr.ContactID, addressID, fields)
 	if err != nil {
 		log.Infof("Could not update contact address. err: %v", err)
 		return nil, err
@@ -159,7 +159,6 @@ func (h *serviceHandler) ContactAddressUpdateIndependent(
 func (h *serviceHandler) ContactAddressDeleteIndependent(
 	ctx context.Context,
 	a *auth.AuthIdentity,
-	contactID uuid.UUID,
 	addressID uuid.UUID,
 ) (*cmcontact.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -172,17 +171,18 @@ func (h *serviceHandler) ContactAddressDeleteIndependent(
 		return nil, serviceerrors.ErrDirectAccessNotSupported
 	}
 
-	ct, err := h.contactGet(ctx, contactID)
+	// Tenant isolation: AddressGet scopes by customerID
+	addr, err := h.reqHandler.ContactV1ContactAddressGet(ctx, a.CustomerID, addressID)
 	if err != nil {
-		log.Errorf("Could not get contact. err: %v", err)
+		log.Infof("Could not get contact address. err: %v", err)
 		return nil, err
 	}
 
-	if !h.hasPermission(ctx, a, ct.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
+	if !h.hasPermission(ctx, a, addr.CustomerID, amagent.PermissionCustomerAdmin|amagent.PermissionCustomerManager) {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressDelete(ctx, a.CustomerID, contactID, addressID)
+	res, err := h.reqHandler.ContactV1ContactAddressDelete(ctx, a.CustomerID, addr.ContactID, addressID)
 	if err != nil {
 		log.Infof("Could not delete contact address. err: %v", err)
 		return nil, err
@@ -296,7 +296,6 @@ func (h *serviceHandler) ServiceAgentContactAddressCreateIndependent(
 func (h *serviceHandler) ServiceAgentContactAddressUpdateIndependent(
 	ctx context.Context,
 	a *auth.AuthIdentity,
-	contactID uuid.UUID,
 	addressID uuid.UUID,
 	fields map[string]any,
 ) (*cmcontact.Address, error) {
@@ -311,17 +310,18 @@ func (h *serviceHandler) ServiceAgentContactAddressUpdateIndependent(
 		return nil, err
 	}
 
-	ct, err := h.contactGet(ctx, contactID)
+	// Tenant isolation: AddressGet scopes by customerID
+	addr, err := h.reqHandler.ContactV1ContactAddressGet(ctx, agent.CustomerID, addressID)
 	if err != nil {
-		log.Errorf("Could not get contact. err: %v", err)
+		log.Infof("Could not get contact address. err: %v", err)
 		return nil, err
 	}
 
-	if ct.CustomerID != agent.CustomerID {
+	if addr.CustomerID != agent.CustomerID {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressUpdate(ctx, agent.CustomerID, contactID, addressID, fields)
+	res, err := h.reqHandler.ContactV1ContactAddressUpdate(ctx, agent.CustomerID, addr.ContactID, addressID, fields)
 	if err != nil {
 		log.Infof("Could not update contact address. err: %v", err)
 		return nil, err
@@ -334,7 +334,6 @@ func (h *serviceHandler) ServiceAgentContactAddressUpdateIndependent(
 func (h *serviceHandler) ServiceAgentContactAddressDeleteIndependent(
 	ctx context.Context,
 	a *auth.AuthIdentity,
-	contactID uuid.UUID,
 	addressID uuid.UUID,
 ) (*cmcontact.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
@@ -348,17 +347,18 @@ func (h *serviceHandler) ServiceAgentContactAddressDeleteIndependent(
 		return nil, err
 	}
 
-	ct, err := h.contactGet(ctx, contactID)
+	// Tenant isolation: AddressGet scopes by customerID
+	addr, err := h.reqHandler.ContactV1ContactAddressGet(ctx, agent.CustomerID, addressID)
 	if err != nil {
-		log.Errorf("Could not get contact. err: %v", err)
+		log.Infof("Could not get contact address. err: %v", err)
 		return nil, err
 	}
 
-	if ct.CustomerID != agent.CustomerID {
+	if addr.CustomerID != agent.CustomerID {
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressDelete(ctx, agent.CustomerID, contactID, addressID)
+	res, err := h.reqHandler.ContactV1ContactAddressDelete(ctx, agent.CustomerID, addr.ContactID, addressID)
 	if err != nil {
 		log.Infof("Could not delete contact address. err: %v", err)
 		return nil, err

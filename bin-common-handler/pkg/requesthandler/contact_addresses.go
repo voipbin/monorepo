@@ -20,7 +20,7 @@ func (r *requestHandler) ContactV1AddressCreate(
 	addrType string,
 	target string,
 	isPrimary bool,
-) (*cmcontact.Contact, error) {
+) (*cmcontact.Address, error) {
 	uri := fmt.Sprintf("/v1/contacts/%s/addresses", contactID)
 
 	data := &cmrequest.AddressCreate{
@@ -39,7 +39,7 @@ func (r *requestHandler) ContactV1AddressCreate(
 		return nil, err
 	}
 
-	var res cmcontact.Contact
+	var res cmcontact.Address
 	if errParse := parseResponse(tmp, &res); errParse != nil {
 		return nil, errParse
 	}

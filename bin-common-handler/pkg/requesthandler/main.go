@@ -893,7 +893,7 @@ type RequestHandler interface {
 		addrType string,
 		target string,
 		isPrimary bool,
-	) (*cmcontact.Contact, error)
+	) (*cmcontact.Address, error)
 	ContactV1AddressGet(ctx context.Context, contactID uuid.UUID) ([]cmcontact.Address, error)
 	ContactV1AddressUpdate(ctx context.Context, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.Contact, error)
 	ContactV1AddressDelete(ctx context.Context, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.Contact, error)

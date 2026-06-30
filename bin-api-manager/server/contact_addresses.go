@@ -154,9 +154,6 @@ func (h *server) PutContactAddressesId(c *gin.Context, id openapi_types.UUID) {
 		return
 	}
 
-	contactIDStr := c.Query("contact_id")
-	contactID := uuid.FromStringOrNil(contactIDStr)
-
 	fields := map[string]any{}
 	if req.Target != nil {
 		fields["target"] = *req.Target
@@ -165,7 +162,7 @@ func (h *server) PutContactAddressesId(c *gin.Context, id openapi_types.UUID) {
 		fields["is_primary"] = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ContactAddressUpdateIndependent(c.Request.Context(), a, contactID, addressID, fields)
+	res, err := h.serviceHandler.ContactAddressUpdateIndependent(c.Request.Context(), a, addressID, fields)
 	if err != nil {
 		log.Errorf("Could not update contact address. err: %v", err)
 		abortWithServiceError(c, err)
@@ -195,10 +192,7 @@ func (h *server) DeleteContactAddressesId(c *gin.Context, id openapi_types.UUID)
 		return
 	}
 
-	contactIDStr := c.Query("contact_id")
-	contactID := uuid.FromStringOrNil(contactIDStr)
-
-	res, err := h.serviceHandler.ContactAddressDeleteIndependent(c.Request.Context(), a, contactID, addressID)
+	res, err := h.serviceHandler.ContactAddressDeleteIndependent(c.Request.Context(), a, addressID)
 	if err != nil {
 		log.Errorf("Could not delete contact address. err: %v", err)
 		abortWithServiceError(c, err)

@@ -1959,18 +1959,18 @@ func (mr *MockServiceHandlerMockRecorder) ContactAddressDelete(ctx, a, contactID
 }
 
 // ContactAddressDeleteIndependent mocks base method.
-func (m *MockServiceHandler) ContactAddressDeleteIndependent(ctx context.Context, a *auth.AuthIdentity, contactID, addressID uuid.UUID) (*contact.Address, error) {
+func (m *MockServiceHandler) ContactAddressDeleteIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID) (*contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactAddressDeleteIndependent", ctx, a, contactID, addressID)
+	ret := m.ctrl.Call(m, "ContactAddressDeleteIndependent", ctx, a, addressID)
 	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactAddressDeleteIndependent indicates an expected call of ContactAddressDeleteIndependent.
-func (mr *MockServiceHandlerMockRecorder) ContactAddressDeleteIndependent(ctx, a, contactID, addressID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ContactAddressDeleteIndependent(ctx, a, addressID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactAddressDeleteIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ContactAddressDeleteIndependent), ctx, a, contactID, addressID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactAddressDeleteIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ContactAddressDeleteIndependent), ctx, a, addressID)
 }
 
 // ContactAddressGet mocks base method.
@@ -2019,18 +2019,18 @@ func (mr *MockServiceHandlerMockRecorder) ContactAddressUpdate(ctx, a, contactID
 }
 
 // ContactAddressUpdateIndependent mocks base method.
-func (m *MockServiceHandler) ContactAddressUpdateIndependent(ctx context.Context, a *auth.AuthIdentity, contactID, addressID uuid.UUID, fields map[string]any) (*contact.Address, error) {
+func (m *MockServiceHandler) ContactAddressUpdateIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID, fields map[string]any) (*contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContactAddressUpdateIndependent", ctx, a, contactID, addressID, fields)
+	ret := m.ctrl.Call(m, "ContactAddressUpdateIndependent", ctx, a, addressID, fields)
 	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ContactAddressUpdateIndependent indicates an expected call of ContactAddressUpdateIndependent.
-func (mr *MockServiceHandlerMockRecorder) ContactAddressUpdateIndependent(ctx, a, contactID, addressID, fields any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ContactAddressUpdateIndependent(ctx, a, addressID, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactAddressUpdateIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ContactAddressUpdateIndependent), ctx, a, contactID, addressID, fields)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContactAddressUpdateIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ContactAddressUpdateIndependent), ctx, a, addressID, fields)
 }
 
 // ContactCreate mocks base method.
@@ -4240,18 +4240,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressDelete(ctx, 
 }
 
 // ServiceAgentContactAddressDeleteIndependent mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactAddressDeleteIndependent(ctx context.Context, a *auth.AuthIdentity, contactID, addressID uuid.UUID) (*contact.Address, error) {
+func (m *MockServiceHandler) ServiceAgentContactAddressDeleteIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID) (*contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentContactAddressDeleteIndependent", ctx, a, contactID, addressID)
+	ret := m.ctrl.Call(m, "ServiceAgentContactAddressDeleteIndependent", ctx, a, addressID)
 	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentContactAddressDeleteIndependent indicates an expected call of ServiceAgentContactAddressDeleteIndependent.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressDeleteIndependent(ctx, a, contactID, addressID any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressDeleteIndependent(ctx, a, addressID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactAddressDeleteIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactAddressDeleteIndependent), ctx, a, contactID, addressID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactAddressDeleteIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactAddressDeleteIndependent), ctx, a, addressID)
 }
 
 // ServiceAgentContactAddressGet mocks base method.
@@ -4300,18 +4300,18 @@ func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressUpdate(ctx, 
 }
 
 // ServiceAgentContactAddressUpdateIndependent mocks base method.
-func (m *MockServiceHandler) ServiceAgentContactAddressUpdateIndependent(ctx context.Context, a *auth.AuthIdentity, contactID, addressID uuid.UUID, fields map[string]any) (*contact.Address, error) {
+func (m *MockServiceHandler) ServiceAgentContactAddressUpdateIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID, fields map[string]any) (*contact.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ServiceAgentContactAddressUpdateIndependent", ctx, a, contactID, addressID, fields)
+	ret := m.ctrl.Call(m, "ServiceAgentContactAddressUpdateIndependent", ctx, a, addressID, fields)
 	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ServiceAgentContactAddressUpdateIndependent indicates an expected call of ServiceAgentContactAddressUpdateIndependent.
-func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressUpdateIndependent(ctx, a, contactID, addressID, fields any) *gomock.Call {
+func (mr *MockServiceHandlerMockRecorder) ServiceAgentContactAddressUpdateIndependent(ctx, a, addressID, fields any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactAddressUpdateIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactAddressUpdateIndependent), ctx, a, contactID, addressID, fields)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServiceAgentContactAddressUpdateIndependent", reflect.TypeOf((*MockServiceHandler)(nil).ServiceAgentContactAddressUpdateIndependent), ctx, a, addressID, fields)
 }
 
 // ServiceAgentContactCreate mocks base method.

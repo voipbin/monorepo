@@ -3413,10 +3413,10 @@ func (mr *MockRequestHandlerMockRecorder) ConferenceV1ServiceTypeConferencecallS
 }
 
 // ContactV1AddressCreate mocks base method.
-func (m *MockRequestHandler) ContactV1AddressCreate(ctx context.Context, contactID uuid.UUID, addrType, target string, isPrimary bool) (*contact.Contact, error) {
+func (m *MockRequestHandler) ContactV1AddressCreate(ctx context.Context, contactID uuid.UUID, addrType, target string, isPrimary bool) (*contact.Address, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ContactV1AddressCreate", ctx, contactID, addrType, target, isPrimary)
-	ret0, _ := ret[0].(*contact.Contact)
+	ret0, _ := ret[0].(*contact.Address)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

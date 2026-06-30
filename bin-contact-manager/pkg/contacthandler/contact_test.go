@@ -353,6 +353,8 @@ func Test_AddAddress(t *testing.T) {
 		},
 	}
 
+	addressID := uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333")
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mc := gomock.NewController(t)
@@ -369,7 +371,7 @@ func Test_AddAddress(t *testing.T) {
 			ctx := context.Background()
 
 			mockDB.EXPECT().ContactGet(ctx, tt.contactID).Return(tt.responseContact, nil)
-			mockUtil.EXPECT().UUIDCreate().Return(uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"))
+			mockUtil.EXPECT().UUIDCreate().Return(addressID)
 			if tt.address.IsPrimary {
 				mockDB.EXPECT().AddressResetPrimary(ctx, tt.contactID).Return(nil)
 			}
@@ -382,8 +384,9 @@ func Test_AddAddress(t *testing.T) {
 				t.Errorf("Wrong match. expect: ok, got: %v", err)
 			}
 
-			if res.ID != tt.contactID {
-				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", tt.contactID, res.ID)
+			// AddAddress now returns the created Address, not the Contact
+			if res.ID != addressID {
+				t.Errorf("Wrong match.\nexpect: %v\ngot: %v", addressID, res.ID)
 			}
 		})
 	}

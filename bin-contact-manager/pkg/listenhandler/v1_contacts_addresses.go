@@ -101,7 +101,7 @@ func (h *listenHandler) processV1ContactsAddressesPost(ctx context.Context, m *s
 	}
 
 	res := &sock.Response{
-		StatusCode: 200,
+		StatusCode: 201,
 		DataType:   "application/json",
 		Data:       data,
 	}
