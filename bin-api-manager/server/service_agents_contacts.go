@@ -129,27 +129,14 @@ func (h *server) PostServiceAgentsContacts(c *gin.Context) {
 	}
 
 	addresses := []cmrequest.AddressCreate{}
-	if req.PhoneNumbers != nil {
-		for _, v := range *req.PhoneNumbers {
-			addr := cmrequest.AddressCreate{
-				Type: "tel",
+	if req.Addresses != nil {
+		for _, v := range *req.Addresses {
+			addr := cmrequest.AddressCreate{}
+			if v.Type != nil {
+				addr.Type = string(*v.Type)
 			}
-			if v.Number != nil {
-				addr.Target = *v.Number
-			}
-			if v.IsPrimary != nil {
-				addr.IsPrimary = *v.IsPrimary
-			}
-			addresses = append(addresses, addr)
-		}
-	}
-	if req.Emails != nil {
-		for _, v := range *req.Emails {
-			addr := cmrequest.AddressCreate{
-				Type: "email",
-			}
-			if v.Address != nil {
-				addr.Target = string(*v.Address)
+			if v.Target != nil {
+				addr.Target = *v.Target
 			}
 			if v.IsPrimary != nil {
 				addr.IsPrimary = *v.IsPrimary
