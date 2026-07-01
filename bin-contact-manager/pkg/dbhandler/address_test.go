@@ -484,6 +484,78 @@ func Test_AddressList_Unresolved(t *testing.T) {
 	}
 }
 
+// Test_AddressList_UnresolvedWinsOverContactID verifies the OpenAPI-spec'd
+// precedence rule: when both `unresolved=true` and `contact_id` are given,
+// unresolved wins and contact_id is ignored. PR review finding: the initial
+// implementation ANDed both filters unconditionally, producing a
+// self-contradictory `contact_id = ? AND contact_id IS NULL` clause that
+// always returned zero rows regardless of what was actually in the table.
+func Test_AddressList_UnresolvedWinsOverContactID(t *testing.T) {
+	mc := gomock.NewController(t)
+	defer mc.Finish()
+
+	mockUtil := utilhandler.NewMockUtilHandler(mc)
+	mockCache := cachehandler.NewMockCacheHandler(mc)
+	h := handler{
+		utilHandler: mockUtil,
+		db:          dbTest,
+		cache:       mockCache,
+	}
+	ctx := context.Background()
+
+	customerID := uuid.FromStringOrNil("ab1b2c3d-0009-0009-0009-000000000001")
+	contactID := uuid.FromStringOrNil("ab1b2c3d-0009-0009-0009-000000000002")
+	unresolvedAddrID := uuid.FromStringOrNil("ab1b2c3d-0009-0009-0009-000000000003")
+	curTime := timePtr(time.Date(2026, 6, 28, 9, 0, 0, 0, time.UTC))
+
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	mockCache.EXPECT().ContactSet(ctx, gomock.Any())
+	c := &contact.Contact{
+		Identity: commonidentity.Identity{
+			ID:         contactID,
+			CustomerID: customerID,
+		},
+		FirstName: "Address",
+		LastName:  "ListPrecedence",
+		Source:    "manual",
+	}
+	if err := h.ContactCreate(ctx, c); err != nil {
+		t.Fatalf("ContactCreate() error = %v", err)
+	}
+
+	// unresolved address (no ContactSet expected — contact_id is NULL)
+	mockUtil.EXPECT().TimeNow().Return(curTime)
+	if err := h.AddressCreate(ctx, &contact.Address{
+		ID:         unresolvedAddrID,
+		CustomerID: customerID,
+		ContactID:  uuid.Nil,
+		Type:       contact.AddressTypeTel,
+		Target:     "+155****8001",
+	}); err != nil {
+		t.Fatalf("AddressCreate() unresolved error = %v", err)
+	}
+
+	// Both filters given together: unresolved=true AND contact_id=<some other contact>.
+	// unresolved=true must win, so the unresolved address must still be returned.
+	res, err := h.AddressList(ctx, customerID, map[string]any{
+		"unresolved": true,
+		"contact_id": contactID,
+	}, "", 0)
+	if err != nil {
+		t.Fatalf("AddressList() error = %v", err)
+	}
+
+	found := false
+	for _, a := range res {
+		if a.ID == unresolvedAddrID {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("AddressList(unresolved=true, contact_id=%v) did not include unresolved address %v — unresolved=true must take precedence over contact_id", contactID, unresolvedAddrID)
+	}
+}
+
 // Test_AddressClaim covers the claim guard: successful claim of an
 // unresolved address, conflict on an address already resolved to a
 // different contact, and idempotent success on re-claiming the same

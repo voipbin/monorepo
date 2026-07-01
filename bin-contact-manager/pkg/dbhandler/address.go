@@ -225,19 +225,28 @@ func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters m
 		Where(sq.Eq{"customer_id": customerID.Bytes()}).
 		OrderBy("tm_create desc")
 
-	if v, ok := filters["contact_id"]; ok {
-		if cid, ok2 := v.(uuid.UUID); ok2 && cid != uuid.Nil {
-			q = q.Where(sq.Eq{"contact_id": cid.Bytes()})
+	// unresolved=true takes precedence over contact_id per the OpenAPI spec
+	// ("if both are given, unresolved=true wins and contact_id is ignored").
+	// PR review finding: applying both filters unconditionally produced a
+	// self-contradictory `contact_id = ? AND contact_id IS NULL` clause that
+	// always returned zero rows.
+	unresolved := false
+	if v, ok := filters["unresolved"]; ok {
+		if b, ok2 := v.(bool); ok2 && b {
+			unresolved = true
+			q = q.Where(sq.Eq{"contact_id": nil}) // squirrel renders IS NULL for nil
+		}
+	}
+	if !unresolved {
+		if v, ok := filters["contact_id"]; ok {
+			if cid, ok2 := v.(uuid.UUID); ok2 && cid != uuid.Nil {
+				q = q.Where(sq.Eq{"contact_id": cid.Bytes()})
+			}
 		}
 	}
 	if v, ok := filters["type"]; ok {
 		if t, ok2 := v.(string); ok2 && t != "" {
 			q = q.Where(sq.Eq{"type": t})
-		}
-	}
-	if v, ok := filters["unresolved"]; ok {
-		if unresolved, ok2 := v.(bool); ok2 && unresolved {
-			q = q.Where(sq.Eq{"contact_id": nil}) // squirrel renders IS NULL for nil
 		}
 	}
 	if pageSize > 0 {
