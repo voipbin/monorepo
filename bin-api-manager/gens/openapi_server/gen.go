@@ -2655,6 +2655,9 @@ type ContactManagerContact struct {
 	// LastName Last name of the contact.
 	LastName *string `json:"last_name,omitempty"`
 
+	// Notes Free-form notes about the contact. May include call summaries, preferences, or special instructions.
+	Notes *string `json:"notes,omitempty"`
+
 	// Source Source of the contact.
 	Source *ContactManagerContactSource `json:"source,omitempty"`
 

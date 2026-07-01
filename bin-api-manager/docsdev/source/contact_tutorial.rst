@@ -67,6 +67,7 @@ Create a new contact with phone numbers, emails, and tags.
         "job_title": "Account Manager",
         "source": "manual",
         "external_id": "",
+        "notes": "Key enterprise customer contact",
         "phone_numbers": [
             {
                 "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
@@ -121,6 +122,7 @@ Retrieve all contacts. Supports pagination with ``page_size`` and ``page_token``
                 "job_title": "Account Manager",
                 "source": "manual",
                 "external_id": "",
+                "notes": "Key enterprise customer contact",
                 "phone_numbers": [
                     {
                         "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",

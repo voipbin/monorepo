@@ -24903,6 +24903,11 @@
             "description": "External identifier for the contact.",
             "example": "CRM-12345"
           },
+          "notes": {
+            "type": "string",
+            "description": "Free-form notes about the contact. May include call summaries, preferences, or special instructions.",
+            "example": "Prefers morning calls. VIP account - escalate to senior support immediately."
+          },
           "addresses": {
             "type": "array",
             "description": "List of addresses (tel or email) associated with the contact.",

@@ -23,6 +23,7 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 		JobTitle:    "Engineer",
 		Source:      "manual",
 		ExternalID:  "ext-123",
+		Notes:       "Key enterprise customer - VIP account.",
 		Addresses: []Address{
 			{
 				ID:        uuid.FromStringOrNil("33333333-3333-3333-3333-333333333333"),
@@ -73,6 +74,9 @@ func TestContact_ConvertWebhookMessage(t *testing.T) {
 	}
 	if webhook.ExternalID != contact.ExternalID {
 		t.Errorf("ExternalID mismatch: got %v, want %v", webhook.ExternalID, contact.ExternalID)
+	}
+	if webhook.Notes != contact.Notes {
+		t.Errorf("Notes mismatch: got %v, want %v", webhook.Notes, contact.Notes)
 	}
 	if len(webhook.Addresses) != len(contact.Addresses) {
 		t.Errorf("Addresses length mismatch: got %v, want %v", len(webhook.Addresses), len(contact.Addresses))
