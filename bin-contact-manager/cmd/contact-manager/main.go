@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"monorepo/bin-contact-manager/internal/config"
+	"monorepo/bin-contact-manager/pkg/addresshandler"
 	"monorepo/bin-contact-manager/pkg/cachehandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
@@ -126,8 +127,9 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 	reqHandler := requesthandler.NewRequestHandler(sockHandler, serviceName)
 	notifyHandler := notifyhandler.NewNotifyHandler(sockHandler, reqHandler, commonoutline.QueueNameContactEvent, serviceName)
 	contactHandler := contacthandler.NewContactHandler(reqHandler, db, notifyHandler)
+	addrHandler := addresshandler.NewAddressHandler(db)
 
-	if err := runListen(sockHandler, contactHandler); err != nil {
+	if err := runListen(sockHandler, contactHandler, addrHandler); err != nil {
 		return err
 	}
 
@@ -139,8 +141,8 @@ func runService(sqlDB *sql.DB, cache cachehandler.CacheHandler) error {
 }
 
 // runListen runs the listen service
-func runListen(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler) error {
-	listenHandler := listenhandler.NewListenHandler(sockHandler, contactHandler)
+func runListen(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler, addrHandler addresshandler.AddressHandler) error {
+	listenHandler := listenhandler.NewListenHandler(sockHandler, contactHandler, addrHandler)
 
 	// run
 	if err := listenHandler.Run(string(commonoutline.QueueNameContactRequest), string(commonoutline.QueueNameDelay)); err != nil {
