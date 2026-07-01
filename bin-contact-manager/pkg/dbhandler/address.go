@@ -33,6 +33,8 @@ type addressRow struct {
 	ContactID  uuid.UUID  `db:"contact_id,uuid"`
 	Type       string     `db:"type"`
 	Target     string     `db:"target"`
+	Name       string     `db:"name"`
+	Detail     string     `db:"detail"`
 	IsPrimary  bool       `db:"is_primary"`
 	TMCreate   *time.Time `db:"tm_create"`
 }
@@ -54,6 +56,8 @@ func scanFullAddressRow(rows *sql.Rows) (*contact.Address, error) {
 		ContactID:  r.ContactID,
 		Type:       r.Type,
 		Target:     r.Target,
+		Name:       r.Name,
+		Detail:     r.Detail,
 		IsPrimary:  r.IsPrimary,
 		TMCreate:   r.TMCreate,
 	}, nil
@@ -111,6 +115,8 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 			"type":        a.Type,
 			"target":      a.Target,
 			"target_name": "",
+			"name":        a.Name,
+			"detail":      a.Detail,
 			"is_primary":  a.IsPrimary,
 			"tm_create":   a.TMCreate,
 		}).
@@ -258,6 +264,10 @@ func (h *handler) AddressUpdate(ctx context.Context, id uuid.UUID, fields map[st
 		switch k {
 		case "target":
 			q = q.Set("target", v)
+		case "name":
+			q = q.Set("name", v)
+		case "detail":
+			q = q.Set("detail", v)
 		case "is_primary":
 			q = q.Set("is_primary", v)
 		default:

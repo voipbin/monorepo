@@ -20,6 +20,8 @@ func (r *requestHandler) ContactV1AddressCreate(
 	addrType string,
 	target string,
 	isPrimary bool,
+	name string,
+	detail string,
 ) (*cmcontact.Address, error) {
 	uri := fmt.Sprintf("/v1/contacts/%s/addresses", contactID)
 
@@ -27,6 +29,8 @@ func (r *requestHandler) ContactV1AddressCreate(
 		Type:      addrType,
 		Target:    target,
 		IsPrimary: isPrimary,
+		Name:      name,
+		Detail:    detail,
 	}
 
 	m, err := json.Marshal(data)

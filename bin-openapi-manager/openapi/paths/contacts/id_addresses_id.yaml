@@ -31,6 +31,14 @@ put:
               type: string
               description: The updated address value. E.164 format for tel, email address for email.
               example: "+155****9999"
+            name:
+              type: string
+              description: Optional human-readable label for this address.
+              example: "Main Office"
+            detail:
+              type: string
+              description: Optional free-form notes about this address.
+              example: "Primary contact number"
             is_primary:
               type: boolean
               description: Whether this is the primary address for the given type.

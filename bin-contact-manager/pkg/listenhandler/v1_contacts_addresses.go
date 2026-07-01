@@ -85,6 +85,8 @@ func (h *listenHandler) processV1ContactsAddressesPost(ctx context.Context, m *s
 	address := &contact.Address{
 		Type:      reqData.Type,
 		Target:    reqData.Target,
+		Name:      reqData.Name,
+		Detail:    reqData.Detail,
 		IsPrimary: reqData.IsPrimary,
 	}
 
@@ -138,6 +140,12 @@ func (h *listenHandler) processV1ContactsAddressesIDPut(ctx context.Context, m *
 	fields := make(map[string]any)
 	if reqData.Target != nil {
 		fields["target"] = *reqData.Target
+	}
+	if reqData.Name != nil {
+		fields["name"] = *reqData.Name
+	}
+	if reqData.Detail != nil {
+		fields["detail"] = *reqData.Detail
 	}
 	if reqData.IsPrimary != nil {
 		fields["is_primary"] = *reqData.IsPrimary

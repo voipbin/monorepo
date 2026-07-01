@@ -110,6 +110,8 @@ func (h *listenHandler) processV1ContactsPost(ctx context.Context, m *sock.Reque
 		c.Addresses = append(c.Addresses, contact.Address{
 			Type:      a.Type,
 			Target:    a.Target,
+			Name:      a.Name,
+			Detail:    a.Detail,
 			IsPrimary: a.IsPrimary,
 		})
 	}

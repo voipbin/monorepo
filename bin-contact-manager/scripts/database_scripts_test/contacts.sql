@@ -68,6 +68,8 @@ create table contact_addresses(
   type          varchar(255),
   target        varchar(255),
   target_name   varchar(255),
+  name          varchar(255),
+  detail        varchar(255),
   is_primary    boolean,
 
   -- STORED generated column mirroring production: one-primary-per-contact.

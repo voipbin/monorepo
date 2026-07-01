@@ -651,7 +651,7 @@ func Test_PostServiceAgentsContactsIdAddresses(t *testing.T) {
 			expectAddrType:  "tel",
 			expectTarget:    "+121****1234",
 			expectIsPrimary: false,
-			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****1234","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****1234","name":"","detail":"","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -676,7 +676,7 @@ func Test_PostServiceAgentsContactsIdAddresses(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentContactAddressCreate(req.Context(), tt.agent, tt.expectContactID, tt.expectAddrType, tt.expectTarget, tt.expectIsPrimary).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactAddressCreate(req.Context(), tt.agent, tt.expectContactID, tt.expectAddrType, tt.expectTarget, tt.expectIsPrimary, "", "").Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
@@ -732,6 +732,34 @@ func Test_PutServiceAgentsContactsIdAddressesAddressId(t *testing.T) {
 			expectContactID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
 			expectFields:    map[string]any{"target": "+121****9999"},
+			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "update name and detail",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("58b5afa0-8004-11ec-aea5-5f3d4e3c86d1"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
+				},
+				Permission: amagent.PermissionCustomerAdmin,
+			}),
+
+			reqQuery: "/service_agents/contacts/c07ff34e-500d-11ec-8393-2bc7870b7eff/addresses/a1b2c3d4-0001-11ec-0001-000000000001",
+			reqBody:  []byte(`{"name":"Main Office","detail":"Primary contact number"}`),
+
+			responseContact: &cmcontact.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8004-11ec-aea5-d3a320e3b3c0"),
+				},
+				FirstName: "John",
+				LastName:  "Doe",
+				TMCreate:  timePtr("2020-09-20T03:23:21.995Z"),
+			},
+
+			expectContactID: uuid.FromStringOrNil("c07ff34e-500d-11ec-8393-2bc7870b7eff"),
+			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-0001-11ec-0001-000000000001"),
+			expectFields:    map[string]any{"name": "Main Office", "detail": "Primary contact number"},
 			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}

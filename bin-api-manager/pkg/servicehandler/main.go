@@ -451,6 +451,8 @@ type ServiceHandler interface {
 		addrType string,
 		target string,
 		isPrimary bool,
+		name string,
+		detail string,
 	) (*cmcontact.WebhookMessage, error)
 	ContactAddressUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
 	ContactAddressDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.WebhookMessage, error)
@@ -458,7 +460,7 @@ type ServiceHandler interface {
 	// contact_addresses (independent resource)
 	ContactAddressList(ctx context.Context, a *auth.AuthIdentity, filters map[string]any, pageToken string, pageSize uint64) ([]cmcontact.Address, error)
 	ContactAddressGet(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID) (*cmcontact.Address, error)
-	ContactAddressCreateIndependent(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool) (*cmcontact.Address, error)
+	ContactAddressCreateIndependent(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool, name string, detail string) (*cmcontact.Address, error)
 	ContactAddressUpdateIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID, fields map[string]any) (*cmcontact.Address, error)
 	ContactAddressDeleteIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID) (*cmcontact.Address, error)
 
@@ -914,14 +916,14 @@ type ServiceHandler interface {
 	) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactLookup(ctx context.Context, a *auth.AuthIdentity, phoneE164 string, email string) (*cmcontact.WebhookMessage, error)
-	ServiceAgentContactAddressCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool) (*cmcontact.WebhookMessage, error)
+	ServiceAgentContactAddressCreate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool, name string, detail string) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactAddressUpdate(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.WebhookMessage, error)
 	ServiceAgentContactAddressDelete(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.WebhookMessage, error)
 
 	// service_agents/contact_addresses (independent resource)
 	ServiceAgentContactAddressList(ctx context.Context, a *auth.AuthIdentity, filters map[string]any, pageToken string, pageSize uint64) ([]cmcontact.Address, error)
 	ServiceAgentContactAddressGet(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID) (*cmcontact.Address, error)
-	ServiceAgentContactAddressCreateIndependent(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool) (*cmcontact.Address, error)
+	ServiceAgentContactAddressCreateIndependent(ctx context.Context, a *auth.AuthIdentity, contactID uuid.UUID, addrType string, target string, isPrimary bool, name string, detail string) (*cmcontact.Address, error)
 	ServiceAgentContactAddressUpdateIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID, fields map[string]any) (*cmcontact.Address, error)
 	ServiceAgentContactAddressDeleteIndependent(ctx context.Context, a *auth.AuthIdentity, addressID uuid.UUID) (*cmcontact.Address, error)
 

@@ -87,6 +87,8 @@ func (h *serviceHandler) ContactAddressCreateIndependent(
 	addrType string,
 	target string,
 	isPrimary bool,
+	name string,
+	detail string,
 ) (*cmcontact.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactAddressCreateIndependent",
@@ -109,7 +111,7 @@ func (h *serviceHandler) ContactAddressCreateIndependent(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, contactID, addrType, target, isPrimary)
+	res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, contactID, addrType, target, isPrimary, name, detail)
 	if err != nil {
 		log.Infof("Could not create contact address. err: %v", err)
 		return nil, err
@@ -261,6 +263,8 @@ func (h *serviceHandler) ServiceAgentContactAddressCreateIndependent(
 	addrType string,
 	target string,
 	isPrimary bool,
+	name string,
+	detail string,
 ) (*cmcontact.Address, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":       "ServiceAgentContactAddressCreateIndependent",
@@ -283,7 +287,7 @@ func (h *serviceHandler) ServiceAgentContactAddressCreateIndependent(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, contactID, addrType, target, isPrimary)
+	res, err := h.reqHandler.ContactV1ContactAddressCreate(ctx, contactID, addrType, target, isPrimary, name, detail)
 	if err != nil {
 		log.Infof("Could not create contact address. err: %v", err)
 		return nil, err

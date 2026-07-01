@@ -5693,8 +5693,14 @@ type PostContactAddressesJSONBody struct {
 	// ContactId The ID of the contact to add the address to.
 	ContactId openapi_types.UUID `json:"contact_id"`
 
+	// Detail Optional free-form notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// IsPrimary Whether this is the primary address for the contact.
 	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Name Optional human-readable label for this address.
+	Name *string `json:"name,omitempty"`
 
 	// Target The address value. E.164 format for tel, email address for email.
 	Target string `json:"target"`
@@ -5708,8 +5714,14 @@ type PostContactAddressesJSONBodyType string
 
 // PutContactAddressesIdJSONBody defines parameters for PutContactAddressesId.
 type PutContactAddressesIdJSONBody struct {
+	// Detail Optional free-form notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// IsPrimary Whether this is the primary address for the contact.
 	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Name Optional human-readable label for this address.
+	Name *string `json:"name,omitempty"`
 
 	// Target The updated address value. E.164 format for tel, email address for email.
 	Target *string `json:"target,omitempty"`
@@ -5785,8 +5797,14 @@ type PutContactsIdJSONBody struct {
 
 // PostContactsIdAddressesJSONBody defines parameters for PostContactsIdAddresses.
 type PostContactsIdAddressesJSONBody struct {
+	// Detail Optional free-form notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// IsPrimary Whether this is the primary address for the given type.
 	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Name Optional human-readable label for this address.
+	Name *string `json:"name,omitempty"`
 
 	// Target The address value. E.164 format for tel, email address for email.
 	Target string `json:"target"`
@@ -5800,8 +5818,14 @@ type PostContactsIdAddressesJSONBodyType string
 
 // PutContactsIdAddressesAddressIdJSONBody defines parameters for PutContactsIdAddressesAddressId.
 type PutContactsIdAddressesAddressIdJSONBody struct {
+	// Detail Optional free-form notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// IsPrimary Whether this is the primary address for the given type.
 	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Name Optional human-readable label for this address.
+	Name *string `json:"name,omitempty"`
 
 	// Target The updated address value. E.164 format for tel, email address for email.
 	Target *string `json:"target,omitempty"`
@@ -6666,8 +6690,14 @@ type PostServiceAgentsContactAddressesJSONBody struct {
 	// ContactId The ID of the contact to add the address to.
 	ContactId openapi_types.UUID `json:"contact_id"`
 
+	// Detail Optional free-form notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// IsPrimary Whether this is the primary address for the contact.
 	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Name Optional human-readable label for this address.
+	Name *string `json:"name,omitempty"`
 
 	// Target The address value. E.164 format for tel, email address for email.
 	Target string `json:"target"`
@@ -6681,8 +6711,14 @@ type PostServiceAgentsContactAddressesJSONBodyType string
 
 // PutServiceAgentsContactAddressesIdJSONBody defines parameters for PutServiceAgentsContactAddressesId.
 type PutServiceAgentsContactAddressesIdJSONBody struct {
+	// Detail Optional free-form notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// IsPrimary Whether this is the primary address for the contact.
 	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Name Optional human-readable label for this address.
+	Name *string `json:"name,omitempty"`
 
 	// Target The updated address value. E.164 format for tel, email address for email.
 	Target *string `json:"target,omitempty"`
@@ -6758,8 +6794,14 @@ type PutServiceAgentsContactsIdJSONBody struct {
 
 // PostServiceAgentsContactsIdAddressesJSONBody defines parameters for PostServiceAgentsContactsIdAddresses.
 type PostServiceAgentsContactsIdAddressesJSONBody struct {
+	// Detail Optional free-form notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// IsPrimary Whether this is the primary address for the given type.
 	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Name Optional human-readable label for this address.
+	Name *string `json:"name,omitempty"`
 
 	// Target The address value. E.164 format for tel, email address for email.
 	Target string `json:"target"`
@@ -6773,8 +6815,14 @@ type PostServiceAgentsContactsIdAddressesJSONBodyType string
 
 // PutServiceAgentsContactsIdAddressesAddressIdJSONBody defines parameters for PutServiceAgentsContactsIdAddressesAddressId.
 type PutServiceAgentsContactsIdAddressesAddressIdJSONBody struct {
+	// Detail Optional free-form notes about this address.
+	Detail *string `json:"detail,omitempty"`
+
 	// IsPrimary Whether this is the primary address for the given type.
 	IsPrimary *bool `json:"is_primary,omitempty"`
+
+	// Name Optional human-readable label for this address.
+	Name *string `json:"name,omitempty"`
 
 	// Target The updated address value.
 	Target *string `json:"target,omitempty"`

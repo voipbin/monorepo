@@ -63,6 +63,8 @@ func (r *requestHandler) ContactV1ContactAddressCreate(
 	addrType string,
 	target string,
 	isPrimary bool,
+	name string,
+	detail string,
 ) (*cmcontact.Address, error) {
 	uri := "/v1/contact_addresses"
 
@@ -71,6 +73,8 @@ func (r *requestHandler) ContactV1ContactAddressCreate(
 		Type:      addrType,
 		Target:    target,
 		IsPrimary: isPrimary,
+		Name:      name,
+		Detail:    detail,
 	}
 
 	m, err := json.Marshal(data)

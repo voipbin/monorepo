@@ -35,6 +35,8 @@ type ContactUpdate struct {
 type AddressCreate struct {
 	Type      string `json:"type"`       // "tel" | "email" — required
 	Target    string `json:"target"`     // E.164 or email   — required
+	Name      string `json:"name"`       // optional label
+	Detail    string `json:"detail"`     // optional notes
 	IsPrimary bool   `json:"is_primary"`
 }
 
@@ -43,12 +45,17 @@ type ContactAddressCreate struct {
 	ContactID uuid.UUID `json:"contact_id"` // required
 	Type      string    `json:"type"`        // "tel" | "email" — required
 	Target    string    `json:"target"`      // E.164 or email   — required
+	Name      string    `json:"name"`        // optional label
+	Detail    string    `json:"detail"`      // optional notes
 	IsPrimary bool      `json:"is_primary"`
 }
 
 // AddressUpdate is the body for PUT /v1/contacts/{id}/addresses/{address_id}
+// and PUT /v1/contact_addresses/{id}
 type AddressUpdate struct {
 	Target    *string `json:"target,omitempty"`
+	Name      *string `json:"name,omitempty"`
+	Detail    *string `json:"detail,omitempty"`
 	IsPrimary *bool   `json:"is_primary,omitempty"`
 }
 
