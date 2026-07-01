@@ -314,6 +314,8 @@ func (h *serviceHandler) ContactAddressCreate(
 	addrType string,
 	target string,
 	isPrimary bool,
+	name string,
+	detail string,
 ) (*cmcontact.WebhookMessage, error) {
 	log := logrus.WithFields(logrus.Fields{
 		"func":        "ContactAddressCreate",
@@ -335,7 +337,7 @@ func (h *serviceHandler) ContactAddressCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	if _, err := h.reqHandler.ContactV1AddressCreate(ctx, contactID, addrType, target, isPrimary); err != nil {
+	if _, err := h.reqHandler.ContactV1AddressCreate(ctx, contactID, addrType, target, isPrimary, name, detail); err != nil {
 		log.Infof("Could not add address to contact. err: %v", err)
 		return nil, err
 	}

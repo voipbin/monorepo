@@ -155,6 +155,12 @@ func (h *server) PostContacts(c *gin.Context) {
 			if v.IsPrimary != nil {
 				addr.IsPrimary = *v.IsPrimary
 			}
+			if v.Name != nil {
+				addr.Name = *v.Name
+			}
+			if v.Detail != nil {
+				addr.Detail = *v.Detail
+			}
 			addresses = append(addresses, addr)
 		}
 	}
@@ -387,7 +393,16 @@ func (h *server) PostContactsIdAddresses(c *gin.Context, id openapi_types.UUID) 
 		isPrimary = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ContactAddressCreate(c.Request.Context(), a, target, string(req.Type), req.Target, isPrimary)
+	name := ""
+	if req.Name != nil {
+		name = *req.Name
+	}
+	detail := ""
+	if req.Detail != nil {
+		detail = *req.Detail
+	}
+
+	res, err := h.serviceHandler.ContactAddressCreate(c.Request.Context(), a, target, string(req.Type), req.Target, isPrimary, name, detail)
 	if err != nil {
 		log.Errorf("Could not add address to contact. err: %v", err)
 		abortWithServiceError(c, err)

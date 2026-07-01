@@ -893,6 +893,8 @@ type RequestHandler interface {
 		addrType string,
 		target string,
 		isPrimary bool,
+		name string,
+		detail string,
 	) (*cmcontact.Address, error)
 	ContactV1AddressGet(ctx context.Context, contactID uuid.UUID) ([]cmcontact.Address, error)
 	ContactV1AddressUpdate(ctx context.Context, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.Contact, error)
@@ -900,7 +902,7 @@ type RequestHandler interface {
 
 	// contact-manager contact_addresses (independent resource)
 	ContactV1ContactAddressList(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]cmcontact.Address, error)
-	ContactV1ContactAddressCreate(ctx context.Context, contactID uuid.UUID, addrType string, target string, isPrimary bool) (*cmcontact.Address, error)
+	ContactV1ContactAddressCreate(ctx context.Context, contactID uuid.UUID, addrType string, target string, isPrimary bool, name string, detail string) (*cmcontact.Address, error)
 	ContactV1ContactAddressGet(ctx context.Context, customerID uuid.UUID, addressID uuid.UUID) (*cmcontact.Address, error)
 	ContactV1ContactAddressUpdate(ctx context.Context, customerID uuid.UUID, contactID uuid.UUID, addressID uuid.UUID, fields map[string]any) (*cmcontact.Address, error)
 	ContactV1ContactAddressDelete(ctx context.Context, customerID uuid.UUID, contactID uuid.UUID, addressID uuid.UUID) (*cmcontact.Address, error)

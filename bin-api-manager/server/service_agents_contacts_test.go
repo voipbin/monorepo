@@ -651,7 +651,7 @@ func Test_PostServiceAgentsContactsIdAddresses(t *testing.T) {
 			expectAddrType:  "tel",
 			expectTarget:    "+121****1234",
 			expectIsPrimary: false,
-			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****1234","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"c07ff34e-500d-11ec-8393-2bc7870b7eff","customer_id":"5f621078-8004-11ec-aea5-d3a320e3b3c0","first_name":"John","last_name":"Doe","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-0001-11ec-0001-000000000001","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****1234","name":"","detail":"","is_primary":false,"tm_create":null}],"tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -676,7 +676,7 @@ func Test_PostServiceAgentsContactsIdAddresses(t *testing.T) {
 			req, _ := http.NewRequest("POST", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ServiceAgentContactAddressCreate(req.Context(), tt.agent, tt.expectContactID, tt.expectAddrType, tt.expectTarget, tt.expectIsPrimary).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ServiceAgentContactAddressCreate(req.Context(), tt.agent, tt.expectContactID, tt.expectAddrType, tt.expectTarget, tt.expectIsPrimary, "", "").Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {

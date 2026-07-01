@@ -267,6 +267,8 @@ func (h *serviceHandler) ServiceAgentContactAddressCreate(
 	addrType string,
 	target string,
 	isPrimary bool,
+	name string,
+	detail string,
 ) (*cmcontact.WebhookMessage, error) {
 	if !a.IsAgent() {
 		return nil, serviceerrors.ErrAuthenticationRequired
@@ -289,7 +291,7 @@ func (h *serviceHandler) ServiceAgentContactAddressCreate(
 		return nil, serviceerrors.ErrPermissionDenied
 	}
 
-	if _, err := h.reqHandler.ContactV1AddressCreate(ctx, contactID, addrType, target, isPrimary); err != nil {
+	if _, err := h.reqHandler.ContactV1AddressCreate(ctx, contactID, addrType, target, isPrimary, name, detail); err != nil {
 		log.Infof("Could not add address to contact. err: %v", err)
 		return nil, err
 	}

@@ -87,7 +87,16 @@ func (h *server) PostContactAddresses(c *gin.Context) {
 		isPrimary = *req.IsPrimary
 	}
 
-	res, err := h.serviceHandler.ContactAddressCreateIndependent(c.Request.Context(), a, contactID, string(req.Type), req.Target, isPrimary)
+	name := ""
+	if req.Name != nil {
+		name = *req.Name
+	}
+	detail := ""
+	if req.Detail != nil {
+		detail = *req.Detail
+	}
+
+	res, err := h.serviceHandler.ContactAddressCreateIndependent(c.Request.Context(), a, contactID, string(req.Type), req.Target, isPrimary, name, detail)
 	if err != nil {
 		log.Errorf("Could not create contact address. err: %v", err)
 		abortWithServiceError(c, err)
