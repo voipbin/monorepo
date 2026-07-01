@@ -7888,6 +7888,9 @@ type GetContactAddressesParams struct {
 
 	// Type Filter by address type.
 	Type *GetContactAddressesParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// Unresolved When true, list only unresolved addresses (contact_id IS NULL) for the customer — the pool of addresses not yet attached to any contact. Mutually exclusive with contact_id; if both are given, unresolved=true wins and contact_id is ignored.
+	Unresolved *bool `form:"unresolved,omitempty" json:"unresolved,omitempty"`
 }
 
 // GetContactAddressesParamsType defines parameters for GetContactAddresses.
@@ -7895,8 +7898,8 @@ type GetContactAddressesParamsType string
 
 // PostContactAddressesJSONBody defines parameters for PostContactAddresses.
 type PostContactAddressesJSONBody struct {
-	// ContactId The ID of the contact to add the address to.
-	ContactId openapi_types.UUID `json:"contact_id"`
+	// ContactId The ID of the contact to add the address to. Omit to create an unresolved address in the customer's unresolved pool.
+	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
 
 	// Detail Optional free-form notes about this address.
 	Detail *string `json:"detail,omitempty"`
@@ -7930,6 +7933,11 @@ type PutContactAddressesIdJSONBody struct {
 
 	// Target The updated address value. E.164 format for tel, email address for email.
 	Target *string `json:"target,omitempty"`
+}
+
+// PostContactAddressesIdClaimJSONBody defines parameters for PostContactAddressesIdClaim.
+type PostContactAddressesIdClaimJSONBody struct {
+	ContactId openapi_types.UUID `json:"contact_id"`
 }
 
 // GetContactsParams defines parameters for GetContacts.
@@ -8885,6 +8893,9 @@ type GetServiceAgentsContactAddressesParams struct {
 
 	// Type Filter by address type.
 	Type *GetServiceAgentsContactAddressesParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// Unresolved When true, list only unresolved addresses (contact_id IS NULL) for the customer — the pool of addresses not yet attached to any contact. Mutually exclusive with contact_id; if both are given, unresolved=true wins and contact_id is ignored.
+	Unresolved *bool `form:"unresolved,omitempty" json:"unresolved,omitempty"`
 }
 
 // GetServiceAgentsContactAddressesParamsType defines parameters for GetServiceAgentsContactAddresses.
@@ -8892,8 +8903,8 @@ type GetServiceAgentsContactAddressesParamsType string
 
 // PostServiceAgentsContactAddressesJSONBody defines parameters for PostServiceAgentsContactAddresses.
 type PostServiceAgentsContactAddressesJSONBody struct {
-	// ContactId The ID of the contact to add the address to.
-	ContactId openapi_types.UUID `json:"contact_id"`
+	// ContactId The ID of the contact to add the address to. Omit to create an unresolved address in the customer's unresolved pool.
+	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
 
 	// Detail Optional free-form notes about this address.
 	Detail *string `json:"detail,omitempty"`
@@ -8927,6 +8938,11 @@ type PutServiceAgentsContactAddressesIdJSONBody struct {
 
 	// Target The updated address value. E.164 format for tel, email address for email.
 	Target *string `json:"target,omitempty"`
+}
+
+// PostServiceAgentsContactAddressesIdClaimJSONBody defines parameters for PostServiceAgentsContactAddressesIdClaim.
+type PostServiceAgentsContactAddressesIdClaimJSONBody struct {
+	ContactId openapi_types.UUID `json:"contact_id"`
 }
 
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
@@ -9615,6 +9631,9 @@ type PostContactAddressesJSONRequestBody PostContactAddressesJSONBody
 // PutContactAddressesIdJSONRequestBody defines body for PutContactAddressesId for application/json ContentType.
 type PutContactAddressesIdJSONRequestBody PutContactAddressesIdJSONBody
 
+// PostContactAddressesIdClaimJSONRequestBody defines body for PostContactAddressesIdClaim for application/json ContentType.
+type PostContactAddressesIdClaimJSONRequestBody PostContactAddressesIdClaimJSONBody
+
 // PostContactsJSONRequestBody defines body for PostContacts for application/json ContentType.
 type PostContactsJSONRequestBody PostContactsJSONBody
 
@@ -9782,6 +9801,9 @@ type PostServiceAgentsContactAddressesJSONRequestBody PostServiceAgentsContactAd
 
 // PutServiceAgentsContactAddressesIdJSONRequestBody defines body for PutServiceAgentsContactAddressesId for application/json ContentType.
 type PutServiceAgentsContactAddressesIdJSONRequestBody PutServiceAgentsContactAddressesIdJSONBody
+
+// PostServiceAgentsContactAddressesIdClaimJSONRequestBody defines body for PostServiceAgentsContactAddressesIdClaim for application/json ContentType.
+type PostServiceAgentsContactAddressesIdClaimJSONRequestBody PostServiceAgentsContactAddressesIdClaimJSONBody
 
 // PostServiceAgentsContactsJSONRequestBody defines body for PostServiceAgentsContacts for application/json ContentType.
 type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody

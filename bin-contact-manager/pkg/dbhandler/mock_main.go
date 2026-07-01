@@ -45,6 +45,20 @@ func (m *MockDBHandler) EXPECT() *MockDBHandlerMockRecorder {
 	return m.recorder
 }
 
+// AddressClaim mocks base method.
+func (m *MockDBHandler) AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddressClaim", ctx, customerID, addressID, contactID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddressClaim indicates an expected call of AddressClaim.
+func (mr *MockDBHandlerMockRecorder) AddressClaim(ctx, customerID, addressID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddressClaim", reflect.TypeOf((*MockDBHandler)(nil).AddressClaim), ctx, customerID, addressID, contactID)
+}
+
 // AddressCreate mocks base method.
 func (m *MockDBHandler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	m.ctrl.T.Helper()

@@ -1,0 +1,47 @@
+post:
+  summary: Claim an unresolved contact address
+  description: Attaches a currently-unresolved contact address (contact_id
+    is NULL) to the given contact. Idempotent if already claimed by the
+    same contact; returns 409 if claimed by a different contact.
+  tags:
+    - Contact
+  parameters:
+    - name: id
+      in: path
+      description: The ID of the contact address to claim.
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - contact_id
+          properties:
+            contact_id:
+              type: string
+              format: uuid
+              example: 5e4a0680-eba3-4001-a000-000000000001
+  responses:
+    '200':
+      description: Address claimed successfully.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ContactManagerAddress'
+    '400':
+      $ref: '#/components/responses/BadRequest'
+    '401':
+      $ref: '#/components/responses/Unauthenticated'
+    '403':
+      $ref: '#/components/responses/PermissionDenied'
+    '404':
+      $ref: '#/components/responses/NotFound'
+    '409':
+      $ref: '#/components/responses/Conflict'
+    '500':
+      $ref: '#/components/responses/InternalError'

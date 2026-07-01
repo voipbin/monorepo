@@ -7300,6 +7300,16 @@
               ],
               "example": "tel"
             }
+          },
+          {
+            "name": "unresolved",
+            "in": "query",
+            "required": false,
+            "description": "When true, list only unresolved addresses (contact_id IS NULL) for the customer — the pool of addresses not yet attached to any contact. Mutually exclusive with contact_id; if both are given, unresolved=true wins and contact_id is ignored.",
+            "schema": {
+              "type": "boolean",
+              "example": true
+            }
           }
         ],
         "responses": {
@@ -7338,7 +7348,7 @@
       },
       "post": {
         "summary": "Create a contact address",
-        "description": "Create a new address (tel or email) for a contact.",
+        "description": "Create a new address (tel or email) for a contact. If contact_id is omitted, creates an unresolved address (not yet attached to any contact) for the authenticated customer's unresolved pool; such an address cannot be primary.",
         "tags": [
           "Contact"
         ],
@@ -7349,7 +7359,6 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "contact_id",
                   "type",
                   "target"
                 ],
@@ -7357,7 +7366,7 @@
                   "contact_id": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "The ID of the contact to add the address to.",
+                    "description": "The ID of the contact to add the address to. Omit to create an unresolved address in the customer's unresolved pool.",
                     "example": "5e4a0680-eba3-4001-a000-000000000001"
                   },
                   "type": {
@@ -7372,7 +7381,17 @@
                   "target": {
                     "type": "string",
                     "description": "The address value. E.164 format for tel, email address for email.",
-                    "example": "+15551234567"
+                    "example": "+155****4567"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional human-readable label for this address.",
+                    "example": "Main Office"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Optional free-form notes about this address.",
+                    "example": "Primary contact number"
                   },
                   "is_primary": {
                     "type": "boolean",
@@ -7490,7 +7509,17 @@
                   "target": {
                     "type": "string",
                     "description": "The updated address value. E.164 format for tel, email address for email.",
-                    "example": "+15559999999"
+                    "example": "+155****9999"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional human-readable label for this address.",
+                    "example": "Main Office"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Optional free-form notes about this address.",
+                    "example": "Primary contact number"
                   },
                   "is_primary": {
                     "type": "boolean",
@@ -7571,6 +7600,77 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
+    "/contact_addresses/{id}/claim": {
+      "post": {
+        "summary": "Claim an unresolved contact address",
+        "description": "Attaches a currently-unresolved contact address (contact_id is NULL) to the given contact. Idempotent if already claimed by the same contact; returns 409 if claimed by a different contact.",
+        "tags": [
+          "Contact"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the contact address to claim.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "contact_id"
+                ],
+                "properties": {
+                  "contact_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "5e4a0680-eba3-4001-a000-000000000001"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address claimed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerAddress"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
@@ -7986,7 +8086,17 @@
                   "target": {
                     "type": "string",
                     "description": "The address value. E.164 format for tel, email address for email.",
-                    "example": "+15551234567"
+                    "example": "+155****4567"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional human-readable label for this address.",
+                    "example": "Main Office"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Optional free-form notes about this address.",
+                    "example": "Primary contact number"
                   },
                   "is_primary": {
                     "type": "boolean",
@@ -8069,6 +8179,16 @@
                     "type": "string",
                     "description": "The updated address value. E.164 format for tel, email address for email.",
                     "example": "+155****9999"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional human-readable label for this address.",
+                    "example": "Main Office"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Optional free-form notes about this address.",
+                    "example": "Primary contact number"
                   },
                   "is_primary": {
                     "type": "boolean",
@@ -17562,6 +17682,16 @@
               ],
               "example": "tel"
             }
+          },
+          {
+            "name": "unresolved",
+            "in": "query",
+            "required": false,
+            "description": "When true, list only unresolved addresses (contact_id IS NULL) for the customer — the pool of addresses not yet attached to any contact. Mutually exclusive with contact_id; if both are given, unresolved=true wins and contact_id is ignored.",
+            "schema": {
+              "type": "boolean",
+              "example": true
+            }
           }
         ],
         "responses": {
@@ -17600,7 +17730,7 @@
       },
       "post": {
         "summary": "Create a contact address (service agent)",
-        "description": "Create a new address (tel or email) for a contact as a service agent.",
+        "description": "Create a new address (tel or email) for a contact as a service agent. If contact_id is omitted, creates an unresolved address (not yet attached to any contact) for the customer's unresolved pool; such an address cannot be primary.",
         "tags": [
           "ServiceAgent"
         ],
@@ -17611,7 +17741,6 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "contact_id",
                   "type",
                   "target"
                 ],
@@ -17619,7 +17748,7 @@
                   "contact_id": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "The ID of the contact to add the address to.",
+                    "description": "The ID of the contact to add the address to. Omit to create an unresolved address in the customer's unresolved pool.",
                     "example": "5e4a0680-eba3-4001-a000-000000000001"
                   },
                   "type": {
@@ -17635,6 +17764,16 @@
                     "type": "string",
                     "description": "The address value. E.164 format for tel, email address for email.",
                     "example": "+155****4567"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional human-readable label for this address.",
+                    "example": "Main Office"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Optional free-form notes about this address.",
+                    "example": "Primary contact number"
                   },
                   "is_primary": {
                     "type": "boolean",
@@ -17754,6 +17893,16 @@
                     "description": "The updated address value. E.164 format for tel, email address for email.",
                     "example": "+155****9999"
                   },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional human-readable label for this address.",
+                    "example": "Main Office"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Optional free-form notes about this address.",
+                    "example": "Primary contact number"
+                  },
                   "is_primary": {
                     "type": "boolean",
                     "description": "Whether this is the primary address for the contact.",
@@ -17840,6 +17989,77 @@
         }
       }
     },
+    "/service_agents/contact_addresses/{id}/claim": {
+      "post": {
+        "summary": "Claim an unresolved contact address (service agent)",
+        "description": "Attaches a currently-unresolved contact address (contact_id is NULL) to the given contact, as a service agent. Idempotent if already claimed by the same contact; returns 409 if claimed by a different contact.",
+        "tags": [
+          "ServiceAgent"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the contact address to claim.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "contact_id"
+                ],
+                "properties": {
+                  "contact_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "example": "5e4a0680-eba3-4001-a000-000000000001"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Address claimed successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactManagerAddress"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/PermissionDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
+    },
     "/service_agents/contacts/{id}/addresses": {
       "post": {
         "summary": "Add address to contact (service agent)",
@@ -17884,6 +18104,16 @@
                     "type": "string",
                     "description": "The address value. E.164 format for tel, email address for email.",
                     "example": "+155****4567"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional human-readable label for this address.",
+                    "example": "Main Office"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Optional free-form notes about this address.",
+                    "example": "Primary contact number"
                   },
                   "is_primary": {
                     "type": "boolean",
@@ -17966,6 +18196,16 @@
                     "type": "string",
                     "description": "The updated address value.",
                     "example": "+155****9999"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Optional human-readable label for this address.",
+                    "example": "Main Office"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Optional free-form notes about this address.",
+                    "example": "Primary contact number"
                   },
                   "is_primary": {
                     "type": "boolean",

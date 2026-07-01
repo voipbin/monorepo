@@ -33,21 +33,27 @@ type ContactUpdate struct {
 
 // AddressCreate is the body for POST /v1/contacts/{id}/addresses
 type AddressCreate struct {
-	Type      string `json:"type"`       // "tel" | "email" — required
-	Target    string `json:"target"`     // E.164 or email   — required
-	Name      string `json:"name"`       // optional label
-	Detail    string `json:"detail"`     // optional notes
+	Type      string `json:"type"`   // "tel" | "email" — required
+	Target    string `json:"target"` // E.164 or email   — required
+	Name      string `json:"name"`   // optional label
+	Detail    string `json:"detail"` // optional notes
 	IsPrimary bool   `json:"is_primary"`
 }
 
 // ContactAddressCreate is the body for POST /v1/contact_addresses
 type ContactAddressCreate struct {
+	CustomerID uuid.UUID `json:"customer_id"` // internal RPC field, set by bin-api-manager only
+	ContactID  uuid.UUID `json:"contact_id"`  // optional — absent/uuid.Nil means "create unresolved"
+	Type       string    `json:"type"`        // "tel" | "email" — required
+	Target     string    `json:"target"`      // E.164 or email   — required
+	Name       string    `json:"name"`        // optional label
+	Detail     string    `json:"detail"`      // optional notes
+	IsPrimary  bool      `json:"is_primary"`
+}
+
+// ContactAddressClaim is the body for POST /v1/contact_addresses/{id}/claim
+type ContactAddressClaim struct {
 	ContactID uuid.UUID `json:"contact_id"` // required
-	Type      string    `json:"type"`        // "tel" | "email" — required
-	Target    string    `json:"target"`      // E.164 or email   — required
-	Name      string    `json:"name"`        // optional label
-	Detail    string    `json:"detail"`      // optional notes
-	IsPrimary bool      `json:"is_primary"`
 }
 
 // AddressUpdate is the body for PUT /v1/contacts/{id}/addresses/{address_id}

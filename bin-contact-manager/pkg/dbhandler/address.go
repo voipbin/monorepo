@@ -107,11 +107,18 @@ func (h *handler) addressContactID(id uuid.UUID) (uuid.UUID, error) {
 func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 	a.TMCreate = h.utilHandler.TimeNow()
 
+	// contact_id is nullable (NULL = unresolved). uuid.Nil.Bytes() is 16 zero
+	// bytes, NOT SQL NULL, so we must explicitly pass Go nil when unresolved.
+	var contactIDValue any
+	if a.ContactID != uuid.Nil {
+		contactIDValue = a.ContactID.Bytes()
+	}
+
 	query, args, err := sq.Insert(addressTable).
 		SetMap(map[string]any{
 			"id":          a.ID.Bytes(),
 			"customer_id": a.CustomerID.Bytes(),
-			"contact_id":  a.ContactID.Bytes(),
+			"contact_id":  contactIDValue,
 			"type":        a.Type,
 			"target":      a.Target,
 			"target_name": "",
@@ -129,8 +136,52 @@ func (h *handler) AddressCreate(ctx context.Context, a *contact.Address) error {
 		return fmt.Errorf("could not execute. AddressCreate. err: %v", err)
 	}
 
-	// update the contact cache
-	_ = h.contactUpdateToCache(ctx, a.ContactID)
+	// update the contact cache (skip for unresolved addresses — there is no
+	// contact to refresh yet)
+	if a.ContactID != uuid.Nil {
+		_ = h.contactUpdateToCache(ctx, a.ContactID)
+	}
+
+	return nil
+}
+
+// AddressClaim attaches contact_id to a currently-unresolved address.
+// Returns ErrConflict if the address is already resolved to a DIFFERENT
+// contact_id. No-ops (success) if already resolved to the SAME contact_id.
+func (h *handler) AddressClaim(ctx context.Context, customerID, addressID, contactID uuid.UUID) error {
+	existing, err := h.AddressGet(ctx, customerID, addressID) // tenant-scoped fetch
+	if err != nil {
+		return err // ErrNotFound propagates as-is
+	}
+	if existing.ContactID == contactID {
+		return nil // already claimed by this contact — idempotent success
+	}
+	if existing.ContactID != uuid.Nil {
+		return ErrConflict // resolved to a DIFFERENT contact — reject, no move
+	}
+
+	query, args, err := sq.Update(addressTable).
+		Set("contact_id", contactID.Bytes()).
+		Set("tm_update", h.utilHandler.TimeNow()).
+		Where(sq.Eq{"id": addressID.Bytes()}).
+		Where(sq.Eq{"contact_id": nil}). // race guard: only claim if STILL unresolved
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("could not build query. AddressClaim. err: %v", err)
+	}
+	result, err := h.db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("could not execute. AddressClaim. err: %v", err)
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return ErrConflict // lost the race — someone else claimed it between Get and Update
+	}
+
+	// Refresh the contact-body cache, mirroring AddressUpdate/AddressDelete.
+	// This is the dbhandler layer's own responsibility (unexported method,
+	// not reachable from contactHandler) and is independent of publishEvent.
+	_ = h.contactUpdateToCache(ctx, contactID)
 
 	return nil
 }
@@ -182,6 +233,11 @@ func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters m
 	if v, ok := filters["type"]; ok {
 		if t, ok2 := v.(string); ok2 && t != "" {
 			q = q.Where(sq.Eq{"type": t})
+		}
+	}
+	if v, ok := filters["unresolved"]; ok {
+		if unresolved, ok2 := v.(bool); ok2 && unresolved {
+			q = q.Where(sq.Eq{"contact_id": nil}) // squirrel renders IS NULL for nil
 		}
 	}
 	if pageSize > 0 {

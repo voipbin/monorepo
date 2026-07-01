@@ -5683,6 +5683,9 @@ type GetContactAddressesParams struct {
 
 	// Type Filter by address type.
 	Type *GetContactAddressesParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// Unresolved When true, list only unresolved addresses (contact_id IS NULL) for the customer — the pool of addresses not yet attached to any contact. Mutually exclusive with contact_id; if both are given, unresolved=true wins and contact_id is ignored.
+	Unresolved *bool `form:"unresolved,omitempty" json:"unresolved,omitempty"`
 }
 
 // GetContactAddressesParamsType defines parameters for GetContactAddresses.
@@ -5690,8 +5693,8 @@ type GetContactAddressesParamsType string
 
 // PostContactAddressesJSONBody defines parameters for PostContactAddresses.
 type PostContactAddressesJSONBody struct {
-	// ContactId The ID of the contact to add the address to.
-	ContactId openapi_types.UUID `json:"contact_id"`
+	// ContactId The ID of the contact to add the address to. Omit to create an unresolved address in the customer's unresolved pool.
+	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
 
 	// Detail Optional free-form notes about this address.
 	Detail *string `json:"detail,omitempty"`
@@ -5725,6 +5728,11 @@ type PutContactAddressesIdJSONBody struct {
 
 	// Target The updated address value. E.164 format for tel, email address for email.
 	Target *string `json:"target,omitempty"`
+}
+
+// PostContactAddressesIdClaimJSONBody defines parameters for PostContactAddressesIdClaim.
+type PostContactAddressesIdClaimJSONBody struct {
+	ContactId openapi_types.UUID `json:"contact_id"`
 }
 
 // GetContactsParams defines parameters for GetContacts.
@@ -6680,6 +6688,9 @@ type GetServiceAgentsContactAddressesParams struct {
 
 	// Type Filter by address type.
 	Type *GetServiceAgentsContactAddressesParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// Unresolved When true, list only unresolved addresses (contact_id IS NULL) for the customer — the pool of addresses not yet attached to any contact. Mutually exclusive with contact_id; if both are given, unresolved=true wins and contact_id is ignored.
+	Unresolved *bool `form:"unresolved,omitempty" json:"unresolved,omitempty"`
 }
 
 // GetServiceAgentsContactAddressesParamsType defines parameters for GetServiceAgentsContactAddresses.
@@ -6687,8 +6698,8 @@ type GetServiceAgentsContactAddressesParamsType string
 
 // PostServiceAgentsContactAddressesJSONBody defines parameters for PostServiceAgentsContactAddresses.
 type PostServiceAgentsContactAddressesJSONBody struct {
-	// ContactId The ID of the contact to add the address to.
-	ContactId openapi_types.UUID `json:"contact_id"`
+	// ContactId The ID of the contact to add the address to. Omit to create an unresolved address in the customer's unresolved pool.
+	ContactId *openapi_types.UUID `json:"contact_id,omitempty"`
 
 	// Detail Optional free-form notes about this address.
 	Detail *string `json:"detail,omitempty"`
@@ -6722,6 +6733,11 @@ type PutServiceAgentsContactAddressesIdJSONBody struct {
 
 	// Target The updated address value. E.164 format for tel, email address for email.
 	Target *string `json:"target,omitempty"`
+}
+
+// PostServiceAgentsContactAddressesIdClaimJSONBody defines parameters for PostServiceAgentsContactAddressesIdClaim.
+type PostServiceAgentsContactAddressesIdClaimJSONBody struct {
+	ContactId openapi_types.UUID `json:"contact_id"`
 }
 
 // GetServiceAgentsContactsParams defines parameters for GetServiceAgentsContacts.
@@ -7410,6 +7426,9 @@ type PostContactAddressesJSONRequestBody PostContactAddressesJSONBody
 // PutContactAddressesIdJSONRequestBody defines body for PutContactAddressesId for application/json ContentType.
 type PutContactAddressesIdJSONRequestBody PutContactAddressesIdJSONBody
 
+// PostContactAddressesIdClaimJSONRequestBody defines body for PostContactAddressesIdClaim for application/json ContentType.
+type PostContactAddressesIdClaimJSONRequestBody PostContactAddressesIdClaimJSONBody
+
 // PostContactsJSONRequestBody defines body for PostContacts for application/json ContentType.
 type PostContactsJSONRequestBody PostContactsJSONBody
 
@@ -7577,6 +7596,9 @@ type PostServiceAgentsContactAddressesJSONRequestBody PostServiceAgentsContactAd
 
 // PutServiceAgentsContactAddressesIdJSONRequestBody defines body for PutServiceAgentsContactAddressesId for application/json ContentType.
 type PutServiceAgentsContactAddressesIdJSONRequestBody PutServiceAgentsContactAddressesIdJSONBody
+
+// PostServiceAgentsContactAddressesIdClaimJSONRequestBody defines body for PostServiceAgentsContactAddressesIdClaim for application/json ContentType.
+type PostServiceAgentsContactAddressesIdClaimJSONRequestBody PostServiceAgentsContactAddressesIdClaimJSONBody
 
 // PostServiceAgentsContactsJSONRequestBody defines body for PostServiceAgentsContacts for application/json ContentType.
 type PostServiceAgentsContactsJSONRequestBody PostServiceAgentsContactsJSONBody
@@ -8048,6 +8070,9 @@ type ServerInterface interface {
 	// Update a contact address
 	// (PUT /contact_addresses/{id})
 	PutContactAddressesId(c *gin.Context, id openapi_types.UUID)
+	// Claim an unresolved contact address
+	// (POST /contact_addresses/{id}/claim)
+	PostContactAddressesIdClaim(c *gin.Context, id openapi_types.UUID)
 	// List contacts
 	// (GET /contacts)
 	GetContacts(c *gin.Context, params GetContactsParams)
@@ -8486,6 +8511,9 @@ type ServerInterface interface {
 	// Update a contact address (service agent)
 	// (PUT /service_agents/contact_addresses/{id})
 	PutServiceAgentsContactAddressesId(c *gin.Context, id openapi_types.UUID)
+	// Claim an unresolved contact address (service agent)
+	// (POST /service_agents/contact_addresses/{id}/claim)
+	PostServiceAgentsContactAddressesIdClaim(c *gin.Context, id openapi_types.UUID)
 	// List contacts
 	// (GET /service_agents/contacts)
 	GetServiceAgentsContacts(c *gin.Context, params GetServiceAgentsContactsParams)
@@ -11892,6 +11920,14 @@ func (siw *ServerInterfaceWrapper) GetContactAddresses(c *gin.Context) {
 		return
 	}
 
+	// ------------- Optional query parameter "unresolved" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "unresolved", c.Request.URL.Query(), &params.Unresolved)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter unresolved: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -11985,6 +12021,30 @@ func (siw *ServerInterfaceWrapper) PutContactAddressesId(c *gin.Context) {
 	}
 
 	siw.Handler.PutContactAddressesId(c, id)
+}
+
+// PostContactAddressesIdClaim operation middleware
+func (siw *ServerInterfaceWrapper) PostContactAddressesIdClaim(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostContactAddressesIdClaim(c, id)
 }
 
 // GetContacts operation middleware
@@ -15548,6 +15608,14 @@ func (siw *ServerInterfaceWrapper) GetServiceAgentsContactAddresses(c *gin.Conte
 		return
 	}
 
+	// ------------- Optional query parameter "unresolved" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "unresolved", c.Request.URL.Query(), &params.Unresolved)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter unresolved: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -15641,6 +15709,30 @@ func (siw *ServerInterfaceWrapper) PutServiceAgentsContactAddressesId(c *gin.Con
 	}
 
 	siw.Handler.PutServiceAgentsContactAddressesId(c, id)
+}
+
+// PostServiceAgentsContactAddressesIdClaim operation middleware
+func (siw *ServerInterfaceWrapper) PostServiceAgentsContactAddressesIdClaim(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", c.Param("id"), &id, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostServiceAgentsContactAddressesIdClaim(c, id)
 }
 
 // GetServiceAgentsContacts operation middleware
@@ -18167,6 +18259,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/contact_addresses/:id", wrapper.DeleteContactAddressesId)
 	router.GET(options.BaseURL+"/contact_addresses/:id", wrapper.GetContactAddressesId)
 	router.PUT(options.BaseURL+"/contact_addresses/:id", wrapper.PutContactAddressesId)
+	router.POST(options.BaseURL+"/contact_addresses/:id/claim", wrapper.PostContactAddressesIdClaim)
 	router.GET(options.BaseURL+"/contacts", wrapper.GetContacts)
 	router.POST(options.BaseURL+"/contacts", wrapper.PostContacts)
 	router.GET(options.BaseURL+"/contacts/lookup", wrapper.GetContactsLookup)
@@ -18313,6 +18406,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/service_agents/contact_addresses/:id", wrapper.DeleteServiceAgentsContactAddressesId)
 	router.GET(options.BaseURL+"/service_agents/contact_addresses/:id", wrapper.GetServiceAgentsContactAddressesId)
 	router.PUT(options.BaseURL+"/service_agents/contact_addresses/:id", wrapper.PutServiceAgentsContactAddressesId)
+	router.POST(options.BaseURL+"/service_agents/contact_addresses/:id/claim", wrapper.PostServiceAgentsContactAddressesIdClaim)
 	router.GET(options.BaseURL+"/service_agents/contacts", wrapper.GetServiceAgentsContacts)
 	router.POST(options.BaseURL+"/service_agents/contacts", wrapper.PostServiceAgentsContacts)
 	router.GET(options.BaseURL+"/service_agents/contacts/lookup", wrapper.GetServiceAgentsContactsLookup)
@@ -25597,6 +25691,78 @@ func (response PutContactAddressesId404JSONResponse) VisitPutContactAddressesIdR
 type PutContactAddressesId500JSONResponse struct{ InternalErrorJSONResponse }
 
 func (response PutContactAddressesId500JSONResponse) VisitPutContactAddressesIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactAddressesIdClaimRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostContactAddressesIdClaimJSONRequestBody
+}
+
+type PostContactAddressesIdClaimResponseObject interface {
+	VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error
+}
+
+type PostContactAddressesIdClaim200JSONResponse ContactManagerAddress
+
+func (response PostContactAddressesIdClaim200JSONResponse) VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactAddressesIdClaim400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostContactAddressesIdClaim400JSONResponse) VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactAddressesIdClaim401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostContactAddressesIdClaim401JSONResponse) VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactAddressesIdClaim403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostContactAddressesIdClaim403JSONResponse) VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactAddressesIdClaim404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostContactAddressesIdClaim404JSONResponse) VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactAddressesIdClaim409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostContactAddressesIdClaim409JSONResponse) VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostContactAddressesIdClaim500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostContactAddressesIdClaim500JSONResponse) VisitPostContactAddressesIdClaimResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -33897,6 +34063,78 @@ func (response PutServiceAgentsContactAddressesId500JSONResponse) VisitPutServic
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PostServiceAgentsContactAddressesIdClaimRequestObject struct {
+	Id   openapi_types.UUID `json:"id"`
+	Body *PostServiceAgentsContactAddressesIdClaimJSONRequestBody
+}
+
+type PostServiceAgentsContactAddressesIdClaimResponseObject interface {
+	VisitPostServiceAgentsContactAddressesIdClaimResponse(w http.ResponseWriter) error
+}
+
+type PostServiceAgentsContactAddressesIdClaim200JSONResponse ContactManagerAddress
+
+func (response PostServiceAgentsContactAddressesIdClaim200JSONResponse) VisitPostServiceAgentsContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactAddressesIdClaim400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response PostServiceAgentsContactAddressesIdClaim400JSONResponse) VisitPostServiceAgentsContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactAddressesIdClaim401JSONResponse struct{ UnauthenticatedJSONResponse }
+
+func (response PostServiceAgentsContactAddressesIdClaim401JSONResponse) VisitPostServiceAgentsContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactAddressesIdClaim403JSONResponse struct{ PermissionDeniedJSONResponse }
+
+func (response PostServiceAgentsContactAddressesIdClaim403JSONResponse) VisitPostServiceAgentsContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactAddressesIdClaim404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response PostServiceAgentsContactAddressesIdClaim404JSONResponse) VisitPostServiceAgentsContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactAddressesIdClaim409JSONResponse struct{ ConflictJSONResponse }
+
+func (response PostServiceAgentsContactAddressesIdClaim409JSONResponse) VisitPostServiceAgentsContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostServiceAgentsContactAddressesIdClaim500JSONResponse struct{ InternalErrorJSONResponse }
+
+func (response PostServiceAgentsContactAddressesIdClaim500JSONResponse) VisitPostServiceAgentsContactAddressesIdClaimResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetServiceAgentsContactsRequestObject struct {
 	Params GetServiceAgentsContactsParams
 }
@@ -39539,6 +39777,9 @@ type StrictServerInterface interface {
 	// Update a contact address
 	// (PUT /contact_addresses/{id})
 	PutContactAddressesId(ctx context.Context, request PutContactAddressesIdRequestObject) (PutContactAddressesIdResponseObject, error)
+	// Claim an unresolved contact address
+	// (POST /contact_addresses/{id}/claim)
+	PostContactAddressesIdClaim(ctx context.Context, request PostContactAddressesIdClaimRequestObject) (PostContactAddressesIdClaimResponseObject, error)
 	// List contacts
 	// (GET /contacts)
 	GetContacts(ctx context.Context, request GetContactsRequestObject) (GetContactsResponseObject, error)
@@ -39977,6 +40218,9 @@ type StrictServerInterface interface {
 	// Update a contact address (service agent)
 	// (PUT /service_agents/contact_addresses/{id})
 	PutServiceAgentsContactAddressesId(ctx context.Context, request PutServiceAgentsContactAddressesIdRequestObject) (PutServiceAgentsContactAddressesIdResponseObject, error)
+	// Claim an unresolved contact address (service agent)
+	// (POST /service_agents/contact_addresses/{id}/claim)
+	PostServiceAgentsContactAddressesIdClaim(ctx context.Context, request PostServiceAgentsContactAddressesIdClaimRequestObject) (PostServiceAgentsContactAddressesIdClaimResponseObject, error)
 	// List contacts
 	// (GET /service_agents/contacts)
 	GetServiceAgentsContacts(ctx context.Context, request GetServiceAgentsContactsRequestObject) (GetServiceAgentsContactsResponseObject, error)
@@ -44013,6 +44257,41 @@ func (sh *strictHandler) PutContactAddressesId(ctx *gin.Context, id openapi_type
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutContactAddressesIdResponseObject); ok {
 		if err := validResponse.VisitPutContactAddressesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostContactAddressesIdClaim operation middleware
+func (sh *strictHandler) PostContactAddressesIdClaim(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostContactAddressesIdClaimRequestObject
+
+	request.Id = id
+
+	var body PostContactAddressesIdClaimJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostContactAddressesIdClaim(ctx, request.(PostContactAddressesIdClaimRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostContactAddressesIdClaim")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostContactAddressesIdClaimResponseObject); ok {
+		if err := validResponse.VisitPostContactAddressesIdClaimResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
@@ -48358,6 +48637,41 @@ func (sh *strictHandler) PutServiceAgentsContactAddressesId(ctx *gin.Context, id
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PutServiceAgentsContactAddressesIdResponseObject); ok {
 		if err := validResponse.VisitPutServiceAgentsContactAddressesIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostServiceAgentsContactAddressesIdClaim operation middleware
+func (sh *strictHandler) PostServiceAgentsContactAddressesIdClaim(ctx *gin.Context, id openapi_types.UUID) {
+	var request PostServiceAgentsContactAddressesIdClaimRequestObject
+
+	request.Id = id
+
+	var body PostServiceAgentsContactAddressesIdClaimJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostServiceAgentsContactAddressesIdClaim(ctx, request.(PostServiceAgentsContactAddressesIdClaimRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostServiceAgentsContactAddressesIdClaim")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostServiceAgentsContactAddressesIdClaimResponseObject); ok {
+		if err := validResponse.VisitPostServiceAgentsContactAddressesIdClaimResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

@@ -52,9 +52,10 @@ var (
 	regV1ContactsLookup = regexp.MustCompile(`/v1/contacts/lookup\?(.*)$`)
 
 	// v1 contact_addresses (independent resource)
-	regV1ContactAddresses    = regexp.MustCompile("/v1/contact_addresses$")
-	regV1ContactAddressesGet = regexp.MustCompile(`/v1/contact_addresses\?(.*)$`)
-	regV1ContactAddressesID  = regexp.MustCompile("/v1/contact_addresses/" + regUUID + "$")
+	regV1ContactAddresses        = regexp.MustCompile("/v1/contact_addresses$")
+	regV1ContactAddressesGet     = regexp.MustCompile(`/v1/contact_addresses\?(.*)$`)
+	regV1ContactAddressesID      = regexp.MustCompile("/v1/contact_addresses/" + regUUID + "$")
+	regV1ContactAddressesIDClaim = regexp.MustCompile("/v1/contact_addresses/" + regUUID + "/claim$")
 
 	// v1 contacts/{id}/addresses
 	regV1ContactsAddresses   = regexp.MustCompile("/v1/contacts/" + regUUID + "/addresses$")
@@ -239,6 +240,11 @@ func (h *listenHandler) processRequest(m *sock.Request) (*sock.Response, error) 
 	case regV1ContactAddressesID.MatchString(m.URI) && m.Method == sock.RequestMethodDelete:
 		response, err = h.processV1ContactAddressesIDDelete(ctx, m)
 		requestType = "/v1/contact_addresses/{id}"
+
+	// POST /contact_addresses/{id}/claim
+	case regV1ContactAddressesIDClaim.MatchString(m.URI) && m.Method == sock.RequestMethodPost:
+		response, err = h.processV1ContactAddressesIDClaim(ctx, m)
+		requestType = "/v1/contact_addresses/{id}/claim"
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// v1 Contacts Addresses

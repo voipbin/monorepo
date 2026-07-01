@@ -78,6 +78,21 @@ func (mr *MockContactHandlerMockRecorder) AddTag(ctx, contactID, tagID any) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTag", reflect.TypeOf((*MockContactHandler)(nil).AddTag), ctx, contactID, tagID)
 }
 
+// ClaimAddress mocks base method.
+func (m *MockContactHandler) ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ClaimAddress", ctx, customerID, addressID, contactID)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ClaimAddress indicates an expected call of ClaimAddress.
+func (mr *MockContactHandlerMockRecorder) ClaimAddress(ctx, customerID, addressID, contactID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ClaimAddress", reflect.TypeOf((*MockContactHandler)(nil).ClaimAddress), ctx, customerID, addressID, contactID)
+}
+
 // Create mocks base method.
 func (m *MockContactHandler) Create(ctx context.Context, c *contact.Contact) (*contact.Contact, error) {
 	m.ctrl.T.Helper()
@@ -91,6 +106,21 @@ func (m *MockContactHandler) Create(ctx context.Context, c *contact.Contact) (*c
 func (mr *MockContactHandlerMockRecorder) Create(ctx, c any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockContactHandler)(nil).Create), ctx, c)
+}
+
+// CreateUnresolvedAddress mocks base method.
+func (m *MockContactHandler) CreateUnresolvedAddress(ctx context.Context, customerID uuid.UUID, a *contact.Address) (*contact.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUnresolvedAddress", ctx, customerID, a)
+	ret0, _ := ret[0].(*contact.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateUnresolvedAddress indicates an expected call of CreateUnresolvedAddress.
+func (mr *MockContactHandlerMockRecorder) CreateUnresolvedAddress(ctx, customerID, a any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUnresolvedAddress", reflect.TypeOf((*MockContactHandler)(nil).CreateUnresolvedAddress), ctx, customerID, a)
 }
 
 // Delete mocks base method.

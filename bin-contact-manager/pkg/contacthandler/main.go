@@ -15,11 +15,11 @@ import (
 	"github.com/gofrs/uuid"
 
 	callmodel "monorepo/bin-call-manager/models/call"
-	convmsg "monorepo/bin-conversation-manager/models/message"
 	"monorepo/bin-contact-manager/models/contact"
 	"monorepo/bin-contact-manager/models/interaction"
 	"monorepo/bin-contact-manager/models/resolution"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
+	convmsg "monorepo/bin-conversation-manager/models/message"
 )
 
 // ContactHandler interface for contact business logic operations
@@ -37,6 +37,8 @@ type ContactHandler interface {
 	AddAddress(ctx context.Context, contactID uuid.UUID, a *contact.Address) (*contact.Address, error)
 	UpdateAddress(ctx context.Context, contactID, addressID uuid.UUID, fields map[string]any) (*contact.Contact, error)
 	RemoveAddress(ctx context.Context, contactID, addressID uuid.UUID) (*contact.Contact, error)
+	CreateUnresolvedAddress(ctx context.Context, customerID uuid.UUID, a *contact.Address) (*contact.Address, error)
+	ClaimAddress(ctx context.Context, customerID, addressID, contactID uuid.UUID) (*contact.Address, error)
 
 	// Tag operations
 	AddTag(ctx context.Context, contactID, tagID uuid.UUID) (*contact.Contact, error)
