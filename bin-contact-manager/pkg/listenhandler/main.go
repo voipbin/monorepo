@@ -18,6 +18,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
+	"monorepo/bin-contact-manager/pkg/addresshandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 	"monorepo/bin-contact-manager/pkg/dbhandler"
 )
@@ -38,6 +39,7 @@ type listenHandler struct {
 
 	utilHandler    utilhandler.UtilHandler
 	contactHandler contacthandler.ContactHandler
+	addressHandler addresshandler.AddressHandler
 }
 
 var (
@@ -126,12 +128,13 @@ func errorResponse(err error) *sock.Response {
 }
 
 // NewListenHandler return ListenHandler interface
-func NewListenHandler(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler) ListenHandler {
+func NewListenHandler(sockHandler sockhandler.SockHandler, contactHandler contacthandler.ContactHandler, addressHandler addresshandler.AddressHandler) ListenHandler {
 	h := &listenHandler{
 		sockHandler: sockHandler,
 
 		utilHandler:    utilhandler.NewUtilHandler(),
 		contactHandler: contactHandler,
+		addressHandler: addressHandler,
 	}
 
 	return h

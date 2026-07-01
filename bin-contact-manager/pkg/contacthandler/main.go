@@ -37,8 +37,6 @@ type ContactHandler interface {
 	AddAddress(ctx context.Context, contactID uuid.UUID, a *contact.Address) (*contact.Address, error)
 	UpdateAddress(ctx context.Context, contactID, addressID uuid.UUID, fields map[string]any) (*contact.Contact, error)
 	RemoveAddress(ctx context.Context, contactID, addressID uuid.UUID) (*contact.Contact, error)
-	GetAddress(ctx context.Context, customerID, addressID uuid.UUID) (*contact.Address, error)
-	ListAddresses(ctx context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error)
 
 	// Tag operations
 	AddTag(ctx context.Context, contactID, tagID uuid.UUID) (*contact.Contact, error)

@@ -48,7 +48,7 @@ func (h *listenHandler) processV1ContactAddressesGet(ctx context.Context, m *soc
 	pageToken := u.Query().Get("page_token")
 	pageSize := uint64(20)
 
-	tmp, err := h.contactHandler.ListAddresses(ctx, customerID, filters, pageToken, pageSize)
+	tmp, err := h.addressHandler.ListAddresses(ctx, customerID, filters, pageToken, pageSize)
 	if err != nil {
 		log.Errorf("Could not list addresses. err: %v", err)
 		return simpleResponse(500), nil
@@ -134,10 +134,10 @@ func (h *listenHandler) processV1ContactAddressesIDGet(ctx context.Context, m *s
 		return simpleResponse(400), nil
 	}
 
-	tmp, err := h.contactHandler.GetAddress(ctx, customerID, id)
+	tmp, err := h.addressHandler.GetAddress(ctx, customerID, id)
 	if err != nil {
 		log.Errorf("Could not get address. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
@@ -204,7 +204,7 @@ func (h *listenHandler) processV1ContactAddressesIDPut(ctx context.Context, m *s
 		// fetch directly via contactHandler
 		u2, _ := url.Parse(m.URI)
 		customerID := uuid.FromStringOrNil(u2.Query().Get("customer_id"))
-		updated, err = h.contactHandler.GetAddress(ctx, customerID, id)
+		updated, err = h.addressHandler.GetAddress(ctx, customerID, id)
 		if err != nil {
 			return simpleResponse(500), nil
 		}

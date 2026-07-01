@@ -15,6 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"monorepo/bin-contact-manager/models/contact"
+	"monorepo/bin-contact-manager/pkg/addresshandler"
 	"monorepo/bin-contact-manager/pkg/contacthandler"
 )
 
@@ -1179,8 +1180,9 @@ func TestNewListenHandler(t *testing.T) {
 
 	mockSock := sockhandler.NewMockSockHandler(mc)
 	mockContact := contacthandler.NewMockContactHandler(mc)
+	mockAddr := addresshandler.NewMockAddressHandler(mc)
 
-	h := NewListenHandler(mockSock, mockContact)
+	h := NewListenHandler(mockSock, mockContact, mockAddr)
 	if h == nil {
 		t.Error("NewListenHandler() returned nil")
 	}
