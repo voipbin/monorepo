@@ -568,6 +568,7 @@ func Test_PutContactsIdAddressesAddressId(t *testing.T) {
 
 		expectContactID uuid.UUID
 		expectAddressID uuid.UUID
+		expectFields    map[string]any
 		expectRes       string
 	}{
 		{
@@ -598,7 +599,41 @@ func Test_PutContactsIdAddressesAddressId(t *testing.T) {
 
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+			expectFields:    map[string]any{"target": "+121****9999"},
 			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****9999","name":"","detail":"","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
+		},
+		{
+			name: "update name and detail",
+			agent: auth.NewAgentIdentity(&amagent.Agent{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("2a2ec0ba-8004-11ec-aea5-439829c92a7c"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+			}),
+
+			reqQuery: "/contacts/3147612c-5066-11ec-ab34-23643cfdc1c5/addresses/a1b2c3d4-5066-11ec-ab34-23643cfdc1c5",
+			reqBody:  []byte(`{"name":"Main Office","detail":"Primary contact number"}`),
+
+			responseContact: &cmcontact.WebhookMessage{
+				Identity: commonidentity.Identity{
+					ID:         uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
+					CustomerID: uuid.FromStringOrNil("5f621078-8e5f-11ee-97b2-cfe7337b701c"),
+				},
+				Addresses: []cmcontact.Address{
+					{
+						ID:     uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+						Type:   "tel",
+						Target: "+121****9999",
+						Name:   "Main Office",
+						Detail: "Primary contact number",
+					},
+				},
+			},
+
+			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
+			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
+			expectFields:    map[string]any{"name": "Main Office", "detail": "Primary contact number"},
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****9999","name":"Main Office","detail":"Primary contact number","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -623,7 +658,7 @@ func Test_PutContactsIdAddressesAddressId(t *testing.T) {
 			req, _ := http.NewRequest("PUT", tt.reqQuery, bytes.NewBuffer(tt.reqBody))
 			req.Header.Set("Content-Type", "application/json")
 
-			mockSvc.EXPECT().ContactAddressUpdate(req.Context(), tt.agent, tt.expectContactID, tt.expectAddressID, gomock.Any()).Return(tt.responseContact, nil)
+			mockSvc.EXPECT().ContactAddressUpdate(req.Context(), tt.agent, tt.expectContactID, tt.expectAddressID, tt.expectFields).Return(tt.responseContact, nil)
 
 			r.ServeHTTP(w, req)
 			if w.Code != http.StatusOK {
