@@ -619,6 +619,7 @@
     <span class="s2">&quot;job_title&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;external_id&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;notes&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
     <span class="s2">&quot;addresses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="o">&lt;</span><span class="n">Address</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
     <span class="s2">&quot;tag_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
     <span class="s2">&quot;tm_create&quot;</span><span class="p">:</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span>
@@ -637,6 +638,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">job_title</span></code> (String): Contact’s job title or role.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">source</span></code> (enum string): How the contact was created. See <a class="reference internal" href="#contact-struct-contact-source"><span class="std std-ref">Source</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">external_id</span></code> (String): Reference ID in an external CRM system (Salesforce, HubSpot, Zoho, etc.). Used for deduplication and two-way sync.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">notes</span></code> (String): Free-form notes about the contact. May include call summaries, preferences, or special instructions. Empty string if not set.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">addresses</span></code> (Array of Object): Array of addresses (tel or email) associated with this contact. See <a class="reference internal" href="#contact-struct-contact-address"><span class="std std-ref">Address</span></a>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tag_ids</span></code> (Array of UUID): Array of tag UUIDs assigned to this contact. Each tag ID is obtained from <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/tags</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tm_create</span></code> (string, ISO 8601): Timestamp when the contact was created.</p></li>

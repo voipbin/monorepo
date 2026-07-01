@@ -20,6 +20,7 @@ Contact
         "job_title": "<string>",
         "source": "<string>",
         "external_id": "<string>",
+        "notes": "<string>",
         "addresses": [<Address>, ...],
         "tag_ids": ["<string>", ...],
         "tm_create": "<string>",
@@ -36,6 +37,7 @@ Contact
 * ``job_title`` (String): Contact's job title or role.
 * ``source`` (enum string): How the contact was created. See :ref:`Source <contact-struct-contact-source>`.
 * ``external_id`` (String): Reference ID in an external CRM system (Salesforce, HubSpot, Zoho, etc.). Used for deduplication and two-way sync.
+* ``notes`` (String): Free-form notes about the contact. May include call summaries, preferences, or special instructions. Empty string if not set.
 * ``addresses`` (Array of Object): Array of addresses (tel or email) associated with this contact. See :ref:`Address <contact-struct-contact-address>`.
 * ``tag_ids`` (Array of UUID): Array of tag UUIDs assigned to this contact. Each tag ID is obtained from ``GET /tags``.
 * ``tm_create`` (string, ISO 8601): Timestamp when the contact was created.

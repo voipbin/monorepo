@@ -23,6 +23,7 @@ type WebhookMessage struct {
 
 	Source     string `json:"source"`
 	ExternalID string `json:"external_id"`
+	Notes      string `json:"notes"`
 
 	Addresses []Address   `json:"addresses,omitempty"`
 	TagIDs    []uuid.UUID `json:"tag_ids,omitempty"`
@@ -45,6 +46,7 @@ func (c *Contact) ConvertWebhookMessage() *WebhookMessage {
 
 		Source:     c.Source,
 		ExternalID: c.ExternalID,
+		Notes:      c.Notes,
 
 		Addresses: c.Addresses,
 		TagIDs:    c.TagIDs,
