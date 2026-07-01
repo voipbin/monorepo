@@ -3539,6 +3539,14 @@ components:
               format: uuid
               description: Unique identifier of the customer this address belongs to.
               example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            name:
+              type: string
+              description: Optional human-readable label for this address.
+              example: "Main Office"
+            detail:
+              type: string
+              description: Optional free-form notes about this address.
+              example: "Primary contact number"
             is_primary:
               type: boolean
               description: Indicates if this is the primary address for the given type.
