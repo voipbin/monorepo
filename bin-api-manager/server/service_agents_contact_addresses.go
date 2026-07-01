@@ -170,6 +170,12 @@ func (h *server) PutServiceAgentsContactAddressesId(c *gin.Context, id openapi_t
 	if req.IsPrimary != nil {
 		fields["is_primary"] = *req.IsPrimary
 	}
+	if req.Name != nil {
+		fields["name"] = *req.Name
+	}
+	if req.Detail != nil {
+		fields["detail"] = *req.Detail
+	}
 
 	res, err := h.serviceHandler.ServiceAgentContactAddressUpdateIndependent(c.Request.Context(), a, addressID, fields)
 	if err != nil {

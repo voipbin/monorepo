@@ -432,6 +432,12 @@ func (h *server) PutServiceAgentsContactsIdAddressesAddressId(c *gin.Context, id
 	if req.IsPrimary != nil {
 		fields["is_primary"] = *req.IsPrimary
 	}
+	if req.Name != nil {
+		fields["name"] = *req.Name
+	}
+	if req.Detail != nil {
+		fields["detail"] = *req.Detail
+	}
 
 	res, err := h.serviceHandler.ServiceAgentContactAddressUpdate(c.Request.Context(), a, contactID, addrID, fields)
 	if err != nil {

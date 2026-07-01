@@ -457,6 +457,12 @@ func (h *server) PutContactsIdAddressesAddressId(c *gin.Context, id openapi_type
 	if req.IsPrimary != nil {
 		fields["is_primary"] = *req.IsPrimary
 	}
+	if req.Name != nil {
+		fields["name"] = *req.Name
+	}
+	if req.Detail != nil {
+		fields["detail"] = *req.Detail
+	}
 
 	res, err := h.serviceHandler.ContactAddressUpdate(c.Request.Context(), a, contactID, addrID, fields)
 	if err != nil {

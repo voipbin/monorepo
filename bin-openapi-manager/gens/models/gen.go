@@ -4803,7 +4803,7 @@ type ContactManagerAddress struct {
 	// CustomerId Unique identifier of the customer this address belongs to.
 	CustomerId *openapi_types.UUID `json:"customer_id,omitempty"`
 
-	// Detail Optional free-form notes about this address.
+	// Detail Additional notes about this address.
 	Detail *string `json:"detail,omitempty"`
 
 	// Id Unique identifier for the address.
@@ -4812,7 +4812,7 @@ type ContactManagerAddress struct {
 	// IsPrimary Indicates if this is the primary address for the given type.
 	IsPrimary *bool `json:"is_primary,omitempty"`
 
-	// Name Optional human-readable label for this address.
+	// Name Optional label for this address.
 	Name *string `json:"name,omitempty"`
 
 	// Target The address endpoint. Format depends on type: phone number for tel (e.g. +14155551234), UUID for agent/conference/extension, email for email, SIP URI for sip.
