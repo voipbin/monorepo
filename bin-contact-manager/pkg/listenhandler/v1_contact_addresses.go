@@ -137,7 +137,7 @@ func (h *listenHandler) processV1ContactAddressesIDGet(ctx context.Context, m *s
 	tmp, err := h.addressHandler.GetAddress(ctx, customerID, id)
 	if err != nil {
 		log.Errorf("Could not get address. err: %v", err)
-		return simpleResponse(404), nil
+		return errorResponse(err), nil
 	}
 
 	data, err := json.Marshal(tmp)
