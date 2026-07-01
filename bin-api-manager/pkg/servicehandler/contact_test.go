@@ -88,6 +88,7 @@ func Test_ContactCreate(t *testing.T) {
 				JobTitle:    "Engineer",
 				Source:      "api",
 				ExternalID:  "ext-123",
+				Notes:       "test note",
 				TMCreate:    timePtr("2020-09-20T03:23:21.995000Z"),
 			},
 		},

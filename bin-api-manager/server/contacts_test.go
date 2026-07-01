@@ -53,7 +53,7 @@ func Test_GetContacts(t *testing.T) {
 				},
 			},
 
-			expectRes: `{"result":[{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
+			expectRes: `{"result":[{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":"2020-09-20T03:23:21.995Z","tm_update":null,"tm_delete":null}],"next_page_token":"2020-09-20T03:23:21.995000Z"}`,
 		},
 	}
 
@@ -122,7 +122,7 @@ func Test_PostContacts(t *testing.T) {
 				},
 			},
 
-			expectRes: `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes: `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -206,7 +206,7 @@ func Test_GetContactsId(t *testing.T) {
 			},
 
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -278,7 +278,7 @@ func Test_PutContactsId(t *testing.T) {
 			},
 
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"Jane","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"Jane","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -361,7 +361,7 @@ func Test_DeleteContactsId(t *testing.T) {
 			},
 
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tm_create":null,"tm_update":null,"tm_delete":"2020-09-20T04:00:00Z"}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":null,"tm_update":null,"tm_delete":"2020-09-20T04:00:00Z"}`,
 		},
 	}
 
@@ -432,7 +432,7 @@ func Test_GetContactsLookup(t *testing.T) {
 
 			expectPhone: "+1234567890",
 			expectEmail: "",
-			expectRes:   `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:   `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -516,7 +516,7 @@ func Test_PostContactsIdAddresses(t *testing.T) {
 			expectAddrType:  "tel",
 			expectTarget:    "+121****1234",
 			expectIsPrimary: false,
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****1234","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****1234","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -598,7 +598,7 @@ func Test_PutContactsIdAddressesAddressId(t *testing.T) {
 
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****9999","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","addresses":[{"id":"a1b2c3d4-5066-11ec-ab34-23643cfdc1c5","customer_id":"00000000-0000-0000-0000-000000000000","contact_id":"00000000-0000-0000-0000-000000000000","type":"tel","target":"+121****9999","is_primary":false,"tm_create":null}],"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -671,7 +671,7 @@ func Test_DeleteContactsIdAddressesAddressId(t *testing.T) {
 
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			expectAddressID: uuid.FromStringOrNil("a1b2c3d4-5066-11ec-ab34-23643cfdc1c5"),
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -753,7 +753,7 @@ func Test_PostContactsIdTags(t *testing.T) {
 
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			expectTagID:     uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tag_ids":["bd8cee04-4f21-11ec-9955-db7041b6d997"],"tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tag_ids":["bd8cee04-4f21-11ec-9955-db7041b6d997"],"tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
@@ -826,7 +826,7 @@ func Test_DeleteContactsIdTagsTagId(t *testing.T) {
 
 			expectContactID: uuid.FromStringOrNil("3147612c-5066-11ec-ab34-23643cfdc1c5"),
 			expectTagID:     uuid.FromStringOrNil("bd8cee04-4f21-11ec-9955-db7041b6d997"),
-			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
+			expectRes:       `{"id":"3147612c-5066-11ec-ab34-23643cfdc1c5","customer_id":"5f621078-8e5f-11ee-97b2-cfe7337b701c","first_name":"","last_name":"","display_name":"","company":"","job_title":"","source":"","external_id":"","notes":"","tm_create":null,"tm_update":null,"tm_delete":null}`,
 		},
 	}
 
