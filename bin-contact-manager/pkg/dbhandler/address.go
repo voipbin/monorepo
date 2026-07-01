@@ -218,7 +218,9 @@ func (h *handler) AddressGet(ctx context.Context, customerID, id uuid.UUID) (*co
 }
 
 // AddressList returns addresses for the customer with optional filters.
-// filters keys: "contact_id" (uuid.UUID), "type" (string).
+// filters keys: "contact_id" (uuid.UUID), "type" (string), "unresolved"
+// (bool — when true, restricts to rows where contact_id IS NULL and takes
+// precedence over "contact_id" if both are given).
 func (h *handler) AddressList(_ context.Context, customerID uuid.UUID, filters map[string]any, pageToken string, pageSize uint64) ([]contact.Address, error) {
 	q := sq.Select(addressRowColumns()...).
 		From(addressTable).

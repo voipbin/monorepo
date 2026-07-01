@@ -169,7 +169,12 @@ func (h *serviceHandler) ContactAddressClaim(
 		return nil, err
 	}
 	if addr.CustomerID != a.CustomerID {
-		return nil, serviceerrors.ErrPermissionDenied
+		// Cross-tenant: return NotFound (404), not PermissionDenied (403), to
+		// avoid leaking the existence of another tenant's address. This
+		// matches the design doc's explicit anti-enumeration decision and
+		// mirrors contactHandler.ClaimAddress's own "treat cross-tenant
+		// contact as not-found" comment on the backend side.
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	// Tenant isolation: verify the target contact also belongs to this customer
@@ -179,7 +184,7 @@ func (h *serviceHandler) ContactAddressClaim(
 		return nil, err
 	}
 	if ct.CustomerID != a.CustomerID {
-		return nil, serviceerrors.ErrPermissionDenied
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	res, err := h.reqHandler.ContactV1ContactAddressClaim(ctx, a.CustomerID, addressID, contactID)
@@ -408,7 +413,9 @@ func (h *serviceHandler) ServiceAgentContactAddressClaim(
 		return nil, err
 	}
 	if addr.CustomerID != agent.CustomerID {
-		return nil, serviceerrors.ErrPermissionDenied
+		// Cross-tenant: NotFound (404), not PermissionDenied (403) — see
+		// ContactAddressClaim's identical anti-enumeration rationale above.
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	// Tenant isolation: verify the target contact also belongs to this customer
@@ -418,7 +425,7 @@ func (h *serviceHandler) ServiceAgentContactAddressClaim(
 		return nil, err
 	}
 	if ct.CustomerID != agent.CustomerID {
-		return nil, serviceerrors.ErrPermissionDenied
+		return nil, serviceerrors.ErrNotFound
 	}
 
 	res, err := h.reqHandler.ContactV1ContactAddressClaim(ctx, agent.CustomerID, addressID, contactID)

@@ -177,7 +177,7 @@ func Test_ContactAddressClaim(t *testing.T) {
 			expectAddressGetCall: true,
 			expectContactGetCall: false,
 			expectClaimCall:      false,
-			expectErr:            serviceerrors.ErrPermissionDenied,
+			expectErr:            serviceerrors.ErrNotFound,
 		},
 		{
 			name: "cross-tenant contact rejected",
@@ -197,7 +197,7 @@ func Test_ContactAddressClaim(t *testing.T) {
 			expectAddressGetCall: true,
 			expectContactGetCall: true,
 			expectClaimCall:      false,
-			expectErr:            serviceerrors.ErrPermissionDenied,
+			expectErr:            serviceerrors.ErrNotFound,
 		},
 	}
 
